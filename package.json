@@ -1,0 +1,54 @@
+{
+  "name": "grafana-frontend-agent",
+  "version": "0.0.1",
+  "description": "Monorepo for Grafana Frontend Agent",
+  "license": "AGPL-3.0-or-later",
+  "author": "Grafana Labs",
+  "homepage": "TODO",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/TODO.git"
+  },
+  "private": true,
+  "workspaces": [
+    "packages/**"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "start": "yarn build",
+    "build": "lerna run build",
+    "clean": "run-p clean:*",
+    "clean:packages": "lerna run --parallel clean",
+    "clean:root": "rimraf .build-cache/",
+    "quality": "lerna run --parallel quality",
+    "quality:test": "lerna run --parallel quality:test",
+    "quality:format": "lerna run --parallel quality:format",
+    "quality:lint": "lerna run --parallel quality:lint",
+    "quality:circular-deps": "lerna run --parallel quality:circular-deps",
+    "publish": "lerna publish",
+    "git-hooks": "run-s git-hooks:*",
+    "git-hooks:pre-commit": "lint-staged"
+  },
+  "devDependencies": {
+    "@grafana/eslint-config": "^2.5.0",
+    "@types/node": "^16.9.1",
+    "@typescript-eslint/eslint-plugin": "^4.31.1",
+    "@typescript-eslint/parser": "^4.31.1",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-jsdoc": "^36.1.0",
+    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.25.1",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "husky": "^7.0.2",
+    "lerna": "^4.0.0",
+    "lint-staged": "^11.1.2",
+    "madge": "^5.0.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.4.1",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.4.3"
+  }
+}

@@ -1,0 +1,13 @@
+# Git
+.git
+
+# IDEs
+.idea
+.vscode
+
+# App-specifics
+.build-cache
+.husky
+coverage
+dist
+node_modules

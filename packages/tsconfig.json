@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@grafana/frontend-agent-*": ["*/src"],
+      "#angular/*": ["angular/src/*"],
+      "#core/*": ["core/src/*"],
+      "#react/*": ["react/src/*"],
+      "#*": ["*/src"]
+    },
+    "rootDir": "."
+  }
+}

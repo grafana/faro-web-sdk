@@ -1,0 +1,35 @@
+{
+  "name": "@grafana/frontend-agent-angular",
+  "version": "0.0.0",
+  "description": "Grafana Frontend Agent Helpers for Angular",
+  "license": "AGPL-3.0-or-later",
+  "author": "Grafana Labs",
+  "homepage": "TODO",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/TODO.git",
+    "directory": "packages/angular"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "imports": {
+    "#angular/*": {
+      "default": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist/",
+    "quality": "run-s quality:*",
+    "quality:test": "exit 0",
+    "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint": "eslint \"src/**/*.ts\"",
+    "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
+  },
+  "dependencies": {
+    "@grafana/frontend-agent-core": "^0.0.1"
+  }
+}
