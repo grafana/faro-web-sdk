@@ -1,3 +1,3 @@
-import sayHello from '@grafana/frontend-agent-core';
+import { grafanaFEAgentLogger } from '@grafana/frontend-agent-core';
 
-sayHello('React');
+grafanaFEAgentLogger.event('Angular');
