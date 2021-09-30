@@ -1,11 +1,12 @@
-import { GrafanaFEAgentPlugin } from '@grafana/frontend-agent-core';
+import { logger, Plugin } from '@grafana/frontend-agent-core';
 
-export const grafanaFEAgentPluginErrors: GrafanaFEAgentPlugin = {
+const plugin: Plugin = {
   name: '@grafana/frontend-agent-plugin-error',
   initialize: () => {
     window.onerror = (...args) => {
-      // eslint-disable-next-line no-console
-      console.debug(`onerror event`, args);
+      logger.sendEvent(...args);
     };
   },
 };
+
+export default plugin;

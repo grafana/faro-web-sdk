@@ -25,5 +25,6 @@
     "strict": true,
     "target": "es5",
     "tsBuildInfoFile": ".build-cache/base.tsbuildinfo"
-  }
+  },
+  "exclude": ["demo"]
 }

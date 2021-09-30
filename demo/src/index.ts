@@ -1,7 +1,10 @@
-import { initializeGrafanaFEAgent } from '@grafana/frontend-agent-core';
-import { grafanaFEAgentPluginConsole } from '@grafana/frontend-agent-plugin-console';
-import { grafanaFEAgentPluginErrors } from '@grafana/frontend-agent-plugin-errors';
+import { initialize, logger } from '@grafana/frontend-agent-core';
+import consolePlugin from '@grafana/frontend-agent-plugin-console';
+import errorsPlugin from '@grafana/frontend-agent-plugin-errors';
 
-initializeGrafanaFEAgent({
-  plugins: [grafanaFEAgentPluginConsole, grafanaFEAgentPluginErrors],
+initialize({
+  plugins: [consolePlugin, errorsPlugin],
+  receiverUrl: 'http://localhost:8080/',
 });
+
+logger.sendEvent('Manual event');

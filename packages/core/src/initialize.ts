@@ -1,21 +1,31 @@
-import { createAgent, setAgent } from './agent';
-import { getConfigFromUserConfig, UserConfig } from './config';
+import { config, initializeConfig } from './config';
+import { logger } from './logger';
+import { UserConfig } from './types';
 
 export function initialize(userConfig: UserConfig) {
-  const config = getConfigFromUserConfig(userConfig);
+  initializeConfig(userConfig);
 
-  const agent = createAgent(config);
+  initializePlugins();
 
-  setAgent(agent);
+  defineAgentOnWindow();
+}
 
+export function initializePlugins() {
+  config.plugins.forEach((plugin) => {
+    plugin.initialize();
+  });
+}
+
+export function defineAgentOnWindow() {
   if (!config.preventWindowExposure) {
-    Object.defineProperty(window, config.windowObject, {
+    Object.defineProperty(window, config.windowObjectKey, {
       configurable: false,
       enumerable: true,
-      value: agent,
+      value: {
+        config,
+        logger,
+      },
       writable: false,
     });
   }
-
-  return agent;
 }

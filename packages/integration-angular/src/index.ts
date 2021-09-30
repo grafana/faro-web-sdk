@@ -1,3 +1,3 @@
-import { grafanaFEAgentLogger } from '@grafana/frontend-agent-core';
+import { logger } from '@grafana/frontend-agent-core';
 
-grafanaFEAgentLogger.event('Angular');
+logger.sendEvent('Angular');

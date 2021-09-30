@@ -1,21 +1,11 @@
-export interface Plugin {
-  name: string;
-  initialize: (config: Config) => void;
-}
+import { Config, UserConfig } from './types';
 
-export interface Config {
-  plugins: Plugin[];
-  preventWindowExposure: boolean;
-  windowObject: string;
-}
+export let config: Config = null!;
 
-export type UserConfig = Partial<Config>;
-
-export function getConfigFromUserConfig(userConfig: UserConfig): Config {
-  return {
-    plugins: [],
+export function initializeConfig(userConfig: UserConfig) {
+  config = {
     preventWindowExposure: false,
-    windowObject: 'grafanaFEAgent',
+    windowObjectKey: 'grafanaFEAgent',
     ...userConfig,
   };
 }

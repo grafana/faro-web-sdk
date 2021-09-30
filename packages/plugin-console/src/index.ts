@@ -1,16 +1,15 @@
-import { GrafanaFEAgentPlugin } from '@grafana/frontend-agent-core';
+import { logger, Plugin } from '@grafana/frontend-agent-core';
 
-export const grafanaFEAgentPluginConsole: GrafanaFEAgentPlugin = {
+/* eslint-disable no-console */
+
+const plugin: Plugin = {
   name: '@grafana/frontend-agent-plugin-console',
   initialize: () => {
     const patchConsole = (name: 'debug' | 'trace' | 'info' | 'log' | 'warn' | 'error') => {
-      // eslint-disable-next-line no-console
       const original = console[name];
 
-      // eslint-disable-next-line no-console
       console[name] = (...args) => {
-        // eslint-disable-next-line no-console
-        console.debug('console event', ...args);
+        logger.sendEvent(...args);
 
         original(...args);
       };
@@ -23,3 +22,5 @@ export const grafanaFEAgentPluginConsole: GrafanaFEAgentPlugin = {
     patchConsole('error');
   },
 };
+
+export default plugin;
