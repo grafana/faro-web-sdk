@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.build-cache/react.tsbuildinfo"
+    "tsBuildInfoFile": "../../.build-cache/integration-react.tsbuildinfo"
   },
   "include": ["./src"],
   "references": [

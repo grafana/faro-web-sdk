@@ -4,6 +4,8 @@
 
 # App-specifics
 .build-cache
+.cache
+.parcel-cache
 coverage
 dist
 node_modules

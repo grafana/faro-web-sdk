@@ -1,14 +1,14 @@
 {
-  "name": "@grafana/frontend-agent-react",
+  "name": "@grafana/frontend-agent-plugin-errors",
   "version": "0.0.0",
-  "description": "Grafana Frontend Agent Helpers for React",
+  "description": "Grafana Frontend Agent plugin for capturing console events.",
   "license": "AGPL-3.0-or-later",
   "author": "Grafana Labs",
-  "homepage": "TODO",
+  "homepage": "https://github.com/grafana/grafana-frontend-agent",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grafana/TODO.git",
-    "directory": "packages/react"
+    "url": "https://github.com/grafana/grafana-frontend-agent.git",
+    "directory": "packages/plugin-errors"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,11 +16,12 @@
     "dist"
   ],
   "imports": {
-    "#react/*": {
+    "#plugin-errors/*": {
       "default": "./dist/*.js"
     }
   },
   "scripts": {
+    "start": "yarn build -w",
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist/",
     "quality": "run-s quality:*",
@@ -31,12 +32,5 @@
   },
   "dependencies": {
     "@grafana/frontend-agent-core": "^0.0.1"
-  },
-  "devDependencies": {
-    "@types/react": "^17.0.21",
-    "react": "^17.0.2"
-  },
-  "peerDependencies": {
-    "react": "^17.0.0"
   }
 }

@@ -1,1 +1,3 @@
-# Grafana Frontend Agent Core Package
+# @grafana/frontend-agent-core
+
+Core package of Grafana Frontend Agent.

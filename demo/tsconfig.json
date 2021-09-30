@@ -1,0 +1,33 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "isolatedModules": false,
+    "noEmit": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.build-cache/demo.tsbuildinfo"
+  },
+  "include": ["./src"],
+  "references": [
+    {
+      "path": "../packages/core/tsconfig.json",
+      "prepend": false
+    },
+    {
+      "path": "../packages/integration-angular/tsconfig.json",
+      "prepend": false
+    },
+    {
+      "path": "../packages/integration-react/tsconfig.json",
+      "prepend": false
+    },
+    {
+      "path": "../packages/plugin-console/tsconfig.json",
+      "prepend": false
+    },
+    {
+      "path": "../packages/plugin-errors/tsconfig.json",
+      "prepend": false
+    }
+  ]
+}

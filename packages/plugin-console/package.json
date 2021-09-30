@@ -1,23 +1,22 @@
 {
-  "name": "@grafana/frontend-agent-core",
-  "version": "0.0.1",
-  "description": "Core package of Grafana Frontend Agent.",
+  "name": "@grafana/frontend-agent-plugin-console",
+  "version": "0.0.0",
+  "description": "Grafana Frontend Agent plugin for capturing console events.",
   "license": "AGPL-3.0-or-later",
   "author": "Grafana Labs",
   "homepage": "https://github.com/grafana/grafana-frontend-agent",
   "repository": {
     "type": "git",
     "url": "https://github.com/grafana/grafana-frontend-agent.git",
-    "directory": "packages/core"
+    "directory": "packages/plugin-console"
   },
-  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "imports": {
-    "#core/*": {
+    "#plugin-console/*": {
       "default": "./dist/*.js"
     }
   },
@@ -30,5 +29,8 @@
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "eslint \"src/**/*.ts\"",
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
+  },
+  "dependencies": {
+    "@grafana/frontend-agent-core": "^0.0.1"
   }
 }

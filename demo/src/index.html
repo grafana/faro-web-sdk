@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Grafana Frontend Agent Demo</h1>
+    <hr />
+
+    <h2>Console plugin</h2>
+    <button onclick="callConsole('trace')">Trace</button>
+    <button onclick="callConsole('info')">Info</button>
+    <button onclick="callConsole('log')">Log</button>
+    <button onclick="callConsole('warn')">Warn</button>
+    <button onclick="callConsole('error')">Error</button>
+    <hr />
+
+    <h2>Error plugin</h2>
+    <button onclick="throwError()">Throw error</button>
+    <button onclick="callUndefined()">Call undefined method</button>
+    <hr />
+
+    <script src="./index.ts" type="module"></script>
+    <script src="./actions.ts"></script>
+  </body>
+</html>

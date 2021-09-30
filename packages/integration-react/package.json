@@ -1,23 +1,22 @@
 {
-  "name": "@grafana/frontend-agent-core",
-  "version": "0.0.1",
-  "description": "Core package of Grafana Frontend Agent.",
+  "name": "@grafana/frontend-agent-integration-react",
+  "version": "0.0.0",
+  "description": "Grafana Frontend Agent package that enables easier integration in projects built with React.",
   "license": "AGPL-3.0-or-later",
   "author": "Grafana Labs",
   "homepage": "https://github.com/grafana/grafana-frontend-agent",
   "repository": {
     "type": "git",
     "url": "https://github.com/grafana/grafana-frontend-agent.git",
-    "directory": "packages/core"
+    "directory": "packages/integration-react"
   },
-  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "imports": {
-    "#core/*": {
+    "#integration-react/*": {
       "default": "./dist/*.js"
     }
   },
@@ -30,5 +29,15 @@
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "eslint \"src/**/*.ts\"",
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
+  },
+  "dependencies": {
+    "@grafana/frontend-agent-core": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.25",
+    "react": "^17.0.2"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0"
   }
 }

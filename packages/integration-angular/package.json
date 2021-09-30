@@ -1,14 +1,14 @@
 {
-  "name": "@grafana/frontend-agent-angular",
+  "name": "@grafana/frontend-agent-integration-angular",
   "version": "0.0.0",
-  "description": "Grafana Frontend Agent Helpers for Angular",
+  "description": "Grafana Frontend Agent package that enables easier integration in projects built with Angular.",
   "license": "AGPL-3.0-or-later",
   "author": "Grafana Labs",
-  "homepage": "TODO",
+  "homepage": "https://github.com/grafana/grafana-frontend-agent",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grafana/TODO.git",
-    "directory": "packages/angular"
+    "url": "https://github.com/grafana/grafana-frontend-agent.git",
+    "directory": "packages/integration-angular"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,11 +16,12 @@
     "dist"
   ],
   "imports": {
-    "#angular/*": {
+    "#integration-angular/*": {
       "default": "./dist/*.js"
     }
   },
   "scripts": {
+    "start": "yarn build -w",
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist/",
     "quality": "run-s quality:*",

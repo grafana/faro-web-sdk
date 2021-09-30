@@ -4,9 +4,11 @@
     "baseUrl": ".",
     "paths": {
       "@grafana/frontend-agent-*": ["*/src"],
-      "#angular/*": ["angular/src/*"],
       "#core/*": ["core/src/*"],
-      "#react/*": ["react/src/*"],
+      "#integration-angular/*": ["integration-angular/src/*"],
+      "#integration-react/*": ["integration-react/src/*"],
+      "#plugin-console/*": ["plugin-console/src/*"],
+      "#plugin-errors/*": ["plugin-errors/src/*"],
       "#*": ["*/src"]
     },
     "rootDir": "."

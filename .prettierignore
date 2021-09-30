@@ -7,7 +7,9 @@
 
 # App-specifics
 .build-cache
+.cache
 .husky
+.parcel-cache
 coverage
 dist
 node_modules

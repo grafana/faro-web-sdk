@@ -9,6 +9,10 @@ export interface Agent {
 export let agent: Agent | null = null;
 
 export function createAgent(config: Config): Agent {
+  config.plugins.forEach((plugin) => {
+    plugin.initialize(config);
+  });
+
   return {
     config,
     logger,
