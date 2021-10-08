@@ -1,0 +1,36 @@
+{
+  "name": "@grafana/frontend-agent-plugin-browser-meta",
+  "version": "0.0.0",
+  "description": "Grafana Frontend Agent plugin for gathering meta of the browser.",
+  "license": "AGPL-3.0-or-later",
+  "author": "Grafana Labs",
+  "homepage": "https://github.com/grafana/grafana-frontend-agent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/grafana-frontend-agent.git",
+    "directory": "packages/plugin-browser-meta"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "imports": {
+    "#plugin-browser-meta/*": {
+      "default": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "start": "yarn build -w",
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist/",
+    "quality": "run-s quality:*",
+    "quality:test": "exit 0",
+    "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint": "eslint \"src/**/*.ts\"",
+    "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
+  },
+  "dependencies": {
+    "@grafana/frontend-agent-core": "^0.0.1"
+  }
+}

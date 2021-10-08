@@ -1,26 +1,35 @@
-import { logger, Plugin } from '@grafana/frontend-agent-core';
+import { logger, LoggerLogLevels, Plugin, PluginTypes } from '@grafana/frontend-agent-core';
 
 /* eslint-disable no-console */
 
-const plugin: Plugin = {
-  name: '@grafana/frontend-agent-plugin-console',
-  initialize: () => {
-    const patchConsole = (name: 'debug' | 'trace' | 'info' | 'log' | 'warn' | 'error') => {
-      const original = console[name];
+const patchConsole = (level: LoggerLogLevels) => {
+  const original = console[level];
 
-      console[name] = (...args) => {
-        logger.sendEvent(...args);
-
-        original(...args);
-      };
-    };
-
-    patchConsole('trace');
-    patchConsole('info');
-    patchConsole('log');
-    patchConsole('warn');
-    patchConsole('error');
-  },
+  console[level] = (...args) => {
+    try {
+      logger.log(args, level);
+    } catch (err) {
+    } finally {
+      original(...args);
+    }
+  };
 };
 
-export default plugin;
+const allLevels: LoggerLogLevels[] = [
+  LoggerLogLevels.TRACE,
+  LoggerLogLevels.DEBUG,
+  LoggerLogLevels.INFO,
+  LoggerLogLevels.LOG,
+  LoggerLogLevels.WARN,
+  LoggerLogLevels.ERROR,
+];
+
+export default function getPlugin(disabledLevels: LoggerLogLevels[] = []): Plugin {
+  return {
+    name: '@grafana/frontend-agent-plugin-console',
+    type: PluginTypes.INSTRUMENTATION,
+    initialize: () => {
+      allLevels.filter((level) => !disabledLevels.includes(level)).forEach((level) => patchConsole(level));
+    },
+  };
+}
