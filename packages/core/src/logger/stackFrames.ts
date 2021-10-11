@@ -64,9 +64,7 @@ export function getStackFrames(error: ExtendedError): StackFrame[] {
 
   if (error.stacktrace) {
     lines = error.stacktrace.split(newLineString).filter((_line, idx) => idx % 2 === 0);
-  }
-
-  if (error.stack) {
+  } else if (error.stack) {
     lines = error.stack.split(newLineString);
   }
 
@@ -87,7 +85,7 @@ export function getStackFrames(error: ExtendedError): StackFrame[] {
         const submatch = chromeEvalRegex.exec(filename);
 
         if (submatch) {
-          filename = submatch[1] || '';
+          filename = submatch[1] || null;
           lineno = submatch[2] || null;
           colno = submatch[3] || null;
         }
