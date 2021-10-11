@@ -1,9 +1,8 @@
-import { logger, Plugin, PluginTypes } from '@grafana/frontend-agent-core';
+import { logger, Plugin } from '@grafana/frontend-agent-core';
 
 const plugin: Plugin = {
   name: '@grafana/frontend-agent-plugin-error',
-  type: PluginTypes.INSTRUMENTATION,
-  initialize: () => {
+  registerInstrumentation: () => {
     window.onerror = (_event, _source, _lineno, _colno, error) => {
       logger.exception(error!);
     };

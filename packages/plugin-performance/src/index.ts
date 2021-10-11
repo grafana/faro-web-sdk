@@ -1,9 +1,8 @@
-import { logger, Plugin, PluginTypes } from '@grafana/frontend-agent-core';
+import { logger, Plugin } from '@grafana/frontend-agent-core';
 
 const plugin: Plugin = {
   name: '@grafana/frontend-agent-plugin-performance',
-  type: PluginTypes.INSTRUMENTATION,
-  initialize: () => {
+  registerInstrumentation: () => {
     if (window.performance) {
       const performance = window.performance;
       const performanceEntries = performance.getEntriesByType('paint');

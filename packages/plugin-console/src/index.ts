@@ -1,4 +1,4 @@
-import { logger, LoggerLogLevels, Plugin, PluginTypes } from '@grafana/frontend-agent-core';
+import { logger, LoggerLogLevels, Plugin } from '@grafana/frontend-agent-core';
 
 /* eslint-disable no-console */
 
@@ -27,8 +27,7 @@ const allLevels: LoggerLogLevels[] = [
 export default function getPlugin(disabledLevels: LoggerLogLevels[] = []): Plugin {
   return {
     name: '@grafana/frontend-agent-plugin-console',
-    type: PluginTypes.INSTRUMENTATION,
-    initialize: () => {
+    registerInstrumentation: () => {
       allLevels.filter((level) => !disabledLevels.includes(level)).forEach((level) => patchConsole(level));
     },
   };

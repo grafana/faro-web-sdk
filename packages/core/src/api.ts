@@ -1,6 +1,8 @@
 import { config } from './config';
 import { getMetaValues } from './meta';
-import { ApiPayload } from './types';
+import type { BaseObject } from './utils/baseObject';
+
+export type ApiPayload = BaseObject;
 
 export function sendRequest(payload: ApiPayload) {
   try {
