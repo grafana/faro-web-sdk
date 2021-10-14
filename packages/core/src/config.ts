@@ -11,7 +11,7 @@ export type UserConfig = Partial<Config> & Pick<Config, 'plugins' | 'receiverUrl
 
 export let config: Config = null!;
 
-export function initializeConfig(userConfig: UserConfig) {
+export function initializeConfig(userConfig: UserConfig): void {
   config = {
     preventWindowExposure: false,
     windowObjectKey: 'grafanaFEAgent',

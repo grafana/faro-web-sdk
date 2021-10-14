@@ -1,4 +1,5 @@
-import { logger, Plugin } from '@grafana/frontend-agent-core';
+import { logger } from '@grafana/frontend-agent-core';
+import type { Plugin } from '@grafana/frontend-agent-core';
 
 const plugin: Plugin = {
   name: '@grafana/frontend-agent-plugin-error',

@@ -1,4 +1,4 @@
-export { sendRequest } from './api';
+export { ApiPayloadItems, sendRequest } from './api';
 export type { ApiPayload } from './api';
 
 export { config } from './config';

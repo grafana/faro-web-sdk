@@ -1,6 +1,9 @@
-import { Config, config } from './config';
-import { Logger, logger } from './logger';
-import { getMetaValues, MetaValues } from './meta';
+import { config } from './config';
+import type { Config } from './config';
+import { logger } from './logger';
+import type { Logger } from './logger';
+import { getMetaValues } from './meta';
+import type { MetaValues } from './meta';
 
 export interface WindowObject {
   config: Config;
@@ -8,7 +11,7 @@ export interface WindowObject {
   meta: MetaValues;
 }
 
-export function initializeWindowObject() {
+export function initializeWindowObject(): void {
   if (!config.preventWindowExposure) {
     Object.defineProperty(window, config.windowObjectKey, {
       configurable: false,

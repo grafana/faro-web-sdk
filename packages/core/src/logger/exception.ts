@@ -1,20 +1,26 @@
-import { sendRequest } from '../api';
 import { getCurrentTimestamp } from '../utils/getCurrentTimestamp';
+import { pushException } from './buffer';
 import { getStackFrames } from './stackFrames';
+import type { StackFrame } from './stackFrames';
 
-export function exception(error: Error) {
+export interface ExceptionEvent {
+  stacktrace: {
+    frames: StackFrame[];
+  };
+  timestamp: string;
+  type: 'Error';
+  value: string;
+}
+
+export function exception(error: Error): void {
   try {
-    sendRequest({
-      exceptions: [
-        {
-          type: 'Error',
-          value: error.message,
-          stacktrace: {
-            frames: getStackFrames(error),
-          },
-          timestamp: getCurrentTimestamp(),
-        },
-      ],
+    pushException({
+      type: 'Error',
+      value: error.message,
+      stacktrace: {
+        frames: getStackFrames(error),
+      },
+      timestamp: getCurrentTimestamp(),
     });
   } catch (err) {}
 }

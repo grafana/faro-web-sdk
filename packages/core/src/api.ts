@@ -1,10 +1,20 @@
 import { config } from './config';
+import type { ExceptionEvent, LogEvent } from './logger';
 import { getMetaValues } from './meta';
-import type { BaseObject } from './utils/baseObject';
+import type { MetaValues } from './meta';
 
-export type ApiPayload = BaseObject;
+export enum ApiPayloadItems {
+  LOG = 'logs',
+  EXCEPTION = 'exceptions',
+}
 
-export function sendRequest(payload: ApiPayload) {
+export interface ApiPayload {
+  [ApiPayloadItems.LOG]: LogEvent[];
+  [ApiPayloadItems.EXCEPTION]: ExceptionEvent[];
+  meta?: MetaValues;
+}
+
+export function sendRequest(payload: ApiPayload): void {
   try {
     fetch(config.receiverUrl, {
       method: 'POST',
@@ -13,8 +23,11 @@ export function sendRequest(payload: ApiPayload) {
       },
       body: JSON.stringify({
         ...payload,
-        meta: getMetaValues(),
+        meta: {
+          ...getMetaValues(),
+          ...(payload.meta ?? {}),
+        },
       }),
-    });
+    }).catch();
   } catch (err) {}
 }

@@ -1,12 +1,10 @@
-import type { BaseObject } from '../utils/baseObject';
-
 export interface ExtendedError extends Error {
   columnNumber?: number;
   framesToPop?: number;
   stacktrace?: Error['stack'];
 }
 
-export interface StackFrame extends BaseObject {
+export interface StackFrame {
   filename: string;
   function: string;
 

@@ -11,3 +11,9 @@ function callConsole(method: 'trace' | 'info' | 'log' | 'warn' | 'error') {
   // eslint-disable-next-line no-console
   console[method](`This is a console ${method} message`);
 }
+
+function fetchError() {
+  fetch('http://localhost:12345', {
+    method: 'POST',
+  });
+}

@@ -8,7 +8,7 @@ export type MetaValues = BaseObject;
 
 export const meta: MetaMap = new Map();
 
-export function initializeMeta() {
+export function initializeMeta(): void {
   meta.set('sdk', () => ({
     name: '@grafana/frontend-agent',
     version: '0.0.1', // TODO: set correct version here

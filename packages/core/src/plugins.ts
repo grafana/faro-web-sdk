@@ -5,7 +5,7 @@ export interface Plugin {
   registerMeta?: () => void;
 }
 
-export function initializePlugins(plugins: Plugin[]) {
+export function initializePlugins(plugins: Plugin[]): void {
   plugins.forEach((plugin) => {
     plugin.registerMeta?.();
   });
