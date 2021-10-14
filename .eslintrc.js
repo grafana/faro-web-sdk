@@ -17,6 +17,8 @@ module.exports = {
         groups: [['builtin', 'external'], 'internal', ['parent', 'sibling', 'index']],
       },
     ],
+    'no-duplicate-imports': 'off',
+    '@typescript-eslint/no-duplicate-imports': ['error'],
     'no-only-tests/no-only-tests': 'error',
     'react/prop-types': 'off',
     'react/react-in-jsx-scope': 'off',

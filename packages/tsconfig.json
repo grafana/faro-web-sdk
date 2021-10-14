@@ -7,8 +7,10 @@
       "#core/*": ["core/src/*"],
       "#integration-angular/*": ["integration-angular/src/*"],
       "#integration-react/*": ["integration-react/src/*"],
+      "#plugin-browser-meta/*": ["plugin-browser-meta/src/*"],
       "#plugin-console/*": ["plugin-console/src/*"],
       "#plugin-errors/*": ["plugin-errors/src/*"],
+      "#plugin-performance/*": ["plugin-performance/src/*"],
       "#*": ["*/src"]
     },
     "rootDir": "."

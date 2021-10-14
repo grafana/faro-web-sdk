@@ -22,11 +22,19 @@
       "prepend": false
     },
     {
+      "path": "../packages/plugin-browser-meta/tsconfig.json",
+      "prepend": false
+    },
+    {
       "path": "../packages/plugin-console/tsconfig.json",
       "prepend": false
     },
     {
       "path": "../packages/plugin-errors/tsconfig.json",
+      "prepend": false
+    },
+    {
+      "path": "../packages/plugin-performance/tsconfig.json",
       "prepend": false
     }
   ]
