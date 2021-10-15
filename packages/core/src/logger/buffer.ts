@@ -1,44 +1,79 @@
-import { ApiPayloadItems, sendRequest } from '../api';
-import type { ApiPayload } from '../api';
+import type { ApiHandlerPayload } from '../api';
+import { config } from '../config';
+import { getMetaValues } from '../meta';
 import type { ExceptionEvent } from './exception';
 import type { LogEvent } from './log';
+import type { TraceEvent } from './trace';
 
-export type LoggerBuffer = Omit<ApiPayload, 'meta'>;
+export enum LoggerBufferItemType {
+  LOGS = 'logs',
+  EXCEPTIONS = 'exceptions',
+  TRACES = 'traces',
+}
 
-export const buffer: LoggerBuffer = {
-  logs: [],
-  exceptions: [],
-};
+export type LoggerBufferItemPayload = LogEvent | ExceptionEvent | TraceEvent;
+
+export interface LoggerBufferItem {
+  type: LoggerBufferItemType;
+  payload: LoggerBufferItemPayload;
+}
+
+export type LoggerBuffer = LoggerBufferItem[];
+
+export let buffer: LoggerBuffer = [];
 
 export let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-export function getBuffer(): LoggerBuffer {
-  return buffer;
+export function getBufferCopy(): LoggerBuffer {
+  // TODO: implement a better way to deep copy the buffer
+  return JSON.parse(JSON.stringify(buffer));
 }
 
-export function pushEvent(type: ApiPayloadItems, payload: LogEvent | ExceptionEvent): void {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-    timeoutId = null;
-  }
+export function clearTimeoutId(): void {}
 
-  buffer[type].push(payload as LogEvent & ExceptionEvent);
+export function drain(): void {
+  clearTimeoutId();
 
   // TODO: Set correct timeout interval
   timeoutId = setTimeout(() => {
-    sendRequest(buffer);
+    const payload = buffer.reduce(
+      (acc, item) => {
+        acc[item.type].push(item.payload as LogEvent & ExceptionEvent);
 
-    buffer.logs = [];
-    buffer.exceptions = [];
+        return acc;
+      },
+      {
+        [LoggerBufferItemType.LOGS]: [],
+        [LoggerBufferItemType.EXCEPTIONS]: [],
+        [LoggerBufferItemType.TRACES]: [],
+      } as ApiHandlerPayload
+    );
+
+    const enhancedPayload: ApiHandlerPayload = {
+      ...payload,
+      meta: {
+        ...getMetaValues(),
+        ...(payload.meta ?? {}),
+      },
+    };
+
+    config.apiHandlers.forEach((apiHandler) => {
+      apiHandler(enhancedPayload);
+    });
+
+    buffer = [];
 
     timeoutId = null;
   }, 2000);
 }
 
-export function pushLog(payload: LogEvent): void {
-  pushEvent(ApiPayloadItems.LOG, payload);
-}
+export function pushEvent(type: LoggerBufferItemType, payload: LoggerBufferItemPayload): void {
+  clearTimeoutId();
 
-export function pushException(payload: ExceptionEvent): void {
-  pushEvent(ApiPayloadItems.EXCEPTION, payload);
+  buffer.push({
+    type,
+    payload,
+  });
+
+  drain();
 }

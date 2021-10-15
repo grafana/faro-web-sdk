@@ -1,4 +1,4 @@
-import { logger, LogLevels } from '@grafana/frontend-agent-core';
+import { LogLevels, pushLog } from '@grafana/frontend-agent-core';
 import type { Plugin } from '@grafana/frontend-agent-core';
 
 /* eslint-disable no-console */
@@ -8,7 +8,7 @@ const patchConsole = (level: LogLevels) => {
 
   console[level] = (...args) => {
     try {
-      logger.log(args, level);
+      pushLog([], level);
     } catch (err) {
     } finally {
       original.call(console, args);

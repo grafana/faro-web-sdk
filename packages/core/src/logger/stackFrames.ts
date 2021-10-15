@@ -43,7 +43,7 @@ export const safariWebExtensionString = 'safari-web-extension';
 
 export const reactMinifiedRegex = /Minified React error #\d+;/i;
 
-function handleSafariExtensions(func: string | null, filename: string | null): [string | null, string | null] {
+export function handleSafariExtensions(func: string | null, filename: string | null): [string | null, string | null] {
   const isSafariExtension = func?.includes(safariExtensionString);
   const isSafariWebExtension = !isSafariExtension && func?.includes(safariWebExtensionString);
 
@@ -57,7 +57,7 @@ function handleSafariExtensions(func: string | null, filename: string | null): [
   ];
 }
 
-export function getStackFrames(error: ExtendedError): StackFrame[] {
+export function getStackFramesFromError(error: ExtendedError): StackFrame[] {
   let lines: string[] = [];
 
   if (error.stacktrace) {
@@ -66,7 +66,7 @@ export function getStackFrames(error: ExtendedError): StackFrame[] {
     lines = error.stack.split(newLineString);
   }
 
-  const stackFrames = lines.reduce((arr, line, idx) => {
+  const stackFrames = lines.reduce((acc, line, idx) => {
     let parts: RegExpExecArray | null;
     let func: string | null = null;
     let filename: string | null = null;
@@ -140,10 +140,10 @@ export function getStackFrames(error: ExtendedError): StackFrame[] {
         stackFrame.colno = Number(colno);
       }
 
-      arr.push(stackFrame);
+      acc.push(stackFrame);
     }
 
-    return arr;
+    return acc;
   }, [] as StackFrame[]);
 
   if (typeof error.framesToPop === numberString) {

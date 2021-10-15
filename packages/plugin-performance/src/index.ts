@@ -1,4 +1,4 @@
-import { logger } from '@grafana/frontend-agent-core';
+import { pushLog } from '@grafana/frontend-agent-core';
 import type { Plugin } from '@grafana/frontend-agent-core';
 
 const plugin: Plugin = {
@@ -8,7 +8,7 @@ const plugin: Plugin = {
       const performance = window.performance;
       const performanceEntries = performance.getEntriesByType('paint');
       performanceEntries.forEach((performanceEntry) => {
-        logger.log([`The time to ${performanceEntry.name} was ${performanceEntry.startTime} milliseconds.`]);
+        pushLog([`The time to ${performanceEntry.name} was ${performanceEntry.startTime} milliseconds.`]);
       });
     }
   },

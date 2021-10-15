@@ -7,6 +7,7 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "importsNotUsedAsValues": "error",
     "isolatedModules": true,
     "lib": ["DOM", "ESNext"],
     "module": "ESNext",

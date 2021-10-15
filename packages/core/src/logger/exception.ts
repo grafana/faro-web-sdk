@@ -1,6 +1,6 @@
 import { getCurrentTimestamp } from '../utils/getCurrentTimestamp';
-import { pushException } from './buffer';
-import { getStackFrames } from './stackFrames';
+import { LoggerBufferItemType, pushEvent } from './buffer';
+import { getStackFramesFromError } from './stackFrames';
 import type { StackFrame } from './stackFrames';
 
 export interface ExceptionEvent {
@@ -12,13 +12,44 @@ export interface ExceptionEvent {
   value: string;
 }
 
-export function exception(error: Error): void {
+export function pushExceptionFromError(error: Error): void {
   try {
-    pushException({
+    pushEvent(LoggerBufferItemType.EXCEPTIONS, {
       type: 'Error',
       value: error.message,
       stacktrace: {
-        frames: getStackFrames(error),
+        frames: getStackFramesFromError(error),
+      },
+      timestamp: getCurrentTimestamp(),
+    });
+  } catch (err) {}
+}
+
+export function pushExceptionFromSource(
+  event: string | Event,
+  filename: string,
+  lineno: number | null,
+  colno: number | null
+): void {
+  try {
+    const stackFrame: StackFrame = {
+      filename,
+      function: '?',
+    };
+
+    if (lineno !== null) {
+      stackFrame.lineno = lineno;
+    }
+
+    if (colno !== null) {
+      stackFrame.colno = colno;
+    }
+
+    pushEvent(LoggerBufferItemType.EXCEPTIONS, {
+      type: 'Error',
+      value: String(event),
+      stacktrace: {
+        frames: [stackFrame],
       },
       timestamp: getCurrentTimestamp(),
     });

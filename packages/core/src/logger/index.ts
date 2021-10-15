@@ -1,24 +1,14 @@
-import { getBuffer } from './buffer';
-import { exception } from './exception';
-import { log } from './log';
+export { drain, getBufferCopy, LoggerBufferItemType, pushEvent } from './buffer';
+export type { LoggerBuffer, LoggerBufferItem, LoggerBufferItemPayload } from './buffer';
 
-export const logger = {
-  get buffer() {
-    return getBuffer();
-  },
-  exception,
-  log,
-};
-
-export type Logger = typeof logger;
-
-export { pushEvent, pushException, pushLog } from './buffer';
-export type { LoggerBuffer } from './buffer';
-
+export { pushExceptionFromError, pushExceptionFromSource } from './exception';
 export type { ExceptionEvent } from './exception';
 
-export { LogLevels } from './log';
+export { LogLevels, pushLog } from './log';
 export type { LogContext, LogEvent } from './log';
 
-export { getStackFrames } from './stackFrames';
-export type { StackFrame } from './stackFrames';
+export { getStackFramesFromError } from './stackFrames';
+export type { ExtendedError, StackFrame } from './stackFrames';
+
+export { pushTrace } from './trace';
+export type { TraceEvent } from './trace';
