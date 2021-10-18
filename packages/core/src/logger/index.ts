@@ -1,6 +1,3 @@
-export { drain, getBufferCopy, LoggerBufferItemType, pushEvent } from './buffer';
-export type { LoggerBuffer, LoggerBufferItem, LoggerBufferItemPayload } from './buffer';
-
 export { pushExceptionFromError, pushExceptionFromSource } from './exception';
 export type { ExceptionEvent } from './exception';
 

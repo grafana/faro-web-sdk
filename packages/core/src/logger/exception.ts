@@ -1,5 +1,5 @@
+import { pushEvent, QueueItemType } from '../queue';
 import { getCurrentTimestamp } from '../utils/getCurrentTimestamp';
-import { LoggerBufferItemType, pushEvent } from './buffer';
 import { getStackFramesFromError } from './stackFrames';
 import type { StackFrame } from './stackFrames';
 
@@ -14,7 +14,7 @@ export interface ExceptionEvent {
 
 export function pushExceptionFromError(error: Error): void {
   try {
-    pushEvent(LoggerBufferItemType.EXCEPTIONS, {
+    pushEvent(QueueItemType.EXCEPTIONS, {
       type: 'Error',
       value: error.message,
       stacktrace: {
@@ -45,7 +45,7 @@ export function pushExceptionFromSource(
       stackFrame.colno = colno;
     }
 
-    pushEvent(LoggerBufferItemType.EXCEPTIONS, {
+    pushEvent(QueueItemType.EXCEPTIONS, {
       type: 'Error',
       value: String(event),
       stacktrace: {

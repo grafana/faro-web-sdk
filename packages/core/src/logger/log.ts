@@ -1,6 +1,6 @@
+import { pushEvent, QueueItemType } from '../queue';
 import type { BaseObject } from '../utils/baseObject';
 import { getCurrentTimestamp } from '../utils/getCurrentTimestamp';
-import { LoggerBufferItemType, pushEvent } from './buffer';
 
 export interface LogEvent {
   context: LogContext;
@@ -22,7 +22,7 @@ export type LogContext = BaseObject;
 
 export function pushLog(args: unknown[], level = LogLevels.LOG, context: LogContext = {}): void {
   try {
-    pushEvent(LoggerBufferItemType.LOGS, {
+    pushEvent(QueueItemType.LOGS, {
       message: args
         .map((arg) => {
           try {
