@@ -17,3 +17,9 @@ function fetchError() {
     method: 'POST',
   });
 }
+
+function promiseReject() {
+  new Promise((_accept, reject) => {
+    reject('This is a rejected promise');
+  });
+}

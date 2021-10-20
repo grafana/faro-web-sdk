@@ -4,22 +4,20 @@ import type { Transports } from '../transports';
 
 export interface TraceEvent {}
 
-export interface Traces {
-  pushTraces: (payload: TraceEvent | null) => void;
+export interface LoggerTrace {
+  pushTrace: (payload: TraceEvent) => void;
 }
 
-export function initializeTraces(transports: Transports, meta: Meta): Traces {
-  const pushTraces: Traces['pushTraces'] = (payload) => {
-    if (payload) {
-      transports.execute({
-        type: TransportItemType.TRACES,
-        payload,
-        meta: meta.values,
-      });
-    }
+export function initializeLoggerTrace(transports: Transports, meta: Meta): LoggerTrace {
+  const pushTrace: LoggerTrace['pushTrace'] = (payload) => {
+    transports.execute({
+      type: TransportItemType.TRACES,
+      payload,
+      meta: meta.values,
+    });
   };
 
   return {
-    pushTraces,
+    pushTrace,
   };
 }

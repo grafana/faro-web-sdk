@@ -8,11 +8,11 @@ export enum TransportItemType {
   TRACES = 'traces',
 }
 
-export type TransportPayload = LogEvent | ExceptionEvent | TraceEvent;
+export type TransportPayload<P = LogEvent | ExceptionEvent | TraceEvent> = P;
 
-export interface TransportItem {
+export interface TransportItem<P = LogEvent | ExceptionEvent | TraceEvent> {
   type: TransportItemType;
-  payload: TransportPayload;
+  payload: TransportPayload<P>;
   meta: MetaValues;
 }
 

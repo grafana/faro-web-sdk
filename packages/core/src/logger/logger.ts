@@ -1,18 +1,18 @@
 import type { Meta } from '../meta';
 import type { Transports } from '../transports';
-import { initializeException } from './exception';
-import type { Exception } from './exception';
-import { initializeLog } from './log';
-import type { Log } from './log';
-import { initializeTraces } from './trace';
-import type { Traces } from './trace';
+import { initializeLoggerException } from './exception';
+import type { LoggerException } from './exception';
+import { initializeLoggerLog } from './log';
+import type { LoggerLog } from './log';
+import { initializeLoggerTrace } from './trace';
+import type { LoggerTrace } from './trace';
 
-export type Logger = Log & Exception & Traces;
+export type Logger = LoggerLog & LoggerException & LoggerTrace;
 
 export function initializeLogger(transports: Transports, meta: Meta): Logger {
   return {
-    ...initializeException(transports, meta),
-    ...initializeLog(transports, meta),
-    ...initializeTraces(transports, meta),
+    ...initializeLoggerException(transports, meta),
+    ...initializeLoggerLog(transports, meta),
+    ...initializeLoggerTrace(transports, meta),
   };
 }

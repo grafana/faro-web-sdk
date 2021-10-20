@@ -2,6 +2,7 @@ import type { Config } from './config';
 import type { Logger } from './logger';
 import type { Meta } from './meta';
 import type { Transports } from './transports';
+import { globalObject } from './utils';
 
 export interface Agent {
   config: Config;
@@ -21,7 +22,7 @@ export function initializeAgent(config: Config, logger: Logger, meta: Meta, tran
   };
 
   if (!config.preventGlobalExposure) {
-    Object.defineProperty(global, config.globalObjectKey, agent);
+    Object.defineProperty(globalObject, config.globalObjectKey, agent);
   }
 
   return agent;

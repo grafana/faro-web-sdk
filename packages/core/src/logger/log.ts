@@ -22,12 +22,12 @@ export enum LogLevels {
 
 export type LogContext = BaseObject;
 
-export interface Log {
+export interface LoggerLog {
   pushLog: (args: unknown[], level?: LogLevels, context?: LogContext) => void;
 }
 
-export function initializeLog(transports: Transports, meta: Meta): Log {
-  const pushLog: Log['pushLog'] = (args, level = LogLevels.LOG, context = {}) => {
+export function initializeLoggerLog(transports: Transports, meta: Meta): LoggerLog {
+  const pushLog: LoggerLog['pushLog'] = (args, level = LogLevels.LOG, context = {}) => {
     try {
       transports.execute({
         type: TransportItemType.LOGS,
