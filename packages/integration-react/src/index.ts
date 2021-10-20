@@ -1,3 +1,3 @@
-import { pushLog } from '@grafana/frontend-agent-core';
+import { agent } from '@grafana/frontend-agent-core';
 
-pushLog(['Angular']);
+agent.logger.pushLog(['React']);

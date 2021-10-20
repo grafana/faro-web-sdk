@@ -1,26 +1,33 @@
-import type { ApiHandlerPayload } from './api';
-import { config } from './config';
+import type { Agent } from './agent';
+import type { MetaMapLike } from './meta';
+import type { Transport } from './transports';
 
 export interface Plugin {
   name: string;
 
-  apiHandler?: (payload: ApiHandlerPayload) => void;
-  registerInstrumentation?: () => void;
-  registerMeta?: () => void;
+  instrumentations?: (agent: Agent) => void;
+  metas?: (agent: Agent) => MetaMapLike;
+  transports?: (agent: Agent) => Transport[];
 }
 
-export function initializePlugins(): void {
-  config.plugins.forEach((plugin) => {
-    if (plugin.apiHandler) {
-      config.apiHandlers.push(plugin.apiHandler);
-    }
-  });
+export function initializePlugins(agent: Agent): void {
+  agent.config.plugins
+    .filter((plugin) => !!plugin.transports)
+    .forEach((plugin) => {
+      const transports = plugin.transports?.(agent) ?? [];
 
-  config.plugins.forEach((plugin) => {
-    plugin.registerMeta?.();
-  });
+      agent.transports.add(...transports);
+    });
 
-  config.plugins.forEach((plugin) => {
-    plugin.registerInstrumentation?.();
+  agent.config.plugins
+    .filter((plugin) => !!plugin.metas)
+    .forEach((plugin) => {
+      const metas = plugin.metas?.(agent) ?? {};
+
+      Object.entries(metas).forEach(([key, getter]) => agent.meta.add(key, getter));
+    });
+
+  agent.config.plugins.forEach((plugin) => {
+    plugin.instrumentations?.(agent);
   });
 }

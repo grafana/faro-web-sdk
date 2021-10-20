@@ -1,5 +1,8 @@
-import { pushEvent, QueueItemType } from '../queue';
+import type { Meta } from '../meta';
+import { TransportItemType } from '../transports';
+import type { Transports } from '../transports';
 import { getCurrentTimestamp } from '../utils/getCurrentTimestamp';
+import { isString } from '../utils/is';
 import { getStackFramesFromError } from './stackFrames';
 import type { StackFrame } from './stackFrames';
 
@@ -12,46 +15,70 @@ export interface ExceptionEvent {
   value: string;
 }
 
-export function pushExceptionFromError(error: Error): void {
-  try {
-    pushEvent(QueueItemType.EXCEPTIONS, {
-      type: 'Error',
-      value: error.message,
-      stacktrace: {
-        frames: getStackFramesFromError(error),
-      },
-      timestamp: getCurrentTimestamp(),
-    });
-  } catch (err) {}
+export interface Exception {
+  pushException: (event?: string | Event, filename?: string, lineno?: number, colno?: number, error?: Error) => void;
 }
 
-export function pushExceptionFromSource(
-  event: string | Event,
-  filename: string,
-  lineno: number | null,
-  colno: number | null
-): void {
-  try {
+export function initializeException(transports: Transports, meta: Meta): Exception {
+  const getInitialStackFrame = (filename: string, lineno: number | null, colno: number | null) => {
     const stackFrame: StackFrame = {
       filename,
       function: '?',
     };
 
-    if (lineno !== null) {
-      stackFrame.lineno = lineno;
+    if (isString(lineno)) {
+      stackFrame.lineno = lineno!;
     }
 
-    if (colno !== null) {
-      stackFrame.colno = colno;
+    if (isString(colno)) {
+      stackFrame.colno = colno!;
     }
 
-    pushEvent(QueueItemType.EXCEPTIONS, {
-      type: 'Error',
-      value: String(event),
-      stacktrace: {
-        frames: [stackFrame],
-      },
-      timestamp: getCurrentTimestamp(),
-    });
-  } catch (err) {}
+    return stackFrame;
+  };
+
+  const pushException: Exception['pushException'] = (_event, filename, lineno, colno, error) => {
+    try {
+      transports.execute({
+        type: TransportItemType.EXCEPTIONS,
+        payload: {
+          type: 'Error',
+          value: error.message,
+          stacktrace: {
+            frames: [getInitialStackFrame(filename, lineno, colno), ...getStackFramesFromError(error)],
+          },
+          timestamp: getCurrentTimestamp(),
+        },
+        meta: meta.values,
+      });
+    } catch (err) {}
+  };
+
+  const pushExceptionFromSource: Exception['pushExceptionFromSource'] = (message, filename, lineno, colno) => {
+    try {
+      const groups = message.match(
+        /^(?:[Uu]ncaught (?:exception: )?)?(?:((?:Eval|Internal|Range|Reference|Syntax|Type|URI|)Error): )?(.*)$/i
+      );
+
+      console.debug(groups);
+
+      transports.execute({
+        type: TransportItemType.EXCEPTIONS,
+        payload: {
+          type: 'Error',
+          value: message,
+          stacktrace: {
+            frames: [getInitialStackFrame(filename, lineno, colno)],
+          },
+          timestamp: getCurrentTimestamp(),
+        },
+        meta: meta.values,
+      });
+    } catch (err) {}
+  };
+
+  return {
+    pushExceptionFromError,
+    pushExceptionFromSource,
+  };
 }

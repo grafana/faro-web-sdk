@@ -1,11 +1,11 @@
-export { pushExceptionFromError, pushExceptionFromSource } from './exception';
 export type { ExceptionEvent } from './exception';
 
-export { LogLevels, pushLog } from './log';
+export { LogLevels } from './log';
 export type { LogContext, LogEvent } from './log';
 
-export { getStackFramesFromError } from './stackFrames';
+export { initializeLogger } from './logger';
+export type { Logger } from './logger';
+
 export type { ExtendedError, StackFrame } from './stackFrames';
 
-export { pushTrace } from './trace';
 export type { TraceEvent } from './trace';

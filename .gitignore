@@ -1,6 +1,5 @@
 # IDEs
 .idea
-.vscode
 
 # App-specifics
 .build-cache

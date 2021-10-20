@@ -1,14 +1,14 @@
-import { LogLevels, pushLog } from '@grafana/frontend-agent-core';
-import type { Plugin } from '@grafana/frontend-agent-core';
+import { LogLevels } from '@grafana/frontend-agent-core';
+import type { Agent, Plugin } from '@grafana/frontend-agent-core';
 
 /* eslint-disable no-console */
 
-const patchConsole = (level: LogLevels) => {
+const patchConsole = (agent: Agent, level: LogLevels) => {
   const original = console[level];
 
   console[level] = (...args) => {
     try {
-      pushLog([], level);
+      agent.logger.pushLog([], level);
     } catch (err) {
     } finally {
       original.call(console, args);
@@ -28,8 +28,8 @@ const allLevels: LogLevels[] = [
 export default function getPlugin(disabledLevels: LogLevels[] = []): Plugin {
   return {
     name: '@grafana/frontend-agent-plugin-console',
-    registerInstrumentation: () => {
-      allLevels.filter((level) => !disabledLevels.includes(level)).forEach((level) => patchConsole(level));
+    instrumentations: (agent) => {
+      allLevels.filter((level) => !disabledLevels.includes(level)).forEach((level) => patchConsole(agent, level));
     },
   };
 }

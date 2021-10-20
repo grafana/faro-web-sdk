@@ -1,15 +1,15 @@
-import { pushExceptionFromError, pushExceptionFromSource } from '@grafana/frontend-agent-core';
+import { isString, isUndefined } from '@grafana/frontend-agent-core';
 import type { Plugin } from '@grafana/frontend-agent-core';
 
 const plugin: Plugin = {
   name: '@grafana/frontend-agent-plugin-error',
-  registerInstrumentation: () => {
+  instrumentations: (agent) => {
     window.onerror = (event, source, lineno, colno, error) => {
-      if (error) {
-        pushExceptionFromError(error);
-      } else {
-        pushExceptionFromSource(event, source ?? '?', lineno ?? null, colno ?? null);
-      }
+      // if (!isUndefined(error)) {
+      //   agent.logger.pushExceptionFromError(event, source ?? '?', lineno ?? null, colno ?? null, error!);
+      // } else if (isString(event)) {
+      agent.logger.pushExceptionFromSource(event as string, source ?? '?', lineno ?? null, colno ?? null);
+      // }
     };
   },
 };

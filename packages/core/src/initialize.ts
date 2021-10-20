@@ -1,14 +1,23 @@
+import { initializeAgent } from './agent';
+import type { Agent } from './agent';
 import { initializeConfig, UserConfig } from './config';
+import { initializeLogger } from './logger';
 import { initializeMeta } from './meta';
 import { initializePlugins } from './plugins';
-import { initializeWindowObject } from './windowObject';
+import { initializeTransports } from './transports';
 
-export function initialize(userConfig: UserConfig): void {
-  initializeConfig(userConfig);
+export function initialize(userConfig: UserConfig): Agent {
+  const config = initializeConfig(userConfig);
 
-  initializeMeta();
+  const meta = initializeMeta();
 
-  initializePlugins();
+  const transports = initializeTransports(config);
 
-  initializeWindowObject();
+  const logger = initializeLogger(transports, meta);
+
+  const agent = initializeAgent(config, logger, meta, transports);
+
+  initializePlugins(agent);
+
+  return agent;
 }

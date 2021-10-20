@@ -1,3 +1,5 @@
+import { hasProperties, isNull, isNumber } from '../utils/is';
+
 export interface ExtendedError extends Error {
   columnNumber?: number;
   framesToPop?: number;
@@ -17,7 +19,6 @@ export const evalString = 'eval';
 export const unknownString = '?';
 export const framesToPopString = 'framesToPop';
 export const atString = '@';
-export const numberString = 'number';
 
 export const chromeLineRegex =
   /^\s*at (?:(.*?) ?\()?((?:file|https?|blob|chrome-extension|address|native|eval|webpack|<anonymous>|[-a-z]+:|.*bundle|\/).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
@@ -43,7 +44,10 @@ export const safariWebExtensionString = 'safari-web-extension';
 
 export const reactMinifiedRegex = /Minified React error #\d+;/i;
 
-export function handleSafariExtensions(func: string | null, filename: string | null): [string | null, string | null] {
+export function getDataFromSafariExtensions(
+  func: string | null,
+  filename: string | null
+): [string | null, string | null] {
   const isSafariExtension = func?.includes(safariExtensionString);
   const isSafariWebExtension = !isSafariExtension && func?.includes(safariWebExtensionString);
 
@@ -60,10 +64,10 @@ export function handleSafariExtensions(func: string | null, filename: string | n
 export function getStackFramesFromError(error: ExtendedError): StackFrame[] {
   let lines: string[] = [];
 
-  if (error.stacktrace) {
-    lines = error.stacktrace.split(newLineString).filter((_line, idx) => idx % 2 === 0);
-  } else if (error.stack) {
-    lines = error.stack.split(newLineString);
+  if (hasProperties(error, 'stacktrace')) {
+    lines = error.stacktrace!.split(newLineString).filter((_line, idx) => idx % 2 === 0);
+  } else if (hasProperties(error, 'stack')) {
+    lines = error.stack!.split(newLineString);
   }
 
   const stackFrames = lines.reduce((acc, line, idx) => {
@@ -90,7 +94,7 @@ export function getStackFramesFromError(error: ExtendedError): StackFrame[] {
       }
 
       filename = filename?.startsWith(chromeAddressAtString) ? filename.substr(chromeAddressAtStringLength) : filename;
-      [func, filename] = handleSafariExtensions(func, filename);
+      [func, filename] = getDataFromSafariExtensions(func, filename);
     } else if ((parts = msLineRegex.exec(line))) {
       func = parts[1] || null;
       filename = parts[2] || null;
@@ -110,11 +114,11 @@ export function getStackFramesFromError(error: ExtendedError): StackFrame[] {
           filename = submatch[1] || null;
           lineno = submatch[2] || null;
         }
-      } else if (idx === 0 && colno === null && typeof error.columnNumber === numberString) {
+      } else if (idx === 0 && isNull(colno) && isNumber(error.columnNumber)) {
         colno = String(error.columnNumber! + 1);
       }
 
-      [func, filename] = handleSafariExtensions(func, filename);
+      [func, filename] = getDataFromSafariExtensions(func, filename);
     } else if ((parts = opera10LineRegex.exec(line))) {
       filename = parts[2] || null;
       func = parts[3] || null;
@@ -126,17 +130,17 @@ export function getStackFramesFromError(error: ExtendedError): StackFrame[] {
       colno = parts[2] || null;
     }
 
-    if (filename !== null || func !== null) {
+    if (!isNull(filename) || !isNull(func)) {
       const stackFrame: StackFrame = {
         filename: filename || unknownString,
         function: func || unknownString,
       };
 
-      if (lineno !== null) {
+      if (!isNull(lineno)) {
         stackFrame.lineno = Number(lineno);
       }
 
-      if (colno !== null) {
+      if (!isNull(colno)) {
         stackFrame.colno = Number(colno);
       }
 
@@ -146,7 +150,7 @@ export function getStackFramesFromError(error: ExtendedError): StackFrame[] {
     return acc;
   }, [] as StackFrame[]);
 
-  if (typeof error.framesToPop === numberString) {
+  if (isNumber(error.framesToPop)) {
     return stackFrames.slice(error.framesToPop);
   }
 
