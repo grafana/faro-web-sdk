@@ -1,3 +1,4 @@
+// @ts-ignore
 function throwError() {
   throw new Error('This is a thrown error');
 }
@@ -22,4 +23,8 @@ function promiseReject() {
   new Promise((_accept, reject) => {
     reject('This is a rejected promise');
   });
+}
+
+function fetchSuccess() {
+  fetch('http://localhost:1234');
 }

@@ -1,6 +1,7 @@
 import { isPrimitive } from '@grafana/frontend-agent-core';
 import type { Agent } from '@grafana/frontend-agent-core';
 
+import { primitiveUnhandledType, primitiveUnhandledValue } from './const';
 import type { ExtendedPromiseRejectionEvent } from './extendedPromiseRejectionEvent';
 import { getErrorDetails } from './getErrorDetails';
 
@@ -18,8 +19,8 @@ export function registerOnunhandledrejection(agent: Agent): void {
     let type: string | undefined;
 
     if (isPrimitive(error)) {
-      value = `Non-Error promise rejection captured with value: ${String(error)}`;
-      type = 'UnhandledRejection';
+      value = `${primitiveUnhandledValue} ${String(error)}`;
+      type = primitiveUnhandledType;
     } else {
       [value, type] = getErrorDetails(error);
     }

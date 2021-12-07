@@ -1,9 +1,14 @@
 import { isDomError, isDomException, isError, isErrorEvent, isEvent, isObject } from '@grafana/frontend-agent-core';
 import type { ExceptionStackFrame } from '@grafana/frontend-agent-core';
 
+import { domErrorType, domExceptionType, objectEventValue } from './const';
 import { getStackFramesFromError } from './stackFrames';
 
-export function getErrorDetails(event: Error | Event): any {
+type ErrorEvent = (Error | Event) & {
+  error?: Error;
+};
+
+export function getErrorDetails(event: ErrorEvent): any {
   let value: string | undefined;
   let type: string | undefined;
   let stackFrames: ExceptionStackFrame[] = [];
@@ -15,14 +20,16 @@ export function getErrorDetails(event: Error | Event): any {
     type = event.error.name;
     stackFrames = getStackFramesFromError(event.error);
   } else if ((isDomErrorRes = isDomError(event)) || isDomException(event)) {
-    type = event.name ?? (isDomErrorRes ? 'DOMError' : 'DOMException');
-    value = event.message ? `${type}: ${event.message}` : type;
+    const { name, message } = event;
+
+    type = name ?? (isDomErrorRes ? domErrorType : domExceptionType);
+    value = message ? `${type}: ${message}` : type;
   } else if (isError(event)) {
     value = event.message;
     stackFrames = getStackFramesFromError(event);
   } else if (isObject(event) || (isEventRes = isEvent(event))) {
     type = isEventRes ? event.constructor.name : undefined;
-    value = `Non-Error exception captured with keys: ${Object.keys(event)}`;
+    value = `${objectEventValue} ${Object.keys(event)}`;
   }
 
   return [value, type, stackFrames];

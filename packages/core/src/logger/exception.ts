@@ -1,7 +1,7 @@
 import type { Meta } from '../meta';
 import { TransportItemType } from '../transports';
 import type { TransportItem, Transports } from '../transports';
-import { getCurrentTimestamp } from '../utils/getCurrentTimestamp';
+import { getCurrentTimestamp } from '../utils';
 
 export interface ExceptionEvent {
   timestamp: string;
@@ -21,12 +21,14 @@ export interface ExceptionStackFrame {
   lineno?: number;
 }
 
+export const defaultExceptionType = 'Error';
+
 export interface LoggerException {
   pushException: (value: string, type?: string, stackFrames?: any[]) => void;
 }
 
 export function initializeLoggerException(transports: Transports, meta: Meta): LoggerException {
-  const pushException: LoggerException['pushException'] = (value, type = 'Error', stackFrames = []) => {
+  const pushException: LoggerException['pushException'] = (value, type = defaultExceptionType, stackFrames = []) => {
     try {
       const item: TransportItem<ExceptionEvent> = {
         meta: meta.values,

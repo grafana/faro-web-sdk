@@ -22,7 +22,9 @@ export function initializeAgent(config: Config, logger: Logger, meta: Meta, tran
   };
 
   if (!config.preventGlobalExposure) {
-    Object.defineProperty(globalObject, config.globalObjectKey, agent);
+    Object.defineProperty(globalObject, config.globalObjectKey, {
+      value: agent,
+    });
   }
 
   return agent;

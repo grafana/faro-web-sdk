@@ -26,8 +26,10 @@ export interface LoggerLog {
   pushLog: (args: unknown[], level?: LogLevels, context?: LogContext) => void;
 }
 
+export const defaultLogLevel = LogLevels.LOG;
+
 export function initializeLoggerLog(transports: Transports, meta: Meta): LoggerLog {
-  const pushLog: LoggerLog['pushLog'] = (args, level = LogLevels.LOG, context = {}) => {
+  const pushLog: LoggerLog['pushLog'] = (args, level = defaultLogLevel, context = {}) => {
     try {
       transports.execute({
         type: TransportItemType.LOGS,

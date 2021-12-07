@@ -16,10 +16,6 @@ export function isInstanceOf<T extends Function = any>(value: unknown, reference
   }
 }
 
-export function hasProperties(value: object, ...properties: string[]): boolean {
-  return properties.every((property) => property in value);
-}
-
 export const isUndefined = ((value) => isTypeof(value, 'undefined')) as IsFnHelper<undefined>;
 
 export const isNull = ((value) => isTypeof(value, 'null')) as IsFnHelper<null>;
@@ -60,4 +56,7 @@ export const isDomException = ((value) => isToString(value, 'DOMException')) as 
 export const isElement = ((value) => !isUndefined(Element) && isInstanceOf(value, Element)) as IsFnHelper<Element>;
 
 export const isSyntheticEvent = ((value) =>
-  isObject(value) && hasProperties(value, 'nativeEvent', 'preventDefault', 'stopPropagation')) as IsFnHelper<Event>;
+  isObject(value) &&
+  'nativeEvent' in value &&
+  'preventDefault' in value &&
+  'stopPropagation' in value) as IsFnHelper<Event>;
