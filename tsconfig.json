@@ -7,10 +7,12 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "importsNotUsedAsValues": "error",
     "isolatedModules": true,
     "lib": ["DOM", "ESNext"],
     "module": "ESNext",
     "moduleResolution": "Node",
+    "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
@@ -25,6 +27,5 @@
     "strict": true,
     "target": "es5",
     "tsBuildInfoFile": ".build-cache/base.tsbuildinfo"
-  },
-  "exclude": ["demo"]
+  }
 }

@@ -11,17 +11,15 @@
   },
   "private": true,
   "workspaces": [
-    "packages/**"
+    "packages/**",
+    "demo"
   ],
   "main": "index.js",
   "scripts": {
-    "start": "run-p start:*",
-    "start:packages": "lerna run --parallel start",
-    "start:demo": "parcel serve demo/src/index.html",
+    "start": "lerna run --parallel start",
     "build": "lerna run build",
     "clean": "run-p clean:*",
     "clean:packages": "lerna run --parallel clean",
-    "clean:demo": "rm -rf demo/dist",
     "clean:root": "rimraf .build-cache/ .cache/ .parcel-cache/",
     "quality": "lerna run --parallel quality",
     "quality:test": "lerna run --parallel quality:test",
@@ -33,27 +31,27 @@
     "git-hooks:pre-commit": "lint-staged"
   },
   "devDependencies": {
-    "@grafana/eslint-config": "^2.5.0",
-    "@types/node": "^16.10.3",
-    "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "@typescript-eslint/parser": "^4.33.0",
-    "eslint": "^7.32.0",
+    "@grafana/eslint-config": "^2.5.1",
+    "@types/node": "^16.11.12",
+    "@typescript-eslint/eslint-plugin": "^5.6.0",
+    "@typescript-eslint/parser": "^5.6.0",
+    "eslint": "^8.4.1",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.24.2",
-    "eslint-plugin-jsdoc": "^36.1.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-jsdoc": "^37.1.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-react": "^7.26.1",
-    "eslint-plugin-react-hooks": "^4.2.0",
-    "husky": "^7.0.2",
+    "eslint-plugin-react": "^7.27.1",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "husky": "^7.0.4",
     "lerna": "^4.0.0",
-    "lint-staged": "^11.2.0",
+    "lint-staged": "^12.1.2",
     "madge": "^5.0.1",
     "npm-run-all": "^4.1.5",
-    "parcel": "^2.0.0-rc.0",
-    "prettier": "^2.4.1",
+    "parcel": "^2.0.1",
+    "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
-    "ts-node": "^10.2.1",
-    "typescript": "^4.4.3"
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.2"
   }
 }

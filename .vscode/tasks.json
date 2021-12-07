@@ -1,0 +1,80 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "start",
+      "problemMatcher": [],
+      "label": "start",
+      "detail": "start the demo"
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "label": "build",
+      "detail": "build the library"
+    },
+    {
+      "type": "npm",
+      "script": "clean",
+      "problemMatcher": [],
+      "label": "clean",
+      "detail": "remove all the built files and caches"
+    },
+    {
+      "type": "npm",
+      "script": "publish",
+      "problemMatcher": [],
+      "label": "publish",
+      "detail": "publish the library"
+    },
+    {
+      "type": "npm",
+      "script": "quality",
+      "problemMatcher": [],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "label": "quality",
+      "detail": "run all code quality checks"
+    },
+    {
+      "type": "npm",
+      "script": "quality:test",
+      "problemMatcher": [],
+      "group": "test",
+      "label": "test",
+      "detail": "run the unit tests"
+    },
+    {
+      "type": "npm",
+      "script": "quality:format",
+      "problemMatcher": [],
+      "group": "test",
+      "label": "format",
+      "detail": "run the code formatter"
+    },
+    {
+      "type": "npm",
+      "script": "quality:lint",
+      "problemMatcher": [],
+      "group": "test",
+      "label": "lint",
+      "detail": "run the linter"
+    },
+    {
+      "type": "npm",
+      "script": "quality:circular-deps",
+      "problemMatcher": [],
+      "group": "test",
+      "label": "circular-deps",
+      "detail": "run circular deps detector"
+    },
+  ]
+}

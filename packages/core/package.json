@@ -1,6 +1,6 @@
 {
   "name": "@grafana/frontend-agent-core",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "Core package of Grafana Frontend Agent.",
   "license": "AGPL-3.0-or-later",
   "author": "Grafana Labs",
@@ -16,11 +16,6 @@
   "files": [
     "dist"
   ],
-  "imports": {
-    "#core/*": {
-      "default": "./dist/*.js"
-    }
-  },
   "scripts": {
     "start": "yarn build -w",
     "build": "tsc -p tsconfig.json",

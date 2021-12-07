@@ -2,7 +2,6 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "isolatedModules": false,
-    "noEmit": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "tsBuildInfoFile": "../../.build-cache/demo.tsbuildinfo"
@@ -35,6 +34,10 @@
     },
     {
       "path": "../packages/plugin-performance/tsconfig.json",
+      "prepend": false
+    },
+    {
+      "path": "../packages/plugin-tracing/tsconfig.json",
       "prepend": false
     }
   ]

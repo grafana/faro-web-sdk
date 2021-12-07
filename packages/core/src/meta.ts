@@ -4,17 +4,43 @@ export type MetaGetter = () => BaseObject;
 
 export type MetaMap = Map<BaseObjectKey, MetaGetter>;
 
+export interface MetaMapLike {
+  [key: BaseObjectKey]: MetaGetter;
+}
+
 export type MetaValues = BaseObject;
 
-export const meta: MetaMap = new Map();
+export interface Meta {
+  add: (key: string, getter: MetaGetter) => void;
+  map: MetaMap;
+  remove: (key: string) => void;
+  values: MetaValues;
+}
 
-export function initializeMeta(): void {
-  meta.set('sdk', () => ({
+export function initializeMeta(): Meta {
+  const map: MetaMap = new Map();
+
+  const add: Meta['add'] = (key, getter) => {
+    if (!map.has(key)) {
+      map.set(key, getter);
+    }
+  };
+
+  const remove: Meta['remove'] = (key) => {
+    map.delete(key);
+  };
+
+  add('sdk', () => ({
     name: '@grafana/frontend-agent',
     version: '0.0.1', // TODO: set correct version here
   }));
-}
 
-export function getMetaValues(): MetaValues {
-  return Object.fromEntries(Array.from(meta.entries()).map(([key, valueGetter]) => [key, valueGetter()]));
+  return {
+    add,
+    map,
+    remove,
+    get values() {
+      return Object.fromEntries(Array.from(map.entries()).map(([key, valueGetter]) => [key, valueGetter()]));
+    },
+  };
 }

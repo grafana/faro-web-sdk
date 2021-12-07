@@ -1,26 +1,56 @@
-import { getCurrentTimestamp } from '../utils/getCurrentTimestamp';
-import { pushException } from './buffer';
-import { getStackFrames } from './stackFrames';
-import type { StackFrame } from './stackFrames';
+import type { Meta } from '../meta';
+import { TransportItemType } from '../transports';
+import type { TransportItem, Transports } from '../transports';
+import { getCurrentTimestamp } from '../utils';
 
 export interface ExceptionEvent {
-  stacktrace: {
-    frames: StackFrame[];
-  };
   timestamp: string;
-  type: 'Error';
+  type: string;
   value: string;
+
+  stacktrace?: {
+    frames: ExceptionStackFrame[];
+  };
 }
 
-export function exception(error: Error): void {
-  try {
-    pushException({
-      type: 'Error',
-      value: error.message,
-      stacktrace: {
-        frames: getStackFrames(error),
-      },
-      timestamp: getCurrentTimestamp(),
-    });
-  } catch (err) {}
+export interface ExceptionStackFrame {
+  filename: string;
+  function: string;
+
+  colno?: number;
+  lineno?: number;
+}
+
+export const defaultExceptionType = 'Error';
+
+export interface LoggerException {
+  pushException: (value: string, type?: string, stackFrames?: any[]) => void;
+}
+
+export function initializeLoggerException(transports: Transports, meta: Meta): LoggerException {
+  const pushException: LoggerException['pushException'] = (value, type = defaultExceptionType, stackFrames = []) => {
+    try {
+      const item: TransportItem<ExceptionEvent> = {
+        meta: meta.values,
+        payload: {
+          type,
+          value,
+          timestamp: getCurrentTimestamp(),
+        },
+        type: TransportItemType.EXCEPTIONS,
+      };
+
+      if (stackFrames.length > 0) {
+        item.payload.stacktrace = {
+          frames: stackFrames,
+        };
+      }
+
+      transports.execute(item);
+    } catch (err) {}
+  };
+
+  return {
+    pushException,
+  };
 }

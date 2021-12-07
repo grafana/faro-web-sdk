@@ -10,16 +10,12 @@
     "url": "https://github.com/grafana/grafana-frontend-agent.git",
     "directory": "packages/integration-angular"
   },
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "imports": {
-    "#integration-angular/*": {
-      "default": "./dist/*.js"
-    }
-  },
   "scripts": {
     "start": "yarn build -w",
     "build": "tsc -p tsconfig.json",
@@ -31,6 +27,6 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
-    "@grafana/frontend-agent-core": "^0.0.1"
+    "@grafana/frontend-agent-core": "^0.0.0"
   }
 }

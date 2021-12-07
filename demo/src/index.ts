@@ -1,12 +1,13 @@
-import { initialize, logger, LogLevels } from '@grafana/frontend-agent-core';
+import { consoleTransport, initialize, LogLevels } from '@grafana/frontend-agent-core';
 import browserMetaPlugin from '@grafana/frontend-agent-plugin-browser-meta';
 import getConsolePlugin from '@grafana/frontend-agent-plugin-console';
 import errorsPlugin from '@grafana/frontend-agent-plugin-errors';
 import performancePlugin from '@grafana/frontend-agent-plugin-performance';
+import tracingPlugin from '@grafana/frontend-agent-plugin-tracing';
 
-initialize({
-  plugins: [browserMetaPlugin, getConsolePlugin([LogLevels.DEBUG]), errorsPlugin, performancePlugin],
-  receiverUrl: 'http://localhost:8080/',
+const agent = initialize({
+  plugins: [browserMetaPlugin, getConsolePlugin([LogLevels.DEBUG]), errorsPlugin, performancePlugin, tracingPlugin],
+  transports: [consoleTransport],
 });
 
-logger.log(['Manual event']);
+agent.logger.pushLog(['Manual event']);
