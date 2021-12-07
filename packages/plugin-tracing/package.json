@@ -2,7 +2,7 @@
   "name": "@grafana/frontend-agent-plugin-tracing",
   "version": "0.0.0",
   "description": "Grafana Frontend Agent plugin for tracing.",
-  "license": "AGPL-3.0-or-later",
+  "license": "Apache-2.0",
   "author": "Grafana Labs",
   "homepage": "https://github.com/grafana/grafana-frontend-agent",
   "repository": {
