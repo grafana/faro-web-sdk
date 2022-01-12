@@ -1,7 +1,8 @@
 import { initializeAgent } from './agent';
 import type { Agent } from './agent';
-import { initializeConfig, UserConfig } from './config';
-import { initializeLogger } from './logger';
+import { initializeCommander } from './commander';
+import { initializeConfig } from './config';
+import type { UserConfig } from './config';
 import { initializeMeta } from './meta';
 import { initializePlugins } from './plugins';
 import { initializeTransports } from './transports';
@@ -13,9 +14,9 @@ export function initialize(userConfig: UserConfig): Agent {
 
   const transports = initializeTransports(config);
 
-  const logger = initializeLogger(transports, meta);
+  const commander = initializeCommander(transports, meta);
 
-  const agent = initializeAgent(config, logger, meta, transports);
+  const agent = initializeAgent(config, commander, meta, transports);
 
   initializePlugins(agent);
 

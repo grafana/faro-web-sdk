@@ -1,16 +1,19 @@
+import type { ExceptionsEvent, LoggingEvent, MeasurementsEvent, TracingEvent } from '../commander';
 import type { Config } from '../config';
-import type { ExceptionEvent, LogEvent, TraceEvent } from '../logger';
 import type { MetaValues } from '../meta';
 
 export enum TransportItemType {
-  LOGS = 'logs',
   EXCEPTIONS = 'exceptions',
+  LOGS = 'logs',
+  MEASUREMENTS = 'measurements',
   TRACES = 'traces',
 }
 
-export type TransportPayload<P = LogEvent | ExceptionEvent | TraceEvent> = P;
+export type AllPayloadTypes = LoggingEvent | ExceptionsEvent | MeasurementsEvent | TracingEvent;
 
-export interface TransportItem<P = LogEvent | ExceptionEvent | TraceEvent> {
+export type TransportPayload<P = AllPayloadTypes> = P;
+
+export interface TransportItem<P = AllPayloadTypes> {
   type: TransportItemType;
   payload: TransportPayload<P>;
   meta: MetaValues;

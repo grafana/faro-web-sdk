@@ -26,7 +26,7 @@ export function registerOnunhandledrejection(agent: Agent): void {
     }
 
     if (value) {
-      agent.logger.pushException(value, type);
+      agent.commander.pushException(value, type);
     }
   };
 }

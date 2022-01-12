@@ -1,3 +1,3 @@
 import { agent } from '@grafana/frontend-agent-core';
 
-agent.logger.pushLog(['React']);
+agent.commander.pushLog(['A simple log from the React integration']);

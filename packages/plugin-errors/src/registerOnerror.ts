@@ -1,5 +1,5 @@
 import { isString } from '@grafana/frontend-agent-core';
-import type { Agent, ExceptionStackFrame } from '@grafana/frontend-agent-core';
+import type { Agent, StackFrame } from '@grafana/frontend-agent-core';
 
 import { unknownString } from './const';
 import { getErrorDetails } from './getErrorDetails';
@@ -10,7 +10,7 @@ export function registerOnerror(agent: Agent): void {
   window.onerror = (event, source, lineno, colno, error) => {
     let value: string | undefined;
     let type: string | undefined;
-    let stackFrames: ExceptionStackFrame[] = [];
+    let stackFrames: StackFrame[] = [];
     const eventIsString = isString(event);
     const initialStackFrame = buildStackFrame(source, unknownString, lineno, colno);
 
@@ -26,7 +26,7 @@ export function registerOnerror(agent: Agent): void {
     }
 
     if (value) {
-      agent.logger.pushException(value, type, stackFrames);
+      agent.commander.pushException(value, type, stackFrames);
     }
   };
 }

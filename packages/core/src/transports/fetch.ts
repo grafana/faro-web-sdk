@@ -5,6 +5,7 @@ const baseOptions: Partial<RequestInit> = {
   headers: {
     'Content-Type': 'application/json',
   },
+  keepalive: true,
 };
 
 export function getFetchTransport(url: string): Transport {

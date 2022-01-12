@@ -1,4 +1,4 @@
-import type { ExceptionStackFrame } from '@grafana/frontend-agent-core';
+import type { StackFrame } from '@grafana/frontend-agent-core';
 import { isNumber } from '@grafana/frontend-agent-core';
 
 import {
@@ -45,8 +45,8 @@ export function buildStackFrame(
   func: string | undefined,
   lineno: number | undefined,
   colno: number | undefined
-): ExceptionStackFrame {
-  const stackFrame: ExceptionStackFrame = {
+): StackFrame {
+  const stackFrame: StackFrame = {
     filename: filename || document.location.href,
     function: func || unknownString,
   };
@@ -62,7 +62,7 @@ export function buildStackFrame(
   return stackFrame;
 }
 
-export function getStackFramesFromError(error: ExtendedError): ExceptionStackFrame[] {
+export function getStackFramesFromError(error: ExtendedError): StackFrame[] {
   let lines: string[] = [];
 
   if (error.stacktrace) {
@@ -136,7 +136,7 @@ export function getStackFramesFromError(error: ExtendedError): ExceptionStackFra
     }
 
     return acc;
-  }, [] as ExceptionStackFrame[]);
+  }, [] as StackFrame[]);
 
   if (error.framesToPop) {
     return stackFrames.slice(error.framesToPop);

@@ -1,5 +1,5 @@
 import { isDomError, isDomException, isError, isErrorEvent, isEvent, isObject } from '@grafana/frontend-agent-core';
-import type { ExceptionStackFrame } from '@grafana/frontend-agent-core';
+import type { StackFrame } from '@grafana/frontend-agent-core';
 
 import { domErrorType, domExceptionType, objectEventValue } from './const';
 import { getStackFramesFromError } from './stackFrames';
@@ -8,10 +8,10 @@ type ErrorEvent = (Error | Event) & {
   error?: Error;
 };
 
-export function getErrorDetails(event: ErrorEvent): any {
+export function getErrorDetails(event: ErrorEvent): [string | undefined, string | undefined, StackFrame[]] {
   let value: string | undefined;
   let type: string | undefined;
-  let stackFrames: ExceptionStackFrame[] = [];
+  let stackFrames: StackFrame[] = [];
   let isDomErrorRes: boolean | undefined;
   let isEventRes: boolean | undefined;
 

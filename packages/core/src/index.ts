@@ -5,7 +5,7 @@ export type { Config, UserConfig } from './config';
 
 export { initialize } from './initialize';
 
-export * from './logger';
+export * from './commander';
 
 export type { MetaGetter, MetaMap, MetaValues } from './meta';
 
