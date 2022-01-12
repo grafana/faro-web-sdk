@@ -11,13 +11,19 @@ const baseOptions: Partial<RequestInit> = {
 export function getFetchTransport(url: string): Transport {
   return (item: TransportItem) => {
     try {
-      fetch(url, {
-        ...baseOptions,
-        body: JSON.stringify({
-          [item.type]: [item.payload],
-          meta: item.meta,
-        }),
-      }).catch();
+      const body = JSON.stringify({
+        [item.type]: [item.payload],
+        meta: item.meta,
+      });
+
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(url, body);
+      } else {
+        fetch(url, {
+          ...baseOptions,
+          body,
+        }).catch();
+      }
     } catch (err) {}
   };
 }

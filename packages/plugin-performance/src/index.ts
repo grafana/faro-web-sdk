@@ -5,14 +5,11 @@ import type { Metric } from 'web-vitals';
 const plugin: Plugin = {
   name: '@grafana/frontend-agent-plugin-performance',
   instrumentations: async (agent) => {
+    const values: any = {};
+
     const getMarkValue = (indicator: string) => {
       return (metric: Metric) => {
-        agent.commander.pushMeasurement({
-          type: 'page load',
-          values: {
-            [indicator]: metric.value,
-          },
-        });
+        values[indicator] = metric.value;
       };
     };
 
@@ -21,6 +18,13 @@ const plugin: Plugin = {
     getFID(getMarkValue('fid'));
     getLCP(getMarkValue('lcp'));
     getTTFB(getMarkValue('ttfb'));
+
+    window.onunload = () => {
+      agent.commander.pushMeasurement({
+        type: 'web-vitals',
+        values,
+      });
+    };
   },
 };
 

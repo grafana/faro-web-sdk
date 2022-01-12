@@ -1,4 +1,4 @@
-import { consoleTransport, initialize, LoggingLevels } from '@grafana/frontend-agent-core';
+import { consoleTransport, getFetchTransport, initialize, LoggingLevels } from '@grafana/frontend-agent-core';
 import browserMetaPlugin from '@grafana/frontend-agent-plugin-browser-meta';
 import getConsolePlugin from '@grafana/frontend-agent-plugin-console';
 import errorsPlugin from '@grafana/frontend-agent-plugin-errors';
@@ -15,7 +15,7 @@ const agent = initialize({
     performancePlugin,
     tracingPlugin,
   ],
-  transports: [consoleTransport],
+  transports: [consoleTransport, getFetchTransport('http://localhost:8080/collect')],
 });
 
 agent.commander.pushLog(['Manual event from initialized agent']);
