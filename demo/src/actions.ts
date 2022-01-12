@@ -28,3 +28,7 @@ function promiseReject() {
 function fetchSuccess() {
   fetch('http://localhost:1234');
 }
+
+window.onload = () => {
+  (window as any).grafanaFEAgent.commander.pushLog(['Manual event from Home']);
+};

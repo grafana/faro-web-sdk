@@ -33,6 +33,10 @@
       "prepend": false
     },
     {
+      "path": "../packages/plugin-page-meta/tsconfig.json",
+      "prepend": false
+    },
+    {
       "path": "../packages/plugin-performance/tsconfig.json",
       "prepend": false
     },

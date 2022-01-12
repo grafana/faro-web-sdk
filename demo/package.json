@@ -26,6 +26,7 @@
     "@grafana/frontend-agent-plugin-browser-meta": "^0.0.0",
     "@grafana/frontend-agent-plugin-console": "^0.0.0",
     "@grafana/frontend-agent-plugin-errors": "^0.0.0",
+    "@grafana/frontend-agent-plugin-page-meta": "^0.0.0",
     "@grafana/frontend-agent-plugin-performance": "^0.0.0",
     "@grafana/frontend-agent-plugin-tracing": "^0.0.0"
   }
