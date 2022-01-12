@@ -18,9 +18,9 @@
   "scripts": {
     "start": "lerna run --parallel start",
     "build": "lerna run build",
-    "clean": "run-p clean:*",
+    "clean": "run-s clean:*",
     "clean:packages": "lerna run --parallel clean",
-    "clean:root": "rimraf .build-cache/ .cache/ .parcel-cache/",
+    "clean:root": "rimraf .build-cache .cache .parcel-cache",
     "quality": "lerna run --parallel quality",
     "quality:test": "lerna run --parallel quality:test",
     "quality:format": "lerna run --parallel quality:format",
