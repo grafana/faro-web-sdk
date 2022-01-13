@@ -1,16 +1,16 @@
-import type { Meta } from '../meta';
+import type { Meta } from '../meta/types';
 import type { Transports } from '../transports';
-import type { Commander } from './commander';
 import { initializeExceptions } from './exceptions';
-import { initializeLogging } from './logging';
+import { initializeLogs } from './logs';
 import { initializeMeasurements } from './measurements';
-import { initializeTracing } from './tracing';
+import { initializeTraces } from './traces';
+import type { Commander } from './types';
 
-export function initialize(transports: Transports, meta: Meta): Commander {
+export function initializeCommander(transports: Transports, meta: Meta): Commander {
   return {
     ...initializeExceptions(transports, meta),
-    ...initializeLogging(transports, meta),
+    ...initializeLogs(transports, meta),
     ...initializeMeasurements(transports, meta),
-    ...initializeTracing(transports, meta),
+    ...initializeTraces(transports, meta),
   };
 }

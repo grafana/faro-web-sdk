@@ -1,15 +1,15 @@
-import type { Meta } from '../../meta';
+import type { Meta } from '../../meta/types';
 import { TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
-import type { Commands } from './commands';
-import { defaultLevel } from './const';
+import { defaultLogLevel } from './const';
+import type { LogsCommands } from './types';
 
-export function initialize(transports: Transports, meta: Meta): Commands {
-  const pushLog: Commands['pushLog'] = (args, level = defaultLevel, context = {}) => {
+export function initializeLogs(transports: Transports, meta: Meta): LogsCommands {
+  const pushLog: LogsCommands['pushLog'] = (args, level = defaultLogLevel, context = {}) => {
     try {
       transports.execute({
-        type: TransportItemType.LOGS,
+        type: TransportItemType.LOG,
         payload: {
           message: args
             .map((arg) => {

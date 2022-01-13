@@ -1,13 +1,15 @@
-import { initializeAgent } from './agent';
-import type { Agent } from './agent';
 import { initializeCommander } from './commander';
 import { initializeConfig } from './config';
 import type { UserConfig } from './config';
 import { initializeMeta } from './meta';
 import { initializePlugins } from './plugins';
 import { initializeTransports } from './transports';
+import type { Agent } from './types';
+import { globalObject } from './utils';
 
-export function initialize(userConfig: UserConfig): Agent {
+export let agent: Agent;
+
+export function initializeAgent(userConfig: UserConfig): Agent {
   const config = initializeConfig(userConfig);
 
   const meta = initializeMeta();
@@ -16,7 +18,18 @@ export function initialize(userConfig: UserConfig): Agent {
 
   const commander = initializeCommander(transports, meta);
 
-  const agent = initializeAgent(config, commander, meta, transports);
+  agent = {
+    config,
+    commander,
+    meta,
+    transports,
+  };
+
+  if (!config.preventGlobalExposure) {
+    Object.defineProperty(globalObject, config.globalObjectKey, {
+      value: agent,
+    });
+  }
 
   initializePlugins(agent);
 

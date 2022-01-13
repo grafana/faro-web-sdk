@@ -1,1 +1,1 @@
-export const defaultType = 'Error';
+export const defaultExceptionType = 'Error';

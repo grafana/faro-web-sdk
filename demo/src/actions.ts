@@ -1,4 +1,3 @@
-// @ts-ignore
 function throwError() {
   throw new Error('This is a thrown error');
 }
@@ -27,6 +26,15 @@ function promiseReject() {
 
 function fetchSuccess() {
   fetch('http://localhost:1234');
+}
+
+function sendCustomMetric() {
+  (window as any).grafanaFEAgent.commander.pushMeasurement({
+    type: 'custom',
+    values: {
+      my_custom_metric: Math.random(),
+    },
+  });
 }
 
 window.onload = () => {

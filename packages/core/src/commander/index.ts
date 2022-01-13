@@ -1,12 +1,12 @@
-export type { Commander } from './commander';
-export { initialize as initializeCommander } from './initialize';
+export { initializeCommander } from './initialize';
+export type { Commander, CommanderEvent } from './types';
 
-export { defaultType as defaultExceptionType } from './exceptions';
-export type { ExceptionsEvent, StackFrame } from './exceptions';
+export { defaultExceptionType } from './exceptions';
+export type { ExceptionEvent, ExceptionStackFrame } from './exceptions';
 
-export { defaultLevel as defaultLogLevel, LoggingLevels } from './logging';
-export type { LoggingContext, LoggingEvent } from './logging';
+export { defaultLogLevel, LogLevel } from './logs';
+export type { LogContext, LogEvent } from './logs';
 
-export type { MeasurementsEvent } from './measurements';
+export type { MeasurementEvent } from './measurements';
 
-export type { TracingEvent } from './tracing';
+export type { TraceEvent } from './traces';
