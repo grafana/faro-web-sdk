@@ -1,5 +1,5 @@
-import type { ExceptionStackFrame } from '@grafana/frontend-agent-core';
-import { isNumber } from '@grafana/frontend-agent-core';
+import type { ExceptionStackFrame } from '@grafana/javascript-agent-core';
+import { isNumber } from '@grafana/javascript-agent-core';
 
 import {
   atString,
@@ -94,7 +94,9 @@ export function getStackFramesFromError(error: ExtendedError): ExceptionStackFra
         }
       }
 
-      filename = filename?.startsWith(chromeAddressAtString) ? filename.substr(chromeAddressAtStringLength) : filename;
+      filename = filename?.startsWith(chromeAddressAtString)
+        ? filename.substring(chromeAddressAtStringLength)
+        : filename;
       [func, filename] = getDataFromSafariExtensions(func, filename);
     } else if ((parts = msLineRegex.exec(line))) {
       func = parts[1];

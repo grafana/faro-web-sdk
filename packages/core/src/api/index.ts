@@ -1,5 +1,5 @@
-export { initializeCommander } from './initialize';
-export type { Commander, CommanderEvent } from './types';
+export { initializeAPI } from './initialize';
+export type { API, APIEvent } from './types';
 
 export { defaultExceptionType } from './exceptions';
 export type { ExceptionEvent, ExceptionStackFrame } from './exceptions';

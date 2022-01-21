@@ -1,4 +1,4 @@
-import type { CommanderEvent, ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent } from '../commander';
+import type { APIEvent, ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent } from '../api';
 import type { MetaValues } from '../meta';
 
 export enum TransportItemType {
@@ -8,9 +8,9 @@ export enum TransportItemType {
   TRACE = 'trace',
 }
 
-export type TransportItemPayload<P = CommanderEvent> = P;
+export type TransportItemPayload<P = APIEvent> = P;
 
-export interface TransportItem<P = CommanderEvent> {
+export interface TransportItem<P = APIEvent> {
   type: TransportItemType;
   payload: TransportItemPayload<P>;
   meta: MetaValues;

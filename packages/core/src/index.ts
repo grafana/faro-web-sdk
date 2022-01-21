@@ -1,20 +1,20 @@
-export { agent, initializeAgent } from './initialize';
-
-export type { Agent } from './types';
-
-export type { Config, UserConfig } from './config';
-
-export { defaultExceptionType, defaultLogLevel, LogLevel } from './commander';
+export { defaultExceptionType, defaultLogLevel, LogLevel } from './api';
 export type {
-  Commander,
-  CommanderEvent,
+  API,
+  APIEvent,
   ExceptionEvent,
   ExceptionStackFrame,
   LogContext,
   LogEvent,
   MeasurementEvent,
   TraceEvent,
-} from './commander';
+} from './api';
+
+export { agent, initializeAgent } from './initialize';
+
+export type { Agent } from './types';
+
+export type { Config, UserConfig } from './config';
 
 export type { Meta, MetaGetter, MetaMap, MetaMapLike, MetaValues } from './meta';
 

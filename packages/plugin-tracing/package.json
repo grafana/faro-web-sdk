@@ -1,13 +1,13 @@
 {
-  "name": "@grafana/frontend-agent-plugin-tracing",
+  "name": "@grafana/javascript-agent-plugin-tracing",
   "version": "0.0.0",
-  "description": "Grafana Frontend Agent plugin for tracing.",
+  "description": "Grafana JavaScript Agent plugin for tracing.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "homepage": "https://github.com/grafana/grafana-frontend-agent",
+  "homepage": "https://github.com/grafana/grafana-javascript-agent",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grafana/grafana-frontend-agent.git",
+    "url": "https://github.com/grafana/grafana-javascript-agent.git",
     "directory": "packages/plugin-tracing"
   },
   "type": "module",
@@ -27,6 +27,6 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
-    "@grafana/frontend-agent-core": "^0.0.0"
+    "@grafana/javascript-agent-core": "^0.0.0"
   }
 }

@@ -1,4 +1,4 @@
-import { initializeCommander } from './commander';
+import { initializeAPI } from './api';
 import { initializeConfig } from './config';
 import type { UserConfig } from './config';
 import { initializeMeta } from './meta';
@@ -16,11 +16,11 @@ export function initializeAgent(userConfig: UserConfig): Agent {
 
   const transports = initializeTransports(config);
 
-  const commander = initializeCommander(transports, meta);
+  const api = initializeAPI(transports, meta);
 
   agent = {
+    api,
     config,
-    commander,
     meta,
     transports,
   };

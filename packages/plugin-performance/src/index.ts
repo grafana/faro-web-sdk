@@ -1,30 +1,26 @@
-import type { Plugin } from '@grafana/frontend-agent-core';
+import type { Agent, Plugin } from '@grafana/javascript-agent-core';
 import { getCLS, getFCP, getFID, getLCP, getTTFB } from 'web-vitals';
 import type { Metric } from 'web-vitals';
 
+const getMarkValue = (indicator: string, agent: Agent) => {
+  return (metric: Metric) => {
+    agent.api.pushMeasurement({
+      type: 'web-vitals',
+      values: {
+        [indicator]: metric.value,
+      },
+    });
+  };
+};
+
 const plugin: Plugin = {
-  name: '@grafana/frontend-agent-plugin-performance',
+  name: '@grafana/javascript-agent-plugin-performance',
   instrumentations: async (agent) => {
-    const values: any = {};
-
-    const getMarkValue = (indicator: string) => {
-      return (metric: Metric) => {
-        values[indicator] = metric.value;
-      };
-    };
-
-    getCLS(getMarkValue('cls'));
-    getFCP(getMarkValue('fcp'));
-    getFID(getMarkValue('fid'));
-    getLCP(getMarkValue('lcp'));
-    getTTFB(getMarkValue('ttfb'));
-
-    window.onunload = () => {
-      agent.commander.pushMeasurement({
-        type: 'web-vitals',
-        values,
-      });
-    };
+    getCLS(getMarkValue('cls', agent));
+    getFCP(getMarkValue('fcp', agent));
+    getFID(getMarkValue('fid', agent));
+    getLCP(getMarkValue('lcp', agent));
+    getTTFB(getMarkValue('ttfb', agent));
   },
 };
 

@@ -1,4 +1,4 @@
-export { defaultglobalObjectKey } from './const';
+export { defaultGlobalObjectKey } from './const';
 
 export { initializeConfig } from './initialize';
 

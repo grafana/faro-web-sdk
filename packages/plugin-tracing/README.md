@@ -1,3 +1,3 @@
-# @grafana/frontend-agent-plugin-tracing
+# @grafana/javascript-agent-plugin-tracing
 
-Grafana Frontend Agent plugin for tracing.
+Grafana JavaScript Agent plugin for tracing.

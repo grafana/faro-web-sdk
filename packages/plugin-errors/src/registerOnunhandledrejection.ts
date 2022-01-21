@@ -1,5 +1,5 @@
-import { isPrimitive } from '@grafana/frontend-agent-core';
-import type { Agent } from '@grafana/frontend-agent-core';
+import { isPrimitive } from '@grafana/javascript-agent-core';
+import type { Agent } from '@grafana/javascript-agent-core';
 
 import { primitiveUnhandledType, primitiveUnhandledValue } from './const';
 import type { ExtendedPromiseRejectionEvent } from './extendedPromiseRejectionEvent';
@@ -26,7 +26,7 @@ export function registerOnunhandledrejection(agent: Agent): void {
     }
 
     if (value) {
-      agent.commander.pushException(value, type);
+      agent.api.pushException(value, type);
     }
   };
 }

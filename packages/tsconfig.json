@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@grafana/frontend-agent-*": ["*/src"],
+      "@grafana/javascript-agent-*": ["*/src"],
       "#core/*": ["core/src/*"],
       "#demo/*": ["demo/src/*"],
       "#integration-angular/*": ["integration-angular/src/*"],

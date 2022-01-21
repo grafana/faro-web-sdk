@@ -3,6 +3,6 @@ export interface MeasurementEvent<V extends { [label: string]: number } = { [lab
   type: string;
 }
 
-export interface MeasurementsCommands {
+export interface MeasurementsAPI {
   pushMeasurement: (payload: MeasurementEvent) => void;
 }

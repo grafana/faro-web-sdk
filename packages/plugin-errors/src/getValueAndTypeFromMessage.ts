@@ -1,4 +1,4 @@
-import { defaultExceptionType } from '@grafana/frontend-agent-core';
+import { defaultExceptionType } from '@grafana/javascript-agent-core';
 
 import { valueTypeRegex } from './const';
 

@@ -14,7 +14,7 @@ export function initializeMeta(): Meta {
   };
 
   add('sdk', () => ({
-    name: '@grafana/frontend-agent',
+    name: '@grafana/javascript-agent',
     version: '0.0.1', // TODO: set correct version here
   }));
 

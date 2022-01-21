@@ -1,11 +1,11 @@
-import type { Meta } from '../../meta/types';
+import type { Meta } from '../../meta';
 import { TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
-import type { MeasurementsCommands } from './types';
+import type { MeasurementsAPI } from './types';
 
-export function initializeMeasurements(transports: Transports, meta: Meta): MeasurementsCommands {
-  const pushMeasurement: MeasurementsCommands['pushMeasurement'] = (payload) => {
+export function initializeMeasurements(transports: Transports, meta: Meta): MeasurementsAPI {
+  const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload) => {
     transports.execute({
       type: TransportItemType.MEASUREMENT,
       payload: {

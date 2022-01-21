@@ -18,6 +18,6 @@ export interface LogEvent {
   timestamp: string;
 }
 
-export interface LogsCommands {
+export interface LogsAPI {
   pushLog: (args: unknown[], level?: LogLevel, context?: LogContext) => void;
 }

@@ -16,6 +16,6 @@ export interface ExceptionEvent {
   };
 }
 
-export interface ExceptionsCommands {
+export interface ExceptionsAPI {
   pushException: (value: string, type?: string, stackFrames?: ExceptionStackFrame[]) => void;
 }

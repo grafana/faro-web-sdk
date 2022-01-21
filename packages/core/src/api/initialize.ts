@@ -1,12 +1,12 @@
-import type { Meta } from '../meta/types';
+import type { Meta } from '../meta';
 import type { Transports } from '../transports';
 import { initializeExceptions } from './exceptions';
 import { initializeLogs } from './logs';
 import { initializeMeasurements } from './measurements';
 import { initializeTraces } from './traces';
-import type { Commander } from './types';
+import type { API } from './types';
 
-export function initializeCommander(transports: Transports, meta: Meta): Commander {
+export function initializeAPI(transports: Transports, meta: Meta): API {
   return {
     ...initializeExceptions(transports, meta),
     ...initializeLogs(transports, meta),

@@ -1,7 +1,7 @@
-import type { Plugin } from '@grafana/frontend-agent-core';
+import type { Plugin } from '@grafana/javascript-agent-core';
 
 const plugin: Plugin = {
-  name: '@grafana/frontend-agent-plugin-browser-meta',
+  name: '@grafana/javascript-agent-plugin-page-meta',
   metas: () => ({
     page: () => ({
       href: location.href,

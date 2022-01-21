@@ -1,3 +1,3 @@
-# @grafana/frontend-agent-plugin-errors
+# @grafana/javascript-agent-plugin-errors
 
-Grafana Frontend Agent plugin for capturing browser errors.
+Grafana JavaScript Agent plugin for capturing browser errors.

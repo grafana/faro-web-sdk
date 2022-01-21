@@ -1,13 +1,13 @@
 {
-  "name": "@grafana/frontend-agent-integration-react",
+  "name": "@grafana/javascript-agent-integration-react",
   "version": "0.0.0",
-  "description": "Grafana Frontend Agent package that enables easier integration in projects built with React.",
+  "description": "Grafana JavaScript Agent package that enables easier integration in projects built with React.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "homepage": "https://github.com/grafana/grafana-frontend-agent",
+  "homepage": "https://github.com/grafana/grafana-javascript-agent",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grafana/grafana-frontend-agent.git",
+    "url": "https://github.com/grafana/grafana-javascript-agent.git",
     "directory": "packages/integration-react"
   },
   "type": "module",
@@ -32,10 +32,10 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
-    "@grafana/frontend-agent-core": "^0.0.0"
+    "@grafana/javascript-agent-core": "^0.0.0"
   },
   "devDependencies": {
-    "@types/react": "^17.0.37",
+    "@types/react": "^17.0.38",
     "react": "^17.0.2"
   },
   "peerDependencies": {

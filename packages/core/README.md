@@ -1,3 +1,3 @@
-# @grafana/frontend-agent-core
+# @grafana/javascript-agent-core
 
-Core package of Grafana Frontend Agent.
+Core package of Grafana JavaScript Agent.

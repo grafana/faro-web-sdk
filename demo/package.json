@@ -1,13 +1,13 @@
 {
-  "name": "@grafana/frontend-agent-demo",
+  "name": "@grafana/javascript-agent-demo",
   "version": "0.0.0",
-  "description": "Demo of Grafana Frontend Agent.",
+  "description": "Demo of Grafana JavaScript Agent.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "homepage": "https://github.com/grafana/grafana-frontend-agent",
+  "homepage": "https://github.com/grafana/grafana-javascript-agent",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grafana/grafana-frontend-agent.git",
+    "url": "https://github.com/grafana/grafana-javascript-agent.git",
     "directory": "demo"
   },
   "source": "src/index.html",
@@ -22,12 +22,12 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json "
   },
   "dependencies": {
-    "@grafana/frontend-agent-core": "^0.0.0",
-    "@grafana/frontend-agent-plugin-browser-meta": "^0.0.0",
-    "@grafana/frontend-agent-plugin-console": "^0.0.0",
-    "@grafana/frontend-agent-plugin-errors": "^0.0.0",
-    "@grafana/frontend-agent-plugin-page-meta": "^0.0.0",
-    "@grafana/frontend-agent-plugin-performance": "^0.0.0",
-    "@grafana/frontend-agent-plugin-tracing": "^0.0.0"
+    "@grafana/javascript-agent-core": "^0.0.0",
+    "@grafana/javascript-agent-plugin-browser-meta": "^0.0.0",
+    "@grafana/javascript-agent-plugin-console": "^0.0.0",
+    "@grafana/javascript-agent-plugin-errors": "^0.0.0",
+    "@grafana/javascript-agent-plugin-page-meta": "^0.0.0",
+    "@grafana/javascript-agent-plugin-performance": "^0.0.0",
+    "@grafana/javascript-agent-plugin-tracing": "^0.0.0"
   }
 }

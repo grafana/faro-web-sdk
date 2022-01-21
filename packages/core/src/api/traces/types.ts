@@ -1,5 +1,5 @@
 export interface TraceEvent {}
 
-export interface TracesCommands {
+export interface TracesAPI {
   pushSpan: (payload: TraceEvent) => void;
 }

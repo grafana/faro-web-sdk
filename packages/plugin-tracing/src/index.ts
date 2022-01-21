@@ -1,9 +1,9 @@
-import type { Plugin } from '@grafana/frontend-agent-core';
+import type { Plugin } from '@grafana/javascript-agent-core';
 
 const plugin: Plugin = {
-  name: '@grafana/frontend-agent-plugin-tracing',
+  name: '@grafana/javascript-agent-plugin-tracing',
   instrumentations: (agent) => {
-    agent.commander.pushLog(['A simple log from the tracing plugin']);
+    agent.api.pushLog(['A simple log from the tracing plugin']);
   },
 };
 

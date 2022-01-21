@@ -1,13 +1,13 @@
 {
-  "name": "@grafana/frontend-agent-core",
+  "name": "@grafana/javascript-agent-core",
   "version": "0.0.0",
-  "description": "Core package of Grafana Frontend Agent.",
+  "description": "Core package of Grafana JavaScript Agent.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "homepage": "https://github.com/grafana/grafana-frontend-agent",
+  "homepage": "https://github.com/grafana/grafana-javascript-agent",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grafana/grafana-frontend-agent.git",
+    "url": "https://github.com/grafana/grafana-javascript-agent.git",
     "directory": "packages/core"
   },
   "type": "module",
@@ -30,6 +30,6 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@types/uuid": "^8.3.3"
+    "@types/uuid": "^8.3.4"
   }
 }

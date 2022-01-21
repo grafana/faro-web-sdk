@@ -29,7 +29,7 @@ function fetchSuccess() {
 }
 
 function sendCustomMetric() {
-  (window as any).grafanaFEAgent.commander.pushMeasurement({
+  (window as any).grafanaJavaScriptAgent.api.pushMeasurement({
     type: 'custom',
     values: {
       my_custom_metric: Math.random(),
@@ -38,5 +38,5 @@ function sendCustomMetric() {
 }
 
 window.onload = () => {
-  (window as any).grafanaFEAgent.commander.pushLog(['Manual event from Home']);
+  (window as any).grafanaJavasScriptAgent.api.pushLog(['Manual event from Home']);
 };

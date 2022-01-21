@@ -1,5 +1,5 @@
-import { isString } from '@grafana/frontend-agent-core';
-import type { Agent, ExceptionStackFrame } from '@grafana/frontend-agent-core';
+import { isString } from '@grafana/javascript-agent-core';
+import type { Agent, ExceptionStackFrame } from '@grafana/javascript-agent-core';
 
 import { unknownString } from './const';
 import { getErrorDetails } from './getErrorDetails';
@@ -26,7 +26,7 @@ export function registerOnerror(agent: Agent): void {
     }
 
     if (value) {
-      agent.commander.pushException(value, type, stackFrames);
+      agent.api.pushException(value, type, stackFrames);
     }
   };
 }
