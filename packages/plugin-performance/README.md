@@ -1,3 +1,3 @@
-# @grafana/frontend-agent-plugin-performance
+# @grafana/javascript-agent-plugin-performance
 
-Grafana Frontend Agent plugin for capturing performance data.
+Grafana JavaScript Agent plugin for capturing performance data.

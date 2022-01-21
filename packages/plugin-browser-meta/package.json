@@ -1,13 +1,13 @@
 {
-  "name": "@grafana/frontend-agent-plugin-browser-meta",
+  "name": "@grafana/javascript-agent-plugin-browser-meta",
   "version": "0.0.0",
-  "description": "Grafana Frontend Agent plugin for gathering meta of the browser.",
+  "description": "Grafana JavaScript Agent plugin for gathering meta of the browser.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "homepage": "https://github.com/grafana/grafana-frontend-agent",
+  "homepage": "https://github.com/grafana/grafana-javascript-agent",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grafana/grafana-frontend-agent.git",
+    "url": "https://github.com/grafana/grafana-javascript-agent.git",
     "directory": "packages/plugin-browser-meta"
   },
   "type": "module",
@@ -26,7 +26,11 @@
     "quality:lint": "eslint \"src/**/*.ts\"",
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
+  "devDependencies": {
+    "@types/ua-parser-js": "^0.7.36"
+  },
   "dependencies": {
-    "@grafana/frontend-agent-core": "^0.0.0"
+    "@grafana/javascript-agent-core": "^0.0.0",
+    "ua-parser-js": "^1.0.2"
   }
 }

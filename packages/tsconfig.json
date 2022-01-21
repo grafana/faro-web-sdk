@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@grafana/frontend-agent-*": ["*/src"],
+      "@grafana/javascript-agent-*": ["*/src"],
       "#core/*": ["core/src/*"],
       "#demo/*": ["demo/src/*"],
       "#integration-angular/*": ["integration-angular/src/*"],
@@ -11,6 +11,7 @@
       "#plugin-browser-meta/*": ["plugin-browser-meta/src/*"],
       "#plugin-console/*": ["plugin-console/src/*"],
       "#plugin-errors/*": ["plugin-errors/src/*"],
+      "#plugin-page-meta/*": ["plugin-page-meta/src/*"],
       "#plugin-performance/*": ["plugin-performance/src/*"],
       "#plugin-tracing/*": ["plugin-tracing/src/*"],
       "#*": ["*/src"]

@@ -1,3 +1,3 @@
-# @grafana/frontend-agent-plugin-console
+# @grafana/javascript-agent-plugin-console
 
-Grafana Frontend Agent plugin for capturing console events.
+Grafana JavaScript Agent plugin for capturing console events.

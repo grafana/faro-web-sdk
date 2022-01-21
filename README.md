@@ -1,1 +1,1 @@
-# Grafana Frontend Agent
+# Grafana JavaScript Agent

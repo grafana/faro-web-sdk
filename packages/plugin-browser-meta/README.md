@@ -1,3 +1,3 @@
-# @grafana/frontend-agent-plugin-browser-meta
+# @grafana/javascript-agent-plugin-browser-meta
 
-Grafana Frontend Agent plugin for gathering meta of the browser.
+Grafana JavaScript Agent plugin for gathering meta of the browser.

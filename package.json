@@ -1,13 +1,13 @@
 {
-  "name": "grafana-frontend-agent",
+  "name": "grafana-javascript-agent",
   "version": "0.0.0",
-  "description": "Monorepo for Grafana Frontend Agent",
+  "description": "Monorepo for Grafana JavaScript Agent",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "homepage": "https://github.com/grafana/grafana-frontend-agent#readme",
+  "homepage": "https://github.com/grafana/grafana-javascript-agent#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grafana/grafana-frontend-agent.git"
+    "url": "https://github.com/grafana/grafana-javascript-agent.git"
   },
   "private": true,
   "workspaces": [
@@ -18,9 +18,9 @@
   "scripts": {
     "start": "lerna run --parallel start",
     "build": "lerna run build",
-    "clean": "run-p clean:*",
+    "clean": "run-s clean:*",
     "clean:packages": "lerna run --parallel clean",
-    "clean:root": "rimraf .build-cache/ .cache/ .parcel-cache/",
+    "clean:root": "rimraf .build-cache .cache .parcel-cache",
     "quality": "lerna run --parallel quality",
     "quality:test": "lerna run --parallel quality:test",
     "quality:format": "lerna run --parallel quality:format",
@@ -32,26 +32,26 @@
   },
   "devDependencies": {
     "@grafana/eslint-config": "^2.5.1",
-    "@types/node": "^16.11.12",
-    "@typescript-eslint/eslint-plugin": "^5.6.0",
-    "@typescript-eslint/parser": "^5.6.0",
-    "eslint": "^8.4.1",
+    "@types/node": "^17.0.10",
+    "@typescript-eslint/eslint-plugin": "^5.10.0",
+    "@typescript-eslint/parser": "^5.10.0",
+    "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.25.3",
-    "eslint-plugin-jsdoc": "^37.1.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-jsdoc": "^37.6.3",
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-react": "^7.27.1",
+    "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "husky": "^7.0.4",
     "lerna": "^4.0.0",
-    "lint-staged": "^12.1.2",
+    "lint-staged": "^12.2.2",
     "madge": "^5.0.1",
     "npm-run-all": "^4.1.5",
-    "parcel": "^2.0.1",
+    "parcel": "^2.2.1",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
     "ts-node": "^10.4.0",
-    "typescript": "^4.5.2"
+    "typescript": "^4.5.5"
   }
 }

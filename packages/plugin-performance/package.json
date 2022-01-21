@@ -1,13 +1,13 @@
 {
-  "name": "@grafana/frontend-agent-plugin-performance",
+  "name": "@grafana/javascript-agent-plugin-performance",
   "version": "0.0.0",
-  "description": "Grafana Frontend Agent plugin for capturing performance data.",
+  "description": "Grafana JavaScript Agent plugin for capturing performance data.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "homepage": "https://github.com/grafana/grafana-frontend-agent",
+  "homepage": "https://github.com/grafana/grafana-javascript-agent",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grafana/grafana-frontend-agent.git",
+    "url": "https://github.com/grafana/grafana-javascript-agent.git",
     "directory": "packages/plugin-performance"
   },
   "type": "module",
@@ -27,6 +27,7 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
-    "@grafana/frontend-agent-core": "^0.0.0"
+    "@grafana/javascript-agent-core": "^0.0.0",
+    "web-vitals": "^2.1.3"
   }
 }

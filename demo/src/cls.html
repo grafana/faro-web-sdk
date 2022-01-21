@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <body>
+    <h1>Grafana JavaScript Agent Demo - CLS Test Page</h1>
+    <hr />
+
+    <a href="./index.html">Home</a> |
+    <a href="./another-page.html">Another page</a>
+    <hr />
+
+    <div id="btn-container">
+      <button>Click me</button>
+    </div>
+    <hr />
+
+    <script src="index.ts" type="module"></script>
+    <script>
+      window.onload = () => {
+        const btnContainer = document.getElementById('btn-container');
+
+        for (let i = 0; i < 1000; i++) {
+          setTimeout(() => {
+            const element = document.createElement('button');
+            element.innerText = `Click me ${i}`;
+            btnContainer.prepend(element);
+          }, i * 10)
+        }
+      };
+    </script>
+  </body>
+</html>

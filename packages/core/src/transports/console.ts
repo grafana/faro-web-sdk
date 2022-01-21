@@ -1,6 +1,7 @@
-import type { TransportItem } from './transports';
+import type { TransportItem } from './types';
+import { getTransportBody } from './utils';
 
 export function consoleTransport(item: TransportItem): void {
   // eslint-disable-next-line no-console
-  console.debug(item);
+  console.debug(getTransportBody(item));
 }
