@@ -8,10 +8,13 @@ function sendAsBeacon(url: string, body: string): void {
   navigator.sendBeacon(url, blobBody);
 }
 
-type RequestOptions = Omit<RequestInit, 'url' | 'body'>;
+type FetchTransportOptions = Omit<RequestInit, 'body'> & {
+  url: string;
+  debug?: boolean;
+};
 
-function sendAsFetch(url: string, body: string, isDebugEnabled = false, options: RequestOptions = {}): void {
-  const { headers, ...restOfOptions } = options;
+function sendAsFetch(body: string, options: FetchTransportOptions): void {
+  const { url, debug, headers, ...restOfOptions } = options;
   fetch(url, {
     method: 'POST',
     headers: {
@@ -22,14 +25,14 @@ function sendAsFetch(url: string, body: string, isDebugEnabled = false, options:
     keepalive: true,
     ...restOfOptions,
   }).catch(() => {
-    if (isDebugEnabled) {
+    if (debug) {
       // eslint-disable-next-line no-console
       console.debug('[GrafanaJavaScriptAgent] Failed sending payload to the receiver', JSON.parse(body));
     }
   }); // the empty callback is required as otherwise the catch will be ignored
 }
 
-export function getFetchTransport(url: string, isDebugEnabled = false, options: RequestOptions = {}): Transport {
+export function getFetchTransport(options: FetchTransportOptions): Transport {
   // TODO: add support for sendBeacon in receiver
   // const sender = !navigator.sendBeacon ? sendAsFetch : sendAsBeacon;
   const sender = sendAsFetch;
@@ -38,7 +41,7 @@ export function getFetchTransport(url: string, isDebugEnabled = false, options: 
     try {
       const body = JSON.stringify(getTransportBody(item));
 
-      sender(url, body, isDebugEnabled, options);
+      sender(body, options);
     } catch (err) {}
   };
 }
