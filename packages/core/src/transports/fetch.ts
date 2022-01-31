@@ -8,14 +8,19 @@ function sendAsBeacon(url: string, body: string): void {
   navigator.sendBeacon(url, blobBody);
 }
 
-function sendAsFetch(url: string, body: string, isDebugEnabled = false): void {
+type RequestOptions = Omit<RequestInit, 'url' | 'body'>;
+
+function sendAsFetch(url: string, body: string, isDebugEnabled = false, options: RequestOptions = {}): void {
+  const { headers, ...restOfOptions } = options;
   fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...headers,
     },
     body,
     keepalive: true,
+    ...restOfOptions,
   }).catch(() => {
     if (isDebugEnabled) {
       // eslint-disable-next-line no-console
@@ -24,7 +29,7 @@ function sendAsFetch(url: string, body: string, isDebugEnabled = false): void {
   }); // the empty callback is required as otherwise the catch will be ignored
 }
 
-export function getFetchTransport(url: string, isDebugEnabled = false): Transport {
+export function getFetchTransport(url: string, isDebugEnabled = false, options: RequestOptions = {}): Transport {
   // TODO: add support for sendBeacon in receiver
   // const sender = !navigator.sendBeacon ? sendAsFetch : sendAsBeacon;
   const sender = sendAsFetch;
@@ -33,7 +38,7 @@ export function getFetchTransport(url: string, isDebugEnabled = false): Transpor
     try {
       const body = JSON.stringify(getTransportBody(item));
 
-      sender(url, body, isDebugEnabled);
+      sender(url, body, isDebugEnabled, options);
     } catch (err) {}
   };
 }
