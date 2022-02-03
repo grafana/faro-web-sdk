@@ -1,34 +1,14 @@
-import { getMessage, getTransportBody, LogLevel } from '@grafana/javascript-agent-core';
+import { allLogLevels, getMessage, getTransportBody, LogLevel } from '@grafana/javascript-agent-core';
 import type { Agent, Plugin } from '@grafana/javascript-agent-core';
 
-/* eslint-disable no-console */
-
-const allLevels: LogLevel[] = [
-  LogLevel.TRACE,
-  LogLevel.DEBUG,
-  LogLevel.INFO,
-  LogLevel.LOG,
-  LogLevel.WARN,
-  LogLevel.ERROR,
-];
-
-const unpatchedConsoleMethods = allLevels.reduce((acc, level) => {
-  acc[level] = console[level];
-
-  return acc;
-}, {} as { [level in LogLevel]: typeof console[level] });
-
-const callUnpatchedConsoleMethod = (level: LogLevel, ...args: unknown[]) => {
-  unpatchedConsoleMethods[level].apply(console, args);
-};
-
 const patchConsoleMethod = (agent: Agent, level: LogLevel) => {
+  /* eslint-disable-next-line no-console */
   console[level] = (...args) => {
     try {
       agent.api.pushLog([], level);
     } catch (err) {
     } finally {
-      callUnpatchedConsoleMethod(level, ...args);
+      agent.api.callOriginalConsoleMethod(level, ...args);
     }
   };
 };
@@ -54,7 +34,7 @@ export default function getPlugin({
 
   if (enableInstrumentation ?? true) {
     plugin.instrumentations = (agent) => {
-      allLevels
+      allLogLevels
         .filter((level) => !(disabledInstrumentationLevels ?? defaultDisabledLevels).includes(level))
         .forEach((level) => patchConsoleMethod(agent, level));
     };
@@ -63,9 +43,9 @@ export default function getPlugin({
   if (enableTransport) {
     const message = getMessage('New event');
 
-    plugin.transports = () => [
+    plugin.transports = (agent) => [
       (item) => {
-        callUnpatchedConsoleMethod(transportLevel ?? LogLevel.DEBUG, message, getTransportBody(item));
+        agent.api.callOriginalConsoleMethod(transportLevel ?? LogLevel.DEBUG, message, getTransportBody(item));
       },
     ];
   }

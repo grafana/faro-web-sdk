@@ -1,5 +1,5 @@
-import { getMessage, getTransportBody } from '@grafana/javascript-agent-core';
 import type { Plugin } from '@grafana/javascript-agent-core';
+import { Agent, getMessage, getTransportBody, LogLevel } from '@grafana/javascript-agent-core';
 
 // @ts-ignore
 function sendAsBeacon(url: string, body: string): void {
@@ -10,7 +10,7 @@ function sendAsBeacon(url: string, body: string): void {
 
 const debugMessage = getMessage('Failed sending payload to the receiver');
 
-function sendAsFetch(body: string, options: FetchTransportPluginOptions): void {
+function sendAsFetch(body: string, options: FetchTransportPluginOptions, agent: Agent): void {
   const { url, debug, requestOptions } = options;
 
   const { headers, ...restOfRequestOptions } = requestOptions ?? {};
@@ -26,8 +26,7 @@ function sendAsFetch(body: string, options: FetchTransportPluginOptions): void {
     ...(restOfRequestOptions ?? {}),
   }).catch(() => {
     if (debug) {
-      // eslint-disable-next-line no-console
-      console.debug(debugMessage, JSON.parse(body));
+      agent.api.callOriginalConsoleMethod(LogLevel.DEBUG, debugMessage, JSON.parse(body));
     }
   });
 }
@@ -49,13 +48,13 @@ export default function getPlugin(options: FetchTransportPluginOptions): Plugin 
 
   return {
     name: '@grafana/javascript-agent-plugin-fetch-transport',
-    transports: () => {
+    transports: (agent) => {
       return [
         (item) => {
           try {
             const body = JSON.stringify(getTransportBody(item));
 
-            sender(body, options);
+            sender(body, options, agent);
           } catch (err) {}
         },
       ];

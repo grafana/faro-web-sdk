@@ -1,4 +1,4 @@
-export { defaultExceptionType, defaultLogLevel, LogLevel } from './api';
+export { allLogLevels, defaultExceptionType, defaultLogLevel, LogLevel } from './api';
 export type {
   API,
   APIEvent,

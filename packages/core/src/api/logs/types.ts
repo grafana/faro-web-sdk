@@ -19,5 +19,6 @@ export interface LogEvent {
 }
 
 export interface LogsAPI {
+  callOriginalConsoleMethod: (level: LogLevel, ...args: unknown[]) => void;
   pushLog: (args: unknown[], level?: LogLevel, context?: LogContext) => void;
 }
