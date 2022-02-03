@@ -15,7 +15,10 @@ const agent = initializeAgent({
     performancePlugin,
     tracingPlugin,
   ],
-  transports: [consoleTransport, getFetchTransport('http://localhost:8080/collect', true)],
+  transports: [
+    consoleTransport,
+    getFetchTransport({ url: 'http://localhost:8080/collect', debug: true, headers: { 'x-api-key': 'my-api-key' } }),
+  ],
 });
 
 agent.api.pushLog(['Manual event from initialized agent']);
