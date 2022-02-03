@@ -14,7 +14,7 @@ const getMarkValue = (indicator: string, agent: Agent) => {
 };
 
 const plugin: Plugin = {
-  name: '@grafana/javascript-agent-plugin-performance',
+  name: '@grafana/javascript-agent-plugin-web-vitals',
   instrumentations: async (agent) => {
     getCLS(getMarkValue('cls', agent));
     getFCP(getMarkValue('fcp', agent));

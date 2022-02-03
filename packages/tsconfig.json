@@ -11,9 +11,10 @@
       "#plugin-browser-meta/*": ["plugin-browser-meta/src/*"],
       "#plugin-console/*": ["plugin-console/src/*"],
       "#plugin-errors/*": ["plugin-errors/src/*"],
+      "#plugin-fetch-transport/*": ["plugin-fetch-transport/src/*"],
       "#plugin-page-meta/*": ["plugin-page-meta/src/*"],
-      "#plugin-performance/*": ["plugin-performance/src/*"],
       "#plugin-tracing/*": ["plugin-tracing/src/*"],
+      "#plugin-web-vitals/*": ["plugin-web-vitals/src/*"],
       "#*": ["*/src"]
     },
     "rootDir": "."

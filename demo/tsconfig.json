@@ -34,15 +34,19 @@
       "prepend": false
     },
     {
+      "path": "../packages/plugin-fetch-transport/tsconfig.json",
+      "prepend": false
+    },
+    {
       "path": "../packages/plugin-page-meta/tsconfig.json",
       "prepend": false
     },
     {
-      "path": "../packages/plugin-performance/tsconfig.json",
+      "path": "../packages/plugin-tracing/tsconfig.json",
       "prepend": false
     },
     {
-      "path": "../packages/plugin-tracing/tsconfig.json",
+      "path": "../packages/plugin-web-vitals/tsconfig.json",
       "prepend": false
     }
   ]

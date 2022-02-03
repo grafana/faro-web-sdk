@@ -1,14 +1,14 @@
 {
-  "name": "@grafana/javascript-agent-plugin-performance",
+  "name": "@grafana/javascript-agent-plugin-web-vitals",
   "version": "0.0.0",
-  "description": "Grafana JavaScript Agent plugin for capturing performance data.",
+  "description": "Grafana JavaScript Agent plugin which collects web vitals metrics from the app.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
   "homepage": "https://github.com/grafana/grafana-javascript-agent",
   "repository": {
     "type": "git",
     "url": "https://github.com/grafana/grafana-javascript-agent.git",
-    "directory": "packages/plugin-performance"
+    "directory": "packages/plugin-web-vitals"
   },
   "type": "module",
   "main": "dist/index.js",
@@ -23,11 +23,13 @@
     "quality": "run-s quality:*",
     "quality:test": "exit 0",
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
-    "quality:lint": "eslint \"src/**/*.ts\"",
+    "quality:lint": "run-s quality:lint:*",
+    "quality:lint:ts": "eslint \"src/**/*.ts\"",
+    "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
     "@grafana/javascript-agent-core": "^0.0.0",
-    "web-vitals": "^2.1.3"
+    "web-vitals": "^2.1.4"
   }
 }

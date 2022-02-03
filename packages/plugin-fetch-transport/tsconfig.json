@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.build-cache/plugin-performance.tsbuildinfo"
+    "tsBuildInfoFile": "../../.build-cache/plugin-fetch-transport.tsbuildinfo"
   },
   "include": ["./src"],
   "references": [

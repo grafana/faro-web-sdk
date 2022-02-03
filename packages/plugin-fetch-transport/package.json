@@ -1,14 +1,14 @@
 {
-  "name": "@grafana/javascript-agent-plugin-browser-meta",
+  "name": "@grafana/javascript-agent-plugin-fetch-transport",
   "version": "0.0.0",
-  "description": "Grafana JavaScript Agent plugin for collecting details about the browser, operating system and device type.",
+  "description": "Grafana JavaScript Agent plugin for sending the data to a specific URL.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
   "homepage": "https://github.com/grafana/grafana-javascript-agent",
   "repository": {
     "type": "git",
     "url": "https://github.com/grafana/grafana-javascript-agent.git",
-    "directory": "packages/plugin-browser-meta"
+    "directory": "packages/plugin-fetch-transport"
   },
   "type": "module",
   "main": "dist/index.js",
@@ -28,11 +28,7 @@
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
-  "devDependencies": {
-    "@types/ua-parser-js": "^0.7.36"
-  },
   "dependencies": {
-    "@grafana/javascript-agent-core": "^0.0.0",
-    "ua-parser-js": "^1.0.2"
+    "@grafana/javascript-agent-core": "^0.0.0"
   }
 }

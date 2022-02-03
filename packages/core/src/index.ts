@@ -20,7 +20,7 @@ export type { Meta, MetaGetter, MetaMap, MetaMapLike, MetaValues } from './meta'
 
 export type { Plugin } from './plugins';
 
-export { consoleTransport, getFetchTransport, getTransportBody, TransportItemType } from './transports';
+export { getTransportBody, TransportItemType } from './transports';
 export type { Transport, TransportBody, TransportItem, TransportItemPayload, Transports } from './transports';
 
 export * from './utils';

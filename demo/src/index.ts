@@ -1,23 +1,29 @@
-import { consoleTransport, getFetchTransport, initializeAgent, LogLevel } from '@grafana/javascript-agent-core';
+import { initializeAgent } from '@grafana/javascript-agent-core';
 import browserMetaPlugin from '@grafana/javascript-agent-plugin-browser-meta';
 import getConsolePlugin from '@grafana/javascript-agent-plugin-console';
 import errorsPlugin from '@grafana/javascript-agent-plugin-errors';
+import getFetchTransportPlugin from '@grafana/javascript-agent-plugin-fetch-transport';
 import pageMetaPlugin from '@grafana/javascript-agent-plugin-page-meta';
-import performancePlugin from '@grafana/javascript-agent-plugin-performance';
 import tracingPlugin from '@grafana/javascript-agent-plugin-tracing';
+import webVitalsPlugin from '@grafana/javascript-agent-plugin-web-vitals';
 
 const agent = initializeAgent({
   plugins: [
     browserMetaPlugin,
-    getConsolePlugin([LogLevel.DEBUG]),
+    getConsolePlugin({
+      enableTransport: true,
+    }),
+    getFetchTransportPlugin({
+      url: 'http://localhost:8080/collect',
+      debug: true,
+      requestOptions: {
+        headers: { 'x-api-key': 'my-api-key' },
+      },
+    }),
     errorsPlugin,
     pageMetaPlugin,
-    performancePlugin,
     tracingPlugin,
-  ],
-  transports: [
-    consoleTransport,
-    getFetchTransport({ url: 'http://localhost:8080/collect', debug: true, headers: { 'x-api-key': 'my-api-key' } }),
+    webVitalsPlugin,
   ],
 });
 
