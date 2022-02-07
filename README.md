@@ -43,9 +43,9 @@ file provides an overview of the architecture and the API of library.
 
 ### Integrations
 
-1. [@grafana/javascript-agent-integration](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/integration-angular)
+1. [@grafana/javascript-agent-integration-angular](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/integration-angular)
    is a package that enables easier integration in projects built with Angular. FOR THE TIME BEING
    THIS PACKAGE IS A PLACEHOLDER.
-1. [@grafana/javascript-agent-transport-fetch](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/transport-fetch)
+1. [@grafana/javascript-agent-integration-react](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/transport-fetch)
    is a package that enables easier integration in projects built with React. FOR THE TIME BEING
    THIS PACKAGE IS A PLACEHOLDER.
