@@ -24,6 +24,6 @@ const agent = initializeAgent({
 
 The package supports an optional configuration parameter.
 
-| Property         | Description                                  | Type         | Default Value                    |
-| ---------------- | -------------------------------------------- | ------------ | -------------------------------- |
-| `disabledLevels` | An array of levels to ignore while capturing | `LogLevel[]` | `[LogLevel.LOG, LogLevel.DEBUG]` |
+| Property         | Description                                  | Type         | Optional | Default Value                    |
+| ---------------- | -------------------------------------------- | ------------ | -------- | -------------------------------- |
+| `disabledLevels` | An array of levels to ignore while capturing | `LogLevel[]` | Y        | `[LogLevel.LOG, LogLevel.DEBUG]` |

@@ -20,6 +20,6 @@ const agent = initializeAgent({
 
 The packges supports an optional configuration parameter.
 
-| Property | Description                             | Type       | Default Value    |
-| -------- | --------------------------------------- | ---------- | ---------------- |
-| `level`  | A level to use when printing the events | `LogLevel` | `LogLevel.DEBUG` |
+| Property | Description                             | Type       | Optional | Default Value    |
+| -------- | --------------------------------------- | ---------- | -------- | ---------------- |
+| `level`  | A level to use when printing the events | `LogLevel` | Y        | `LogLevel.DEBUG` |

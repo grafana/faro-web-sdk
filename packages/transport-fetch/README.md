@@ -23,8 +23,8 @@ const agent = initializeAgent({
 
 The package needs a configuration object in order to pass the `url` but the rest of the options are optional:
 
-| Property         | Description                                                        | Type                           | Default Value |
-| ---------------- | ------------------------------------------------------------------ | ------------------------------ | ------------- |
-| `url`            | The URL to the backend service                                     | `string`                       | `undefined`   |
-| `debug`          | Flag to enable or disable the debug mode for the current transport | `boolean`                      | `false`       |
-| `requestOptions` | An object to pass to the request (i.e. headers, method etc.)       | `FetchTransportRequestOptions` | `undefined`   |
+| Property         | Description                                                        | Type                           | Optional | Default Value |
+| ---------------- | ------------------------------------------------------------------ | ------------------------------ | -------- | ------------- |
+| `url`            | The URL to the backend service                                     | `string`                       | N        | `undefined`   |
+| `debug`          | Flag to enable or disable the debug mode for the current transport | `boolean`                      | Y        | `false`       |
+| `requestOptions` | An object to pass to the request (i.e. headers, method etc.)       | `FetchTransportRequestOptions` | Y        | `undefined`   |
