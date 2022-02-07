@@ -14,7 +14,7 @@ const agent = initializeAgent({
     tracingInstrumentation,
     webVitalsInstrumentation,
   ],
-  meta: [browserMeta, pageMeta],
+  metas: [browserMeta, pageMeta],
   transports: [
     getConsoleInstrumentation(),
     getFetchTransport({
