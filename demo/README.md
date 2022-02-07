@@ -1,8 +1,6 @@
 # Grafana JavaScript Agent Demo
 
-This small project demonstrates how to use the Grafana JavaScript Agent and its plugins.
-
----
+This small project demonstrates how to use the Grafana JavaScript Agent and its packages.
 
 ## Installation
 

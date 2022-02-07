@@ -14,6 +14,22 @@
       "prepend": false
     },
     {
+      "path": "../packages/instrumentation-console/tsconfig.json",
+      "prepend": false
+    },
+    {
+      "path": "../packages/instrumentation-errors/tsconfig.json",
+      "prepend": false
+    },
+    {
+      "path": "../packages/instrumentation-tracing/tsconfig.json",
+      "prepend": false
+    },
+    {
+      "path": "../packages/instrumentation-web-vitals/tsconfig.json",
+      "prepend": false
+    },
+    {
       "path": "../packages/integration-angular/tsconfig.json",
       "prepend": false
     },
@@ -22,31 +38,19 @@
       "prepend": false
     },
     {
-      "path": "../packages/plugin-browser-meta/tsconfig.json",
+      "path": "../packages/meta-browser/tsconfig.json",
       "prepend": false
     },
     {
-      "path": "../packages/plugin-console/tsconfig.json",
+      "path": "../packages/meta-page/tsconfig.json",
       "prepend": false
     },
     {
-      "path": "../packages/plugin-errors/tsconfig.json",
+      "path": "../packages/transport-console/tsconfig.json",
       "prepend": false
     },
     {
-      "path": "../packages/plugin-fetch-transport/tsconfig.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/plugin-page-meta/tsconfig.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/plugin-tracing/tsconfig.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/plugin-web-vitals/tsconfig.json",
+      "path": "../packages/transport-fetch/tsconfig.json",
       "prepend": false
     }
   ]

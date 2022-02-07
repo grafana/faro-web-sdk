@@ -25,13 +25,14 @@
   },
   "dependencies": {
     "@grafana/javascript-agent-core": "^0.0.0",
-    "@grafana/javascript-agent-plugin-browser-meta": "^0.0.0",
-    "@grafana/javascript-agent-plugin-console": "^0.0.0",
-    "@grafana/javascript-agent-plugin-errors": "^0.0.0",
-    "@grafana/javascript-agent-plugin-fetch-transport": "^0.0.0",
-    "@grafana/javascript-agent-plugin-page-meta": "^0.0.0",
-    "@grafana/javascript-agent-plugin-tracing": "^0.0.0",
-    "@grafana/javascript-agent-plugin-web-vitals": "^0.0.0"
+    "@grafana/javascript-agent-instrumentation-console": "^0.0.0",
+    "@grafana/javascript-agent-instrumentation-errors": "^0.0.0",
+    "@grafana/javascript-agent-instrumentation-tracing": "^0.0.0",
+    "@grafana/javascript-agent-instrumentation-web-vitals": "^0.0.0",
+    "@grafana/javascript-agent-meta-browser": "^0.0.0",
+    "@grafana/javascript-agent-meta-page": "^0.0.0",
+    "@grafana/javascript-agent-transport-console": "^0.0.0",
+    "@grafana/javascript-agent-transport-fetch": "^0.0.0"
   },
   "devDependencies": {
     "parcel": "^2.2.1"

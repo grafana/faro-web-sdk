@@ -1,10 +1,10 @@
-import type { Meta } from '../../meta';
+import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
 import type { MeasurementsAPI } from './types';
 
-export function initializeMeasurements(transports: Transports, meta: Meta): MeasurementsAPI {
+export function initializeMeasurements(transports: Transports, metas: Metas): MeasurementsAPI {
   const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload) => {
     transports.execute({
       type: TransportItemType.MEASUREMENT,
@@ -12,7 +12,7 @@ export function initializeMeasurements(transports: Transports, meta: Meta): Meas
         ...payload,
         timestamp: getCurrentTimestamp(),
       },
-      meta: meta.values,
+      meta: metas.value,
     });
   };
 

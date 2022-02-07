@@ -1,11 +1,11 @@
-import type { Meta } from '../../meta';
+import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
 import { defaultLogLevel, originalConsoleMethods } from './const';
 import type { LogsAPI } from './types';
 
-export function initializeLogs(transports: Transports, meta: Meta): LogsAPI {
+export function initializeLogs(transports: Transports, metas: Metas): LogsAPI {
   const pushLog: LogsAPI['pushLog'] = (args, level = defaultLogLevel, context = {}) => {
     try {
       transports.execute({
@@ -24,7 +24,7 @@ export function initializeLogs(transports: Transports, meta: Meta): LogsAPI {
           context,
           timestamp: getCurrentTimestamp(),
         },
-        meta: meta.values,
+        meta: metas.value,
       });
     } catch (err) {}
   };

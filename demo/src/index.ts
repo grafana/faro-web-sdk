@@ -1,29 +1,29 @@
 import { initializeAgent } from '@grafana/javascript-agent-core';
-import browserMetaPlugin from '@grafana/javascript-agent-plugin-browser-meta';
-import getConsolePlugin from '@grafana/javascript-agent-plugin-console';
-import errorsPlugin from '@grafana/javascript-agent-plugin-errors';
-import getFetchTransportPlugin from '@grafana/javascript-agent-plugin-fetch-transport';
-import pageMetaPlugin from '@grafana/javascript-agent-plugin-page-meta';
-import tracingPlugin from '@grafana/javascript-agent-plugin-tracing';
-import webVitalsPlugin from '@grafana/javascript-agent-plugin-web-vitals';
+import getConsoleInstrumentation from '@grafana/javascript-agent-instrumentation-console';
+import errorsInstrumentation from '@grafana/javascript-agent-instrumentation-errors';
+import tracingInstrumentation from '@grafana/javascript-agent-instrumentation-tracing';
+import webVitalsInstrumentation from '@grafana/javascript-agent-instrumentation-web-vitals';
+import browserMeta from '@grafana/javascript-agent-meta-browser';
+import pageMeta from '@grafana/javascript-agent-meta-page';
+import getFetchTransport from '@grafana/javascript-agent-transport-fetch';
 
 const agent = initializeAgent({
-  plugins: [
-    browserMetaPlugin,
-    getConsolePlugin({
-      enableTransport: true,
-    }),
-    getFetchTransportPlugin({
+  instrumentations: [
+    getConsoleInstrumentation(),
+    errorsInstrumentation,
+    tracingInstrumentation,
+    webVitalsInstrumentation,
+  ],
+  meta: [browserMeta, pageMeta],
+  transports: [
+    getConsoleInstrumentation(),
+    getFetchTransport({
       url: 'http://localhost:8080/collect',
       debug: true,
       requestOptions: {
         headers: { 'x-api-key': 'my-api-key' },
       },
     }),
-    errorsPlugin,
-    pageMetaPlugin,
-    tracingPlugin,
-    webVitalsPlugin,
   ],
 });
 

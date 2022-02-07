@@ -1,4 +1,4 @@
-import type { Meta } from '../meta';
+import type { Metas } from '../metas';
 import type { Transports } from '../transports';
 import { initializeExceptions } from './exceptions';
 import { initializeLogs } from './logs';
@@ -6,11 +6,11 @@ import { initializeMeasurements } from './measurements';
 import { initializeTraces } from './traces';
 import type { API } from './types';
 
-export function initializeAPI(transports: Transports, meta: Meta): API {
+export function initializeAPI(transports: Transports, metas: Metas): API {
   return {
-    ...initializeExceptions(transports, meta),
-    ...initializeLogs(transports, meta),
-    ...initializeMeasurements(transports, meta),
-    ...initializeTraces(transports, meta),
+    ...initializeExceptions(transports, metas),
+    ...initializeLogs(transports, metas),
+    ...initializeMeasurements(transports, metas),
+    ...initializeTraces(transports, metas),
   };
 }

@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.build-cache/transport-console.tsbuildinfo"
+  },
+  "include": ["./src"],
+  "references": [
+    {
+      "path": "../core/tsconfig.json",
+      "prepend": false
+    }
+  ]
+}

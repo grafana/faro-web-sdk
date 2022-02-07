@@ -1,15 +1,15 @@
-import type { Meta } from '../../meta';
+import type { Metas } from '../../metas';
 import type { TransportItem, Transports } from '../../transports';
 import { TransportItemType } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
 import { defaultExceptionType } from './const';
 import type { ExceptionEvent, ExceptionsAPI } from './types';
 
-export function initializeExceptions(transports: Transports, meta: Meta): ExceptionsAPI {
+export function initializeExceptions(transports: Transports, metas: Metas): ExceptionsAPI {
   const pushException: ExceptionsAPI['pushException'] = (value, type = defaultExceptionType, stackFrames = []) => {
     try {
       const item: TransportItem<ExceptionEvent> = {
-        meta: meta.values,
+        meta: metas.value,
         payload: {
           type,
           value,

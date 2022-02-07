@@ -1,11 +1,13 @@
-import type { Plugin } from '../plugins';
+import type { Instrumentation } from '../instrumentations';
+import type { Meta } from '../metas';
 import type { Transport } from '../transports';
 
 export interface Config {
   globalObjectKey: string;
-  plugins: Plugin[];
+  instrumentations: Instrumentation[];
+  metas: Meta[];
   preventGlobalExposure: boolean;
   transports: Transport[];
 }
 
-export type UserConfig = Partial<Config> & Pick<Config, 'plugins'>;
+export type UserConfig = Partial<Config> & Pick<Config, 'instrumentations'>;

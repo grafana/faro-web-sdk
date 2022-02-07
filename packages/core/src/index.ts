@@ -16,9 +16,9 @@ export type { Agent } from './types';
 
 export type { Config, UserConfig } from './config';
 
-export type { Meta, MetaGetter, MetaMap, MetaMapLike, MetaValues } from './meta';
+export type { Instrumentation } from './instrumentations';
 
-export type { Plugin } from './plugins';
+export type { Meta, MetaGetter, Metas, MetasMap, MetasValue } from './metas';
 
 export { getTransportBody, TransportItemType } from './transports';
 export type { Transport, TransportBody, TransportItem, TransportItemPayload, Transports } from './transports';
