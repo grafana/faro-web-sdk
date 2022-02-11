@@ -112,13 +112,30 @@ The `api` property on the agent contains all the necessary methods to push new e
 
 #### Instrumentations
 
-Instrumentations are packages that leverage the agent API to provide automatic mechanisms for collecting data.
+Instrumentations are packages that leverage the agent API to provide automatic mechanisms for collecting data. They are
+just simple functions that are executed when the agent is initialized.
 
 Please note that the `core` package does not contain any instrumentations out of the box and they should be provided by
 external packages like [@grafana/javascript-agent-instrumentation-console](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-console),
 [@grafana/javascript-agent-instrumentation-errors](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-errors),
 [@grafana/javascript-agent-instrumentation-tracing](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-tracing)
 and [@grafana/javascript-agent-instrumentation-web-vitals](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-web-vitals).
+
+You can also write your own instrumentations:
+
+```ts
+import { agent, initializeAgent } from '@grafana/javascript-agent-core';
+
+initializeAgent({
+  instrumentations: [
+    () => {
+      const myLog = 'asdf';
+
+      agent.api.pushLog([myLog]);
+    },
+  ],
+});
+```
 
 #### Metas
 
@@ -128,6 +145,34 @@ Out of the box, only one meta is provided: `sdk` which contains information abou
 metas can be provided by external packages like [@grafana/javascript-agent-meta-browser](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/meta-browser)
 and [@grafana/javascript-agent-meta-page](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/meta-page).
 
+You can also define your own metas:
+
+```ts
+import { agent, initializeAgent } from '@grafana/javascript-agent-core';
+
+initializeAgent({
+  metas: [
+    () => {
+      // Here you can do some one-time processing when the meta initializes
+      // This way you can "cache" the data and then return it
+      const appData = {
+        name: 'my-app',
+        version: '1.0.0',
+      };
+
+      return {
+        app: () => appData,
+        // This meta will always be computed since the values can change
+        viewPort: () => ({
+          height: window.innerHeight,
+          width: window.innerWidth,
+        }),
+      };
+    },
+  ],
+});
+```
+
 #### Transports
 
 Transports are functions that will be called for every event that is triggered by the API. They are used to do
@@ -136,3 +181,18 @@ something with the data after collecting it.
 Out of the box, no transports are provided in the `core` package and they should be provided by external packages like
 [@grafana/javascript-agent-transport-console](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/transport-console)
 and [@grafana/javascript-agent-transport-fetch](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/transport-fetch).
+
+You can also define your own transports:
+
+```ts
+import { agent, initializeAgent } from '@grafana/javascript-agent-core';
+
+initializeAgent({
+  transports: [
+    (item) => {
+      // Do something with the data
+      console.log(item);
+    },
+  ],
+});
+```
