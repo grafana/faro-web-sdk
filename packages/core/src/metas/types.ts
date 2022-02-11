@@ -2,11 +2,13 @@ import type { BaseObject, BaseObjectKey } from '../utils';
 
 export type MetaGetter = () => BaseObject;
 
-export type MetasMap = Map<BaseObjectKey, MetaGetter>;
+export type MetasMap = Map<BaseObjectKey, MetaGetter | BaseObject>;
 
-export type Meta = () => {
-  [key: BaseObjectKey]: MetaGetter;
-};
+export type Meta =
+  | BaseObject
+  | (() => {
+      [key: BaseObjectKey]: MetaGetter | BaseObject;
+    });
 
 export type MetasValue = BaseObject;
 

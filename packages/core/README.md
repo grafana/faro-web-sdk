@@ -152,17 +152,33 @@ import { agent, initializeAgent } from '@grafana/javascript-agent-core';
 
 initializeAgent({
   metas: [
-    () => {
-      // Here you can do some one-time processing when the meta initializes
-      // This way you can "cache" the data and then return it
-      const appData = {
+    // Define a static meta
+    {
+      app: {
         name: 'my-app',
         version: '1.0.0',
+      },
+    },
+
+    // Define a meta which does some instant value computation
+    {
+      viewPort: () => ({
+        height: window.innerHeight,
+        width: window.innerWidth,
+      }),
+    },
+
+    // Define a meta which caches some values on initialization
+    () => {
+      const initialViewport = {
+        height: window.innerHeight,
+        width: window.innerWidth,
       };
 
       return {
-        app: () => appData,
-        // This meta will always be computed since the values can change
+        initialViewport,
+
+        // You can also define instant metas here
         viewPort: () => ({
           height: window.innerHeight,
           width: window.innerWidth,

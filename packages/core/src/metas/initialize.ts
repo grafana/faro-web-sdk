@@ -1,4 +1,5 @@
 import type { Config } from '../config';
+import { isFunction } from '../utils';
 import type { Metas, MetasMap } from './types';
 
 export function initializeMetas(config: Config): Metas {
@@ -20,7 +21,9 @@ export function initializeMetas(config: Config): Metas {
   }));
 
   config.metas.forEach((meta) => {
-    Object.entries(meta()).forEach(([key, getter]) => {
+    const metaValues = isFunction(meta) ? meta() : meta;
+
+    Object.entries(metaValues).forEach(([key, getter]) => {
       add(key, getter);
     });
   });
@@ -30,7 +33,12 @@ export function initializeMetas(config: Config): Metas {
     map,
     remove,
     get value() {
-      return Object.fromEntries(Array.from(map.entries()).map(([key, valueGetter]) => [key, valueGetter()]));
+      return Object.fromEntries(
+        Array.from(map.entries()).map(([key, valueGetter]) => [
+          key,
+          isFunction(valueGetter) ? valueGetter() : valueGetter,
+        ])
+      );
     },
   };
 }
