@@ -1,11 +1,11 @@
 import type { API } from './api';
 import type { Config } from './config';
-import type { Meta } from './meta';
+import type { Metas } from './metas';
 import type { Transports } from './transports';
 
 export interface Agent {
   api: API;
   config: Config;
-  meta: Meta;
+  metas: Metas;
   transports: Transports;
 }

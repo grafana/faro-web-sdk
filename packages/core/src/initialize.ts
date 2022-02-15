@@ -1,37 +1,27 @@
 import { initializeAPI } from './api';
 import { initializeConfig } from './config';
 import type { UserConfig } from './config';
-import { initializeMeta } from './meta';
-import { initializePlugins } from './plugins';
+import { initializeInstrumentations } from './instrumentations';
+import { initializeMetas } from './metas';
 import { initializeTransports } from './transports';
 import type { Agent } from './types';
 import { globalObject } from './utils';
 
-export let agent: Agent;
+export let agent: Agent = {} as Agent;
 
 export function initializeAgent(userConfig: UserConfig): Agent {
-  const config = initializeConfig(userConfig);
+  agent.config = initializeConfig(userConfig);
+  agent.metas = initializeMetas(agent.config);
+  agent.transports = initializeTransports(agent.config);
+  agent.api = initializeAPI(agent.transports, agent.metas);
 
-  const meta = initializeMeta();
-
-  const transports = initializeTransports(config);
-
-  const api = initializeAPI(transports, meta);
-
-  agent = {
-    api,
-    config,
-    meta,
-    transports,
-  };
-
-  if (!config.preventGlobalExposure) {
-    Object.defineProperty(globalObject, config.globalObjectKey, {
+  if (!agent.config.preventGlobalExposure) {
+    Object.defineProperty(globalObject, agent.config.globalObjectKey, {
       value: agent,
     });
   }
 
-  initializePlugins(agent);
+  initializeInstrumentations(agent.config);
 
   return agent;
 }

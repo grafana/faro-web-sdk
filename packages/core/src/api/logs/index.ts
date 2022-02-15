@@ -1,4 +1,4 @@
-export { defaultLogLevel } from './const';
+export { allLogLevels, defaultLogLevel } from './const';
 
 export { initializeLogs } from './initialize';
 

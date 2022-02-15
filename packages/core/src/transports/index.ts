@@ -1,7 +1,3 @@
-export { consoleTransport } from './console';
-
-export { getFetchTransport } from './fetch';
-
 export { initializeTransports } from './initialize';
 
 export { TransportItemType } from './types';

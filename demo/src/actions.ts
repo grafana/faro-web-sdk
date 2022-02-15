@@ -37,6 +37,6 @@ function sendCustomMetric() {
   });
 }
 
-window.onload = () => {
-  (window as any).grafanaJavasScriptAgent.api.pushLog(['Manual event from Home']);
-};
+window.addEventListener('load', () => {
+  (window as any).grafanaJavaScriptAgent.api.pushLog(['Manual event from Home']);
+});
