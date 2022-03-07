@@ -25,6 +25,8 @@ export const isString = ((value) => isTypeof(value, 'string')) as IsFnHelper<str
 export const isNumber = ((value) =>
   (isTypeof<number>(value, 'number') && !isNaN(value)) || isTypeof(value, 'bigint')) as IsFnHelper<number | bigint>;
 
+export const isInt = ((value) => isNumber(value) && Number.isInteger(value)) as IsFnHelper<number>;
+
 export const isBoolean = ((value) => isTypeof(value, 'boolean')) as IsFnHelper<boolean>;
 
 export const isSymbol = ((value) => isTypeof(value, 'symbol')) as IsFnHelper<Symbol>;

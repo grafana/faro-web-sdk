@@ -9,7 +9,7 @@ import { buildStackFrame } from './stackFrames';
 export function registerOnerror(agent: Agent): void {
   // The error event is a little bit different than other events when it comes to the listener
   // window.addEventListener does not provide all parameters, hence we need to use the window.onerror syntax
-  // To be investigated: https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror
+  // TODO: investigate https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror
 
   window.onerror = (event, source, lineno, colno, error) => {
     let value: string | undefined;
@@ -30,7 +30,7 @@ export function registerOnerror(agent: Agent): void {
     }
 
     if (value) {
-      agent.api.pushException(value, type, stackFrames);
+      agent.api.pushException(value, { type, stackFrames });
     }
   };
 }

@@ -1,14 +1,14 @@
 import type { Metas } from '../../metas';
-import { TransportItemType } from '../../transports';
+import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
 import { defaultLogLevel, originalConsoleMethods } from './const';
-import type { LogsAPI } from './types';
+import type { LogEvent, LogsAPI } from './types';
 
 export function initializeLogs(transports: Transports, metas: Metas): LogsAPI {
-  const pushLog: LogsAPI['pushLog'] = (args, level = defaultLogLevel, context = {}) => {
+  const pushLog: LogsAPI['pushLog'] = (args, { context, level, span } = {}) => {
     try {
-      transports.execute({
+      const item: TransportItem<LogEvent> = {
         type: TransportItemType.LOG,
         payload: {
           message: args
@@ -20,13 +20,24 @@ export function initializeLogs(transports: Transports, metas: Metas): LogsAPI {
               }
             })
             .join(' '),
-          level,
-          context,
+          level: level ?? defaultLogLevel,
+          context: context ?? {},
           timestamp: getCurrentTimestamp(),
         },
         meta: metas.value,
-      });
-    } catch (err) {}
+      };
+
+      if (span) {
+        item.payload.trace = {
+          trace_id: span.getTraceId(),
+          span_id: span.getId(),
+        };
+      }
+
+      transports.execute(item);
+    } catch (err) {
+      // TODO: Add proper logging when debug is enabled
+    }
   };
 
   const callOriginalConsoleMethod: LogsAPI['callOriginalConsoleMethod'] = (level, ...args) => {

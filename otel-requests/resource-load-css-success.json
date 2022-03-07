@@ -1,0 +1,137 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "unknown_service"
+            }
+          },
+          {
+            "key": "telemetry.sdk.language",
+            "value": {
+              "stringValue": "webjs"
+            }
+          },
+          {
+            "key": "telemetry.sdk.name",
+            "value": {
+              "stringValue": "opentelemetry"
+            }
+          },
+          {
+            "key": "telemetry.sdk.version",
+            "value": {
+              "stringValue": "1.0.1"
+            }
+          }
+        ],
+        "droppedAttributesCount": 0
+      },
+      "instrumentationLibrarySpans": [
+        {
+          "spans": [
+            {
+              "traceId": "2d6f18da2663c7e477df23d8a8ad95b7",
+              "spanId": "72444df4c78187a0",
+              "parentSpanId": "9d9da6529d56706c",
+              "name": "resourceFetch",
+              "kind": 1,
+              "startTimeUnixNano": 1646228314383100200,
+              "endTimeUnixNano": 1646228314393800000,
+              "attributes": [
+                {
+                  "key": "component",
+                  "value": {
+                    "stringValue": "document-load"
+                  }
+                },
+                {
+                  "key": "http.url",
+                  "value": {
+                    "stringValue": "http://localhost:1234/index.c8e21b54.css"
+                  }
+                },
+                {
+                  "key": "http.response_content_length",
+                  "value": {
+                    "intValue": 76
+                  }
+                }
+              ],
+              "droppedAttributesCount": 0,
+              "events": [
+                {
+                  "timeUnixNano": 1646228314383100200,
+                  "name": "fetchStart",
+                  "attributes": [],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": 1646228314383100200,
+                  "name": "domainLookupStart",
+                  "attributes": [],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": 1646228314383100200,
+                  "name": "domainLookupEnd",
+                  "attributes": [],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": 1646228314383100200,
+                  "name": "connectStart",
+                  "attributes": [],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": 1646228314330100000,
+                  "name": "secureConnectionStart",
+                  "attributes": [],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": 1646228314383100200,
+                  "name": "connectEnd",
+                  "attributes": [],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": 1646228314387600100,
+                  "name": "requestStart",
+                  "attributes": [],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": 1646228314391900200,
+                  "name": "responseStart",
+                  "attributes": [],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": 1646228314393800000,
+                  "name": "responseEnd",
+                  "attributes": [],
+                  "droppedAttributesCount": 0
+                }
+              ],
+              "droppedEventsCount": 0,
+              "status": {
+                "code": 0
+              },
+              "links": [],
+              "droppedLinksCount": 0
+            }
+          ],
+          "instrumentationLibrary": {
+            "name": "@opentelemetry/instrumentation-document-load",
+            "version": "0.27.1"
+          }
+        }
+      ]
+    }
+  ]
+}

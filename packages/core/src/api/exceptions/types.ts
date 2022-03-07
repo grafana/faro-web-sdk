@@ -1,3 +1,5 @@
+import type { Span } from '../traces';
+
 export interface ExceptionStackFrame {
   filename: string;
   function: string;
@@ -14,8 +16,18 @@ export interface ExceptionEvent {
   stacktrace?: {
     frames: ExceptionStackFrame[];
   };
+  trace?: {
+    trace_id: string;
+    span_id: string;
+  };
+}
+
+export interface PushExceptionOptions {
+  span?: Span;
+  stackFrames?: ExceptionStackFrame[];
+  type?: string;
 }
 
 export interface ExceptionsAPI {
-  pushException: (value: string, type?: string, stackFrames?: ExceptionStackFrame[]) => void;
+  pushException: (value: string, options?: PushExceptionOptions) => void;
 }

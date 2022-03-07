@@ -30,6 +30,6 @@
     "@grafana/agent-web": "^0.1.6"
   },
   "devDependencies": {
-    "parcel": "^2.2.1"
+    "parcel": "^2.3.2"
   }
 }
