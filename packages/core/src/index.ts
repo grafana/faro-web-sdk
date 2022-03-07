@@ -1,15 +1,31 @@
 export { agent } from './agent';
 
-export { allLogLevels, defaultExceptionType, defaultLogLevel, LogLevel } from './api';
+export { allLogLevels, defaultExceptionType, defaultLogLevel, LogLevel, SpanKind, SpanStatusCode } from './api';
 export type {
   API,
   APIEvent,
   ExceptionEvent,
   ExceptionStackFrame,
+  GetNewSpanOptions,
+  InstrumentationLibrary,
+  InstrumentationLibrarySpan,
+  InstrumentationLibrarySpanEvent,
+  InstrumentationLibrarySpanLink,
+  KeyValue,
+  KeyValueValue,
   LogContext,
   LogEvent,
   MeasurementEvent,
+  Resource,
+  ResourceSpan,
+  Span,
+  SpanAttributes,
+  SpanAttributeValue,
+  SpanGeneralAttributes,
+  SpanHttpAttributes,
+  SpanStatus,
   TraceEvent,
+  TraceEventSpan,
 } from './api';
 
 export { initializeAgent } from './initialize';

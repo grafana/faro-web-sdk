@@ -1,6 +1,8 @@
 export type BaseObjectKey = string | number;
 
-export type BaseObjectValue = string | number | boolean | null | undefined | BaseObject | BaseObjectValue[];
+export type BaseObjectPrimitiveValue = string | number | boolean | null | undefined;
+
+export type BaseObjectValue = BaseObjectPrimitiveValue | BaseObject | BaseObjectPrimitiveValue[];
 
 export interface BaseObject {
   [key: BaseObjectKey]: BaseObjectValue;

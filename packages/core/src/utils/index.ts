@@ -7,3 +7,5 @@ export * from './globalObject';
 export * from './is';
 
 export * from './prefixAgentMessage';
+
+export * from './randomId';

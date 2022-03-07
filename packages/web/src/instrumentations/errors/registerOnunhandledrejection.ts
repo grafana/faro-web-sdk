@@ -25,7 +25,7 @@ export function registerOnunhandledrejection(agent: Agent): void {
     }
 
     if (value) {
-      agent.api.pushException(value, type);
+      agent.api.pushException(value, { type });
     }
   });
 }

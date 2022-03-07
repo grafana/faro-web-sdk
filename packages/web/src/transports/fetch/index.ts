@@ -8,8 +8,9 @@ export interface FetchTransportRequestOptions extends Omit<RequestInit, 'body' |
 
 export interface FetchTransportOptions {
   url: string;
+
   debug?: boolean;
-  requestOptions: FetchTransportRequestOptions;
+  requestOptions?: FetchTransportRequestOptions;
 }
 
 export class FetchTransport extends BaseTransport {

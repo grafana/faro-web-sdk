@@ -1,0 +1,135 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "unknown_service"
+            }
+          },
+          {
+            "key": "telemetry.sdk.language",
+            "value": {
+              "stringValue": "webjs"
+            }
+          },
+          {
+            "key": "telemetry.sdk.name",
+            "value": {
+              "stringValue": "opentelemetry"
+            }
+          },
+          {
+            "key": "telemetry.sdk.version",
+            "value": {
+              "stringValue": "1.0.1"
+            }
+          }
+        ],
+        "droppedAttributesCount": 0
+      },
+      "instrumentationLibrarySpans": [
+        {
+          "spans": [
+            {
+              "traceId": "9ff6873f4cd09cb2ffdc736777a41080",
+              "spanId": "67e579ff2b0855b5",
+              "name": "longtask",
+              "kind": 1,
+              "startTimeUnixNano": 1646228314701300000,
+              "endTimeUnixNano": 1646228314765300000,
+              "attributes": [
+                {
+                  "key": "component",
+                  "value": {
+                    "stringValue": "long-task"
+                  }
+                },
+                {
+                  "key": "longtask.name",
+                  "value": {
+                    "stringValue": "self"
+                  }
+                },
+                {
+                  "key": "longtask.entry_type",
+                  "value": {
+                    "stringValue": "longtask"
+                  }
+                },
+                {
+                  "key": "longtask.duration",
+                  "value": {
+                    "intValue": 64
+                  }
+                },
+                {
+                  "key": "longtask.attribution.name",
+                  "value": {
+                    "stringValue": "unknown"
+                  }
+                },
+                {
+                  "key": "longtask.attribution.entry_type",
+                  "value": {
+                    "stringValue": "taskattribution"
+                  }
+                },
+                {
+                  "key": "longtask.attribution.start_time",
+                  "value": {
+                    "intValue": 0
+                  }
+                },
+                {
+                  "key": "longtask.attribution.duration",
+                  "value": {
+                    "intValue": 0
+                  }
+                },
+                {
+                  "key": "longtask.attribution.container_type",
+                  "value": {
+                    "stringValue": "window"
+                  }
+                },
+                {
+                  "key": "longtask.attribution.container_src",
+                  "value": {
+                    "stringValue": ""
+                  }
+                },
+                {
+                  "key": "longtask.attribution.container_id",
+                  "value": {
+                    "stringValue": ""
+                  }
+                },
+                {
+                  "key": "longtask.attribution.container_name",
+                  "value": {
+                    "stringValue": ""
+                  }
+                }
+              ],
+              "droppedAttributesCount": 0,
+              "events": [],
+              "droppedEventsCount": 0,
+              "status": {
+                "code": 0
+              },
+              "links": [],
+              "droppedLinksCount": 0
+            }
+          ],
+          "instrumentationLibrary": {
+            "name": "@opentelemetry/instrumentation-long-task",
+            "version": "0.27.0"
+          }
+        }
+      ]
+    }
+  ]
+}
