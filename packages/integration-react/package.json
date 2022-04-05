@@ -25,7 +25,7 @@
   "scripts": {
     "start": "yarn build -w",
     "build": "tsc -p tsconfig.json",
-    "clean": "rimraf dist/",
+    "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "exit 0",
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
@@ -38,10 +38,10 @@
     "@grafana/agent-core": "^0.1.6"
   },
   "devDependencies": {
-    "@types/react": "^17.0.38",
-    "react": "^17.0.2"
+    "@types/react": "^17.0.43",
+    "react": "^18.0.0"
   },
   "peerDependencies": {
-    "react": "^17.0.0"
+    "react": "^17.0.0 || ^18.0.0"
   }
 }
