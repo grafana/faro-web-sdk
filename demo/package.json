@@ -15,7 +15,7 @@
   "scripts": {
     "start": "parcel serve",
     "build": "parcel build",
-    "clean": "rimraf dist/",
+    "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "exit 0",
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
@@ -30,6 +30,6 @@
     "@grafana/agent-web": "^0.1.6"
   },
   "devDependencies": {
-    "parcel": "^2.3.2"
+    "parcel": "^2.4.1"
   }
 }
