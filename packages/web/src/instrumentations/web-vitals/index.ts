@@ -10,15 +10,19 @@ const map = {
   ttfb: getTTFB,
 };
 
-export const webVitalsInstrumentation: Instrumentation = async () => {
-  Object.entries(map).forEach(([indicator, executor]) => {
-    executor((metric) => {
-      agent.api.pushMeasurement({
-        type: 'web-vitals',
-        values: {
-          [indicator]: metric.value,
-        },
+export const webVitalsInstrumentation: Instrumentation = {
+  initialize: async () => {
+    Object.entries(map).forEach(([indicator, executor]) => {
+      executor((metric) => {
+        agent.api.pushMeasurement({
+          type: 'web-vitals',
+          values: {
+            [indicator]: metric.value,
+          },
+        });
       });
     });
-  });
+  },
+  name: 'web-vitals',
+  version: '1.0',
 };

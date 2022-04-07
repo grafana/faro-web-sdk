@@ -38,5 +38,5 @@ function sendCustomMetric() {
 }
 
 window.addEventListener('load', () => {
-  (window as any).grafanaJavaScriptAgent.api.pushLog(['Manual event from Home']);
+  (window as any).grafanaAgent.api.pushLog(['Manual event from Home']);
 });

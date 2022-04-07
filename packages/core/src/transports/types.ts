@@ -1,5 +1,5 @@
 import type { APIEvent, ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent } from '../api';
-import type { MetasValue } from '../metas';
+import type { Meta } from '../metas';
 
 export enum TransportItemType {
   EXCEPTION = 'exception',
@@ -13,7 +13,7 @@ export type TransportItemPayload<P = APIEvent> = P;
 export interface TransportItem<P = APIEvent> {
   type: TransportItemType;
   payload: TransportItemPayload<P>;
-  meta: MetasValue;
+  meta: Meta;
 }
 
 export type Transport = (item: TransportItem) => void | Promise<void>;
@@ -23,7 +23,7 @@ export interface TransportBody {
   logs?: LogEvent[];
   measurements?: MeasurementEvent[];
   traces?: TraceEvent[];
-  meta: MetasValue;
+  meta: Meta;
 }
 
 export interface Transports {

@@ -28,6 +28,13 @@ const agent = initializeAgent({
       },
     }),
   ],
+  user: {
+    username: 'bob',
+  },
+  app: {
+    name: 'demo',
+    version: '1.0',
+  },
 });
 
 agent.api.pushLog(['Manual event from initialized agent']);

@@ -1,44 +1,47 @@
 import type { Config } from '../config';
 import { isFunction } from '../utils';
-import type { Metas, MetasMap } from './types';
+import type { Meta, Metas, MetaItem } from './types';
 
 export function initializeMetas(config: Config): Metas {
-  const map: MetasMap = new Map();
+  let items: MetaItem[] = [];
 
-  const add: Metas['add'] = (key, getter) => {
-    if (!map.has(key)) {
-      map.set(key, getter);
-    }
+  const add: Metas['add'] = (item) => {
+    items.push(item);
   };
 
-  const remove: Metas['remove'] = (key) => {
-    map.delete(key);
+  const remove: Metas['remove'] = (item) => {
+    items = items.filter((i) => i !== item);
   };
 
-  add('sdk', () => ({
-    name: '@grafana/agent-core',
-    version: '0.0.1', // TODO: set correct version here
-  }));
+  const initial: Meta = {
+    sdk: {
+      name: '@grafana/javascript-agent-core',
+      version: '0.0.1', // TODO: set correct version here
+      integrations: config.instrumentations.map(({ name, version }) => ({ name, version })),
+    },
+  };
 
-  config.metas.forEach((meta) => {
-    const metaValues = isFunction(meta) ? meta() : meta;
+  if (config.app) {
+    initial.app = config.app;
+  }
+  if (config.user) {
+    initial.user = config.user;
+  }
+  if (config.session) {
+    initial.session = config.session;
+  }
 
-    Object.entries(metaValues).forEach(([key, getter]) => {
-      add(key, getter);
-    });
-  });
+  config.metas?.forEach(add);
+
+  add(initial);
 
   return {
     add,
-    map,
     remove,
     get value() {
-      return Object.fromEntries(
-        Array.from(map.entries()).map(([key, valueGetter]) => [
-          key,
-          isFunction(valueGetter) ? valueGetter() : valueGetter,
-        ])
-      );
+      const meta: Meta = {};
+      items.forEach((item) => Object.assign(meta, isFunction(item) ? item() : item));
+      return meta;
     },
   };
 }
