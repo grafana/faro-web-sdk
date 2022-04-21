@@ -9,5 +9,5 @@ export const errorsInstrumentation: Instrumentation = {
     registerOnunhandledrejection();
   },
   version: '1.0',
-  name: 'errors',
+  name: '@grafana/agent-instrumentation-errors',
 };
