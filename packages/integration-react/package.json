@@ -24,6 +24,7 @@
   },
   "scripts": {
     "start": "yarn build -w",
+    "prebuild": "node -p \"'export const VERSION = \\'' + String(require('./package.json').version) + '\\';'\" > src/version.ts",
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist/",
     "quality": "run-s quality:*",

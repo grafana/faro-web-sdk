@@ -1,5 +1,6 @@
 import type { Config } from '../config';
 import { isFunction } from '../utils';
+import { VERSION } from '../version';
 import type { Meta, Metas, MetaItem } from './types';
 
 export function initializeMetas(config: Config): Metas {
@@ -15,8 +16,8 @@ export function initializeMetas(config: Config): Metas {
 
   const initial: Meta = {
     sdk: {
-      name: '@grafana/javascript-agent-core',
-      version: '0.0.1', // TODO: set correct version here
+      name: '@grafana/agent-core',
+      version: VERSION,
       integrations: config.instrumentations.map(({ name, version }) => ({ name, version })),
     },
   };
