@@ -10,9 +10,9 @@ import type { API } from './types';
 export function initializeAPI(transports: Transports, metas: Metas): API {
   return {
     ...initializeExceptions(transports, metas),
+    ...initializeMeta(transports, metas),
     ...initializeLogs(transports, metas),
     ...initializeMeasurements(transports, metas),
     ...initializeTraces(transports, metas),
-    ...initializeMeta(transports, metas),
   };
 }

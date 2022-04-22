@@ -1,5 +1,4 @@
-import type { Meta, Metas } from '../../metas';
-import type { User } from '../../metas/types';
+import type { Meta, Metas, User } from '../../metas';
 import type { Transports } from '../../transports';
 import type { MetaAPI } from './types';
 

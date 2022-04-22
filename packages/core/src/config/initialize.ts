@@ -6,6 +6,7 @@ export function initializeConfig(userConfig: UserConfig): Config {
     globalObjectKey: defaultGlobalObjectKey,
     preventGlobalExposure: false,
     transports: [],
+    metas: [],
     ...userConfig,
   };
 }
