@@ -1,15 +1,15 @@
 {
-  "name": "@grafana/agent-integration-react",
-  "version": "0.0.0",
-  "description": "Grafana JavaScript Agent package that enables easier integration in projects built with React.",
+  "name": "@grafana/agent-web",
+  "version": "0.0.0-dev",
+  "description": "Grafana JavaScript Agent instrumentations, metas, transports for web.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "private": true,
   "homepage": "https://github.com/grafana/grafana-javascript-agent",
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/grafana/grafana-javascript-agent.git",
-    "directory": "packages/integration-react"
+    "directory": "packages/web"
   },
   "type": "module",
   "main": "dist/index.js",
@@ -17,11 +17,6 @@
   "files": [
     "dist"
   ],
-  "imports": {
-    "#integration-react/*": {
-      "default": "./dist/*.js"
-    }
-  },
   "scripts": {
     "start": "yarn build -w",
     "build": "tsc -p tsconfig.json",
@@ -35,13 +30,11 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
-    "@grafana/agent-core": "^0.0.0"
+    "@grafana/agent-core": "^0.0.0",
+    "ua-parser-js": "^1.0.2",
+    "web-vitals": "^2.1.4"
   },
   "devDependencies": {
-    "@types/react": "^17.0.38",
-    "react": "^17.0.2"
-  },
-  "peerDependencies": {
-    "react": "^17.0.0"
+    "@types/ua-parser-js": "^0.7.36"
   }
 }

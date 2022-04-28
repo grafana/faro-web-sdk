@@ -1,6 +1,6 @@
 {
-  "name": "@grafana/javascript-agent-demo",
-  "version": "0.0.2",
+  "name": "@grafana/agent-demo",
+  "version": "0.0.0",
   "description": "Demo of Grafana JavaScript Agent.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -24,15 +24,8 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json "
   },
   "dependencies": {
-    "@grafana/javascript-agent-core": "^0.0.2",
-    "@grafana/javascript-agent-instrumentation-console": "^0.0.2",
-    "@grafana/javascript-agent-instrumentation-errors": "^0.0.2",
-    "@grafana/javascript-agent-instrumentation-tracing": "^0.0.2",
-    "@grafana/javascript-agent-instrumentation-web-vitals": "^0.0.2",
-    "@grafana/javascript-agent-meta-browser": "^0.0.2",
-    "@grafana/javascript-agent-meta-page": "^0.0.2",
-    "@grafana/javascript-agent-transport-console": "^0.0.2",
-    "@grafana/javascript-agent-transport-fetch": "^0.0.2"
+    "@grafana/agent-core": "^0.0.0",
+    "@grafana/agent-web": "^0.0.0"
   },
   "devDependencies": {
     "parcel": "^2.2.1"

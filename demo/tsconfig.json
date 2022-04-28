@@ -14,44 +14,12 @@
       "prepend": false
     },
     {
-      "path": "../packages/instrumentation-console/tsconfig.json",
+      "path": "../packages/web/tsconfig.json",
       "prepend": false
     },
     {
-      "path": "../packages/instrumentation-errors/tsconfig.json",
+      "path": "../packages/web-tracing/tsconfig.json",
       "prepend": false
     },
-    {
-      "path": "../packages/instrumentation-tracing/tsconfig.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/instrumentation-web-vitals/tsconfig.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/integration-angular/tsconfig.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/integration-react/tsconfig.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/meta-browser/tsconfig.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/meta-page/tsconfig.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/transport-console/tsconfig.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/transport-fetch/tsconfig.json",
-      "prepend": false
-    }
   ]
 }

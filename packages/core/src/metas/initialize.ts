@@ -16,7 +16,7 @@ export function initializeMetas(config: Config): Metas {
   };
 
   add('sdk', () => ({
-    name: '@grafana/javascript-agent-core',
+    name: '@grafana/agent-core',
     version: '0.0.1', // TODO: set correct version here
   }));
 
