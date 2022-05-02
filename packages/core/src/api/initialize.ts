@@ -8,11 +8,14 @@ import { initializeTraces } from './traces';
 import type { API } from './types';
 
 export function initializeAPI(transports: Transports, metas: Metas): API {
+  const tracesApi = initializeTraces(transports, metas);
+
   return {
-    ...initializeExceptions(transports, metas),
+    ...tracesApi,
+    ...initializeExceptions(transports, metas, tracesApi),
     ...initializeMeta(transports, metas),
-    ...initializeLogs(transports, metas),
-    ...initializeMeasurements(transports, metas),
+    ...initializeLogs(transports, metas, tracesApi),
+    ...initializeMeasurements(transports, metas, tracesApi),
     ...initializeTraces(transports, metas),
   };
 }

@@ -2,11 +2,12 @@ import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
+import type { TracesAPI } from '../traces';
 import { defaultLogLevel, originalConsoleMethods } from './const';
 import type { LogEvent, LogsAPI } from './types';
 
-export function initializeLogs(transports: Transports, metas: Metas): LogsAPI {
-  const pushLog: LogsAPI['pushLog'] = (args, { context, level, span } = {}) => {
+export function initializeLogs(transports: Transports, metas: Metas, tracesApi: TracesAPI): LogsAPI {
+  const pushLog: LogsAPI['pushLog'] = (args, { context, level } = {}) => {
     try {
       const item: TransportItem<LogEvent> = {
         type: TransportItemType.LOG,
@@ -27,10 +28,11 @@ export function initializeLogs(transports: Transports, metas: Metas): LogsAPI {
         meta: metas.value,
       };
 
-      if (span) {
+      if (tracesApi.isInitialized()) {
         item.payload.trace = {
-          trace_id: span.getTraceId(),
-          span_id: span.getId(),
+          // TODO: Fix this types
+          trace_id: (tracesApi.getActiveSpan() as any).spanContext().traceId,
+          span_id: (tracesApi.getActiveSpan() as any).spanContext().spanId,
         };
       }
 

@@ -1,28 +1,36 @@
 import type { Metas } from '../../metas';
 import type { Transports } from '../../transports';
-import { TransportItemType } from '../../transports';
-import { getRandomTraceId } from '../../utils';
-import { spanGenerator } from './span';
-import type { TracesAPI } from './types';
+import type { GetActiveSpan, TracesAPI } from './types';
 
-export function initializeTraces(transports: Transports, metas: Metas): TracesAPI {
-  let traceId: string = getRandomTraceId();
-
-  const getTraceId: TracesAPI['getTraceId'] = () => traceId;
-
-  const pushSpan: TracesAPI['pushSpan'] = (payload) => {
-    transports.execute({
-      type: TransportItemType.TRACE,
-      payload,
-      meta: metas.value,
-    });
+export function initializeTraces(_transports: Transports, _metas: Metas): TracesAPI {
+  let tracer: unknown | null = null;
+  let getActiveSpanInternal: GetActiveSpan = () => {
+    throw new Error('Tracer is not initialized');
   };
 
-  const getNewSpan: TracesAPI['getNewSpan'] = (options) => spanGenerator(traceId, pushSpan, options);
+  const getTracer: TracesAPI['getTracer'] = () => tracer;
+
+  const isInitialized: TracesAPI['isInitialized'] = () => tracer !== null;
+
+  const setTracer: TracesAPI['setTracer'] = (newTracer) => {
+    // TODO: add check if tracer is already set
+
+    tracer = newTracer;
+  };
+
+  const getActiveSpan: TracesAPI['getActiveSpan'] = () => {
+    return getActiveSpanInternal();
+  };
+
+  const setGetActiveSpanInternal: TracesAPI['setGetActiveSpanInternal'] = (newGetActiveSpanInternal) => {
+    getActiveSpanInternal = newGetActiveSpanInternal;
+  };
 
   return {
-    getNewSpan,
-    getTraceId,
-    pushSpan,
+    getTracer,
+    isInitialized,
+    setTracer,
+    setGetActiveSpanInternal,
+    getActiveSpan,
   };
 }
