@@ -1,5 +1,3 @@
-import type { Span } from '../traces';
-
 export interface ExceptionStackFrame {
   filename: string;
   function: string;
@@ -23,7 +21,6 @@ export interface ExceptionEvent {
 }
 
 export interface PushExceptionOptions {
-  span?: Span;
   stackFrames?: ExceptionStackFrame[];
   type?: string;
 }

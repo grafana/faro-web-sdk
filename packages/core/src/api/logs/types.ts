@@ -1,5 +1,4 @@
 import type { BaseObject } from '../../utils';
-import type { Span } from '../traces';
 
 export enum LogLevel {
   TRACE = 'trace',
@@ -27,7 +26,6 @@ export interface LogEvent {
 export interface PushLogOptions {
   context?: LogContext;
   level?: LogLevel;
-  span?: Span;
 }
 
 export interface LogsAPI {

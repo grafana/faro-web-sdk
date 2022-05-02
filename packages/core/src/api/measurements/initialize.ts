@@ -1,10 +1,11 @@
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
+import type { TracesAPI } from '../traces';
 import type { MeasurementEvent, MeasurementsAPI } from './types';
 
-export function initializeMeasurements(transports: Transports, metas: Metas): MeasurementsAPI {
-  const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload, { span } = {}) => {
+export function initializeMeasurements(transports: Transports, metas: Metas, tracesApi: TracesAPI): MeasurementsAPI {
+  const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload) => {
     try {
       const item: TransportItem<MeasurementEvent> = {
         type: TransportItemType.MEASUREMENT,
@@ -12,10 +13,11 @@ export function initializeMeasurements(transports: Transports, metas: Metas): Me
         meta: metas.value,
       };
 
-      if (span) {
+      if (tracesApi.isInitialized()) {
         item.payload.trace = {
-          trace_id: span.getTraceId(),
-          span_id: span.getId(),
+          // TODO: Fix this types
+          trace_id: (tracesApi.getActiveSpan() as any).spanContext().traceId,
+          span_id: (tracesApi.getActiveSpan() as any).spanContext().spanId,
         };
       }
 

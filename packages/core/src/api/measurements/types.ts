@@ -1,5 +1,3 @@
-import type { Span } from '../traces';
-
 export interface MeasurementEvent<V extends { [label: string]: number } = { [label: string]: number }> {
   type: string;
   values: V;
@@ -10,9 +8,7 @@ export interface MeasurementEvent<V extends { [label: string]: number } = { [lab
   };
 }
 
-export interface PushMeasurementOptions {
-  span?: Span;
-}
+export interface PushMeasurementOptions {}
 
 export interface MeasurementsAPI {
   pushMeasurement: (payload: MeasurementEvent, options?: PushMeasurementOptions) => void;
