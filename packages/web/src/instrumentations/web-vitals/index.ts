@@ -10,8 +10,8 @@ const map = {
   ttfb: getTTFB,
 };
 
-export const webVitalsInstrumentation: Instrumentation = {
-  initialize: () => {
+export class WebVitalsInstrumentation implements Instrumentation {
+  initialize(): void {
     Object.entries(map).forEach(([indicator, executor]) => {
       executor((metric) => {
         agent.api.pushMeasurement({
@@ -22,7 +22,7 @@ export const webVitalsInstrumentation: Instrumentation = {
         });
       });
     });
-  },
-  name: '@grafana/agent-web:instrumentation-web-vitals',
-  version: VERSION,
-};
+  }
+  name = '@grafana/agent-web:instrumentation-web-vitals';
+  version = VERSION;
+}

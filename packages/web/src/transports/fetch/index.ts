@@ -1,4 +1,4 @@
-import { agent, getTransportBody, LogLevel, prefixAgentMessage } from '@grafana/agent-core';
+import { agent, getTransportBody, LogLevel, prefixAgentMessage, TransportItem } from '@grafana/agent-core';
 import type { Transport } from '@grafana/agent-core';
 
 const debugMessage = prefixAgentMessage('Failed sending payload to the receiver');
@@ -13,12 +13,14 @@ export interface FetchTransportOptions {
   requestOptions: FetchTransportRequestOptions;
 }
 
-export function getFetchTransport(options: FetchTransportOptions): Transport {
-  return async (item) => {
+export class FetchTransport implements Transport {
+  constructor(private options: FetchTransportOptions) {}
+
+  async send(item: TransportItem) {
     try {
       const body = JSON.stringify(getTransportBody(item));
 
-      const { url, debug, requestOptions } = options;
+      const { url, debug, requestOptions } = this.options;
 
       const { headers, ...restOfRequestOptions } = requestOptions ?? {};
 
@@ -37,5 +39,5 @@ export function getFetchTransport(options: FetchTransportOptions): Transport {
         }
       });
     } catch (err) {}
-  };
+  }
 }
