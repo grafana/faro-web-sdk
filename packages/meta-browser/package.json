@@ -1,6 +1,6 @@
 {
   "name": "@grafana/javascript-agent-meta-browser",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "description": "Grafana JavaScript Agent browser package for collecting details about the browser, operating system and device type.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -32,7 +32,7 @@
     "@types/ua-parser-js": "^0.7.36"
   },
   "dependencies": {
-    "@grafana/javascript-agent-core": "^0.0.0",
+    "@grafana/javascript-agent-core": "^0.0.2",
     "ua-parser-js": "^1.0.2"
   }
 }

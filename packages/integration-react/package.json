@@ -1,6 +1,6 @@
 {
   "name": "@grafana/javascript-agent-integration-react",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "description": "Grafana JavaScript Agent package that enables easier integration in projects built with React.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -34,7 +34,7 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
-    "@grafana/javascript-agent-core": "^0.0.0"
+    "@grafana/javascript-agent-core": "^0.0.2"
   },
   "devDependencies": {
     "@types/react": "^17.0.38",
