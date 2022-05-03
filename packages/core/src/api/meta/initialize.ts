@@ -7,9 +7,11 @@ export function initializeMeta(_: Transports, metas: Metas): MetaAPI {
 
   metas.add(() => meta);
 
+  const setUser = (user: User | null) => {
+    meta = { ...meta, user: user ?? undefined };
+  };
+
   return {
-    setUser: (user: User | null) => {
-      meta = { user: user ?? undefined };
-    },
+    setUser,
   };
 }
