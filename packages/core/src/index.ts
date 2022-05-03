@@ -24,3 +24,4 @@ export { getTransportBody, TransportItemType } from './transports';
 export type { Transport, TransportBody, TransportItem, TransportItemPayload, Transports } from './transports';
 
 export * from './utils';
+export { VERSION } from './version';

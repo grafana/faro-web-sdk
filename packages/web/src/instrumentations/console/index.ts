@@ -1,7 +1,5 @@
-import { agent, allLogLevels, LogLevel } from '@grafana/agent-core';
+import { agent, allLogLevels, LogLevel, VERSION } from '@grafana/agent-core';
 import type { Instrumentation } from '@grafana/agent-core';
-
-import { VERSION } from './version';
 
 export interface ConsoleInstrumentationOptions {
   disabledLevels?: LogLevel[];
@@ -26,7 +24,7 @@ export function getConsoleInstrumentation({ disabledLevels }: ConsoleInstrumenta
           };
         });
     },
-    version: VERSION,
+    version: VERSION.CURRENT,
     name: '@grafana/agent-instrumentation-console',
   };
 }

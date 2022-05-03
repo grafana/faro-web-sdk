@@ -1,8 +1,6 @@
-import { agent } from '@grafana/agent-core';
+import { agent, VERSION } from '@grafana/agent-core';
 import type { Instrumentation } from '@grafana/agent-core';
 import { getCLS, getFCP, getFID, getLCP, getTTFB } from 'web-vitals';
-
-import { VERSION } from './version';
 
 const map = {
   cls: getCLS,
@@ -26,5 +24,5 @@ export const webVitalsInstrumentation: Instrumentation = {
     });
   },
   name: '@grafana/agent-instrumentation-web-vitals',
-  version: VERSION,
+  version: VERSION.CURRENT,
 };
