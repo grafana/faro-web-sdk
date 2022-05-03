@@ -23,11 +23,11 @@ The agent requires a configuration parameter.
 | ----------------------- | ----------------------------------------------------------------------- | ------------------- | -------- | ------------------------ |
 | `app`                   | Application metadata                                                    | `App`               | Y        | `undefined`              |
 | `globalObjectKey`       | String that should be used when defining the agent on the global object | `string`            | Y        | `grafanaAgent`           |
-| `metas`                 | Array of metas that should be logged                                    | `MetaItem[]`        | Y        | `[]`                     |
 | `instrumentations`      | Array of instrumentations that should be ran                            | `Instrumentation[]` | N        | `[]`                     |
+| `metas`                 | Array of metas that should be logged                                    | `MetaItem[]`        | Y        | `[]`                     |
 | `preventGlobalExposure` | Flag for toggling the definition on the global object                   | `boolean`           | Y        | `false`                  |
-| `transports`            | Array of transports that should be used                                 | `Transport[]`       | Y        | `[]`                     |
 | `session`               | Session metadata                                                        | `Session`           | Y        | `undefined`              |
+| `transports`            | Array of transports that should be used                                 | `Transport[]`       | Y        | `[]`                     |
 | `user`                  | User metadata                                                           | `User`              | Y        | `undefined`              |
 
 ## Components
