@@ -11,7 +11,7 @@ const map = {
 };
 
 export const webVitalsInstrumentation: Instrumentation = {
-  initialize: async () => {
+  initialize: () => {
     Object.entries(map).forEach(([indicator, executor]) => {
       executor((metric) => {
         agent.api.pushMeasurement({
