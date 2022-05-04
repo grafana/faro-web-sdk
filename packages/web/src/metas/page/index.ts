@@ -1,7 +1,7 @@
-import type { Meta } from '@grafana/agent-core';
+import type { MetaItem } from '@grafana/agent-core';
 
-export const pageMeta: Meta = () => ({
-  page: () => ({
+export const pageMeta: MetaItem = () => ({
+  page: {
     url: location.href,
-  }),
+  },
 });

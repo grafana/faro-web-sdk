@@ -17,7 +17,7 @@ export function initializeMetas(config: Config): Metas {
   const initial: Meta = {
     sdk: {
       name: '@grafana/agent-core',
-      version: VERSION.CURRENT,
+      version: VERSION,
       integrations: config.instrumentations.map(({ name, version }) => ({ name, version })),
     },
   };

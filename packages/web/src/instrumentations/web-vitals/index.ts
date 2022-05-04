@@ -24,5 +24,5 @@ export const webVitalsInstrumentation: Instrumentation = {
     });
   },
   name: '@grafana/agent-instrumentation-web-vitals',
-  version: VERSION.CURRENT,
+  version: VERSION,
 };
