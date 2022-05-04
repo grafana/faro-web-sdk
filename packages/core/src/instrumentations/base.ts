@@ -8,4 +8,7 @@ export abstract class BaseInstrumentation implements Instrumentation {
   get agent(): Agent {
     return init.agent;
   }
+
+  abstract name: string;
+  abstract version: string;
 }
