@@ -19,9 +19,9 @@ file provides an overview of the architecture and the API of library.
 
 [@grafana/agent-web](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/web) provides instrumentations, metas and transports for use in web applications. See The [README.md](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/web/README.md) for more information.
 
-### Web-tracing
+### Tracing-web
 
-[@grafana/agent-web-tracing](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/web-tracing) provides implementation for tracing web applications. See The [README.md](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/web-tracing/README.md) for more information.
+[@grafana/agent-tracing-web](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/tracing-web) provides implementation for tracing web applications. See The [README.md](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/tracing-web/README.md) for more information.
 
 
 ### Integrations

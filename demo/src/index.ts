@@ -1,4 +1,5 @@
 import { initializeAgent } from '@grafana/agent-core';
+import { tracingInstrumentation } from '@grafana/agent-tracing-web';
 import {
   getConsoleInstrumentation,
   getConsoleTransport,
@@ -8,7 +9,6 @@ import {
   pageMeta,
   getFetchTransport,
 } from '@grafana/agent-web';
-import { tracingInstrumentation } from '@grafana/agent-web-tracing';
 
 const agent = initializeAgent({
   instrumentations: [

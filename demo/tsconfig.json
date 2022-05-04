@@ -18,8 +18,8 @@
       "prepend": false
     },
     {
-      "path": "../packages/web-tracing/tsconfig.json",
+      "path": "../packages/tracing-web/tsconfig.json",
       "prepend": false
-    },
+    }
   ]
 }

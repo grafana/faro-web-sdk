@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "@grafana/agent-core": "^0.0.0",
-    "@grafana/agent-web": "^0.0.0"
+    "@grafana/agent-web": "^0.0.0",
+    "@grafana/agent-tracing-web": "^0.0.0"
   },
   "devDependencies": {
     "parcel": "^2.2.1"

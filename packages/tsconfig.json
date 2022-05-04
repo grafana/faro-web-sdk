@@ -7,7 +7,7 @@
       "#core/*": ["core/src/*"],
       "#demo/*": ["demo/src/*"],
       "#web/*": ["web/src/*"],
-      "#web-tracing/*": ["web-tracing/src/*"],
+      "#tracing-web/*": ["tracing-web/src/*"],
       "#integration-angular/*": ["integration-angular/src/*"],
       "#integration-react/*": ["integration-react/src/*"],
       "#*": ["*/src"]

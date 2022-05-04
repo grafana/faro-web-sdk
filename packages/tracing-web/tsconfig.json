@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.build-cache/web-tracing.tsbuildinfo"
+    "tsBuildInfoFile": "../../.build-cache/tracing-web.tsbuildinfo"
   },
   "include": ["./src"],
   "references": [
