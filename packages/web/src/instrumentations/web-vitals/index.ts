@@ -1,5 +1,4 @@
-import { agent, VERSION } from '@grafana/agent-core';
-import type { Instrumentation } from '@grafana/agent-core';
+import { BaseInstrumentation, VERSION } from '@grafana/agent-core';
 import { getCLS, getFCP, getFID, getLCP, getTTFB } from 'web-vitals';
 
 const map = {
@@ -10,11 +9,11 @@ const map = {
   ttfb: getTTFB,
 };
 
-export class WebVitalsInstrumentation implements Instrumentation {
+export class WebVitalsInstrumentation extends BaseInstrumentation {
   initialize(): void {
     Object.entries(map).forEach(([indicator, executor]) => {
       executor((metric) => {
-        agent.api.pushMeasurement({
+        this.agent.api.pushMeasurement({
           type: 'web-vitals',
           values: {
             [indicator]: metric.value,

@@ -1,10 +1,10 @@
-import { agent, isPrimitive } from '@grafana/agent-core';
+import { Agent, isPrimitive } from '@grafana/agent-core';
 
 import { primitiveUnhandledType, primitiveUnhandledValue } from './const';
 import type { ExtendedPromiseRejectionEvent } from './extendedPromiseRejectionEvent';
 import { getErrorDetails } from './getErrorDetails';
 
-export function registerOnunhandledrejection(): void {
+export function registerOnunhandledrejection(agent: Agent): void {
   window.addEventListener('unhandledrejection', (event: ExtendedPromiseRejectionEvent) => {
     let error = event;
 
