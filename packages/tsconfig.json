@@ -3,19 +3,13 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@grafana/javascript-agent-*": ["*/src"],
+      "@grafana/agent-*": ["*/src"],
       "#core/*": ["core/src/*"],
       "#demo/*": ["demo/src/*"],
-      "#instrumentation-console/*": ["instrumentation-console/src/*"],
-      "#instrumentation-errors/*": ["instrumentation-errors/src/*"],
-      "#instrumentation-tracing/*": ["instrumentation-tracing/src/*"],
-      "#instrumentation-web-vitals/*": ["instrumentation-web-vitals/src/*"],
+      "#web/*": ["web/src/*"],
+      "#tracing-web/*": ["tracing-web/src/*"],
       "#integration-angular/*": ["integration-angular/src/*"],
       "#integration-react/*": ["integration-react/src/*"],
-      "#meta-browser/*": ["meta-browser/src/*"],
-      "#meta-page/*": ["meta-page/src/*"],
-      "#transport-console/*": ["transport-console/src/*"],
-      "#transport-fetch/*": ["transport-fetch/src/*"],
       "#*": ["*/src"]
     },
     "rootDir": "."

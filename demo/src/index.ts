@@ -1,11 +1,14 @@
-import { initializeAgent } from '@grafana/javascript-agent-core';
-import getConsoleInstrumentation from '@grafana/javascript-agent-instrumentation-console';
-import errorsInstrumentation from '@grafana/javascript-agent-instrumentation-errors';
-import tracingInstrumentation from '@grafana/javascript-agent-instrumentation-tracing';
-import webVitalsInstrumentation from '@grafana/javascript-agent-instrumentation-web-vitals';
-import browserMeta from '@grafana/javascript-agent-meta-browser';
-import pageMeta from '@grafana/javascript-agent-meta-page';
-import getFetchTransport from '@grafana/javascript-agent-transport-fetch';
+import { initializeAgent } from '@grafana/agent-core';
+import { tracingInstrumentation } from '@grafana/agent-tracing-web';
+import {
+  getConsoleInstrumentation,
+  getConsoleTransport,
+  errorsInstrumentation,
+  webVitalsInstrumentation,
+  browserMeta,
+  pageMeta,
+  getFetchTransport,
+} from '@grafana/agent-web';
 
 const agent = initializeAgent({
   instrumentations: [
@@ -16,9 +19,9 @@ const agent = initializeAgent({
   ],
   metas: [browserMeta, pageMeta],
   transports: [
-    getConsoleInstrumentation(),
+    getConsoleTransport(),
     getFetchTransport({
-      url: 'http://localhost:8080/collect',
+      url: 'http://localhost:12345/collect',
       debug: true,
       requestOptions: {
         headers: { 'x-api-key': 'my-api-key' },

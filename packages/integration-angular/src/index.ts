@@ -1,3 +1,3 @@
-import { agent } from '@grafana/javascript-agent-core';
+import { agent } from '@grafana/agent-core';
 
 agent.api.pushLog(['A simple log from the Angular integration']);

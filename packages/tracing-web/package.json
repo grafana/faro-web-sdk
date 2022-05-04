@@ -1,15 +1,16 @@
 {
-  "name": "@grafana/agent-integration-react",
+  "name": "@grafana/agent-tracing-web",
   "version": "0.0.0",
-  "description": "Grafana JavaScript Agent package that enables easier integration in projects built with React.",
+  "description": "Grafana JavaScript Agent web tracing implementation.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
   "private": true,
   "homepage": "https://github.com/grafana/grafana-javascript-agent",
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/grafana/grafana-javascript-agent.git",
-    "directory": "packages/integration-react"
+    "directory": "packages/tracing-web"
   },
   "type": "module",
   "main": "dist/index.js",
@@ -17,11 +18,6 @@
   "files": [
     "dist"
   ],
-  "imports": {
-    "#integration-react/*": {
-      "default": "./dist/*.js"
-    }
-  },
   "scripts": {
     "start": "yarn build -w",
     "build": "tsc -p tsconfig.json",
@@ -36,12 +32,5 @@
   },
   "dependencies": {
     "@grafana/agent-core": "^0.0.0"
-  },
-  "devDependencies": {
-    "@types/react": "^17.0.38",
-    "react": "^17.0.2"
-  },
-  "peerDependencies": {
-    "react": "^17.0.0"
   }
 }

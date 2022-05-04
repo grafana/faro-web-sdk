@@ -1,10 +1,11 @@
 {
-  "name": "@grafana/javascript-agent-core",
-  "version": "0.0.2",
+  "name": "@grafana/agent-core",
+  "version": "0.0.0",
   "description": "Core package of Grafana JavaScript Agent.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
   "homepage": "https://github.com/grafana/grafana-javascript-agent",
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/grafana/grafana-javascript-agent.git",

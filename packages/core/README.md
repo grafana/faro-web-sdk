@@ -1,4 +1,4 @@
-# @grafana/javascript-agent-core
+# @grafana/agent-core
 
 Core package of Grafana JavaScript Agent.
 
@@ -8,7 +8,7 @@ logs etc. but it offers an API to capture them.
 ## Installation
 
 ```ts
-import { initializeAgent } from '@grafana/javascript-agent-core';
+import { initializeAgent } from '@grafana/agent-core';
 
 initializeAgent({
   // ...
@@ -36,7 +36,7 @@ global object (`window` in browsers and `global` in Node.js).
 
 ```ts
 // Browser/Node.js
-import { agent } from '@grafana/javascript-agent-core';
+import { agent } from '@grafana/agent-core';
 
 agent.api.pushLog(/* ... */);
 
@@ -116,15 +116,15 @@ Instrumentations are packages that leverage the agent API to provide automatic m
 just simple functions that are executed when the agent is initialized.
 
 Please note that the `core` package does not contain any instrumentations out of the box and they should be provided by
-external packages like [@grafana/javascript-agent-instrumentation-console](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-console),
-[@grafana/javascript-agent-instrumentation-errors](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-errors),
-[@grafana/javascript-agent-instrumentation-tracing](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-tracing)
-and [@grafana/javascript-agent-instrumentation-web-vitals](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-web-vitals).
+external packages like [@grafana/agent-instrumentation-console](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-console),
+[@grafana/agent-instrumentation-errors](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-errors),
+[@grafana/agent-instrumentation-tracing](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-tracing)
+and [@grafana/agent-instrumentation-web-vitals](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/instrumentation-web-vitals).
 
 You can also write your own instrumentations:
 
 ```ts
-import { agent, initializeAgent } from '@grafana/javascript-agent-core';
+import { agent, initializeAgent } from '@grafana/agent-core';
 
 initializeAgent({
   instrumentations: [
@@ -142,13 +142,13 @@ initializeAgent({
 Metas are objects that will be attached to every event that is triggered by the API.
 
 Out of the box, only one meta is provided: `sdk` which contains information about the agent and its version. Additional
-metas can be provided by external packages like [@grafana/javascript-agent-meta-browser](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/meta-browser)
-and [@grafana/javascript-agent-meta-page](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/meta-page).
+metas can be provided by external packages like [@grafana/agent-meta-browser](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/meta-browser)
+and [@grafana/agent-meta-page](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/meta-page).
 
 You can also define your own metas:
 
 ```ts
-import { agent, initializeAgent } from '@grafana/javascript-agent-core';
+import { agent, initializeAgent } from '@grafana/agent-core';
 
 initializeAgent({
   metas: [
@@ -195,13 +195,13 @@ Transports are functions that will be called for every event that is triggered b
 something with the data after collecting it.
 
 Out of the box, no transports are provided in the `core` package and they should be provided by external packages like
-[@grafana/javascript-agent-transport-console](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/transport-console)
-and [@grafana/javascript-agent-transport-fetch](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/transport-fetch).
+[@grafana/agent-transport-console](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/transport-console)
+and [@grafana/agent-transport-fetch](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/transport-fetch).
 
 You can also define your own transports:
 
 ```ts
-import { agent, initializeAgent } from '@grafana/javascript-agent-core';
+import { agent, initializeAgent } from '@grafana/agent-core';
 
 initializeAgent({
   transports: [

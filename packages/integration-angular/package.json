@@ -1,9 +1,10 @@
 {
-  "name": "@grafana/javascript-agent-integration-angular",
-  "version": "0.0.2",
+  "name": "@grafana/agent-integration-angular",
+  "version": "0.0.0",
   "description": "Grafana JavaScript Agent package that enables easier integration in projects built with Angular.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
+  "private": true,
   "homepage": "https://github.com/grafana/grafana-javascript-agent",
   "repository": {
     "type": "git",
@@ -29,6 +30,6 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
-    "@grafana/javascript-agent-core": "^0.0.2"
+    "@grafana/agent-core": "^0.0.0"
   }
 }
