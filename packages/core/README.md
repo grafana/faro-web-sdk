@@ -21,11 +21,14 @@ The agent requires a configuration parameter.
 
 | Property                | Description                                                             | Type                | Optional | Default Value            |
 | ----------------------- | ----------------------------------------------------------------------- | ------------------- | -------- | ------------------------ |
-| `globalObjectKey`       | String that should be used when defining the agent on the global object | `string`            | Y        | `grafanaJavaScriptAgent` |
-| `metas`                 | Array of metas that should be logged                                    | `Meta[]`            | Y        | `[]`                     |
+| `app`                   | Application metadata                                                    | `App`               | Y        | `undefined`              |
+| `globalObjectKey`       | String that should be used when defining the agent on the global object | `string`            | Y        | `grafanaAgent`           |
 | `instrumentations`      | Array of instrumentations that should be ran                            | `Instrumentation[]` | N        | `[]`                     |
+| `metas`                 | Array of metas that should be logged                                    | `MetaItem[]`        | Y        | `[]`                     |
 | `preventGlobalExposure` | Flag for toggling the definition on the global object                   | `boolean`           | Y        | `false`                  |
+| `session`               | Session metadata                                                        | `Session`           | Y        | `undefined`              |
 | `transports`            | Array of transports that should be used                                 | `Transport[]`       | Y        | `[]`                     |
+| `user`                  | User metadata                                                           | `User`              | Y        | `undefined`              |
 
 ## Components
 
@@ -160,29 +163,12 @@ initializeAgent({
       },
     },
 
-    // Define a meta which does some instant value computation
-    {
-      viewPort: () => ({
-        height: window.innerHeight,
-        width: window.innerWidth,
-      }),
-    },
-
     // Define a meta which caches some values on initialization
     () => {
-      const initialViewport = {
-        height: window.innerHeight,
-        width: window.innerWidth,
-      };
-
       return {
-        initialViewport,
-
-        // You can also define instant metas here
-        viewPort: () => ({
-          height: window.innerHeight,
-          width: window.innerWidth,
-        }),
+        user: {
+          username: getUser().name
+        }
       };
     },
   ],

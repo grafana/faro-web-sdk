@@ -1,3 +1,3 @@
 export { initializeMetas } from './initialize';
 
-export type { Meta, Metas, MetaGetter, MetasMap, MetasValue } from './types';
+export type { Meta, Metas, MetaGetter, MetaItem, App, User, Session } from './types';

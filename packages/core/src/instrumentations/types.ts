@@ -1,1 +1,5 @@
-export type Instrumentation = () => void;
+export interface Instrumentation {
+  initialize: () => void;
+  name: string;
+  version: string;
+}

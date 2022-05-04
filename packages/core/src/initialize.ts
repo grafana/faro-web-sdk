@@ -22,6 +22,5 @@ export function initializeAgent(userConfig: UserConfig): Agent {
   }
 
   initializeInstrumentations(agent.config);
-
   return agent;
 }

@@ -1,1 +1,1 @@
-export const defaultGlobalObjectKey = 'grafanaJavaScriptAgent';
+export const defaultGlobalObjectKey = 'grafanaAgent';

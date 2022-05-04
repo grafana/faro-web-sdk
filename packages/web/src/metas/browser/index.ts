@@ -1,7 +1,7 @@
-import type { Meta } from '@grafana/agent-core';
+import type { MetaItem } from '@grafana/agent-core';
 import { UAParser } from 'ua-parser-js';
 
-export const browserMeta: Meta = () => {
+export const browserMeta: MetaItem = () => {
   const parser = new UAParser();
   const { name, version } = parser.getBrowser();
   const { name: osName, version: osVersion } = parser.getOS();
@@ -9,11 +9,11 @@ export const browserMeta: Meta = () => {
   const unknown = 'unknown';
 
   return {
-    browser: () => ({
+    browser: {
       name: name ?? unknown,
       version: version ?? unknown,
       os: `${osName ?? unknown} ${osVersion ?? unknown}`,
       mobile,
-    }),
+    },
   };
 };
