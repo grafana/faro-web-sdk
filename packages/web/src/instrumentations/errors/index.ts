@@ -10,5 +10,5 @@ export const errorsInstrumentation: Instrumentation = {
     registerOnunhandledrejection();
   },
   version: VERSION,
-  name: '@grafana/agent-instrumentation-errors',
+  name: '@grafana/agent-web:instrumentation-errors',
 };

@@ -25,6 +25,6 @@ export function getConsoleInstrumentation({ disabledLevels }: ConsoleInstrumenta
         });
     },
     version: VERSION,
-    name: '@grafana/agent-instrumentation-console',
+    name: '@grafana/agent-web:instrumentation-console',
   };
 }

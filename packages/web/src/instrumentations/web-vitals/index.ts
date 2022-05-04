@@ -23,6 +23,6 @@ export const webVitalsInstrumentation: Instrumentation = {
       });
     });
   },
-  name: '@grafana/agent-instrumentation-web-vitals',
+  name: '@grafana/agent-web:instrumentation-web-vitals',
   version: VERSION,
 };
