@@ -11,6 +11,7 @@
     "directory": "demo"
   },
   "source": "src/index.html",
+  "private": true,
   "scripts": {
     "start": "parcel serve",
     "build": "parcel build",
