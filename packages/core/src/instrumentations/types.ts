@@ -1,5 +1,6 @@
 export interface Instrumentation {
-  initialize: () => void;
-  name: string;
-  version: string;
+  readonly name: string;
+  readonly version: string;
+
+  initialize(): void;
 }

@@ -16,8 +16,9 @@ export interface TransportItem<P = APIEvent> {
   meta: Meta;
 }
 
-export type Transport = (item: TransportItem) => void | Promise<void>;
-
+export interface Transport {
+  send(item: TransportItem): void | Promise<void>;
+}
 export interface TransportBody {
   exceptions?: ExceptionEvent[];
   logs?: LogEvent[];

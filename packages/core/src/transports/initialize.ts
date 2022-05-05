@@ -9,7 +9,7 @@ export function initializeTransports(config: Config): Transports {
   };
 
   const execute: Transports['execute'] = (payload) => {
-    value.forEach((transport) => transport(payload));
+    value.forEach((transport) => transport.send(payload));
   };
 
   return {

@@ -1,14 +1,21 @@
-import { agent, getTransportBody, LogLevel, prefixAgentMessage } from '@grafana/agent-core';
-import type { Transport } from '@grafana/agent-core';
+import { BaseTransport, getTransportBody, LogLevel, prefixAgentMessage, TransportItem } from '@grafana/agent-core';
 
 export interface ConsoleTransportOptions {
   level?: LogLevel;
 }
 
-export function getConsoleTransport({ level }: ConsoleTransportOptions = {}): Transport {
-  const message = prefixAgentMessage('New event');
+export class ConsoleTransport extends BaseTransport {
+  private message = prefixAgentMessage('New event');
 
-  return async (item) => {
-    agent.api.callOriginalConsoleMethod(level ?? LogLevel.DEBUG, message, getTransportBody(item));
-  };
+  constructor(private options: ConsoleTransportOptions = {}) {
+    super();
+  }
+
+  send(item: TransportItem) {
+    return this.agent.api.callOriginalConsoleMethod(
+      this.options.level ?? LogLevel.DEBUG,
+      this.message,
+      getTransportBody(item)
+    );
+  }
 }

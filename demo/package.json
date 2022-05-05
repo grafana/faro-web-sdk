@@ -11,6 +11,7 @@
     "directory": "demo"
   },
   "source": "src/index.html",
+  "private": true,
   "scripts": {
     "start": "parcel serve",
     "build": "parcel build",
@@ -21,7 +22,7 @@
     "quality:lint": "run-s quality:lint:*",
     "quality:lint:ts": "eslint \"src/**/*.ts\"",
     "quality:lint:md": "markdownlint README.md",
-    "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json "
+    "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
     "@grafana/agent-core": "^0.0.0",

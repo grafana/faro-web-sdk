@@ -1,26 +1,26 @@
 import { initializeAgent } from '@grafana/agent-core';
-import { tracingInstrumentation } from '@grafana/agent-tracing-web';
+import { TracingInstrumentation } from '@grafana/agent-tracing-web';
 import {
-  getConsoleInstrumentation,
-  getConsoleTransport,
-  errorsInstrumentation,
-  webVitalsInstrumentation,
+  ConsoleInstrumentation,
+  ConsoleTransport,
+  ErrorsInstrumentation,
+  WebVitalsInstrumentation,
   browserMeta,
   pageMeta,
-  getFetchTransport,
+  FetchTransport,
 } from '@grafana/agent-web';
 
 const agent = initializeAgent({
   instrumentations: [
-    getConsoleInstrumentation(),
-    errorsInstrumentation,
-    tracingInstrumentation,
-    webVitalsInstrumentation,
+    new ConsoleInstrumentation(),
+    new ErrorsInstrumentation(),
+    new TracingInstrumentation(),
+    new WebVitalsInstrumentation(),
   ],
   metas: [browserMeta, pageMeta],
   transports: [
-    getConsoleTransport(),
-    getFetchTransport({
+    new ConsoleTransport(),
+    new FetchTransport({
       url: 'http://localhost:12345/collect',
       debug: true,
       requestOptions: {
