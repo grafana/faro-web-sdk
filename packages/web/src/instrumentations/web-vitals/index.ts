@@ -10,6 +10,9 @@ const map = {
 };
 
 export class WebVitalsInstrumentation extends BaseInstrumentation {
+  readonly name = '@grafana/agent-web:instrumentation-web-vitals';
+  readonly version = VERSION;
+
   initialize(): void {
     Object.entries(map).forEach(([indicator, executor]) => {
       executor((metric) => {
@@ -22,6 +25,4 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
       });
     });
   }
-  name = '@grafana/agent-web:instrumentation-web-vitals';
-  version = VERSION;
 }

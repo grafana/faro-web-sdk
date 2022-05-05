@@ -7,6 +7,9 @@ export interface ConsoleInstrumentationOptions {
 export class ConsoleInstrumentation extends BaseInstrumentation {
   static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.LOG];
 
+  readonly version = VERSION;
+  readonly name = '@grafana/agent-web:instrumentation-console';
+
   constructor(private options: ConsoleInstrumentationOptions = {}) {
     super();
   }
@@ -26,7 +29,4 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         };
       });
   }
-
-  version = VERSION;
-  name = '@grafana/agent-web:instrumentation-console';
 }

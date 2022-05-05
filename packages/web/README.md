@@ -34,11 +34,7 @@ import {
 } from '@grafana/agent-web';
 
 const agent = initializeAgent({
-  instrumentations: [
-    new ConsoleInstrumentation(),
-    new ErrorsInstrumentation(),
-    new WebVitalsInstrumentation(),
-  ],
+  instrumentations: [new ConsoleInstrumentation(), new ErrorsInstrumentation(), new WebVitalsInstrumentation()],
   metas: [browserMeta, pageMeta],
   transports: [
     new ConsoleTransport(),
