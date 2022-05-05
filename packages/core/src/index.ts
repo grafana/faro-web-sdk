@@ -1,3 +1,5 @@
+export { agent } from './agent';
+
 export { allLogLevels, defaultExceptionType, defaultLogLevel, LogLevel } from './api';
 export type {
   API,
@@ -10,7 +12,7 @@ export type {
   TraceEvent,
 } from './api';
 
-export { agent, initializeAgent } from './initialize';
+export { initializeAgent } from './initialize';
 
 export type { Agent } from './types';
 
