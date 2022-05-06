@@ -1,6 +1,6 @@
 {
   "name": "@grafana/agent-core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Core package of Grafana JavaScript Agent.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "start": "yarn build -w",
+    "postversion": "yarn prebuild",
     "prebuild": "node bin/gen-version.js",
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist/",
@@ -35,5 +36,8 @@
   },
   "devDependencies": {
     "@types/uuid": "^8.3.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

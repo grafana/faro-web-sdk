@@ -1,6 +1,6 @@
 {
   "name": "@grafana/agent-web",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Grafana JavaScript Agent instrumentations, metas, transports for web.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -30,11 +30,14 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
-    "@grafana/agent-core": "^0.0.0",
+    "@grafana/agent-core": "^0.1.0",
     "ua-parser-js": "^1.0.2",
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
     "@types/ua-parser-js": "^0.7.36"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

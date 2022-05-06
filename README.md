@@ -1,5 +1,7 @@
 # Grafana JavaScript Agent
 
+*Warning*: currently pre-release and subject to frequent breaking changes. Use at your own risk.
+
 Grafana JavaScript Agent is a library that enables applications (both frontend and backend) to interact with external
 services like [Grafana](https://grafana.com/grafana/), [Prometheus](https://prometheus.io/),
 [Loki](https://grafana.com/logs/), [Tempo](https://grafana.com/traces/) etc.
