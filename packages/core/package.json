@@ -37,7 +37,6 @@
   "devDependencies": {
     "@types/uuid": "^8.3.4"
   },
-  "gitHead": "31a64db626b2f28816e95b671d2a3c759a9c7b03",
   "publishConfig": {
     "access": "public"
   }
