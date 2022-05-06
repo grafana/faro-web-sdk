@@ -20,3 +20,4 @@ yarn-error.log*
 
 # Misc
 .DS_Store
+/packages/core/src/version.ts
