@@ -27,10 +27,10 @@ steps:
     NPM_TOKEN:
       from_secret: NPM_TOKEN
   when:
-    branch:
-    - main
+    event:
+    - tag
 ---
 kind: signature
-hmac: 42c3ae051e96886dbba72b31ab8d568254a9cddfd35718664a21803a6ee52186
+hmac: 5a8101aa8620130d6cd883688ac328adf6c25cb7bdbc60f5c51bfcf1099390fc
 
 ...
