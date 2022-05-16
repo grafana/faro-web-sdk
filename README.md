@@ -1,5 +1,7 @@
 # Grafana JavaScript Agent
 
+[![Build Status](https://drone.grafana.net/api/badges/grafana/grafana-javascript-agent/status.svg)](https://drone.grafana.net/grafana/grafana-javascript-agent)
+
 *Warning*: currently pre-release and subject to frequent breaking changes. Use at your own risk.
 
 Grafana JavaScript Agent is a library that enables applications (both frontend and backend) to interact with external
