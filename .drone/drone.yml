@@ -22,7 +22,7 @@ steps:
   image: node:lts-stretch
   commands:
   - git fetch --tags
-  - echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
+  - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
   - yarn run publish from-git --yes --no-verify-access
   environment:
     NPM_TOKEN:
@@ -32,6 +32,6 @@ steps:
     - tag
 ---
 kind: signature
-hmac: 130153697bd7c1febd7069a8c87a0446fd3b16f46d810173db3e093d76cd9c5d
+hmac: 7446b40b5c9c110e103c2f9fbeba5d8058461e22d47143f49374b9ee62a35c51
 
 ...
