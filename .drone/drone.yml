@@ -1,3 +1,4 @@
+---
 kind: pipeline
 name: grafana-javascript-agent
 
@@ -16,3 +17,8 @@ steps:
   image: node:lts-stretch
   commands:
   - yarn quality
+---
+kind: signature
+hmac: 482b76729e2519c49e513979848463742d31f4cd0342fe8fec35682a1fd43bba
+
+...

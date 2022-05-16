@@ -31,7 +31,10 @@
     "quality:circular-deps": "lerna run --parallel quality:circular-deps",
     "publish": "lerna publish",
     "git-hooks": "run-s git-hooks:*",
-    "git-hooks:pre-commit": "lint-staged"
+    "git-hooks:pre-commit": "lint-staged",
+    "drone": "run-s drone:lint drone:sign",
+    "drone:lint": "drone lint .drone/drone.yml --trusted",
+    "drone:sign": "drone --server https://drone.grafana.net sign --save grafana/grafana-javascript-agent .drone/drone.yml"
   },
   "devDependencies": {
     "@grafana/eslint-config": "^2.5.2",
