@@ -1,0 +1,18 @@
+kind: pipeline
+name: grafana-javascript-agent
+
+steps:
+- name: Install dependencies
+  image: node:lts-stretch
+  commands:
+  - yarn install --frozen-lockfile
+
+- name: Build
+  image: node:lts-stretch
+  commands:
+  - yarn build
+
+- name: Lint
+  image: node:lts-stretch
+  commands:
+  - yarn quality

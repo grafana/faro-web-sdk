@@ -2,7 +2,7 @@
 
 Core package of Grafana JavaScript Agent.
 
-*Warning*: currently pre-release and subject to frequent breaking changes. Use at your own risk.
+_Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.
 
 The entire architecture of the library is contained within this package. Out of the box, it doesn't collect any metrics,
 logs etc. but it offers an API to capture them.
@@ -175,8 +175,8 @@ initializeAgent({
 Transports are functions that will be called for every event that is triggered by the API. They are used to do
 something with the data after collecting it.
 
-Out of the box, no transports are provided in the `core` package and they should be provided by platform specific packages like
-[@grafana/agent-web](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/web)
+Out of the box, no transports are provided in the `core` package and they should be provided by platform specific
+packages like [@grafana/agent-web](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/web)
 
 You can also define your own transports:
 

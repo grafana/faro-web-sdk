@@ -2,7 +2,7 @@
 
 Instrumentations, metas and transports for web applications.
 
-*Warning*: currently pre-release and subject to frequent breaking changes. Use at your own risk.
+_Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.
 
 ## Instrumentations
 
