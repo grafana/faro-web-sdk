@@ -23,7 +23,7 @@ steps:
   commands:
   - git fetch --tags
   - echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
-  - yarn run publish --yes from-git
+  - yarn run publish from-git --yes --no-verify-access
   environment:
     NPM_TOKEN:
       from_secret: NPM_TOKEN
@@ -32,6 +32,6 @@ steps:
     - tag
 ---
 kind: signature
-hmac: da806c877a91dba0e9707887a2c9829f61e0d0f54b05bdc577675cf4e616888b
+hmac: 130153697bd7c1febd7069a8c87a0446fd3b16f46d810173db3e093d76cd9c5d
 
 ...
