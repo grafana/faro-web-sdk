@@ -1,8 +1,9 @@
+import type { APIEvent } from '../api';
 import type { Instrumentation } from '../instrumentations';
 import type { App, User, Session, MetaItem } from '../metas';
-import type { Transport } from '../transports';
+import type { BeforeSendHook, Transport } from '../transports';
 
-export interface Config {
+export interface Config<P = APIEvent> {
   globalObjectKey: string;
   instrumentations: Instrumentation[];
   preventGlobalExposure: boolean;
@@ -11,6 +12,10 @@ export interface Config {
   app: App;
   session?: Session;
   user?: User;
+  beforeSend?: BeforeSendHook<P>;
+  ignoreErrors?: Patterns;
 }
+
+export type Patterns = Array<string | RegExp>;
 
 export type UserConfig = Partial<Config> & Pick<Config, 'instrumentations' | 'app'>;
