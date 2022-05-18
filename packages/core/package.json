@@ -24,7 +24,7 @@
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist/",
     "quality": "run-s quality:*",
-    "quality:test": "exit 0",
+    "quality:test": "jest",
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s quality:lint:*",
     "quality:lint:ts": "eslint \"src/**/*.ts\"",
@@ -35,7 +35,10 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@types/uuid": "^8.3.4"
+    "@types/jest": "^27.5.1",
+    "@types/uuid": "^8.3.4",
+    "jest": "^28.1.0",
+    "ts-jest": "^28.0.2"
   },
   "publishConfig": {
     "access": "public"

@@ -37,10 +37,11 @@ export function initializeTransports(config: Config): Transports {
 function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
   return (item) => {
     if (item.type === TransportItemType.EXCEPTION && item.payload) {
-      const msg = (item.payload as ExceptionEvent).value;
+      const event = item.payload as ExceptionEvent;
+      const msg = `${event.type}: ${event.value}`;
       if (
         patterns.find((pattern) => {
-          return typeof pattern === 'string' ? msg.includes(pattern) : msg.match(pattern);
+          return typeof pattern === 'string' ? msg.includes(pattern) : !!msg.match(pattern);
         })
       ) {
         return null;
