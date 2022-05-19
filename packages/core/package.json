@@ -32,6 +32,8 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.1.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.28.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

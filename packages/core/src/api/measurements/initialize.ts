@@ -14,11 +14,14 @@ export function initializeMeasurements(transports: Transports, metas: Metas, tra
       };
 
       if (tracesApi.isInitialized()) {
-        item.payload.trace = {
-          // TODO: Fix this types
-          trace_id: (tracesApi.getActiveSpan() as any).spanContext().traceId,
-          span_id: (tracesApi.getActiveSpan() as any).spanContext().spanId,
-        };
+        const span = tracesApi.getActiveSpan();
+        if (span) {
+          item.payload.trace = {
+            // TODO: Fix this types
+            trace_id: span.spanContext().traceId,
+            span_id: span.spanContext().spanId,
+          };
+        }
       }
 
       transports.execute(item);

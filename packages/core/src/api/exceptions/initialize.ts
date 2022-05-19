@@ -20,11 +20,13 @@ export function initializeExceptions(transports: Transports, metas: Metas, trace
       };
 
       if (tracesApi.isInitialized()) {
-        item.payload.trace = {
-          // TODO: Fix this types
-          trace_id: (tracesApi.getActiveSpan() as any).spanContext().traceId,
-          span_id: (tracesApi.getActiveSpan() as any).spanContext().spanId,
-        };
+        const span = tracesApi.getActiveSpan();
+        if (span) {
+          item.payload.trace = {
+            trace_id: span.spanContext().traceId,
+            span_id: span.spanContext().spanId,
+          };
+        }
       }
 
       if (stackFrames?.length) {

@@ -14,7 +14,7 @@ const agent = initializeAgent({
   instrumentations: [
     new ConsoleInstrumentation(),
     new ErrorsInstrumentation(),
-    new TracingInstrumentation(),
+    webTracingInstrumentation('frontend'),
     new WebVitalsInstrumentation(),
   ],
   metas: [browserMeta, pageMeta],
