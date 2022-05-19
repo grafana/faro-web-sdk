@@ -1,11 +1,15 @@
-export interface TraceEvent {}
+import type { Span, Tracer } from '@opentelemetry/api';
+import type { opentelemetryProto } from '@opentelemetry/exporter-trace-otlp-http/build/src/types';
 
-export type GetActiveSpan<S = unknown> = () => S;
+export type TraceEvent = opentelemetryProto.collector.trace.v1.ExportTraceServiceRequest;
 
-export interface TracesAPI<T = unknown, S = unknown> {
-  getTracer: () => T;
+export type GetActiveSpan = () => Span | undefined;
+
+export interface TracesAPI {
+  getTracer: () => Tracer | undefined;
   isInitialized: () => boolean;
-  setTracer: (tracer: T) => void;
-  setGetActiveSpanInternal: (getActiveSpanInternal: GetActiveSpan<S>) => void;
+  setTracer: (tracer: Tracer) => void;
+  setGetActiveSpanInternal: (getActiveSpanInternal: GetActiveSpan) => void;
   getActiveSpan: GetActiveSpan;
+  pushTraces: (req: opentelemetryProto.collector.trace.v1.ExportTraceServiceRequest) => void;
 }

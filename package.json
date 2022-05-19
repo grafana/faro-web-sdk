@@ -35,7 +35,8 @@
     "git-hooks:pre-commit": "lint-staged",
     "drone": "run-s drone:lint drone:sign",
     "drone:lint": "drone lint .drone/drone.yml --trusted",
-    "drone:sign": "drone --server https://drone.grafana.net sign --save grafana/grafana-javascript-agent .drone/drone.yml"
+    "drone:sign": "drone --server https://drone.grafana.net sign --save grafana/grafana-javascript-agent .drone/drone.yml",
+    "postinstall": "npm explore @opentelemetry/otlp-exporter-base -- cp -r build/src build/esm"
   },
   "devDependencies": {
     "@grafana/eslint-config": "^3.0.0",
@@ -58,6 +59,7 @@
     "markdownlint-cli": "^0.31.1",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.6.2",
+    "process": "^0.11.10",
     "rimraf": "^3.0.2",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.4"

@@ -1,9 +1,11 @@
+import type { Tracer } from '@opentelemetry/api';
+
 import type { Metas } from '../../metas';
-import type { Transports } from '../../transports';
-import type { GetActiveSpan, TracesAPI } from './types';
+import { TransportItem, TransportItemType, Transports } from '../../transports';
+import type { GetActiveSpan, TraceEvent, TracesAPI } from './types';
 
 export function initializeTraces(_transports: Transports, _metas: Metas): TracesAPI {
-  let tracer: unknown | null = null;
+  let tracer: Tracer | undefined;
   let getActiveSpanInternal: GetActiveSpan = () => {
     throw new Error('Tracer is not initialized');
   };
@@ -26,11 +28,25 @@ export function initializeTraces(_transports: Transports, _metas: Metas): Traces
     getActiveSpanInternal = newGetActiveSpanInternal;
   };
 
+  const pushTraces: TracesAPI['pushTraces'] = (request) => {
+    try {
+      const item: TransportItem<TraceEvent> = {
+        type: TransportItemType.TRACE,
+        payload: request,
+        meta: _metas.value,
+      };
+      _transports.execute(item);
+    } catch (err) {
+      // TODO: Add proper logging when debug is enabled
+    }
+  };
+
   return {
     getTracer,
     isInitialized,
     setTracer,
     setGetActiveSpanInternal,
     getActiveSpan,
+    pushTraces,
   };
 }
