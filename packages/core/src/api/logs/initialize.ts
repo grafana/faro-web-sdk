@@ -24,19 +24,10 @@ export function initializeLogs(transports: Transports, metas: Metas, tracesApi: 
           level: level ?? defaultLogLevel,
           context: context ?? {},
           timestamp: getCurrentTimestamp(),
+          trace: tracesApi.getTraceContext(),
         },
         meta: metas.value,
       };
-
-      if (tracesApi.isInitialized()) {
-        const span = tracesApi.getActiveSpan();
-        if (span) {
-          item.payload.trace = {
-            trace_id: span.spanContext().traceId,
-            span_id: span.spanContext().spanId,
-          };
-        }
-      }
 
       transports.execute(item);
     } catch (err) {

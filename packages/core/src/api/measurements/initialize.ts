@@ -9,20 +9,12 @@ export function initializeMeasurements(transports: Transports, metas: Metas, tra
     try {
       const item: TransportItem<MeasurementEvent> = {
         type: TransportItemType.MEASUREMENT,
-        payload,
+        payload: {
+          ...payload,
+          trace: tracesApi.getTraceContext(),
+        },
         meta: metas.value,
       };
-
-      if (tracesApi.isInitialized()) {
-        const span = tracesApi.getActiveSpan();
-        if (span) {
-          item.payload.trace = {
-            // TODO: Fix this types
-            trace_id: span.spanContext().traceId,
-            span_id: span.spanContext().spanId,
-          };
-        }
-      }
 
       transports.execute(item);
     } catch (err) {

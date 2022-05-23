@@ -1,4 +1,5 @@
 import type { BaseObject } from '../../utils';
+import type { TraceContext } from '../traces/types';
 
 export enum LogLevel {
   TRACE = 'trace',
@@ -17,10 +18,7 @@ export interface LogEvent {
   message: string;
   timestamp: string;
 
-  trace?: {
-    trace_id: string;
-    span_id: string;
-  };
+  trace?: TraceContext;
 }
 
 export interface PushLogOptions {
