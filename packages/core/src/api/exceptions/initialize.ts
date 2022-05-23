@@ -15,19 +15,10 @@ export function initializeExceptions(transports: Transports, metas: Metas, trace
           type: type ?? defaultExceptionType,
           value,
           timestamp: getCurrentTimestamp(),
+          trace: tracesApi.getTraceContext(),
         },
         type: TransportItemType.EXCEPTION,
       };
-
-      if (tracesApi.isInitialized()) {
-        const span = tracesApi.getActiveSpan();
-        if (span) {
-          item.payload.trace = {
-            trace_id: span.spanContext().traceId,
-            span_id: span.spanContext().spanId,
-          };
-        }
-      }
 
       if (stackFrames?.length) {
         item.payload.stacktrace = {

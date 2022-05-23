@@ -1,31 +1,35 @@
-import type { Tracer } from '@opentelemetry/api';
+import type { ContextAPI as OTELContextAPI, TraceAPI as OTELTraceAPI } from '@opentelemetry/api';
 
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType, Transports } from '../../transports';
-import type { GetActiveSpan, TraceEvent, TracesAPI } from './types';
+import type { TraceContext, TraceEvent, TracesAPI } from './types';
 
 export function initializeTraces(_transports: Transports, _metas: Metas): TracesAPI {
-  let tracer: Tracer | undefined;
-  let getActiveSpanInternal: GetActiveSpan = () => {
-    throw new Error('Tracer is not initialized');
+  let traceAPI: OTELTraceAPI | undefined;
+  let contextAPI: OTELContextAPI | undefined;
+
+  const getOTELTraceAPI = () => traceAPI;
+  const getOTELContextAPI = () => contextAPI;
+
+  const setOTELTraceAPI = (_traceAPI: OTELTraceAPI) => {
+    traceAPI = _traceAPI;
   };
 
-  const getTracer: TracesAPI['getTracer'] = () => tracer;
-
-  const isInitialized: TracesAPI['isInitialized'] = () => tracer !== null;
-
-  const setTracer: TracesAPI['setTracer'] = (newTracer) => {
-    // TODO: add check if tracer is already set
-
-    tracer = newTracer;
+  const setOTELContextAPI = (_contextAPI: OTELContextAPI) => {
+    contextAPI = _contextAPI;
   };
 
-  const getActiveSpan: TracesAPI['getActiveSpan'] = () => {
-    return getActiveSpanInternal();
-  };
-
-  const setGetActiveSpanInternal: TracesAPI['setGetActiveSpanInternal'] = (newGetActiveSpanInternal) => {
-    getActiveSpanInternal = newGetActiveSpanInternal;
+  const getTraceContext = (): TraceContext | undefined => {
+    if (traceAPI && contextAPI) {
+      const ctx = traceAPI.getSpan(contextAPI.active())?.spanContext();
+      if (ctx) {
+        return {
+          trace_id: ctx.traceId,
+          span_id: ctx.spanId,
+        };
+      }
+    }
+    return undefined;
   };
 
   const pushTraces: TracesAPI['pushTraces'] = (request) => {
@@ -42,11 +46,11 @@ export function initializeTraces(_transports: Transports, _metas: Metas): Traces
   };
 
   return {
-    getTracer,
-    isInitialized,
-    setTracer,
-    setGetActiveSpanInternal,
-    getActiveSpan,
+    getOTELContextAPI,
+    getOTELTraceAPI,
+    setOTELContextAPI,
+    setOTELTraceAPI,
     pushTraces,
+    getTraceContext,
   };
 }

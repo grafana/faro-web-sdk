@@ -1,3 +1,5 @@
+import type { TraceContext } from '../traces/types';
+
 export interface ExceptionStackFrame {
   filename: string;
   function: string;
@@ -14,10 +16,7 @@ export interface ExceptionEvent {
   stacktrace?: {
     frames: ExceptionStackFrame[];
   };
-  trace?: {
-    trace_id: string;
-    span_id: string;
-  };
+  trace?: TraceContext;
 }
 
 export interface PushExceptionOptions {

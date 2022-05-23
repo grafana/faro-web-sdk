@@ -1,11 +1,10 @@
+import type { TraceContext } from '../traces/types';
+
 export interface MeasurementEvent<V extends { [label: string]: number } = { [label: string]: number }> {
   type: string;
   values: V;
 
-  trace?: {
-    trace_id: string;
-    span_id: string;
-  };
+  trace?: TraceContext;
 }
 
 export interface PushMeasurementOptions {}
