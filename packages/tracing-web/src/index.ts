@@ -1,5 +1,4 @@
-import { BaseInstrumentation, Instrumentation, VERSION } from '@grafana/agent-core';
-import { agent } from '@grafana/agent-core';
+import { BaseInstrumentation, VERSION, agent } from '@grafana/agent-core';
 import { trace, context, TextMapPropagator, ContextManager } from '@opentelemetry/api';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
@@ -13,7 +12,7 @@ import { SimpleSpanProcessor, SpanProcessor } from '@opentelemetry/sdk-trace-bas
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 
-import { GrafanaAgentTraceExporter } from '@grafana/agent-tracing-web/src/agent-exporter';
+import { GrafanaAgentTraceExporter } from './agent-exporter';
 
 // the providing of app name here is not great
 // should delay initialization and provide the full agent config,
@@ -70,5 +69,5 @@ export class TracingInstrumentation extends BaseInstrumentation {
     });
     agent.api.setOTELTraceAPI(trace);
     agent.api.setOTELContextAPI(context);
-  };
+  }
 }
