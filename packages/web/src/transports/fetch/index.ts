@@ -43,7 +43,7 @@ export class FetchTransport extends BaseTransport {
     } catch (err) {}
   }
 
-  override getIgnoreUrls(): (string | RegExp)[] {
+  override getIgnoreUrls(): Array<string | RegExp> {
     return [this.options.url];
   }
 }
