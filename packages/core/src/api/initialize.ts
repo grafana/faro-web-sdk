@@ -16,6 +16,5 @@ export function initializeAPI(transports: Transports, metas: Metas): API {
     ...initializeMeta(transports, metas),
     ...initializeLogs(transports, metas, tracesApi),
     ...initializeMeasurements(transports, metas, tracesApi),
-    ...initializeTraces(transports, metas),
   };
 }
