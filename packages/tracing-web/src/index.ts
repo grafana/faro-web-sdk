@@ -8,7 +8,7 @@ import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { UserInteractionInstrumentation } from '@opentelemetry/instrumentation-user-interaction';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
-import { SimpleSpanProcessor, SpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { BatchSpanProcessor, SpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 
@@ -39,6 +39,8 @@ export class TracingInstrumentation extends BaseInstrumentation {
   name = '@grafana/agent-tracing-web';
   version = VERSION;
 
+  static SCHEDULED_BATCH_DELAY_MS = 1000;
+
   constructor(private options: TracingInstrumentationOptions = {}) {
     super();
   }
@@ -62,7 +64,9 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     const provider = new WebTracerProvider({ resource });
     provider.addSpanProcessor(
-      options.spanProcessor ?? new SimpleSpanProcessor(new GrafanaAgentTraceExporter({ agent }))
+      options.spanProcessor ?? new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }), {
+        scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
+      })
     );
     provider.register({
       propagator: options.propagator ?? new W3CTraceContextPropagator(),
