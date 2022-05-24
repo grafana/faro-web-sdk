@@ -1,35 +1,40 @@
-function throwError() {
+import '@grafana/agent-web/dist/globals'
+import { SpanStatusCode } from '@opentelemetry/api'
+
+const w = window as any;
+
+w.throwError = () => {
   throw new Error('This is a thrown error');
 }
 
-function callUndefined() {
+w.callUndefined = () => {
   // eslint-disable-next-line no-eval
   eval('test();');
 }
 
-function callConsole(method: 'trace' | 'info' | 'log' | 'warn' | 'error') {
+w.callConsole = (method: 'trace' | 'info' | 'log' | 'warn' | 'error') => {
   // eslint-disable-next-line no-console
   console[method](`This is a console ${method} message`);
 }
 
-function fetchError() {
+w.fetchError = () => {
   fetch('http://localhost:12345', {
     method: 'POST',
   });
 }
 
-function promiseReject() {
+w.promiseReject = () => {
   new Promise((_accept, reject) => {
     reject('This is a rejected promise');
   });
 }
 
-function fetchSuccess() {
+w.fetchSuccess = () => {
   fetch('http://localhost:1234');
 }
 
-function sendCustomMetric() {
-  (window as any).grafanaJavaScriptAgent.api.pushMeasurement({
+w.sendCustomMetric = () => {
+  window.grafanaAgent.api.pushMeasurement({
     type: 'custom',
     values: {
       my_custom_metric: Math.random(),
@@ -37,6 +42,19 @@ function sendCustomMetric() {
   });
 }
 
+w.traceWithLog = () => {
+  const otel = window.grafanaAgent.api.getOTEL();
+  console.log('twe', otel);
+  if (otel) {
+    const span = otel.trace.getTracer('default').startSpan("trace with log");
+    otel.context.with(otel.trace.setSpan(otel.context.active(), span), () => {
+      window.grafanaAgent.api.pushLog(["trace with log button clicked"]);
+      span.setStatus({code: SpanStatusCode.OK});
+      span.end();
+    })
+  }
+}
+
 window.addEventListener('load', () => {
-  (window as any).grafanaAgent.api.pushLog(['Manual event from Home']);
+  window.grafanaAgent.api.pushLog(['Manual event from Home']);
 });
