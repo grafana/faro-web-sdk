@@ -42,4 +42,8 @@ export class FetchTransport extends BaseTransport {
       });
     } catch (err) {}
   }
+
+  override getIgnoreUrls(): (string | RegExp)[] {
+    return [this.options.url];
+  }
 }

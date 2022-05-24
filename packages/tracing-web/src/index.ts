@@ -19,8 +19,6 @@ import { GrafanaAgentTraceExporter } from './agent-exporter';
 // taking app name from it
 
 export interface TracingInstrumentationOptions {
-  appName: string;
-  appVersion: string;
   resourceAttributes?: ResourceAttributes;
   propagator?: TextMapPropagator;
   contextManager?: ContextManager;
@@ -28,11 +26,11 @@ export interface TracingInstrumentationOptions {
   spanProcessor?: SpanProcessor;
 }
 
-export function getDefaultInstrumentations(): InstrumentationOption[] {
+export function getDefaultOTELInstrumentations(ignoreUrls: Array<string | RegExp> = []): InstrumentationOption[] {
   return [
     new DocumentLoadInstrumentation() as any,
-    new FetchInstrumentation(),
-    new XMLHttpRequestInstrumentation(),
+    new FetchInstrumentation({ ignoreUrls }),
+    new XMLHttpRequestInstrumentation({ ignoreUrls }),
     new UserInteractionInstrumentation(),
   ];
 }
@@ -41,17 +39,24 @@ export class TracingInstrumentation extends BaseInstrumentation {
   name = '@grafana/agent-tracing-web';
   version = VERSION;
 
-  constructor(private options: TracingInstrumentationOptions) {
+  constructor(private options: TracingInstrumentationOptions = {}) {
     super();
   }
 
   initialize(): void {
+    const config = this.agent.config
     const options = this.options;
-    const attributes: ResourceAttributes = {
-      [SemanticResourceAttributes.SERVICE_NAME]: options.appName,
-      [SemanticResourceAttributes.SERVICE_VERSION]: options.appVersion,
-      ...options.resourceAttributes,
-    };
+    const attributes: ResourceAttributes = {};
+
+    if (config.app.name) {
+      attributes[SemanticResourceAttributes.SERVICE_NAME] = config.app.name;
+    }
+    if (config.app.version) {
+      attributes[SemanticResourceAttributes.SERVICE_VERSION] = config.app.version;
+    }
+
+    Object.assign(attributes, options.resourceAttributes)
+
 
     const resource = Resource.default().merge(new Resource(attributes));
 
@@ -65,9 +70,13 @@ export class TracingInstrumentation extends BaseInstrumentation {
     });
 
     registerInstrumentations({
-      instrumentations: options.instrumentations?.length ? options.instrumentations : getDefaultInstrumentations(),
+      instrumentations: options.instrumentations?.length ? options.instrumentations : getDefaultOTELInstrumentations(this._getIgnoreUrls()),
     });
     agent.api.setOTELTraceAPI(trace);
     agent.api.setOTELContextAPI(context);
+  }
+
+  private _getIgnoreUrls(): Array<string | RegExp> {
+    return this.agent.transports.value.flatMap(transport => transport.getIgnoreUrls());
   }
 }

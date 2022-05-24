@@ -1,27 +1,31 @@
 import type { ContextAPI as OTELContextAPI, TraceAPI as OTELTraceAPI } from '@opentelemetry/api';
-
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType, Transports } from '../../transports';
 import type { TraceContext, TraceEvent, TracesAPI } from './types';
 
-export function initializeTraces(_transports: Transports, _metas: Metas): TracesAPI {
-  let traceAPI: OTELTraceAPI | undefined;
-  let contextAPI: OTELContextAPI | undefined;
+interface OTELAPI {
+  traceAPI?: OTELTraceAPI;
+  contextAPI?: OTELContextAPI;
+}
 
-  const getOTELTraceAPI = () => traceAPI;
-  const getOTELContextAPI = () => contextAPI;
+export function initializeTraces(_transports: Transports, _metas: Metas): TracesAPI {
+  const otel: OTELAPI = {};
+
+  const getOTELTraceAPI = () => otel.traceAPI;
+  const getOTELContextAPI = () => otel.contextAPI;
 
   const setOTELTraceAPI = (_traceAPI: OTELTraceAPI) => {
-    traceAPI = _traceAPI;
+    console.log('settraceapi', _traceAPI);
+    otel.traceAPI = _traceAPI;
   };
 
   const setOTELContextAPI = (_contextAPI: OTELContextAPI) => {
-    contextAPI = _contextAPI;
+    otel.contextAPI = _contextAPI;
   };
 
   const getTraceContext = (): TraceContext | undefined => {
-    if (traceAPI && contextAPI) {
-      const ctx = traceAPI.getSpan(contextAPI.active())?.spanContext();
+    if (otel.traceAPI && otel.contextAPI) {
+      const ctx = otel.traceAPI.getSpanContext(otel.contextAPI.active());
       if (ctx) {
         return {
           trace_id: ctx.traceId,
