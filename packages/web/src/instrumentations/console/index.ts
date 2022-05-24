@@ -21,7 +21,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         /* eslint-disable-next-line no-console */
         console[level] = (...args) => {
           try {
-            this.agent.api.pushLog(args, level);
+            this.agent.api.pushLog(args, { level });
           } catch (err) {
           } finally {
             this.agent.api.callOriginalConsoleMethod(level, ...args);
