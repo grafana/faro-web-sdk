@@ -46,7 +46,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
   }
 
   initialize(): void {
-    const config = this.agent.config
+    const config = this.agent.config;
     const options = this.options;
     const attributes: ResourceAttributes = {};
 
@@ -57,16 +57,16 @@ export class TracingInstrumentation extends BaseInstrumentation {
       attributes[SemanticResourceAttributes.SERVICE_VERSION] = config.app.version;
     }
 
-    Object.assign(attributes, options.resourceAttributes)
-
+    Object.assign(attributes, options.resourceAttributes);
 
     const resource = Resource.default().merge(new Resource(attributes));
 
     const provider = new WebTracerProvider({ resource });
     provider.addSpanProcessor(
-      options.spanProcessor ?? new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }), {
-        scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
-      })
+      options.spanProcessor ??
+        new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }), {
+          scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
+        })
     );
     provider.register({
       propagator: options.propagator ?? new W3CTraceContextPropagator(),
@@ -74,13 +74,14 @@ export class TracingInstrumentation extends BaseInstrumentation {
     });
 
     registerInstrumentations({
-      instrumentations: options.instrumentations?.length ? options.instrumentations : getDefaultOTELInstrumentations(this._getIgnoreUrls()),
+      instrumentations: options.instrumentations?.length
+        ? options.instrumentations
+        : getDefaultOTELInstrumentations(this._getIgnoreUrls()),
     });
-    agent.api.setOTELTraceAPI(trace);
-    agent.api.setOTELContextAPI(context);
+    agent.api.initOTEL(trace, context);
   }
 
   private _getIgnoreUrls(): Array<string | RegExp> {
-    return this.agent.transports.value.flatMap(transport => transport.getIgnoreUrls());
+    return this.agent.transports.value.flatMap((transport) => transport.getIgnoreUrls());
   }
 }

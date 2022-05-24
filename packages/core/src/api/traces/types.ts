@@ -6,10 +6,11 @@ export type TraceEvent = opentelemetryProto.collector.trace.v1.ExportTraceServic
 export type GetActiveSpan = () => Span | undefined;
 
 export interface TracesAPI {
-  getOTELTraceAPI: () => OTELTraceAPI | undefined;
-  getOTELContextAPI: () => OTELContextAPI | undefined;
-  setOTELTraceAPI: (traceAPI: OTELTraceAPI) => void;
-  setOTELContextAPI: (contextAPI: OTELContextAPI) => void;
+  initOTEL: (trace: OTELTraceAPI, context: OTELContextAPI) => void;
+  otel?: {
+    trace: OTELTraceAPI;
+    context: OTELContextAPI;
+  };
   getTraceContext: () => TraceContext | undefined;
   pushTraces: (req: opentelemetryProto.collector.trace.v1.ExportTraceServiceRequest) => void;
 }
