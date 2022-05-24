@@ -1,18 +1,16 @@
 import type { ContextAPI as OTELContextAPI, TraceAPI as OTELTraceAPI } from '@opentelemetry/api';
-
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType, Transports } from '../../transports';
-import type { TraceContext, TraceEvent, TracesAPI } from './types';
+import type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './types';
 
 export function initializeTraces(_transports: Transports, _metas: Metas): TracesAPI {
-  let otel: TracesAPI['otel'] = undefined;
+  let otel: OTELApi | undefined = undefined;
 
   const initOTEL = (trace: OTELTraceAPI, context: OTELContextAPI) => {
     otel = {
       trace,
       context,
     };
-    bag.otel = otel;
   };
 
   const getTraceContext = (): TraceContext | undefined => {
@@ -41,11 +39,13 @@ export function initializeTraces(_transports: Transports, _metas: Metas): Traces
     }
   };
 
+  const getOTEL: TracesAPI['getOTEL'] = () => otel;
+
   const bag: TracesAPI = {
     initOTEL,
     pushTraces,
     getTraceContext,
-    otel,
+    getOTEL
   };
 
   return bag;
