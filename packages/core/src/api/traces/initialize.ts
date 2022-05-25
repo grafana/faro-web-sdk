@@ -1,4 +1,5 @@
 import type { ContextAPI as OTELContextAPI, TraceAPI as OTELTraceAPI } from '@opentelemetry/api';
+
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType, Transports } from '../../transports';
 import type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './types';
@@ -45,7 +46,7 @@ export function initializeTraces(_transports: Transports, _metas: Metas): Traces
     initOTEL,
     pushTraces,
     getTraceContext,
-    getOTEL
+    getOTEL,
   };
 
   return bag;
