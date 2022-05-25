@@ -8,7 +8,7 @@ export type GetActiveSpan = () => Span | undefined;
 export type OTELApi = {
   trace: OTELTraceAPI;
   context: OTELContextAPI;
-}
+};
 
 export interface TracesAPI {
   initOTEL: (trace: OTELTraceAPI, context: OTELContextAPI) => void;
