@@ -5,11 +5,13 @@ This document describes basic setup and usage. Also see [demo application](https
 ## Set up Grafana Agent
 
 First, a Grafana Agent instance has to be set up, see [Grafana Agent set up documentation](https://grafana.com/docs/agent/latest/set-up/).
-It has to be configured with `app-agent-receiver` integration to expose a http collection endpoint and run with `integrations-next` flag enabled.
+It has to be configured with `app-agent-receiver` integration to expose a http collection
+endpoint and run with `integrations-next` flag enabled.
 
-
-Below is an example of a basic Grafana Agent config that will expose a collector endpoint at http://host:12345/collect, and forward collected telemetry to Loki,
-Tempo and Prometheus instances. See [agent app receiver integration documentation](https://github.com/grafana/agent/blob/main/docs/user/configuration/integrations/integrations-next/app-agent-receiver-config.md) for more details on available options.
+Below is an example of a basic Grafana Agent config that will expose a collector endpoint
+at [http://host:12345/collect](http://host:12345/collect), and forward collected telemetry to Loki,
+Tempo and Prometheus instances. See [agent app receiver integration documentation](https://github.com/grafana/agent/blob/main/docs/user/configuration/integrations/integrations-next/app-agent-receiver-config.md)
+for more details on available options.
 
 ```yaml
 metrics:
@@ -65,10 +67,9 @@ integrations:
         kind:         # value will be taken from log items. exception, log, measurement, etc
       logs_send_timeout: 5000
       sourcemaps:
-        download: true # will download source file, extract source map location, download soure map and use it to transform stack trace locations
+        download: true # will download source file, extract source map location,
+        # download source map and use it to transform stack trace locations
 ```
-
-
 
 ## Install Grafana Javascript Agent
 
@@ -84,7 +85,8 @@ yarn add @grafana/agent-web
 
 ### Basic
 
-Will set up agent to automatically collect uncaught errors & [web vitals](https://github.com/GoogleChrome/web-vitals) measurements. No tracing, low footprint.
+Will set up agent to automatically collect uncaught errors
+& [web vitals](https://github.com/GoogleChrome/web-vitals) measurements. No tracing, low footprint.
 
 ```javascript
 import { initializeAgent } from '@grafana/agent-web';
@@ -97,14 +99,15 @@ const agent = initializeAgent({
     version: '1.0.0',
   },
 });
-
 ```
 
 ### With Open Telemetry tracing
 
-Due to it's hefty size, [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/) tracing support is provided in a separate `@grafna/agent-tracing-web` package.
+Due to it's hefty size, [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/)
+tracing support is provided in a separate `@grafna/agent-tracing-web` package.
 
-Using a provided default OTEL setup, which includes tracing instrumentations for user interaction, fetch and document load:
+Using a provided default OTEL setup, which includes tracing instrumentations for user
+interaction, fetch and document load:
 
 ```javascript
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
@@ -122,10 +125,10 @@ const agent = initializeAgent({
 
 // get otel trace and context apis
 const { trace, context } = agent.api.getOTEL();
-
 ```
 
-Configure OTEL manual. Have to use `GrafanaAgentTraceExporter` and call `agent.api.initOTEL` with OTEL trace and context APIs.
+Configure OTEL manual. Have to use `GrafanaAgentTraceExporter` and call `agent.api.initOTEL`
+with OTEL trace and context APIs.
 
 ```javascript
 import { trace, context } from '@opentelemetry/api';
@@ -220,6 +223,4 @@ agent.api.pushMeasurement({
     duration: 4000
   }
 });
-
-
 ```
