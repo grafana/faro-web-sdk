@@ -7,8 +7,11 @@ export interface FetchTransportRequestOptions extends Omit<RequestInit, 'body' |
 }
 
 export interface FetchTransportOptions {
+  // url of the collector endpoint
   url: string;
 
+  // will be added as `x-api-key` header
+  apiKey?: string;
   debug?: boolean;
   requestOptions?: FetchTransportRequestOptions;
 }
@@ -22,7 +25,7 @@ export class FetchTransport extends BaseTransport {
     try {
       const body = JSON.stringify(getTransportBody(item));
 
-      const { url, debug, requestOptions } = this.options;
+      const { url, debug, requestOptions, apiKey } = this.options;
 
       const { headers, ...restOfRequestOptions } = requestOptions ?? {};
 
@@ -31,6 +34,7 @@ export class FetchTransport extends BaseTransport {
         headers: {
           'Content-Type': 'application/json',
           ...(headers ?? {}),
+          ...(apiKey ? { 'x-api-key': apiKey } : {}),
         },
         body,
         keepalive: true,

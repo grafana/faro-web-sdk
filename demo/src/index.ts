@@ -1,40 +1,17 @@
-import { initializeAgent } from '@grafana/agent-core';
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
-import {
-  ConsoleInstrumentation,
-  ConsoleTransport,
-  ErrorsInstrumentation,
-  WebVitalsInstrumentation,
-  browserMeta,
-  pageMeta,
-  FetchTransport,
-} from '@grafana/agent-web';
+import { ConsoleInstrumentation, initializeAgent, getDefaultInstrumentations } from '@grafana/agent-web';
 
 const agent = initializeAgent({
-  instrumentations: [
-    new ConsoleInstrumentation(),
-    new ErrorsInstrumentation(),
-    new TracingInstrumentation(),
-    new WebVitalsInstrumentation(),
-  ],
-  metas: [browserMeta, pageMeta],
-  transports: [
-    new ConsoleTransport(),
-    new FetchTransport({
-      url: 'http://localhost:12345/collect',
-      debug: true,
-      requestOptions: {
-        headers: { 'x-api-key': 'my-api-key' },
-      },
-    }),
-  ],
-  user: {
-    username: 'bob',
-  },
+  url: 'http://localhost:12345/collect',
+  apiKey: 'secret',
+  instrumentations: [...getDefaultInstrumentations(), new TracingInstrumentation(), new ConsoleInstrumentation()],
   app: {
-    name: 'demo',
-    version: '1.0',
+    name: 'frontend',
+    version: '1.0.0',
   },
 });
 
-agent.api.pushLog(['Manual event from initialized agent']);
+agent.api.getOTEL()!.trace.getTracer('frontend').startActiveSpan('hello world', span => {
+  console.log('hello world!!');
+  span.end()
+});

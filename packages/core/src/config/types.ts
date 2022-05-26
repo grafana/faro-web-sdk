@@ -12,5 +12,3 @@ export interface Config {
   session?: Session;
   user?: User;
 }
-
-export type UserConfig = Partial<Config> & Pick<Config, 'instrumentations' | 'app'>;
