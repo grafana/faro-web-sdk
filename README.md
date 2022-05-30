@@ -4,7 +4,7 @@
 
 *Warning*: currently pre-release and subject to frequent breaking changes. Use at your own risk.
 
-Grafana JavaScript Agent is a library that can instrument javascript applications
+Grafana JavaScript Agent is a library that can instrument JavaScript applications
 (both frontend and (soon!) backend) to collect telemetry and forward it
 to the [Grafana Agent](https://grafana.com/docs/agent/latest/)
 (with app o11y collector integration enabled). Grafana Agent then can send this data further to [Prometheus](https://prometheus.io/),

@@ -86,7 +86,7 @@ yarn add @grafana/agent-web
 ### Basic
 
 Will set up agent to automatically collect uncaught errors
-& [web vitals](https://github.com/GoogleChrome/web-vitals) measurements. No tracing, low footprint.
+and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements. No tracing, low footprint.
 
 ```javascript
 import { initializeAgent } from '@grafana/agent-web';
