@@ -1,6 +1,7 @@
 import type { ExceptionEvent } from '../api';
 import type { Config } from '../config';
 import type { Patterns } from '../config/types';
+import { isString } from '../utils';
 import { BeforeSendHook, Transport, TransportItem, TransportItemType, Transports } from './types';
 
 export function initializeTransports(config: Config): Transports {
@@ -41,7 +42,7 @@ function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendH
       const msg = `${event.type}: ${event.value}`;
       if (
         patterns.find((pattern) => {
-          return typeof pattern === 'string' ? msg.includes(pattern) : !!msg.match(pattern);
+          return isString(pattern) ? msg.includes(pattern) : !!msg.match(pattern);
         })
       ) {
         return null;
