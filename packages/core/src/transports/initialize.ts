@@ -2,7 +2,7 @@ import type { ExceptionEvent } from '../api';
 import type { Config } from '../config';
 import type { Patterns } from '../config/types';
 import { isString } from '../utils';
-import { BeforeSendHook, Transport, TransportItem, TransportItemType, Transports } from './types';
+import { BeforeSendHook, Transport, TransportItemType, Transports } from './types';
 
 export function initializeTransports(config: Config): Transports {
   const transports: Transport[] = [...config.transports];
@@ -20,11 +20,16 @@ export function initializeTransports(config: Config): Transports {
   };
 
   const execute: Transports['execute'] = (item) => {
-    let modified = beforeSendHooks.reduce<TransportItem | null>((prev, hook) => (prev ? hook(prev) : null), item);
-    if (modified !== null) {
-      for (const transport of transports) {
-        transport.send(modified);
+    let _item = item;
+    for (const hook of beforeSendHooks) {
+      const modified = hook(_item);
+      if (modified === null) {
+        return;
       }
+      _item = modified;
+    }
+    for (const transport of transports) {
+      transport.send(_item);
     }
   };
 
