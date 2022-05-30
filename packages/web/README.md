@@ -6,10 +6,9 @@ _Warning_: currently pre-release and subject to frequent breaking changes. Use a
 
 ## Instrumentations
 
-- console - captures messages logged to `console` global object
+- console - captures messages logged to `console` global object. Only `warn`, `info` and `error` levels by default.
 - errors - captures unhandled top level exceptions
 - web-vitals - captures performance metrics reported by web vitals API
-- tracing - captures traces. @TODO
 
 ## Metas
 

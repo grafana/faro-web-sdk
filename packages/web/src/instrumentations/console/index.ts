@@ -5,7 +5,7 @@ export interface ConsoleInstrumentationOptions {
 }
 
 export class ConsoleInstrumentation extends BaseInstrumentation {
-  static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE];
+  static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];
 
   readonly version = VERSION;
   readonly name = '@grafana/agent-web:instrumentation-console';
