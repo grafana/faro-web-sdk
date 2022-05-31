@@ -50,7 +50,7 @@ import { TracingInstrumentation } from '@grafana/agent-tracing-web';
 import {
   ConsoleInstrumentation,
   initializeAgent,
-  getDefaultInstrumentations
+  getWebInstrumentations
 } from '@grafana/agent-web';
 
 
@@ -58,9 +58,8 @@ const agent = initializeAgent({
   url: 'https://agent.myapp/collect',
   apiKey: 'secret',
   instrumentations: [
-    ...getDefaultInstrumentations(),
+    ...getWebInstrumentations(captureConsole=true),
     new TracingInstrumentation(),
-    new ConsoleInstrumentation()
   ],
   app: {
     name: 'frontend',
