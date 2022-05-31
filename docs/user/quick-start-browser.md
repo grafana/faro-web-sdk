@@ -1,17 +1,16 @@
-# Grafana Javascript Agent quickstart (browser)
+# Get started with Grafana Javascript Agent
 
-This document describes basic setup and usage. Also see [demo application](https://github.com/grafana/grafana-javascript-agent/tree/main/demo).
+This document describes how to set up and use Grafana Javascript Agent. For more information, refer to [demo application](https://github.com/grafana/grafana-javascript-agent/tree/main/demo).
 
-## Set up Grafana Agent
+## Before you begin
 
-First, a Grafana Agent instance has to be set up, see [Grafana Agent set up documentation](https://grafana.com/docs/agent/latest/set-up/).
-It has to be configured with `app-agent-receiver` integration to expose a http collection
-endpoint and run with `integrations-next` flag enabled.
+* Set up a Grafana Agent instance. For more information , refer to [Grafana Agent set up documentation](https://grafana.com/docs/agent/latest/set-up/).
+* Configure your instance with `app-agent-receiver` integration to expose a http collection
+endpoint and run with the `integrations-next` flag enabled.
 
-Below is an example of a basic Grafana Agent config that will expose a collector endpoint
-at [http://host:12345/collect](http://host:12345/collect), and forward collected telemetry to Loki,
-Tempo and Prometheus instances. See [agent app receiver integration documentation](https://github.com/grafana/agent/blob/main/docs/user/configuration/integrations/integrations-next/app-agent-receiver-config.md)
-for more details on available options.
+The following is an example of a basic Grafana Agent configuration that exposes a collector endpoint
+at [http://host:12345/collect](http://host:12345/collect) and forwards collected telemetry to Loki,
+Tempo, and Prometheus instances. For more information, refer to [agent app receiver integration documentation](https://github.com/grafana/agent/blob/main/docs/user/configuration/integrations/integrations-next/app-agent-receiver-config.md).
 
 ```yaml
 metrics:
