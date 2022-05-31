@@ -21,18 +21,18 @@ initializeAgent({
 
 The agent requires a configuration parameter.
 
-| Property                | Description                                                             | Type                | Optional | Default Value  |
-| ----------------------- | ----------------------------------------------------------------------- | ------------------- | -------- | -------------- |
-| `app`                   | Application metadata                                                    | `App`               | Y        | `undefined`    |
-| `beforeSend`            | Hook to modify or discard an event before it is sent over the wire      | `BeforeSendHook`    | Y        | `undefined`    |
-| `globalObjectKey`       | String that should be used when defining the agent on the global object | `string`            | Y        | `grafanaAgent` |
-| `ignoreErrors`          | Error message patterns for errors that should be ignored                | `Patterns`          | Y        | `[]`           |
-| `instrumentations`      | Array of instrumentations that should be ran                            | `Instrumentation[]` | N        | `[]`           |
-| `metas`                 | Array of metas that should be logged                                    | `MetaItem[]`        | Y        | `[]`           |
-| `preventGlobalExposure` | Flag for toggling the definition on the global object                   | `boolean`           | Y        | `false`        |
-| `session`               | Session metadata                                                        | `Session`           | Y        | `undefined`    |
-| `transports`            | Array of transports that should be used                                 | `Transport[]`       | Y        | `[]`           |
-| `user`                  | User metadata                                                           | `User`              | Y        | `undefined`    |
+| Property                | Description                                                                            | Type                | Optional | Default Value  |
+| ----------------------- | -------------------------------------------------------------------------------------- | ------------------- | -------- | -------------- |
+| `app`                   | Application metadata                                                                   | `App`               | Y        | `undefined`    |
+| `beforeSend`            | Hook invoked before pushing event to transport. Can be used to modify or filter events | `BeforeSendHook`    | Y        | `undefined`    |
+| `globalObjectKey`       | String that should be used when defining the agent on the global object                | `string`            | Y        | `grafanaAgent` |
+| `ignoreErrors`          | Error message patterns for errors that should be ignored                               | `Patterns`          | Y        | `[]`           |
+| `instrumentations`      | Array of instrumentations that should be ran                                           | `Instrumentation[]` | N        | `[]`           |
+| `metas`                 | Array of metas that should be logged                                                   | `MetaItem[]`        | Y        | `[]`           |
+| `preventGlobalExposure` | Flag for toggling the definition on the global object                                  | `boolean`           | Y        | `false`        |
+| `session`               | Session metadata                                                                       | `Session`           | Y        | `undefined`    |
+| `transports`            | Array of transports that should be used                                                | `Transport[]`       | Y        | `[]`           |
+| `user`                  | User metadata                                                                          | `User`              | Y        | `undefined`    |
 
 ## Agent
 
