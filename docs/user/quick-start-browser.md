@@ -70,7 +70,9 @@ integrations:
         # download source map and use it to transform stack trace locations
 ```
 
-## Install Grafana Javascript Agent
+## 1. Install Grafana Javascript Agent
+
+Add `@grafana/agent-web` dependency to your web app bundle.
 
 ```bash
 #npm
@@ -80,12 +82,13 @@ npm i -S @grafana/agent-web
 yarn add @grafana/agent-web
 ```
 
-## Initialize Grafana Javascript Agent
+## 2. Initialize Grafana Javascript Agent
+
+Grafana Javascript Agent has to be initialized when your web app starts. Several intiailization snippet examples included below.
 
 ### Basic
 
-Will set up agent to automatically collect uncaught errors
-and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements. No tracing, low footprint.
+Will set up the agent with basic default instrumentations to automatically collect uncaught errors, [web vitals](https://github.com/GoogleChrome/web-vitals). No tracing, low footprint.
 
 ```javascript
 import { initializeAgent } from '@grafana/agent-web';
@@ -96,17 +99,46 @@ const agent = initializeAgent({
   app: {
     name: 'frontend',
     version: '1.0.0',
+  }
+});
+```
+
+### Advanced
+
+You can also customize transports and instrumentations.
+
+```javascript
+import { LogLevel, ConsoleInstrumentation, initializeAgent, FetchTransport, ConsoleTransport, WebVitalsInstrumentation, ErrorsInstrumentation } from '@grafana/agent-web';
+
+const agent = initializeAgent({
+  instrumentations: [
+    new ErrorsInstrumentation(),
+    new WebVitalsInstrumentation(),
+    new ConsoleInstrumentation({
+      disabledLevels: [LogLevel.TRACE, LogLevel.ERROR] // console.log will be captured
+    })],
+  transports: [
+    new FetchTransport({
+      url: 'http://localhost:12345/collect',
+      apiKey: 'secret',
+    }),
+    new ConsoleTransport()
+  ],
+  app: {
+    name: 'frontend',
+    version: '1.0.0',
   },
 });
 ```
 
-### With Open Telemetry tracing
+
+### With Open Telemetry tracing using the included instrumentation
 
 Due to it's hefty size, [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/)
 tracing support is provided in a separate `@grafna/agent-tracing-web` package.
 
 Using a provided default OTEL setup, which includes tracing instrumentations for user
-interaction, fetch and document load:
+interaction, fetch and document load, W3C trace context propagation via `fetch` and `xhr`.
 
 ```javascript
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
@@ -124,9 +156,18 @@ const agent = initializeAgent({
 
 // get otel trace and context apis
 const { trace, context } = agent.api.getOTEL();
+
+const tracer = trace.getTracer('default');
+const span = tracer.startSpan('click');
+context.with(trace.setSpan(context.active(), span), () => {
+  doSoemthing();
+  span.end();
+})
 ```
 
-Configure OTEL manual. Have to use `GrafanaAgentTraceExporter` and call `agent.api.initOTEL`
+###  With custom Open Telemetry tracing configuration
+
+Configure OTEL manually. Have to use `GrafanaAgentTraceExporter` and call `agent.api.initOTEL`
 with OTEL trace and context APIs.
 
 ```javascript
