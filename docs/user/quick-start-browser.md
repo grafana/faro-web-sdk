@@ -82,6 +82,16 @@ npm i -S @grafana/agent-web
 yarn add @grafana/agent-web
 ```
 
+If you want to enable [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/) based tracing, also add `@grafana/agent-tracing-web`.
+
+```bash
+#npm
+npm i -S @grafana/agent-tracing-web
+
+#yarn
+yarn add @grafana/agent-tracing-web
+```
+
 ## 2. Initialize Grafana Javascript Agent
 
 Grafana Javascript Agent has to be initialized when your web application starts.
@@ -138,8 +148,8 @@ const agent = initializeAgent({
 
 ### With Open Telemetry tracing using the included instrumentation
 
-Due to it's hefty size, [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/)
-tracing support is provided in a separate `@grafna/agent-tracing-web` package.
+Due to it's large size, [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/)
+tracing support is provided in a separate `@grafana/agent-tracing-web` package.
 
 Using a provided default OTEL setup, which includes tracing instrumentations for user
 interaction, fetch and document load, W3C trace context propagation via `fetch` and `xhr`.
