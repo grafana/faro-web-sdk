@@ -240,7 +240,7 @@ registerInstrumentations({
 agent.api.initOTEL(trace, context);
 ```
 
-## Usage
+## Use
 
 ```javascript
 import { LogLevel } from '@grafana/agent-core';
