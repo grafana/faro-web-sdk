@@ -85,14 +85,14 @@ yarn add @grafana/agent-web
 ## 2. Initialize Grafana Javascript Agent
 
 Grafana Javascript Agent has to be initialized when your web application starts.
-Several initialization snippet examples included below.
-Pick one, add it to your app code and customize as necessary.
+Several initialization snippet examples are included below.
+Choose one, add it to your application code, and customize it as required.
 
 ### Basic
 
 This basic configuration sets up the Grafana Javascript Agent to automatically collect uncaught errors
 and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements.
-Without tracing, small bundle size footprint.
+Without tracing, there is small bundle size footprint.
 
 ```javascript
 import { initializeAgent } from '@grafana/agent-web';
@@ -171,7 +171,7 @@ context.with(trace.setSpan(context.active(), span), () => {
 
 ### With custom Open Telemetry tracing configuration
 
-Configure OTEL manually. Have to use `GrafanaAgentTraceExporter` and call `agent.api.initOTEL`
+Configure OTEL manually. Use `GrafanaAgentTraceExporter` and call `agent.api.initOTEL`
 with OTEL trace and context APIs.
 
 ```javascript
