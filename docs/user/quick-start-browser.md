@@ -72,7 +72,7 @@ integrations:
 
 ## 1. Install Grafana Javascript Agent
 
-Add `@grafana/agent-web` dependency to your web app bundle.
+Add `@grafana/agent-web` dependency to your project.
 
 ```bash
 #npm
@@ -84,11 +84,15 @@ yarn add @grafana/agent-web
 
 ## 2. Initialize Grafana Javascript Agent
 
-Grafana Javascript Agent has to be initialized when your web app starts. Several intiailization snippet examples included below.
+Grafana Javascript Agent has to be initialized when your web application starts.
+Several initialization snippet examples included below.
+Pick one, add it to your app code and customize as necessary.
 
 ### Basic
 
-Will set up the agent with basic default instrumentations to automatically collect uncaught errors, [web vitals](https://github.com/GoogleChrome/web-vitals). No tracing, low footprint.
+This basic configuration sets up the Grafana Javascript Agent to automatically collect uncaught errors
+and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements.
+Without tracing, small bundle size footprint.
 
 ```javascript
 import { initializeAgent } from '@grafana/agent-web';
@@ -105,10 +109,11 @@ const agent = initializeAgent({
 
 ### Advanced
 
-You can also customize transports and instrumentations.
+You can also explicitly specify and customize transports and instrumentations.
 
 ```javascript
-import { LogLevel, ConsoleInstrumentation, initializeAgent, FetchTransport, ConsoleTransport, WebVitalsInstrumentation, ErrorsInstrumentation } from '@grafana/agent-web';
+import { LogLevel, ConsoleInstrumentation, initializeAgent, FetchTransport,
+ConsoleTransport, WebVitalsInstrumentation, ErrorsInstrumentation } from '@grafana/agent-web';
 
 const agent = initializeAgent({
   instrumentations: [
@@ -130,7 +135,6 @@ const agent = initializeAgent({
   },
 });
 ```
-
 
 ### With Open Telemetry tracing using the included instrumentation
 
@@ -165,7 +169,7 @@ context.with(trace.setSpan(context.active(), span), () => {
 })
 ```
 
-###  With custom Open Telemetry tracing configuration
+### With custom Open Telemetry tracing configuration
 
 Configure OTEL manually. Have to use `GrafanaAgentTraceExporter` and call `agent.api.initOTEL`
 with OTEL trace and context APIs.

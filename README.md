@@ -5,12 +5,14 @@
 *Warning*
 This feature is currently pre-release and subject to frequent breaking changes.
 
-Grafana JavaScript Agent is a library that can instrument frontend JavaScript applications to collect telemetry and forward it
-to the [Grafana Agent](https://grafana.com/docs/agent/latest/)
-(with app o11y collector integration enabled). We are also planning to implement this for backend JavaScript applications. Grafana Agent can then send this data to [Prometheus](https://prometheus.io/),
+Grafana JavaScript Agent is a library that can instrument frontend JavaScript applications to collect
+telemetry and forward it to the [Grafana Agent](https://grafana.com/docs/agent/latest/)
+(with app agent receiver integration enabled). We are also planning to implement this for backend JavaScript applications.
+Grafana Agent can then send this data to [Prometheus](https://prometheus.io/),
 [Loki](https://grafana.com/logs/), or [Tempo](https://grafana.com/traces/).
 
-The repository consists of multiple packages that can be combined depending on your requirements, as well as a [demo](https://github.com/grafana/grafana-javascript-agent/tree/main/demo),
+The repository consists of multiple packages that can be combined depending on your requirements,
+as well as a [demo](https://github.com/grafana/grafana-javascript-agent/tree/main/demo),
 which can be run by following the [README.md file](https://github.com/grafana/grafana-javascript-agent/tree/main/demo/README.md).
 
 ## Packages
