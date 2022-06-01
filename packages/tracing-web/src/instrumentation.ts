@@ -76,12 +76,12 @@ export class TracingInstrumentation extends BaseInstrumentation {
     registerInstrumentations({
       instrumentations: options.instrumentations?.length
         ? options.instrumentations
-        : getDefaultOTELInstrumentations(this._getIgnoreUrls()),
+        : getDefaultOTELInstrumentations(this.getIgnoreUrls()),
     });
     agent.api.initOTEL(trace, context);
   }
 
-  private _getIgnoreUrls(): Array<string | RegExp> {
+  private getIgnoreUrls(): Array<string | RegExp> {
     return this.agent.transports.value.flatMap((transport) => transport.getIgnoreUrls());
   }
 }

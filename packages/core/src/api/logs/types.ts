@@ -1,5 +1,5 @@
 import type { BaseObject } from '../../utils';
-import type { TraceContext } from '../traces/types';
+import type { TraceContext } from '../traces';
 
 export enum LogLevel {
   TRACE = 'trace',

@@ -1,4 +1,4 @@
-import type { TraceContext } from '../traces/types';
+import type { TraceContext } from '../traces';
 
 export interface ExceptionStackFrame {
   filename: string;
