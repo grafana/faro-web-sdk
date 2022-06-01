@@ -28,7 +28,7 @@ export interface TracingInstrumentationOptions {
 
 export function getDefaultOTELInstrumentations(ignoreUrls: Array<string | RegExp> = []): InstrumentationOption[] {
   return [
-    new DocumentLoadInstrumentation() as any,
+    new DocumentLoadInstrumentation() as any, // TODO: Fix any when OTel fixes it as well
     new FetchInstrumentation({ ignoreUrls }),
     new XMLHttpRequestInstrumentation({ ignoreUrls }),
     new UserInteractionInstrumentation(),

@@ -17,7 +17,7 @@ export class GrafanaAgentTraceExporter {
   }
 
   export(spans: ReadableSpan[], resultCallback: (result: ExportResult) => void): void {
-    // fix the "any" once @opentelemetry/otel-transforms is published to npm
+    // TODO: fix the "any" once @opentelemetry/otel-transforms is published to npm
     // it will have a version that does not need reference to exporter
     // only `attributes` property is used from this
     const request = toOTLPExportTraceServiceRequest(spans, this as any, true);
