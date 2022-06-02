@@ -1,16 +1,13 @@
-import type { Agent, TraceEvent } from '@grafana/agent-core';
+import type { Agent, TraceEvent, ResourceSpan, InstrumentationLibrarySpan } from '@grafana/agent-core';
 import { ExportResult, ExportResultCode } from '@opentelemetry/core';
-import { IExportTraceServiceRequest, createExportTraceServiceRequest } from '@opentelemetry/otlp-transformer'
-import type { ReadableSpan } from '@opentelemetry/sdk-trace-base';
-
-import type { InstrumentationLibrarySpan, ResourceSpan } from '#core/api/traces/types';
+import { IExportTraceServiceRequest, createExportTraceServiceRequest } from '@opentelemetry/otlp-transformer';
+import type { ReadableSpan, SpanExporter } from '@opentelemetry/sdk-trace-base';
 
 interface GrafanaAgentTraceExporterConfig {
   agent: Agent;
 }
 
-export class GrafanaAgentTraceExporter {
-
+export class GrafanaAgentTraceExporter implements SpanExporter {
   constructor(private config: GrafanaAgentTraceExporterConfig) {}
 
   export(spans: ReadableSpan[], resultCallback: (result: ExportResult) => void): void {
@@ -30,7 +27,7 @@ function exportTraceServiceRequestToTraceEvent(req: IExportTraceServiceRequest):
   return {
     ...rest,
     resourceSpans: resourceSpans?.map((rsp): ResourceSpan => {
-      const {scopeSpans, ...rest} = rsp;
+      const { scopeSpans, ...rest } = rsp;
       return {
         ...rest,
         instrumentationLibrarySpans: scopeSpans?.map((scopeSpan): InstrumentationLibrarySpan => {
@@ -38,9 +35,9 @@ function exportTraceServiceRequestToTraceEvent(req: IExportTraceServiceRequest):
           return {
             ...rest,
             instrumentationLibrary: scope,
-          }
-        })
-      }
-    })
-  }
-};
+          };
+        }),
+      };
+    }),
+  };
+}

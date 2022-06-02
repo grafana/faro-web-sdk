@@ -10,6 +10,8 @@ export type {
   LogEvent,
   MeasurementEvent,
   TraceEvent,
+  ResourceSpan,
+  InstrumentationLibrarySpan,
 } from './api';
 
 export { initializeAgent } from './initialize';

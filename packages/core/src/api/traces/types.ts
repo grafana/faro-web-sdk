@@ -1,5 +1,5 @@
 import type { Span, ContextAPI as OTELContextAPI, TraceAPI as OTELTraceAPI } from '@opentelemetry/api';
-import type { IInstrumentationScope, IScopeSpans, IResourceSpans } from '@opentelemetry/otlp-transformer'
+import type { IInstrumentationScope, IScopeSpans, IResourceSpans } from '@opentelemetry/otlp-transformer';
 
 // @TODO in latest opentelemetry protobuf types "instrumentationLibrary" has been renamed to "scope"
 // however on the grafana agent we use older otel collector that doesn't have this change.
@@ -9,11 +9,11 @@ export interface TraceEvent {
 }
 export type ResourceSpan = Omit<IResourceSpans, 'scopeSpans'> & {
   instrumentationLibrarySpans: InstrumentationLibrarySpan[];
-}
+};
 
 export type InstrumentationLibrarySpan = Omit<IScopeSpans, 'scope'> & {
   instrumentationLibrary?: IInstrumentationScope;
-}
+};
 
 export type GetActiveSpan = () => Span | undefined;
 
