@@ -17,5 +17,3 @@ export interface Config<P = APIEvent> {
 }
 
 export type Patterns = Array<string | RegExp>;
-
-export type UserConfig = Partial<Config> & Pick<Config, 'instrumentations' | 'app'>;

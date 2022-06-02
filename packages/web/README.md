@@ -6,10 +6,9 @@ _Warning_: currently pre-release and subject to frequent breaking changes. Use a
 
 ## Instrumentations
 
-- console - captures messages logged to `console` global object
+- console - captures messages logged to `console` global object. Only `warn`, `info` and `error` levels by default.
 - errors - captures unhandled top level exceptions
 - web-vitals - captures performance metrics reported by web vitals API
-- tracing - captures traces. @TODO
 
 ## Metas
 
@@ -23,30 +22,59 @@ _Warning_: currently pre-release and subject to frequent breaking changes. Use a
 
 ## Example
 
+Basic set up, will automatically report errors and web vitals:
+
 ```javascript
-import { initializeAgent } from '@grafana/agent-core';
-import {
-  ConsoleInstrumentation,
-  ConsoleTransport,
-  ErrorsInstrumentation,
-  WebVitalsInstrumentation,
-  browserMeta,
-  pageMeta,
-  FetchTransport,
-} from '@grafana/agent-web';
+import { initializeAgent } from '@grafana/agent-web';
 
 const agent = initializeAgent({
-  instrumentations: [new ConsoleInstrumentation(), new ErrorsInstrumentation(), new WebVitalsInstrumentation()],
-  metas: [browserMeta, pageMeta],
-  transports: [
-    new ConsoleTransport(),
-    new FetchTransport({
-      url: 'https://agent.myapp/collect',
-      debug: true,
-      requestOptions: {
-        headers: { 'x-api-key': 'secret' },
-      },
-    }),
-  ],
+  url: 'https://agent.myapp/collect',
+  apiKey: 'secret',
+  app: {
+    name: 'frontend',
+    version: '1.0.0',
+  },
 });
+
+// send a log message
+agent.api.pushLog(['hello world']);
+
+// will be captured
+throw new Error('oh no');
+```
+
+With OTEL tracing and browser console capture:
+
+```javascript
+import { TracingInstrumentation } from '@grafana/agent-tracing-web';
+import {
+  ConsoleInstrumentation,
+  initializeAgent,
+  getWebInstrumentations
+} from '@grafana/agent-web';
+
+
+const agent = initializeAgent({
+  url: 'https://agent.myapp/collect',
+  apiKey: 'secret',
+  instrumentations: [
+    ...getWebInstrumentations(captureConsole=true),
+    new TracingInstrumentation(),
+  ],
+  app: {
+    name: 'frontend',
+    version: '1.0.0'
+  }
+});
+
+// start a span
+agent.api.getOTEL()!.trace.getTracer('frontend').startActiveSpan('hello world', span => {
+  // send a log message
+  agent.api.pushLog(['hello world']);
+  span.end()
+});
+
+
+// will be captured
+throw new Error('oh no');
 ```
