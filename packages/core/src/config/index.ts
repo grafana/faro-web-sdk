@@ -1,3 +1,3 @@
 export { defaultGlobalObjectKey } from './const';
 
-export type { Config } from './types';
+export type { Config, Patterns } from './types';

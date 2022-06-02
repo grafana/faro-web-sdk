@@ -18,7 +18,7 @@ export { initializeAgent } from './initialize';
 
 export type { Agent } from './types';
 
-export type { Config } from './config';
+export type { Config, Patterns } from './config';
 export { defaultGlobalObjectKey } from './config';
 
 export type { Instrumentation } from './instrumentations';

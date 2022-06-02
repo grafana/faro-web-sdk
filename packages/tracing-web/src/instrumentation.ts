@@ -82,6 +82,6 @@ export class TracingInstrumentation extends BaseInstrumentation {
   }
 
   private getIgnoreUrls(): Array<string | RegExp> {
-    return this.agent.transports.value.flatMap((transport) => transport.getIgnoreUrls());
+    return this.agent.transports.transports.flatMap((transport) => transport.getIgnoreUrls());
   }
 }

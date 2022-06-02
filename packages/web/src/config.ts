@@ -7,9 +7,10 @@ import {
   Config,
   defaultGlobalObjectKey,
   Transport,
+  Patterns,
 } from '@grafana/agent-core';
 
-import { ErrorsInstrumentation, WebVitalsInstrumentation } from './instrumentations';
+import { ConsoleInstrumentation, ErrorsInstrumentation, WebVitalsInstrumentation } from './instrumentations';
 import { browserMeta, pageMeta } from './metas';
 import { FetchTransport } from './transports';
 
@@ -24,14 +25,28 @@ export interface BrowserConfig {
   metas?: MetaItem[];
   instrumentations?: Instrumentation[];
   transports?: Transport[];
+  ignoreErrors?: Patterns;
 }
 
 export const defaultMetas: MetaItem[] = [browserMeta, pageMeta];
 
-export const getDefaultInstrumentations = (): Instrumentation[] => [
-  new ErrorsInstrumentation(),
-  new WebVitalsInstrumentation(),
-];
+interface GetWebInstrumentationsOptions {
+  captureConsole?: boolean
+}
+
+export const getWebInstrumentations = (options: GetWebInstrumentationsOptions = {}): Instrumentation[] => {
+
+  const instrumentations: Instrumentation[] = [
+    new ErrorsInstrumentation(),
+    new WebVitalsInstrumentation(),
+  ];
+
+  if (options.captureConsole !== false) {
+    instrumentations.push(new ConsoleInstrumentation())
+  }
+
+  return instrumentations;
+}
 
 export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   const transports: Transport[] = [];
@@ -56,10 +71,11 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     preventGlobalExposure: browserConfig.preventGlobalExposure || false,
     transports,
     metas: browserConfig.metas ?? defaultMetas,
-    instrumentations: browserConfig.instrumentations ?? getDefaultInstrumentations(),
+    instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
     app: browserConfig.app,
     session: browserConfig.session,
     user: browserConfig.user,
+    ignoreErrors: browserConfig.ignoreErrors
   };
 
   return config;
