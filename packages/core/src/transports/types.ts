@@ -10,6 +10,8 @@ export enum TransportItemType {
 
 export type TransportItemPayload<P = APIEvent> = P;
 
+export type BeforeSendHook<P = APIEvent> = (item: TransportItem<P>) => TransportItem<P> | null;
+
 export interface TransportItem<P = APIEvent> {
   type: TransportItemType;
   payload: TransportItemPayload<P>;
@@ -30,5 +32,5 @@ export interface TransportBody {
 export interface Transports {
   add: (...transports: Transport[]) => void;
   execute: (transportItem: TransportItem) => void;
-  value: Transport[];
+  transports: Transport[];
 }
