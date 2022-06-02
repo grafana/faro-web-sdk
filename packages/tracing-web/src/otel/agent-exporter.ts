@@ -1,27 +1,21 @@
-import type { Agent } from '@grafana/agent-core';
-import type { Attributes } from '@opentelemetry/api';
+import type { Agent, TraceEvent } from '@grafana/agent-core';
 import { ExportResult, ExportResultCode } from '@opentelemetry/core';
-import { toOTLPExportTraceServiceRequest } from '@opentelemetry/exporter-trace-otlp-http/build/esnext';
+import { IExportTraceServiceRequest, createExportTraceServiceRequest } from '@opentelemetry/otlp-transformer'
 import type { ReadableSpan } from '@opentelemetry/sdk-trace-base';
 
+import type { InstrumentationLibrarySpan, ResourceSpan } from '#core/api/traces/types';
+
 interface GrafanaAgentTraceExporterConfig {
-  attributes?: Attributes;
   agent: Agent;
 }
 
 export class GrafanaAgentTraceExporter {
-  attributes: Attributes;
 
-  constructor(private config: GrafanaAgentTraceExporterConfig) {
-    this.attributes = config.attributes ?? {};
-  }
+  constructor(private config: GrafanaAgentTraceExporterConfig) {}
 
   export(spans: ReadableSpan[], resultCallback: (result: ExportResult) => void): void {
-    // TODO: fix the "any" once @opentelemetry/otel-transforms is published to npm
-    // it will have a version that does not need reference to exporter
-    // only `attributes` property is used from this
-    const request = toOTLPExportTraceServiceRequest(spans, this as any, true);
-    this.config.agent.api.pushTraces(request);
+    const traceEvent = exportTraceServiceRequestToTraceEvent(createExportTraceServiceRequest(spans, true));
+    this.config.agent.api.pushTraces(traceEvent);
     resultCallback({ code: ExportResultCode.SUCCESS });
   }
 
@@ -29,3 +23,24 @@ export class GrafanaAgentTraceExporter {
     return Promise.resolve(undefined);
   }
 }
+
+// @TODO temporary, transforming trace export request to earlier version where "scope" -> "instrumentationLibrary"
+function exportTraceServiceRequestToTraceEvent(req: IExportTraceServiceRequest): TraceEvent {
+  const { resourceSpans, ...rest } = req;
+  return {
+    ...rest,
+    resourceSpans: resourceSpans?.map((rsp): ResourceSpan => {
+      const {scopeSpans, ...rest} = rsp;
+      return {
+        ...rest,
+        instrumentationLibrarySpans: scopeSpans?.map((scopeSpan): InstrumentationLibrarySpan => {
+          const { scope, ...rest } = scopeSpan;
+          return {
+            ...rest,
+            instrumentationLibrary: scope,
+          }
+        })
+      }
+    })
+  }
+};
