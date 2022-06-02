@@ -58,20 +58,32 @@ The `api` property on the agent contains all the necessary methods to push new e
 
 ## Exceptions
 
-- `pushException` - is a method to push an error/exception to the agent. It accepts a message as a mandatory parameter
-  and two optional ones: a `type` which by default is `error` and `stackFrames` which is an array of stack frames.
+- `pushException` - is a method to push an error/exception to the agent. It accepts a mandatory `message` parameter
+  and an optional one where you can set:
+
+  - `span` - the span where the exception has occurred. Default value: `undefined`.
+  - `stackFrames` - an array of stack frames. Default value: `[]`.
+  - `type` - the type of exception. Default value: `error`.
 
   ```ts
   agent.api.pushException('This is an error');
-  agent.api.pushException('This is an unhandled exception', 'unhandledException');
-  agent.api.pushException('This is an error with stack frames', 'error', [
-    {
-      filename: 'file.js',
-      function: 'myFunction',
-      colno: 120,
-      lineno: 80,
-    },
-  ]);
+
+  agent.api.pushException('This is an unhandled exception', { type: 'unhandledException' });
+
+  agent.api.pushException('This is an error with stack frames', {
+    stackFrames: [
+      {
+        filename: 'file.js',
+        function: 'myFunction',
+        colno: 120,
+        lineno: 80,
+      },
+    ],
+  });
+
+  agent.api.pushException('This is an error in a span', {
+    span: mySpan,
+  });
   ```
 
 ## Logs
@@ -92,15 +104,22 @@ The `api` property on the agent contains all the necessary methods to push new e
 
   ```ts
   agent.api.pushLog(['This is a log', 'With another message']);
-  agent.api.pushLog(['This is a warning'], LogLevel.WARN);
-  agent.api.pushLog(['This is a log with context'], LogLevel.LOG, {
-    randomNumber: Math.random(),
+
+  agent.api.pushLog(['This is a warning'], { level: LogLevel.WARN });
+
+  agent.api.pushLog(['This is a log with context'], {
+    context: {
+      randomNumber: Math.random(),
+    },
   });
   ```
 
 ## Measurements
 
-- `pushMeasurement` - is a method for registering metrics.
+- `pushMeasurement` - is a method for registering metrics. The method accepts a mandatory `payload` parameter and an
+  optional parameter for passing additional options:
+
+  - `span` - the span where the exception has occurred. Default value: `undefined`.
 
   ```ts
   agent.api.pushMeasurement({
@@ -109,6 +128,18 @@ The `api` property on the agent contains all the necessary methods to push new e
       my_custom_metric: Math.random(),
     },
   });
+
+  agent.api.pushMeasurement(
+    {
+      type: 'custom',
+      values: {
+        my_custom_metric: Math.random(),
+      },
+    },
+    {
+      span: mySpan,
+    }
+  );
   ```
 
 ## Instrumentations

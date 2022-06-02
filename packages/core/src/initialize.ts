@@ -1,15 +1,13 @@
 import { initializeGlobalAgent } from './agent';
 import { initializeAPI } from './api';
-import { initializeConfig } from './config';
-import type { UserConfig } from './config';
+import type { Config } from './config';
 import { initializeInstrumentations } from './instrumentations';
 import { initializeMetas } from './metas';
 import { initializeTransports } from './transports';
 import type { Agent } from './types';
 import { globalObject } from './utils';
 
-export function initializeAgent(userConfig: UserConfig): Agent {
-  const config = initializeConfig(userConfig);
+export function initializeAgent(config: Config): Agent {
   const metas = initializeMetas(config);
   const transports = initializeTransports(config);
   const api = initializeAPI(transports, metas);

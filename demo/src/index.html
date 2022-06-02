@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <title>Grafana JavaScript Agent Demo - Home</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
   <body>
     <h1>Grafana JavaScript Agent Demo - Home</h1>
     <hr />
 
+    <a href="./index.html" class="active">Home</a> |
     <a href="./another-page.html">Another page</a> |
     <a href="./cls.html">CLS Test Page</a>
     <hr />
@@ -25,6 +30,7 @@
 
     <h2>Tracing Instrumentation</h2>
     <button onclick="fetchSuccess()">Fetch</button>
+    <button onclick="traceWithLog()">Trace with log</button>
     <hr />
 
     <h2>Metrics Measurements</h2>
@@ -32,6 +38,6 @@
     <hr />
 
     <script src="index.ts" type="module"></script>
-    <script src="actions.ts"></script>
+    <script src="actions.ts" type="module"></script>
   </body>
 </html>

@@ -5,7 +5,7 @@ export interface ConsoleInstrumentationOptions {
 }
 
 export class ConsoleInstrumentation extends BaseInstrumentation {
-  static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.LOG];
+  static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];
 
   readonly version = VERSION;
   readonly name = '@grafana/agent-web:instrumentation-console';
@@ -21,7 +21,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         /* eslint-disable-next-line no-console */
         console[level] = (...args) => {
           try {
-            this.agent.api.pushLog(args, level);
+            this.agent.api.pushLog(args, { level });
           } catch (err) {
           } finally {
             this.agent.api.callOriginalConsoleMethod(level, ...args);

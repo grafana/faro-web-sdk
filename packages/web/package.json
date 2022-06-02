@@ -20,7 +20,7 @@
   "scripts": {
     "start": "yarn build -w",
     "build": "tsc -p tsconfig.json",
-    "clean": "rimraf dist/",
+    "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "exit 0",
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",

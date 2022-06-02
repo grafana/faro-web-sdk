@@ -9,4 +9,4 @@ export type { LogContext, LogEvent } from './logs';
 
 export type { MeasurementEvent } from './measurements';
 
-export type { TraceEvent } from './traces';
+export type { TraceEvent, TracesAPI, ResourceSpan, InstrumentationLibrarySpan } from './traces';

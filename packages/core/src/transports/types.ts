@@ -20,6 +20,9 @@ export interface TransportItem<P = APIEvent> {
 
 export interface Transport {
   send(item: TransportItem): void | Promise<void>;
+
+  // returns URLs to be ignored by tracing, to not cause a feedback loop
+  getIgnoreUrls(): Array<string | RegExp>;
 }
 export interface TransportBody {
   exceptions?: ExceptionEvent[];

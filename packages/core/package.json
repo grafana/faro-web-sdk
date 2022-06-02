@@ -22,7 +22,7 @@
     "postversion": "yarn prebuild",
     "prebuild": "node bin/gen-version.js",
     "build": "tsc -p tsconfig.json",
-    "clean": "rimraf dist/",
+    "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "jest",
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
@@ -32,6 +32,9 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.1.0",
+    "@opentelemetry/api-metrics": "^0.29.1",
+    "@opentelemetry/otlp-transformer": "^0.29.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

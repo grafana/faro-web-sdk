@@ -10,18 +10,21 @@ export type {
   LogEvent,
   MeasurementEvent,
   TraceEvent,
+  ResourceSpan,
+  InstrumentationLibrarySpan,
 } from './api';
 
 export { initializeAgent } from './initialize';
 
 export type { Agent } from './types';
 
-export type { Config, UserConfig } from './config';
+export type { Config, Patterns } from './config';
+export { defaultGlobalObjectKey } from './config';
 
 export type { Instrumentation } from './instrumentations';
 export { BaseInstrumentation } from './instrumentations';
 
-export type { Meta, MetaGetter, Metas, MetaItem } from './metas';
+export type { Meta, MetaGetter, Metas, MetaItem, App, User, Session } from './metas';
 
 export { getTransportBody, TransportItemType } from './transports';
 export type { Transport, TransportBody, TransportItem, TransportItemPayload, Transports } from './transports';

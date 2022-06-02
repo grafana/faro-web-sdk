@@ -1,8 +1,14 @@
+import type { TraceContext } from '../traces';
+
 export interface MeasurementEvent<V extends { [label: string]: number } = { [label: string]: number }> {
-  values: V;
   type: string;
+  values: V;
+
+  trace?: TraceContext;
 }
 
+export interface PushMeasurementOptions {}
+
 export interface MeasurementsAPI {
-  pushMeasurement: (payload: MeasurementEvent) => void;
+  pushMeasurement: (payload: MeasurementEvent, options?: PushMeasurementOptions) => void;
 }
