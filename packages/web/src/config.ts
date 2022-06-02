@@ -31,22 +31,18 @@ export interface BrowserConfig {
 export const defaultMetas: MetaItem[] = [browserMeta, pageMeta];
 
 interface GetWebInstrumentationsOptions {
-  captureConsole?: boolean
+  captureConsole?: boolean;
 }
 
 export const getWebInstrumentations = (options: GetWebInstrumentationsOptions = {}): Instrumentation[] => {
-
-  const instrumentations: Instrumentation[] = [
-    new ErrorsInstrumentation(),
-    new WebVitalsInstrumentation(),
-  ];
+  const instrumentations: Instrumentation[] = [new ErrorsInstrumentation(), new WebVitalsInstrumentation()];
 
   if (options.captureConsole !== false) {
-    instrumentations.push(new ConsoleInstrumentation())
+    instrumentations.push(new ConsoleInstrumentation());
   }
 
   return instrumentations;
-}
+};
 
 export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   const transports: Transport[] = [];
@@ -75,7 +71,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     app: browserConfig.app,
     session: browserConfig.session,
     user: browserConfig.user,
-    ignoreErrors: browserConfig.ignoreErrors
+    ignoreErrors: browserConfig.ignoreErrors,
   };
 
   return config;

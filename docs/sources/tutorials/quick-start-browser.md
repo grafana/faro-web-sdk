@@ -113,7 +113,7 @@ const agent = initializeAgent({
   app: {
     name: 'frontend',
     version: '1.0.0',
-  }
+  },
 });
 ```
 
@@ -156,12 +156,12 @@ interaction, fetch and document load, W3C trace context propagation via `fetch` 
 
 ```javascript
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
-import { initializeAgent, getDefaultInstrumentations } from '@grafana/agent-web';
+import { initializeAgent, getWebInstrumentations } from '@grafana/agent-web';
 
 const agent = initializeAgent({
   url: 'http://localhost:12345/collect',
   apiKey: 'secret',
-  instrumentations: [...getDefaultInstrumentations(), new TracingInstrumentation()],
+  instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
   app: {
     name: 'frontend',
     version: '1.0.0',
@@ -229,7 +229,7 @@ provider.register({
 const ignoreUrls = [COLLECTOR_URL];
 registerInstrumentations({
   instrumentations: [
-    new DocumentLoadInstrumentation() as any,
+    new DocumentLoadInstrumentation(),
     new FetchInstrumentation({ ignoreUrls }),
     new XMLHttpRequestInstrumentation({ ignoreUrls }),
     new UserInteractionInstrumentation()
@@ -249,7 +249,11 @@ import { LogLevel } from '@grafana/agent-core';
 const agent = window.grafanaAgent;
 
 // send a log message
-agent.api.pushLog(["Hello world", 123], { level: LogLevel.Debug});
+// by default info, warn and error levels are captured.
+// trace, debug and log are not
+console.info("Hello world", 123);
+// or
+agent.api.pushLog(["Hello world", 123], { level: LogLevel.Debug });
 
 // log with context
 agent.api.pushLog(["Navigation"], {
