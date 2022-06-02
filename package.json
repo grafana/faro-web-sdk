@@ -66,5 +66,8 @@
     "@types/jest": "^27.5.1",
     "jest": "^28.1.0",
     "ts-jest": "^28.0.2"
+  },
+  "resolutions": {
+    "@opentelemetry/api-metrics": "^0.29.1"
   }
 }
