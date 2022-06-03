@@ -4,6 +4,7 @@
 
 * Updated build: packages will be published with a build targeting es5 with common-js modules,
 and a build targeting es6 with ecmascript modules.
+* `agent.api.pushError` method to push `Error` objects directly
 
 ## 0.2.0 (2022-06-03)
 

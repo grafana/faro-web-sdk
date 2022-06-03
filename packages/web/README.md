@@ -41,6 +41,9 @@ agent.api.pushLog(['hello world']);
 
 // will be captured
 throw new Error('oh no');
+
+// push error manually
+agent.api.pushError(new Error('oh no'));
 ```
 
 With OTEL tracing and browser console capture:

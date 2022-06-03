@@ -1,12 +1,18 @@
+import type { Config } from '../../config';
 import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
 import type { TracesAPI } from '../traces';
 import { defaultExceptionType } from './const';
-import type { ExceptionEvent, ExceptionsAPI } from './types';
+import type { ExceptionEvent, ExceptionsAPI, PushExceptionOptions } from './types';
 
-export function initializeExceptions(transports: Transports, metas: Metas, tracesApi: TracesAPI): ExceptionsAPI {
+export function initializeExceptions(
+  config: Config,
+  transports: Transports,
+  metas: Metas,
+  tracesApi: TracesAPI
+): ExceptionsAPI {
   const pushException: ExceptionsAPI['pushException'] = (value, { stackFrames, type } = {}) => {
     try {
       const item: TransportItem<ExceptionEvent> = {
@@ -32,7 +38,21 @@ export function initializeExceptions(transports: Transports, metas: Metas, trace
     }
   };
 
+  const pushError: ExceptionsAPI['pushError'] = (error) => {
+    const message = error.message;
+    const opts: PushExceptionOptions = {};
+    if (error.name) {
+      opts.type = error.name;
+    }
+    if (error.stack && config.parseStacktrace) {
+      opts.stackFrames = config.parseStacktrace(error).frames;
+    }
+
+    return pushException(message, opts);
+  };
+
   return {
     pushException,
+    pushError,
   };
 }

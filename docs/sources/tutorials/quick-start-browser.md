@@ -281,4 +281,7 @@ agent.api.pushMeasurement({
     duration: 4000
   }
 });
+
+// push an Error
+agent.api.pushError(new Error('everything went horribly wrong'));
 ```

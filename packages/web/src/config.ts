@@ -10,7 +10,12 @@ import {
   Patterns,
 } from '@grafana/agent-core';
 
-import { ConsoleInstrumentation, ErrorsInstrumentation, WebVitalsInstrumentation } from './instrumentations';
+import {
+  ConsoleInstrumentation,
+  ErrorsInstrumentation,
+  parseStacktrace,
+  WebVitalsInstrumentation,
+} from './instrumentations';
 import { browserMeta, pageMeta } from './metas';
 import { FetchTransport } from './transports';
 
@@ -72,6 +77,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     session: browserConfig.session,
     user: browserConfig.user,
     ignoreErrors: browserConfig.ignoreErrors,
+    parseStacktrace,
   };
 
   return config;
