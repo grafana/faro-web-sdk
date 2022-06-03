@@ -4,7 +4,6 @@
   "description": "Grafana JavaScript Agent web tracing implementation.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "private": true,
   "homepage": "https://github.com/grafana/grafana-javascript-agent",
   "sideEffects": false,
   "repository": {
