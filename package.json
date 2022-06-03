@@ -28,7 +28,7 @@
     "quality:format": "lerna run --parallel quality:format",
     "quality:lint": "run-p quality:lint:*",
     "quality:lint:packages": "lerna run --parallel quality:lint",
-    "quality:lint:root": "markdownlint README.md docs/**/*.md",
+    "quality:lint:root": "markdownlint README.md CHANGELOG.md docs/**/*.md",
     "quality:circular-deps": "lerna run --parallel quality:circular-deps",
     "publish": "lerna publish",
     "git-hooks": "run-s git-hooks:*",
