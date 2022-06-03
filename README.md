@@ -15,6 +15,10 @@ The repository consists of multiple packages that can be combined depending on y
 as well as a [demo](https://github.com/grafana/grafana-javascript-agent/tree/main/demo),
 which can be run by following the [README.md file](https://github.com/grafana/grafana-javascript-agent/tree/main/demo/README.md).
 
+## Get started
+
+See [quick start for web applications](docs/sources/tutorials/quick-start-browser.md).
+
 ## Packages
 
 ### Core
