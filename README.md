@@ -2,14 +2,22 @@
 
 [![Build Status](https://drone.grafana.net/api/badges/grafana/grafana-javascript-agent/status.svg)](https://drone.grafana.net/grafana/grafana-javascript-agent)
 
-*Warning*: currently pre-release and subject to frequent breaking changes. Use at your own risk.
+*Warning*
+This feature is currently pre-release and subject to frequent breaking changes.
 
-Grafana JavaScript Agent is a library that enables applications (both frontend and backend) to interact with external
-services like [Grafana](https://grafana.com/grafana/), [Prometheus](https://prometheus.io/),
-[Loki](https://grafana.com/logs/), [Tempo](https://grafana.com/traces/) etc.
+Grafana JavaScript Agent is a library that can instrument frontend JavaScript applications to collect
+telemetry and forward it to the [Grafana Agent](https://grafana.com/docs/agent/latest/)
+(with app agent receiver integration enabled). We are also planning to implement this for backend JavaScript applications.
+Grafana Agent can then send this data to [Prometheus](https://prometheus.io/),
+[Loki](https://grafana.com/logs/), or [Tempo](https://grafana.com/traces/).
 
-The repository consists of multiple packages that should be combined depending on the needs, as well as a [demo](https://github.com/grafana/grafana-javascript-agent/tree/main/demo)
-which can be ran by following the [README.md file](https://github.com/grafana/grafana-javascript-agent/tree/main/demo/README.md).
+The repository consists of multiple packages that can be combined depending on your requirements,
+as well as a [demo](https://github.com/grafana/grafana-javascript-agent/tree/main/demo),
+which can be run by following the [README.md file](https://github.com/grafana/grafana-javascript-agent/tree/main/demo/README.md).
+
+## Get started
+
+See [quick start for web applications](docs/sources/tutorials/quick-start-browser.md).
 
 ## Packages
 
