@@ -49,5 +49,9 @@
   },
   "resolutions": {
     "@opentelemetry/api-metrics": "^0.29.1"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "25d20e53457ce3b68a8b07275d296d1bf4c00bf4"
 }
