@@ -4,7 +4,7 @@ import type { Transports } from '../../transports';
 import type { TracesAPI } from '../traces';
 import type { MeasurementEvent, MeasurementsAPI } from './types';
 
-export function initializeMeasurements(transports: Transports, metas: Metas, tracesApi: TracesAPI): MeasurementsAPI {
+export function initializeMeasurementsAPI(transports: Transports, metas: Metas, tracesApi: TracesAPI): MeasurementsAPI {
   const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload) => {
     try {
       const item: TransportItem<MeasurementEvent> = {

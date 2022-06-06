@@ -10,11 +10,14 @@ export interface Config<P = APIEvent> {
   transports: Transport[];
   metas: MetaItem[];
   app: App;
+  parseStacktrace: StacktraceParser;
+
   session?: Session;
   user?: User;
   beforeSend?: BeforeSendHook<P>;
   ignoreErrors?: Patterns;
-  parseStacktrace?: (err: ExtendedError) => Stacktrace;
 }
+
+export type StacktraceParser = (err: ExtendedError) => Stacktrace;
 
 export type Patterns = Array<string | RegExp>;

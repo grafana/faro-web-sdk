@@ -7,7 +7,7 @@ import type { TracesAPI } from '../traces';
 import { defaultExceptionType } from './const';
 import type { ExceptionEvent, ExceptionsAPI, PushExceptionOptions } from './types';
 
-export function initializeExceptions(
+export function initializeExceptionsAPI(
   config: Config,
   transports: Transports,
   metas: Metas,

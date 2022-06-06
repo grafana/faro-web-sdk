@@ -6,7 +6,7 @@ import type { TracesAPI } from '../traces';
 import { defaultLogLevel, originalConsoleMethods } from './const';
 import type { LogEvent, LogsAPI } from './types';
 
-export function initializeLogs(transports: Transports, metas: Metas, tracesApi: TracesAPI): LogsAPI {
+export function initializeLogsAPI(transports: Transports, metas: Metas, tracesApi: TracesAPI): LogsAPI {
   const pushLog: LogsAPI['pushLog'] = (args, { context, level } = {}) => {
     try {
       const item: TransportItem<LogEvent> = {

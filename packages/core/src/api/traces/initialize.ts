@@ -4,7 +4,7 @@ import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType, Transports } from '../../transports';
 import type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './types';
 
-export function initializeTraces(_transports: Transports, _metas: Metas): TracesAPI {
+export function initializeTracesAPI(_transports: Transports, _metas: Metas): TracesAPI {
   let otel: OTELApi | undefined = undefined;
 
   const initOTEL = (trace: OTELTraceAPI, context: OTELContextAPI) => {
