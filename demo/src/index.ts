@@ -1,7 +1,7 @@
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
 import { initializeAgent, getWebInstrumentations } from '@grafana/agent-web';
 
-const agent = initializeAgent({
+initializeAgent({
   url: 'http://localhost:12345/collect',
   apiKey: 'secret',
   instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
@@ -10,11 +10,3 @@ const agent = initializeAgent({
     version: '1.0.0',
   },
 });
-
-agent.api
-  .getOTEL()!
-  .trace.getTracer('frontend')
-  .startActiveSpan('hello world', (span) => {
-    console.info('hello world!!');
-    span.end();
-  });

@@ -53,7 +53,3 @@ w.traceWithLog = () => {
     });
   }
 };
-
-window.addEventListener('load', () => {
-  window.grafanaAgent.api.pushLog(['Manual event from Home']);
-});
