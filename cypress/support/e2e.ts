@@ -29,5 +29,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  cy.visit('about:blank')
+  cy.window().then((win) => {
+    win.location.href = 'about:blank'
+  })
+  //cy.wait(1500)
 })

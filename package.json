@@ -19,6 +19,7 @@
     "start": "lerna run --parallel start",
     "build": "lerna run build",
     "prepublish": "yarn build",
+    "cypress": "cypress open",
     "clean": "run-s clean:*",
     "clean:packages": "lerna run --parallel clean",
     "clean:root": "rimraf .build-cache .cache .parcel-cache yarn-error.log",
