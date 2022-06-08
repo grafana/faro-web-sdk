@@ -1,4 +1,7 @@
 /// <reference types="cypress" />
+
+import type { TransportBody } from 'packages/core/src';
+
 // ***********************************************
 // This example commands.ts shows you how to
 // create various custom commands and overwrite
@@ -35,3 +38,24 @@
 //     }
 //   }
 // }
+
+Cypress.Commands.add('collect', (expectedRequests: number, fn: (payloads: TransportBody[]) => void) => {
+  cy.wait(times('@collector', expectedRequests)).then(interceptions => {
+    fn(interceptions.map(i => i.request.body as TransportBody))
+  })
+})
+
+declare global {
+   namespace Cypress {
+     interface Chainable {
+      collect(expectedRequests: number, fn: (payloads: TransportBody[]) => void): Chainable<void>
+     }
+   }
+}
+
+
+function times(alias: string, count: number): string[] {
+  return Array.from(Array(count)).map(() => alias);
+}
+
+export {};

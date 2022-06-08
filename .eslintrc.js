@@ -19,9 +19,10 @@ module.exports = {
     ],
     'no-duplicate-imports': 'off',
     '@typescript-eslint/no-duplicate-imports': ['error'],
+    '@typescript-eslint/no-namespace': 'off',
     'no-only-tests/no-only-tests': 'error',
     'react/prop-types': 'off',
     'react/react-in-jsx-scope': 'off',
-    'react-hooks/exhaustive-deps': 'error',
+    'react-hooks/exhaustive-deps': 'error'
   },
 };
