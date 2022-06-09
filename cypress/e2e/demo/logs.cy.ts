@@ -16,17 +16,17 @@ context('Logs', () => {
   }
 
   it('will capture info level', () => {
-    cy.get('[data-cy="btn-log-info"]').click()
+    cy.clickButton('btn-log-info')
     checkLogCaptured(LogLevel.INFO , 'This is a console info message')
   })
 
   it('will capture warn level', () => {
-    cy.get('[data-cy="btn-log-warn"]').click()
+    cy.clickButton('btn-log-warn')
     checkLogCaptured(LogLevel.WARN , 'This is a console warn message')
   })
 
   it('will capture error level', () => {
-    cy.get('[data-cy="btn-log-error"]').click()
+    cy.clickButton('btn-log-error')
     checkLogCaptured(LogLevel.ERROR , 'This is a console error message')
   })
 })

@@ -28,7 +28,7 @@ export interface TransportBody {
   exceptions?: ExceptionEvent[];
   logs?: LogEvent[];
   measurements?: MeasurementEvent[];
-  traces?: TraceEvent[];
+  traces?: TraceEvent;
   meta: Meta;
 }
 

@@ -21,22 +21,22 @@ context('Errors', () => {
   })
 
   it('thrown Error', () => {
-    cy.get('[data-cy="btn-throw-error"]').click()
+    cy.clickButton('btn-throw-error')
     checkErrorReported('Error', 'This is a thrown error')
   })
 
   it('undefined method error', () => {
-    cy.get('[data-cy="btn-call-undefined"]').click()
+    cy.clickButton('btn-call-undefined')
     checkErrorReported('Error', 'test is not defined')
   })
 
   it('fetch error', () => {
-    cy.get('[data-cy="btn-fetch-error"]').click()
+    cy.clickButton('btn-fetch-error')
     checkErrorReported('Error', 'Failed to fetch', false, 5)
   })
 
   it('promise rejection', () => {
-    cy.get('[data-cy="btn-promise-reject"]').click()
+    cy.clickButton('btn-promise-reject')
     checkErrorReported('UnhandledRejection', 'Non-Error promise rejection captured with value: This is a rejected promise', false, 5)
   })
 })

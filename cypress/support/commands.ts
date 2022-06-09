@@ -40,16 +40,21 @@ import type { TransportBody } from 'packages/core/src';
 // }
 
 Cypress.Commands.add('collect', (expectedRequests: number, fn: (payloads: TransportBody[]) => void) => {
-  cy.wait(times('@collector', expectedRequests)).then(interceptions => {
+  cy.wait(times('@collector', expectedRequests), { timeout: 2000 }).then(interceptions => {
     fn(interceptions.map(i => i.request.body as TransportBody))
   })
+})
+
+Cypress.Commands.add('clickButton', (dataname: string) => {
+  cy.get(`[data-cy="${dataname}"]`).click()
 })
 
 declare global {
    namespace Cypress {
      interface Chainable {
       collect(expectedRequests: number, fn: (payloads: TransportBody[]) => void): Chainable<void>
-     }
+      clickButton(dataname: string): Chainable<void>
+    }
    }
 }
 
