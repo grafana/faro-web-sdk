@@ -19,9 +19,8 @@ steps:
   - yarn quality
 
 - name: E2E
-  image: cypress/browsers:node16.14.2-slim-chrome100-ff99-edge
+  image: cypress/included:10.0.3
   commands:
-  - npx cypress install
   - yarn ci:e2e
 
 - name: Publish
@@ -38,6 +37,6 @@ steps:
     - tag
 ---
 kind: signature
-hmac: b35a62fc4a105dca81ae7b49d7525f0d0feba9804a15b739a1bfd238adbb9f28
+hmac: 197925165f6c379883b0103c6eb463ed7cc238cac716477b9f7424e43398a54e
 
 ...
