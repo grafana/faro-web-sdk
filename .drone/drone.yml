@@ -21,6 +21,7 @@ steps:
 - name: E2E
   image: cypress/browsers:node16.14.2-slim-chrome100-ff99-edge
   commands:
+  - npx cypress install
   - yarn ci:e2e
 
 - name: Publish
@@ -37,6 +38,6 @@ steps:
     - tag
 ---
 kind: signature
-hmac: 325c96cb1a88a7d65e8afba7db45855b9234bbea674f2f1ffb204d8bd339b410
+hmac: b35a62fc4a105dca81ae7b49d7525f0d0feba9804a15b739a1bfd238adbb9f28
 
 ...
