@@ -18,6 +18,11 @@ steps:
   commands:
   - yarn quality
 
+- name: E2E
+  image: cypress/browsers:node16.14.2-slim-chrome100-ff99-edge
+  commands:
+  - yarn ci:e2e
+
 - name: Publish
   image: node:lts-stretch
   commands:
@@ -32,6 +37,6 @@ steps:
     - tag
 ---
 kind: signature
-hmac: 7446b40b5c9c110e103c2f9fbeba5d8058461e22d47143f49374b9ee62a35c51
+hmac: 325c96cb1a88a7d65e8afba7db45855b9234bbea674f2f1ffb204d8bd339b410
 
 ...

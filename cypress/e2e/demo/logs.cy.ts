@@ -4,12 +4,10 @@ import { LogLevel } from '../../../packages/core/src';
 
 context('Logs', () => {
 
-  function checkLogCaptured(level: LogLevel, message: string, expectedRequests = 4) {
-    cy.collect(expectedRequests, payloads => {
-      const logs = payloads.filter(b => !!b.logs)
+  function checkLogCaptured(level: LogLevel, message: string) {
+    cy.waitLogs(logs => {
       expect(logs).to.have.lengthOf(1)
-      expect(logs[0]?.logs).to.have.lengthOf(1)
-      const log = logs[0]?.logs?.[0]!
+      const log = logs[0]!
       expect(log).property('level').to.equal(level)
       expect(log).property('message').to.equal(message)
     })

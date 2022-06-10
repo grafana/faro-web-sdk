@@ -17,9 +17,12 @@
   "main": "index.js",
   "scripts": {
     "start": "lerna run --parallel start",
+    "start:demo": "lerna run start --scope @grafana/agent-demo",
     "build": "lerna run build",
     "prepublish": "yarn build",
     "cypress": "cypress open",
+    "cypress:ci": "cypress run",
+    "ci:e2e": "start-server-and-test start:demo http://localhost:1234 cypress:ci",
     "clean": "run-s clean:*",
     "clean:packages": "lerna run --parallel clean",
     "clean:root": "rimraf .build-cache .cache .parcel-cache yarn-error.log",
@@ -65,6 +68,7 @@
     "prettier": "^2.6.2",
     "process": "^0.11.10",
     "rimraf": "^3.0.2",
+    "start-server-and-test": "^1.14.0",
     "ts-jest": "^28.0.2",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.4"

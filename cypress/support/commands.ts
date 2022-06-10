@@ -1,6 +1,7 @@
 /// <reference types="cypress" />
 
-import type { TransportBody } from 'packages/core/src';
+import type { ExceptionEvent } from 'packages/core/dist';
+import type { LogEvent, MeasurementEvent, TraceEvent, TransportBody } from 'packages/core/src';
 
 // ***********************************************
 // This example commands.ts shows you how to
@@ -39,10 +40,20 @@ import type { TransportBody } from 'packages/core/src';
 //   }
 // }
 
-Cypress.Commands.add('collect', (expectedRequests: number, fn: (payloads: TransportBody[]) => void) => {
-  cy.wait(times('@collector', expectedRequests), { timeout: 2000 }).then(interceptions => {
-    fn(interceptions.map(i => i.request.body as TransportBody))
-  })
+Cypress.Commands.add('waitLogs', (fn: (events: LogEvent[]) => void) => {
+  cy.wait('@logs').then(interception => fn((interception.request.body as TransportBody).logs!))
+})
+
+Cypress.Commands.add('waitExceptions', (fn: (events: ExceptionEvent[]) => void) => {
+  cy.wait('@exceptions').then(interception => fn((interception.request.body as TransportBody).exceptions!))
+})
+
+Cypress.Commands.add('waitTraces', (fn: (event: TraceEvent) => void) => {
+  cy.wait('@traces').then(interception => fn((interception.request.body as TransportBody).traces!))
+})
+
+Cypress.Commands.add('waitMeasurements', (fn: (events: MeasurementEvent[]) => void) => {
+  cy.wait('@measurements').then(interception => fn((interception.request.body as TransportBody).measurements!))
 })
 
 Cypress.Commands.add('clickButton', (dataname: string) => {
@@ -52,15 +63,13 @@ Cypress.Commands.add('clickButton', (dataname: string) => {
 declare global {
    namespace Cypress {
      interface Chainable {
-      collect(expectedRequests: number, fn: (payloads: TransportBody[]) => void): Chainable<void>
+      waitLogs(fn: (events: LogEvent[]) => void): Chainable<void>
+      waitExceptions(fn: (events: ExceptionEvent[]) => void): Chainable<void>
+      waitMeasurements(fn: (events: MeasurementEvent[]) => void): Chainable<void>
+      waitTraces(fn: (event: TraceEvent) => void): Chainable<void>
       clickButton(dataname: string): Chainable<void>
     }
    }
-}
-
-
-function times(alias: string, count: number): string[] {
-  return Array.from(Array(count)).map(() => alias);
 }
 
 export {};
