@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 context('Errors', () => {
 
   function checkErrorReported(type: string, value: string, expectStacktrace = true) {

@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 context('Tracing', () => {
 
   it('will capture log with trace context', () => {

@@ -21,3 +21,8 @@ yarn-error.log*
 # Misc
 .DS_Store
 /packages/core/src/version.ts
+
+
+# Cypress
+cypress/videos
+cypress/screenshots

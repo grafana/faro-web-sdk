@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 import { LogLevel } from '../../../packages/core/src';
 
 context('Logs', () => {

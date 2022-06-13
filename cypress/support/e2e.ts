@@ -41,8 +41,4 @@ beforeEach(() => {
   cy.visit('/')
 })
 
-afterEach(() => {
-  cy.window().then((win) => {
-    win.location.href = 'about:blank'
-  })
-})
+afterEach(() => cy.loadBlank())
