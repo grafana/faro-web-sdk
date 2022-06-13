@@ -21,7 +21,7 @@
     "build": "lerna run build",
     "prepublish": "yarn build",
     "cypress": "cypress open",
-    "cypress:ci": "cypress run",
+    "cypress:ci": "cypress run --headed",
     "ci:e2e": "start-server-and-test start:demo http://localhost:1234 cypress:ci",
     "clean": "run-s clean:*",
     "clean:packages": "lerna run --parallel clean",
