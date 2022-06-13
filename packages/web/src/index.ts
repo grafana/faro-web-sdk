@@ -4,3 +4,4 @@ export * from './transports';
 export * from './config';
 export * from './initialize';
 export { LogLevel } from '@grafana/agent-core';
+export type { Agent } from '@grafana/agent-core';
