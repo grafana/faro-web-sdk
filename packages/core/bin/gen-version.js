@@ -1,5 +1,5 @@
 #!node
-import { writeFileSync, readFileSync } from 'fs';
+const { writeFileSync, readFileSync } = require('fs');
 
 const { version } = JSON.parse(readFileSync('package.json'));
 

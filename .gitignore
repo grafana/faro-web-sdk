@@ -8,6 +8,7 @@
 .parcel-cache
 coverage
 dist
+build
 node_modules
 .eslintcache
 

@@ -1,15 +1,9 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "./build/cjs",
     "rootDir": "./src",
     "tsBuildInfoFile": "../../.build-cache/tracing-web.tsbuildinfo"
   },
-  "include": ["./src"],
-  "references": [
-    {
-      "path": "../core/tsconfig.json",
-      "prepend": false
-    }
-  ]
+  "include": ["./src"]
 }
