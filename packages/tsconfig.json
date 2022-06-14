@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@grafana/agent-*": ["*/src"],
+    },
+    "rootDir": "."
+  }
+}
