@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.esm.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./build/esm",
+    "outDir": "./dist/esm",
     "tsBuildInfoFile": "../../.build-cache/web.esm.tsbuildinfo"
   },
   "include": ["./src"]

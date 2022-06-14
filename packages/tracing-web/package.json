@@ -11,18 +11,18 @@
     "url": "https://github.com/grafana/grafana-javascript-agent.git",
     "directory": "packages/tracing-web"
   },
-  "main": "build/cjs/index.js",
-  "module": "build/esm/index.js",
-  "types": "build/cjs/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/cjs/index.d.ts",
   "files": [
-    "build",
+    "dist",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "start": "yarn build -w",
     "build": "tsc --build tsconfig.all.json",
-    "clean": "rimraf build/ yarn-error.log",
+    "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "exit 0",
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",

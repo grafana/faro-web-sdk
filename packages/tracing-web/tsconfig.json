@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./build/cjs",
+    "outDir": "./dist/cjs",
     "rootDir": "./src",
     "tsBuildInfoFile": "../../.build-cache/tracing-web.tsbuildinfo"
   },

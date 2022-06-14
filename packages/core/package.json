@@ -11,11 +11,11 @@
     "url": "https://github.com/grafana/grafana-javascript-agent.git",
     "directory": "packages/core"
   },
-  "main": "build/cjs/index.js",
-  "module": "build/esm/index.js",
-  "types": "build/cjs/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/cjs/index.d.ts",
   "files": [
-    "build",
+    "dist",
     "README.md",
     "LICENSE"
   ],
@@ -24,7 +24,7 @@
     "postversion": "yarn prebuild",
     "prebuild": "node bin/gen-version.js",
     "build": "tsc --build tsconfig.all.json",
-    "clean": "rimraf build/ yarn-error.log",
+    "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "jest",
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
