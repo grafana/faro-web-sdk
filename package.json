@@ -28,7 +28,7 @@
     "quality:packages": "lerna run --parallel quality",
     "quality:test": "lerna run --parallel quality:test",
     "quality:e2e": "cypress run --headed",
-    "quality:e2e:ci": "start-server-and-test start:demo http://localhost:1234 cypress:ci",
+    "quality:e2e:ci": "start-server-and-test start:demo http://localhost:1234 quality:e2e",
     "quality:format": "lerna run --parallel quality:format",
     "quality:lint": "run-p quality:lint:*",
     "quality:lint:packages": "lerna run --parallel quality:lint",
