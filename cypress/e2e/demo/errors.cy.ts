@@ -36,5 +36,3 @@ context('Errors', () => {
     checkErrorReported('UnhandledRejection', 'Non-Error promise rejection captured with value: This is a rejected promise', false)
   })
 })
-
-export {};

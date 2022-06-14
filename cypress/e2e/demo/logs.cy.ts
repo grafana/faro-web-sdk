@@ -1,4 +1,4 @@
-import { LogLevel } from '../../../packages/core/src';
+import { LogLevel } from '@grafana/agent-core'
 
 context('Logs', () => {
 
@@ -26,5 +26,3 @@ context('Logs', () => {
     checkLogCaptured(LogLevel.ERROR , 'This is a console error message')
   })
 })
-
-export {}

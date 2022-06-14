@@ -12,5 +12,3 @@ context('Measurements', () => {
     }, 4)
   })
 })
-
-export {}

@@ -21,5 +21,3 @@ context('Tracing', () => {
     });
   })
 })
-
-export {}
