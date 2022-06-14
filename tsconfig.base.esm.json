@@ -3,7 +3,6 @@
   "compilerOptions": {
     "module": "ES6",
     "moduleResolution": "node",
-    "target": "es6",
-    "downlevelIteration": true
+    "target": "es6"
   }
 }
