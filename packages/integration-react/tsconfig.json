@@ -5,5 +5,11 @@
     "rootDir": "./src",
     "tsBuildInfoFile": "../../.build-cache/integration-react.tsbuildinfo"
   },
-  "include": ["./src"]
+  "include": ["./src"],
+  "references": [
+    {
+      "path": "../core/tsconfig.json",
+      "prepend": false
+    }
+  ]
 }

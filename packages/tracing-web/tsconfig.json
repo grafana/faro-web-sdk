@@ -5,5 +5,11 @@
     "rootDir": "./src",
     "tsBuildInfoFile": "../../.build-cache/tracing-web.tsbuildinfo"
   },
-  "include": ["./src"]
+  "include": ["./src"],
+  "references": [
+    {
+      "path": "../core/tsconfig.json",
+      "prepend": false
+    }
+  ]
 }
