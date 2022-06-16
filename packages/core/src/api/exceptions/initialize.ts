@@ -1,3 +1,4 @@
+import type { Config } from '../../config';
 import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
@@ -6,33 +7,39 @@ import type { TracesAPI } from '../traces';
 import { defaultExceptionType } from './const';
 import type { ExceptionEvent, ExceptionsAPI } from './types';
 
-export function initializeExceptions(transports: Transports, metas: Metas, tracesApi: TracesAPI): ExceptionsAPI {
-  const pushException: ExceptionsAPI['pushException'] = (value, { stackFrames, type } = {}) => {
-    try {
-      const item: TransportItem<ExceptionEvent> = {
-        meta: metas.value,
-        payload: {
-          type: type ?? defaultExceptionType,
-          value,
-          timestamp: getCurrentTimestamp(),
-          trace: tracesApi.getTraceContext(),
-        },
-        type: TransportItemType.EXCEPTION,
+export function initializeExceptionsAPI(
+  config: Config,
+  transports: Transports,
+  metas: Metas,
+  tracesApi: TracesAPI
+): ExceptionsAPI {
+  const pushError: ExceptionsAPI['pushError'] = (error, options = {}) => {
+    const type = options.type || error.name || defaultExceptionType;
+
+    const stackFrames =
+      options.stackFrames ?? (error.stack && config.parseStacktrace ? config.parseStacktrace(error).frames : undefined);
+
+    const item: TransportItem<ExceptionEvent> = {
+      meta: metas.value,
+      payload: {
+        type,
+        value: error.message,
+        timestamp: getCurrentTimestamp(),
+        trace: tracesApi.getTraceContext(),
+      },
+      type: TransportItemType.EXCEPTION,
+    };
+
+    if (stackFrames?.length) {
+      item.payload.stacktrace = {
+        frames: stackFrames,
       };
-
-      if (stackFrames?.length) {
-        item.payload.stacktrace = {
-          frames: stackFrames,
-        };
-      }
-
-      transports.execute(item);
-    } catch (err) {
-      // TODO: Add proper logging when debug is enabled
     }
+
+    transports.execute(item);
   };
 
   return {
-    pushException,
+    pushError,
   };
 }

@@ -1,5 +1,12 @@
 export { defaultExceptionType } from './const';
 
-export { initializeExceptions } from './initialize';
+export { initializeExceptionsAPI } from './initialize';
 
-export type { ExceptionEvent, ExceptionStackFrame, ExceptionsAPI, PushExceptionOptions } from './types';
+export type {
+  ExceptionEvent,
+  ExceptionStackFrame,
+  ExceptionsAPI,
+  PushErrorOptions,
+  ExtendedError,
+  Stacktrace,
+} from './types';

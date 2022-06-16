@@ -12,6 +12,7 @@ export type {
   TraceEvent,
   ResourceSpan,
   InstrumentationLibrarySpan,
+  Stacktrace,
 } from './api';
 
 export { initializeAgent } from './initialize';

@@ -30,7 +30,7 @@ export function registerOnerror(agent: Agent): void {
     }
 
     if (value) {
-      agent.api.pushException(value, { type, stackFrames });
+      agent.api.pushError(new Error(value), { type, stackFrames });
     }
   };
 }

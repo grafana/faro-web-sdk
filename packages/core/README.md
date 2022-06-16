@@ -56,21 +56,20 @@ global.grafanaAgent.api.pushLog(/* ... */);
 
 The `api` property on the agent contains all the necessary methods to push new events.
 
-## Exceptions
+## Errors
 
-- `pushException` - is a method to push an error/exception to the agent. It accepts a mandatory `message` parameter
+- `pushError` - is a method to push an error/exception to the agent. It accepts a mandatory `message` parameter
   and an optional one where you can set:
 
-  - `span` - the span where the exception has occurred. Default value: `undefined`.
-  - `stackFrames` - an array of stack frames. Default value: `[]`.
-  - `type` - the type of exception. Default value: `error`.
+  - `stackFrames` - an array of stack frames. Defaults to parsing `error.stack` if present.
+  - `type` - the type of exception. Default value: `error.name` or `"error"`.
 
   ```ts
-  agent.api.pushException('This is an error');
+  agent.api.pushError(new Error('This is an error'));
 
-  agent.api.pushException('This is an unhandled exception', { type: 'unhandledException' });
+  agent.api.pushError(new Error('This is an unhandled exception'), { type: 'unhandledException' });
 
-  agent.api.pushException('This is an error with stack frames', {
+  agent.api.pushError(new Error('This is an error with stack frames'), {
     stackFrames: [
       {
         filename: 'file.js',
@@ -79,10 +78,6 @@ The `api` property on the agent contains all the necessary methods to push new e
         lineno: 80,
       },
     ],
-  });
-
-  agent.api.pushException('This is an error in a span', {
-    span: mySpan,
   });
   ```
 

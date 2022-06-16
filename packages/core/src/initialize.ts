@@ -10,7 +10,7 @@ import { globalObject } from './utils';
 export function initializeAgent(config: Config): Agent {
   const metas = initializeMetas(config);
   const transports = initializeTransports(config);
-  const api = initializeAPI(transports, metas);
+  const api = initializeAPI(config, transports, metas);
 
   const agent = initializeGlobalAgent({
     config,

@@ -1,4 +1,4 @@
-import type { ExceptionStackFrame } from '@grafana/agent-core';
+import type { ExceptionStackFrame, Stacktrace } from '@grafana/agent-core';
 import { isNumber } from '@grafana/agent-core';
 
 import {
@@ -149,4 +149,10 @@ export function getStackFramesFromError(error: ExtendedError): ExceptionStackFra
   }
 
   return stackFrames;
+}
+
+export function parseStacktrace(error: ExtendedError): Stacktrace {
+  return {
+    frames: getStackFramesFromError(error),
+  };
 }
