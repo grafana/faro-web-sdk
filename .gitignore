@@ -10,6 +10,8 @@ coverage
 dist
 node_modules
 .eslintcache
+cypress/videos
+cypress/screenshots
 
 # Logs
 *.log
@@ -21,8 +23,3 @@ yarn-error.log*
 # Misc
 .DS_Store
 /packages/core/src/version.ts
-
-
-# Cypress
-cypress/videos
-cypress/screenshots
