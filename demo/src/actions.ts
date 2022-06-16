@@ -1,4 +1,4 @@
-import '@grafana/agent-web/dist/globals';
+import '@grafana/agent-web/globals';
 import { SpanStatusCode } from '@opentelemetry/api';
 
 const w = window as any;

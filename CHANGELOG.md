@@ -1,5 +1,10 @@
 # Changelog
 
+## unreleased
+
+* Updated build: packages will be published with a build targeting es5 with common-js modules,
+and a build targeting es6 with ecmascript modules.
+
 ## 0.2.0 (2022-06-03)
 
 * Open Telemetry tracing integration via `@grafana/agent-tracing-web`

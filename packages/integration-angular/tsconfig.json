@@ -1,7 +1,7 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "./dist/cjs",
     "rootDir": "./src",
     "tsBuildInfoFile": "../../.build-cache/integration-angular.tsbuildinfo"
   },

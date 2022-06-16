@@ -11,20 +11,17 @@
     "url": "https://github.com/grafana/grafana-javascript-agent.git",
     "directory": "packages/integration-react"
   },
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/cjs/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
-  "imports": {
-    "#integration-react/*": {
-      "default": "./dist/*.js"
-    }
-  },
   "scripts": {
     "start": "yarn build -w",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc --build tsconfig.all.json",
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "exit 0",

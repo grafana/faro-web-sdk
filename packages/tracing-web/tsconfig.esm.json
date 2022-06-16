@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.esm.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist/esm",
+    "tsBuildInfoFile": "../../.build-cache/tracing-web.esm.tsbuildinfo"
+  },
+  "include": ["./src"]
+}

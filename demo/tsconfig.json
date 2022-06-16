@@ -10,15 +10,15 @@
   "include": ["./src"],
   "references": [
     {
-      "path": "../packages/core/tsconfig.json",
+      "path": "../packages/core/tsconfig.esm.json",
       "prepend": false
     },
     {
-      "path": "../packages/web/tsconfig.json",
+      "path": "../packages/web/tsconfig.esm.json",
       "prepend": false
     },
     {
-      "path": "../packages/tracing-web/tsconfig.json",
+      "path": "../packages/tracing-web/tsconfig.esm.json",
       "prepend": false
     }
   ]
