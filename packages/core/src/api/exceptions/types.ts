@@ -26,12 +26,11 @@ export interface ExceptionEvent {
   trace?: TraceContext;
 }
 
-export interface PushExceptionOptions {
+export interface PushErrorOptions {
   stackFrames?: ExceptionStackFrame[];
   type?: string;
 }
 
 export interface ExceptionsAPI {
-  pushError: (error: Error) => void;
-  pushException: (value: string, options?: PushExceptionOptions) => void;
+  pushError: (value: Error, options?: PushErrorOptions) => void;
 }

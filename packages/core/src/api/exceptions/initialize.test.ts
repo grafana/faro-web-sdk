@@ -18,38 +18,38 @@ describe('api.exceptions', () => {
     return [api, transport];
   }
 
-  describe('pushException', () => {
-    const [api, transport] = createAPI();
-    const frames: ExceptionStackFrame[] = [
-      {
-        filename: 'foo.js',
-        function: 'FooFn',
-        colno: 4,
-        lineno: 23,
-      },
-      {
-        filename: 'bar.js',
-        function: 'BarFn',
-        colno: 6,
-        lineno: 52,
-      },
-    ];
-    api.pushException('test exception', {
-      stackFrames: frames,
-      type: 'TestError',
-    });
-    expect(transport.items).toHaveLength(1);
-    const payload = transport.items[0];
-    expect(payload?.payload).toBeTruthy();
-    expect(payload?.type).toEqual(TransportItemType.EXCEPTION);
-    const event = payload?.payload as ExceptionEvent;
-    expect(event.type).toEqual('TestError');
-    expect(event.value).toEqual('test exception');
-    expect(event.stacktrace).toEqual({ frames });
-  });
-
   describe('pushError', () => {
-    it('should report an exception', () => {
+    it('error with overrides', () => {
+      const [api, transport] = createAPI();
+      const frames: ExceptionStackFrame[] = [
+        {
+          filename: 'foo.js',
+          function: 'FooFn',
+          colno: 4,
+          lineno: 23,
+        },
+        {
+          filename: 'bar.js',
+          function: 'BarFn',
+          colno: 6,
+          lineno: 52,
+        },
+      ];
+      api.pushError(new Error('test exception'), {
+        stackFrames: frames,
+        type: 'TestError',
+      });
+      expect(transport.items).toHaveLength(1);
+      const payload = transport.items[0];
+      expect(payload?.payload).toBeTruthy();
+      expect(payload?.type).toEqual(TransportItemType.EXCEPTION);
+      const event = payload?.payload as ExceptionEvent;
+      expect(event.type).toEqual('TestError');
+      expect(event.value).toEqual('test exception');
+      expect(event.stacktrace).toEqual({ frames });
+    });
+
+    it('error without overrides', () => {
       const [api, transport] = createAPI();
 
       const err = new Error('test');
