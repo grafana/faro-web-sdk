@@ -29,7 +29,9 @@ Cypress.Commands.add('loadBlank', () => {
 })
 
 declare global {
-   namespace Cypress {
+
+   // cypress uses namespace typing so we have to extend it as well
+   namespace Cypress { // eslint-disable-line @typescript-eslint/no-namespace
      interface Chainable {
       waitLogs(fn: (events: LogEvent[]) => void): Chainable<void>
       waitExceptions(fn: (events: ExceptionEvent[]) => void): Chainable<void>
