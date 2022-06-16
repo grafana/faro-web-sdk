@@ -11,10 +11,4 @@ const agent = initializeAgent({
   },
 });
 
-agent.api
-  .getOTEL()!
-  .trace.getTracer('frontend')
-  .startActiveSpan('hello world', (span) => {
-    console.info('hello world!!');
-    span.end();
-  });
+//agent.api.pushLog('hello world')

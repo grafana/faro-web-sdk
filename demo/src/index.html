@@ -14,23 +14,23 @@
     <hr />
 
     <h2>Console Instrumentation</h2>
-    <button onclick="callConsole('trace')">Trace</button>
-    <button onclick="callConsole('info')">Info</button>
-    <button onclick="callConsole('log')">Log</button>
-    <button onclick="callConsole('warn')">Warn</button>
-    <button onclick="callConsole('error')">Error</button>
+    <button data-cy="btn-log-trace" onclick="callConsole('trace')">Trace</button>
+    <button data-cy="btn-log-info" onclick="callConsole('info')">Info</button>
+    <button data-cy="btn-log-log"  onclick="callConsole('log')">Log</button>
+    <button data-cy="btn-log-warn" onclick="callConsole('warn')">Warn</button>
+    <button data-cy="btn-log-error" onclick="callConsole('error')">Error</button>
     <hr />
 
     <h2>Error Instrumentation</h2>
-    <button onclick="throwError()">Throw error</button>
-    <button onclick="callUndefined()">Call undefined method</button>
-    <button onclick="fetchError()">Fetch error</button>
-    <button onclick="promiseReject()">Promise reject</button>
+    <button data-cy="btn-throw-error" onclick="throwError()">Throw error</button>
+    <button data-cy="btn-call-undefined" onclick="callUndefined()">Call undefined method</button>
+    <button data-cy="btn-fetch-error" onclick="fetchError()">Fetch error</button>
+    <button data-cy="btn-promise-reject" onclick="promiseReject()">Promise reject</button>
     <hr />
 
     <h2>Tracing Instrumentation</h2>
     <button onclick="fetchSuccess()">Fetch</button>
-    <button onclick="traceWithLog()">Trace with log</button>
+    <button data-cy="btn-trace-with-log" onclick="traceWithLog()">Trace with log</button>
     <hr />
 
     <h2>Metrics Measurements</h2>

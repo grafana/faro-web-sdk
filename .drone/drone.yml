@@ -16,7 +16,22 @@ steps:
 - name: Lint
   image: node:lts-stretch
   commands:
-  - yarn quality
+  - yarn quality:lint
+
+- name: Check circular deps
+  image: node:lts-stretch
+  commands:
+  - yarn quality:circular-deps
+
+- name: Unit tests
+  image: node:lts-stretch
+  commands:
+  - yarn quality:test
+
+- name: End to end tests
+  image: cypress/included:10.0.3
+  commands:
+  - yarn quality:e2e:ci
 
 - name: Publish
   image: node:lts-stretch
@@ -32,6 +47,6 @@ steps:
     - tag
 ---
 kind: signature
-hmac: 7446b40b5c9c110e103c2f9fbeba5d8058461e22d47143f49374b9ee62a35c51
+hmac: 76925513b65c6d85a809fc5d508fb92fb138f5394ce93bf167b6a03feed47401
 
 ...

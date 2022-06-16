@@ -10,6 +10,8 @@ coverage
 dist
 node_modules
 .eslintcache
+cypress/videos
+cypress/screenshots
 
 # Logs
 *.log
