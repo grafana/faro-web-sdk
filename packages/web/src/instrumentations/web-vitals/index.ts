@@ -25,4 +25,6 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
       });
     });
   }
+
+  shutdown(): void {}
 }

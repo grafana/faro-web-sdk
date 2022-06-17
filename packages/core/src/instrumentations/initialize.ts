@@ -5,3 +5,9 @@ export function initializeInstrumentations(config: Config): void {
     instrumentation.initialize();
   });
 }
+
+export function shutdownInstrumentations(config: Config): void {
+  config.instrumentations.forEach((instrumentation) => {
+    instrumentation.shutdown();
+  });
+}

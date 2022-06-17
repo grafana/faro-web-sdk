@@ -1,5 +1,11 @@
 # Changelog
 
+## unreleased
+
+* Added `shutdown()` method to instrumentations, transports and agent.
+Calling it will unsubscribe global event handlers, unpatch console and etc when possible,
+and prevent events from being ingested.
+
 ## 0.3.0 (2022-06-16)
 
 * Updated build: packages will be published with a build targeting es5 with common-js modules,

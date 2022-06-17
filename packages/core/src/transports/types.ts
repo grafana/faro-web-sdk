@@ -24,6 +24,8 @@ export interface Transport {
 
   // returns URLs to be ignored by tracing, to not cause a feedback loop
   getIgnoreUrls(): Patterns;
+
+  shutdown(): void
 }
 export interface TransportBody {
   exceptions?: ExceptionEvent[];
@@ -37,4 +39,5 @@ export interface Transports {
   add: (...transports: Transport[]) => void;
   execute: (transportItem: TransportItem) => void;
   transports: Transport[];
+  shutdown: () => void
 }

@@ -3,4 +3,5 @@ export interface Instrumentation {
   readonly version: string;
 
   initialize(): void;
+  shutdown(): void
 }

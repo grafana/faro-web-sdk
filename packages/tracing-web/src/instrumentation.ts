@@ -41,6 +41,8 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
   static SCHEDULED_BATCH_DELAY_MS = 1000;
 
+  private provider: WebTracerProvider | undefined
+
   constructor(private options: TracingInstrumentationOptions = {}) {
     super();
   }
@@ -61,7 +63,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     const resource = Resource.default().merge(new Resource(attributes));
 
-    const provider = new WebTracerProvider({ resource });
+    const provider = this.provider = new WebTracerProvider({ resource });
     provider.addSpanProcessor(
       options.spanProcessor ??
         new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }), {
@@ -73,12 +75,18 @@ export class TracingInstrumentation extends BaseInstrumentation {
       contextManager: options.contextManager ?? new ZoneContextManager(),
     });
 
+    const instrumentations =  options.instrumentations?.length
+    ? options.instrumentations
+    : getDefaultOTELInstrumentations(this.getIgnoreUrls())
+
     registerInstrumentations({
-      instrumentations: options.instrumentations?.length
-        ? options.instrumentations
-        : getDefaultOTELInstrumentations(this.getIgnoreUrls()),
+      instrumentations,
     });
     agent.api.initOTEL(trace, context);
+  }
+
+  shutdown(): void {
+    this.provider?.shutdown()
   }
 
   private getIgnoreUrls(): Array<string | RegExp> {

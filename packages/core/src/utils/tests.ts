@@ -15,6 +15,10 @@ export class MockTransport implements Transport {
   getIgnoreUrls(): Patterns {
     return this.ignoreURLs;
   }
+
+  shutdown(): void {
+
+  }
 }
 
 export function mockConfig(overrides: Partial<Config> = {}): Config {

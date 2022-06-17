@@ -12,4 +12,8 @@ export abstract class BaseTransport implements Transport {
   get agent(): Agent {
     return agent;
   }
+
+  shutdown(): void {
+
+  }
 }

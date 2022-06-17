@@ -11,4 +11,5 @@ export abstract class BaseInstrumentation implements Instrumentation {
   abstract readonly version: string;
 
   abstract initialize(): void;
+  abstract shutdown(): void;
 }

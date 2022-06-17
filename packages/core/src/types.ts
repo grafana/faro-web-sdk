@@ -8,4 +8,5 @@ export interface Agent {
   config: Config;
   metas: Metas;
   transports: Transports;
+  shutdown(): void
 }
