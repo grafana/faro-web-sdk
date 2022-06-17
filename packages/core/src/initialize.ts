@@ -12,11 +12,16 @@ export function initializeAgent(config: Config): Agent {
   const transports = initializeTransports(config);
   const api = initializeAPI(config, transports, metas);
 
+  const pause = () => transports.pause();
+  const unpause = () => transports.unpause();
+
   const agent = initializeGlobalAgent({
     config,
     metas,
     transports,
     api,
+    pause,
+    unpause
   });
 
   if (!agent.config.preventGlobalExposure) {

@@ -221,3 +221,9 @@ initializeAgent({
   transports: [new MyTransport()],
 });
 ```
+
+## Pause / unpause
+
+Agent can be paused by invoking `agent.pause()`.
+This will prevent events from being sent to transports.
+Call `agent.unpause()` to resume capturing events.
