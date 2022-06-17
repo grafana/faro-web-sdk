@@ -174,7 +174,7 @@ const { trace, context } = agent.api.getOTEL();
 const tracer = trace.getTracer('default');
 const span = tracer.startSpan('click');
 context.with(trace.setSpan(context.active(), span), () => {
-  doSoemthing();
+  doSomething();
   span.end();
 })
 ```
