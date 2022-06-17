@@ -224,10 +224,11 @@ initializeAgent({
 
 ## Shutdown
 
-It's possible to shut down the agent. Instrumentations will unpatch/unregsiter, events will no longer be sent to transports,
-global variable will be removed.
-Warning: when using `ErrorInstrumentation` or `ConsoleInstrumentation`, and if `console` or `window.onerror` were wrapped by
-something else after the grafana javascript agent was initialized, this later callback will be lost as well when shutting down.
+It's possible to shut down the agent. Instrumentations will unpatch/unregsiter, events will no longer be
+sent to transports, global variable will be removed.
+Warning: when using `ErrorInstrumentation` or `ConsoleInstrumentation`, and if `console` or `window.onerror`
+were wrapped by something else after the grafana javascript agent was initialized, this later callback will
+be lost as well when shutting down.
 
 ```ts
 import { agent } from '@grafana/agent-core';
