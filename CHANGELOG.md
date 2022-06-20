@@ -1,6 +1,7 @@
 # Changelog
 
 ## unreleased
+
 * Added `agent.pause()` and `agent.unpause()` to be able to temproarily stop
 ingesting events.
 
