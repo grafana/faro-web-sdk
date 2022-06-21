@@ -7,7 +7,7 @@ import { BeforeSendHook, Transport, TransportItemType, Transports } from './type
 export function initializeTransports(config: Config): Transports {
   const transports: Transport[] = [...config.transports];
 
-  let paused = false;
+  let paused = config.paused ?? false;
 
   const beforeSendHooks: BeforeSendHook[] = [];
   if (config.beforeSend) {
@@ -39,18 +39,18 @@ export function initializeTransports(config: Config): Transports {
 
   const pause = () => {
     paused = true;
-  }
+  };
 
   const unpause = () => {
     paused = false;
-  }
+  };
 
   return {
     add,
     execute,
     transports,
     pause,
-    unpause
+    unpause,
   };
 }
 

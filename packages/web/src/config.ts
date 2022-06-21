@@ -8,6 +8,8 @@ import {
   defaultGlobalObjectKey,
   Transport,
   Patterns,
+  APIEvent,
+  BeforeSendHook,
 } from '@grafana/agent-core';
 
 import {
@@ -20,9 +22,10 @@ import { browserMeta, pageMeta } from './metas';
 import { FetchTransport } from './transports';
 
 export interface BrowserConfig {
+  app: App;
+
   url?: string;
   apiKey?: string;
-  app: App;
   session?: Session;
   user?: User;
   globalObjectKey?: string;
@@ -31,6 +34,8 @@ export interface BrowserConfig {
   instrumentations?: Instrumentation[];
   transports?: Transport[];
   ignoreErrors?: Patterns;
+  beforeSend?: BeforeSendHook<APIEvent>;
+  paused?: boolean;
 }
 
 export const defaultMetas: MetaItem[] = [browserMeta, pageMeta];
@@ -78,6 +83,8 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     user: browserConfig.user,
     ignoreErrors: browserConfig.ignoreErrors,
     parseStacktrace,
+    paused: browserConfig.paused,
+    beforeSend: browserConfig.beforeSend,
   };
 
   return config;

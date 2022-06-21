@@ -21,7 +21,7 @@ export function initializeAgent(config: Config): Agent {
     transports,
     api,
     pause,
-    unpause
+    unpause,
   });
 
   if (!agent.config.preventGlobalExposure) {

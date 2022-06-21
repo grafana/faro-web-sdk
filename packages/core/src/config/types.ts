@@ -12,6 +12,7 @@ export interface Config<P = APIEvent> {
   app: App;
   parseStacktrace: StacktraceParser;
 
+  paused?: boolean;
   session?: Session;
   user?: User;
   beforeSend?: BeforeSendHook<P>;
