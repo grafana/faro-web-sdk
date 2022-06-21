@@ -29,7 +29,8 @@
     "quality:test": "jest",
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s quality:lint:*",
-    "quality:lint:ts": "eslint \"src/**/*.ts\"",
+    "quality:lint:eslint": "eslint \"src/**/*.ts\"",
+    "quality:lint:prettier": "prettier --check src/**/*.ts src/*.ts",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
