@@ -11,6 +11,7 @@ export interface Config<P = APIEvent> {
   metas: MetaItem[];
   app: App;
   parseStacktrace: StacktraceParser;
+  paused: boolean;
 
   session?: Session;
   user?: User;

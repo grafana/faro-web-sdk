@@ -1,5 +1,10 @@
 # Changelog
 
+## unreleased
+
+* Added `agent.pause()` and `agent.unpause()` to be able to temproarily stop
+ingesting events.
+
 ## 0.3.0 (2022-06-16)
 
 * Updated build: packages will be published with a build targeting es5 with common-js modules,
