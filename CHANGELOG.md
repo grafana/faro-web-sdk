@@ -2,8 +2,8 @@
 
 ## unreleased
 
-* Added `agent.pause()` and `agent.unpause()` to be able to temproarily stop
-ingesting events.
+- Added `agent.pause()` and `agent.unpause()` to be able to temproarily stop
+  ingesting events.
 
 ## 0.3.0 (2022-06-16)
 
