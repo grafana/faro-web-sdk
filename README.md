@@ -2,7 +2,7 @@
 
 [![Build Status](https://drone.grafana.net/api/badges/grafana/grafana-javascript-agent/status.svg)](https://drone.grafana.net/grafana/grafana-javascript-agent)
 
-*Warning*
+_Warning_
 This feature is currently pre-release and subject to frequent breaking changes.
 
 Grafana JavaScript Agent is a library that can instrument frontend JavaScript applications to collect
