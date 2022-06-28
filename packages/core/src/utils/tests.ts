@@ -29,6 +29,7 @@ export function mockConfig(overrides: Partial<Config> = {}): Config {
       version: '1.0.0',
     },
     parseStacktrace: mockStacktraceParser,
+    paused: false,
     ...overrides,
   };
 }

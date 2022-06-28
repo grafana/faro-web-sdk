@@ -83,7 +83,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     user: browserConfig.user,
     ignoreErrors: browserConfig.ignoreErrors,
     parseStacktrace,
-    paused: browserConfig.paused,
+    paused: browserConfig.paused ?? false,
     beforeSend: browserConfig.beforeSend,
   };
 
