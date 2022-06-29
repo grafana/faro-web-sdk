@@ -25,7 +25,7 @@
     "build": "tsc --build tsconfig.all.json",
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
-    "quality:test": "exit 0",
+    "quality:test": "jest",
     "quality:format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s quality:lint:*",
     "quality:lint:ts": "eslint \"src/**/*.ts\"",
