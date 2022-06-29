@@ -1,6 +1,5 @@
 import type { ExceptionEvent } from '../api';
-import type { Config } from '../config';
-import type { Patterns } from '../config/types';
+import type { Config, Patterns } from '../config';
 import { isString } from '../utils';
 import { BeforeSendHook, Transport, TransportItemType, Transports } from './types';
 

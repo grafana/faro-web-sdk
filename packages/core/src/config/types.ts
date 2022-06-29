@@ -4,18 +4,19 @@ import type { App, User, Session, MetaItem } from '../metas';
 import type { BeforeSendHook, Transport } from '../transports';
 
 export interface Config<P = APIEvent> {
+  app: App;
   globalObjectKey: string;
   instrumentations: Instrumentation[];
+  metas: MetaItem[];
+  parseStacktrace: StacktraceParser;
   preventGlobalExposure: boolean;
   transports: Transport[];
-  metas: MetaItem[];
-  app: App;
-  parseStacktrace: StacktraceParser;
 
+  beforeSend?: BeforeSendHook<P>;
+  enableDebug?: boolean;
+  ignoreErrors?: Patterns;
   session?: Session;
   user?: User;
-  beforeSend?: BeforeSendHook<P>;
-  ignoreErrors?: Patterns;
 }
 
 export type StacktraceParser = (err: ExtendedError) => Stacktrace;

@@ -12,6 +12,7 @@
     "isolatedModules": true,
     "lib": ["DOM", "ESNext"],
     "module": "commonjs",
+    "moduleResolution": "nodeNext",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,

@@ -19,6 +19,12 @@
     "README.md",
     "LICENSE"
   ],
+  "exports": {
+    "./utils/*": {
+      "import": "./dist/esm/*.js",
+      "require": "./dist/cjs/*.js"
+    }
+  },
   "scripts": {
     "start": "yarn build -w",
     "postversion": "yarn prebuild",

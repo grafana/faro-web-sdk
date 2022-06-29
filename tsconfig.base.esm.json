@@ -2,7 +2,7 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "module": "ES6",
-    "moduleResolution": "node",
+    "moduleResolution": "nodeNext",
     "target": "es6"
   }
 }
