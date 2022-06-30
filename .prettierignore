@@ -13,3 +13,6 @@
 coverage
 dist
 node_modules
+
+# drone sign step formats it in a way that prettier doesn't like
+.drone/drone.yml

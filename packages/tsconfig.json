@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@grafana/agent-*": ["*/src"],
+      "@grafana/agent-*": ["*/src"]
     },
     "rootDir": "."
   }
