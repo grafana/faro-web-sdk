@@ -126,9 +126,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -196,9 +194,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -212,7 +208,7 @@
             "uid": "${DS_LOGS}"
           },
           "editorMode": "code",
-          "expr": "avg_over_time({kind=\"measurement\",app=\"$app\"} |= \"fcp\" | logfmt | unwrap fcp [$__range]) by (app)",
+          "expr": "avg_over_time({kind=\"measurement\",app=\"$app\"} |= \" fcp=\" | logfmt | unwrap fcp [$__range]) by (app)",
           "legendFormat": "FCP",
           "queryType": "range",
           "refId": "A"
@@ -268,9 +264,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -338,9 +332,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -354,7 +346,7 @@
             "uid": "${DS_LOGS}"
           },
           "editorMode": "code",
-          "expr": "avg_over_time({kind=\"measurement\",app=\"$app\"} |= \"lcp\" | logfmt | unwrap lcp [$__range]) by (app)",
+          "expr": "avg_over_time({kind=\"measurement\",app=\"$app\"} |= \" lcp=\" | logfmt | unwrap lcp [$__range]) by (app)",
           "legendFormat": "LCP",
           "queryType": "range",
           "refId": "A"
@@ -408,9 +400,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -424,7 +414,7 @@
             "uid": "${DS_LOGS}"
           },
           "editorMode": "code",
-          "expr": "avg_over_time({kind=\"measurement\",app=\"$app\"} |= \"fid\" | logfmt | unwrap fid [$__range]) by (app)",
+          "expr": "avg_over_time({kind=\"measurement\",app=\"$app\"} |= \" fid=\" | logfmt | unwrap fid [$__range]) by (app)",
           "legendFormat": "FID",
           "queryType": "range",
           "refId": "A"
@@ -514,7 +504,7 @@
             "uid": "${DS_LOGS}"
           },
           "editorMode": "code",
-          "expr": "quantile_over_time(0.75, {kind=\"measurement\",app=\"$app\"} |= \"ttfb\" | logfmt | unwrap ttfb [5m]) by (app)",
+          "expr": "quantile_over_time(0.75, {kind=\"measurement\",app=\"$app\"} |= \" ttfb=\" | logfmt | unwrap ttfb [5m]) by (app)",
           "legendFormat": "TTFB",
           "queryType": "range",
           "refId": "A"
@@ -525,7 +515,7 @@
             "uid": "${DS_LOGS}"
           },
           "editorMode": "code",
-          "expr": "quantile_over_time(0.75, {kind=\"measurement\",app=\"$app\"} |= \"fcp\" | logfmt | unwrap fcp [5m]) by (app)",
+          "expr": "quantile_over_time(0.75, {kind=\"measurement\",app=\"$app\"} |= \" fcp=\" | logfmt | unwrap fcp [5m]) by (app)",
           "hide": false,
           "legendFormat": "FCP",
           "queryType": "range",
@@ -537,7 +527,7 @@
             "uid": "${DS_LOGS}"
           },
           "editorMode": "code",
-          "expr": "quantile_over_time(0.75, {kind=\"measurement\",app=\"$app\"} |= \"lcp\" | logfmt | unwrap lcp [5m]) by (app)",
+          "expr": "quantile_over_time(0.75, {kind=\"measurement\",app=\"$app\"} |= \" lcp=\" | logfmt | unwrap lcp [5m]) by (app)",
           "hide": false,
           "legendFormat": "LCP",
           "queryType": "range",
@@ -631,7 +621,7 @@
             "uid": "${DS_LOGS}"
           },
           "editorMode": "code",
-          "expr": "quantile_over_time(0.75, {kind=\"measurement\",app=\"$app\"} |= \"cls\" | logfmt | unwrap cls [5m]) by (app)",
+          "expr": "quantile_over_time(0.75, {kind=\"measurement\",app=\"$app\"} |= \" cls=\" | logfmt | unwrap cls [5m]) by (app)",
           "legendFormat": "CLS",
           "queryType": "range",
           "refId": "A"
@@ -725,7 +715,7 @@
             "uid": "${DS_LOGS}"
           },
           "editorMode": "code",
-          "expr": "quantile_over_time(0.75, {kind=\"measurement\",app=\"$app\"} |= \"fid\" | logfmt | unwrap fid [5m]) by (app)",
+          "expr": "quantile_over_time(0.75, {kind=\"measurement\",app=\"$app\"} |= \" fid=\" | logfmt | unwrap fid [5m]) by (app)",
           "legendFormat": "FID",
           "queryType": "range",
           "refId": "A"
@@ -787,9 +777,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -969,9 +957,7 @@
       "options": {
         "footer": {
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true,
@@ -1068,9 +1054,7 @@
       "options": {
         "footer": {
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true,
@@ -1180,9 +1164,7 @@
       "options": {
         "footer": {
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true,
@@ -1282,9 +1264,7 @@
       "options": {
         "footer": {
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true,
@@ -1303,7 +1283,7 @@
             "uid": "${DS_LOGS}"
           },
           "editorMode": "code",
-          "expr": "topk(10, count(count_over_time({app=\"$app\",kind=\"measurement\"} |= \"ttfb\" | logfmt [$__range])) by (browser_name, browser_version))",
+          "expr": "topk(10, count(count_over_time({app=\"$app\",kind=\"measurement\"} |= \" ttfb=\" | logfmt [$__range])) by (browser_name, browser_version))",
           "queryType": "instant",
           "refId": "A"
         }
@@ -1423,7 +1403,7 @@
             "uid": "${DS_LOGS}"
           },
           "editorMode": "code",
-          "expr": "count_over_time({app=\"$app\",kind=\"measurement\"} |= \"ttfb\" [$__interval])",
+          "expr": "count_over_time({app=\"$app\",kind=\"measurement\"} |= \" ttfb=\" [$__interval])",
           "legendFormat": "visits",
           "queryType": "range",
           "refId": "A"
