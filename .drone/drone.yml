@@ -36,9 +36,9 @@ steps:
   - name: Publish
     image: node:lts-stretch
     commands:
-      - git fetch --tags
-      - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
-      - yarn run publish from-git --yes --no-verify-access
+    - git fetch --tags
+    - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+    - yarn run publish from-git --yes --no-verify-access
     environment:
       NPM_TOKEN:
         from_secret: NPM_TOKEN
