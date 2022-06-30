@@ -1,8 +1,8 @@
 # Changelog
 
-## unreleased
+## 0.4.0 (2022-06-30)
 
-- Added `agent.pause()` and `agent.unpause()` to be able to temproarily stop
+- Added `agent.pause()` and `agent.unpause()` to be able to temporarily stop
   ingesting events.
 
 ## 0.3.0 (2022-06-16)
