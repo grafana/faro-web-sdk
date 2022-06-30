@@ -1,5 +1,1 @@
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  roots: ['src'],
-};
+module.exports = require('../../jest.config');
