@@ -15,7 +15,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "9.0.2-1eca4aee"
+      "version": "9.0.3-0dc0087e"
     },
     {
       "type": "datasource",
@@ -62,7 +62,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1656502382053,
+  "iteration": 1657178846545,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -91,8 +91,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 3,
+        "h": 4,
+        "w": 2,
         "x": 0,
         "y": 0
       },
@@ -110,7 +110,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.2-1eca4aee",
+      "pluginVersion": "9.0.3-0dc0087e",
       "targets": [
         {
           "datasource": {
@@ -154,9 +154,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 3,
-        "x": 3,
+        "h": 4,
+        "w": 2,
+        "x": 2,
         "y": 0
       },
       "id": 10,
@@ -173,7 +173,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.2-1eca4aee",
+      "pluginVersion": "9.0.3-0dc0087e",
       "targets": [
         {
           "datasource": {
@@ -217,9 +217,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 3,
-        "x": 6,
+        "h": 4,
+        "w": 2,
+        "x": 4,
         "y": 0
       },
       "id": 9,
@@ -236,7 +236,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.2-1eca4aee",
+      "pluginVersion": "9.0.3-0dc0087e",
       "targets": [
         {
           "datasource": {
@@ -284,9 +284,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 3,
-        "x": 9,
+        "h": 4,
+        "w": 2,
+        "x": 6,
         "y": 0
       },
       "id": 11,
@@ -303,7 +303,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.2-1eca4aee",
+      "pluginVersion": "9.0.3-0dc0087e",
       "targets": [
         {
           "datasource": {
@@ -346,9 +346,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 3,
-        "x": 12,
+        "h": 4,
+        "w": 2,
+        "x": 8,
         "y": 0
       },
       "id": 17,
@@ -364,7 +364,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.2-1eca4aee",
+      "pluginVersion": "9.0.3-0dc0087e",
       "targets": [
         {
           "datasource": {
@@ -411,9 +411,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 3,
-        "x": 15,
+        "h": 4,
+        "w": 2,
+        "x": 10,
         "y": 0
       },
       "id": 15,
@@ -429,7 +429,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.2-1eca4aee",
+      "pluginVersion": "9.0.3-0dc0087e",
       "targets": [
         {
           "datasource": {
@@ -445,6 +445,69 @@
         }
       ],
       "title": "Rate Limited Requests",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 12,
+        "y": 0
+      },
+      "id": 19,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.3-0dc0087e",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(app_agent_receiver_sourcemap_cache_size{instance=\"auth-app-production\"})",
+          "legendFormat": "sourcemaps cached",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Sourcemaps Cached",
       "type": "stat"
     },
     {
@@ -506,7 +569,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 4
       },
       "id": 2,
       "interval": "5m",
@@ -637,10 +700,10 @@
         ]
       },
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 4
       },
       "id": 6,
       "interval": "5m",
@@ -695,110 +758,6 @@
         }
       ],
       "title": "Events ingested",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${PROMETHEUS}"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 16
-      },
-      "id": 4,
-      "interval": "5m",
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${PROMETHEUS}"
-          },
-          "exemplar": true,
-          "expr": "(sum(rate(app_agent_receiver_request_duration_seconds_sum{instance=\"$instance\"}[$__rate_interval]))) / (sum(rate(app_agent_receiver_request_duration_seconds_count{instance=\"$instance\"}[$__rate_interval])))",
-          "interval": "",
-          "legendFormat": "avg",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${PROMETHEUS}"
-          },
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(app_agent_receiver_request_duration_seconds_bucket{instance=\"$instance\"}[$__rate_interval])) by (le)) ",
-          "hide": false,
-          "legendFormat": "p95",
-          "range": true,
-          "refId": "B"
-        }
-      ],
-      "title": "Request duration",
       "type": "timeseries"
     },
     {
@@ -876,7 +835,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 17
+        "y": 13
       },
       "id": 13,
       "options": {
@@ -905,8 +864,113 @@
       ],
       "title": "Exporter errors",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "id": 4,
+      "interval": "5m",
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${PROMETHEUS}"
+          },
+          "exemplar": true,
+          "expr": "(sum(rate(app_agent_receiver_request_duration_seconds_sum{instance=\"$instance\"}[$__rate_interval]))) / (sum(rate(app_agent_receiver_request_duration_seconds_count{instance=\"$instance\"}[$__rate_interval])))",
+          "interval": "",
+          "legendFormat": "avg",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(app_agent_receiver_request_duration_seconds_bucket{instance=\"$instance\"}[$__rate_interval])) by (le)) ",
+          "hide": false,
+          "legendFormat": "p95",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Request duration",
+      "type": "timeseries"
     }
   ],
+  "refresh": false,
   "schemaVersion": 36,
   "style": "dark",
   "tags": [],
@@ -937,7 +1001,7 @@
     ]
   },
   "time": {
-    "from": "now-2d",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {},
