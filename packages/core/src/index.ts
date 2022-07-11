@@ -32,7 +32,14 @@ export type { App, Meta, MetaGetter, MetaItem, Metas, Session, User } from './me
 export type { OriginalConsole } from './originalConsole';
 
 export { BaseTransport, getTransportBody, TransportItemType } from './transports';
-export type { Transport, TransportBody, TransportItem, TransportItemPayload, Transports } from './transports';
+export type {
+  BeforeSendHook,
+  Transport,
+  TransportBody,
+  TransportItem,
+  TransportItemPayload,
+  Transports,
+} from './transports';
 
 export * from './utils';
 export { VERSION } from './version';

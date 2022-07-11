@@ -21,8 +21,10 @@ export function initializeGrafanaAgent(config: Config): Agent {
     config,
     internalLogger,
     metas,
+    originalConsole,
+    pause: transports.pause,
     transports,
-    originalConsole
+    unpause: transports.unpause,
   });
 
   if (!agent.config.preventGlobalExposure) {

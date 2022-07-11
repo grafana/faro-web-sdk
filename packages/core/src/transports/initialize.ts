@@ -6,6 +6,8 @@ import { BeforeSendHook, Transport, TransportItemType, Transports } from './type
 export function initializeTransports(config: Config): Transports {
   const transports: Transport[] = [...config.transports];
 
+  let paused = config.paused;
+
   const beforeSendHooks: BeforeSendHook[] = [];
 
   if (config.beforeSend) {
@@ -21,27 +23,39 @@ export function initializeTransports(config: Config): Transports {
   };
 
   const execute: Transports['execute'] = (item) => {
-    let _item = item;
+    if (!paused) {
+      let _item = item;
 
-    for (const hook of beforeSendHooks) {
-      const modified = hook(_item);
+      for (const hook of beforeSendHooks) {
+        const modified = hook(_item);
 
-      if (modified === null) {
-        return;
+        if (modified === null) {
+          return;
+        }
+
+        _item = modified;
       }
 
-      _item = modified;
+      for (const transport of transports) {
+        transport.send(_item);
+      }
     }
+  };
 
-    for (const transport of transports) {
-      transport.send(_item);
-    }
+  const pause: Transports['pause'] = () => {
+    paused = true;
+  };
+
+  const unpause: Transports['unpause'] = () => {
+    paused = false;
   };
 
   return {
     add,
     execute,
+    pause,
     transports,
+    unpause,
   };
 }
 

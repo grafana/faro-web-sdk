@@ -39,4 +39,6 @@ export interface Transports {
   add: (...transports: Transport[]) => void;
   execute: (transportItem: TransportItem) => void;
   transports: Transport[];
+  pause: () => void;
+  unpause: () => void;
 }

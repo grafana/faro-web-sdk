@@ -10,5 +10,7 @@ export interface Agent {
   internalLogger: InternalLogger;
   metas: Metas;
   originalConsole: Console;
+  pause: Transports['pause'];
   transports: Transports;
+  unpause: Transports['unpause'];
 }

@@ -11,26 +11,33 @@ export function registerOnerror(agent: Agent): void {
   // window.addEventListener does not provide all parameters, hence we need to use the window.onerror syntax
   // TODO: investigate https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror
 
-  window.onerror = (event, source, lineno, colno, error) => {
-    let value: string | undefined;
-    let type: string | undefined;
-    let stackFrames: ExceptionStackFrame[] = [];
-    const eventIsString = isString(event);
-    const initialStackFrame = buildStackFrame(source, unknownString, lineno, colno);
+  const oldonerror = window.onerror;
 
-    if (error || !eventIsString) {
-      [value, type, stackFrames] = getErrorDetails((error ?? event) as Error | Event);
+  window.onerror = (...args) => {
+    try {
+      const [event, source, lineno, colno, error] = args;
+      let value: string | undefined;
+      let type: string | undefined;
+      let stackFrames: ExceptionStackFrame[] = [];
+      const eventIsString = isString(event);
+      const initialStackFrame = buildStackFrame(source, unknownString, lineno, colno);
 
-      if (stackFrames.length === 0) {
+      if (error || !eventIsString) {
+        [value, type, stackFrames] = getErrorDetails((error ?? event) as Error | Event);
+
+        if (stackFrames.length === 0) {
+          stackFrames = [initialStackFrame];
+        }
+      } else if (eventIsString) {
+        [value, type] = getValueAndTypeFromMessage(event);
         stackFrames = [initialStackFrame];
       }
-    } else if (eventIsString) {
-      [value, type] = getValueAndTypeFromMessage(event);
-      stackFrames = [initialStackFrame];
-    }
 
-    if (value) {
-      agent.api.pushError(new Error(value), { type, stackFrames });
+      if (value) {
+        agent.api.pushError(new Error(value), { type, stackFrames });
+      }
+    } finally {
+      oldonerror?.apply(window, args);
     }
   };
 }

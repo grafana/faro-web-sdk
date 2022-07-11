@@ -4,9 +4,9 @@ This document describes how to set up and use Grafana Javascript Agent. For more
 
 ## Before you begin
 
-* Set up a Grafana Agent instance. For more information , refer to [Grafana Agent set up documentation](https://grafana.com/docs/agent/latest/set-up/).
-* Configure your instance with `app-agent-receiver` integration to expose a http collection
-endpoint and run with the `integrations-next` flag enabled.
+- Set up a Grafana Agent instance. For more information , refer to [Grafana Agent set up documentation](https://grafana.com/docs/agent/latest/set-up/).
+- Configure your instance with `app-agent-receiver` integration to expose a http collection
+  endpoint and run with the `integrations-next` flag enabled.
 
 The following is an example of a basic Grafana Agent configuration that exposes a collector endpoint
 at [http://host:12345/collect](http://host:12345/collect) and forwards collected telemetry to Loki,
@@ -51,19 +51,19 @@ integrations:
   app_agent_receiver_configs:
     - autoscrape:
         enable: true
-        metrics_instance: "default"
-      api_key: "secret" # optional, if set, client will be required to provide it via x-api-key header
-      instance: "frontend"
-      logs_instance: "default"
-      traces_instance: "default"
+        metrics_instance: 'default'
+      api_key: 'secret' # optional, if set, client will be required to provide it via x-api-key header
+      instance: 'frontend'
+      logs_instance: 'default'
+      traces_instance: 'default'
       server:
         host: 0.0.0.0
         port: 12345
         cors_allowed_origins:
-          - "https://my-app.example.com"
+          - 'https://my-app.example.com'
       logs_labels: # labels to add to loki log record
         app: frontend # static value
-        kind:         # value will be taken from log items. exception, log, measurement, etc
+        kind: # value will be taken from log items. exception, log, measurement, etc
       logs_send_timeout: 5000
       sourcemaps:
         download: true # will download source file, extract source map location,
@@ -122,22 +122,30 @@ const agent = initializeGrafanaAgent({
 You can also explicitly specify and customize transports and instrumentations.
 
 ```javascript
-import { LogLevel, ConsoleInstrumentation, initializeGrafanaAgent, FetchTransport,
-ConsoleTransport, WebVitalsInstrumentation, ErrorsInstrumentation } from '@grafana/agent-web';
+import {
+  ConsoleInstrumentation,
+  ConsoleTransport,
+  ErrorsInstrumentation,
+  FetchTransport,
+  initializeGrafanaAgent,
+  LogLevel,
+  WebVitalsInstrumentation,
+} from '@grafana/agent-web';
 
 const agent = initializeGrafanaAgent({
   instrumentations: [
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
     new ConsoleInstrumentation({
-      disabledLevels: [LogLevel.TRACE, LogLevel.ERROR] // console.log will be captured
-    })],
+      disabledLevels: [LogLevel.TRACE, LogLevel.ERROR], // console.log will be captured
+    }),
+  ],
   transports: [
     new FetchTransport({
       url: 'http://localhost:12345/collect',
       apiKey: 'secret',
     }),
-    new ConsoleTransport()
+    new ConsoleTransport(),
   ],
   app: {
     name: 'frontend',
@@ -176,7 +184,7 @@ const span = tracer.startSpan('click');
 context.with(trace.setSpan(context.active(), span), () => {
   doSomething();
   span.end();
-})
+});
 ```
 
 ### With custom Open Telemetry tracing configuration
@@ -215,10 +223,12 @@ const agent = initializeGrafanaAgent({
 });
 
 // set up otel
-const resource = Resource.default().merge(new Resource({
-  [SemanticResourceAttributes.SERVICE_NAME]: NAME,
-  [SemanticResourceAttributes.SERVICE_VERSION]: VERSION
-}));
+const resource = Resource.default().merge(
+  new Resource({
+    [SemanticResourceAttributes.SERVICE_NAME]: NAME,
+    [SemanticResourceAttributes.SERVICE_VERSION]: VERSION,
+  })
+);
 
 const provider = new WebTracerProvider({ resource });
 provider.addSpanProcessor(new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent })));
@@ -232,8 +242,8 @@ registerInstrumentations({
     new DocumentLoadInstrumentation(),
     new FetchInstrumentation({ ignoreUrls }),
     new XMLHttpRequestInstrumentation({ ignoreUrls }),
-    new UserInteractionInstrumentation()
-  ]
+    new UserInteractionInstrumentation(),
+  ],
 });
 
 // register otel with agent
@@ -284,4 +294,10 @@ agent.api.pushMeasurement({
 
 // push an Error
 agent.api.pushError(new Error('everything went horribly wrong'));
+
+// pause agent, preventing events from being sent
+agent.pause()
+
+// resume sending events
+agent.unpause()
 ```

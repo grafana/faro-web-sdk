@@ -3,50 +3,50 @@ kind: pipeline
 name: grafana-javascript-agent
 
 steps:
-- name: Install dependencies
-  image: node:lts-stretch
-  commands:
-  - yarn install --frozen-lockfile
+  - name: Install dependencies
+    image: node:lts-stretch
+    commands:
+      - yarn install --frozen-lockfile
 
-- name: Build
-  image: node:lts-stretch
-  commands:
-  - yarn build
+  - name: Build
+    image: node:lts-stretch
+    commands:
+      - yarn build
 
-- name: Lint
-  image: node:lts-stretch
-  commands:
-  - yarn quality:lint
+  - name: Lint
+    image: node:lts-stretch
+    commands:
+      - yarn quality:lint
 
-- name: Check circular deps
-  image: node:lts-stretch
-  commands:
-  - yarn quality:circular-deps
+  - name: Check circular deps
+    image: node:lts-stretch
+    commands:
+      - yarn quality:circular-deps
 
-- name: Unit tests
-  image: node:lts-stretch
-  commands:
-  - yarn quality:test
+  - name: Unit tests
+    image: node:lts-stretch
+    commands:
+      - yarn quality:test
 
-- name: End to end tests
-  image: cypress/included:10.0.3
-  commands:
-  - yarn quality:e2e:ci
+  - name: End to end tests
+    image: cypress/included:10.0.3
+    commands:
+      - yarn quality:e2e:ci
 
-- name: Publish
-  image: node:lts-stretch
-  commands:
-  - git fetch --tags
-  - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
-  - yarn run publish from-git --yes --no-verify-access
-  environment:
-    NPM_TOKEN:
-      from_secret: NPM_TOKEN
-  when:
-    event:
-    - tag
+  - name: Publish
+    image: node:lts-stretch
+    commands:
+      - git fetch --tags
+      - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+      - yarn run publish from-git --yes --no-verify-access
+    environment:
+      NPM_TOKEN:
+        from_secret: NPM_TOKEN
+    when:
+      event:
+        - tag
 ---
 kind: signature
-hmac: 76925513b65c6d85a809fc5d508fb92fb138f5394ce93bf167b6a03feed47401
+hmac: 4816291bcdbc8c2aee8ceb2c8e479d8c3e7b6521f927c148bb3e26ea05baf1f9
 
 ...

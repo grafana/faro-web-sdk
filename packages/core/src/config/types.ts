@@ -9,6 +9,7 @@ export interface Config<P = APIEvent> {
   instrumentations: Instrumentation[];
   metas: MetaItem[];
   parseStacktrace: StacktraceParser;
+  paused: boolean;
   preventGlobalExposure: boolean;
   transports: Transport[];
 
