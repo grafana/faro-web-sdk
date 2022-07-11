@@ -25,9 +25,9 @@ _Warning_: currently pre-release and subject to frequent breaking changes. Use a
 Basic set up, will automatically report errors and web vitals:
 
 ```javascript
-import { initializeAgent } from '@grafana/agent-web';
+import { initializeGrafanaAgent } from '@grafana/agent-web';
 
-const agent = initializeAgent({
+const agent = initializeGrafanaAgent({
   url: 'https://agent.myapp/collect',
   apiKey: 'secret',
   app: {
@@ -46,7 +46,7 @@ throw new Error('oh no');
 agent.api.pushError(new Error('oh no'));
 ```
 
-With OTEL tracing and browser console capture:
+With OTel tracing and browser console capture:
 
 ```javascript
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
@@ -57,11 +57,11 @@ import {
 } from '@grafana/agent-web';
 
 
-const agent = initializeAgent({
+const agent = initializeGrafanaAgent({
   url: 'https://agent.myapp/collect',
   apiKey: 'secret',
   instrumentations: [
-    ...getWebInstrumentations(captureConsole=true),
+    ...getWebInstrumentations({ captureConsole: true }),
     new TracingInstrumentation(),
   ],
   app: {
@@ -71,11 +71,12 @@ const agent = initializeAgent({
 });
 
 // start a span
-agent.api.getOTEL()!.trace.getTracer('frontend').startActiveSpan('hello world', span => {
-  // send a log message
-  agent.api.pushLog(['hello world']);
-  span.end()
-});
+agent.api.getOTEL()?.trace.getTracer('frontend')
+  .startActiveSpan('hello world', (span) => {
+     // send a log message
+     agent.api.pushLog(['hello world']);
+     span.end()
+  });
 
 
 // will be captured

@@ -105,9 +105,9 @@ and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements.
 Without tracing, there is small bundle size footprint.
 
 ```javascript
-import { initializeAgent } from '@grafana/agent-web';
+import { initializeGrafanaAgent } from '@grafana/agent-web';
 
-const agent = initializeAgent({
+const agent = initializeGrafanaAgent({
   url: 'https://collector-host:12345/collect',
   apiKey: 'secret',
   app: {
@@ -122,10 +122,10 @@ const agent = initializeAgent({
 You can also explicitly specify and customize transports and instrumentations.
 
 ```javascript
-import { LogLevel, ConsoleInstrumentation, initializeAgent, FetchTransport,
+import { LogLevel, ConsoleInstrumentation, initializeGrafanaAgent, FetchTransport,
 ConsoleTransport, WebVitalsInstrumentation, ErrorsInstrumentation } from '@grafana/agent-web';
 
-const agent = initializeAgent({
+const agent = initializeGrafanaAgent({
   instrumentations: [
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
@@ -156,9 +156,9 @@ interaction, fetch and document load, W3C trace context propagation via `fetch` 
 
 ```javascript
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
-import { initializeAgent, getWebInstrumentations } from '@grafana/agent-web';
+import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
 
-const agent = initializeAgent({
+const agent = initializeGrafanaAgent({
   url: 'http://localhost:12345/collect',
   apiKey: 'secret',
   instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
@@ -197,7 +197,7 @@ import { Resource } from '@opentelemetry/resources';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { initializeAgent } from '@grafana/agent-web';
+import { initializeGrafanaAgent } from '@grafana/agent-web';
 import { GrafanaAgentTraceExporter } from '@grafana/agent-trace-web';
 
 const VERSION = '1.0.0';
@@ -205,7 +205,7 @@ const NAME = 'frontend';
 const COLLECTOR_URL = 'http://localhost:12345/collect';
 
 // initialize agent
-const agent = initializeAgent({
+const agent = initializeGrafanaAgent({
   url: COLLECTOR_URL,
   apiKey: 'secret',
   app: {

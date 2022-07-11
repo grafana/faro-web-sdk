@@ -1,22 +1,28 @@
-import { initializeGlobalAgent } from './agent';
+import { initializeAgent } from './agent';
+import type { Agent } from './agent';
 import { initializeAPI } from './api';
 import type { Config } from './config';
 import { initializeInstrumentations } from './instrumentations';
+import { initializeInternalLogger } from './internalLogger';
 import { initializeMetas } from './metas';
+import { initializeOriginalConsole } from './originalConsole';
 import { initializeTransports } from './transports';
-import type { Agent } from './types';
 import { globalObject } from './utils';
 
-export function initializeAgent(config: Config): Agent {
+export function initializeGrafanaAgent(config: Config): Agent {
+  const originalConsole = initializeOriginalConsole(config);
+  const internalLogger = initializeInternalLogger(config);
   const metas = initializeMetas(config);
   const transports = initializeTransports(config);
   const api = initializeAPI(config, transports, metas);
 
-  const agent = initializeGlobalAgent({
+  const agent = initializeAgent({
+    api,
     config,
+    internalLogger,
     metas,
     transports,
-    api,
+    originalConsole
   });
 
   if (!agent.config.preventGlobalExposure) {
@@ -26,5 +32,6 @@ export function initializeAgent(config: Config): Agent {
   }
 
   initializeInstrumentations(agent.config);
+
   return agent;
 }

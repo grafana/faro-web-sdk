@@ -15,6 +15,7 @@ export interface Config<P = APIEvent> {
   beforeSend?: BeforeSendHook<P>;
   enableDebug?: boolean;
   ignoreErrors?: Patterns;
+  originalConsole?: Console;
   session?: Session;
   user?: User;
 }

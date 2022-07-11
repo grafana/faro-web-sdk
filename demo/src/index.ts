@@ -1,7 +1,7 @@
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
-import { initializeAgent, getWebInstrumentations } from '@grafana/agent-web';
+import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
 
-const agent = initializeAgent({
+const agent = initializeGrafanaAgent({
   url: 'http://localhost:12345/collect',
   apiKey: 'secret',
   instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],

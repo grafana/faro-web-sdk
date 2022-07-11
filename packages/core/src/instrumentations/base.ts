@@ -1,5 +1,5 @@
 import { agent } from '../agent';
-import type { Agent } from '../types';
+import type { Agent } from '../agent';
 import type { Instrumentation } from './types';
 
 export abstract class BaseInstrumentation implements Instrumentation {

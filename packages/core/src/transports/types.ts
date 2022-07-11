@@ -25,12 +25,14 @@ export interface Transport {
   // returns URLs to be ignored by tracing, to not cause a feedback loop
   getIgnoreUrls(): Patterns;
 }
+
 export interface TransportBody {
+  meta: Meta;
+
   exceptions?: ExceptionEvent[];
   logs?: LogEvent[];
   measurements?: MeasurementEvent[];
   traces?: TraceEvent;
-  meta: Meta;
 }
 
 export interface Transports {

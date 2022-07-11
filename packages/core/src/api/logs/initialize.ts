@@ -1,9 +1,10 @@
 import type { Metas } from '../../metas';
+import { originalConsole } from '../../originalConsole';
 import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
 import type { TracesAPI } from '../traces';
-import { defaultLogLevel, originalConsoleMethods } from './const';
+import { defaultLogLevel } from './const';
 import type { LogEvent, LogsAPI } from './types';
 
 export function initializeLogsAPI(transports: Transports, metas: Metas, tracesApi: TracesAPI): LogsAPI {
@@ -36,7 +37,7 @@ export function initializeLogsAPI(transports: Transports, metas: Metas, tracesAp
   };
 
   const callOriginalConsoleMethod: LogsAPI['callOriginalConsoleMethod'] = (level, ...args) => {
-    originalConsoleMethods[level].apply(console, args);
+    originalConsole[level].apply(console, args);
   };
 
   return {

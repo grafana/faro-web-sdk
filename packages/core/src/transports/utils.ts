@@ -1,7 +1,7 @@
 import { TransportBody, TransportItemType } from './types';
 import type { TransportItem } from './types';
 
-const transportItemTypeToBodyKey: { [label in TransportItemType]: string } = {
+const transportItemTypeToBodyKey: Record<TransportItemType, string> = {
   [TransportItemType.EXCEPTION]: 'exceptions',
   [TransportItemType.LOG]: 'logs',
   [TransportItemType.MEASUREMENT]: 'measurements',

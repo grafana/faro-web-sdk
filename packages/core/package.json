@@ -1,6 +1,6 @@
 {
   "name": "@grafana/agent-core",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Core package of Grafana JavaScript Agent.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -41,8 +41,8 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.1.0",
-    "@opentelemetry/api-metrics": "^0.29.1",
-    "@opentelemetry/otlp-transformer": "^0.29.1",
+    "@opentelemetry/api-metrics": "^0.30.0",
+    "@opentelemetry/otlp-transformer": "^0.30.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

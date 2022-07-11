@@ -12,7 +12,7 @@ import { BatchSpanProcessor, SpanProcessor } from '@opentelemetry/sdk-trace-base
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 
-import { GrafanaAgentTraceExporter } from './otel/agent-exporter';
+import { GrafanaAgentTraceExporter } from './otel';
 
 // the providing of app name here is not great
 // should delay initialization and provide the full agent config,

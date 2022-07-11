@@ -10,9 +10,9 @@ logs etc. but it offers an API to capture them.
 ## Installation
 
 ```ts
-import { initializeAgent } from '@grafana/agent-core';
+import { initializeGrafanaAgent } from '@grafana/agent-core';
 
-initializeAgent({
+initializeGrafanaAgent({
   // ...
 });
 ```
@@ -159,7 +159,7 @@ export class MyInstrumentation extends BaseInstrumentation {
   }
 }
 
-initializeAgent({
+initializeGrafanaAgent({
   instrumentations: [new MyInstrumentation()],
 });
 ```
@@ -175,9 +175,9 @@ and [@grafana/agent-meta-page](https://github.com/grafana/grafana-javascript-age
 You can also define your own metas:
 
 ```ts
-import { agent, initializeAgent } from '@grafana/agent-core';
+import { agent, initializeGrafanaAgent } from '@grafana/agent-core';
 
-initializeAgent({
+initializeGrafanaAgent({
   metas: [
     // Define a static meta
     app: {
@@ -209,7 +209,7 @@ packages like [@grafana/agent-web](https://github.com/grafana/grafana-javascript
 You can also define your own transports:
 
 ```ts
-import { agent, initializeAgent, BaseTransport, TransportItem } from '@grafana/agent-core';
+import { agent, initializeGrafanaAgent, BaseTransport, TransportItem } from '@grafana/agent-core';
 
 class MyTransport extends BaseTransport {
   send(item: TransportItem) {
@@ -217,7 +217,7 @@ class MyTransport extends BaseTransport {
   }
 }
 
-initializeAgent({
+initializeGrafanaAgent({
   transports: [new MyTransport()],
 });
 ```

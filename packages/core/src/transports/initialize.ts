@@ -7,9 +7,11 @@ export function initializeTransports(config: Config): Transports {
   const transports: Transport[] = [...config.transports];
 
   const beforeSendHooks: BeforeSendHook[] = [];
+
   if (config.beforeSend) {
     beforeSendHooks.push(config.beforeSend);
   }
+
   if (config.ignoreErrors) {
     beforeSendHooks.push(createBeforeSendHookFromIgnorePatterns(config.ignoreErrors));
   }
@@ -20,13 +22,17 @@ export function initializeTransports(config: Config): Transports {
 
   const execute: Transports['execute'] = (item) => {
     let _item = item;
+
     for (const hook of beforeSendHooks) {
       const modified = hook(_item);
+
       if (modified === null) {
         return;
       }
+
       _item = modified;
     }
+
     for (const transport of transports) {
       transport.send(_item);
     }
@@ -39,19 +45,23 @@ export function initializeTransports(config: Config): Transports {
   };
 }
 
+function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
+  return patterns.some((pattern) => {
+    return isString(pattern) ? msg.includes(pattern) : !!msg.match(pattern);
+  });
+}
+
 function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
   return (item) => {
     if (item.type === TransportItemType.EXCEPTION && item.payload) {
       const event = item.payload as ExceptionEvent;
       const msg = `${event.type}: ${event.value}`;
-      if (
-        patterns.find((pattern) => {
-          return isString(pattern) ? msg.includes(pattern) : !!msg.match(pattern);
-        })
-      ) {
+
+      if (shouldIgnoreEvent(patterns, msg)) {
         return null;
       }
     }
+
     return item;
   };
 }
