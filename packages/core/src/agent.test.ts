@@ -1,5 +1,5 @@
 import type { LogEvent } from './api';
-import { initializeAgent } from './initialize';
+import { initializeGrafanaAgent } from './initialize';
 import type { TransportItem } from './transports';
 import { mockConfig, MockTransport } from './utils/tests';
 
@@ -11,7 +11,7 @@ describe('agent', () => {
       transports: [transport],
     });
 
-    const agent = initializeAgent(config);
+    const agent = initializeGrafanaAgent(config);
     agent.api.pushLog(['test']);
     expect(transport.items).toHaveLength(0);
     agent.unpause();
@@ -26,7 +26,7 @@ describe('agent', () => {
     const config = mockConfig({
       transports: [transport],
     });
-    const agent = initializeAgent(config);
+    const agent = initializeGrafanaAgent(config);
     agent.api.pushLog(['test1']);
     expect(transport.items).toHaveLength(1);
     agent.pause();

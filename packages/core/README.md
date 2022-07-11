@@ -150,7 +150,7 @@ platform specific packages like [@grafana/agent-web](https://github.com/grafana/
 You can also write your own instrumentations:
 
 ```ts
-import { agent, initializeAgent, BaseInstrumentation } from '@grafana/agent-core';
+import { agent, initializeGrafanaAgent, BaseInstrumentation } from '@grafana/agent-core';
 
 export class MyInstrumentation extends BaseInstrumentation {
   readonly version = '1.0.0';

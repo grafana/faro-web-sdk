@@ -1,6 +1,6 @@
 import { mockConfig, MockTransport } from '@grafana/agent-core/src/utils/tests';
 
-import { initializeAgent } from '../../initialize';
+import { initializeGrafanaAgent } from '../../initialize';
 import { registerOnerror } from './registerOnerror';
 
 describe('registerOnerror', () => {
@@ -13,7 +13,7 @@ describe('registerOnerror', () => {
     const config = mockConfig({
       transports: [transport],
     });
-    const agent = initializeAgent(config);
+    const agent = initializeGrafanaAgent(config);
     registerOnerror(agent);
 
     window.onerror('boo', 'some file', 10, 10, new Error('boo'));

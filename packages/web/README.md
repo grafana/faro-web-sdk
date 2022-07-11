@@ -50,34 +50,27 @@ With OTel tracing and browser console capture:
 
 ```javascript
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
-import {
-  ConsoleInstrumentation,
-  initializeAgent,
-  getWebInstrumentations
-} from '@grafana/agent-web';
-
+import { ConsoleInstrumentation, initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
 
 const agent = initializeGrafanaAgent({
   url: 'https://agent.myapp/collect',
   apiKey: 'secret',
-  instrumentations: [
-    ...getWebInstrumentations({ captureConsole: true }),
-    new TracingInstrumentation(),
-  ],
+  instrumentations: [...getWebInstrumentations({ captureConsole: true }), new TracingInstrumentation()],
   app: {
     name: 'frontend',
-    version: '1.0.0'
-  }
+    version: '1.0.0',
+  },
 });
 
 // start a span
-agent.api.getOTEL()?.trace.getTracer('frontend')
+agent.api
+  .getOTEL()
+  ?.trace.getTracer('frontend')
   .startActiveSpan('hello world', (span) => {
-     // send a log message
-     agent.api.pushLog(['hello world']);
-     span.end()
+    // send a log message
+    agent.api.pushLog(['hello world']);
+    span.end();
   });
-
 
 // will be captured
 throw new Error('oh no');
