@@ -1,14 +1,6 @@
 import type { BaseObject } from '../../utils';
 import type { TraceContext } from '../traces';
-
-export enum LogLevel {
-  TRACE = 'trace',
-  DEBUG = 'debug',
-  INFO = 'info',
-  LOG = 'log',
-  WARN = 'warn',
-  ERROR = 'error',
-}
+import type { LogLevel } from './const';
 
 export type LogContext = BaseObject;
 

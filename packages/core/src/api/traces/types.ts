@@ -23,9 +23,9 @@ export interface OTELApi {
 }
 
 export interface TracesAPI {
-  initOTEL: (trace: OTELTraceAPI, context: OTELContextAPI) => void;
   getOTEL: () => OTELApi | undefined;
   getTraceContext: () => TraceContext | undefined;
+  initOTEL: (trace: OTELTraceAPI, context: OTELContextAPI) => void;
   pushTraces: (traces: TraceEvent) => void;
 }
 

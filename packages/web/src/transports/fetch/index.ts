@@ -1,4 +1,11 @@
-import { BaseTransport, getTransportBody, LogLevel, prefixAgentMessage, TransportItem } from '@grafana/agent-core';
+import {
+  BaseTransport,
+  getTransportBody,
+  LogLevel,
+  prefixAgentMessage,
+  TransportItem,
+  VERSION,
+} from '@grafana/agent-core';
 
 const debugMessage = prefixAgentMessage('Failed sending payload to the receiver');
 
@@ -17,6 +24,9 @@ export interface FetchTransportOptions {
 }
 
 export class FetchTransport extends BaseTransport {
+  readonly name = '@grafana/agent-web:transport-console';
+  readonly version = VERSION;
+
   constructor(private options: FetchTransportOptions) {
     super();
   }
@@ -44,7 +54,9 @@ export class FetchTransport extends BaseTransport {
           this.agent.api.callOriginalConsoleMethod(LogLevel.DEBUG, debugMessage, JSON.parse(body));
         }
       });
-    } catch (err) {}
+    } catch (err) {
+      this.logError(err);
+    }
   }
 
   override getIgnoreUrls(): Array<string | RegExp> {

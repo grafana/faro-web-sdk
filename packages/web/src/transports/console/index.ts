@@ -1,10 +1,20 @@
-import { BaseTransport, getTransportBody, LogLevel, prefixAgentMessage, TransportItem } from '@grafana/agent-core';
+import {
+  BaseTransport,
+  getTransportBody,
+  LogLevel,
+  prefixAgentMessage,
+  TransportItem,
+  VERSION,
+} from '@grafana/agent-core';
 
 export interface ConsoleTransportOptions {
   level?: LogLevel;
 }
 
 export class ConsoleTransport extends BaseTransport {
+  readonly name = '@grafana/agent-web:transport-console';
+  readonly version = VERSION;
+
   private message = prefixAgentMessage('New event');
 
   constructor(private options: ConsoleTransportOptions = {}) {

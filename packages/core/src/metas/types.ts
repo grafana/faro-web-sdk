@@ -1,14 +1,16 @@
 export type MetaGetter = () => Partial<Meta>;
+
 export type MetaItem = Partial<Meta> | MetaGetter;
+
 export interface Metas {
   add: (getter: MetaItem) => void;
   remove: (getter: MetaItem) => void;
   value: Meta;
 }
 
-type Attributes = Record<string, string>;
+export type Attributes = Record<string, string>;
 
-interface SDKIntegration {
+export interface SDKIntegration {
   name?: string;
   version?: string;
 }

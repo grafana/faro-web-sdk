@@ -1,9 +1,32 @@
 import type { ExceptionEvent } from '../api';
 import type { Config, Patterns } from '../config';
+import type { InternalLogger } from '../internalLogger';
 import { isString } from '../utils';
-import { BeforeSendHook, Transport, TransportItemType, Transports } from './types';
+import { TransportItemType } from './const';
+import type { BeforeSendHook, Transport, Transports } from './types';
 
-export function initializeTransports(config: Config): Transports {
+function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
+  return patterns.some((pattern) => {
+    return isString(pattern) ? msg.includes(pattern) : !!msg.match(pattern);
+  });
+}
+
+function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
+  return (item) => {
+    if (item.type === TransportItemType.EXCEPTION && item.payload) {
+      const event = item.payload as ExceptionEvent;
+      const msg = `${event.type}: ${event.value}`;
+
+      if (shouldIgnoreEvent(patterns, msg)) {
+        return null;
+      }
+    }
+
+    return item;
+  };
+}
+
+export function initializeTransports(_internalLogger: InternalLogger, config: Config): Transports {
   const transports: Transport[] = [...config.transports];
 
   let paused = config.paused;
@@ -56,26 +79,5 @@ export function initializeTransports(config: Config): Transports {
     pause,
     transports,
     unpause,
-  };
-}
-
-function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
-  return patterns.some((pattern) => {
-    return isString(pattern) ? msg.includes(pattern) : !!msg.match(pattern);
-  });
-}
-
-function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
-  return (item) => {
-    if (item.type === TransportItemType.EXCEPTION && item.payload) {
-      const event = item.payload as ExceptionEvent;
-      const msg = `${event.type}: ${event.value}`;
-
-      if (shouldIgnoreEvent(patterns, msg)) {
-        return null;
-      }
-    }
-
-    return item;
   };
 }

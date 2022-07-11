@@ -1,4 +1,4 @@
-import { mockConfig, MockTransport } from '@grafana/agent-core/src/utils/tests';
+import { mockConfig, MockTransport } from '@grafana/agent-core/src/utils';
 
 import { initializeGrafanaAgent } from '../../initialize';
 import { registerOnerror } from './registerOnerror';

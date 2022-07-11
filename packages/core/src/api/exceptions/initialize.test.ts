@@ -1,6 +1,6 @@
 import { initializeMetas } from '../../metas';
 import { initializeTransports, TransportItemType } from '../../transports';
-import { mockConfig, MockTransport } from '../../utils/tests';
+import { mockConfig, mockInternalLogger, MockTransport } from '../../utils';
 import { initializeTracesAPI } from '../traces';
 import { initializeExceptionsAPI } from './initialize';
 import type { ExceptionEvent, ExceptionsAPI, ExceptionStackFrame } from './types';
@@ -11,10 +11,11 @@ describe('api.exceptions', () => {
     const config = mockConfig({
       transports: [transport],
     });
-    const transports = initializeTransports(config);
-    const metas = initializeMetas(config);
-    const tracesAPI = initializeTracesAPI(transports, metas);
-    const api = initializeExceptionsAPI(config, transports, metas, tracesAPI);
+    const transports = initializeTransports(mockInternalLogger, config);
+    const metas = initializeMetas(mockInternalLogger, config);
+    const tracesAPI = initializeTracesAPI(mockInternalLogger, transports, metas);
+    const api = initializeExceptionsAPI(mockInternalLogger, config, transports, metas, tracesAPI);
+
     return [api, transport];
   }
 

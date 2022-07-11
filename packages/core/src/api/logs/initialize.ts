@@ -1,3 +1,4 @@
+import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { originalConsole } from '../../originalConsole';
 import { TransportItem, TransportItemType } from '../../transports';
@@ -7,7 +8,12 @@ import type { TracesAPI } from '../traces';
 import { defaultLogLevel } from './const';
 import type { LogEvent, LogsAPI } from './types';
 
-export function initializeLogsAPI(transports: Transports, metas: Metas, tracesApi: TracesAPI): LogsAPI {
+export function initializeLogsAPI(
+  internalLogger: InternalLogger,
+  transports: Transports,
+  metas: Metas,
+  tracesApi: TracesAPI
+): LogsAPI {
   const pushLog: LogsAPI['pushLog'] = (args, { context, level } = {}) => {
     try {
       const item: TransportItem<LogEvent> = {
@@ -32,7 +38,7 @@ export function initializeLogsAPI(transports: Transports, metas: Metas, tracesAp
 
       transports.execute(item);
     } catch (err) {
-      // TODO: Add proper logging when debug is enabled
+      internalLogger.error(err);
     }
   };
 

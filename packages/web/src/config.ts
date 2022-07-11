@@ -8,7 +8,6 @@ import {
   defaultGlobalObjectKey,
   Transport,
   Patterns,
-  APIEvent,
   BeforeSendHook,
 } from '@grafana/agent-core';
 
@@ -34,7 +33,7 @@ export interface BrowserConfig {
   instrumentations?: Instrumentation[];
   transports?: Transport[];
   ignoreErrors?: Patterns;
-  beforeSend?: BeforeSendHook<APIEvent>;
+  beforeSend?: BeforeSendHook;
   paused?: boolean;
 }
 
@@ -56,10 +55,12 @@ export const getWebInstrumentations = (options: GetWebInstrumentationsOptions = 
 
 export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   const transports: Transport[] = [];
+
   if (browserConfig.transports) {
     if (browserConfig.url || browserConfig.apiKey) {
       throw new Error('if "transports" is defined, "url" and "apiKey" should not be defined');
     }
+
     transports.push(...browserConfig.transports);
   } else if (browserConfig.url) {
     transports.push(
@@ -72,7 +73,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     throw new Error('either "url" or "transports" must be defined');
   }
 
-  const config: Config = {
+  return {
     globalObjectKey: browserConfig.globalObjectKey || defaultGlobalObjectKey,
     preventGlobalExposure: browserConfig.preventGlobalExposure || false,
     transports,
@@ -86,6 +87,4 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     paused: browserConfig.paused ?? false,
     beforeSend: browserConfig.beforeSend,
   };
-
-  return config;
 }

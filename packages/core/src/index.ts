@@ -7,31 +7,54 @@ export type {
   APIEvent,
   ExceptionEvent,
   ExceptionStackFrame,
+  ExceptionsAPI,
+  ExtendedError,
   InstrumentationLibrarySpan,
   LogContext,
   LogEvent,
+  LogsAPI,
   MeasurementEvent,
+  MeasurementsAPI,
+  MetaAPI,
+  PushErrorOptions,
+  PushLogOptions,
+  PushMeasurementOptions,
   ResourceSpan,
   Stacktrace,
+  TraceContext,
   TraceEvent,
+  TracesAPI,
 } from './api';
 
 // TODO: Remove this alias after the updating the projects where we dogfood
 export { initializeGrafanaAgent, initializeGrafanaAgent as initializeAgent } from './initialize';
 
-export type { Config, Patterns, StacktraceParser } from './config';
 export { defaultGlobalObjectKey } from './config';
+export type { Config, Patterns, StacktraceParser } from './config';
+
+export { BaseInstrumentation } from './instrumentations';
+export type { Instrumentation } from './instrumentations';
 
 export type { InternalLogger } from './internalLogger';
 
-export type { Instrumentation } from './instrumentations';
-export { BaseInstrumentation } from './instrumentations';
-
-export type { App, Meta, MetaGetter, MetaItem, Metas, Session, User } from './metas';
+export type {
+  App,
+  Attributes,
+  Browser,
+  Meta,
+  MetaGetter,
+  MetaItem,
+  Metas,
+  Page,
+  SDK,
+  SDKIntegration,
+  Session,
+  User,
+} from './metas';
 
 export type { OriginalConsole } from './originalConsole';
 
-export { BaseTransport, getTransportBody, TransportItemType } from './transports';
+export { BaseTransport, getTransportBody, TransportItemType, transportItemTypeToBodyKey } from './transports';
 export type {
   BeforeSendHook,
   Transport,
@@ -41,5 +64,36 @@ export type {
   Transports,
 } from './transports';
 
-export * from './utils';
+export {
+  BaseExtension,
+  getCurrentTimestamp,
+  globalObject,
+  isArray,
+  isBoolean,
+  isDomError,
+  isDomException,
+  isElement,
+  isError,
+  isErrorEvent,
+  isEvent,
+  isFunction,
+  isInstanceOf,
+  isInt,
+  isNull,
+  isNumber,
+  isObject,
+  isPrimitive,
+  isRegExp,
+  isString,
+  isSymbol,
+  isSyntheticEvent,
+  isThenable,
+  isToString,
+  isTypeof,
+  isUndefined,
+  noop,
+  prefixAgentMessage,
+} from './utils';
+export type { BaseObject, BaseObjectKey, BaseObjectPrimitiveValue, BaseObjectValue } from './utils';
+
 export { VERSION } from './version';

@@ -12,7 +12,7 @@ import { BatchSpanProcessor, SpanProcessor } from '@opentelemetry/sdk-trace-base
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 
-import { GrafanaAgentTraceExporter } from './otel';
+import { GrafanaAgentTraceExporter } from './agentExporter';
 
 // the providing of app name here is not great
 // should delay initialization and provide the full agent config,
@@ -53,6 +53,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
     if (config.app.name) {
       attributes[SemanticResourceAttributes.SERVICE_NAME] = config.app.name;
     }
+
     if (config.app.version) {
       attributes[SemanticResourceAttributes.SERVICE_VERSION] = config.app.version;
     }
@@ -62,12 +63,14 @@ export class TracingInstrumentation extends BaseInstrumentation {
     const resource = Resource.default().merge(new Resource(attributes));
 
     const provider = new WebTracerProvider({ resource });
+
     provider.addSpanProcessor(
       options.spanProcessor ??
         new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }), {
           scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
         })
     );
+
     provider.register({
       propagator: options.propagator ?? new W3CTraceContextPropagator(),
       contextManager: options.contextManager ?? new ZoneContextManager(),
@@ -78,6 +81,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
         ? options.instrumentations
         : getDefaultOTELInstrumentations(this.getIgnoreUrls()),
     });
+
     agent.api.initOTEL(trace, context);
   }
 

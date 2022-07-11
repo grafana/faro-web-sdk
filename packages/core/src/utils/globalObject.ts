@@ -1,1 +1,3 @@
-export const globalObject = typeof window === 'undefined' ? global : window;
+import { isUndefined } from './is';
+
+export const globalObject = isUndefined(window) ? global : window;

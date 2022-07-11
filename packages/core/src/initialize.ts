@@ -12,11 +12,11 @@ import { globalObject } from './utils';
 export function initializeGrafanaAgent(config: Config): Agent {
   const originalConsole = initializeOriginalConsole(config);
   const internalLogger = initializeInternalLogger(config);
-  const metas = initializeMetas(config);
-  const transports = initializeTransports(config);
-  const api = initializeAPI(config, transports, metas);
+  const metas = initializeMetas(internalLogger, config);
+  const transports = initializeTransports(internalLogger, config);
+  const api = initializeAPI(internalLogger, config, transports, metas);
 
-  const agent = initializeAgent({
+  const agent = initializeAgent(internalLogger, {
     api,
     config,
     internalLogger,
@@ -33,7 +33,7 @@ export function initializeGrafanaAgent(config: Config): Agent {
     });
   }
 
-  initializeInstrumentations(agent.config);
+  initializeInstrumentations(internalLogger, agent.config);
 
   return agent;
 }

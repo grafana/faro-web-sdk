@@ -1,9 +1,10 @@
 import type { Config } from '../config';
+import type { InternalLogger } from '../internalLogger';
 import { isFunction } from '../utils';
 import { VERSION } from '../version';
 import type { Meta, Metas, MetaItem } from './types';
 
-export function initializeMetas(config: Config): Metas {
+export function initializeMetas(_internalLogger: InternalLogger, config: Config): Metas {
   let items: MetaItem[] = [];
 
   const add: Metas['add'] = (item) => {
@@ -25,9 +26,11 @@ export function initializeMetas(config: Config): Metas {
   if (config.app) {
     initial.app = config.app;
   }
+
   if (config.user) {
     initial.user = config.user;
   }
+
   if (config.session) {
     initial.session = config.session;
   }
@@ -40,9 +43,11 @@ export function initializeMetas(config: Config): Metas {
     add,
     remove,
     get value() {
-      const meta: Meta = {};
-      items.forEach((item) => Object.assign(meta, isFunction(item) ? item() : item));
-      return meta;
+      return items.reduce<Meta>((acc, item) => {
+        Object.assign(acc, isFunction(item) ? item() : item);
+
+        return acc;
+      }, {});
     },
   };
 }

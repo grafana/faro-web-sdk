@@ -1,10 +1,16 @@
+import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import type { TracesAPI } from '../traces';
 import type { MeasurementEvent, MeasurementsAPI } from './types';
 
-export function initializeMeasurementsAPI(transports: Transports, metas: Metas, tracesApi: TracesAPI): MeasurementsAPI {
+export function initializeMeasurementsAPI(
+  internalLogger: InternalLogger,
+  transports: Transports,
+  metas: Metas,
+  tracesApi: TracesAPI
+): MeasurementsAPI {
   const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload) => {
     try {
       const item: TransportItem<MeasurementEvent> = {
@@ -18,7 +24,7 @@ export function initializeMeasurementsAPI(transports: Transports, metas: Metas, 
 
       transports.execute(item);
     } catch (err) {
-      // TODO: Add proper logging when debug is enabled
+      internalLogger.error(err);
     }
   };
 
