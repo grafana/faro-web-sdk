@@ -1,6 +1,6 @@
 import { initializeMetas } from '../../metas';
+import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
 import { initializeTransports, TransportItemType } from '../../transports';
-import { mockConfig, mockInternalLogger, MockTransport } from '../../utils';
 import { initializeTracesAPI } from '../traces';
 import { initializeExceptionsAPI } from './initialize';
 import type { ExceptionEvent, ExceptionsAPI, ExceptionStackFrame } from './types';

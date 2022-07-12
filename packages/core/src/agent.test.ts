@@ -1,7 +1,7 @@
 import type { LogEvent } from './api';
 import { initializeGrafanaAgent } from './initialize';
+import { mockConfig, MockTransport } from './testUtils';
 import type { TransportItem } from './transports';
-import { mockConfig, MockTransport } from './utils';
 
 describe('agent', () => {
   it(`can be started paused and doesn't ingest events until unpaused`, () => {

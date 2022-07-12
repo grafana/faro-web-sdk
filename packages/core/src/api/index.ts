@@ -11,7 +11,6 @@ export type {
   Stacktrace,
 } from './exceptions';
 
-export { allLogLevels, defaultLogLevel, LogLevel } from './logs';
 export type { LogContext, LogEvent, LogsAPI, PushLogOptions } from './logs';
 
 export type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from './measurements';

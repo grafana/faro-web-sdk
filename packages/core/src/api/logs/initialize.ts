@@ -3,9 +3,8 @@ import type { Metas } from '../../metas';
 import { originalConsole } from '../../originalConsole';
 import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
-import { getCurrentTimestamp } from '../../utils';
+import { defaultLogLevel, getCurrentTimestamp } from '../../utils';
 import type { TracesAPI } from '../traces';
-import { defaultLogLevel } from './const';
 import type { LogEvent, LogsAPI } from './types';
 
 export function initializeLogsAPI(

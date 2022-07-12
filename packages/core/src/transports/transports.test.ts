@@ -1,6 +1,7 @@
-import type { APIEvent, ExceptionEvent } from '../api';
+import type { ExceptionEvent } from '../api';
 import type { Config } from '../config';
-import { getCurrentTimestamp, mockInternalLogger } from '../utils';
+import { mockInternalLogger } from '../testUtils';
+import { getCurrentTimestamp } from '../utils';
 import { VERSION } from '../version';
 import { BaseTransport } from './base';
 import { TransportItemType } from './const';
@@ -51,7 +52,7 @@ describe('transports', () => {
       const hookedItems: TransportItem[] = [];
       const config = {
         transports: [transport],
-        beforeSend: (item: TransportItem<APIEvent>) => {
+        beforeSend: (item: TransportItem) => {
           hookedItems.push(item);
           if (item.type === TransportItemType.EXCEPTION && (item.payload as ErrorEvent).type === 'TypeError') {
             return null;
@@ -72,7 +73,7 @@ describe('transports', () => {
       const transport = new MockTransport();
       const config = {
         transports: [transport],
-        beforeSend: (item: TransportItem<APIEvent>) => {
+        beforeSend: (item: TransportItem) => {
           if (item.type === TransportItemType.EXCEPTION) {
             return {
               ...item,

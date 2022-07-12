@@ -1,7 +1,7 @@
 export { agent } from './agent';
 export type { Agent } from './agent';
 
-export { allLogLevels, defaultExceptionType, defaultLogLevel, LogLevel } from './api';
+export { defaultExceptionType } from './api';
 export type {
   API,
   APIEvent,
@@ -65,7 +65,9 @@ export type {
 } from './transports';
 
 export {
+  allLogLevels,
   BaseExtension,
+  defaultLogLevel,
   getCurrentTimestamp,
   globalObject,
   isArray,
@@ -91,6 +93,7 @@ export {
   isToString,
   isTypeof,
   isUndefined,
+  LogLevel,
   noop,
   prefixAgentMessage,
 } from './utils';

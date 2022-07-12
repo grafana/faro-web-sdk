@@ -1,5 +1,5 @@
-import { allLogLevels } from '../api';
 import type { Config } from '../config';
+import { allLogLevels } from '../utils';
 import type { OriginalConsole } from './types';
 
 export let originalConsole: OriginalConsole = console;

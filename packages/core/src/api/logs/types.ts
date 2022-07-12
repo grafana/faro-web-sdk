@@ -1,6 +1,5 @@
-import type { BaseObject } from '../../utils';
+import type { BaseObject, LogLevel } from '../../utils';
 import type { TraceContext } from '../traces';
-import type { LogLevel } from './const';
 
 export type LogContext = BaseObject;
 
