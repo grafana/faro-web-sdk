@@ -1,7 +1,7 @@
-import type { MetaItem } from '@grafana/agent-core';
+import type { Meta, MetaItem } from '@grafana/agent-core';
 import { UAParser } from 'ua-parser-js';
 
-export const browserMeta: MetaItem = () => {
+export const browserMeta: MetaItem<Pick<Meta, 'browser'>> = () => {
   const parser = new UAParser();
   const { name, version } = parser.getBrowser();
   const { name: osName, version: osVersion } = parser.getOS();

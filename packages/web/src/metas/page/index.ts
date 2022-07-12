@@ -1,6 +1,6 @@
-import type { MetaItem } from '@grafana/agent-core';
+import type { Meta, MetaItem } from '@grafana/agent-core';
 
-export const pageMeta: MetaItem = () => ({
+export const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => ({
   page: {
     url: location.href,
   },

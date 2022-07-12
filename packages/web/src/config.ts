@@ -1,14 +1,14 @@
-import {
-  Instrumentation,
-  MetaItem,
-  App,
-  Session,
-  User,
-  Config,
-  defaultGlobalObjectKey,
-  Transport,
-  Patterns,
+import { defaultGlobalObjectKey } from '@grafana/agent-core';
+import type {
   BeforeSendHook,
+  Config,
+  Instrumentation,
+  MetaApp,
+  MetaItem,
+  MetaSession,
+  MetaUser,
+  Patterns,
+  Transport,
 } from '@grafana/agent-core';
 
 import {
@@ -21,12 +21,12 @@ import { browserMeta, pageMeta } from './metas';
 import { FetchTransport } from './transports';
 
 export interface BrowserConfig {
-  app: App;
+  app: MetaApp;
 
   url?: string;
   apiKey?: string;
-  session?: Session;
-  user?: User;
+  session?: MetaSession;
+  user?: MetaUser;
   globalObjectKey?: string;
   preventGlobalExposure?: boolean;
   metas?: MetaItem[];
@@ -43,7 +43,7 @@ interface GetWebInstrumentationsOptions {
   captureConsole?: boolean;
 }
 
-export const getWebInstrumentations = (options: GetWebInstrumentationsOptions = {}): Instrumentation[] => {
+export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {
   const instrumentations: Instrumentation[] = [new ErrorsInstrumentation(), new WebVitalsInstrumentation()];
 
   if (options.captureConsole !== false) {
@@ -51,7 +51,7 @@ export const getWebInstrumentations = (options: GetWebInstrumentationsOptions = 
   }
 
   return instrumentations;
-};
+}
 
 export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   const transports: Transport[] = [];

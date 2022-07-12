@@ -22,6 +22,8 @@ export class ConsoleTransport extends BaseTransport {
   }
 
   send(item: TransportItem) {
+    this.logDebug('Sending payload');
+
     return this.agent.api.callOriginalConsoleMethod(
       this.options.level ?? LogLevel.DEBUG,
       this.message,

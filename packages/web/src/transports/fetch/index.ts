@@ -32,6 +32,8 @@ export class FetchTransport extends BaseTransport {
   }
 
   async send(item: TransportItem) {
+    this.logDebug('Sending payload');
+
     try {
       const body = JSON.stringify(getTransportBody(item));
 

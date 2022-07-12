@@ -38,18 +38,18 @@ export type { Instrumentation } from './instrumentations';
 export type { InternalLogger } from './internalLogger';
 
 export type {
-  App,
-  Attributes,
-  Browser,
   Meta,
+  MetaApp,
+  MetaAttributes,
+  MetaBrowser,
   MetaGetter,
   MetaItem,
+  MetaPage,
   Metas,
-  Page,
-  SDK,
-  SDKIntegration,
-  Session,
-  User,
+  MetaSDK,
+  MetaSDKIntegration,
+  MetaSession,
+  MetaUser,
 } from './metas';
 
 export type { OriginalConsole } from './originalConsole';

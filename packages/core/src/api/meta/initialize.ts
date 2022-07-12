@@ -1,5 +1,5 @@
 import type { InternalLogger } from '../../internalLogger';
-import type { Meta, Metas, User } from '../../metas';
+import type { Meta, Metas, MetaUser } from '../../metas';
 import type { Transports } from '../../transports';
 import type { MetaAPI } from './types';
 
@@ -8,7 +8,7 @@ export function initializeMetaAPI(_internalLogger: InternalLogger, _transports: 
 
   metas.add(() => meta);
 
-  const setUser: MetaAPI['setUser'] = (user: User | null) => {
+  const setUser: MetaAPI['setUser'] = (user: MetaUser | null) => {
     meta = { ...meta, user: user ?? undefined };
   };
 

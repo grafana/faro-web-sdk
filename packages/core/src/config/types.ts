@@ -1,11 +1,11 @@
 import type { APIEvent, ExtendedError, Stacktrace } from '../api';
 import type { Instrumentation } from '../instrumentations';
 import type { InternalLoggerLevel } from '../internalLogger';
-import type { App, User, Session, MetaItem } from '../metas';
+import type { MetaApp, MetaItem, MetaSession, MetaUser } from '../metas';
 import type { BeforeSendHook, Transport } from '../transports';
 
 export interface Config<P = APIEvent> {
-  app: App;
+  app: MetaApp;
   globalObjectKey: string;
   instrumentations: Instrumentation[];
   metas: MetaItem[];
@@ -18,8 +18,8 @@ export interface Config<P = APIEvent> {
   ignoreErrors?: Patterns;
   internalLoggerLevel?: InternalLoggerLevel;
   originalConsole?: Console;
-  session?: Session;
-  user?: User;
+  session?: MetaSession;
+  user?: MetaUser;
 }
 
 export type StacktraceParser = (err: ExtendedError) => Stacktrace;

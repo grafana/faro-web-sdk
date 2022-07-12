@@ -15,6 +15,8 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
   }
 
   initialize() {
+    this.logDebug('Initializing', this.options);
+
     allLogLevels
       .filter((level) => !(this.options.disabledLevels ?? ConsoleInstrumentation.defaultDisabledLevels).includes(level))
       .forEach((level) => {
