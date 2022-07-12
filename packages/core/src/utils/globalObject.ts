@@ -1,3 +1,2 @@
-import { isUndefined } from './is';
-
-export const globalObject = isUndefined(window) ? global : window;
+// This does not uses isUndefined method because it will throw an error in non-browser environments
+export const globalObject = typeof window === 'undefined' ? global : window;
