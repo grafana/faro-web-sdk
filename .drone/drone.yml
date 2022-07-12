@@ -31,7 +31,6 @@ steps:
   - name: End to end tests
     image: cypress/included:10.0.3
     commands:
-      - cypress install
       - yarn quality:e2e:ci
 
   - name: Publish
@@ -48,6 +47,6 @@ steps:
         - tag
 ---
 kind: signature
-hmac: 0f74c578cb8e6fd32e68932f52565f71da663d7cf780fc28aa6ce361f6d60a6e
+hmac: 4816291bcdbc8c2aee8ceb2c8e479d8c3e7b6521f927c148bb3e26ea05baf1f9
 
 ...
