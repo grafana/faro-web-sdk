@@ -22,8 +22,6 @@ export class FetchTransport extends BaseTransport {
   }
 
   async send(item: TransportItem): Promise<void> {
-    this.logDebug('Sending payload');
-
     try {
       const body = JSON.stringify(getTransportBody(item));
 
@@ -42,7 +40,7 @@ export class FetchTransport extends BaseTransport {
         keepalive: true,
         ...(restOfRequestOptions ?? {}),
       }).catch(() => {
-        this.logError('Failed sending payload to the receiver', JSON.parse(body));
+        this.logError('Failed sending payload to the receiver\n', JSON.parse(body));
       });
     } catch (err) {
       this.logError(err);

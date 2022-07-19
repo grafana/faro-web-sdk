@@ -34,6 +34,7 @@ export function initializeGrafanaAgent(config: Config): Agent {
     internalLogger.debug(`Registering in the global scope using "${agent.config.globalObjectKey}" key`);
 
     // TODO: Fix this type
+    // Object.assign is avoided due to HMR issues
     (globalObject as any)[agent.config.globalObjectKey] = agent;
   }
 

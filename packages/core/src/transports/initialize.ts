@@ -61,7 +61,7 @@ export function initializeTransports(_internalLogger: InternalLogger, config: Co
       }
 
       for (const transport of transports) {
-        internalLogger.debug(`Transporting item using ${transport.name} transport`, actualItem);
+        internalLogger.debug(`Transporting item using ${transport.name}`, actualItem);
 
         transport.send(actualItem);
       }

@@ -10,7 +10,7 @@ export class ErrorsInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   initialize(): void {
-    this.logDebug('Initializing');
+    this.logDebug('Initializing...');
 
     registerOnerror(this.agent);
 

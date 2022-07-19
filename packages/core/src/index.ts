@@ -35,6 +35,7 @@ export type { Config, Patterns, StacktraceParser } from './config';
 export { BaseInstrumentation } from './instrumentations';
 export type { Instrumentation } from './instrumentations';
 
+export { defaultInternalLoggerLevel, InternalLoggerLevel } from './internalLogger';
 export type { InternalLogger } from './internalLogger';
 
 export type {

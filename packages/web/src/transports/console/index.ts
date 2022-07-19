@@ -13,8 +13,6 @@ export class ConsoleTransport extends BaseTransport {
   }
 
   send(item: TransportItem): void {
-    this.logDebug('Sending payload');
-
     return this.agent.originalConsole.debug(this.options.level ?? LogLevel.DEBUG, 'New event', getTransportBody(item));
   }
 }
