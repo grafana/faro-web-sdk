@@ -1,17 +1,18 @@
 import type { ExceptionEvent } from '../api';
 import type { Config, Patterns } from '../config';
+import { internalLogger } from '../internalLogger';
 import type { InternalLogger } from '../internalLogger';
 import { isString } from '../utils';
 import { TransportItemType } from './const';
 import type { BeforeSendHook, Transport, Transports } from './types';
 
-function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
+export function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
   return patterns.some((pattern) => {
     return isString(pattern) ? msg.includes(pattern) : !!msg.match(pattern);
   });
 }
 
-function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
+export function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
   return (item) => {
     if (item.type === TransportItemType.EXCEPTION && item.payload) {
       const event = item.payload as ExceptionEvent;
@@ -47,29 +48,35 @@ export function initializeTransports(_internalLogger: InternalLogger, config: Co
 
   const execute: Transports['execute'] = (item) => {
     if (!paused) {
-      let _item = item;
+      let actualItem = item;
 
       for (const hook of beforeSendHooks) {
-        const modified = hook(_item);
+        const modified = hook(actualItem);
 
         if (modified === null) {
           return;
         }
 
-        _item = modified;
+        actualItem = modified;
       }
 
       for (const transport of transports) {
-        transport.send(_item);
+        internalLogger.debug(`Transporting item using ${transport.name} transport`, actualItem);
+
+        transport.send(actualItem);
       }
     }
   };
 
   const pause: Transports['pause'] = () => {
+    internalLogger.debug('Pausing transports');
+
     paused = true;
   };
 
   const unpause: Transports['unpause'] = () => {
+    internalLogger.debug('Unpausing transports');
+
     paused = false;
   };
 

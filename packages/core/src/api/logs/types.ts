@@ -18,6 +18,5 @@ export interface PushLogOptions {
 }
 
 export interface LogsAPI {
-  callOriginalConsoleMethod: (level: LogLevel, ...args: unknown[]) => void;
   pushLog: (args: unknown[], options?: PushLogOptions) => void;
 }

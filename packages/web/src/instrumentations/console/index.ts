@@ -1,4 +1,4 @@
-import { allLogLevels, LogLevel, VERSION, BaseInstrumentation } from '@grafana/agent-core';
+import { allLogLevels, BaseInstrumentation, LogLevel, VERSION } from '@grafana/agent-core';
 
 export interface ConsoleInstrumentationOptions {
   disabledLevels?: LogLevel[];
@@ -27,7 +27,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
           } catch (err) {
             this.logError(err);
           } finally {
-            this.agent.api.callOriginalConsoleMethod(level, ...args);
+            this.agent.originalConsole[level](...args);
           }
         };
       });

@@ -11,7 +11,10 @@ import { globalObject } from './utils';
 
 export function initializeGrafanaAgent(config: Config): Agent {
   const originalConsole = initializeOriginalConsole(config);
-  const internalLogger = initializeInternalLogger(config);
+  const internalLogger = initializeInternalLogger(originalConsole, config);
+
+  internalLogger.debug('Initializing...');
+
   const metas = initializeMetas(internalLogger, config);
   const transports = initializeTransports(internalLogger, config);
   const api = initializeAPI(internalLogger, config, transports, metas);
@@ -28,9 +31,10 @@ export function initializeGrafanaAgent(config: Config): Agent {
   });
 
   if (!agent.config.preventGlobalExposure) {
-    Object.defineProperty(globalObject, agent.config.globalObjectKey, {
-      value: agent,
-    });
+    internalLogger.debug(`Registering in the global scope using "${agent.config.globalObjectKey}" key`);
+
+    // TODO: Fix this type
+    (globalObject as any)[agent.config.globalObjectKey] = agent;
   }
 
   initializeInstrumentations(internalLogger, agent.config);

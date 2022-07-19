@@ -9,7 +9,7 @@ import { defaultExceptionType } from './const';
 import type { ExceptionEvent, ExceptionsAPI } from './types';
 
 export function initializeExceptionsAPI(
-  _internalLogger: InternalLogger,
+  internalLogger: InternalLogger,
   config: Config,
   transports: Transports,
   metas: Metas,
@@ -37,6 +37,8 @@ export function initializeExceptionsAPI(
         frames: stackFrames,
       };
     }
+
+    internalLogger.debug('Pushing exception', item);
 
     transports.execute(item);
   };

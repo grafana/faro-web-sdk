@@ -1,6 +1,5 @@
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
-import { originalConsole } from '../../originalConsole';
 import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import { defaultLogLevel, getCurrentTimestamp } from '../../utils';
@@ -35,18 +34,15 @@ export function initializeLogsAPI(
         meta: metas.value,
       };
 
+      internalLogger.debug('Pushing log', item);
+
       transports.execute(item);
     } catch (err) {
       internalLogger.error(err);
     }
   };
 
-  const callOriginalConsoleMethod: LogsAPI['callOriginalConsoleMethod'] = (level, ...args) => {
-    originalConsole[level].apply(console, args);
-  };
-
   return {
-    callOriginalConsoleMethod,
     pushLog,
   };
 }

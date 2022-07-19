@@ -14,27 +14,25 @@ export function initializeTracesAPI(internalLogger: InternalLogger, transports: 
   };
 
   const getTraceContext: TracesAPI['getTraceContext'] = (): TraceContext | undefined => {
-    if (otel) {
-      const ctx = otel.trace.getSpanContext(otel.context.active());
+    const ctx = otel?.trace.getSpanContext(otel.context.active());
 
-      if (ctx) {
-        return {
+    return !ctx
+      ? undefined
+      : {
           trace_id: ctx.traceId,
           span_id: ctx.spanId,
         };
-      }
-    }
-
-    return undefined;
   };
 
-  const pushTraces: TracesAPI['pushTraces'] = (request) => {
+  const pushTraces: TracesAPI['pushTraces'] = (payload) => {
     try {
       const item: TransportItem<TraceEvent> = {
         type: TransportItemType.TRACE,
-        payload: request,
+        payload,
         meta: metas.value,
       };
+
+      internalLogger.debug('Pushing trace', item);
 
       transports.execute(item);
     } catch (err) {

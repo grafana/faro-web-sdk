@@ -1,15 +1,5 @@
 import { defaultGlobalObjectKey } from '@grafana/agent-core';
-import type {
-  BeforeSendHook,
-  Config,
-  Instrumentation,
-  MetaApp,
-  MetaItem,
-  MetaSession,
-  MetaUser,
-  Patterns,
-  Transport,
-} from '@grafana/agent-core';
+import type { Config, Instrumentation, MetaItem, Transport } from '@grafana/agent-core';
 
 import {
   ConsoleInstrumentation,
@@ -20,21 +10,9 @@ import {
 import { browserMeta, pageMeta } from './metas';
 import { FetchTransport } from './transports';
 
-export interface BrowserConfig {
-  app: MetaApp;
-
+export interface BrowserConfig extends Partial<Omit<Config, 'app' | 'parseStacktrace'>>, Pick<Config, 'app'> {
   url?: string;
   apiKey?: string;
-  session?: MetaSession;
-  user?: MetaUser;
-  globalObjectKey?: string;
-  preventGlobalExposure?: boolean;
-  metas?: MetaItem[];
-  instrumentations?: Instrumentation[];
-  transports?: Transport[];
-  ignoreErrors?: Patterns;
-  beforeSend?: BeforeSendHook;
-  paused?: boolean;
 }
 
 export const defaultMetas: MetaItem[] = [browserMeta, pageMeta];
@@ -74,17 +52,19 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   }
 
   return {
-    globalObjectKey: browserConfig.globalObjectKey || defaultGlobalObjectKey,
-    preventGlobalExposure: browserConfig.preventGlobalExposure || false,
-    transports,
-    metas: browserConfig.metas ?? defaultMetas,
-    instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
     app: browserConfig.app,
-    session: browserConfig.session,
-    user: browserConfig.user,
+    beforeSend: browserConfig.beforeSend,
+    globalObjectKey: browserConfig.globalObjectKey || defaultGlobalObjectKey,
     ignoreErrors: browserConfig.ignoreErrors,
+    instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
+    internalLoggerLevel: browserConfig.internalLoggerLevel,
+    metas: browserConfig.metas ?? defaultMetas,
+    originalConsole: browserConfig.originalConsole,
     parseStacktrace,
     paused: browserConfig.paused ?? false,
-    beforeSend: browserConfig.beforeSend,
+    preventGlobalExposure: browserConfig.preventGlobalExposure || false,
+    session: browserConfig.session,
+    transports,
+    user: browserConfig.user,
   };
 }

@@ -22,6 +22,8 @@ export function initializeMeasurementsAPI(
         meta: metas.value,
       };
 
+      internalLogger.debug('Pushing measurement', item);
+
       transports.execute(item);
     } catch (err) {
       internalLogger.error(err);

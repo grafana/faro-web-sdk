@@ -85,15 +85,6 @@ The `api` property on the agent contains all the necessary methods to push new e
 
 ## Logs
 
-- `callOriginalConsoleMethod` - is a method to call the original console methods. Some instrumentations might override
-  the default console methods, so this helper makes sure that you call the original methods. It accepts a `level`
-  parameter and the rest of the parameters are inherited from the original method.
-
-  ```ts
-  agent.api.callOriginalConsoleMethod(LogLevel.LOG, 'This is a log');
-  agent.api.callOriginalConsoleMethod(LogLevel.WARN, 'This is a warning');
-  ```
-
 - `pushLog` - is a method to register a log event. The method accepts a mandatory `args` parameter which is an array of
   arguments that will be stringified and send to the transports. The other two parameters are optional: `logLevel` is
   the type of message that we register and `context` is a plain object containing primitive values that will be
@@ -182,7 +173,8 @@ import { agent, initializeGrafanaAgent } from '@grafana/agent-core';
 initializeGrafanaAgent({
   metas: [
     // Define a static meta
-    app: {
+    {
+      app: {
         name: 'my-app',
         version: '1.0.0',
       },
@@ -222,6 +214,16 @@ class MyTransport extends BaseTransport {
 initializeGrafanaAgent({
   transports: [new MyTransport()],
 });
+```
+
+## Original console
+
+Some instrumentations might override the default console methods but the agent provides a way to access the
+unmodified console methods.
+
+```ts
+agent.originalConsole.log('This is a log');
+agent.originalConsole.warn('This is a warning');
 ```
 
 ## Pause / unpause

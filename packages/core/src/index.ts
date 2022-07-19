@@ -95,7 +95,6 @@ export {
   isUndefined,
   LogLevel,
   noop,
-  prefixAgentMessage,
 } from './utils';
 export type { BaseObject, BaseObjectKey, BaseObjectPrimitiveValue, BaseObjectValue } from './utils';
 

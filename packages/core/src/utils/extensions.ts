@@ -22,18 +22,18 @@ export abstract class BaseExtension implements Extension {
   }
 
   logDebug(...args: unknown[]): void {
-    this.agent.internalLogger.debug(this.name, ...args);
+    this.agent?.internalLogger?.debug(`${this.name}\n`, ...args);
   }
 
   logInfo(...args: unknown[]): void {
-    this.agent.internalLogger.info(this.name, ...args);
+    this.agent?.internalLogger?.info(`${this.name}\n`, ...args);
   }
 
   logWarn(...args: unknown[]): void {
-    this.agent.internalLogger.warn(this.name, ...args);
+    this.agent?.internalLogger?.warn(`${this.name}\n`, ...args);
   }
 
   logError(...args: unknown[]): void {
-    this.agent.internalLogger.error(this.name, ...args);
+    this.agent?.internalLogger?.error(`${this.name}\n`, ...args);
   }
 }
