@@ -1,4 +1,5 @@
 import type { TransportBody } from '@grafana/agent-core';
+
 import './commands';
 
 beforeEach(() => {

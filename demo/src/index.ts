@@ -3,7 +3,7 @@ import { TracingInstrumentation } from '@grafana/agent-tracing-web';
 import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
 
 initializeGrafanaAgent({
-  url: 'http://localhost:12345/collect',
+  url: '/collect',
   apiKey: 'secret',
   instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
   internalLoggerLevel: InternalLoggerLevel.VERBOSE,

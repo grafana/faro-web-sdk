@@ -1,4 +1,4 @@
-import { defaultGlobalObjectKey, defaultInternalLoggerLevel } from '@grafana/agent-core';
+import { defaultGlobalObjectKey, defaultInternalLoggerLevel, defaultUnpatchedConsole } from '@grafana/agent-core';
 import type { Config, Transport } from '@grafana/agent-core';
 
 import { parseStacktrace } from '../instrumentations';
@@ -37,7 +37,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     paused: browserConfig.paused ?? false,
     preventGlobalExposure: browserConfig.preventGlobalExposure || false,
     transports,
-    unpatchedConsole: browserConfig.unpatchedConsole ?? console,
+    unpatchedConsole: browserConfig.unpatchedConsole ?? defaultUnpatchedConsole,
 
     beforeSend: browserConfig.beforeSend,
     ignoreErrors: browserConfig.ignoreErrors,

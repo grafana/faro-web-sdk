@@ -62,6 +62,7 @@ export type {
   Transports,
 } from './transports';
 
+export { defaultUnpatchedConsole } from './unpatchedConsole';
 export type { UnpatchedConsole } from './unpatchedConsole';
 
 export {

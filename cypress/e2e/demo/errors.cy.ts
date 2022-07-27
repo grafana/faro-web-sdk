@@ -2,9 +2,11 @@ context('Errors', () => {
   function checkErrorReported(type: string, value: string, expectStacktrace = true) {
     cy.waitExceptions((evts) => {
       expect(evts).to.have.lengthOf(1);
+
       const exception = evts[0];
       expect(exception).property('type').to.equal(type);
       expect(exception).property('value').to.equal(value);
+
       if (expectStacktrace) {
         expect(exception).property('stacktrace').property('frames').to.have.length.greaterThan(1);
       }
