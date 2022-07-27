@@ -1,39 +1,20 @@
-import { BaseInstrumentation, VERSION, agent } from '@grafana/agent-core';
-import { trace, context, TextMapPropagator, ContextManager } from '@opentelemetry/api';
+import { agent, BaseInstrumentation, VERSION } from '@grafana/agent-core';
+import { context, trace } from '@opentelemetry/api';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
-import { InstrumentationOption, registerInstrumentations } from '@opentelemetry/instrumentation';
-import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
-import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
-import { UserInteractionInstrumentation } from '@opentelemetry/instrumentation-user-interaction';
-import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
+import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
-import { BatchSpanProcessor, SpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 
 import { GrafanaAgentTraceExporter } from './agentExporter';
+import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
+import type { TracingInstrumentationOptions } from './types';
 
 // the providing of app name here is not great
 // should delay initialization and provide the full agent config,
 // taking app name from it
-
-export interface TracingInstrumentationOptions {
-  resourceAttributes?: ResourceAttributes;
-  propagator?: TextMapPropagator;
-  contextManager?: ContextManager;
-  instrumentations?: InstrumentationOption[];
-  spanProcessor?: SpanProcessor;
-}
-
-export function getDefaultOTELInstrumentations(ignoreUrls: Array<string | RegExp> = []): InstrumentationOption[] {
-  return [
-    new DocumentLoadInstrumentation(),
-    new FetchInstrumentation({ ignoreUrls }),
-    new XMLHttpRequestInstrumentation({ ignoreUrls }),
-    new UserInteractionInstrumentation(),
-  ];
-}
 
 export class TracingInstrumentation extends BaseInstrumentation {
   name = '@grafana/agent-tracing-web';

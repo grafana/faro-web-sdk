@@ -19,22 +19,28 @@ initializeGrafanaAgent({
 
 ## Options
 
-The agent requires a configuration parameter.
+The agent requires a configuration parameter with the following properties:
 
-| Property                | Description                                                                            | Type                | Optional | Default Value |
-| ----------------------- | -------------------------------------------------------------------------------------- | ------------------- | -------- | ------------- |
-| `app`                   | Application metadata                                                                   | `App`               | N        | `undefined`   |
-| `beforeSend`            | Hook invoked before pushing event to transport. Can be used to modify or filter events | `BeforeSendHook`    | Y        | `undefined`   |
-| `globalObjectKey`       | String that should be used when defining the agent on the global object                | `string`            | N        |               |
-| `ignoreErrors`          | Error message patterns for errors that should be ignored                               | `Patterns`          | Y        | `[]`          |
-| `instrumentations`      | Array of instrumentations that should be ran                                           | `Instrumentation[]` | N        |               |
-| `metas`                 | Array of metas that should be logged                                                   | `MetaItem[]`        | N        |               |
-| `preventGlobalExposure` | Flag for toggling the definition on the global object                                  | `boolean`           | N        |               |
-| `session`               | Session metadata                                                                       | `Session`           | Y        | `undefined`   |
-| `transports`            | Array of transports that should be used                                                | `Transport[]`       | N        |               |
-| `user`                  | User metadata                                                                          | `User`              | Y        | `undefined`   |
-| `parseStacktrace`       | Stack trace parser                                                                     | `StacktraceParser`  | N        |               |
-| `paused`                | Should the agent start paused                                                          | `boolean`           | Y        | `false`       |
+| Property                | Description                                                             | Type                  | Default Value Variable                                   |
+| ----------------------- | ----------------------------------------------------------------------- | --------------------- | -------------------------------------------------------- |
+| `app`                   | Application metadata                                                    | `App`                 |                                                          |
+| `globalObjectKey`       | String that should be used when defining the agent on the global object | `string`              | `defaultGlobalObjectKey = 'grafanaAgent'`                |
+| `instrumentations`      | Array of instrumentations that should be ran                            | `Instrumentation[]`   |                                                          |
+| `internalLoggerLevel`   | The level of information printed to console for internal messages       | `InternalLoggerLevel` | `defaultInternalLoggerLevel = InternalLoggerLevel.ERROR` |
+| `metas`                 | Array of metas that should be logged                                    | `MetaItem[]`          |                                                          |
+| `parseStacktrace`       | A function used to parse stack traces                                   | `StacktraceParser`    |                                                          |
+| `paused`                | Flag for initializing the agent as paused                               | `boolean`             |                                                          |
+| `preventGlobalExposure` | Flag for toggling the definition on the global object                   | `boolean`             |                                                          |
+| `transports`            | Array of transports that should be used                                 | `Transport[]`         |                                                          |
+
+Besides the mandatory properties, the agent also supports the following optional properties:
+
+| Property       | Description                                                                            | Type             | Default Value |
+| -------------- | -------------------------------------------------------------------------------------- | ---------------- | ------------- |
+| `beforeSend`   | Hook invoked before pushing event to transport. Can be used to modify or filter events | `BeforeSendHook` | `undefined`   |
+| `ignoreErrors` | Error message patterns for errors that should be ignored                               | `Patterns`       | `[]`          |
+| `session`      | Session metadata                                                                       | `Session`        | `undefined`   |
+| `user`         | User metadata                                                                          | `User`           | `undefined`   |
 
 ## Agent
 

@@ -1,19 +1,5 @@
-import { BaseInstrumentation, VERSION } from '@grafana/agent-core';
+export { ErrorsInstrumentation } from './instrumentation';
 
-import { registerOnerror } from './registerOnerror';
-import { registerOnunhandledrejection } from './registerOnunhandledrejection';
+export { buildStackFrame, getDataFromSafariExtensions, getStackFramesFromError, parseStacktrace } from './stackFrames';
 
-export { parseStacktrace } from './stackFrames';
-
-export class ErrorsInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/agent-web:instrumentation-errors';
-  readonly version = VERSION;
-
-  initialize(): void {
-    this.logDebug('Initializing...');
-
-    registerOnerror(this.agent);
-
-    registerOnunhandledrejection(this.agent);
-  }
-}
+export type { ErrorEvent, ExtendedPromiseRejectionEvent } from './types';

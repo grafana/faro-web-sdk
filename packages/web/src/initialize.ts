@@ -1,6 +1,8 @@
-import { Agent, Config, initializeGrafanaAgent as coreInit } from '@grafana/agent-core';
+import { initializeGrafanaAgent as coreInit } from '@grafana/agent-core';
+import type { Agent, Config } from '@grafana/agent-core';
 
-import { BrowserConfig, makeCoreConfig } from './config';
+import { makeCoreConfig } from './config';
+import type { BrowserConfig } from './config';
 
 export function initializeGrafanaAgent(config: BrowserConfig): Agent {
   const coreConfig = makeCoreConfig(config);

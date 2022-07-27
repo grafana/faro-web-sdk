@@ -15,8 +15,8 @@ export function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
 export function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
   return (item) => {
     if (item.type === TransportItemType.EXCEPTION && item.payload) {
-      const event = item.payload as ExceptionEvent;
-      const msg = `${event.type}: ${event.value}`;
+      const evt = item.payload as ExceptionEvent;
+      const msg = `${evt.type}: ${evt.value}`;
 
       if (shouldIgnoreEvent(patterns, msg)) {
         return null;

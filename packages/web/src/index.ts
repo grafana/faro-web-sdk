@@ -1,20 +1,23 @@
-export {
-  ConsoleInstrumentation,
-  ErrorsInstrumentation,
-  parseStacktrace,
-  WebVitalsInstrumentation,
-} from './instrumentations';
-export type { ConsoleInstrumentationOptions } from './instrumentations';
-
-export { browserMeta, pageMeta } from './metas';
-
-export { ConsoleTransport, FetchTransport } from './transports';
-export type { ConsoleTransportOptions, FetchTransportOptions, FetchTransportRequestOptions } from './transports';
-
-export { defaultMetas, getWebInstrumentations, makeCoreConfig } from './config';
+export { getWebInstrumentations, makeCoreConfig } from './config';
 export type { BrowserConfig } from './config';
 
 export { initializeAgent, initializeGrafanaAgent } from './initialize';
+
+export {
+  buildStackFrame,
+  ConsoleInstrumentation,
+  ErrorsInstrumentation,
+  getDataFromSafariExtensions,
+  getStackFramesFromError,
+  parseStacktrace,
+  WebVitalsInstrumentation,
+} from './instrumentations';
+export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
+
+export { browserMeta, defaultMetas, pageMeta } from './metas';
+
+export { ConsoleTransport, FetchTransport } from './transports';
+export type { ConsoleTransportOptions, FetchTransportOptions, FetchTransportRequestOptions } from './transports';
 
 export {
   agent,

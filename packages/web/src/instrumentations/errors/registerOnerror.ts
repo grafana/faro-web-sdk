@@ -11,25 +11,25 @@ export function registerOnerror(agent: Agent): void {
   // window.addEventListener does not provide all parameters, hence we need to use the window.onerror syntax
   // TODO: investigate https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror
 
-  const oldonerror = window.onerror;
+  const oldOnerror = window.onerror;
 
   window.onerror = (...args) => {
     try {
-      const [event, source, lineno, colno, error] = args;
+      const [evt, source, lineno, colno, error] = args;
       let value: string | undefined;
       let type: string | undefined;
       let stackFrames: ExceptionStackFrame[] = [];
-      const eventIsString = isString(event);
+      const eventIsString = isString(evt);
       const initialStackFrame = buildStackFrame(source, unknownString, lineno, colno);
 
       if (error || !eventIsString) {
-        [value, type, stackFrames] = getErrorDetails((error ?? event) as Error | Event);
+        [value, type, stackFrames] = getErrorDetails((error ?? evt) as Error | Event);
 
         if (stackFrames.length === 0) {
           stackFrames = [initialStackFrame];
         }
       } else if (eventIsString) {
-        [value, type] = getValueAndTypeFromMessage(event);
+        [value, type] = getValueAndTypeFromMessage(evt);
         stackFrames = [initialStackFrame];
       }
 
@@ -37,7 +37,7 @@ export function registerOnerror(agent: Agent): void {
         agent.api.pushError(new Error(value), { type, stackFrames });
       }
     } finally {
-      oldonerror?.apply(window, args);
+      oldOnerror?.apply(window, args);
     }
   };
 }

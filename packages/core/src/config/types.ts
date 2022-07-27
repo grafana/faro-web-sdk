@@ -9,17 +9,17 @@ export interface Config<P = APIEvent> {
   app: MetaApp;
   globalObjectKey: string;
   instrumentations: Instrumentation[];
+  internalLoggerLevel: InternalLoggerLevel;
   metas: MetaItem[];
   parseStacktrace: StacktraceParser;
   paused: boolean;
   preventGlobalExposure: boolean;
   transports: Transport[];
+  unpatchedConsole: UnpatchedConsole;
 
   beforeSend?: BeforeSendHook<P>;
   ignoreErrors?: Patterns;
-  internalLoggerLevel?: InternalLoggerLevel;
   session?: MetaSession;
-  unpatchedConsole?: UnpatchedConsole;
   user?: MetaUser;
 }
 

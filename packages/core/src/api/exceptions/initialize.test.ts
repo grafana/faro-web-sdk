@@ -44,10 +44,10 @@ describe('api.exceptions', () => {
       const payload = transport.items[0];
       expect(payload?.payload).toBeTruthy();
       expect(payload?.type).toEqual(TransportItemType.EXCEPTION);
-      const event = payload?.payload as ExceptionEvent;
-      expect(event.type).toEqual('TestError');
-      expect(event.value).toEqual('test exception');
-      expect(event.stacktrace).toEqual({ frames });
+      const evt = payload?.payload as ExceptionEvent;
+      expect(evt.type).toEqual('TestError');
+      expect(evt.value).toEqual('test exception');
+      expect(evt.stacktrace).toEqual({ frames });
     });
 
     it('error without overrides', () => {
@@ -60,11 +60,11 @@ describe('api.exceptions', () => {
       expect(payload?.meta.app?.name).toEqual('test');
       expect(payload?.payload).toBeTruthy();
       expect(payload?.type).toEqual(TransportItemType.EXCEPTION);
-      const event = payload?.payload as ExceptionEvent;
-      expect(event.type).toEqual('Error');
-      expect(event.value).toEqual('test');
-      expect(event.timestamp).toBeTruthy();
-      const stacktrace = event.stacktrace;
+      const evt = payload?.payload as ExceptionEvent;
+      expect(evt.type).toEqual('Error');
+      expect(evt.value).toEqual('test');
+      expect(evt.timestamp).toBeTruthy();
+      const stacktrace = evt.stacktrace;
       expect(stacktrace).toBeTruthy();
       expect(stacktrace?.frames.length).toBeGreaterThan(3);
       expect(stacktrace?.frames[0]?.filename).toEqual('Error: test');
