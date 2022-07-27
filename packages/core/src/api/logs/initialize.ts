@@ -38,7 +38,7 @@ export function initializeLogsAPI(
 
       transports.execute(item);
     } catch (err) {
-      internalLogger.error(err);
+      internalLogger.error('Error pushing log', err);
     }
   };
 

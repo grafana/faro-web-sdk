@@ -3,6 +3,7 @@ import type { Instrumentation } from '../instrumentations';
 import type { InternalLoggerLevel } from '../internalLogger';
 import type { MetaApp, MetaItem, MetaSession, MetaUser } from '../metas';
 import type { BeforeSendHook, Transport } from '../transports';
+import type { UnpatchedConsole } from '../unpatchedConsole';
 
 export interface Config<P = APIEvent> {
   app: MetaApp;
@@ -17,8 +18,8 @@ export interface Config<P = APIEvent> {
   beforeSend?: BeforeSendHook<P>;
   ignoreErrors?: Patterns;
   internalLoggerLevel?: InternalLoggerLevel;
-  originalConsole?: Console;
   session?: MetaSession;
+  unpatchedConsole?: UnpatchedConsole;
   user?: MetaUser;
 }
 

@@ -36,7 +36,7 @@ export function initializeTracesAPI(internalLogger: InternalLogger, transports: 
 
       transports.execute(item);
     } catch (err) {
-      internalLogger.error(err);
+      internalLogger.error('Error pushing trace', err);
     }
   };
 

@@ -5,13 +5,13 @@ import type { Config } from './config';
 import { initializeInstrumentations } from './instrumentations';
 import { initializeInternalLogger } from './internalLogger';
 import { initializeMetas } from './metas';
-import { initializeOriginalConsole } from './originalConsole';
 import { initializeTransports } from './transports';
+import { initializeUnpatchedConsole } from './unpatchedConsole';
 import { globalObject } from './utils';
 
 export function initializeGrafanaAgent(config: Config): Agent {
-  const originalConsole = initializeOriginalConsole(config);
-  const internalLogger = initializeInternalLogger(originalConsole, config);
+  const unpatchedConsole = initializeUnpatchedConsole(config);
+  const internalLogger = initializeInternalLogger(unpatchedConsole, config);
 
   internalLogger.debug('Initializing...');
 
@@ -24,9 +24,9 @@ export function initializeGrafanaAgent(config: Config): Agent {
     config,
     internalLogger,
     metas,
-    originalConsole,
     pause: transports.pause,
     transports,
+    unpatchedConsole,
     unpause: transports.unpause,
   });
 
@@ -39,6 +39,17 @@ export function initializeGrafanaAgent(config: Config): Agent {
   }
 
   initializeInstrumentations(internalLogger, agent.config);
+
+  return agent;
+}
+
+// TODO: Remove this alias after the updating the projects where we dogfood
+export function initializeAgentDeprecated(config: Config): Agent {
+  const agent = initializeGrafanaAgent(config);
+
+  agent.internalLogger.warn(
+    'initializeAgent method is deprecated and it will be removed in an upcoming version. Please use initializeGrafanaAgent method instead.'
+  );
 
   return agent;
 }

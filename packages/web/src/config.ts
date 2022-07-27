@@ -59,12 +59,12 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
     internalLoggerLevel: browserConfig.internalLoggerLevel,
     metas: browserConfig.metas ?? defaultMetas,
-    originalConsole: browserConfig.originalConsole,
     parseStacktrace,
     paused: browserConfig.paused ?? false,
     preventGlobalExposure: browserConfig.preventGlobalExposure || false,
     session: browserConfig.session,
     transports,
+    unpatchedConsole: browserConfig.unpatchedConsole,
     user: browserConfig.user,
   };
 }

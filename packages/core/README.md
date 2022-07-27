@@ -216,14 +216,14 @@ initializeGrafanaAgent({
 });
 ```
 
-## Original console
+## Unpatched console
 
 Some instrumentations might override the default console methods but the agent provides a way to access the
 unmodified console methods.
 
 ```ts
-agent.originalConsole.log('This is a log');
-agent.originalConsole.warn('This is a warning');
+agent.unpatchedConsole.log('This is a log');
+agent.unpatchedConsole.warn('This is a warning');
 ```
 
 ## Pause / unpause

@@ -27,7 +27,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
           } catch (err) {
             this.logError(err);
           } finally {
-            this.agent.originalConsole[level](...args);
+            this.agent.unpatchedConsole[level](...args);
           }
         };
       });

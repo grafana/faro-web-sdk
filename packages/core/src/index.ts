@@ -26,8 +26,7 @@ export type {
   TracesAPI,
 } from './api';
 
-// TODO: Remove this alias after the updating the projects where we dogfood
-export { initializeGrafanaAgent, initializeGrafanaAgent as initializeAgent } from './initialize';
+export { initializeAgentDeprecated as initializeAgent, initializeGrafanaAgent } from './initialize';
 
 export { defaultGlobalObjectKey } from './config';
 export type { Config, Patterns, StacktraceParser } from './config';
@@ -53,8 +52,6 @@ export type {
   MetaUser,
 } from './metas';
 
-export type { OriginalConsole } from './originalConsole';
-
 export { BaseTransport, getTransportBody, TransportItemType, transportItemTypeToBodyKey } from './transports';
 export type {
   BeforeSendHook,
@@ -64,6 +61,8 @@ export type {
   TransportItemPayload,
   Transports,
 } from './transports';
+
+export type { UnpatchedConsole } from './unpatchedConsole';
 
 export {
   allLogLevels,
