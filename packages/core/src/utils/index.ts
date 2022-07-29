@@ -37,3 +37,5 @@ export type { IsFnHelper } from './is';
 export { allLogLevels, defaultLogLevel, LogLevel } from './logLevels';
 
 export { noop } from './noop';
+
+export * from './promiseBuffer';

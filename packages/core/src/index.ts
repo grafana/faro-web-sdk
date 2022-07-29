@@ -96,7 +96,15 @@ export {
   isUndefined,
   LogLevel,
   noop,
+  createPromiseBuffer,
 } from './utils';
-export type { BaseObject, BaseObjectKey, BaseObjectPrimitiveValue, BaseObjectValue } from './utils';
+export type {
+  BaseObject,
+  BaseObjectKey,
+  BaseObjectPrimitiveValue,
+  BaseObjectValue,
+  PromiseBuffer,
+  PromiseBufferOptions,
+} from './utils';
 
 export { VERSION } from './version';
