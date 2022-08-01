@@ -1,17 +1,17 @@
 import { Agent, isPrimitive } from '@grafana/agent-core';
 
 import { primitiveUnhandledType, primitiveUnhandledValue } from './const';
-import type { ExtendedPromiseRejectionEvent } from './extendedPromiseRejectionEvent';
 import { getErrorDetails } from './getErrorDetails';
+import type { ExtendedPromiseRejectionEvent } from './types';
 
 export function registerOnunhandledrejection(agent: Agent): void {
-  window.addEventListener('unhandledrejection', (event: ExtendedPromiseRejectionEvent) => {
-    let error = event;
+  window.addEventListener('unhandledrejection', (evt: ExtendedPromiseRejectionEvent) => {
+    let error = evt;
 
     if (error.reason) {
-      error = event.reason;
-    } else if (event.detail?.reason) {
-      error = event.detail?.reason;
+      error = evt.reason;
+    } else if (evt.detail?.reason) {
+      error = evt.detail?.reason;
     }
 
     let value: string | undefined;

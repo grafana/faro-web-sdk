@@ -2,14 +2,15 @@ export { initializeTransports } from './initialize';
 
 export { BaseTransport } from './base';
 
-export { TransportItemType } from './types';
+export { TransportItemType, transportItemTypeToBodyKey } from './const';
+
 export type {
+  BeforeSendHook,
   Transport,
   TransportBody,
   TransportItem,
   TransportItemPayload,
   Transports,
-  BeforeSendHook,
 } from './types';
 
 export { getTransportBody } from './utils';

@@ -1,4 +1,5 @@
 import type { Config } from '../../config';
+import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
@@ -8,6 +9,7 @@ import { defaultExceptionType } from './const';
 import type { ExceptionEvent, ExceptionsAPI } from './types';
 
 export function initializeExceptionsAPI(
+  internalLogger: InternalLogger,
   config: Config,
   transports: Transports,
   metas: Metas,
@@ -35,6 +37,8 @@ export function initializeExceptionsAPI(
         frames: stackFrames,
       };
     }
+
+    internalLogger.debug('Pushing exception', item);
 
     transports.execute(item);
   };

@@ -1,8 +1,8 @@
-import type { ExceptionStackFrame, Stacktrace } from '@grafana/agent-core';
 import { isNumber } from '@grafana/agent-core';
+import type { ExceptionStackFrame, ExtendedError } from '@grafana/agent-core';
 
+import { buildStackFrame } from './buildStackFrame';
 import {
-  atString,
   chromeAddressAtString,
   chromeAddressAtStringLength,
   chromeEvalRegex,
@@ -17,50 +17,8 @@ import {
   opera10LineRegex,
   opera11LineRegex,
   reactMinifiedRegex,
-  safariExtensionString,
-  safariWebExtensionString,
-  unknownString,
 } from './const';
-import type { ExtendedError } from './extendedError';
-
-export function getDataFromSafariExtensions(
-  func: string | undefined,
-  filename: string | undefined
-): [string | undefined, string | undefined] {
-  const isSafariExtension = func?.includes(safariExtensionString);
-  const isSafariWebExtension = !isSafariExtension && func?.includes(safariWebExtensionString);
-
-  if (!isSafariExtension && !isSafariWebExtension) {
-    return [func, filename];
-  }
-
-  return [
-    func?.includes(atString) ? func.split(atString)[0] : func,
-    isSafariExtension ? `${safariExtensionString}:${filename}` : `${safariWebExtensionString}:${filename}`,
-  ];
-}
-
-export function buildStackFrame(
-  filename: string | undefined,
-  func: string | undefined,
-  lineno: number | undefined,
-  colno: number | undefined
-): ExceptionStackFrame {
-  const stackFrame: ExceptionStackFrame = {
-    filename: filename || document.location.href,
-    function: func || unknownString,
-  };
-
-  if (lineno !== undefined) {
-    stackFrame.lineno = lineno;
-  }
-
-  if (colno !== undefined) {
-    stackFrame.colno = colno;
-  }
-
-  return stackFrame;
-}
+import { getDataFromSafariExtensions } from './getDataFromSafariExtensions';
 
 export function getStackFramesFromError(error: ExtendedError): ExceptionStackFrame[] {
   let lines: string[] = [];
@@ -149,10 +107,4 @@ export function getStackFramesFromError(error: ExtendedError): ExceptionStackFra
   }
 
   return stackFrames;
-}
-
-export function parseStacktrace(error: ExtendedError): Stacktrace {
-  return {
-    frames: getStackFramesFromError(error),
-  };
 }

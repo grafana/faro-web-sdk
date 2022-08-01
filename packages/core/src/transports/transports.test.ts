@@ -1,11 +1,17 @@
-import type { APIEvent, ExceptionEvent } from '../api';
+import type { ExceptionEvent } from '../api';
 import type { Config } from '../config';
+import { mockInternalLogger } from '../testUtils';
 import { getCurrentTimestamp } from '../utils';
+import { VERSION } from '../version';
 import { BaseTransport } from './base';
+import { TransportItemType } from './const';
 import { initializeTransports } from './initialize';
-import { TransportItem, TransportItemType } from './types';
+import type { Transport, TransportItem } from './types';
 
-class MockTransport extends BaseTransport {
+class MockTransport extends BaseTransport implements Transport {
+  readonly name = '@grafana/transport-mock';
+  readonly version = VERSION;
+
   sentItems: TransportItem[] = [];
 
   send(item: TransportItem): void | Promise<void> {
@@ -22,7 +28,7 @@ describe('transports', () => {
         ignoreErrors: ['Error: ResizeObserver', /FetchError[:\s\w\/]*pwc/],
       } as any as Config;
 
-      const transports = initializeTransports(config);
+      const transports = initializeTransports(mockInternalLogger, config);
 
       transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));
       transports.execute(makeExceptionTransportItem('TypeError', '_.viz is undefined'));
@@ -46,7 +52,7 @@ describe('transports', () => {
       const hookedItems: TransportItem[] = [];
       const config = {
         transports: [transport],
-        beforeSend: (item: TransportItem<APIEvent>) => {
+        beforeSend: (item: TransportItem) => {
           hookedItems.push(item);
           if (item.type === TransportItemType.EXCEPTION && (item.payload as ErrorEvent).type === 'TypeError') {
             return null;
@@ -55,18 +61,19 @@ describe('transports', () => {
         },
       } as any as Config;
 
-      const transports = initializeTransports(config);
+      const transports = initializeTransports(mockInternalLogger, config);
       transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));
       transports.execute(makeExceptionTransportItem('TypeError', '_.viz is undefined'));
       expect(transport.sentItems).toHaveLength(1);
       expect(hookedItems).toHaveLength(2);
       expect((transport.sentItems[0]?.payload as ErrorEvent).type).toEqual('Error');
     });
+
     it('events can be modified by beforeSend hook', () => {
       const transport = new MockTransport();
       const config = {
         transports: [transport],
-        beforeSend: (item: TransportItem<APIEvent>) => {
+        beforeSend: (item: TransportItem) => {
           if (item.type === TransportItemType.EXCEPTION) {
             return {
               ...item,
@@ -80,7 +87,7 @@ describe('transports', () => {
         },
       } as any as Config;
 
-      const transports = initializeTransports(config);
+      const transports = initializeTransports(mockInternalLogger, config);
       transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));
       expect(transport.sentItems).toHaveLength(1);
       expect((transport.sentItems[0]?.payload as ErrorEvent).type).toEqual('NewType');

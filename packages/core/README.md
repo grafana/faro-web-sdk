@@ -10,31 +10,37 @@ logs etc. but it offers an API to capture them.
 ## Installation
 
 ```ts
-import { initializeAgent } from '@grafana/agent-core';
+import { initializeGrafanaAgent } from '@grafana/agent-core';
 
-initializeAgent({
+initializeGrafanaAgent({
   // ...
 });
 ```
 
 ## Options
 
-The agent requires a configuration parameter.
+The agent requires a configuration parameter with the following properties:
 
-| Property                | Description                                                                            | Type                | Optional | Default Value |
-| ----------------------- | -------------------------------------------------------------------------------------- | ------------------- | -------- | ------------- |
-| `app`                   | Application metadata                                                                   | `App`               | N        | `undefined`   |
-| `beforeSend`            | Hook invoked before pushing event to transport. Can be used to modify or filter events | `BeforeSendHook`    | Y        | `undefined`   |
-| `globalObjectKey`       | String that should be used when defining the agent on the global object                | `string`            | N        |               |
-| `ignoreErrors`          | Error message patterns for errors that should be ignored                               | `Patterns`          | Y        | `[]`          |
-| `instrumentations`      | Array of instrumentations that should be ran                                           | `Instrumentation[]` | N        |               |
-| `metas`                 | Array of metas that should be logged                                                   | `MetaItem[]`        | N        |               |
-| `preventGlobalExposure` | Flag for toggling the definition on the global object                                  | `boolean`           | N        |               |
-| `session`               | Session metadata                                                                       | `Session`           | Y        | `undefined`   |
-| `transports`            | Array of transports that should be used                                                | `Transport[]`       | N        |               |
-| `user`                  | User metadata                                                                          | `User`              | Y        | `undefined`   |
-| `parseStacktrace`       | Stack trace parser                                                                     | `StacktraceParser`  | N        |               |
-| `paused`                | Should the agent start paused                                                          | `boolean`           | Y        | `false`       |
+| Property                | Description                                                             | Type                  | Default Value Variable                                   |
+| ----------------------- | ----------------------------------------------------------------------- | --------------------- | -------------------------------------------------------- |
+| `app`                   | Application metadata                                                    | `App`                 |                                                          |
+| `globalObjectKey`       | String that should be used when defining the agent on the global object | `string`              | `defaultGlobalObjectKey = 'grafanaAgent'`                |
+| `instrumentations`      | Array of instrumentations that should be ran                            | `Instrumentation[]`   |                                                          |
+| `internalLoggerLevel`   | The level of information printed to console for internal messages       | `InternalLoggerLevel` | `defaultInternalLoggerLevel = InternalLoggerLevel.ERROR` |
+| `metas`                 | Array of metas that should be logged                                    | `MetaItem[]`          |                                                          |
+| `parseStacktrace`       | A function used to parse stack traces                                   | `StacktraceParser`    |                                                          |
+| `paused`                | Flag for initializing the agent as paused                               | `boolean`             |                                                          |
+| `preventGlobalExposure` | Flag for toggling the definition on the global object                   | `boolean`             |                                                          |
+| `transports`            | Array of transports that should be used                                 | `Transport[]`         |                                                          |
+
+Besides the mandatory properties, the agent also supports the following optional properties:
+
+| Property       | Description                                                                            | Type             | Default Value |
+| -------------- | -------------------------------------------------------------------------------------- | ---------------- | ------------- |
+| `beforeSend`   | Hook invoked before pushing event to transport. Can be used to modify or filter events | `BeforeSendHook` | `undefined`   |
+| `ignoreErrors` | Error message patterns for errors that should be ignored                               | `Patterns`       | `[]`          |
+| `session`      | Session metadata                                                                       | `Session`        | `undefined`   |
+| `user`         | User metadata                                                                          | `User`           | `undefined`   |
 
 ## Agent
 
@@ -84,15 +90,6 @@ The `api` property on the agent contains all the necessary methods to push new e
   ```
 
 ## Logs
-
-- `callOriginalConsoleMethod` - is a method to call the original console methods. Some instrumentations might override
-  the default console methods, so this helper makes sure that you call the original methods. It accepts a `level`
-  parameter and the rest of the parameters are inherited from the original method.
-
-  ```ts
-  agent.api.callOriginalConsoleMethod(LogLevel.LOG, 'This is a log');
-  agent.api.callOriginalConsoleMethod(LogLevel.WARN, 'This is a warning');
-  ```
 
 - `pushLog` - is a method to register a log event. The method accepts a mandatory `args` parameter which is an array of
   arguments that will be stringified and send to the transports. The other two parameters are optional: `logLevel` is
@@ -150,7 +147,7 @@ platform specific packages like [@grafana/agent-web](https://github.com/grafana/
 You can also write your own instrumentations:
 
 ```ts
-import { agent, initializeAgent, BaseInstrumentation } from '@grafana/agent-core';
+import { agent, initializeGrafanaAgent, BaseInstrumentation } from '@grafana/agent-core';
 
 export class MyInstrumentation extends BaseInstrumentation {
   readonly version = '1.0.0';
@@ -161,7 +158,7 @@ export class MyInstrumentation extends BaseInstrumentation {
   }
 }
 
-initializeAgent({
+initializeGrafanaAgent({
   instrumentations: [new MyInstrumentation()],
 });
 ```
@@ -177,12 +174,13 @@ and [@grafana/agent-meta-page](https://github.com/grafana/grafana-javascript-age
 You can also define your own metas:
 
 ```ts
-import { agent, initializeAgent } from '@grafana/agent-core';
+import { agent, initializeGrafanaAgent } from '@grafana/agent-core';
 
-initializeAgent({
+initializeGrafanaAgent({
   metas: [
     // Define a static meta
-    app: {
+    {
+      app: {
         name: 'my-app',
         version: '1.0.0',
       },
@@ -211,7 +209,7 @@ packages like [@grafana/agent-web](https://github.com/grafana/grafana-javascript
 You can also define your own transports:
 
 ```ts
-import { agent, initializeAgent, BaseTransport, TransportItem } from '@grafana/agent-core';
+import { agent, initializeGrafanaAgent, BaseTransport, TransportItem } from '@grafana/agent-core';
 
 class MyTransport extends BaseTransport {
   send(item: TransportItem) {
@@ -219,9 +217,19 @@ class MyTransport extends BaseTransport {
   }
 }
 
-initializeAgent({
+initializeGrafanaAgent({
   transports: [new MyTransport()],
 });
+```
+
+## Unpatched console
+
+Some instrumentations might override the default console methods but the agent provides a way to access the
+unmodified console methods.
+
+```ts
+agent.unpatchedConsole.log('This is a log');
+agent.unpatchedConsole.warn('This is a warning');
 ```
 
 ## Pause / unpause

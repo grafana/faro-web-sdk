@@ -1,14 +1,14 @@
+import { InternalLoggerLevel } from '@grafana/agent-core';
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
-import { initializeAgent, getWebInstrumentations } from '@grafana/agent-web';
+import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
 
-const agent = initializeAgent({
-  url: 'http://localhost:12345/collect',
+initializeGrafanaAgent({
+  url: '/collect',
   apiKey: 'secret',
   instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
+  internalLoggerLevel: InternalLoggerLevel.VERBOSE,
   app: {
     name: 'frontend',
     version: '1.0.0',
   },
 });
-
-//agent.api.pushLog('hello world')

@@ -1,18 +1,43 @@
 import type { ExceptionEvent } from '../api';
-import type { Config } from '../config';
-import type { Patterns } from '../config/types';
+import type { Config, Patterns } from '../config';
+import { internalLogger } from '../internalLogger';
+import type { InternalLogger } from '../internalLogger';
 import { isString } from '../utils';
-import { BeforeSendHook, Transport, TransportItemType, Transports } from './types';
+import { TransportItemType } from './const';
+import type { BeforeSendHook, Transport, Transports } from './types';
 
-export function initializeTransports(config: Config): Transports {
+export function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
+  return patterns.some((pattern) => {
+    return isString(pattern) ? msg.includes(pattern) : !!msg.match(pattern);
+  });
+}
+
+export function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
+  return (item) => {
+    if (item.type === TransportItemType.EXCEPTION && item.payload) {
+      const evt = item.payload as ExceptionEvent;
+      const msg = `${evt.type}: ${evt.value}`;
+
+      if (shouldIgnoreEvent(patterns, msg)) {
+        return null;
+      }
+    }
+
+    return item;
+  };
+}
+
+export function initializeTransports(_internalLogger: InternalLogger, config: Config): Transports {
   const transports: Transport[] = [...config.transports];
 
   let paused = config.paused;
 
   const beforeSendHooks: BeforeSendHook[] = [];
+
   if (config.beforeSend) {
     beforeSendHooks.push(config.beforeSend);
   }
+
   if (config.ignoreErrors) {
     beforeSendHooks.push(createBeforeSendHookFromIgnorePatterns(config.ignoreErrors));
   }
@@ -23,50 +48,43 @@ export function initializeTransports(config: Config): Transports {
 
   const execute: Transports['execute'] = (item) => {
     if (!paused) {
-      let _item = item;
+      let actualItem = item;
+
       for (const hook of beforeSendHooks) {
-        const modified = hook(_item);
+        const modified = hook(actualItem);
+
         if (modified === null) {
           return;
         }
-        _item = modified;
+
+        actualItem = modified;
       }
+
       for (const transport of transports) {
-        transport.send(_item);
+        internalLogger.debug(`Transporting item using ${transport.name}`, actualItem);
+
+        transport.send(actualItem);
       }
     }
   };
 
-  const pause = () => {
+  const pause: Transports['pause'] = () => {
+    internalLogger.debug('Pausing transports');
+
     paused = true;
   };
 
-  const unpause = () => {
+  const unpause: Transports['unpause'] = () => {
+    internalLogger.debug('Unpausing transports');
+
     paused = false;
   };
 
   return {
     add,
     execute,
-    transports,
     pause,
+    transports,
     unpause,
-  };
-}
-
-function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
-  return (item) => {
-    if (item.type === TransportItemType.EXCEPTION && item.payload) {
-      const event = item.payload as ExceptionEvent;
-      const msg = `${event.type}: ${event.value}`;
-      if (
-        patterns.find((pattern) => {
-          return isString(pattern) ? msg.includes(pattern) : !!msg.match(pattern);
-        })
-      ) {
-        return null;
-      }
-    }
-    return item;
   };
 }

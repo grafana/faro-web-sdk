@@ -2,11 +2,19 @@ export { initializeAPI } from './initialize';
 export type { API, APIEvent } from './types';
 
 export { defaultExceptionType } from './exceptions';
-export type { ExceptionEvent, ExceptionStackFrame, Stacktrace, ExtendedError } from './exceptions';
+export type {
+  ExceptionEvent,
+  ExceptionStackFrame,
+  ExceptionsAPI,
+  ExtendedError,
+  PushErrorOptions,
+  Stacktrace,
+} from './exceptions';
 
-export { allLogLevels, defaultLogLevel, LogLevel } from './logs';
-export type { LogContext, LogEvent } from './logs';
+export type { LogContext, LogEvent, LogsAPI, PushLogOptions } from './logs';
 
-export type { MeasurementEvent } from './measurements';
+export type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from './measurements';
 
-export type { TraceEvent, TracesAPI, ResourceSpan, InstrumentationLibrarySpan } from './traces';
+export type { MetaAPI } from './meta';
+
+export type { InstrumentationLibrarySpan, ResourceSpan, TraceContext, TraceEvent, TracesAPI } from './traces';

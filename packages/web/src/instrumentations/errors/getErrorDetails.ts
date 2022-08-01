@@ -3,33 +3,30 @@ import type { ExceptionStackFrame } from '@grafana/agent-core';
 
 import { domErrorType, domExceptionType, objectEventValue } from './const';
 import { getStackFramesFromError } from './stackFrames';
+import type { ErrorEvent } from './types';
 
-type ErrorEvent = (Error | Event) & {
-  error?: Error;
-};
-
-export function getErrorDetails(event: ErrorEvent): [string | undefined, string | undefined, ExceptionStackFrame[]] {
+export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | undefined, ExceptionStackFrame[]] {
   let value: string | undefined;
   let type: string | undefined;
   let stackFrames: ExceptionStackFrame[] = [];
   let isDomErrorRes: boolean | undefined;
   let isEventRes: boolean | undefined;
 
-  if (isErrorEvent(event) && event.error) {
-    value = event.error.message;
-    type = event.error.name;
-    stackFrames = getStackFramesFromError(event.error);
-  } else if ((isDomErrorRes = isDomError(event)) || isDomException(event)) {
-    const { name, message } = event;
+  if (isErrorEvent(evt) && evt.error) {
+    value = evt.error.message;
+    type = evt.error.name;
+    stackFrames = getStackFramesFromError(evt.error);
+  } else if ((isDomErrorRes = isDomError(evt)) || isDomException(evt)) {
+    const { name, message } = evt;
 
     type = name ?? (isDomErrorRes ? domErrorType : domExceptionType);
     value = message ? `${type}: ${message}` : type;
-  } else if (isError(event)) {
-    value = event.message;
-    stackFrames = getStackFramesFromError(event);
-  } else if (isObject(event) || (isEventRes = isEvent(event))) {
-    type = isEventRes ? event.constructor.name : undefined;
-    value = `${objectEventValue} ${Object.keys(event)}`;
+  } else if (isError(evt)) {
+    value = evt.message;
+    stackFrames = getStackFramesFromError(evt);
+  } else if (isObject(evt) || (isEventRes = isEvent(evt))) {
+    type = isEventRes ? evt.constructor.name : undefined;
+    value = `${objectEventValue} ${Object.keys(evt)}`;
   }
 
   return [value, type, stackFrames];

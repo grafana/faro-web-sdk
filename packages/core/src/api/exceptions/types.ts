@@ -7,6 +7,7 @@ export interface ExceptionStackFrame {
   colno?: number;
   lineno?: number;
 }
+
 export interface ExtendedError extends Error {
   columnNumber?: number;
   framesToPop?: number;

@@ -1,40 +1,119 @@
 ---
+name: test
 kind: pipeline
-name: grafana-javascript-agent
+type: docker
+
+trigger:
+  event:
+    exclude:
+      - push
+      - tag
+    include:
+      - pull_request
 
 steps:
-  - name: Install dependencies
+  - name: install-dependencies
     image: node:lts-stretch
     commands:
       - yarn install --frozen-lockfile
 
-  - name: Build
+  - name: build
     image: node:lts-stretch
+    depends_on:
+      - install-dependencies
     commands:
       - yarn build
 
-  - name: Lint
+  - name: lint
     image: node:lts-stretch
+    depends_on:
+      - install-dependencies
     commands:
       - yarn quality:lint
 
-  - name: Check circular deps
+  - name: circular-dependencies-test
     image: node:lts-stretch
+    depends_on:
+      - install-dependencies
     commands:
       - yarn quality:circular-deps
 
-  - name: Unit tests
+  - name: unit-tests
     image: node:lts-stretch
+    depends_on:
+      - install-dependencies
     commands:
       - yarn quality:test
 
-  - name: End to end tests
+  - name: e2e-tests
     image: cypress/included:10.0.3
+    depends_on:
+      - install-dependencies
     commands:
       - yarn quality:e2e:ci
 
-  - name: Publish
+---
+name: release
+kind: pipeline
+type: docker
+
+trigger:
+  event:
+    exclude:
+      - push
+      - pull_request
+    include:
+      - tag
+
+steps:
+  - name: install-dependencies
     image: node:lts-stretch
+    commands:
+      - yarn install --frozen-lockfile
+
+  - name: build
+    image: node:lts-stretch
+    depends_on:
+      - install-dependencies
+    commands:
+      - yarn build
+
+  - name: lint
+    image: node:lts-stretch
+    depends_on:
+      - install-dependencies
+    commands:
+      - yarn quality:lint
+
+  - name: circular-dependencies-test
+    image: node:lts-stretch
+    depends_on:
+      - install-dependencies
+    commands:
+      - yarn quality:circular-deps
+
+  - name: unit-tests
+    image: node:lts-stretch
+    depends_on:
+      - install-dependencies
+    commands:
+      - yarn quality:test
+
+  - name: e2e-tests
+    image: cypress/included:10.0.3
+    depends_on:
+      - install-dependencies
+    commands:
+      - yarn quality:e2e:ci
+
+  - name: publish
+    image: node:lts-stretch
+    depends_on:
+      - build
+      - lint
+      - circular-dependencies-test
+      - unit-tests
+      - e2e-tests
     commands:
       - git fetch --tags
       - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
@@ -42,11 +121,9 @@ steps:
     environment:
       NPM_TOKEN:
         from_secret: NPM_TOKEN
-    when:
-      event:
-        - tag
+
 ---
 kind: signature
-hmac: 4816291bcdbc8c2aee8ceb2c8e479d8c3e7b6521f927c148bb3e26ea05baf1f9
+hmac: c15566bb7536e896a7cbd6a1b96a3886d71fd11f1808808874ad2452e15e20af
 
 ...

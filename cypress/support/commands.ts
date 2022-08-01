@@ -1,18 +1,18 @@
-import type { LogEvent, MeasurementEvent, TraceEvent, TransportBody, ExceptionEvent } from '@grafana/agent-core';
+import type { ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent, TransportBody } from '@grafana/agent-core';
 
-Cypress.Commands.add('waitLogs', (fn: (events: LogEvent[]) => void) => {
+Cypress.Commands.add('waitLogs', (fn: (evts: LogEvent[]) => void) => {
   cy.wait('@logs').then((interception) => fn((interception.request.body as TransportBody).logs!));
 });
 
-Cypress.Commands.add('waitExceptions', (fn: (events: ExceptionEvent[]) => void) => {
+Cypress.Commands.add('waitExceptions', (fn: (evts: ExceptionEvent[]) => void) => {
   cy.wait('@exceptions').then((interception) => fn((interception.request.body as TransportBody).exceptions!));
 });
 
-Cypress.Commands.add('waitTraces', (fn: (event: TraceEvent) => void) => {
+Cypress.Commands.add('waitTraces', (fn: (evts: TraceEvent) => void) => {
   cy.wait('@traces').then((interception) => fn((interception.request.body as TransportBody).traces!));
 });
 
-Cypress.Commands.add('waitMeasurements', (fn: (events: MeasurementEvent[]) => void, count = 1) => {
+Cypress.Commands.add('waitMeasurements', (fn: (evts: MeasurementEvent[]) => void, count = 1) => {
   const aliases = Array.from(Array(count)).map(() => `@measurements`);
   cy.wait(aliases).then((interceptions) =>
     fn(interceptions.flatMap((interception) => (interception.request.body as TransportBody).measurements!))
@@ -32,13 +32,13 @@ Cypress.Commands.add('loadBlank', () => {
 
 declare global {
   // cypress uses namespace typing so we have to extend it as well
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
-    // eslint-disable-line @typescript-eslint/no-namespace
     interface Chainable {
-      waitLogs(fn: (events: LogEvent[]) => void): Chainable<void>;
-      waitExceptions(fn: (events: ExceptionEvent[]) => void): Chainable<void>;
-      waitMeasurements(fn: (events: MeasurementEvent[]) => void, count?: number): Chainable<void>;
-      waitTraces(fn: (event: TraceEvent) => void): Chainable<void>;
+      waitLogs(fn: (evts: LogEvent[]) => void): Chainable<void>;
+      waitExceptions(fn: (evts: ExceptionEvent[]) => void): Chainable<void>;
+      waitMeasurements(fn: (evts: MeasurementEvent[]) => void, count?: number): Chainable<void>;
+      waitTraces(fn: (evt: TraceEvent) => void): Chainable<void>;
       clickButton(dataname: string): Chainable<void>;
       loadBlank(): Chainable<void>;
     }

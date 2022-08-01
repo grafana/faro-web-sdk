@@ -3,3 +3,7 @@ export interface ExtendedPromiseRejectionEvent extends PromiseRejectionEvent {
     reason: PromiseRejectionEvent['reason'];
   };
 }
+
+export type ErrorEvent = (Error | Event) & {
+  error?: Error;
+};

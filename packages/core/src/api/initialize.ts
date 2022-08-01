@@ -1,21 +1,27 @@
 import type { Config } from '../config';
+import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { Transports } from '../transports';
 import { initializeExceptionsAPI } from './exceptions';
 import { initializeLogsAPI } from './logs';
 import { initializeMeasurementsAPI } from './measurements';
-import { initializeMetaAPI } from './meta/initialize';
+import { initializeMetaAPI } from './meta';
 import { initializeTracesAPI } from './traces';
 import type { API } from './types';
 
-export function initializeAPI(config: Config, transports: Transports, metas: Metas): API {
-  const tracesApi = initializeTracesAPI(transports, metas);
+export function initializeAPI(
+  internalLogger: InternalLogger,
+  config: Config,
+  transports: Transports,
+  metas: Metas
+): API {
+  const tracesApi = initializeTracesAPI(internalLogger, transports, metas);
 
   return {
     ...tracesApi,
-    ...initializeExceptionsAPI(config, transports, metas, tracesApi),
-    ...initializeMetaAPI(transports, metas),
-    ...initializeLogsAPI(transports, metas, tracesApi),
-    ...initializeMeasurementsAPI(transports, metas, tracesApi),
+    ...initializeExceptionsAPI(internalLogger, config, transports, metas, tracesApi),
+    ...initializeMetaAPI(internalLogger, transports, metas),
+    ...initializeLogsAPI(internalLogger, transports, metas, tracesApi),
+    ...initializeMeasurementsAPI(internalLogger, transports, metas, tracesApi),
   };
 }

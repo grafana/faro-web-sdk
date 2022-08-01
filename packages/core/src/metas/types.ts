@@ -1,50 +1,52 @@
-export type MetaGetter = () => Partial<Meta>;
-export type MetaItem = Partial<Meta> | MetaGetter;
+export type MetaGetter<P = Partial<Meta>> = () => P;
+
+export type MetaItem<P = Partial<Meta>> = P | MetaGetter<P>;
+
 export interface Metas {
   add: (getter: MetaItem) => void;
   remove: (getter: MetaItem) => void;
   value: Meta;
 }
 
-type Attributes = Record<string, string>;
+export type MetaAttributes = Record<string, string>;
 
-interface SDKIntegration {
+export interface MetaSDKIntegration {
   name?: string;
   version?: string;
 }
 
-export interface SDK {
+export interface MetaSDK {
   name?: string;
   version?: string;
-  integrations?: SDKIntegration[];
+  integrations?: MetaSDKIntegration[];
 }
 
-export interface App {
+export interface MetaApp {
   name?: string;
   release?: string;
   version?: string;
   environment?: string;
 }
 
-export interface User {
+export interface MetaUser {
   email?: string;
   id?: string;
   username?: string;
-  attributes?: Attributes;
+  attributes?: MetaAttributes;
 }
 
-export interface Session {
+export interface MetaSession {
   id?: string;
-  attributes?: Attributes;
+  attributes?: MetaAttributes;
 }
 
-export interface Page {
+export interface MetaPage {
   id?: string;
   url?: string;
-  attributes?: Attributes;
+  attributes?: MetaAttributes;
 }
 
-export interface Browser {
+export interface MetaBrowser {
   name?: string;
   version?: string;
   os?: string;
@@ -52,10 +54,10 @@ export interface Browser {
 }
 
 export interface Meta {
-  sdk?: SDK;
-  app?: App;
-  user?: User;
-  session?: Session;
-  page?: Page;
-  browser?: Browser;
+  sdk?: MetaSDK;
+  app?: MetaApp;
+  user?: MetaUser;
+  session?: MetaSession;
+  page?: MetaPage;
+  browser?: MetaBrowser;
 }

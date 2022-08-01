@@ -44,8 +44,10 @@ w.sendCustomMetric = () => {
 
 w.traceWithLog = () => {
   const otel = window.grafanaAgent.api.getOTEL();
+
   if (otel) {
     const span = otel.trace.getTracer('default').startSpan('trace with log');
+
     otel.context.with(otel.trace.setSpan(otel.context.active(), span), () => {
       window.grafanaAgent.api.pushLog(['trace with log button clicked']);
       span.setStatus({ code: SpanStatusCode.OK });

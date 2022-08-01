@@ -1,12 +1,5 @@
-import { TransportBody, TransportItemType } from './types';
-import type { TransportItem } from './types';
-
-const transportItemTypeToBodyKey: { [label in TransportItemType]: string } = {
-  [TransportItemType.EXCEPTION]: 'exceptions',
-  [TransportItemType.LOG]: 'logs',
-  [TransportItemType.MEASUREMENT]: 'measurements',
-  [TransportItemType.TRACE]: 'traces',
-};
+import { TransportItemType, transportItemTypeToBodyKey } from './const';
+import type { TransportBody, TransportItem } from './types';
 
 export function getTransportBody(item: TransportItem): TransportBody {
   return {

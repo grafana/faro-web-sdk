@@ -1,5 +1,5 @@
-import type { User } from '../../metas/types';
+import type { MetaUser } from '../../metas';
 
 export interface MetaAPI {
-  setUser: (user: User | null) => void;
+  setUser: (user: MetaUser | null) => void;
 }

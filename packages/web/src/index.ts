@@ -1,7 +1,117 @@
-export * from './instrumentations';
-export * from './metas';
-export * from './transports';
-export * from './config';
-export * from './initialize';
-export { LogLevel, agent } from '@grafana/agent-core';
-export type { Agent } from '@grafana/agent-core';
+export { getWebInstrumentations, makeCoreConfig } from './config';
+export type { BrowserConfig } from './config';
+
+export { initializeAgent, initializeGrafanaAgent } from './initialize';
+
+export {
+  buildStackFrame,
+  ConsoleInstrumentation,
+  ErrorsInstrumentation,
+  getDataFromSafariExtensions,
+  getStackFramesFromError,
+  parseStacktrace,
+  WebVitalsInstrumentation,
+} from './instrumentations';
+export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
+
+export { browserMeta, defaultMetas, pageMeta } from './metas';
+
+export { ConsoleTransport, FetchTransport } from './transports';
+export type { ConsoleTransportOptions, FetchTransportOptions, FetchTransportRequestOptions } from './transports';
+
+export {
+  agent,
+  allLogLevels,
+  BaseExtension,
+  BaseInstrumentation,
+  BaseTransport,
+  defaultExceptionType,
+  defaultGlobalObjectKey,
+  defaultInternalLoggerLevel,
+  defaultLogLevel,
+  getCurrentTimestamp,
+  getTransportBody,
+  globalObject,
+  isArray,
+  isBoolean,
+  isDomError,
+  isDomException,
+  isElement,
+  isError,
+  isErrorEvent,
+  isEvent,
+  isFunction,
+  isInstanceOf,
+  isInt,
+  isNull,
+  isNumber,
+  isObject,
+  isPrimitive,
+  isRegExp,
+  isString,
+  isSymbol,
+  isSyntheticEvent,
+  isThenable,
+  isToString,
+  isTypeof,
+  isUndefined,
+  InternalLoggerLevel,
+  LogLevel,
+  noop,
+  TransportItemType,
+  transportItemTypeToBodyKey,
+  VERSION,
+} from '@grafana/agent-core';
+
+export type {
+  Agent,
+  API,
+  APIEvent,
+  BaseObject,
+  BaseObjectKey,
+  BaseObjectPrimitiveValue,
+  BaseObjectValue,
+  BeforeSendHook,
+  Config,
+  ExceptionEvent,
+  ExceptionStackFrame,
+  ExceptionsAPI,
+  ExtendedError,
+  Instrumentation,
+  InstrumentationLibrarySpan,
+  InternalLogger,
+  LogContext,
+  LogEvent,
+  LogsAPI,
+  MeasurementEvent,
+  MeasurementsAPI,
+  Meta,
+  MetaAPI,
+  MetaApp,
+  MetaAttributes,
+  MetaBrowser,
+  MetaGetter,
+  MetaItem,
+  MetaPage,
+  Metas,
+  MetaSDK,
+  MetaSDKIntegration,
+  MetaSession,
+  MetaUser,
+  Patterns,
+  PushErrorOptions,
+  PushLogOptions,
+  PushMeasurementOptions,
+  ResourceSpan,
+  Stacktrace,
+  StacktraceParser,
+  TraceContext,
+  TraceEvent,
+  TracesAPI,
+  Transport,
+  TransportBody,
+  TransportItem,
+  TransportItemPayload,
+  Transports,
+  UnpatchedConsole,
+} from '@grafana/agent-core';

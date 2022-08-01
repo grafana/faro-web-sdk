@@ -1,7 +1,7 @@
 import type { LogEvent } from './api';
-import { initializeAgent } from './initialize';
+import { initializeGrafanaAgent } from './initialize';
+import { mockConfig, MockTransport } from './testUtils';
 import type { TransportItem } from './transports';
-import { mockConfig, MockTransport } from './utils/tests';
 
 describe('agent', () => {
   it(`can be started paused and doesn't ingest events until unpaused`, () => {
@@ -11,12 +11,14 @@ describe('agent', () => {
       transports: [transport],
     });
 
-    const agent = initializeAgent(config);
+    const agent = initializeGrafanaAgent(config);
     agent.api.pushLog(['test']);
     expect(transport.items).toHaveLength(0);
+
     agent.unpause();
     agent.api.pushLog(['test2']);
     expect(transport.items).toHaveLength(1);
+
     const item = transport.items[0]! as TransportItem<LogEvent>;
     expect(item.payload.message).toEqual('test2');
   });
@@ -26,12 +28,15 @@ describe('agent', () => {
     const config = mockConfig({
       transports: [transport],
     });
-    const agent = initializeAgent(config);
+    const agent = initializeGrafanaAgent(config);
+
     agent.api.pushLog(['test1']);
     expect(transport.items).toHaveLength(1);
+
     agent.pause();
     agent.api.pushLog(['test2']);
     expect(transport.items).toHaveLength(1);
+
     agent.unpause();
     agent.api.pushLog(['test3']);
     const items = transport.items as Array<TransportItem<LogEvent>>;

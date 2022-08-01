@@ -6,7 +6,7 @@ export type {
   ExceptionEvent,
   ExceptionStackFrame,
   ExceptionsAPI,
-  PushErrorOptions,
   ExtendedError,
+  PushErrorOptions,
   Stacktrace,
 } from './types';

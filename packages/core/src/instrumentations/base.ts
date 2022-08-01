@@ -1,14 +1,6 @@
-import { agent } from '../agent';
-import type { Agent } from '../types';
+import { BaseExtension } from '../utils';
 import type { Instrumentation } from './types';
 
-export abstract class BaseInstrumentation implements Instrumentation {
-  get agent(): Agent {
-    return agent;
-  }
-
-  abstract readonly name: string;
-  abstract readonly version: string;
-
+export abstract class BaseInstrumentation extends BaseExtension implements Instrumentation {
   abstract initialize(): void;
 }

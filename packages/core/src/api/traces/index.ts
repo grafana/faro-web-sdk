@@ -1,3 +1,3 @@
 export { initializeTracesAPI } from './initialize';
 
-export type { TraceEvent, TracesAPI, TraceContext, ResourceSpan, InstrumentationLibrarySpan } from './types';
+export type { InstrumentationLibrarySpan, ResourceSpan, TraceContext, TraceEvent, TracesAPI } from './types';
