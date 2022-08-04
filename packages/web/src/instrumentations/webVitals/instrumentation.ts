@@ -14,7 +14,7 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
   };
 
   initialize(): void {
-    this.logDebug('Initializing...');
+    this.logDebug('Initializing');
 
     Object.entries(WebVitalsInstrumentation.mapping).forEach(([indicator, executor]) => {
       executor((metric) => {

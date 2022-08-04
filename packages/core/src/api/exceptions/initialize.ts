@@ -6,7 +6,9 @@ import type { TransportItem, Transports } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
 import type { TracesAPI } from '../traces';
 import { defaultExceptionType } from './const';
-import type { ExceptionEvent, ExceptionsAPI } from './types';
+import type { ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
+
+let stacktraceParser: StacktraceParser | undefined;
 
 export function initializeExceptionsAPI(
   internalLogger: InternalLogger,
@@ -15,11 +17,20 @@ export function initializeExceptionsAPI(
   metas: Metas,
   tracesApi: TracesAPI
 ): ExceptionsAPI {
+  internalLogger.debug('Initializing exceptions API');
+
+  stacktraceParser = config.parseStacktrace ?? stacktraceParser;
+
+  const changeStacktraceParser: ExceptionsAPI['changeStacktraceParser'] = (newStacktraceParser) => {
+    internalLogger.debug('Changing stacktrace parser');
+
+    stacktraceParser = newStacktraceParser ?? stacktraceParser;
+  };
+
+  const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => stacktraceParser;
+
   const pushError: ExceptionsAPI['pushError'] = (error, options = {}) => {
     const type = options.type || error.name || defaultExceptionType;
-
-    const stackFrames =
-      options.stackFrames ?? (error.stack && config.parseStacktrace ? config.parseStacktrace(error).frames : undefined);
 
     const item: TransportItem<ExceptionEvent> = {
       meta: metas.value,
@@ -32,6 +43,8 @@ export function initializeExceptionsAPI(
       type: TransportItemType.EXCEPTION,
     };
 
+    const stackFrames = options.stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
+
     if (stackFrames?.length) {
       item.payload.stacktrace = {
         frames: stackFrames,
@@ -43,7 +56,11 @@ export function initializeExceptionsAPI(
     transports.execute(item);
   };
 
+  changeStacktraceParser(config.parseStacktrace);
+
   return {
+    changeStacktraceParser,
+    getStacktraceParser,
     pushError,
   };
 }

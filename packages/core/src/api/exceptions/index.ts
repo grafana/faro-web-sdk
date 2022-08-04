@@ -9,4 +9,5 @@ export type {
   ExtendedError,
   PushErrorOptions,
   Stacktrace,
+  StacktraceParser,
 } from './types';

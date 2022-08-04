@@ -1,4 +1,4 @@
-import type { APIEvent, ExtendedError, Stacktrace } from '../api';
+import type { APIEvent, StacktraceParser } from '../api';
 import type { Instrumentation } from '../instrumentations';
 import type { InternalLoggerLevel } from '../internalLogger';
 import type { MetaApp, MetaItem, MetaSession, MetaUser } from '../metas';
@@ -8,6 +8,7 @@ import type { UnpatchedConsole } from '../unpatchedConsole';
 export interface Config<P = APIEvent> {
   app: MetaApp;
   globalObjectKey: string;
+  isolate: boolean;
   instrumentations: Instrumentation[];
   internalLoggerLevel: InternalLoggerLevel;
   metas: MetaItem[];
@@ -22,7 +23,5 @@ export interface Config<P = APIEvent> {
   session?: MetaSession;
   user?: MetaUser;
 }
-
-export type StacktraceParser = (err: ExtendedError) => Stacktrace;
 
 export type Patterns = Array<string | RegExp>;

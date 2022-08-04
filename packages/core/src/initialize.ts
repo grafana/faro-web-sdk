@@ -1,4 +1,4 @@
-import { initializeAgent } from './agent';
+import { initializeAgent, isInternalAgentOnGlobalObject } from './agent';
 import type { Agent } from './agent';
 import { initializeAPI } from './api';
 import type { Config } from './config';
@@ -7,13 +7,20 @@ import { initializeInternalLogger } from './internalLogger';
 import { initializeMetas } from './metas';
 import { initializeTransports } from './transports';
 import { initializeUnpatchedConsole } from './unpatchedConsole';
-import { globalObject } from './utils';
 
 export function initializeGrafanaAgent(config: Config): Agent {
   const unpatchedConsole = initializeUnpatchedConsole(config);
   const internalLogger = initializeInternalLogger(unpatchedConsole, config);
 
-  internalLogger.debug('Initializing...');
+  internalLogger.debug('Initializing');
+
+  if (isInternalAgentOnGlobalObject() && !config.isolate) {
+    internalLogger.error(
+      'An agent is already registered. Either add instrumentations, transports etc. to the global agent or use the "isolate" property'
+    );
+
+    return undefined!;
+  }
 
   const metas = initializeMetas(internalLogger, config);
   const transports = initializeTransports(internalLogger, config);
@@ -28,17 +35,9 @@ export function initializeGrafanaAgent(config: Config): Agent {
     transports,
     unpatchedConsole,
     unpause: transports.unpause,
-  });
+  } as Agent);
 
-  if (!agent.config.preventGlobalExposure) {
-    internalLogger.debug(`Registering in the global scope using "${agent.config.globalObjectKey}" key`);
-
-    // TODO: Fix this type
-    // Object.assign is avoided due to HMR issues
-    (globalObject as any)[agent.config.globalObjectKey] = agent;
-  }
-
-  initializeInstrumentations(internalLogger, agent.config);
+  agent.instrumentations = initializeInstrumentations(agent.internalLogger, agent.config);
 
   return agent;
 }
@@ -47,9 +46,7 @@ export function initializeGrafanaAgent(config: Config): Agent {
 export function initializeAgentDeprecated(config: Config): Agent {
   const agent = initializeGrafanaAgent(config);
 
-  agent.internalLogger.warn(
-    'initializeAgent method is deprecated and it will be removed in an upcoming version. Please use initializeGrafanaAgent method instead.'
-  );
+  agent.internalLogger.warn('initializeAgent method is deprecated. Please use initializeGrafanaAgent method instead');
 
   return agent;
 }

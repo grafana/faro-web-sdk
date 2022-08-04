@@ -15,6 +15,8 @@ export function initializeAPI(
   transports: Transports,
   metas: Metas
 ): API {
+  internalLogger.debug('Initializing API');
+
   const tracesApi = initializeTracesAPI(internalLogger, transports, metas);
 
   return {

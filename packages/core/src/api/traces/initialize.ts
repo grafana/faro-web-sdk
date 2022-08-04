@@ -1,19 +1,23 @@
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType, Transports } from '../../transports';
-import type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './types';
+import type { OTELApi, TraceEvent, TracesAPI } from './types';
 
 export function initializeTracesAPI(internalLogger: InternalLogger, transports: Transports, metas: Metas): TracesAPI {
+  internalLogger.debug('Initializing traces API');
+
   let otel: OTELApi | undefined = undefined;
 
   const initOTEL: TracesAPI['initOTEL'] = (trace, context) => {
+    internalLogger.debug('Initializing OpenTelemetry');
+
     otel = {
       trace,
       context,
     };
   };
 
-  const getTraceContext: TracesAPI['getTraceContext'] = (): TraceContext | undefined => {
+  const getTraceContext: TracesAPI['getTraceContext'] = () => {
     const ctx = otel?.trace.getSpanContext(otel.context.active());
 
     return !ctx

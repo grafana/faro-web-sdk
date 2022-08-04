@@ -11,6 +11,8 @@ export function initializeMeasurementsAPI(
   metas: Metas,
   tracesApi: TracesAPI
 ): MeasurementsAPI {
+  internalLogger.debug('Initializing measurements API');
+
   const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload) => {
     try {
       const item: TransportItem<MeasurementEvent> = {

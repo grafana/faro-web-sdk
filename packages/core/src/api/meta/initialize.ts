@@ -3,7 +3,9 @@ import type { Meta, Metas, MetaUser } from '../../metas';
 import type { Transports } from '../../transports';
 import type { MetaAPI } from './types';
 
-export function initializeMetaAPI(_internalLogger: InternalLogger, _transports: Transports, metas: Metas): MetaAPI {
+export function initializeMetaAPI(internalLogger: InternalLogger, _transports: Transports, metas: Metas): MetaAPI {
+  internalLogger.debug('Initializing meta API');
+
   let meta: Meta = {};
 
   metas.add(() => meta);

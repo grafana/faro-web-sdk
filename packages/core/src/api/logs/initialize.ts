@@ -12,6 +12,8 @@ export function initializeLogsAPI(
   metas: Metas,
   tracesApi: TracesAPI
 ): LogsAPI {
+  internalLogger.debug('Initializing logs API');
+
   const pushLog: LogsAPI['pushLog'] = (args, { context, level } = {}) => {
     try {
       const item: TransportItem<LogEvent> = {

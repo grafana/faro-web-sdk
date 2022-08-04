@@ -1,5 +1,4 @@
-import type { ExceptionStackFrame } from '../api';
-import type { StacktraceParser } from '../config';
+import type { ExceptionStackFrame, StacktraceParser } from '../api';
 
 export const mockStacktraceParser: StacktraceParser = (err) => {
   const frames: ExceptionStackFrame[] = [];
