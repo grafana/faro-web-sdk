@@ -68,6 +68,7 @@ export type { UnpatchedConsole } from './unpatchedConsole';
 export {
   allLogLevels,
   BaseExtension,
+  createPromiseBuffer,
   defaultLogLevel,
   getCurrentTimestamp,
   globalObject,
@@ -96,15 +97,16 @@ export {
   isUndefined,
   LogLevel,
   noop,
-  createPromiseBuffer,
 } from './utils';
 export type {
   BaseObject,
   BaseObjectKey,
   BaseObjectPrimitiveValue,
   BaseObjectValue,
+  BufferItem,
   PromiseBuffer,
   PromiseBufferOptions,
+  PromiseProducer,
 } from './utils';
 
 export { VERSION } from './version';

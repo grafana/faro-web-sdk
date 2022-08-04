@@ -1,15 +1,17 @@
 export interface PromiseBufferOptions {
-  size: number; // total number of uncompleted tasks to accept
-  concurrency: number; // total number of concurrent tasks
+  // total number of concurrent tasks
+  concurrency: number;
+  // total number of uncompleted tasks to accept
+  size: number;
 }
 
-type PromiseProducer<T> = () => PromiseLike<T>;
+export type PromiseProducer<T> = () => PromiseLike<T>;
 
 export interface PromiseBuffer<T> {
   add(promiseProducer: PromiseProducer<T>): PromiseLike<T>;
 }
 
-interface BufferItem<T> {
+export interface BufferItem<T> {
   producer: PromiseProducer<T>;
   resolve: (value: T) => void;
   reject: (reason?: any) => void;
@@ -26,16 +28,22 @@ export function createPromiseBuffer<T>(options: PromiseBufferOptions): PromiseBu
     // take one task from buffer and run it
     if (inProgress < concurrency && buffer.length) {
       const { producer, resolve, reject } = buffer.shift()!;
+
       inProgress++;
+
       producer().then(
         (result) => {
           inProgress--;
+
           work();
+
           resolve(result);
         },
         (reason) => {
           inProgress--;
+
           work();
+
           reject(reason);
         }
       );
@@ -46,6 +54,7 @@ export function createPromiseBuffer<T>(options: PromiseBufferOptions): PromiseBu
     if (buffer.length + inProgress >= size) {
       throw new Error('Task buffer full');
     }
+
     return new Promise<T>((resolve, reject) => {
       buffer.push({
         producer: promiseProducer,

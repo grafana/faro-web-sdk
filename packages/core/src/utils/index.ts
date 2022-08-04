@@ -38,4 +38,5 @@ export { allLogLevels, defaultLogLevel, LogLevel } from './logLevels';
 
 export { noop } from './noop';
 
-export * from './promiseBuffer';
+export { createPromiseBuffer } from './promiseBuffer';
+export type { BufferItem, PromiseBuffer, PromiseBufferOptions, PromiseProducer } from './promiseBuffer';

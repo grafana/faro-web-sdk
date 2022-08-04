@@ -1,4 +1,4 @@
-import { BaseTransport, getTransportBody, VERSION, createPromiseBuffer, PromiseBuffer } from '@grafana/agent-core';
+import { BaseTransport, createPromiseBuffer, getTransportBody, PromiseBuffer, VERSION } from '@grafana/agent-core';
 import type { TransportItem } from '@grafana/agent-core';
 
 import type { FetchTransportOptions } from './types';
@@ -14,6 +14,7 @@ export class FetchTransport extends BaseTransport {
 
   constructor(private options: FetchTransportOptions) {
     super();
+
     this.promiseBuffer = createPromiseBuffer({
       size: options.bufferSize ?? DEFAULT_BUFFER_SIZE,
       concurrency: options.concurrency ?? DEFAULT_CONCURRENCY,
