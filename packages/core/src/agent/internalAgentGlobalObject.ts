@@ -7,14 +7,18 @@ export function getInternalAgentFromGlobalObject(): Agent | undefined {
 }
 
 export function setInternalAgentOnGlobalObject(agent: Agent): void {
-  agent.internalLogger.debug('Registering internal agent on global object');
+  if (!agent.config.isolate) {
+    agent.internalLogger.debug('Registering internal agent on global object');
 
-  Object.defineProperty(globalObject, internalGlobalObjectKey, {
-    configurable: false,
-    enumerable: false,
-    writable: false,
-    value: agent,
-  });
+    Object.defineProperty(globalObject, internalGlobalObjectKey, {
+      configurable: false,
+      enumerable: false,
+      writable: false,
+      value: agent,
+    });
+  } else {
+    agent.internalLogger.debug('Skipping registering internal agent on global object');
+  }
 }
 
 export function isInternalAgentOnGlobalObject(): boolean {

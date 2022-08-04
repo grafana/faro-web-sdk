@@ -2,7 +2,7 @@ import { InternalLoggerLevel } from '@grafana/agent-core';
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
 import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
 
-const agent = initializeGrafanaAgent({
+initializeGrafanaAgent({
   url: '/collect',
   apiKey: 'secret',
   instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
