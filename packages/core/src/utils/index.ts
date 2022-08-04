@@ -5,9 +5,6 @@ export type { BaseObject, BaseObjectKey, BaseObjectPrimitiveValue, BaseObjectVal
 
 export { getCurrentTimestamp } from './getCurrentTimestamp';
 
-export { globalObject } from './globalObject';
-export type { GlobalObject } from './globalObject';
-
 export {
   isArray,
   isBoolean,

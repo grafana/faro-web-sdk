@@ -1,5 +1,4 @@
-import { internalGlobalObjectKey } from '../agent';
-import type { Agent } from '../agent';
+import type { Agent, internalGlobalObjectKey } from '../agent';
 
 export type GlobalObject<T = typeof window | typeof global> = T & {
   [label: string]: Agent;

@@ -1,9 +1,8 @@
-import { globalObject } from '../utils';
-import { internalGlobalObjectKey } from './const';
+import { globalObject } from '../globalObject';
 import type { Agent } from './types';
 
 export function setAgentOnGlobalObject(agent: Agent): void {
-  if (!agent.config.preventGlobalExposure && !agent.config.isolate) {
+  if (!agent.config.preventGlobalExposure) {
     agent.internalLogger.debug(
       `Registering public agent in the global scope using "${agent.config.globalObjectKey}" key`
     );
@@ -16,7 +15,7 @@ export function setAgentOnGlobalObject(agent: Agent): void {
       return;
     }
 
-    Object.defineProperty(globalObject, internalGlobalObjectKey, {
+    Object.defineProperty(globalObject, agent.config.globalObjectKey, {
       configurable: false,
       writable: false,
       value: agent,

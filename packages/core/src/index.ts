@@ -33,6 +33,9 @@ export type {
   TracesAPI,
 } from './api';
 
+export { globalObject } from './globalObject';
+export type { GlobalObject } from './globalObject';
+
 export { initializeAgentDeprecated as initializeAgent, initializeGrafanaAgent } from './initialize';
 
 export { defaultGlobalObjectKey } from './config';
@@ -77,7 +80,6 @@ export {
   BaseExtension,
   defaultLogLevel,
   getCurrentTimestamp,
-  globalObject,
   isArray,
   isBoolean,
   isDomError,
@@ -104,6 +106,6 @@ export {
   LogLevel,
   noop,
 } from './utils';
-export type { BaseObject, BaseObjectKey, BaseObjectPrimitiveValue, BaseObjectValue, GlobalObject } from './utils';
+export type { BaseObject, BaseObjectKey, BaseObjectPrimitiveValue, BaseObjectValue } from './utils';
 
 export { VERSION } from './version';

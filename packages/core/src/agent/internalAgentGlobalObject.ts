@@ -1,4 +1,4 @@
-import { globalObject } from '../utils';
+import { globalObject } from '../globalObject';
 import { internalGlobalObjectKey } from './const';
 import type { Agent } from './types';
 
