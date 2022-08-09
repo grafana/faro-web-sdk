@@ -51,7 +51,7 @@ export function initializeExceptionsAPI(
       };
     }
 
-    internalLogger.debug('Pushing exception', item);
+    internalLogger.debug('Pushing exception\n', item);
 
     transports.execute(item);
   };

@@ -13,7 +13,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
   }
 
   initialize() {
-    this.logDebug('Initializing...\n', this.options);
+    this.logDebug('Initializing\n', this.options);
 
     allLogLevels
       .filter((level) => !(this.options.disabledLevels ?? ConsoleInstrumentation.defaultDisabledLevels).includes(level))

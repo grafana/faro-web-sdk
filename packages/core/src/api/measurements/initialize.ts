@@ -24,11 +24,11 @@ export function initializeMeasurementsAPI(
         meta: metas.value,
       };
 
-      internalLogger.debug('Pushing measurement', item);
+      internalLogger.debug('Pushing measurement\n', item);
 
       transports.execute(item);
     } catch (err) {
-      internalLogger.error('Error pushing measurement', err);
+      internalLogger.error('Error pushing measurement\n', err);
     }
   };
 

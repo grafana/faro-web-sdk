@@ -8,12 +8,12 @@ export function initializeMetas(internalLogger: InternalLogger, config: Config):
   let items: MetaItem[] = [];
 
   const add: Metas['add'] = (...newItems) => {
-    internalLogger.debug('Adding metas', newItems);
+    internalLogger.debug('Adding metas\n', newItems);
     items.push(...newItems);
   };
 
   const remove: Metas['remove'] = (...itemsToRemove) => {
-    internalLogger.debug('Removing metas', itemsToRemove);
+    internalLogger.debug('Removing metas\n', itemsToRemove);
     items = items.filter((currentItem) => !itemsToRemove.includes(currentItem));
   };
 

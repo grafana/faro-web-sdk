@@ -54,7 +54,7 @@ export function initializeTransports(internalLogger: InternalLogger, config: Con
   };
 
   const addBeforeSendHooks: Transports['addBeforeSendHooks'] = (...newBeforeSendHooks) => {
-    internalLogger.debug('Adding beforeSendHooks', beforeSendHooks);
+    internalLogger.debug('Adding beforeSendHooks\n', beforeSendHooks);
 
     newBeforeSendHooks.forEach((beforeSendHook) => {
       if (beforeSendHook) {
@@ -64,7 +64,7 @@ export function initializeTransports(internalLogger: InternalLogger, config: Con
   };
 
   const addIgnoreErrorsPatterns: Transports['addIgnoreErrorsPatterns'] = (...ignoreErrorsPatterns) => {
-    internalLogger.debug('Adding ignoreErrorsPatterns', ignoreErrorsPatterns);
+    internalLogger.debug('Adding ignoreErrorsPatterns\n', ignoreErrorsPatterns);
 
     ignoreErrorsPatterns.forEach((ignoreErrorsPattern) => {
       if (ignoreErrorsPattern) {
@@ -88,7 +88,7 @@ export function initializeTransports(internalLogger: InternalLogger, config: Con
       }
 
       for (const transport of transports) {
-        internalLogger.debug(`Transporting item using ${transport.name}`, actualItem);
+        internalLogger.debug(`Transporting item using ${transport.name}\n`, actualItem);
 
         transport.send(actualItem);
       }

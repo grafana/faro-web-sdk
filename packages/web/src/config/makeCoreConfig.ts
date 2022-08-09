@@ -1,8 +1,8 @@
 import {
+  createInternalLogger,
   defaultGlobalObjectKey,
   defaultInternalLoggerLevel,
   defaultUnpatchedConsole,
-  generateInternalLogger,
 } from '@grafana/agent-core';
 import type { Config, Transport } from '@grafana/agent-core';
 
@@ -15,7 +15,7 @@ import type { BrowserConfig } from './types';
 export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined {
   const transports: Transport[] = [];
 
-  const internalLogger = generateInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
+  const internalLogger = createInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
 
   if (browserConfig.transports) {
     if (browserConfig.url || browserConfig.apiKey) {

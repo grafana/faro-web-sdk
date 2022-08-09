@@ -36,11 +36,11 @@ export function initializeTracesAPI(internalLogger: InternalLogger, transports: 
         meta: metas.value,
       };
 
-      internalLogger.debug('Pushing trace', item);
+      internalLogger.debug('Pushing trace\n', item);
 
       transports.execute(item);
     } catch (err) {
-      internalLogger.error('Error pushing trace', err);
+      internalLogger.error('Error pushing trace\n', err);
     }
   };
 

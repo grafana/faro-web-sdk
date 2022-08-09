@@ -44,7 +44,7 @@ export type { Config, Patterns } from './config';
 export { BaseInstrumentation } from './instrumentations';
 export type { Instrumentation, Instrumentations } from './instrumentations';
 
-export { defaultInternalLoggerLevel, generateInternalLogger, InternalLoggerLevel } from './internalLogger';
+export { createInternalLogger, defaultInternalLoggerLevel, InternalLoggerLevel } from './internalLogger';
 export type { InternalLogger } from './internalLogger';
 
 export type {

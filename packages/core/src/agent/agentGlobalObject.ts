@@ -8,8 +8,8 @@ export function setAgentOnGlobalObject(agent: Agent): void {
     );
 
     if (agent.config.globalObjectKey in globalObject) {
-      agent.internalLogger.error(
-        `The key "${agent.config.globalObjectKey}" is already in use and it won't be overwritten`
+      agent.internalLogger.warn(
+        `Skipping global registration due to key "${agent.config.globalObjectKey}" being used already. Please set "globalObjectKey" to something else or set "preventGlobalExposure" to "true"`
       );
 
       return;

@@ -4,7 +4,7 @@ import { noop } from '../utils';
 import { defaultInternalLogger, defaultInternalLoggerLevel, InternalLoggerLevel } from './const';
 import type { InternalLogger } from './types';
 
-export function generateInternalLogger(
+export function createInternalLogger(
   unpatchedConsole: UnpatchedConsole = defaultUnpatchedConsole,
   internalLoggerLevel = defaultInternalLoggerLevel
 ): InternalLogger {

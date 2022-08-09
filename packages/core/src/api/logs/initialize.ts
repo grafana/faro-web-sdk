@@ -36,11 +36,11 @@ export function initializeLogsAPI(
         meta: metas.value,
       };
 
-      internalLogger.debug('Pushing log', item);
+      internalLogger.debug('Pushing log\n', item);
 
       transports.execute(item);
     } catch (err) {
-      internalLogger.error('Error pushing log', err);
+      internalLogger.error('Error pushing log\n', err);
     }
   };
 
