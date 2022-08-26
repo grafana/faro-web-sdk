@@ -8,15 +8,14 @@
     <h1>Grafana JavaScript Agent Demo - Home</h1>
     <hr />
 
-    <a href="./index.html" class="active">Home</a> |
-    <a href="./another-page.html">Another page</a> |
+    <a href="./index.html" class="active">Home</a> | <a href="./another-page.html">Another page</a> |
     <a href="./cls.html">CLS Test Page</a>
     <hr />
 
     <h2>Console Instrumentation</h2>
     <button data-cy="btn-log-trace" onclick="callConsole('trace')">Trace</button>
     <button data-cy="btn-log-info" onclick="callConsole('info')">Info</button>
-    <button data-cy="btn-log-log"  onclick="callConsole('log')">Log</button>
+    <button data-cy="btn-log-log" onclick="callConsole('log')">Log</button>
     <button data-cy="btn-log-warn" onclick="callConsole('warn')">Warn</button>
     <button data-cy="btn-log-error" onclick="callConsole('error')">Error</button>
     <hr />
@@ -37,6 +36,16 @@
 
     <h2>Metrics Measurements</h2>
     <button onclick="sendCustomMetric()">Send custom metric</button>
+    <hr />
+
+    <h2>Events</h2>
+    <button onclick="captureEvent('click_button_no_attributes')">Capture click event, no attrs</button>
+    <button
+      data-cy="btn-event-with-attrs"
+      onclick="captureEvent('click_button_with_attributes', { foo: 'bar', baz: 'bad' })"
+    >
+      Capture click event, with attrs
+    </button>
     <hr />
 
     <script src="index.ts" type="module"></script>

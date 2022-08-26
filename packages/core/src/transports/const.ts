@@ -3,6 +3,7 @@ export enum TransportItemType {
   LOG = 'log',
   MEASUREMENT = 'measurement',
   TRACE = 'trace',
+  EVENT = 'event',
 }
 
 export const transportItemTypeToBodyKey: Record<TransportItemType, string> = {
@@ -10,4 +11,5 @@ export const transportItemTypeToBodyKey: Record<TransportItemType, string> = {
   [TransportItemType.LOG]: 'logs',
   [TransportItemType.MEASUREMENT]: 'measurements',
   [TransportItemType.TRACE]: 'traces',
+  [TransportItemType.EVENT]: 'events',
 } as const;

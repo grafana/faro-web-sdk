@@ -51,5 +51,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     ignoreErrors: browserConfig.ignoreErrors,
     session: browserConfig.session,
     user: browserConfig.user,
+    eventDomain: browserConfig.eventDomain ?? 'browser',
   };
 }

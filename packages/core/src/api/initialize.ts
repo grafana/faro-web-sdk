@@ -2,6 +2,7 @@ import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { Transports } from '../transports';
+import { initializeEventsAPI } from './events';
 import { initializeExceptionsAPI } from './exceptions';
 import { initializeLogsAPI } from './logs';
 import { initializeMeasurementsAPI } from './measurements';
@@ -25,5 +26,6 @@ export function initializeAPI(
     ...initializeMetaAPI(internalLogger, transports, metas),
     ...initializeLogsAPI(internalLogger, transports, metas, tracesApi),
     ...initializeMeasurementsAPI(internalLogger, transports, metas, tracesApi),
+    ...initializeEventsAPI(internalLogger, config, transports, metas, tracesApi),
   };
 }
