@@ -18,4 +18,4 @@ export type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '
 
 export type { MetaAPI } from './meta';
 
-export type { InstrumentationLibrarySpan, ResourceSpan, TraceContext, TraceEvent, TracesAPI } from './traces';
+export type { InstrumentationLibrarySpan, OTELApi, ResourceSpan, TraceContext, TraceEvent, TracesAPI } from './traces';

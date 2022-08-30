@@ -1,0 +1,36 @@
+{
+  "name": "@grafana/agent-demo",
+  "version": "0.4.0",
+  "description": "Demo of Grafana JavaScript Agent.",
+  "license": "Apache-2.0",
+  "author": "Grafana Labs",
+  "homepage": "https://github.com/grafana/grafana-javascript-agent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/grafana-javascript-agent.git",
+    "directory": "demo"
+  },
+  "source": "src/index.html",
+  "private": true,
+  "scripts": {
+    "start": "parcel serve",
+    "build": "parcel build",
+    "clean": "rimraf dist/ yarn-error.log",
+    "quality": "run-s quality:*",
+    "quality:test": "exit 0",
+    "quality:format": "prettier --ignore-path ../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint": "run-s quality:lint:*",
+    "quality:lint:eslint": "eslint --ignore-path ../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --ignore-path ../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:md": "markdownlint README.md",
+    "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
+  },
+  "dependencies": {
+    "@grafana/agent-core": "~0.4.0",
+    "@grafana/agent-tracing-web": "~0.4.0",
+    "@grafana/agent-web": "~0.4.0"
+  },
+  "devDependencies": {
+    "parcel": "^2.5.0"
+  }
+}

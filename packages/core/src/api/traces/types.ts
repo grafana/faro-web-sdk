@@ -1,5 +1,5 @@
 import type { ContextAPI as OTELContextAPI, TraceAPI as OTELTraceAPI } from '@opentelemetry/api';
-import type { IInstrumentationScope, IScopeSpans, IResourceSpans } from '@opentelemetry/otlp-transformer';
+import type { IInstrumentationScope, IResourceSpans, IScopeSpans } from '@opentelemetry/otlp-transformer';
 
 // TODO: Revert temporary patching
 // in latest OpenTelemetry packages protobuf type "instrumentationLibrary" has been renamed to "scope"
@@ -26,6 +26,7 @@ export interface TracesAPI {
   getOTEL: () => OTELApi | undefined;
   getTraceContext: () => TraceContext | undefined;
   initOTEL: (trace: OTELTraceAPI, context: OTELContextAPI) => void;
+  isOTELInitialized: () => boolean;
   pushTraces: (traces: TraceEvent) => void;
 }
 

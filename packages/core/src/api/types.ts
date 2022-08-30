@@ -1,8 +1,8 @@
-import type { ExceptionsAPI, ExceptionEvent } from './exceptions';
-import type { LogsAPI, LogEvent } from './logs';
-import type { MeasurementsAPI, MeasurementEvent } from './measurements';
+import type { ExceptionEvent, ExceptionsAPI } from './exceptions';
+import type { LogEvent, LogsAPI } from './logs';
+import type { MeasurementEvent, MeasurementsAPI } from './measurements';
 import type { MetaAPI } from './meta';
-import type { TracesAPI, TraceEvent } from './traces';
+import type { TraceEvent, TracesAPI } from './traces';
 
 export type APIEvent = LogEvent | ExceptionEvent | MeasurementEvent | TraceEvent;
 

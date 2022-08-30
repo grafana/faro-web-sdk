@@ -27,17 +27,17 @@
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "jest",
-    "quality:format": "prettier --ignore-path ../../.prettierignore --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:format": "prettier --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s quality:lint:*",
-    "quality:lint:eslint": "eslint \"src/**/*.ts\"",
-    "quality:lint:prettier": "prettier --ignore-path ../../.prettierignore --check **/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}",
+    "quality:lint:eslint": "eslint --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
     "@opentelemetry/api": "^1.1.0",
-    "@opentelemetry/api-metrics": "^0.31.0",
-    "@opentelemetry/otlp-transformer": "^0.31.0",
+    "@opentelemetry/api-metrics": "^0.32.0",
+    "@opentelemetry/otlp-transformer": "^0.32.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import { InternalLoggerLevel } from '@grafana/agent-core';
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
-import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
+import { getWebInstrumentations, initializeGrafanaAgent } from '@grafana/agent-web';
 
 initializeGrafanaAgent({
   isolate: true,

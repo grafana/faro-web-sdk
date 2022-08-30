@@ -25,21 +25,27 @@
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "exit 0",
-    "quality:format": "prettier --ignore-path ../../.prettierignore --write \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:format": "prettier --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s quality:lint:*",
-    "quality:lint:eslint": "eslint \"src/**/*.ts\"",
-    "quality:lint:prettier": "prettier --ignore-path ../../.prettierignore --check **/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}",
+    "quality:lint:eslint": "eslint --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
-    "@grafana/agent-web": "~0.4.0"
+    "@grafana/agent-tracing-web": "~0.4.0",
+    "@grafana/agent-web": "~0.4.0",
+    "hoist-non-react-statics": "^3.3.2"
   },
   "devDependencies": {
+    "@types/history": "^5.0.0",
+    "@types/hoist-non-react-statics": "^3.3.1",
     "@types/react": "^18.0.8",
-    "react": "^18.1.0"
+    "react": "^18.1.0",
+    "react-router-dom": "^6.3.0"
   },
   "peerDependencies": {
-    "react": "^17.0.0 || ^18.0.0"
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "react-router-dom": "^4.0.0 || ^5.0.0 || ^6.0.0"
   }
 }

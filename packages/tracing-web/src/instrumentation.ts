@@ -58,9 +58,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
     });
 
     registerInstrumentations({
-      instrumentations: options.instrumentations?.length
-        ? options.instrumentations
-        : getDefaultOTELInstrumentations(this.getIgnoreUrls()),
+      instrumentations: options.instrumentations ?? getDefaultOTELInstrumentations(this.getIgnoreUrls()),
     });
 
     agent.api.initOTEL(trace, context);

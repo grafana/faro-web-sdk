@@ -105,6 +105,7 @@ export type {
   MetaSDKIntegration,
   MetaSession,
   MetaUser,
+  OTELApi,
   Patterns,
   PushErrorOptions,
   PushLogOptions,
