@@ -20,4 +20,4 @@ export type { MetaAPI } from './meta';
 
 export type { InstrumentationLibrarySpan, ResourceSpan, TraceContext, TraceEvent, TracesAPI } from './traces';
 
-export type { EventEvent } from './events';
+export type { EventEvent, EventsAPI } from './events';

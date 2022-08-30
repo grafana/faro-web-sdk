@@ -1,7 +1,7 @@
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
-import { TransportItem, TransportItemType, Transports } from '../../transports';
+import type { TransportItem, TransportItemType, Transports } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
 import type { TracesAPI } from '../traces';
 import type { EventEvent, EventsAPI } from './types';
@@ -26,7 +26,7 @@ export function initializeEventsAPI(
       type: TransportItemType.EVENT,
     };
 
-    internalLogger.debug('Pushing event', item);
+    internalLogger.debug('Pushing event\n', item);
 
     transports.execute(item);
   };
