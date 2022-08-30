@@ -7,6 +7,7 @@ describe('agent', () => {
   it(`can be started paused and doesn't ingest events until unpaused`, () => {
     const transport = new MockTransport();
     const config = mockConfig({
+      isolate: true,
       paused: true,
       transports: [transport],
     });
@@ -26,6 +27,7 @@ describe('agent', () => {
   it('can be started unpaused, then paused and unpaused again', () => {
     const transport = new MockTransport();
     const config = mockConfig({
+      isolate: true,
       transports: [transport],
     });
     const agent = initializeGrafanaAgent(config);

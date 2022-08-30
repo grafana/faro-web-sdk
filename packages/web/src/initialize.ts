@@ -7,6 +7,10 @@ import type { BrowserConfig } from './config';
 export function initializeGrafanaAgent(config: BrowserConfig): Agent {
   const coreConfig = makeCoreConfig(config);
 
+  if (!coreConfig) {
+    return undefined!;
+  }
+
   return coreInit(coreConfig);
 }
 
@@ -15,7 +19,7 @@ export function initializeAgent(config: Config): Agent {
   const agent = initializeGrafanaAgent(config);
 
   agent.internalLogger.warn(
-    'initializeAgent method is deprecated and it will be removed in an upcoming version. Please use initializeGrafanaAgent method instead.'
+    'initializeAgent method is deprecated and it will be removed in an upcoming version. Please use initializeGrafanaAgent method instead'
   );
 
   return agent;

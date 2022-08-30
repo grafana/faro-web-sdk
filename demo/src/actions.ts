@@ -1,39 +1,39 @@
 import '@grafana/agent-web/globals';
 import { SpanStatusCode } from '@opentelemetry/api';
 
-const w = window as any;
+const localWindow: any = window;
 
-w.throwError = () => {
+localWindow.throwError = () => {
   throw new Error('This is a thrown error');
 };
 
-w.callUndefined = () => {
+localWindow.callUndefined = () => {
   // eslint-disable-next-line no-eval
   eval('test();');
 };
 
-w.callConsole = (method: 'trace' | 'info' | 'log' | 'warn' | 'error') => {
+localWindow.callConsole = (method: 'trace' | 'info' | 'log' | 'warn' | 'error') => {
   // eslint-disable-next-line no-console
   console[method](`This is a console ${method} message`);
 };
 
-w.fetchError = () => {
+localWindow.fetchError = () => {
   fetch('http://localhost:12345', {
     method: 'POST',
   });
 };
 
-w.promiseReject = () => {
+localWindow.promiseReject = () => {
   new Promise((_accept, reject) => {
     reject('This is a rejected promise');
   });
 };
 
-w.fetchSuccess = () => {
+localWindow.fetchSuccess = () => {
   fetch('http://localhost:1234');
 };
 
-w.sendCustomMetric = () => {
+localWindow.sendCustomMetric = () => {
   window.grafanaAgent.api.pushMeasurement({
     type: 'custom',
     values: {
@@ -42,7 +42,7 @@ w.sendCustomMetric = () => {
   });
 };
 
-w.traceWithLog = () => {
+localWindow.traceWithLog = () => {
   const otel = window.grafanaAgent.api.getOTEL();
 
   if (otel) {

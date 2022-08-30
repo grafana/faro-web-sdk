@@ -1,4 +1,9 @@
-import { defaultGlobalObjectKey, defaultInternalLoggerLevel, defaultUnpatchedConsole } from '@grafana/agent-core';
+import {
+  createInternalLogger,
+  defaultGlobalObjectKey,
+  defaultInternalLoggerLevel,
+  defaultUnpatchedConsole,
+} from '@grafana/agent-core';
 import type { Config, Transport } from '@grafana/agent-core';
 
 import { parseStacktrace } from '../instrumentations';
@@ -7,12 +12,14 @@ import { FetchTransport } from '../transports';
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
 
-export function makeCoreConfig(browserConfig: BrowserConfig): Config {
+export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined {
   const transports: Transport[] = [];
+
+  const internalLogger = createInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
 
   if (browserConfig.transports) {
     if (browserConfig.url || browserConfig.apiKey) {
-      throw new Error('if "transports" is defined, "url" and "apiKey" should not be defined');
+      internalLogger.error('if "transports" is defined, "url" and "apiKey" should not be defined');
     }
 
     transports.push(...browserConfig.transports);
@@ -24,7 +31,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
       })
     );
   } else {
-    throw new Error('either "url" or "transports" must be defined');
+    internalLogger.error('either "url" or "transports" must be defined');
   }
 
   return {
@@ -32,10 +39,11 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     globalObjectKey: browserConfig.globalObjectKey || defaultGlobalObjectKey,
     instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
     internalLoggerLevel: browserConfig.internalLoggerLevel ?? defaultInternalLoggerLevel,
+    isolate: browserConfig.isolate ?? false,
     metas: browserConfig.metas ?? defaultMetas,
     parseStacktrace,
     paused: browserConfig.paused ?? false,
-    preventGlobalExposure: browserConfig.preventGlobalExposure || false,
+    preventGlobalExposure: browserConfig.preventGlobalExposure ?? false,
     transports,
     unpatchedConsole: browserConfig.unpatchedConsole ?? defaultUnpatchedConsole,
 

@@ -1,4 +1,10 @@
-export { agent } from './agent';
+export {
+  agent,
+  getInternalAgentFromGlobalObject,
+  internalGlobalObjectKey,
+  isInternalAgentOnGlobalObject,
+  setInternalAgentOnGlobalObject,
+} from './agent';
 export type { Agent } from './agent';
 
 export { defaultExceptionType } from './api';
@@ -21,20 +27,24 @@ export type {
   PushMeasurementOptions,
   ResourceSpan,
   Stacktrace,
+  StacktraceParser,
   TraceContext,
   TraceEvent,
   TracesAPI,
 } from './api';
 
+export { globalObject } from './globalObject';
+export type { GlobalObject } from './globalObject';
+
 export { initializeAgentDeprecated as initializeAgent, initializeGrafanaAgent } from './initialize';
 
 export { defaultGlobalObjectKey } from './config';
-export type { Config, Patterns, StacktraceParser } from './config';
+export type { Config, Patterns } from './config';
 
 export { BaseInstrumentation } from './instrumentations';
-export type { Instrumentation } from './instrumentations';
+export type { Instrumentation, Instrumentations } from './instrumentations';
 
-export { defaultInternalLoggerLevel, InternalLoggerLevel } from './internalLogger';
+export { createInternalLogger, defaultInternalLoggerLevel, InternalLoggerLevel } from './internalLogger';
 export type { InternalLogger } from './internalLogger';
 
 export type {
@@ -71,7 +81,6 @@ export {
   createPromiseBuffer,
   defaultLogLevel,
   getCurrentTimestamp,
-  globalObject,
   isArray,
   isBoolean,
   isDomError,

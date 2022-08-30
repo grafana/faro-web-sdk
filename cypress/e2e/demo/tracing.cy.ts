@@ -5,6 +5,7 @@ context('Tracing', () => {
       span_id: '',
       trace_id: '',
     };
+
     cy.waitLogs((logEvents) => {
       expect(logEvents).to.have.lengthOf(1);
       const log = logEvents[0]!;
@@ -12,6 +13,7 @@ context('Tracing', () => {
       expect(log).to.have.property('trace');
       Object.assign(context, log.trace!);
     });
+
     cy.waitTraces((traceEvent) => {
       expect(context.span_id).to.have.length.greaterThan(0);
       expect(context.trace_id).to.have.length.greaterThan(1);

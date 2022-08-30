@@ -33,7 +33,7 @@
     "quality:circular-deps": "madge --extensions js,jsx,ts,tsx --circular --ts-config=tsconfig.json ."
   },
   "dependencies": {
-    "@grafana/agent-core": "^0.4.0"
+    "@grafana/agent-web": "~0.4.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.8",

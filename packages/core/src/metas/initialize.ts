@@ -4,15 +4,17 @@ import { isFunction } from '../utils';
 import { VERSION } from '../version';
 import type { Meta, Metas, MetaItem } from './types';
 
-export function initializeMetas(_internalLogger: InternalLogger, config: Config): Metas {
+export function initializeMetas(internalLogger: InternalLogger, config: Config): Metas {
   let items: MetaItem[] = [];
 
-  const add: Metas['add'] = (item) => {
-    items.push(item);
+  const add: Metas['add'] = (...newItems) => {
+    internalLogger.debug('Adding metas\n', newItems);
+    items.push(...newItems);
   };
 
-  const remove: Metas['remove'] = (item) => {
-    items = items.filter((i) => i !== item);
+  const remove: Metas['remove'] = (...itemsToRemove) => {
+    internalLogger.debug('Removing metas\n', itemsToRemove);
+    items = items.filter((currentItem) => !itemsToRemove.includes(currentItem));
   };
 
   const initial: Meta = {
@@ -35,9 +37,7 @@ export function initializeMetas(_internalLogger: InternalLogger, config: Config)
     initial.session = config.session;
   }
 
-  config.metas?.forEach(add);
-
-  add(initial);
+  add(initial, ...(config.metas ?? []));
 
   return {
     add,

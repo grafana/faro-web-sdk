@@ -1,6 +1,5 @@
 import type { ExceptionEvent } from '../api';
 import type { Config, Patterns } from '../config';
-import { internalLogger } from '../internalLogger';
 import type { InternalLogger } from '../internalLogger';
 import { isString } from '../utils';
 import { TransportItemType } from './const';
@@ -27,23 +26,51 @@ export function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): Befo
   };
 }
 
-export function initializeTransports(_internalLogger: InternalLogger, config: Config): Transports {
-  const transports: Transport[] = [...config.transports];
+export function initializeTransports(internalLogger: InternalLogger, config: Config): Transports {
+  internalLogger.debug('Initializing transports');
+
+  const transports: Transport[] = [];
 
   let paused = config.paused;
 
-  const beforeSendHooks: BeforeSendHook[] = [];
+  let beforeSendHooks: BeforeSendHook[] = [];
 
-  if (config.beforeSend) {
-    beforeSendHooks.push(config.beforeSend);
-  }
+  const add: Transports['add'] = (...newTransports) => {
+    internalLogger.debug('Adding transports');
 
-  if (config.ignoreErrors) {
-    beforeSendHooks.push(createBeforeSendHookFromIgnorePatterns(config.ignoreErrors));
-  }
+    newTransports.forEach((newTransport) => {
+      internalLogger.debug(`Adding "${newTransport.name}" transport`);
 
-  const add: Transports['add'] = (...transports) => {
-    transports.push(...transports);
+      const exists = transports.some((existingTransport) => existingTransport.name === newTransport.name);
+
+      if (exists) {
+        internalLogger.warn(`Transport ${newTransport.name} is already added`);
+
+        return;
+      }
+
+      transports.push(newTransport);
+    });
+  };
+
+  const addBeforeSendHooks: Transports['addBeforeSendHooks'] = (...newBeforeSendHooks) => {
+    internalLogger.debug('Adding beforeSendHooks\n', beforeSendHooks);
+
+    newBeforeSendHooks.forEach((beforeSendHook) => {
+      if (beforeSendHook) {
+        beforeSendHooks.push(beforeSendHook);
+      }
+    });
+  };
+
+  const addIgnoreErrorsPatterns: Transports['addIgnoreErrorsPatterns'] = (...ignoreErrorsPatterns) => {
+    internalLogger.debug('Adding ignoreErrorsPatterns\n', ignoreErrorsPatterns);
+
+    ignoreErrorsPatterns.forEach((ignoreErrorsPattern) => {
+      if (ignoreErrorsPattern) {
+        beforeSendHooks.push(createBeforeSendHookFromIgnorePatterns(ignoreErrorsPattern));
+      }
+    });
   };
 
   const execute: Transports['execute'] = (item) => {
@@ -61,17 +88,52 @@ export function initializeTransports(_internalLogger: InternalLogger, config: Co
       }
 
       for (const transport of transports) {
-        internalLogger.debug(`Transporting item using ${transport.name}`, actualItem);
+        internalLogger.debug(`Transporting item using ${transport.name}\n`, actualItem);
 
         transport.send(actualItem);
       }
     }
   };
 
+  const getBeforeSendHooks: Transports['getBeforeSendHooks'] = () => [...beforeSendHooks];
+
+  const isPaused: Transports['isPaused'] = () => paused;
+
   const pause: Transports['pause'] = () => {
     internalLogger.debug('Pausing transports');
 
     paused = true;
+  };
+
+  const remove: Transports['remove'] = (...transportsToRemove) => {
+    internalLogger.debug('Removing transports');
+
+    transportsToRemove.forEach((transportToRemove) => {
+      internalLogger.debug(`Removing "${transportToRemove.name}" transport`);
+
+      const existingTransportIndex = transports.reduce<number | null>(
+        (acc, existingTransport, existingTransportIndex) => {
+          if (acc === null && existingTransport.name === transportToRemove.name) {
+            return existingTransportIndex;
+          }
+
+          return null;
+        },
+        null
+      );
+
+      if (!existingTransportIndex) {
+        internalLogger.warn(`Transport "${transportToRemove.name}" is not added`);
+
+        return;
+      }
+
+      transports.splice(existingTransportIndex, 1);
+    });
+  };
+
+  const removeBeforeSendHooks: Transports['removeBeforeSendHooks'] = (...beforeSendHooksToRemove) => {
+    beforeSendHooks.filter((beforeSendHook) => !beforeSendHooksToRemove.includes(beforeSendHook));
   };
 
   const unpause: Transports['unpause'] = () => {
@@ -80,11 +142,23 @@ export function initializeTransports(_internalLogger: InternalLogger, config: Co
     paused = false;
   };
 
+  add(...config.transports);
+  addBeforeSendHooks(config.beforeSend);
+  addIgnoreErrorsPatterns(config.ignoreErrors);
+
   return {
     add,
+    addBeforeSendHooks,
+    addIgnoreErrorsPatterns,
+    getBeforeSendHooks,
     execute,
+    isPaused,
     pause,
-    transports,
+    remove,
+    removeBeforeSendHooks,
+    get transports() {
+      return [...transports];
+    },
     unpause,
   };
 }

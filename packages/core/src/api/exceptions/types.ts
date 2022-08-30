@@ -1,5 +1,7 @@
 import type { TraceContext } from '../traces';
 
+export type StacktraceParser = (err: ExtendedError) => Stacktrace;
+
 export interface ExceptionStackFrame {
   filename: string;
   function: string;
@@ -33,5 +35,7 @@ export interface PushErrorOptions {
 }
 
 export interface ExceptionsAPI {
+  changeStacktraceParser: (stacktraceParser: StacktraceParser) => void;
+  getStacktraceParser: () => StacktraceParser | undefined;
   pushError: (value: Error, options?: PushErrorOptions) => void;
 }

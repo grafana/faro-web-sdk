@@ -9,6 +9,7 @@ export type {
   ExtendedError,
   PushErrorOptions,
   Stacktrace,
+  StacktraceParser,
 } from './exceptions';
 
 export type { LogContext, LogEvent, LogsAPI, PushLogOptions } from './logs';
