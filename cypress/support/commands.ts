@@ -1,10 +1,10 @@
 import type {
+  EventEvent,
   ExceptionEvent,
   LogEvent,
   MeasurementEvent,
   TraceEvent,
   TransportBody,
-  EventEvent,
 } from '@grafana/agent-core';
 
 Cypress.Commands.add('waitLogs', (fn: (evts: LogEvent[]) => void) => {
