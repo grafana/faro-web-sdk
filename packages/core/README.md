@@ -27,6 +27,7 @@ The agent requires a configuration parameter with the following properties:
 | `globalObjectKey`       | String that should be used when defining the agent on the global object | `string`              | `defaultGlobalObjectKey = 'grafanaAgent'`                |
 | `instrumentations`      | Array of instrumentations that should be ran                            | `Instrumentation[]`   |                                                          |
 | `internalLoggerLevel`   | The level of information printed to console for internal messages       | `InternalLoggerLevel` | `defaultInternalLoggerLevel = InternalLoggerLevel.ERROR` |
+| `isolate`               | A flag that will create an isolated agent                               | `boolean`             |                                                          |
 | `metas`                 | Array of metas that should be logged                                    | `MetaItem[]`          |                                                          |
 | `parseStacktrace`       | A function used to parse stack traces                                   | `StacktraceParser`    |                                                          |
 | `paused`                | Flag for initializing the agent as paused                               | `boolean`             |                                                          |
@@ -237,3 +238,41 @@ agent.unpatchedConsole.warn('This is a warning');
 Agent can be paused by invoking `agent.pause()`.
 This will prevent events from being sent to transports.
 Call `agent.unpause()` to resume capturing events.
+
+## Isolated agents
+
+Sometimes you may want to create one or more isolated agents. For example:
+
+- you want to bundle the agent in a reusable library and report certain events only for it while the project where the
+  library is used has its own agent
+- you want to log certain events in one system while other events in other systems
+- E2E libraries that may create multiple agents without refreshing the page
+
+In order to achieve this, you can use the `isolate` flag when initializing the agent:
+
+```ts
+// agent 1 will be isolated
+const agent1 = initializeGrafanaAgent({
+  // ...
+  isolate: true,
+});
+
+// globalAgent will be available globally
+const globalAgent = initializeGrafanaAgent({
+  // ...
+  isolate: true,
+});
+
+// another isolated agent
+const agent2 = initializeGrafanaAgent({
+  // ...
+  isolate: true,
+});
+```
+
+Although an isolated agent may sound like a great idea, there are some limitations which apply to them:
+
+- some instrumentations will still register globally (i.e. exceptions instrumentation or console instrumentation)
+- an isolated agent will not be available on the global object
+- the agent reference should be stored by the project as it won't be available via
+  `import { agent } from '@grafana/agent-core';`
