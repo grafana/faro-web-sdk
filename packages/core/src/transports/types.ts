@@ -1,5 +1,4 @@
-import type { APIEvent, ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent } from '../api';
-import type { EventEvent } from '../api/events';
+import type { APIEvent, ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent, EventEvent } from '../api';
 import type { Patterns } from '../config';
 import type { Meta } from '../metas';
 import type { Extension } from '../utils';

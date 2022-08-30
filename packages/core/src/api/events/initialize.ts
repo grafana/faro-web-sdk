@@ -1,7 +1,7 @@
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
-import type { TransportItem, TransportItemType, Transports } from '../../transports';
+import { TransportItem, TransportItemType, Transports } from '../../transports';
 import { getCurrentTimestamp } from '../../utils';
 import type { TracesAPI } from '../traces';
 import type { EventEvent, EventsAPI } from './types';
@@ -14,21 +14,23 @@ export function initializeEventsAPI(
   tracesApi: TracesAPI
 ): EventsAPI {
   const pushEvent: EventsAPI['pushEvent'] = (name, attributes, domain) => {
-    const item: TransportItem<EventEvent> = {
-      meta: metas.value,
-      payload: {
-        name,
-        domain: domain ?? config.eventDomain,
-        attributes,
-        timestamp: getCurrentTimestamp(),
-        trace: tracesApi.getTraceContext(),
-      },
-      type: TransportItemType.EVENT,
-    };
-
-    internalLogger.debug('Pushing event\n', item);
-
-    transports.execute(item);
+    try {
+      const item: TransportItem<EventEvent> = {
+        meta: metas.value,
+        payload: {
+          name,
+          domain: domain ?? config.eventDomain,
+          attributes,
+          timestamp: getCurrentTimestamp(),
+          trace: tracesApi.getTraceContext(),
+        },
+        type: TransportItemType.EVENT,
+      };
+      internalLogger.debug('Pushing event\n', item);
+      transports.execute(item);
+    } catch (err) {
+      internalLogger.error('Error pushing event', err);
+    }
   };
 
   return {

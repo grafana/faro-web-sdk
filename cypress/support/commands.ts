@@ -1,5 +1,11 @@
-import type { ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent, TransportBody } from '@grafana/agent-core';
-import type { EventEvent } from 'packages/core/src/api/events';
+import type {
+  ExceptionEvent,
+  LogEvent,
+  MeasurementEvent,
+  TraceEvent,
+  TransportBody,
+  EventEvent,
+} from '@grafana/agent-core';
 
 Cypress.Commands.add('waitLogs', (fn: (evts: LogEvent[]) => void) => {
   cy.wait('@logs').then((interception) => fn((interception.request.body as TransportBody).logs!));
