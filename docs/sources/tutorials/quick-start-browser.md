@@ -266,9 +266,9 @@ console.info("Hello world", 123);
 agent.api.pushLog(["Hello world", 123], { level: LogLevel.Debug });
 
 // log with context
-agent.api.pushLog(["Navigation"], {
+agent.api.pushLog(["Sending update"], {
   context: {
-    url: window.location.href
+    payload: thePayload,
   },
   level: LogLevel.Trace
 });
@@ -292,8 +292,11 @@ agent.api.pushMeasurement({
   }
 });
 
-// push an Error
+// push an error
 agent.api.pushError(new Error('everything went horribly wrong'));
+
+// push an event
+agent.api.pushEvent('navigation', { url: window.location.href });
 
 // pause agent, preventing events from being sent
 agent.pause()

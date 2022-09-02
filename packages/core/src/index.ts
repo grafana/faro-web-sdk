@@ -31,6 +31,8 @@ export type {
   TraceContext,
   TraceEvent,
   TracesAPI,
+  EventEvent,
+  EventsAPI,
 } from './api';
 
 export { globalObject } from './globalObject';

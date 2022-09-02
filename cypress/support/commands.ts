@@ -1,4 +1,11 @@
-import type { ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent, TransportBody } from '@grafana/agent-core';
+import type {
+  EventEvent,
+  ExceptionEvent,
+  LogEvent,
+  MeasurementEvent,
+  TraceEvent,
+  TransportBody,
+} from '@grafana/agent-core';
 
 Cypress.Commands.add('waitLogs', (fn: (evts: LogEvent[]) => void) => {
   cy.wait('@logs').then((interception) => fn((interception.request.body as TransportBody).logs!));
@@ -10,6 +17,10 @@ Cypress.Commands.add('waitExceptions', (fn: (evts: ExceptionEvent[]) => void) =>
 
 Cypress.Commands.add('waitTraces', (fn: (evts: TraceEvent) => void) => {
   cy.wait('@traces').then((interception) => fn((interception.request.body as TransportBody).traces!));
+});
+
+Cypress.Commands.add('waitEvents', (fn: (evts: EventEvent[]) => void) => {
+  cy.wait('@events').then((interception) => fn((interception.request.body as TransportBody).events!));
 });
 
 Cypress.Commands.add('waitMeasurements', (fn: (evts: MeasurementEvent[]) => void, count = 1) => {
@@ -39,6 +50,7 @@ declare global {
       waitExceptions(fn: (evts: ExceptionEvent[]) => void): Chainable<void>;
       waitMeasurements(fn: (evts: MeasurementEvent[]) => void, count?: number): Chainable<void>;
       waitTraces(fn: (evt: TraceEvent) => void): Chainable<void>;
+      waitEvents(fn: (evts: EventEvent[]) => void): Chainable<void>;
       clickButton(dataname: string): Chainable<void>;
       loadBlank(): Chainable<void>;
     }

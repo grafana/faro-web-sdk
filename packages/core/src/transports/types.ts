@@ -1,4 +1,4 @@
-import type { APIEvent, ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent } from '../api';
+import type { APIEvent, EventEvent, ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent } from '../api';
 import type { Patterns } from '../config';
 import type { Meta } from '../metas';
 import type { Extension } from '../utils';
@@ -28,6 +28,7 @@ export interface TransportBody {
   logs?: LogEvent[];
   measurements?: MeasurementEvent[];
   traces?: TraceEvent;
+  events?: EventEvent[];
 }
 
 export interface Transports {

@@ -126,4 +126,8 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
+  EventEvent,
+  EventsAPI,
 } from '@grafana/agent-core';
+
+export { BROWSER_EVENT_DOMAIN } from './consts';

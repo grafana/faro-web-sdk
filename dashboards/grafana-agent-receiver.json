@@ -9,13 +9,13 @@
       "pluginName": "Prometheus"
     }
   ],
-  "__elements": [],
+  "__elements": {},
   "__requires": [
     {
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "9.0.3-0dc0087e"
+      "version": "9.0.0"
     },
     {
       "type": "datasource",
@@ -62,7 +62,6 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1657178846545,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -110,7 +109,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.3-0dc0087e",
+      "pluginVersion": "9.0.0",
       "targets": [
         {
           "datasource": {
@@ -173,7 +172,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.3-0dc0087e",
+      "pluginVersion": "9.0.0",
       "targets": [
         {
           "datasource": {
@@ -236,7 +235,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.3-0dc0087e",
+      "pluginVersion": "9.0.0",
       "targets": [
         {
           "datasource": {
@@ -273,10 +272,6 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "dark-red",
-                "value": 1
               }
             ]
           }
@@ -289,7 +284,7 @@
         "x": 6,
         "y": 0
       },
-      "id": 11,
+      "id": 20,
       "interval": "5m",
       "options": {
         "colorMode": "value",
@@ -303,22 +298,23 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.3-0dc0087e",
+      "pluginVersion": "9.0.0",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "${PROMETHEUS}"
           },
+          "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(increase(app_agent_receiver_exporter_errors_total{instance=\"$instance\"}[$__range]))",
+          "expr": "sum(increase(app_agent_receiver_events_total{instance=\"$instance\"}[$__range]))",
           "instant": true,
           "interval": "",
           "legendFormat": "",
           "refId": "A"
         }
       ],
-      "title": "Exporter errors",
+      "title": "Events",
       "type": "stat"
     },
     {
@@ -364,7 +360,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.3-0dc0087e",
+      "pluginVersion": "9.0.0",
       "targets": [
         {
           "datasource": {
@@ -429,7 +425,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.3-0dc0087e",
+      "pluginVersion": "9.0.0",
       "targets": [
         {
           "datasource": {
@@ -445,6 +441,73 @@
         }
       ],
       "title": "Rate Limited Requests",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "dark-red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 2,
+        "x": 12,
+        "y": 0
+      },
+      "id": 11,
+      "interval": "5m",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${PROMETHEUS}"
+          },
+          "exemplar": false,
+          "expr": "sum(increase(app_agent_receiver_exporter_errors_total{instance=\"$instance\"}[$__range]))",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Processing errors",
       "type": "stat"
     },
     {
@@ -477,7 +540,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 12,
+        "x": 14,
         "y": 0
       },
       "id": 19,
@@ -493,7 +556,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.0.3-0dc0087e",
+      "pluginVersion": "9.0.0",
       "targets": [
         {
           "datasource": {
@@ -501,7 +564,7 @@
             "uid": "${PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(app_agent_receiver_sourcemap_cache_size{instance=\"auth-app-production\"})",
+          "expr": "sum(app_agent_receiver_sourcemap_cache_size{instance=\"$instance\"})",
           "legendFormat": "sourcemaps cached",
           "range": true,
           "refId": "A"
@@ -521,6 +584,8 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -577,7 +642,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -639,6 +705,8 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -711,7 +779,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -755,9 +824,23 @@
           "interval": "",
           "legendFormat": "measurements",
           "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "sum(increase(app_agent_receiver_events_total{instance=\"$instance\"}[$__interval]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "events",
+          "range": true,
+          "refId": "D"
         }
       ],
-      "title": "Events ingested",
+      "title": "Telemetry ingested",
       "type": "timeseries"
     },
     {
@@ -771,6 +854,8 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -842,7 +927,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -877,6 +963,8 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -923,7 +1011,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 12,
         "y": 13
@@ -934,7 +1022,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -971,7 +1060,7 @@
     }
   ],
   "refresh": false,
-  "schemaVersion": 36,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -1007,6 +1096,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "Receiver",
-  "version": 6,
+  "version": 3,
   "weekStart": ""
 }
