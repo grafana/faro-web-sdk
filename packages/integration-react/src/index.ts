@@ -13,7 +13,14 @@ export { ReactIntegration } from './instrumentation';
 export { GrafanaProfiler, withGrafanaProfiler } from './profiler';
 export type { GrafanaProfilerProps } from './profiler';
 
-export { GrafanaAgentRoute, GrafanaAgentRoutes, NavigationType, ReactRouterVersion } from './router';
+export {
+  GrafanaAgentRoute,
+  GrafanaAgentRoutes,
+  NavigationType,
+  ReactRouterVersion,
+  setReactRouterV4V5SSRDependencies,
+  setReactRouterV6SSRDependencies,
+} from './router';
 export type {
   ReactRouterHistory,
   ReactRouterLocation,

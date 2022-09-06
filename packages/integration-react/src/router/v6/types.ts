@@ -13,6 +13,7 @@ export interface ReactRouterV6RouteObject {
 export interface ReactRouterV6RoutesProps {
   children?: ReactNode;
   location?: Partial<ReactRouterLocation> | string;
+  routesComponent?: ReactRouterV6RoutesShape;
 }
 
 export type ReactRouterV6Params<Key extends string = string> = {

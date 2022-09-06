@@ -9,8 +9,8 @@ import type { ReactRouterV6RoutesProps } from './types';
 import { getRouteFromLocation } from './utils';
 
 export function GrafanaAgentRoutes(props: ReactRouterV6RoutesProps) {
-  const location = useLocation();
-  const navigationType = useNavigationType();
+  const location = useLocation?.();
+  const navigationType = useNavigationType?.();
 
   const routes = useMemo(() => createRoutesFromChildren?.(props.children) ?? [], [props.children]);
 
@@ -40,5 +40,7 @@ export function GrafanaAgentRoutes(props: ReactRouterV6RoutesProps) {
     }
   }, [location, navigationType, routes]);
 
-  return <Routes {...props} />;
+  const ActualRoutes = props.routesComponent ?? Routes;
+
+  return <ActualRoutes {...props} />;
 }

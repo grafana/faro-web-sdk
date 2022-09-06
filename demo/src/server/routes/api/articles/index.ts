@@ -1,0 +1,1 @@
+export { registerApiArticlesRoutes } from './registerApiArticlesRoutes';

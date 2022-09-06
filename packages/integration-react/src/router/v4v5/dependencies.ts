@@ -15,3 +15,7 @@ export function setDependencies(dependencies: ReactRouterV4V5Dependencies, newAg
   history = dependencies.history;
   Route = dependencies.Route;
 }
+
+export function setReactRouterV4V5SSRDependencies(newDependencies: Pick<ReactRouterV4V5Dependencies, 'Route'>): void {
+  Route = newDependencies.Route;
+}

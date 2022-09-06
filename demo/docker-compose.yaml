@@ -1,0 +1,66 @@
+version: '3'
+
+services:
+  grafana:
+    image: grafana/grafana:latest
+    entrypoint:
+      - /usr/share/grafana/bin/grafana-server
+      - --homepath=/usr/share/grafana
+      - --config=/etc/grafana-config/grafana.ini
+    volumes:
+      - ./infra/grafana/config:/etc/grafana-config
+      - ./infra/grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - '3000:3000'
+
+  loki:
+    image: grafana/loki:latest
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - '3100:3100'
+
+  cortex:
+    image: cortexproject/cortex:v1.13.0
+    volumes:
+      - ./infra/cortex/config:/etc/cortex-config
+    entrypoint:
+      - /bin/cortex
+      - -config.file=/etc/cortex-config/cortex.yaml
+    ports:
+      - '9009:9009'
+
+  tempo:
+    image: grafana/tempo:latest
+    command:
+      - '-search.enabled=true'
+      - '-storage.trace.backend=local'
+      - '-storage.trace.local.path=/tmp/tempo/traces'
+      - '-storage.trace.wal.path=/tmp/tempo/wal'
+      - '-auth.enabled=false'
+      - '-server.http-listen-port=3200'
+    ports:
+      - '3200:3200'
+
+  agent:
+    image: grafana/agent:main
+    volumes:
+      - ./infra/agent/config:/etc/agent-config
+    entrypoint:
+      - /bin/agent
+      - -config.file=/etc/agent-config/agent.yaml
+      - -metrics.wal-directory=/tmp/agent/wal
+      - -enable-features=integrations-next
+      - -config.expand-env
+      - -config.enable-read-api
+    environment:
+      HOSTNAME: agent
+      REMOTE_WRITE_HOST: cortex:9009
+      LOKI_HOST: loki:3100
+      TEMPO_HOST: tempo:4317
+    ports:
+      - '12345:12345'
+      - '8027:8027'
+    depends_on:
+      - cortex
+      - loki
+      - tempo
