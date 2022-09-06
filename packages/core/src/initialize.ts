@@ -26,6 +26,8 @@ export function initializeGrafanaAgent(config: Config): Agent {
   const transports = initializeTransports(internalLogger, config);
   const api = initializeAPI(internalLogger, config, transports, metas);
 
+  api.setSession(config.session);
+
   const agent = initializeAgent(internalLogger, {
     api,
     config,
@@ -35,9 +37,11 @@ export function initializeGrafanaAgent(config: Config): Agent {
     transports,
     unpatchedConsole,
     unpause: transports.unpause,
-  } as Agent);
+    instrumentations: initializeInstrumentations(internalLogger),
+  });
 
-  agent.instrumentations = initializeInstrumentations(agent.internalLogger, agent.config);
+  // make sure agent is initialized before initializing instrumentations
+  agent.instrumentations.add(...config.instrumentations);
 
   return agent;
 }

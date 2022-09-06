@@ -2,9 +2,12 @@ export type MetaGetter<P = Partial<Meta>> = () => P;
 
 export type MetaItem<P = Partial<Meta>> = P | MetaGetter<P>;
 
+export type MetasListener = (value: Meta) => void;
 export interface Metas {
   add: (...getters: MetaItem[]) => void;
   remove: (...getters: MetaItem[]) => void;
+  addListener: (listener: MetasListener) => void;
+  removeListener: (listener: MetasListener) => void;
   value: Meta;
 }
 
@@ -37,6 +40,7 @@ export interface MetaUser {
 
 export interface MetaSession {
   id?: string;
+  started?: string;
   attributes?: MetaAttributes;
 }
 

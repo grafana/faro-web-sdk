@@ -121,3 +121,5 @@ export type {
 } from './utils';
 
 export { VERSION } from './version';
+
+export { Events } from './semantic';
