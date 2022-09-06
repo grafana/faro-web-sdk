@@ -10,6 +10,7 @@ import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 
 import { GrafanaAgentTraceExporter } from './agentExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
+import { SessionSpanProcessor } from './sessionSpanProcessor';
 import type { TracingInstrumentationOptions } from './types';
 
 // the providing of app name here is not great
@@ -47,9 +48,11 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     provider.addSpanProcessor(
       options.spanProcessor ??
-        new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }), {
-          scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
-        })
+        new SessionSpanProcessor(
+          new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }), {
+            scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
+          })
+        )
     );
 
     provider.register({
