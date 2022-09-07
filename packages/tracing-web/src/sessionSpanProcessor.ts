@@ -16,7 +16,6 @@ export class SessionSpanProcessor implements SpanProcessor {
 
   onStart(span: Span, parentContext: Context): void {
     const session = agent.metas.value.session;
-    console.log('onStart', span, session?.id);
     if (session?.id) {
       span.attributes['session_id'] = session.id;
     }
