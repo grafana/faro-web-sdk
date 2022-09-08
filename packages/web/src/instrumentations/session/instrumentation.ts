@@ -1,4 +1,4 @@
-import { BaseInstrumentation, Events, Meta, MetaSession } from '@grafana/agent-core';
+import { BaseInstrumentation, Conventions, Meta, MetaSession } from '@grafana/agent-core';
 import { VERSION } from 'ua-parser-js';
 
 // all this does is send SESSION_START event
@@ -16,12 +16,12 @@ export class SessionInstrumentation extends BaseInstrumentation {
       this.notifiedSession = session;
       // no need to add attributes and session id, they are included as part of meta
       // automatically
-      this.agent.api.pushEvent(Events.SESSION_START);
+      this.agent.api.pushEvent(Conventions.EventNames.SESSION_START);
     }
   }
 
   initialize() {
     this.sendSessionStartEvent(this.agent.metas.value);
-    this.agent.metas.addListener(this.sendSessionStartEvent);
+    this.agent.metas.addListener(this.sendSessionStartEvent.bind(this));
   }
 }

@@ -122,4 +122,4 @@ export type {
 
 export { VERSION } from './version';
 
-export { Events } from './semantic';
+export { Conventions } from './semantic';

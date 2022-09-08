@@ -131,3 +131,5 @@ export type {
 } from '@grafana/agent-core';
 
 export { BROWSER_EVENT_DOMAIN } from './consts';
+
+export { createSession } from './session';
