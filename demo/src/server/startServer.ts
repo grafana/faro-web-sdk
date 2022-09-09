@@ -1,6 +1,4 @@
-import 'isomorphic-fetch';
-
-import { env } from '../utils';
+import { env } from '../common';
 import { createServer } from './createServer';
 
 if (!env.test) {

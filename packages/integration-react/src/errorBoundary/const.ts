@@ -1,6 +1,6 @@
-import type { ErrorBoundaryState } from './types';
+import type { GrafanaAgentErrorBoundaryState } from './types';
 
-export const errorBoundaryInitialState: ErrorBoundaryState = {
+export const grafanaAgentErrorBoundaryInitialState: GrafanaAgentErrorBoundaryState = {
   componentStack: null,
   error: null,
 } as const;

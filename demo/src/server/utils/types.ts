@@ -5,12 +5,12 @@ import type {
 } from 'express';
 import type { ParsedQs } from 'qs';
 
-import type { UserPublic } from '../../models';
+import type { UserPublic } from '../../common';
 
 export type Request<
-  RouteParams extends Record<string, string>,
-  ResBody extends Record<string, any>,
-  ReqBody extends Record<string, any>,
+  RouteParams extends Record<string, string> = any,
+  ResBody extends Record<string, any> = any,
+  ReqBody extends Record<string, any> = any,
   ReqQuery = ParsedQs
 > = ExpressRequest<RouteParams, ResBody, ReqBody, ReqQuery, { token: string | undefined; user: UserPublic }>;
 
@@ -21,4 +21,7 @@ export type RequestHandler<
   ReqQuery extends ParsedQs = any
 > = ExpressRequestHandler<RouteParams, ResBody, ReqBody, ReqQuery, { token: string | undefined; user: UserPublic }>;
 
-export type Response<ResBody = any> = ExpressResponse<ResBody, { token: string | undefined; user: UserPublic }>;
+export type Response<ResBody extends Record<string, any> = any> = ExpressResponse<
+  ResBody,
+  { token: string | undefined; user: UserPublic }
+>;

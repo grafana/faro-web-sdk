@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import type { Article, ArticleInput, ArticlePublic, User } from '../../models';
+import type { Article, ArticleInput, ArticlePublic, User } from '../../common';
 import { getCommentPublicFromComment, getCommentsByArticleId } from './comments';
 import { getUserById, getUserPublicFromUser } from './users';
 

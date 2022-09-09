@@ -1,6 +1,6 @@
 import { compare } from 'bcrypt';
 
-import type { AuthLoginPayload, AuthLoginSuccessPayload } from '../../../../models';
+import type { AuthLoginPayload, AuthLoginSuccessPayload } from '../../../../common';
 import { getUserByEmail, getUserPublicFromUser } from '../../../data';
 import { sendError, sendFormValidationError, sendSuccess, setAuthorizationToken, signToken } from '../../../utils';
 import type { RequestHandler } from '../../../utils';

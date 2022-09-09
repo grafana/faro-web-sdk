@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "src",
+    "baseUrl": ".",
     "composite": true,
     "declaration": true,
     "esModuleInterop": true,
@@ -34,7 +34,7 @@
   "ts-node": {
     "esm": true
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
   "references": [
     {
       "path": "../packages/core/tsconfig.esm.json",

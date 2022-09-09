@@ -1,9 +1,10 @@
 import type { Express, Router } from 'express';
 import { readFileSync } from 'fs';
 
-import { env } from '../../../utils';
-import { toAbsolutePath, verifyToken } from '../../utils';
-import type { Response } from '../../utils';
+import { env } from '../../../common';
+import { sendError, toAbsolutePath } from '../../utils';
+import type { Request, Response } from '../../utils';
+import { renderPage } from './renderPage';
 
 export async function registerRenderDevRoutes(globalRouter: Router, _app: Express): Promise<void> {
   const vite = await (
@@ -25,35 +26,16 @@ export async function registerRenderDevRoutes(globalRouter: Router, _app: Expres
 
   globalRouter.use('*', async (req, res) => {
     try {
-      const userPublic = verifyToken((res as Response).locals.token) ?? null;
-
-      const preloadedState = {
-        user: {
-          data: userPublic ?? null,
-        },
-      };
-
-      const url = req.originalUrl;
-
       const indexHtml = readFileSync(toAbsolutePath('index.html'), 'utf-8');
-      const template = await vite.transformIndexHtml(url, indexHtml);
+      const template = await vite.transformIndexHtml(req.originalUrl, indexHtml);
 
       const render = (await vite.ssrLoadModule('./src/server/routes/render/renderToString'))['renderToString'];
 
-      const [renderedHtml, helmetContext] = render(url, preloadedState);
-
-      const html = template
-        .replace('<!--app-title-->', helmetContext.helmet.title.toString())
-        .replace('<!--app-state-->', `<script>window.__PRELOADED_STATE__ = ${JSON.stringify(preloadedState)}</script>`)
-        .replace('<!--app-html-->', renderedHtml);
-
-      res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+      renderPage(req as Request, res as Response, template, render);
     } catch (err) {
       vite.ssrFixStacktrace(err);
 
-      console.log(err.stack);
-
-      res.status(500).end(err.stack);
+      sendError(res, err);
     }
   });
 }

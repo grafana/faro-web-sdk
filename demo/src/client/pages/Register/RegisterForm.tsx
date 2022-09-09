@@ -1,21 +1,16 @@
-import { useEffect } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import type { AuthRegisterPayload } from '../../../models';
+import type { AuthRegisterPayload } from '../../../common';
 import { usePostRegisterMutation } from '../../api';
-import { useAppDispatch } from '../../hooks';
-import { setUser } from '../../store';
 
 export function RegisterForm() {
   const navigate = useNavigate();
 
   const [register, registerResult] = usePostRegisterMutation();
-
-  const dispatch = useAppDispatch();
 
   const { handleSubmit, register: registerField } = useForm<AuthRegisterPayload>({
     defaultValues: {
@@ -25,15 +20,14 @@ export function RegisterForm() {
     },
   });
 
-  useEffect(() => {
-    if (!registerResult.isUninitialized && !registerResult.isLoading && !registerResult.isError) {
-      dispatch(setUser(registerResult.data));
-      navigate('/');
-    }
-  }, [dispatch, registerResult, navigate]);
+  const onSubmit = handleSubmit((data) => {
+    register(data).then(() => {
+      navigate('/articles');
+    });
+  });
 
   return (
-    <Form onSubmit={handleSubmit(register)}>
+    <Form onSubmit={onSubmit}>
       {registerResult.isError && !registerResult.isLoading ? (
         <Alert variant="danger">{(registerResult.error as any).data.message}</Alert>
       ) : null}

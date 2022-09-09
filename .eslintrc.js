@@ -15,6 +15,14 @@ module.exports = {
         alphabetize: { order: 'asc', caseInsensitive: true },
         'newlines-between': 'always',
         groups: [['builtin', 'external'], 'internal', ['parent', 'sibling', 'index']],
+        pathGroups: [
+          {
+            pattern: '@grafana/**',
+            group: 'internal',
+            position: 'before',
+          },
+        ],
+        pathGroupsExcludedImportTypes: ['@grafana/**'],
       },
     ],
     'no-duplicate-imports': 'off',

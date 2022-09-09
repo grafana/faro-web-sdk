@@ -1,7 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-import type { UserPublic } from '../../../models';
+import type { UserPublic } from '../../../common';
+import { authAPI } from '../../api';
 import type { RootState } from '../store';
 
 export type UserState = {
@@ -19,6 +20,15 @@ export const userSlice = createSlice({
     setUser: (state, action: PayloadAction<UserPublic | null>) => {
       state.data = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addMatcher(authAPI.endpoints.postLogin.matchFulfilled, (state, action) => {
+      state.data = action.payload;
+    });
+
+    builder.addMatcher(authAPI.endpoints.postRegister.matchFulfilled, (state, action) => {
+      state.data = action.payload;
+    });
   },
 });
 

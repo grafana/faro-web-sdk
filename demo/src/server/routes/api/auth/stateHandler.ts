@@ -1,4 +1,4 @@
-import type { AuthGetAuthStatePayload, AuthGetAuthStateSuccessPayload } from '../../../../models';
+import type { AuthGetAuthStatePayload, AuthGetAuthStateSuccessPayload } from '../../../../common';
 import { sendError, sendSuccess } from '../../../utils';
 import type { RequestHandler } from '../../../utils';
 

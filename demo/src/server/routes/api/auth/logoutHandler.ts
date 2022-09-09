@@ -1,4 +1,4 @@
-import type { AuthLogoutPayload, AuthLogoutSuccessPayload } from '../../../../models';
+import type { AuthLogoutPayload, AuthLogoutSuccessPayload } from '../../../../common';
 import { removeAuthorizationToken, sendSuccess } from '../../../utils';
 import type { RequestHandler } from '../../../utils';
 

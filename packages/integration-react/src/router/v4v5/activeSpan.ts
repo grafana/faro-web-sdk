@@ -1,6 +1,7 @@
-import { globalObject, VERSION } from '@grafana/agent-web';
 import type { Span } from '@opentelemetry/api';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+
+import { globalObject, VERSION } from '@grafana/agent-web';
 
 import { agent } from './dependencies';
 

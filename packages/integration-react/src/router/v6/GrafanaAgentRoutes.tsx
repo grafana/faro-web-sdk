@@ -1,7 +1,8 @@
-import { globalObject, VERSION } from '@grafana/agent-web';
 import type { Span } from '@opentelemetry/api';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { useEffect, useMemo, useRef } from 'react';
+
+import { globalObject, VERSION } from '@grafana/agent-web';
 
 import { NavigationType } from '../types';
 import { agent, createRoutesFromChildren, isInitialized, Routes, useLocation, useNavigationType } from './dependencies';

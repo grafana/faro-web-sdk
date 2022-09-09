@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import type { User, UserInput, UserPublic } from '../../models';
+import type { User, UserInput, UserPublic } from '../../common';
 
 export let users: User[] = [];
 

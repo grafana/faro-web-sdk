@@ -3,7 +3,7 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import type { Express } from 'express';
 
-import { env } from '../utils';
+import { env } from '../common';
 import { registerRoutes } from './routes';
 
 export async function createServer(): Promise<Express> {

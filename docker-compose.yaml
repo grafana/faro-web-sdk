@@ -10,6 +10,8 @@ services:
     volumes:
       - ./infra/grafana/config:/etc/grafana-config
       - ./infra/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./infra/grafana/dashboards-provisioning:/etc/grafana/provisioning/dashboards
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards
     ports:
       - '3000:3000'
 
@@ -45,6 +47,7 @@ services:
     image: grafana/agent:main
     volumes:
       - ./infra/agent/config:/etc/agent-config
+      - applogs:/var/log
     entrypoint:
       - /bin/agent
       - -config.file=/etc/agent-config/agent.yaml
@@ -60,7 +63,21 @@ services:
     ports:
       - '12345:12345'
       - '8027:8027'
+      - '4317:4317'
     depends_on:
       - cortex
       - loki
       - tempo
+
+  app:
+    build: .
+    command: yarn start
+    volumes:
+      - applogs:/usr/app/demo/logs
+    ports:
+      - '5173:5173'
+    depends_on:
+      - agent
+
+volumes:
+  applogs:

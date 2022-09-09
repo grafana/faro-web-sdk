@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import type { Article, Comment, CommentInput, CommentPublic, User } from '../../models';
+import type { Article, Comment, CommentInput, CommentPublic, User } from '../../common';
 import { getUserById, getUserPublicFromUser } from './users';
 
 export let comments: Comment[] = [];

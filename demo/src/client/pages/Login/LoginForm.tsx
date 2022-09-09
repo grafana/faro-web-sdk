@@ -1,21 +1,16 @@
-import { useEffect } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import type { AuthLoginPayload } from '../../../models';
+import type { AuthLoginPayload } from '../../../common';
 import { usePostLoginMutation } from '../../api';
-import { useAppDispatch } from '../../hooks';
-import { setUser } from '../../store';
 
 export function LoginForm() {
   const navigate = useNavigate();
 
   const [login, loginResult] = usePostLoginMutation();
-
-  const dispatch = useAppDispatch();
 
   const { handleSubmit, register: registerField } = useForm<AuthLoginPayload>({
     defaultValues: {
@@ -24,16 +19,14 @@ export function LoginForm() {
     },
   });
 
-  useEffect(() => {
-    if (!loginResult.isUninitialized && !loginResult.isLoading && !loginResult.isError) {
-      dispatch(setUser(loginResult.data));
-
-      navigate('/');
-    }
-  }, [dispatch, loginResult, navigate]);
+  const onSubmit = handleSubmit((data) => {
+    login(data).then(() => {
+      navigate('/articles');
+    });
+  });
 
   return (
-    <Form onSubmit={handleSubmit(login)}>
+    <Form onSubmit={onSubmit}>
       {loginResult.isError && !loginResult.isLoading ? (
         <Alert variant="danger">{(loginResult.error as any).data.message}</Alert>
       ) : null}

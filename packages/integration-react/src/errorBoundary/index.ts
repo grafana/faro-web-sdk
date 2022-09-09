@@ -1,14 +1,13 @@
-export { errorBoundaryInitialState } from './const';
+export { grafanaAgentErrorBoundaryInitialState } from './const';
 
-export { ErrorBoundary } from './ErrorBoundary';
+export { GrafanaAgentErrorBoundary } from './GrafanaAgentErrorBoundary';
 
 export type {
-  ErrorBoundaryFallbackRender,
-  ErrorBoundaryProps,
-  ErrorBoundaryState,
-  ErrorWithCause,
+  GrafanaAgentErrorBoundaryFallbackRender,
+  GrafanaAgentErrorBoundaryProps,
+  GrafanaAgentErrorBoundaryState,
   ReactNodeRender,
   ReactProps,
 } from './types';
 
-export { withErrorBoundary } from './withErrorBoundary';
+export { withGrafanaAgentErrorBoundary } from './withGrafanaAgentErrorBoundary';

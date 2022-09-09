@@ -1,6 +1,7 @@
-import type { Agent } from '@grafana/agent-web';
 import hoistNonReactStatics from 'hoist-non-react-statics';
 import type { FunctionComponent } from 'react';
+
+import type { Agent } from '@grafana/agent-web';
 
 import { NavigationType } from '../types';
 import { activeSpan, createNewActiveSpan } from './activeSpan';

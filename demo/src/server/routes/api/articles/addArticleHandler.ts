@@ -1,4 +1,4 @@
-import type { ArticleAddPayload, ArticleAddSuccessPayload } from '../../../../models';
+import type { ArticleAddPayload, ArticleAddSuccessPayload } from '../../../../common';
 import { addArticle, getArticlePublicFromArticle } from '../../../data';
 import { sendError, sendFormValidationError, sendSuccess } from '../../../utils';
 import type { RequestHandler } from '../../../utils';

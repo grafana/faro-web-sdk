@@ -7,7 +7,7 @@ import type {
   ArticleGetSuccessPayload,
   ArticlesGetPayload,
   ArticlesGetSuccessPayload,
-} from '../../models';
+} from '../../common';
 import { baseQuery } from './baseQuery';
 
 export const articlesAPI = createApi({

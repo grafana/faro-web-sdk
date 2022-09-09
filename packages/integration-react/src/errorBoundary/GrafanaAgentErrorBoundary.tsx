@@ -1,15 +1,19 @@
-import { agent, isFunction } from '@grafana/agent-web';
 import { Component, isValidElement } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 
+import { agent, isFunction } from '@grafana/agent-web';
+
 import { isReactVersionAtLeast17 } from '../utils';
-import { errorBoundaryInitialState } from './const';
-import type { ErrorBoundaryProps, ErrorBoundaryState } from './types';
+import { grafanaAgentErrorBoundaryInitialState } from './const';
+import type { GrafanaAgentErrorBoundaryProps, GrafanaAgentErrorBoundaryState } from './types';
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  override state: ErrorBoundaryState = errorBoundaryInitialState;
+export class GrafanaAgentErrorBoundary extends Component<
+  GrafanaAgentErrorBoundaryProps,
+  GrafanaAgentErrorBoundaryState
+> {
+  override state: GrafanaAgentErrorBoundaryState = grafanaAgentErrorBoundaryInitialState;
 
-  constructor(props: ErrorBoundaryProps) {
+  constructor(props: GrafanaAgentErrorBoundaryProps) {
     super(props);
 
     this.resetErrorBoundary = this.resetErrorBoundary.bind(this);
@@ -51,7 +55,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   resetErrorBoundary(): void {
     this.props.onReset?.(this.state.error, this.state.componentStack);
 
-    this.setState(errorBoundaryInitialState);
+    this.setState(grafanaAgentErrorBoundaryInitialState);
   }
 
   override render(): ReactNode {

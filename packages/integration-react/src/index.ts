@@ -1,9 +1,12 @@
-export { ErrorBoundary, errorBoundaryInitialState, withErrorBoundary } from './errorBoundary';
+export {
+  GrafanaAgentErrorBoundary,
+  grafanaAgentErrorBoundaryInitialState,
+  withGrafanaAgentErrorBoundary,
+} from './errorBoundary';
 export type {
-  ErrorBoundaryFallbackRender,
-  ErrorBoundaryProps,
-  ErrorBoundaryState,
-  ErrorWithCause,
+  GrafanaAgentErrorBoundaryFallbackRender,
+  GrafanaAgentErrorBoundaryProps,
+  GrafanaAgentErrorBoundaryState,
   ReactNodeRender,
   ReactProps,
 } from './errorBoundary';

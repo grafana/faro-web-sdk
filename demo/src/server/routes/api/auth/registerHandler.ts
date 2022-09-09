@@ -1,6 +1,6 @@
 import { hash } from 'bcrypt';
 
-import type { AuthRegisterPayload, AuthRegisterSuccessPayload } from '../../../../models';
+import type { AuthRegisterPayload, AuthRegisterSuccessPayload } from '../../../../common';
 import { addUser, getUserByEmail, getUserPublicFromUser } from '../../../data';
 import { sendError, sendFormValidationError, sendSuccess, setAuthorizationToken, signToken } from '../../../utils';
 import type { RequestHandler } from '../../../utils';

@@ -1,6 +1,6 @@
 import type { Express, Router } from 'express';
 
-import { env } from '../../../utils';
+import { env } from '../../../common';
 
 export async function registerRenderRoutes(globalRouter: Router, app: Express): Promise<void> {
   if (env.prod) {

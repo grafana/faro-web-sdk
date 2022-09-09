@@ -7,7 +7,7 @@ import type {
   AuthLogoutSuccessPayload,
   AuthRegisterPayload,
   AuthRegisterSuccessPayload,
-} from '../../models';
+} from '../../common';
 import { baseQuery } from './baseQuery';
 
 export const authAPI = createApi({

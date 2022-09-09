@@ -1,3 +1,6 @@
+import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
+
 import {
   initializeGrafanaAgent as coreInit,
   getWebInstrumentations,
@@ -6,10 +9,8 @@ import {
 } from '@grafana/agent-integration-react';
 import type { Agent } from '@grafana/agent-integration-react';
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
-import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
 
-import { env } from '../../utils';
+import { env } from '../../common';
 import { setGrafanaAgent } from './grafanaAgent';
 
 export function initializeGrafanaAgent(): Agent {
@@ -38,7 +39,7 @@ export function initializeGrafanaAgent(): Agent {
       id: uuidv4(),
     },
     app: {
-      name: '@grafana/agent-demo',
+      name: '@grafana/agent-demo-client',
       version: '0.0.1',
       environment: env.prod ? 'production' : env.test ? 'test' : 'development',
     },

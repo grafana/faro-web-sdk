@@ -1,9 +1,10 @@
-import type { TraceEvent } from '@grafana/agent-core';
 import { ExportResultCode } from '@opentelemetry/core';
 import type { ExportResult } from '@opentelemetry/core';
 import { createExportTraceServiceRequest } from '@opentelemetry/otlp-transformer';
 import type { IExportTraceServiceRequest } from '@opentelemetry/otlp-transformer';
 import type { ReadableSpan, SpanExporter } from '@opentelemetry/sdk-trace-base';
+
+import type { TraceEvent } from '@grafana/agent-core';
 
 import type { GrafanaAgentTraceExporterConfig } from './types';
 

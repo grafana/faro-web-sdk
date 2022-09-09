@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-import type { UserPublic } from '../../models';
+import type { UserPublic } from '../../common';
 import { getUserById, getUserPublicFromUser } from '../data';
 import { authorizationSecret } from './const';
 

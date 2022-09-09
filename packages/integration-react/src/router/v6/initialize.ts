@@ -1,5 +1,6 @@
-import type { Agent } from '@grafana/agent-web';
 import hoistNonReactStatics from 'hoist-non-react-statics';
+
+import type { Agent } from '@grafana/agent-web';
 
 import { setDependencies } from './dependencies';
 import { GrafanaAgentRoutes } from './GrafanaAgentRoutes';

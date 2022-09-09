@@ -1,0 +1,75 @@
+server:
+  log_level: debug
+
+metrics:
+  global:
+    scrape_interval: 60s
+    remote_write:
+      - url: http://${REMOTE_WRITE_HOST:-localhost:9009}/api/prom/push
+  configs:
+    - name: '@grafana/agent-demo'
+      scrape_configs:
+        - job_name: '@grafana/agent-demo-server'
+          static_configs:
+            - targets:
+                - localhost:5173
+
+logs:
+  configs:
+    - name: '@grafana/agent-demo-client'
+      clients:
+        - url: http://${LOKI_HOST:-localhost:3100}/loki/api/v1/push
+      positions:
+        filename: /tmp/positions-client.yaml
+    - name: '@grafana/agent-demo-server'
+      clients:
+        - url: http://${LOKI_HOST:-localhost:3100}/loki/api/v1/push
+      positions:
+        filename: /tmp/positions-server.yaml
+      scrape_configs:
+        - job_name: '@grafana/agent-demo-server'
+          static_configs:
+            - targets:
+                - localhost
+              labels:
+                app: '@grafana/agent-demo-server'
+                __path__: /var/log/server.log
+
+traces:
+  configs:
+    - name: '@grafana/agent-demo'
+      remote_write:
+        - endpoint: ${TEMPO_HOST:-localhost:4317}
+          insecure: true
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+
+integrations:
+  app_agent_receiver:
+    autoscrape:
+      enable: true
+      metrics_instance: '@grafana/agent-demo'
+    instance: '@grafana/agent-demo'
+    logs_instance: '@grafana/agent-demo-client'
+    logs_labels:
+      app: '@grafana/agent-demo-client'
+      kind: ''
+    logs_send_timeout: 5s
+    server:
+      api_key: api_key
+      cors_allowed_origins:
+        - '*'
+        - http://localhost:5173
+        - http://127.0.0.1:5173
+      host: 0.0.0.0
+      max_allowed_payload_size: 5e+05
+      port: 8027
+      rate_limiting:
+        burstiness: 100
+        enabled: true
+        rps: 100
+    sourcemaps:
+      download: true
+    traces_instance: '@grafana/agent-demo'

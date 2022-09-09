@@ -1,4 +1,3 @@
-import { agent, BaseInstrumentation, VERSION } from '@grafana/agent-core';
 import { context, trace } from '@opentelemetry/api';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
@@ -7,6 +6,8 @@ import { Resource, ResourceAttributes } from '@opentelemetry/resources';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+
+import { agent, BaseInstrumentation, VERSION } from '@grafana/agent-core';
 
 import { GrafanaAgentTraceExporter } from './agentExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';

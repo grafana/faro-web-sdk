@@ -2,19 +2,19 @@ import hoistNonReactStatics from 'hoist-non-react-statics';
 import type { ComponentType, FC } from 'react';
 
 import { unknownString } from '../utils';
-import { ErrorBoundary } from './ErrorBoundary';
-import type { ErrorBoundaryProps, ReactProps } from './types';
+import { GrafanaAgentErrorBoundary } from './GrafanaAgentErrorBoundary';
+import type { GrafanaAgentErrorBoundaryProps, ReactProps } from './types';
 
-export function withErrorBoundary<P extends ReactProps = {}>(
+export function withGrafanaAgentErrorBoundary<P extends ReactProps = {}>(
   WrappedComponent: ComponentType<P>,
-  errorBoundaryProps: ErrorBoundaryProps
+  errorBoundaryProps: GrafanaAgentErrorBoundaryProps
 ): FC<P> {
   const componentDisplayName = WrappedComponent.displayName ?? WrappedComponent.name ?? unknownString;
 
   const Component: FC<P> = (wrappedComponentProps: P) => (
-    <ErrorBoundary {...errorBoundaryProps}>
+    <GrafanaAgentErrorBoundary {...errorBoundaryProps}>
       <WrappedComponent {...wrappedComponentProps} />
-    </ErrorBoundary>
+    </GrafanaAgentErrorBoundary>
   );
 
   Component.displayName = `grafanaAgentErrorBoundary(${componentDisplayName})`;

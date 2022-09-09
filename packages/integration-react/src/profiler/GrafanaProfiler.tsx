@@ -1,8 +1,9 @@
-import { agent, VERSION } from '@grafana/agent-web';
-import type { OTELApi } from '@grafana/agent-web';
 import type { Attributes, Span, Tracer } from '@opentelemetry/api';
 import { Component } from 'react';
 import type { ReactNode } from 'react';
+
+import type { OTELApi } from '@grafana/agent-web';
+import { agent, VERSION } from '@grafana/agent-web';
 
 export interface GrafanaProfilerProps {
   children: ReactNode;

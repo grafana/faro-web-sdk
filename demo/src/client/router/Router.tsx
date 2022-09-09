@@ -1,28 +1,17 @@
-import { GrafanaAgentRoutes } from '@grafana/agent-integration-react';
-import { lazy } from 'react';
 import { Route } from 'react-router-dom';
 
+import { GrafanaAgentRoutes } from '@grafana/agent-integration-react';
+
+import { LoggedIn } from '../layouts/LoggedIn';
+import { LoggedOut } from '../layouts/LoggedOut';
+import { About } from '../pages/About';
+import { ArticleAdd } from '../pages/ArticleAdd';
+import { Articles } from '../pages/Articles';
+import { ArticleView } from '../pages/ArticleView';
+import { Home } from '../pages/Home';
+import { Login } from '../pages/Login';
+import { Register } from '../pages/Register';
 import { LoggedInGuard, LoggedOutGuard } from './guards';
-import { Loadable } from './Loadable';
-
-export function getLoadableLayout(key: string) {
-  return Loadable(lazy(() => import(`../layouts/${key}/${key}.tsx`).then((module) => ({ default: module[key] }))));
-}
-
-export function getLoadablePage(key: string) {
-  return Loadable(lazy(() => import(`../pages/${key}/${key}.tsx`).then((module) => ({ default: module[key] }))));
-}
-
-const LoggedIn = getLoadableLayout('LoggedIn');
-const LoggedOut = getLoadableLayout('LoggedOut');
-
-const About = getLoadablePage('About');
-const ArticleAdd = getLoadablePage('ArticleAdd');
-const Articles = getLoadablePage('Articles');
-const ArticleView = getLoadablePage('ArticleView');
-const Home = getLoadablePage('Home');
-const Login = getLoadablePage('Login');
-const Register = getLoadablePage('Register');
 
 export function Router() {
   return (

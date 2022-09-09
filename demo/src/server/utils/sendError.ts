@@ -1,5 +1,6 @@
-import { isInstanceOf } from '@grafana/agent-core';
 import type { Response } from 'express';
+
+import { isInstanceOf } from '@grafana/agent-core';
 
 export function sendError(res: Response, message: Error | string, statusCode = 500): void {
   const actualMessage = isInstanceOf(message, Error) ? (message as Error).message : message;
