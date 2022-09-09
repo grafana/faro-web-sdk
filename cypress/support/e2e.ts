@@ -13,6 +13,8 @@ beforeEach(() => {
       req.alias = 'traces';
     } else if (body.measurements?.length) {
       req.alias = 'measurements';
+    } else if (body.events?.length) {
+      req.alias = 'events';
     }
     req.reply({
       statusCode: 201,

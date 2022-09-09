@@ -22,6 +22,7 @@ export interface Config<P = APIEvent> {
   ignoreErrors?: Patterns;
   session?: MetaSession;
   user?: MetaUser;
+  eventDomain?: string;
 }
 
 export type Patterns = Array<string | RegExp>;

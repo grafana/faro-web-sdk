@@ -55,3 +55,7 @@ localWindow.traceWithLog = () => {
     });
   }
 };
+
+localWindow.captureEvent = (name: string, attributes?: Record<string, string>) => {
+  window.grafanaAgent.api.pushEvent(name, attributes);
+};
