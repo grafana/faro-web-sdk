@@ -1,4 +1,4 @@
-import type { ErrorInfo, ReactElement, ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 
 import type { Agent } from '@grafana/agent-web';
 
@@ -6,24 +6,20 @@ export type ReactNodeRender = () => ReactNode;
 
 export type ReactProps = Record<string, any>;
 
-export type GrafanaAgentErrorBoundaryFallbackRender = (
-  error: Error,
-  componentStack: string | null,
-  resetError: VoidFunction
-) => ReactElement;
+export type GrafanaAgentErrorBoundaryFallbackRender = (error: Error, resetError: VoidFunction) => ReactElement;
 
 export interface GrafanaAgentErrorBoundaryProps {
   agent?: Agent;
-  beforeCapture?: (error: Error | null, componentStack: string | null) => void;
+  beforeCapture?: (error: Error | null) => void;
   children?: ReactNode | ReactNodeRender;
   fallback?: ReactElement | GrafanaAgentErrorBoundaryFallbackRender;
-  onError?: (error: Error, componentStack: string) => void;
+  onError?: (error: Error) => void;
   onMount?: VoidFunction;
-  onReset?: (error: Error | null, componentStack: string | null) => void;
-  onUnmount?: (error: Error | null, componentStack: string | null) => void;
+  onReset?: (error: Error | null) => void;
+  onUnmount?: (error: Error | null) => void;
 }
 
 export interface GrafanaAgentErrorBoundaryState {
-  componentStack: ErrorInfo['componentStack'] | null;
+  hasError: boolean;
   error: Error | null;
 }

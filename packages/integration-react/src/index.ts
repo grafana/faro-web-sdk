@@ -27,6 +27,7 @@ export {
 export type {
   ReactRouterHistory,
   ReactRouterLocation,
+  ReactRouterV4V5ActiveEvent,
   ReactRouterV4V5Dependencies,
   ReactRouterV4V5RouteShape,
   ReactRouterV6CreateRoutesFromChildren,

@@ -2,6 +2,7 @@ import { hash } from 'bcrypt';
 
 import type { AuthRegisterPayload, AuthRegisterSuccessPayload } from '../../../../common';
 import { addUser, getUserByEmail, getUserPublicFromUser } from '../../../data';
+import { logger } from '../../../logger';
 import { sendError, sendFormValidationError, sendSuccess, setAuthorizationToken, signToken } from '../../../utils';
 import type { RequestHandler } from '../../../utils';
 
@@ -42,6 +43,8 @@ export const registerHandler: RequestHandler<{}, AuthRegisterSuccessPayload, Aut
 
     sendSuccess(res, userPublic, 201);
   } catch (err) {
+    logger.error(err);
+
     sendError(res, err);
   }
 };

@@ -1,6 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
+import { agent } from '@grafana/agent-integration-react';
+
 import type { UserPublic } from '../../../common';
 import { authAPI } from '../../api';
 import type { RootState } from '../store';
@@ -24,10 +26,42 @@ export const userSlice = createSlice({
   extraReducers: (builder) => {
     builder.addMatcher(authAPI.endpoints.postLogin.matchFulfilled, (state, action) => {
       state.data = action.payload;
+
+      agent.api.setUser({
+        email: action.payload.email,
+        id: action.payload.id,
+        username: action.payload.email,
+      });
     });
 
     builder.addMatcher(authAPI.endpoints.postRegister.matchFulfilled, (state, action) => {
       state.data = action.payload;
+
+      agent.api.setUser({
+        email: action.payload.email,
+        id: action.payload.id,
+        username: action.payload.email,
+      });
+    });
+
+    builder.addMatcher(authAPI.endpoints.getAuthState.matchFulfilled, (state, action) => {
+      state.data = action.payload;
+
+      agent.api.setUser({
+        email: action.payload.email,
+        id: action.payload.id,
+        username: action.payload.email,
+      });
+    });
+
+    builder.addMatcher(authAPI.endpoints.getLogout.matchFulfilled, (state) => {
+      state.data = null;
+
+      agent.api.setUser({
+        email: undefined,
+        id: undefined,
+        username: undefined,
+      });
     });
   },
 });

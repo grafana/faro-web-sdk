@@ -1,5 +1,6 @@
 import type { ArticlesGetPayload, ArticlesGetSuccessPayload } from '../../../../common';
 import { getArticlePublicFromArticle, getArticlesByPage, getArticlesLength } from '../../../data';
+import { logger } from '../../../logger';
 import { sendError, sendSuccess } from '../../../utils';
 import type { RequestHandler } from '../../../utils';
 
@@ -19,6 +20,8 @@ export const getArticlesHandler: RequestHandler<{}, ArticlesGetSuccessPayload, {
       totalSize: getArticlesLength(),
     });
   } catch (err) {
+    logger.error(err);
+
     sendError(res, err);
   }
 };

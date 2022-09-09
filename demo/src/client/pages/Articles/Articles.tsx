@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import Pagination from 'react-bootstrap/Pagination';
+import { Link } from 'react-router-dom';
+
+import { withGrafanaProfiler } from '@grafana/agent-integration-react';
 
 import { useGetArticlesQuery } from '../../api';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { Page } from '../../components/Page';
 import { formatDate } from '../../utils';
 
-export function Articles() {
+export function ArticlesComponent() {
   const [page, setPage] = useState(0);
   const getArticlesResult = useGetArticlesQuery({ page: page.toString() });
 
@@ -18,9 +21,11 @@ export function Articles() {
       ) : (
         getArticlesResult.data?.items.map((article) => (
           <Container key={article.id} as="article" className="pb-4 mb-4 border-bottom">
-            <h3>{article.name}</h3>
+            <Link to={`/articles/view/${article.id}`}>
+              <h3>{article.name}</h3>
+            </Link>
             <p className="mb-3">
-              {article.user.name} | {formatDate(article.date)}
+              {article.user.name} | {formatDate(article.date)} | {article.comments.length} comments
             </p>
             <div>{article.text}</div>
           </Container>
@@ -38,3 +43,5 @@ export function Articles() {
     </Page>
   );
 }
+
+export const Articles = withGrafanaProfiler(ArticlesComponent);

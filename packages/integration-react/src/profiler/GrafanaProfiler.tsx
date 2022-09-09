@@ -17,15 +17,15 @@ export class GrafanaProfiler extends Component<GrafanaProfilerProps> {
   protected updateSpan: Span | undefined = undefined;
 
   private get isOtelInitialized(): boolean {
-    return agent.api.isOTELInitialized();
+    return !!agent.api?.isOTELInitialized();
   }
 
-  private get otel(): OTELApi {
-    return agent.api.getOTEL()!;
+  private get otel(): OTELApi | undefined {
+    return agent.api?.getOTEL()!;
   }
 
   private get tracer(): Tracer {
-    return this.otel.trace.getTracer('@grafana/agent-integration-react', VERSION)!;
+    return this.otel?.trace.getTracer('@grafana/agent-integration-react', VERSION)!;
   }
 
   private createSpan(
@@ -40,7 +40,7 @@ export class GrafanaProfiler extends Component<GrafanaProfilerProps> {
       },
     });
 
-    this.otel.trace.setSpan(this.otel.context.active(), span);
+    this.otel?.trace.setSpan(this.otel.context.active(), span);
 
     if (options?.endTime) {
       span.end(options.endTime);
@@ -56,7 +56,7 @@ export class GrafanaProfiler extends Component<GrafanaProfilerProps> {
   ): Span {
     let span: Span;
 
-    this.otel.context.with(this.otel.trace.setSpan(this.otel.context.active(), parent), () => {
+    this.otel?.context.with(this.otel.trace.setSpan(this.otel.context.active(), parent), () => {
       span = this.createSpan(spanName, options);
     });
 
@@ -69,7 +69,7 @@ export class GrafanaProfiler extends Component<GrafanaProfilerProps> {
     if (this.isOtelInitialized) {
       this.mountSpan = this.createSpan('componentMount');
     } else {
-      agent.internalLogger.error(
+      agent.internalLogger?.error(
         'The Grafana React Profiler requires tracing instrumentation. Please enable it in the "instrumentations" section of your config.'
       );
     }

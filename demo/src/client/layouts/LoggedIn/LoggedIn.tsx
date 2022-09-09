@@ -1,28 +1,28 @@
-import { useEffect } from 'react';
+import type { MouseEventHandler } from 'react';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { LinkContainer } from 'react-router-bootstrap';
 import { Outlet, useNavigate } from 'react-router-dom';
 
+import { agent } from '@grafana/agent-integration-react';
+
 import { useLazyGetLogoutQuery } from '../../api';
-import { useAppDispatch } from '../../hooks';
-import { setUser } from '../../store';
 
 export function LoggedIn() {
-  const dispatch = useAppDispatch();
-
-  const [logout, logoutResult] = useLazyGetLogoutQuery();
+  const [logout] = useLazyGetLogoutQuery();
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!logoutResult.isUninitialized && !logoutResult.isLoading) {
-      dispatch(setUser(null));
+  const onLogout: MouseEventHandler<HTMLElement> = (evt) => {
+    evt.preventDefault();
 
+    agent.api.pushEvent('logout');
+
+    logout().then(() => {
       navigate('/');
-    }
-  }, [dispatch, logoutResult, navigate]);
+    });
+  };
 
   return (
     <>
@@ -37,15 +37,13 @@ export function LoggedIn() {
               <LinkContainer to="/articles">
                 <Nav.Link>Articles</Nav.Link>
               </LinkContainer>
-              <Nav.Link
-                onClick={(evt) => {
-                  evt.preventDefault();
-
-                  logout();
-                }}
-              >
-                Logout
-              </Nav.Link>
+              <LinkContainer to="/articles/add">
+                <Nav.Link>Add Article</Nav.Link>
+              </LinkContainer>
+              {/*<LinkContainer to="/experiments/broken-page">*/}
+              {/*  <Nav.Link>Broken Page</Nav.Link>*/}
+              {/*</LinkContainer>*/}
+              <Nav.Link onClick={onLogout}>Logout</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>

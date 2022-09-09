@@ -4,6 +4,8 @@ import Form from 'react-bootstrap/Form';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
+import { agent } from '@grafana/agent-integration-react';
+
 import type { AuthLoginPayload } from '../../../common';
 import { usePostLoginMutation } from '../../api';
 
@@ -20,9 +22,17 @@ export function LoginForm() {
   });
 
   const onSubmit = handleSubmit((data) => {
-    login(data).then(() => {
-      navigate('/articles');
-    });
+    agent.api.pushEvent('loginAttempt');
+
+    login(data)
+      .then(() => {
+        agent.api.pushEvent('loginSuccessfully');
+
+        navigate('/articles');
+      })
+      .catch(() => {
+        agent.api.pushEvent('loginFailed');
+      });
   });
 
   return (

@@ -2,6 +2,7 @@ import { compare } from 'bcrypt';
 
 import type { AuthLoginPayload, AuthLoginSuccessPayload } from '../../../../common';
 import { getUserByEmail, getUserPublicFromUser } from '../../../data';
+import { logger } from '../../../logger';
 import { sendError, sendFormValidationError, sendSuccess, setAuthorizationToken, signToken } from '../../../utils';
 import type { RequestHandler } from '../../../utils';
 
@@ -37,6 +38,7 @@ export const loginHandler: RequestHandler<{}, AuthLoginSuccessPayload, AuthLogin
 
     sendSuccess(res, userPublic, 201);
   } catch (err) {
+    logger.error(err);
     sendError(res, err);
   }
 };

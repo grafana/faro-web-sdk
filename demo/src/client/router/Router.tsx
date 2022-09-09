@@ -8,6 +8,7 @@ import { About } from '../pages/About';
 import { ArticleAdd } from '../pages/ArticleAdd';
 import { Articles } from '../pages/Articles';
 import { ArticleView } from '../pages/ArticleView';
+import { BrokenPage } from '../pages/BrokenPage';
 import { Home } from '../pages/Home';
 import { Login } from '../pages/Login';
 import { Register } from '../pages/Register';
@@ -39,6 +40,17 @@ export function Router() {
         <Route path="" element={<Articles />} />
         <Route path="add" element={<ArticleAdd />} />
         <Route path="view/:id" element={<ArticleView />} />
+      </Route>
+
+      <Route
+        path="/experiments"
+        element={
+          <LoggedInGuard>
+            <LoggedIn />
+          </LoggedInGuard>
+        }
+      >
+        <Route path="broken-page" element={<BrokenPage />} />
       </Route>
 
       <Route

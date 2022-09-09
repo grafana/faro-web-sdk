@@ -13,3 +13,8 @@ export interface ReactRouterV4V5Dependencies {
   history: ReactRouterHistory;
   Route: ReactRouterV4V5RouteShape;
 }
+
+export interface ReactRouterV4V5ActiveEvent extends Record<string, string> {
+  url: string;
+  route: string;
+}

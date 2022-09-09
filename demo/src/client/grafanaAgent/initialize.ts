@@ -47,5 +47,7 @@ export function initializeGrafanaAgent(): Agent {
 
   setGrafanaAgent(agent);
 
+  agent.api.pushLog(['GrafanaAgent was initialized']);
+
   return agent;
 }

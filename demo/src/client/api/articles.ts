@@ -1,6 +1,8 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 
 import type {
+  ArticleAddPayload,
+  ArticleAddSuccessPayload,
   ArticleCommentAddPayload,
   ArticleCommentAddSuccessPayload,
   ArticleGetPayload,
@@ -13,9 +15,10 @@ import { baseQuery } from './baseQuery';
 export const articlesAPI = createApi({
   reducerPath: 'articlesApi',
   baseQuery,
-  tagTypes: ['Articles'],
+  tagTypes: ['Article', 'Articles', 'ArticleComment'],
   endpoints: (builder) => ({
     getArticles: builder.query<ArticlesGetSuccessPayload, ArticlesGetPayload>({
+      providesTags: ['Article', 'Articles', 'ArticleComment'],
       query: (params) => ({
         url: '/articles',
         method: 'GET',
@@ -23,14 +26,27 @@ export const articlesAPI = createApi({
       }),
     }),
     getArticle: builder.query<ArticleGetSuccessPayload, ArticleGetPayload>({
+      providesTags: ['Article', 'ArticleComment'],
       query: (params) => ({
         url: `/articles/${params.id}`,
         method: 'GET',
       }),
     }),
-    postArticleComment: builder.mutation<ArticleCommentAddSuccessPayload, ArticleCommentAddPayload>({
+    postArticle: builder.mutation<ArticleAddSuccessPayload, ArticleAddPayload>({
+      invalidatesTags: ['Article', 'Articles', 'ArticleComment'],
       query: (body) => ({
-        url: '/auth/logout',
+        url: `/articles`,
+        method: 'POST',
+        body,
+      }),
+    }),
+    postArticleComment: builder.mutation<
+      ArticleCommentAddSuccessPayload,
+      ArticleCommentAddPayload & { articleId: string }
+    >({
+      invalidatesTags: ['Article', 'ArticleComment'],
+      query: ({ articleId, ...body }) => ({
+        url: `/articles/${articleId}/comment`,
         method: 'POST',
         body,
       }),
@@ -38,4 +54,5 @@ export const articlesAPI = createApi({
   }),
 });
 
-export const { useLazyGetArticleQuery, useGetArticlesQuery, usePostArticleCommentMutation } = articlesAPI;
+export const { useGetArticleQuery, useGetArticlesQuery, usePostArticleMutation, usePostArticleCommentMutation } =
+  articlesAPI;

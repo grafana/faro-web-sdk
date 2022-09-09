@@ -2,6 +2,7 @@ import type { Express, Router } from 'express';
 import { readFileSync } from 'fs';
 
 import { env } from '../../../common';
+import { logger } from '../../logger';
 import { sendError, toAbsolutePath } from '../../utils';
 import type { Request, Response } from '../../utils';
 import { renderPage } from './renderPage';
@@ -33,6 +34,8 @@ export async function registerRenderDevRoutes(globalRouter: Router, _app: Expres
 
       renderPage(req as Request, res as Response, template, render);
     } catch (err) {
+      logger.error(err);
+
       vite.ssrFixStacktrace(err);
 
       sendError(res, err);

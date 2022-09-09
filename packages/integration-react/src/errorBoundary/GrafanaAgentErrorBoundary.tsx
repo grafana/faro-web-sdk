@@ -32,16 +32,23 @@ export class GrafanaAgentErrorBoundary extends Component<
     return newError;
   }
 
+  static getDerivedStateFromError(error: Error): GrafanaAgentErrorBoundaryState {
+    return {
+      hasError: true,
+      error,
+    };
+  }
+
   override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     const errorWithComponentStack = this.getErrorWithComponentStack(error, errorInfo);
 
-    this.props.beforeCapture?.(errorWithComponentStack, errorInfo.componentStack);
+    this.props.beforeCapture?.(errorWithComponentStack);
 
     agent.api.pushError(errorWithComponentStack);
 
-    this.props.onError?.(errorWithComponentStack, errorInfo.componentStack);
+    this.props.onError?.(errorWithComponentStack);
 
-    this.setState({ error: errorWithComponentStack, componentStack: errorInfo.componentStack });
+    this.setState({ hasError: true, error });
   }
 
   override componentDidMount(): void {
@@ -49,23 +56,23 @@ export class GrafanaAgentErrorBoundary extends Component<
   }
 
   override componentWillUnmount(): void {
-    this.props.onUnmount?.(this.state.error, this.state.componentStack);
+    this.props.onUnmount?.(this.state.error);
   }
 
   resetErrorBoundary(): void {
-    this.props.onReset?.(this.state.error, this.state.componentStack);
+    this.props.onReset?.(this.state.error);
 
     this.setState(grafanaAgentErrorBoundaryInitialState);
   }
 
   override render(): ReactNode {
-    if (!this.state.error) {
+    if (!this.state.hasError) {
       return isFunction(this.props.children) ? this.props.children() : this.props.children;
     }
 
     const element = !isFunction(this.props.fallback)
       ? this.props.fallback
-      : this.props.fallback(this.state.error, this.state.componentStack, this.resetErrorBoundary);
+      : this.props.fallback(this.state.error!, this.resetErrorBoundary);
 
     if (isValidElement(element)) {
       return element;

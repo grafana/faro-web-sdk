@@ -1,10 +1,11 @@
 import hoistNonReactStatics from 'hoist-non-react-statics';
 import type { FunctionComponent } from 'react';
 
+import { globalObject } from '@grafana/agent-web';
 import type { Agent } from '@grafana/agent-web';
 
 import { NavigationType } from '../types';
-import { activeSpan, createNewActiveSpan } from './activeSpan';
+import { createNewActiveEvent, sendActiveEvent } from './activeEvent';
 import { setDependencies } from './dependencies';
 import { GrafanaAgentRoute } from './GrafanaAgentRoute';
 import type { ReactRouterV4V5Dependencies } from './types';
@@ -20,15 +21,13 @@ export function initializeReactRouterV4V5Instrumentation(
 
   setDependencies(dependencies, agent);
 
-  createNewActiveSpan();
+  createNewActiveEvent(globalObject.location?.href);
 
   dependencies.history.listen?.((_location, action) => {
     if (action === NavigationType.Push || action === NavigationType.Pop) {
-      if (activeSpan) {
-        activeSpan.end();
-      }
+      sendActiveEvent();
 
-      createNewActiveSpan();
+      createNewActiveEvent(globalObject.location?.href);
     }
   });
 }

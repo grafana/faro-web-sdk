@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 
 import type { UserPublic } from '../../common';
 import { getUserById, getUserPublicFromUser } from '../data';
+import { logger } from '../logger';
 import { authorizationSecret } from './const';
 
 export function verifyToken(token: string | undefined): UserPublic | undefined {
@@ -22,6 +23,8 @@ export function verifyToken(token: string | undefined): UserPublic | undefined {
 
     return user ? getUserPublicFromUser(user) : undefined;
   } catch (err) {
+    logger.error(err);
+
     return undefined;
   }
 }

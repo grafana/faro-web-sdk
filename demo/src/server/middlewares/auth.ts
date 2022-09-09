@@ -1,3 +1,4 @@
+import { logger } from '../logger';
 import { removeAuthorizationToken, sendUnauthenticatedError, verifyToken } from '../utils';
 import type { RequestHandler } from '../utils';
 
@@ -15,6 +16,8 @@ export const authMiddleware: RequestHandler = async (_req, res, next) => {
 
     next();
   } catch (err) {
+    logger.error(err);
+
     removeAuthorizationToken(res);
 
     sendUnauthenticatedError(res);

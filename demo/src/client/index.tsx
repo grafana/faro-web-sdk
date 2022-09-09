@@ -5,7 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Provider as ReduxProvider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 
-import { GrafanaAgentErrorBoundary } from '@grafana/agent-integration-react';
+// import { GrafanaAgentErrorBoundary } from '@grafana/agent-integration-react';
 
 import { App } from './App';
 import { initializeGrafanaAgent } from './grafanaAgent';
@@ -16,16 +16,16 @@ initializeGrafanaAgent();
 hydrateRoot(
   document.getElementById('app') as HTMLElement,
   <StrictMode>
-    <GrafanaAgentErrorBoundary>
-      <ReduxProvider store={createStore((window as any).__PRELOADED_STATE__)}>
-        <HelmetProvider>
-          <BrowserRouter>
-            <SSRProvider>
-              <App />
-            </SSRProvider>
-          </BrowserRouter>
-        </HelmetProvider>
-      </ReduxProvider>
-    </GrafanaAgentErrorBoundary>
+    {/*<GrafanaAgentErrorBoundary>*/}
+    <ReduxProvider store={createStore((window as any).__PRELOADED_STATE__)}>
+      <HelmetProvider>
+        <BrowserRouter>
+          <SSRProvider>
+            <App />
+          </SSRProvider>
+        </BrowserRouter>
+      </HelmetProvider>
+    </ReduxProvider>
+    {/*</GrafanaAgentErrorBoundary>*/}
   </StrictMode>
 );

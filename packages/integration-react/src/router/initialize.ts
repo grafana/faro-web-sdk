@@ -6,8 +6,8 @@ import { initializeReactRouterV4V5Instrumentation } from './v4v5';
 import { initializeReactRouterV6Instrumentation } from './v6';
 
 export function initializeReactRouterInstrumentation(config: ReactIntegrationConfig, agent: Agent): void {
-  if (!agent.api.isOTELInitialized()) {
-    agent.internalLogger.error(
+  if (!agent.api?.isOTELInitialized()) {
+    agent.internalLogger?.error(
       'The Grafana React Router instrumentation requires tracing instrumentation. Please enable it in the "instrumentations" section of your config.'
     );
 

@@ -1,4 +1,10 @@
-export { articlesAPI, useGetArticlesQuery, useLazyGetArticleQuery, usePostArticleCommentMutation } from './articles';
+export {
+  articlesAPI,
+  useGetArticlesQuery,
+  useGetArticleQuery,
+  usePostArticleMutation,
+  usePostArticleCommentMutation,
+} from './articles';
 
 export {
   authAPI,
