@@ -1,7 +1,11 @@
 import type { Instrumentation } from '@grafana/agent-core';
 
-import { ConsoleInstrumentation, ErrorsInstrumentation, WebVitalsInstrumentation } from '../instrumentations';
-import { SessionInstrumentation } from '../instrumentations/session/instrumentation';
+import {
+  ConsoleInstrumentation,
+  ErrorsInstrumentation,
+  WebVitalsInstrumentation,
+  SessionInstrumentation,
+} from '../instrumentations';
 import type { GetWebInstrumentationsOptions } from './types';
 
 export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {

@@ -1,7 +1,8 @@
+import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Instrumentation, Instrumentations } from './types';
 
-export function initializeInstrumentations(internalLogger: InternalLogger): Instrumentations {
+export function initializeInstrumentations(internalLogger: InternalLogger, _config: Config): Instrumentations {
   internalLogger.debug('Initializing instrumentations');
 
   const instrumentations: Instrumentation[] = [];

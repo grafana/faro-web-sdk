@@ -1,11 +1,9 @@
 import type { MetaSession } from '@grafana/agent-core';
-import ShortUniqueId from 'short-unique-id';
-
-const uid = new ShortUniqueId({ length: 10 });
+import { genShortID } from '@grafana/agent-core';
 
 export function createSession(attributes?: MetaSession['attributes']): MetaSession {
   return {
-    id: uid.randomUUID(),
+    id: genShortID(),
     attributes,
   };
 }

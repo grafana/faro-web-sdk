@@ -38,3 +38,5 @@ export { noop } from './noop';
 
 export { createPromiseBuffer } from './promiseBuffer';
 export type { BufferItem, PromiseBuffer, PromiseBufferOptions, PromiseProducer } from './promiseBuffer';
+
+export { genShortID } from './shortId';

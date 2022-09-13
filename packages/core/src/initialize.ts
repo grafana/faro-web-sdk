@@ -37,7 +37,7 @@ export function initializeGrafanaAgent(config: Config): Agent {
     transports,
     unpatchedConsole,
     unpause: transports.unpause,
-    instrumentations: initializeInstrumentations(internalLogger),
+    instrumentations: initializeInstrumentations(internalLogger, config),
   });
 
   // make sure agent is initialized before initializing instrumentations

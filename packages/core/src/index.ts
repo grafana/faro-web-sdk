@@ -82,6 +82,7 @@ export {
   BaseExtension,
   createPromiseBuffer,
   defaultLogLevel,
+  genShortID,
   getCurrentTimestamp,
   isArray,
   isBoolean,

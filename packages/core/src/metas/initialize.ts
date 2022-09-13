@@ -8,16 +8,11 @@ export function initializeMetas(internalLogger: InternalLogger, config: Config):
   let items: MetaItem[] = [];
   let listeners: MetasListener[] = [];
 
-  const _getValue = () => {
-    return items.reduce<Meta>((acc, item) => {
-      Object.assign(acc, isFunction(item) ? item() : item);
-      return acc;
-    }, {});
-  };
+  const getValue = () => items.reduce<Meta>((acc, item) => Object.assign(acc, isFunction(item) ? item() : item), {});
 
-  const _notifyListeners = () => {
+  const notifyListeners = () => {
     if (listeners.length) {
-      const value = _getValue();
+      const value = getValue();
       listeners.forEach((listener) => listener(value));
     }
   };
@@ -25,13 +20,13 @@ export function initializeMetas(internalLogger: InternalLogger, config: Config):
   const add: Metas['add'] = (...newItems) => {
     internalLogger.debug('Adding metas\n', newItems);
     items.push(...newItems);
-    _notifyListeners();
+    notifyListeners();
   };
 
   const remove: Metas['remove'] = (...itemsToRemove) => {
     internalLogger.debug('Removing metas\n', itemsToRemove);
     items = items.filter((currentItem) => !itemsToRemove.includes(currentItem));
-    _notifyListeners();
+    notifyListeners();
   };
 
   const initial: Meta = {
@@ -66,7 +61,7 @@ export function initializeMetas(internalLogger: InternalLogger, config: Config):
     addListener,
     removeListener,
     get value() {
-      return _getValue();
+      return getValue();
     },
   };
 }
