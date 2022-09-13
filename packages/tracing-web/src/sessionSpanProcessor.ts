@@ -3,7 +3,7 @@ import type { Context } from '@opentelemetry/api';
 import type { ReadableSpan, Span, SpanProcessor } from '@opentelemetry/sdk-trace-base';
 
 // adds grafana agent session id to every span
-export class SessionSpanProcessor implements SpanProcessor {
+export class GrafanaAgentSessionSpanProcessor implements SpanProcessor {
   private processor: SpanProcessor;
 
   constructor(processor: SpanProcessor) {

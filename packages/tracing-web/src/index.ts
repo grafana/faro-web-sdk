@@ -1,6 +1,6 @@
 export { GrafanaAgentTraceExporter } from './agentExporter';
 
-export { SessionSpanProcessor } from './sessionSpanProcessor';
+export { GrafanaAgentSessionSpanProcessor } from './sessionSpanProcessor';
 
 export { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 
