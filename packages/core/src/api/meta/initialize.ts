@@ -13,9 +13,11 @@ export function initializeMetaAPI(internalLogger: InternalLogger, _transports: T
     if (metaUser) {
       metas.remove(metaUser);
     }
+
     metaUser = {
       user,
     };
+
     metas.add(metaUser);
   };
 
@@ -26,6 +28,7 @@ export function initializeMetaAPI(internalLogger: InternalLogger, _transports: T
     metaSession = {
       session,
     };
+
     metas.add(metaSession);
   };
 

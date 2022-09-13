@@ -12,6 +12,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
+
     if (session && session !== this.notifiedSession) {
       this.notifiedSession = session;
       // no need to add attributes and session id, they are included as part of meta

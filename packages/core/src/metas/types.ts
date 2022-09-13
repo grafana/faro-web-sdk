@@ -3,6 +3,7 @@ export type MetaGetter<P = Partial<Meta>> = () => P;
 export type MetaItem<P = Partial<Meta>> = P | MetaGetter<P>;
 
 export type MetasListener = (value: Meta) => void;
+
 export interface Metas {
   add: (...getters: MetaItem[]) => void;
   remove: (...getters: MetaItem[]) => void;
