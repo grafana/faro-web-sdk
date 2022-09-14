@@ -285,6 +285,15 @@ agent.api.setUser({
   }
 });
 
+// unset user
+agent.api.resetUser();
+
+// set session metadata, to be included with every event
+agent.api.setSession(createSession({ plan: 'paid' }));
+
+// unset session
+agent.api.resetSession();
+
 // push measurement
 agent.api.pushMeasurement({
   type: 'cart-transaction',

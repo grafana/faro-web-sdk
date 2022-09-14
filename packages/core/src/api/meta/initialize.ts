@@ -1,5 +1,5 @@
 import type { InternalLogger } from '../../internalLogger';
-import type { Meta, Metas, MetaUser } from '../../metas';
+import type { Meta, Metas, MetaSession, MetaUser } from '../../metas';
 import type { Transports } from '../../transports';
 import type { MetaAPI } from './types';
 
@@ -9,7 +9,7 @@ export function initializeMetaAPI(internalLogger: InternalLogger, _transports: T
   let metaSession: Partial<Meta> | undefined = undefined;
   let metaUser: Partial<Meta> | undefined = undefined;
 
-  const setUser: MetaAPI['setUser'] = (user?: MetaUser) => {
+  const setUser = (user?: MetaUser) => {
     if (metaUser) {
       metas.remove(metaUser);
     }
@@ -21,7 +21,7 @@ export function initializeMetaAPI(internalLogger: InternalLogger, _transports: T
     metas.add(metaUser);
   };
 
-  const setSession: MetaAPI['setSession'] = (session) => {
+  const setSession = (session?: MetaSession) => {
     if (metaSession) {
       metas.remove(metaSession);
     }
@@ -35,8 +35,10 @@ export function initializeMetaAPI(internalLogger: InternalLogger, _transports: T
   const getSession: MetaAPI['getSession'] = () => metas.value.session;
 
   return {
-    setUser,
-    setSession,
+    setUser: (user) => setUser(user),
+    resetUser: () => setUser(),
+    setSession: (session) => setSession(session),
+    resetSession: () => setSession(),
     getSession,
   };
 }
