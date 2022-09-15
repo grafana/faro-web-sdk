@@ -82,6 +82,7 @@ export {
   BaseExtension,
   createPromiseBuffer,
   defaultLogLevel,
+  genShortID,
   getCurrentTimestamp,
   isArray,
   isBoolean,
@@ -121,3 +122,5 @@ export type {
 } from './utils';
 
 export { VERSION } from './version';
+
+export { Conventions } from './semantic';

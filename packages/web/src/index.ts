@@ -25,6 +25,7 @@ export {
   BaseExtension,
   BaseInstrumentation,
   BaseTransport,
+  Conventions,
   createInternalLogger,
   createPromiseBuffer,
   defaultExceptionType,
@@ -131,3 +132,5 @@ export type {
 } from '@grafana/agent-core';
 
 export { BROWSER_EVENT_DOMAIN } from './consts';
+
+export { createSession } from './session';

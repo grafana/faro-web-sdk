@@ -130,6 +130,7 @@ import {
   initializeGrafanaAgent,
   LogLevel,
   WebVitalsInstrumentation,
+  SessionInstrumentation,
 } from '@grafana/agent-web';
 
 const agent = initializeGrafanaAgent({
@@ -139,6 +140,7 @@ const agent = initializeGrafanaAgent({
     new ConsoleInstrumentation({
       disabledLevels: [LogLevel.TRACE, LogLevel.ERROR], // console.log will be captured
     }),
+    new SessionInstrumentation(),
   ],
   transports: [
     new FetchTransport({
@@ -206,7 +208,7 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { initializeGrafanaAgent } from '@grafana/agent-web';
-import { GrafanaAgentTraceExporter } from '@grafana/agent-trace-web';
+import { GrafanaAgentTraceExporter, SessionProcessor } from '@grafana/agent-trace-web';
 
 const VERSION = '1.0.0';
 const NAME = 'frontend';
@@ -231,7 +233,7 @@ const resource = Resource.default().merge(
 );
 
 const provider = new WebTracerProvider({ resource });
-provider.addSpanProcessor(new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent })));
+provider.addSpanProcessor(new SessionSpanProcessor(new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }))));
 provider.register({
   propagator: new W3CTraceContextPropagator(),
   contextManager: new ZoneContextManager(),
@@ -282,6 +284,15 @@ agent.api.setUser({
     role: 'manager',
   }
 });
+
+// unset user
+agent.api.resetUser();
+
+// set session metadata, to be included with every event
+agent.api.setSession(createSession({ plan: 'paid' }));
+
+// unset session
+agent.api.resetSession();
 
 // push measurement
 agent.api.pushMeasurement({

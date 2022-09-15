@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Basic session tracking: web SDK automatically creates new session id when agent is initialized.
+  `SessionInstrumentation` that sends `session_start` event on initialization or when new session
+  is set. `SessionProcessor` for OTel that will add `session_id` attribute to every span if available.
+- Added `agent.api.pushEvent` method for capturing RUM events
+
 ## 0.4.0 (2022-06-30)
 
 - Added `agent.pause()` and `agent.unpause()` to be able to temporarily stop

@@ -4,7 +4,7 @@ import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-w
 
 initializeGrafanaAgent({
   isolate: true,
-  url: '/collect',
+  url: 'http://localhost:12345/collect',
   apiKey: 'secret',
   instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
   internalLoggerLevel: InternalLoggerLevel.VERBOSE,

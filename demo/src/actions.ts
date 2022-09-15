@@ -1,4 +1,5 @@
 import '@grafana/agent-web/globals';
+import { createSession } from '@grafana/agent-web';
 import { SpanStatusCode } from '@opentelemetry/api';
 
 const localWindow: any = window;
@@ -58,4 +59,8 @@ localWindow.traceWithLog = () => {
 
 localWindow.captureEvent = (name: string, attributes?: Record<string, string>) => {
   window.grafanaAgent.api.pushEvent(name, attributes);
+};
+
+localWindow.startNewSession = () => {
+  window.grafanaAgent.api.setSession(createSession());
 };
