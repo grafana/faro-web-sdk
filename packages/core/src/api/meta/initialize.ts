@@ -35,10 +35,10 @@ export function initializeMetaAPI(internalLogger: InternalLogger, _transports: T
   const getSession: MetaAPI['getSession'] = () => metas.value.session;
 
   return {
-    setUser: (user) => setUser(user),
-    resetUser: () => setUser(),
-    setSession: (session) => setSession(session),
-    resetSession: () => setSession(),
+    setUser,
+    resetUser: setUser,
+    setSession,
+    resetSession: setSession,
     getSession,
   };
 }
