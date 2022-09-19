@@ -11,7 +11,37 @@ context('Events', () => {
         return item?.attributes?.['foo'] === 'bar' && item?.attributes?.['baz'] === 'bad' ? 'event' : undefined;
       },
     },
-  ].forEach(({ title, btnName, aliasGenerator }) => {
+    {
+      title: 'an event with different session',
+      btnName: 'new-session',
+      aliasGenerator: (body: TransportBody) => {
+        const item = body.events?.[0]!;
+
+        return item ? 'event' : undefined;
+      },
+      afterTest: () => {
+        let alias: string | undefined = undefined;
+
+        cy.interceptAgent((body) => {
+          if (!alias && body.meta.session?.id) {
+            alias = body.meta.session?.id;
+          }
+
+          if (alias && body.meta.session?.id && body.meta.session?.id !== alias) {
+            return 'new-session';
+          }
+
+          return undefined;
+        });
+
+        cy.clickButton('btn-event-without-attrs');
+
+        cy.clickButton('btn-new-session');
+
+        cy.wait('@new-session');
+      },
+    },
+  ].forEach(({ title, btnName, aliasGenerator, afterTest }) => {
     it(`will capture ${title}`, () => {
       cy.interceptAgent(aliasGenerator);
 
@@ -20,6 +50,8 @@ context('Events', () => {
       cy.clickButton(`btn-${btnName}`);
 
       cy.wait('@event');
+
+      afterTest?.();
     });
   });
 });

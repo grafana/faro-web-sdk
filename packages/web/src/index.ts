@@ -1,6 +1,8 @@
 export { getWebInstrumentations, makeCoreConfig } from './config';
 export type { BrowserConfig } from './config';
 
+export { defaultEventDomain } from './consts';
+
 export { initializeAgent, initializeGrafanaAgent } from './initialize';
 
 export {
@@ -15,6 +17,8 @@ export {
 export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
 export { browserMeta, defaultMetas, pageMeta } from './metas';
+
+export { createSession } from './session';
 
 export { ConsoleTransport, FetchTransport } from './transports';
 export type { ConsoleTransportOptions, FetchTransportOptions, FetchTransportRequestOptions } from './transports';
@@ -131,7 +135,3 @@ export type {
   EventEvent,
   EventsAPI,
 } from '@grafana/agent-core';
-
-export { BROWSER_EVENT_DOMAIN } from './consts';
-
-export { createSession } from './session';

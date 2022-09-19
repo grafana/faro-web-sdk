@@ -1,4 +1,4 @@
-import { getCLS, getFCP, getFID, getLCP, getTTFB } from 'web-vitals';
+import { getCLS, getFCP, getFID, getINP, getLCP, getTTFB } from 'web-vitals';
 
 import { BaseInstrumentation, VERSION } from '@grafana/agent-core';
 
@@ -10,6 +10,7 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
     cls: getCLS,
     fcp: getFCP,
     fid: getFID,
+    inp: getINP,
     lcp: getLCP,
     ttfb: getTTFB,
   };

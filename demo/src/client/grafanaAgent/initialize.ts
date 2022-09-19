@@ -1,8 +1,8 @@
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
 
 import {
   initializeGrafanaAgent as coreInit,
+  createSession,
   getWebInstrumentations,
   ReactIntegration,
   ReactRouterVersion,
@@ -34,9 +34,7 @@ export function initializeGrafanaAgent(): Agent {
         },
       }),
     ],
-    session: {
-      id: uuidv4(),
-    },
+    session: createSession(),
     app: {
       name: env.clientPackageName,
       version: env.packageVersion,
@@ -44,7 +42,7 @@ export function initializeGrafanaAgent(): Agent {
     },
   });
 
-  // agent.api.pushLog(['GrafanaAgent was initialized']);
+  agent.api.pushLog(['GrafanaAgent was initialized']);
 
   return agent;
 }

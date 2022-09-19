@@ -57,7 +57,7 @@ services:
     image: 'grafana/agent:main'
     volumes:
       - '${AGENT_CONFIG_PATH_LOCAL}:${AGENT_CONFIG_PATH}'
-      - './demo/logs:${AGENT_LOGS_PATH}'
+      - 'demo_logs:${AGENT_LOGS_PATH}'
     entrypoint:
       - '/bin/agent'
       - '-config.file=${AGENT_CONFIG_PATH}/${AGENT_CONFIG_FILE}'

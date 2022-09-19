@@ -1,4 +1,4 @@
-export function getEnvConfig(vars: Record<string, string>, nodeEnv?: string | undefined) {
+export function getEnvConfig(vars: Record<string, string | undefined>, nodeEnv?: string | undefined) {
   nodeEnv = nodeEnv ?? 'development';
 
   const prod = nodeEnv === 'production';
@@ -18,8 +18,7 @@ export function getEnvConfig(vars: Record<string, string>, nodeEnv?: string | un
     serverPort: vars['DEMO_PORT']!,
     serverLogsPath: vars['DEMO_SERVER_LOGS_PATH']!,
     serverLogsName: vars['DEMO_SERVER_LOGS_NAME']!,
-    // Given the mixed usage between Docker Containers and Host, this is the best way to ensure the Agent is always reachable.
-    agentHost: 'localhost',
+    agentHost: vars['DEMO_SERVER_AGENT_HOST']! || vars['AGENT_HOST']!,
     agentPortAppReceiver: vars['AGENT_PORT_APP_RECEIVER']!,
     agentPortTraces: vars['TEMPO_PORT_OTLP_RECEIVER']!,
     agentApiKey: vars['AGENT_KEY_APP_RECEIVER']!,

@@ -21,7 +21,7 @@ export const logger = winstonCreateLogger({
 });
 
 // @ts-ignore
-// console.log = (...args: any[]) => logger.info.call(logger, ...args);
+console.log = (...args: any[]) => logger.info.call(logger, ...args);
 // @ts-ignore
 console.info = (...args: any[]) => logger.info.call(logger, ...args);
 // @ts-ignore

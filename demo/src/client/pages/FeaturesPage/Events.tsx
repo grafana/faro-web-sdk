@@ -1,11 +1,15 @@
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 
-import { agent } from '@grafana/agent-integration-react';
+import { agent, createSession } from '@grafana/agent-integration-react';
 
 export function Events() {
   const captureEvent = (name: string, attributes?: Record<string, string>) => {
     agent.api.pushEvent(name, attributes);
+  };
+
+  const startNewSession = () => {
+    agent.api.setSession(createSession());
   };
 
   return (
@@ -20,6 +24,9 @@ export function Events() {
           onClick={() => captureEvent('click_button_with_attributes', { foo: 'bar', baz: 'bad' })}
         >
           Capture Click Event w/ Attributes
+        </Button>
+        <Button data-cy="btn-new-session" onClick={startNewSession}>
+          Start new session
         </Button>
       </ButtonGroup>
     </>

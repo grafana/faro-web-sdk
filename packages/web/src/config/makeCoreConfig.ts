@@ -6,7 +6,7 @@ import {
 } from '@grafana/agent-core';
 import type { Config, Transport } from '@grafana/agent-core';
 
-import { BROWSER_EVENT_DOMAIN } from '../consts';
+import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultMetas } from '../metas';
 import { createSession } from '../session';
@@ -53,6 +53,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     ignoreErrors: browserConfig.ignoreErrors,
     session: browserConfig.session ?? createSession(),
     user: browserConfig.user,
-    eventDomain: browserConfig.eventDomain ?? BROWSER_EVENT_DOMAIN,
+    eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
   };
 }
