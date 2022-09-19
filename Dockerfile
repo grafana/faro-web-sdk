@@ -11,6 +11,12 @@ ARG DEMO_PACKAGES_TRACING_WEB_PATH
 ARG DEMO_PACKAGES_WEB_PATH
 ARG DEMO_PORT_HMR
 
+# Install Python in order to be able to build the native modules
+ENV PYTHONUNBUFFERED=1
+RUN apk add --update --no-cache python3 make build-base && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
+
 # Set the workspace path
 WORKDIR ${DEMO_WORKSPACE_PATH}
 
