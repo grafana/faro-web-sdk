@@ -5,10 +5,10 @@ providers:
     orgId: 1
     folder: 'Grafana Agent'
     folderUid: ''
-    type: file
+    type: 'file'
     disableDeletion: true
     editable: true
     updateIntervalSeconds: 10
     allowUiUpdates: false
     options:
-      path: /var/lib/grafana/dashboards
+      path: '${GRAFANA_DASHBOARDS_PATH}'

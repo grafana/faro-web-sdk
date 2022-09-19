@@ -12,7 +12,9 @@ cypress/screenshots
 dist
 node_modules
 .eslintcache
-/packages/core/src/version.ts
+demo/logs
+demo/stats.html
+packages/core/src/version.ts
 
 # Logs
 *.log

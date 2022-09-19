@@ -10,13 +10,12 @@ import {
 import type { Agent } from '@grafana/agent-integration-react';
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
 
-import { env } from '../../common';
-import { setGrafanaAgent } from './grafanaAgent';
+import { env } from '../utils';
 
 export function initializeGrafanaAgent(): Agent {
   const agent = coreInit({
-    url: 'http://localhost:8027/collect',
-    apiKey: 'api_key',
+    url: `http://localhost:${env.agentPortAppReceiver}/collect`,
+    apiKey: env.agentApiKey,
     instrumentations: [
       ...getWebInstrumentations({
         captureConsole: true,
@@ -39,15 +38,13 @@ export function initializeGrafanaAgent(): Agent {
       id: uuidv4(),
     },
     app: {
-      name: '@grafana/agent-demo-client',
-      version: '0.0.1',
-      environment: env.prod ? 'production' : env.test ? 'test' : 'development',
+      name: env.clientPackageName,
+      version: env.packageVersion,
+      environment: env.mode.name,
     },
   });
 
-  setGrafanaAgent(agent);
-
-  agent.api.pushLog(['GrafanaAgent was initialized']);
+  // agent.api.pushLog(['GrafanaAgent was initialized']);
 
   return agent;
 }

@@ -1,60 +1,60 @@
 apiVersion: 1
 
 deleteDatasources:
-  - name: Cortex
-  - name: Tempo
-  - name: Loki
+  - name: 'Cortex'
+  - name: 'Tempo'
+  - name: 'Loki'
 
 datasources:
-  - name: Cortex
-    type: prometheus
-    access: proxy
+  - name: 'Cortex'
+    type: 'prometheus'
+    access: 'proxy'
     orgId: 1
-    url: http://cortex:9009/api/prom
+    url: 'http://${CORTEX_HOST}:${CORTEX_PORT}/api/prom'
     basicAuth: false
     isDefault: false
     version: 1
     editable: false
-    uid: cortex
+    uid: 'cortex'
     jsonData:
       exemplarTraceIdDestinations:
-        - datasourceUid: tempo
-          name: TraceID
+        - datasourceUid: 'tempo'
+          name: 'TraceID'
 
-  - name: Tempo
-    type: tempo
-    access: proxy
+  - name: 'Tempo'
+    type: 'tempo'
+    access: 'proxy'
     orgId: 1
-    url: http://tempo:3200
+    url: 'http://${TEMPO_HOST}:${TEMPO_PORT}'
     basicAuth: false
     isDefault: false
     version: 1
     editable: false
     apiVersion: 1
-    uid: tempo
+    uid: 'tempo'
     jsonData:
       lokiSearch:
-        datasourceUid: loki
+        datasourceUid: 'loki'
       tracesToLogs:
-        datasourceUid: loki
+        datasourceUid: 'loki'
       nodeGraph:
-        enabled: true
+        enabled: 'true'
       serviceMap:
-        datasourceUid: cortex
+        datasourceUid: 'cortex'
 
-  - name: Loki
-    type: loki
-    access: proxy
+  - name: 'Loki'
+    type: 'loki'
+    access: 'proxy'
     orgId: 1
-    url: http://loki:3100
+    url: 'http://${LOKI_HOST}:${LOKI_PORT}'
     basicAuth: false
     isDefault: false
     version: 1
     editable: false
-    uid: loki
+    uid: 'loki'
     jsonData:
       derivedFields:
-        - datasourceUid: tempo
-          matcherRegex: trace_id=(\w+)
-          name: TraceID
-          url: $${__value.raw}
+        - datasourceUid: 'tempo'
+          matcherRegex: 'traceID=(\w+)'
+          name: 'TraceID'
+          url: '$${__value.raw}'

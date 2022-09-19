@@ -2,16 +2,9 @@ import { Route } from 'react-router-dom';
 
 import { GrafanaAgentRoutes } from '@grafana/agent-integration-react';
 
-import { LoggedIn } from '../layouts/LoggedIn';
-import { LoggedOut } from '../layouts/LoggedOut';
-import { About } from '../pages/About';
-import { ArticleAdd } from '../pages/ArticleAdd';
-import { Articles } from '../pages/Articles';
-import { ArticleView } from '../pages/ArticleView';
-import { BrokenPage } from '../pages/BrokenPage';
-import { Home } from '../pages/Home';
-import { Login } from '../pages/Login';
-import { Register } from '../pages/Register';
+import { GeneralLayout } from '../layouts';
+import { About, ArticleAdd, Articles, ArticleView, BrokenPage, Home, Login, Register } from '../pages';
+import { FeaturesPage } from '../pages/FeaturesPage';
 import { LoggedInGuard, LoggedOutGuard } from './guards';
 
 export function Router() {
@@ -21,7 +14,7 @@ export function Router() {
         path="/auth"
         element={
           <LoggedOutGuard>
-            <LoggedOut />
+            <GeneralLayout />
           </LoggedOutGuard>
         }
       >
@@ -33,7 +26,7 @@ export function Router() {
         path="/articles"
         element={
           <LoggedInGuard>
-            <LoggedIn />
+            <GeneralLayout />
           </LoggedInGuard>
         }
       >
@@ -42,27 +35,11 @@ export function Router() {
         <Route path="view/:id" element={<ArticleView />} />
       </Route>
 
-      <Route
-        path="/experiments"
-        element={
-          <LoggedInGuard>
-            <LoggedIn />
-          </LoggedInGuard>
-        }
-      >
-        <Route path="broken-page" element={<BrokenPage />} />
-      </Route>
-
-      <Route
-        path="*"
-        element={
-          <LoggedOutGuard>
-            <LoggedOut />
-          </LoggedOutGuard>
-        }
-      >
+      <Route path="*" element={<GeneralLayout />}>
         <Route path="" element={<Home />} />
         <Route path="about" element={<About />} />
+        <Route path="features-page" element={<FeaturesPage />} />
+        <Route path="broken-page" element={<BrokenPage />} />
       </Route>
     </GrafanaAgentRoutes>
   );

@@ -2,8 +2,7 @@ import Container from 'react-bootstrap/Container';
 import { useParams } from 'react-router-dom';
 
 import { useGetArticleQuery } from '../../api';
-import { LoadingScreen } from '../../components/LoadingScreen';
-import { Page } from '../../components/Page';
+import { LoadingScreen, Page } from '../../components';
 import { formatDate } from '../../utils';
 import { CommentAddForm } from './CommentAddForm';
 

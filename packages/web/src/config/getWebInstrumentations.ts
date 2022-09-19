@@ -7,7 +7,11 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
   const instrumentations: Instrumentation[] = [new ErrorsInstrumentation(), new WebVitalsInstrumentation()];
 
   if (options.captureConsole !== false) {
-    instrumentations.push(new ConsoleInstrumentation());
+    instrumentations.push(
+      new ConsoleInstrumentation({
+        disabledLevels: options.captureConsoleDisabledLevels,
+      })
+    );
   }
 
   return instrumentations;

@@ -7,7 +7,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { Routes } from 'react-router-dom';
 import { StaticRouter } from 'react-router-dom/server';
 
-import { setReactRouterV6SSRDependencies } from '@grafana/agent-integration-react';
+import { GrafanaAgentErrorBoundary, setReactRouterV6SSRDependencies } from '@grafana/agent-integration-react';
 
 import { App } from '../../../client/App';
 import { createStore } from '../../../client/store';
@@ -20,15 +20,17 @@ export function renderToString(url: string, preloadedState: {}): [string, Filled
   return [
     reactRenderToString(
       <StrictMode>
-        <ReduxProvider store={createStore(preloadedState)}>
-          <HelmetProvider context={helmetContext}>
-            <StaticRouter location={url}>
-              <SSRProvider>
-                <App />
-              </SSRProvider>
-            </StaticRouter>
-          </HelmetProvider>
-        </ReduxProvider>
+        <GrafanaAgentErrorBoundary>
+          <ReduxProvider store={createStore(preloadedState)}>
+            <HelmetProvider context={helmetContext}>
+              <StaticRouter location={url}>
+                <SSRProvider>
+                  <App />
+                </SSRProvider>
+              </StaticRouter>
+            </HelmetProvider>
+          </ReduxProvider>
+        </GrafanaAgentErrorBoundary>
       </StrictMode>
     ),
     helmetContext,

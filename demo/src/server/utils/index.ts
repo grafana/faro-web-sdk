@@ -1,5 +1,7 @@
 export { authorizationCookieName, authorizationSecret } from './const';
 
+export { env } from './env';
+
 export { removeAuthorizationToken } from './removeAuthorizationToken';
 
 export { sendError } from './sendError';

@@ -1,45 +1,45 @@
 server:
-  log_level: debug
+  log_level: 'debug'
 
 metrics:
   global:
-    scrape_interval: 60s
+    scrape_interval: '60s'
     remote_write:
-      - url: http://${REMOTE_WRITE_HOST:-localhost:9009}/api/prom/push
+      - url: 'http://${CORTEX_HOST}:${CORTEX_PORT}/api/prom/push'
   configs:
-    - name: '@grafana/agent-demo'
+    - name: '${DEMO_PACKAGE_NAME}'
       scrape_configs:
-        - job_name: '@grafana/agent-demo-server'
+        - job_name: '${DEMO_SERVER_PACKAGE_NAME}'
           static_configs:
             - targets:
-                - localhost:5173
+                - '${DEMO_HOST}:${DEMO_PORT}'
 
 logs:
   configs:
-    - name: '@grafana/agent-demo-client'
+    - name: '${DEMO_CLIENT_PACKAGE_NAME}'
       clients:
-        - url: http://${LOKI_HOST:-localhost:3100}/loki/api/v1/push
+        - url: 'http://${LOKI_HOST}:${LOKI_PORT}/loki/api/v1/push'
       positions:
-        filename: /tmp/positions-client.yaml
-    - name: '@grafana/agent-demo-server'
+        filename: '/tmp/positions-client.yaml'
+    - name: '${DEMO_SERVER_PACKAGE_NAME}'
       clients:
-        - url: http://${LOKI_HOST:-localhost:3100}/loki/api/v1/push
+        - url: 'http://${LOKI_HOST}:${LOKI_PORT}/loki/api/v1/push'
       positions:
-        filename: /tmp/positions-server.yaml
+        filename: '/tmp/positions-server.yaml'
       scrape_configs:
-        - job_name: '@grafana/agent-demo-server'
+        - job_name: '${DEMO_SERVER_PACKAGE_NAME}'
           static_configs:
             - targets:
-                - localhost
+                - 'localhost'
               labels:
-                app: '@grafana/agent-demo-server'
-                __path__: /var/log/server.log
+                app: '${DEMO_SERVER_PACKAGE_NAME}'
+                __path__: '${AGENT_LOGS_PATH}/${DEMO_SERVER_LOGS_NAME}'
 
 traces:
   configs:
-    - name: '@grafana/agent-demo'
+    - name: '${DEMO_PACKAGE_NAME}'
       remote_write:
-        - endpoint: ${TEMPO_HOST:-localhost:4317}
+        - endpoint: '${TEMPO_HOST}:${TEMPO_PORT_OTLP_RECEIVER}'
           insecure: true
       receivers:
         otlp:
@@ -50,26 +50,24 @@ integrations:
   app_agent_receiver:
     autoscrape:
       enable: true
-      metrics_instance: '@grafana/agent-demo'
-    instance: '@grafana/agent-demo'
-    logs_instance: '@grafana/agent-demo-client'
+      metrics_instance: '${DEMO_PACKAGE_NAME}'
+    instance: '${DEMO_PACKAGE_NAME}'
+    logs_instance: '${DEMO_CLIENT_PACKAGE_NAME}'
     logs_labels:
-      app: '@grafana/agent-demo-client'
+      app: '${DEMO_CLIENT_PACKAGE_NAME}'
       kind: ''
-    logs_send_timeout: 5s
+    logs_send_timeout: '5s'
     server:
-      api_key: api_key
+      api_key: '${AGENT_KEY_APP_RECEIVER}'
       cors_allowed_origins:
         - '*'
-        - http://localhost:5173
-        - http://127.0.0.1:5173
-      host: 0.0.0.0
-      max_allowed_payload_size: 5e+05
-      port: 8027
+      host: '0.0.0.0'
+      max_allowed_payload_size: 5e+07
+      port: ${AGENT_PORT_APP_RECEIVER}
       rate_limiting:
         burstiness: 100
         enabled: true
         rps: 100
     sourcemaps:
       download: true
-    traces_instance: '@grafana/agent-demo'
+    traces_instance: '${DEMO_PACKAGE_NAME}'

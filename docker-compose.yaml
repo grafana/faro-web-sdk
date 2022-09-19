@@ -1,83 +1,119 @@
 version: '3'
 
 services:
-  grafana:
-    image: grafana/grafana:latest
-    entrypoint:
-      - /usr/share/grafana/bin/grafana-server
-      - --homepath=/usr/share/grafana
-      - --config=/etc/grafana-config/grafana.ini
+  cortex:
+    env_file:
+      - './.env'
+    image: 'cortexproject/cortex:v1.13.0'
     volumes:
-      - ./infra/grafana/config:/etc/grafana-config
-      - ./infra/grafana/datasources:/etc/grafana/provisioning/datasources
-      - ./infra/grafana/dashboards-provisioning:/etc/grafana/provisioning/dashboards
-      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards
+      - '${CORTEX_CONFIG_PATH_LOCAL}:${CORTEX_CONFIG_PATH}'
+    entrypoint:
+      - '/bin/cortex'
+      - '-config.file=${CORTEX_CONFIG_PATH}/${CORTEX_CONFIG_FILE}'
     ports:
-      - '3000:3000'
+      - '${CORTEX_PORT}:${CORTEX_PORT}'
+
+  grafana:
+    env_file:
+      - './.env'
+    image: 'grafana/grafana:latest'
+    volumes:
+      - '${GRAFANA_CONFIG_PATH_LOCAL}:${GRAFANA_CONFIG_PATH}'
+      - '${GRAFANA_DATASOURCES_PATH_LOCAL}:${GRAFANA_DATASOURCES_PATH}'
+      - '${GRAFANA_DASHBOARDS_PROVISIONING_PATH_LOCAL}:${GRAFANA_DASHBOARDS_PROVISIONING_PATH}'
+      - '${GRAFANA_DASHBOARDS_PATH_LOCAL}:${GRAFANA_DASHBOARDS_PATH}'
+    entrypoint:
+      - '${GRAFANA_HOME_PATH}/bin/grafana-server'
+      - '--homepath=${GRAFANA_HOME_PATH}'
+      - '--config=${GRAFANA_CONFIG_PATH}/${GRAFANA_CONFIG_FILE}'
+    ports:
+      - '${GRAFANA_PORT}:${GRAFANA_PORT}'
 
   loki:
-    image: grafana/loki:latest
-    command: -config.file=/etc/loki/local-config.yaml
+    env_file:
+      - './.env'
+    image: 'grafana/loki:latest'
+    command: '-config.file=${LOKI_CONFIG_PATH}/${LOKI_CONFIG_FILE}'
     ports:
-      - '3100:3100'
-
-  cortex:
-    image: cortexproject/cortex:v1.13.0
-    volumes:
-      - ./infra/cortex/config:/etc/cortex-config
-    entrypoint:
-      - /bin/cortex
-      - -config.file=/etc/cortex-config/cortex.yaml
-    ports:
-      - '9009:9009'
+      - '${LOKI_PORT}:${LOKI_PORT}'
 
   tempo:
-    image: grafana/tempo:latest
+    env_file:
+      - './.env'
+    image: 'grafana/tempo:latest'
     command:
       - '-search.enabled=true'
       - '-storage.trace.backend=local'
-      - '-storage.trace.local.path=/tmp/tempo/traces'
-      - '-storage.trace.wal.path=/tmp/tempo/wal'
+      - '-storage.trace.local.path=${TEMPO_TEMP_PATH}/${TEMPO_TRACES_PATH}'
+      - '-storage.trace.wal.path=${TEMPO_TEMP_PATH}/${TEMPO_WAL_PATH}'
       - '-auth.enabled=false'
-      - '-server.http-listen-port=3200'
+      - '-server.http-listen-port=${TEMPO_PORT}'
     ports:
-      - '3200:3200'
+      - '${TEMPO_PORT}:${TEMPO_PORT}'
 
   agent:
-    image: grafana/agent:main
+    env_file:
+      - './.env'
+    image: 'grafana/agent:main'
     volumes:
-      - ./infra/agent/config:/etc/agent-config
-      - applogs:/var/log
+      - '${AGENT_CONFIG_PATH_LOCAL}:${AGENT_CONFIG_PATH}'
+      - './demo/logs:${AGENT_LOGS_PATH}'
     entrypoint:
-      - /bin/agent
-      - -config.file=/etc/agent-config/agent.yaml
-      - -metrics.wal-directory=/tmp/agent/wal
-      - -enable-features=integrations-next
-      - -config.expand-env
-      - -config.enable-read-api
-    environment:
-      HOSTNAME: agent
-      REMOTE_WRITE_HOST: cortex:9009
-      LOKI_HOST: loki:3100
-      TEMPO_HOST: tempo:4317
+      - '/bin/agent'
+      - '-config.file=${AGENT_CONFIG_PATH}/${AGENT_CONFIG_FILE}'
+      - '-metrics.wal-directory=${AGENT_TEMP_PATH}/${AGENT_WAL_PATH}'
+      - '-enable-features=integrations-next'
+      - '-config.expand-env'
+      - '-config.enable-read-api'
     ports:
-      - '12345:12345'
-      - '8027:8027'
-      - '4317:4317'
+      - '${AGENT_PORT}:${AGENT_PORT}'
+      - '${AGENT_PORT_APP_RECEIVER}:${AGENT_PORT_APP_RECEIVER}'
+      - '${TEMPO_PORT_OTLP_RECEIVER}:${TEMPO_PORT_OTLP_RECEIVER}'
     depends_on:
-      - cortex
-      - loki
-      - tempo
+      - 'cortex'
+      - 'grafana'
+      - 'loki'
+      - 'tempo'
 
-  app:
-    build: .
-    command: yarn start
+  demo:
+    env_file:
+      - './.env'
+    profiles:
+      - 'demo'
     volumes:
-      - applogs:/usr/app/demo/logs
+      - './${DEMO_DEMO_PATH}:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}'
+      - './${DEMO_PACKAGES_PATH}:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_PATH}'
+      - 'demo_logs:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/${DEMO_SERVER_LOGS_PATH}'
+      - '${DEMO_WORKSPACE_PATH}/node_modules'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/dist'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/node_modules'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/dist'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/node_modules'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH}/dist'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH}/node_modules'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/dist'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/node_modules'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_TRACING_WEB_PATH}/dist'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_TRACING_WEB_PATH}/node_modules'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_PATH}/dist'
+      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_PATH}/node_modules'
+    build:
+      args:
+        DEMO_PORT: '${DEMO_PORT}'
+        DEMO_WORKSPACE_PATH: '${DEMO_WORKSPACE_PATH}'
+        DEMO_DEMO_PATH: '${DEMO_DEMO_PATH}'
+        DEMO_PACKAGES_PATH: '${DEMO_PACKAGES_PATH}'
+        DEMO_PACKAGES_CORE_PATH: '${DEMO_PACKAGES_CORE_PATH}'
+        DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH: '${DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH}'
+        DEMO_PACKAGES_INTEGRATION_REACT_PATH: '${DEMO_PACKAGES_INTEGRATION_REACT_PATH}'
+        DEMO_PACKAGES_TRACING_WEB_PATH: '${DEMO_PACKAGES_TRACING_WEB_PATH}'
+        DEMO_PACKAGES_WEB_PATH: '${DEMO_PACKAGES_WEB_PATH}'
+        DEMO_HMR_PORT: '${DEMO_PORT_HMR}'
     ports:
-      - '5173:5173'
+      - '${DEMO_PORT}:${DEMO_PORT}'
+      - '${DEMO_PORT_HMR}:${DEMO_PORT_HMR}'
     depends_on:
-      - agent
+      - 'agent'
 
 volumes:
-  applogs:
+  demo_logs:

@@ -1,4 +1,4 @@
-import { Page } from '../../components/Page';
+import { Page } from '../../components';
 import { LoginForm } from './LoginForm';
 
 export function Login() {

@@ -9,14 +9,14 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 
-import { env } from '../../common';
+import { env } from '../utils';
 
 const provider = new NodeTracerProvider({
   resource: Resource.default().merge(
     new Resource({
-      [SemanticResourceAttributes.SERVICE_NAME]: '@grafana/agent-demo-server',
-      [SemanticResourceAttributes.SERVICE_VERSION]: '0.0.1',
-      [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: env.prod ? 'production' : env.test ? 'test' : 'development',
+      [SemanticResourceAttributes.SERVICE_NAME]: env.serverPackageName,
+      [SemanticResourceAttributes.SERVICE_VERSION]: env.packageVersion,
+      [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: env.mode.name,
     })
   ),
 });
@@ -24,7 +24,7 @@ const provider = new NodeTracerProvider({
 provider.addSpanProcessor(
   new BatchSpanProcessor(
     new OTLPTraceExporter({
-      url: 'http://localhost:4317',
+      url: `http://${env.agentHost}:${env.agentPortTraces}`,
     })
   )
 );

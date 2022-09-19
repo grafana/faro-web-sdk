@@ -1,4 +1,4 @@
-import { Page } from '../../components/Page';
+import { Page } from '../../components';
 import { RegisterForm } from './RegisterForm';
 
 export function Register() {

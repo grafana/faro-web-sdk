@@ -231,12 +231,16 @@ const resource = Resource.default().merge(
 );
 
 const provider = new WebTracerProvider({ resource });
+
 provider.addSpanProcessor(new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent })));
+
 provider.register({
   propagator: new W3CTraceContextPropagator(),
   contextManager: new ZoneContextManager(),
 });
+
 const ignoreUrls = [COLLECTOR_URL];
+
 registerInstrumentations({
   instrumentations: [
     new DocumentLoadInstrumentation(),
@@ -261,26 +265,26 @@ const agent = window.grafanaAgent;
 // send a log message
 // by default info, warn and error levels are captured.
 // trace, debug and log are not
-console.info("Hello world", 123);
+console.info('Hello world', 123);
 // or
-agent.api.pushLog(["Hello world", 123], { level: LogLevel.Debug });
+agent.api.pushLog(['Hello world', 123], { level: LogLevel.Debug });
 
 // log with context
-agent.api.pushLog(["Sending update"], {
+agent.api.pushLog(['Sending update'], {
   context: {
     payload: thePayload,
   },
-  level: LogLevel.Trace
+  level: LogLevel.TRACE,
 });
 
 // set user metadata, to be included with every event. All properties optional
 agent.api.setUser({
   email: 'bob@example.com',
-  id: '123abc'
-  username: 'bob'
+  id: '123abc',
+  username: 'bob',
   attributes: {
     role: 'manager',
-  }
+  },
 });
 
 // push measurement
@@ -288,8 +292,8 @@ agent.api.pushMeasurement({
   type: 'cart-transaction',
   values: {
     delay: 122,
-    duration: 4000
-  }
+    duration: 4000,
+  },
 });
 
 // push an error
@@ -299,8 +303,8 @@ agent.api.pushError(new Error('everything went horribly wrong'));
 agent.api.pushEvent('navigation', { url: window.location.href });
 
 // pause agent, preventing events from being sent
-agent.pause()
+agent.pause();
 
 // resume sending events
-agent.unpause()
+agent.unpause();
 ```

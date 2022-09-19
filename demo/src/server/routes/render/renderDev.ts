@@ -1,9 +1,8 @@
 import type { Express, Router } from 'express';
 import { readFileSync } from 'fs';
 
-import { env } from '../../../common';
 import { logger } from '../../logger';
-import { sendError, toAbsolutePath } from '../../utils';
+import { env, sendError, toAbsolutePath } from '../../utils';
 import type { Request, Response } from '../../utils';
 import { renderPage } from './renderPage';
 
@@ -12,7 +11,7 @@ export async function registerRenderDevRoutes(globalRouter: Router, _app: Expres
     await import('vite')
   ).createServer({
     root: process.cwd(),
-    logLevel: env.dev ? 'info' : 'error',
+    logLevel: env.mode.dev ? 'info' : 'error',
     server: {
       middlewareMode: true,
       watch: {

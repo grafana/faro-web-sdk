@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "composite": true,
     "declaration": true,
@@ -28,24 +29,29 @@
     "strict": true,
     "target": "ESNext",
     "tsBuildInfoFile": "../../.build-cache/demo.tsbuildinfo",
+    "types": ["vite/client"],
     "useDefineForClassFields": true,
     "useUnknownInCatchVariables": false
   },
   "ts-node": {
     "esm": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "vite.config.ts"],
   "references": [
     {
-      "path": "../packages/core/tsconfig.esm.json",
+      "path": "../packages/core/tsconfig.all.json",
       "prepend": false
     },
     {
-      "path": "../packages/web/tsconfig.esm.json",
+      "path": "../packages/integration-react/tsconfig.all.json",
       "prepend": false
     },
     {
-      "path": "../packages/tracing-web/tsconfig.esm.json",
+      "path": "../packages/tracing-web/tsconfig.all.json",
+      "prepend": false
+    },
+    {
+      "path": "../packages/web/tsconfig.all.json",
       "prepend": false
     }
   ]

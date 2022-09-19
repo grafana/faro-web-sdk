@@ -17,38 +17,38 @@ ingester_client:
   grpc_client_config:
     max_recv_msg_size: 104857600
     max_send_msg_size: 104857600
-    grpc_compression: gzip
+    grpc_compression: 'gzip'
 
 ingester:
   lifecycler:
     join_after: 0
-    min_ready_duration: 0s
-    final_sleep: 0s
+    min_ready_duration: '0s'
+    final_sleep: '0s'
     num_tokens: 512
 
     ring:
       kvstore:
-        store: inmemory
+        store: 'inmemory'
       replication_factor: 1
 
 storage:
-  engine: blocks
+  engine: 'blocks'
 
 blocks_storage:
   tsdb:
-    dir: /tmp/cortex/tsdb
+    dir: '/tmp/cortex/tsdb'
   bucket_store:
-    sync_dir: /tmp/cortex/tsdb-sync
+    sync_dir: '/tmp/cortex/tsdb-sync'
 
-  backend: filesystem
+  backend: 'filesystem'
   filesystem:
-    dir: /tmp/cortex/blocks
+    dir: '/tmp/cortex/blocks'
 
 compactor:
-  data_dir: /tmp/cortex/compactor
+  data_dir: '/tmp/cortex/compactor'
   sharding_ring:
     kvstore:
-      store: inmemory
+      store: 'inmemory'
 
 frontend_worker:
   match_max_concurrent: true
@@ -57,9 +57,9 @@ ruler:
   enable_api: true
   enable_sharding: false
   storage:
-    type: local
+    type: 'local'
     local:
-      directory: /tmp/cortex/rules
+      directory: '/tmp/cortex/rules'
 
 limits:
   ingestion_rate: 250000

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { useLazyGetAuthStateQuery } from '../api';
-import { LoadingScreen } from '../components/LoadingScreen';
+import { LoadingScreen } from '../components';
 import { useIsomorphicEffect } from '../hooks';
 
 export type AuthWrapperProps = {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Page } from '../../components/Page';
+import { Page } from '../../components';
 import { Counter } from './Counter';
 
 export function BrokenPage() {

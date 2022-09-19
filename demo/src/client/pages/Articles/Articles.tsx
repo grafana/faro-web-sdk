@@ -6,8 +6,7 @@ import { Link } from 'react-router-dom';
 import { withGrafanaProfiler } from '@grafana/agent-integration-react';
 
 import { useGetArticlesQuery } from '../../api';
-import { LoadingScreen } from '../../components/LoadingScreen';
-import { Page } from '../../components/Page';
+import { LoadingScreen, Page } from '../../components';
 import { formatDate } from '../../utils';
 
 export function ArticlesComponent() {

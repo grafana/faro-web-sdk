@@ -1,12 +1,25 @@
-context('Events', () => {
-  it('will capture an event', () => {
-    cy.clickButton('btn-event-with-attrs');
+import type { TransportBody } from '@grafana/agent-core';
 
-    cy.waitEvents((events) => {
-      expect(events).to.have.lengthOf(1);
-      const event = events[0]!;
-      expect(event).property('name').to.equal('click_button_with_attributes');
-      expect(event).property('attributes').property('foo').to.equal('bar');
+context('Events', () => {
+  [
+    {
+      title: 'an event',
+      btnName: 'event-with-attrs',
+      aliasGenerator: (body: TransportBody) => {
+        const item = body.events?.[0]!;
+
+        return item?.attributes?.['foo'] === 'bar' && item?.attributes?.['baz'] === 'bad' ? 'event' : undefined;
+      },
+    },
+  ].forEach(({ title, btnName, aliasGenerator }) => {
+    it(`will capture ${title}`, () => {
+      cy.interceptAgent(aliasGenerator);
+
+      cy.visit('/features-page');
+
+      cy.clickButton(`btn-${btnName}`);
+
+      cy.wait('@event');
     });
   });
 });

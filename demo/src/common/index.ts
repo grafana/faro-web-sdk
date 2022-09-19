@@ -34,4 +34,5 @@ export type {
   UserPublic,
 } from './models';
 
-export { clientPackageName, env, NODE_ENV, packageVersion, serverPackageName } from './utils';
+export { getEnvConfig } from './utils';
+export type { Env } from './utils';

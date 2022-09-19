@@ -1,4 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit';
+// import { createSlice } from '@reduxjs/toolkit';
+import * as toolkitRaw from '@reduxjs/toolkit';
+const { createSlice } = ((toolkitRaw as any).default ?? toolkitRaw) as typeof toolkitRaw;
 import type { PayloadAction } from '@reduxjs/toolkit';
 
 import { agent } from '@grafana/agent-integration-react';

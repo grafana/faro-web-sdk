@@ -1,43 +1,50 @@
 context('Errors', () => {
-  function checkErrorReported(type: string, value: string, expectStacktrace = true) {
-    cy.waitExceptions((evts) => {
-      expect(evts).to.have.lengthOf(1);
+  [
+    {
+      title: 'thrown errors',
+      btnName: 'throw-error',
+      value: 'This is a thrown error',
+    },
+    {
+      title: 'unexpected errors',
+      btnName: 'call-undefined',
+      value: 'test is not defined',
+    },
+    {
+      title: 'unhandled error',
+      btnName: 'fetch-error',
+      value: 'Failed to fetch',
+    },
+    {
+      title: 'unhandled rejection',
+      type: 'UnhandledRejection',
+      btnName: 'promise-reject',
+      value: 'Non-Error promise rejection captured with value: This is a rejected promise',
+      expectStacktrace: false,
+    },
+  ].forEach(({ title, btnName, type = 'Error', value, expectStacktrace = true }) => {
+    it(`will capture ${title}`, () => {
+      cy.interceptAgent((body) => {
+        const item = body.exceptions?.[0];
 
-      const exception = evts[0];
-      expect(exception).property('type').to.equal(type);
-      expect(exception).property('value').to.equal(value);
+        if (
+          item?.type === type &&
+          item?.value === value &&
+          ((!expectStacktrace || item?.stacktrace?.frames.length) ?? 0 > 1)
+        ) {
+          return 'exception';
+        }
 
-      if (expectStacktrace) {
-        expect(exception).property('stacktrace').property('frames').to.have.length.greaterThan(1);
-      }
+        return undefined;
+      });
+
+      cy.on('uncaught:exception', () => false);
+
+      cy.visit('/features-page');
+
+      cy.clickButton(`btn-${btnName}`);
+
+      cy.wait('@exception');
     });
-  }
-
-  beforeEach(() => {
-    cy.on('uncaught:exception', () => false);
-  });
-
-  it('thrown Error', () => {
-    cy.clickButton('btn-throw-error');
-    checkErrorReported('Error', 'This is a thrown error');
-  });
-
-  it('undefined method error', () => {
-    cy.clickButton('btn-call-undefined');
-    checkErrorReported('Error', 'test is not defined');
-  });
-
-  it('fetch error', () => {
-    cy.clickButton('btn-fetch-error');
-    checkErrorReported('Error', 'Failed to fetch', false);
-  });
-
-  it('promise rejection', () => {
-    cy.clickButton('btn-promise-reject');
-    checkErrorReported(
-      'UnhandledRejection',
-      'Non-Error promise rejection captured with value: This is a rejected promise',
-      false
-    );
   });
 });

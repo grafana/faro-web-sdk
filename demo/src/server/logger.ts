@@ -1,28 +1,27 @@
 import { format, transports, createLogger as winstonCreateLogger } from 'winston';
 
-import { packageVersion, serverPackageName } from '../common';
-import { toAbsolutePath } from './utils';
+import { env, toAbsolutePath } from './utils';
 
 export const logger = winstonCreateLogger({
   level: 'debug',
   defaultMeta: {
-    app: serverPackageName,
-    version: packageVersion,
-    component: 'api',
+    app: env.serverPackageName,
+    version: env.packageVersion,
+    component: 'server',
   },
   transports: [
     new transports.Console({
       format: format.combine(format.colorize(), format.simple()),
     }),
     new transports.File({
-      filename: toAbsolutePath('logs/server.log'),
+      filename: toAbsolutePath(`${env.serverLogsPath}/${env.serverLogsName}`),
       format: format.json(),
     }),
   ],
 });
 
 // @ts-ignore
-console.log = (...args: any[]) => logger.info.call(logger, ...args);
+// console.log = (...args: any[]) => logger.info.call(logger, ...args);
 // @ts-ignore
 console.info = (...args: any[]) => logger.info.call(logger, ...args);
 // @ts-ignore

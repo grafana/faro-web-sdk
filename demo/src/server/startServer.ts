@@ -1,10 +1,10 @@
-import { env } from '../common';
 import { createServer } from './createServer';
+import { env } from './utils';
 
-if (!env.test) {
+if (!env.mode.test) {
   createServer().then((app) =>
-    app.listen(5173, () => {
-      console.log('http://localhost:5173');
+    app.listen(env.serverPort, () => {
+      console.log(`http://localhost:${env.serverPort}`);
     })
   );
 }
