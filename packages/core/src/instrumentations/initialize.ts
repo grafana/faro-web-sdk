@@ -2,7 +2,7 @@ import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Instrumentation, Instrumentations } from './types';
 
-export function initializeInstrumentations(internalLogger: InternalLogger, config: Config): Instrumentations {
+export function initializeInstrumentations(internalLogger: InternalLogger, _config: Config): Instrumentations {
   internalLogger.debug('Initializing instrumentations');
 
   const instrumentations: Instrumentation[] = [];
@@ -55,8 +55,6 @@ export function initializeInstrumentations(internalLogger: InternalLogger, confi
       instrumentations.splice(existingInstrumentationIndex, 1);
     });
   };
-
-  add(...config.instrumentations);
 
   return {
     add,

@@ -11,7 +11,7 @@ export function mockConfig(overrides: Partial<Config> = {}): Config {
     globalObjectKey: 'grafanaAgent',
     internalLoggerLevel: defaultInternalLoggerLevel,
     instrumentations: [],
-    isolate: false,
+    isolate: true,
     metas: [],
     parseStacktrace: mockStacktraceParser,
     paused: false,
