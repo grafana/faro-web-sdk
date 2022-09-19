@@ -3,8 +3,8 @@ import type { Instrumentation } from '@grafana/agent-core';
 import {
   ConsoleInstrumentation,
   ErrorsInstrumentation,
-  WebVitalsInstrumentation,
   SessionInstrumentation,
+  WebVitalsInstrumentation,
 } from '../instrumentations';
 import type { GetWebInstrumentationsOptions } from './types';
 
