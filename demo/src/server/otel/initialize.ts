@@ -11,6 +11,9 @@ import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 
 import { env } from '../utils';
 
+// OTel really wants to stay like this
+// I would have liked to wrap this in a function and call it in index.ts
+
 const provider = new NodeTracerProvider({
   resource: Resource.default().merge(
     new Resource({

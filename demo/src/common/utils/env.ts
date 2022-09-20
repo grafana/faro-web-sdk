@@ -22,6 +22,7 @@ export function getEnvConfig(vars: Record<string, string | undefined>, nodeEnv?:
     agentPortAppReceiver: vars['AGENT_PORT_APP_RECEIVER']!,
     agentPortTraces: vars['TEMPO_PORT_OTLP_RECEIVER']!,
     agentApiKey: vars['AGENT_KEY_APP_RECEIVER']!,
+    grafanaPort: vars['GRAFANA_PORT']!,
     mode,
   };
 }

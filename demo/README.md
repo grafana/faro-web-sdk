@@ -19,8 +19,18 @@ This small project demonstrates how to use the Grafana JavaScript Agent and its 
    Running the above command in the root directory of the repository will install all the necessary dependencies for
    the packages and the demo.
 
-3. Run the demo:
+3. Run the infrastructure:
 
    ```shell
+   docker-compose up -d
+   ```
+
+4. Run the demo:
+
+   ```shell
+   // if you want to run the demo locally
    yarn start
+
+   // Alternatively you can run the demo using Docker
+   docker compose up -d --profile demo
    ```

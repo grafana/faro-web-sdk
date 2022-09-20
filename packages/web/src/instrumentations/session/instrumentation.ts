@@ -1,5 +1,6 @@
-import { BaseInstrumentation, Conventions, Meta, MetaSession } from '@grafana/agent-core';
 import { VERSION } from 'ua-parser-js';
+
+import { BaseInstrumentation, Conventions, Meta, MetaSession } from '@grafana/agent-core';
 
 // all this does is send SESSION_START event
 export class SessionInstrumentation extends BaseInstrumentation {

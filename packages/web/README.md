@@ -24,7 +24,7 @@ _Warning_: currently pre-release and subject to frequent breaking changes. Use a
 
 Basic set up, will automatically report errors and web vitals:
 
-```javascript
+```ts
 import { initializeGrafanaAgent } from '@grafana/agent-web';
 
 const agent = initializeGrafanaAgent({
@@ -48,7 +48,7 @@ agent.api.pushError(new Error('oh no'));
 
 With OTel tracing and browser console capture:
 
-```javascript
+```ts
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
 import { ConsoleInstrumentation, initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
 

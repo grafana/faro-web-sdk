@@ -84,6 +84,7 @@ services:
       - './${DEMO_DEMO_PATH}:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}'
       - './${DEMO_PACKAGES_PATH}:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_PATH}'
       - 'demo_logs:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/${DEMO_SERVER_LOGS_PATH}'
+      - '${DEMO_WORKSPACE_PATH}/.build-cache'
       - '${DEMO_WORKSPACE_PATH}/node_modules'
       - '${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/dist'
       - '${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/node_modules'

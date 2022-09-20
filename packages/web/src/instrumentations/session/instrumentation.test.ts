@@ -1,4 +1,4 @@
-import { EventEvent, Conventions, initializeGrafanaAgent, TransportItem } from '@grafana/agent-core';
+import { Conventions, EventEvent, initializeGrafanaAgent, TransportItem } from '@grafana/agent-core';
 import { mockConfig, MockTransport } from '@grafana/agent-core/src/testUtils';
 
 import { createSession } from '../../session';

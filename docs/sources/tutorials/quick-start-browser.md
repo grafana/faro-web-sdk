@@ -104,7 +104,7 @@ This basic configuration sets up the Grafana Javascript Agent to automatically c
 and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements.
 Without tracing, there is small bundle size footprint.
 
-```javascript
+```ts
 import { initializeGrafanaAgent } from '@grafana/agent-web';
 
 const agent = initializeGrafanaAgent({
@@ -121,7 +121,7 @@ const agent = initializeGrafanaAgent({
 
 You can also explicitly specify and customize transports and instrumentations.
 
-```javascript
+```ts
 import {
   ConsoleInstrumentation,
   ConsoleTransport,
@@ -164,7 +164,7 @@ tracing support is provided in a separate `@grafana/agent-tracing-web` package.
 Using a provided default OTEL setup, which includes tracing instrumentations for user
 interaction, fetch and document load, W3C trace context propagation via `fetch` and `xhr`.
 
-```javascript
+```ts
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
 import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
 
@@ -194,7 +194,7 @@ context.with(trace.setSpan(context.active(), span), () => {
 Configure OTEL manually. Use `GrafanaAgentTraceExporter` and call `agent.api.initOTEL`
 with OTEL trace and context APIs.
 
-```javascript
+```ts
 import { trace, context } from '@opentelemetry/api';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
@@ -258,7 +258,7 @@ agent.api.initOTEL(trace, context);
 
 ## Use
 
-```javascript
+```ts
 import { LogLevel } from '@grafana/agent-core';
 
 // there's a global property

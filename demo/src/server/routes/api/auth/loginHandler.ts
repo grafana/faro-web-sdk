@@ -39,6 +39,7 @@ export const loginHandler: RequestHandler<{}, AuthLoginSuccessPayload, AuthLogin
     sendSuccess(res, userPublic, 201);
   } catch (err) {
     logger.error(err);
+
     sendError(res, err);
   }
 };
