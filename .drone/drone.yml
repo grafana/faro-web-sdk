@@ -48,6 +48,7 @@ steps:
   - name: e2e-tests
     image: docker:latest
     commands:
+      - docker-entrypoint.sh
       - docker compose --profile test up --build --abort-on-container-exit test
 
 ---
@@ -120,6 +121,6 @@ steps:
 
 ---
 kind: signature
-hmac: 9ddbfb3077684dce84c322790729b9c944cb46ff9e42e82177d97d9aeed20fb6
+hmac: a618dacb3207be0de6b309b802b93beb3a91cfa135b3b932612709d944f606c5
 
 ...
