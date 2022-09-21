@@ -58,7 +58,7 @@ services:
   - name: database
     image: postgres:latest
     environment:
-      POSTGRES_DB: postgres
+      POSTGRES_DB: demo
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
 
@@ -138,12 +138,12 @@ services:
   - name: database
     image: postgres:latest
     environment:
-      POSTGRES_DB: postgres
+      POSTGRES_DB: demo
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
 
 ---
 kind: signature
-hmac: 4f2cbddfd8735e55a4e8971dde4ac54f1e4624a41a092b95e572f3d4b586d7f3
+hmac: cfc7365615ebfee1b2a65c8f7c0bdcaa83f409f068fe73a7fd7ff245a6e1781e
 
 ...
