@@ -51,6 +51,8 @@ steps:
       - build
     commands:
       - yarn quality:e2e:ci
+    environment:
+      IS_TEST: 1
 
 services:
   - name: database
@@ -113,6 +115,8 @@ steps:
       - build
     commands:
       - yarn quality:e2e:ci
+    environment:
+      IS_TEST: 1
 
   - name: publish
     image: node:lts-stretch
@@ -140,6 +144,6 @@ services:
 
 ---
 kind: signature
-hmac: 77c693d6a46b629d1294976beecb6d82649194997cf26db813cc1b027bd80ed6
+hmac: 4f2cbddfd8735e55a4e8971dde4ac54f1e4624a41a092b95e572f3d4b586d7f3
 
 ...

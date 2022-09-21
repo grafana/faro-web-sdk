@@ -12,6 +12,13 @@ config({
   override: true,
 });
 
+if (process.env['IS_TEST']) {
+  config({
+    path: resolve(process.cwd(), '../.env.test'),
+    override: true,
+  });
+}
+
 export const env = getEnvConfig(process.env, process.env['NODE_ENV']);
 
 process.env['__APP_ENV__'] = JSON.stringify(getPublicEnvConfig(env));
