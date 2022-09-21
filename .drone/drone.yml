@@ -47,8 +47,6 @@ steps:
 
   - name: e2e-tests
     image: docker:latest
-    depends_on:
-      - install-dependencies
     commands:
       - docker compose --profile test up --build --abort-on-container-exit test
 
@@ -101,8 +99,6 @@ steps:
 
   - name: e2e-tests
     image: docker:latest
-    depends_on:
-      - install-dependencies
     commands:
       - docker compose --profile test up --build --abort-on-container-exit test
 
@@ -124,6 +120,6 @@ steps:
 
 ---
 kind: signature
-hmac: 9ff314da9cf82d4a61be1c045923c02f729389747eb953846228aaa0963db038
+hmac: 9ddbfb3077684dce84c322790729b9c944cb46ff9e42e82177d97d9aeed20fb6
 
 ...
