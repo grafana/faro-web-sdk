@@ -46,9 +46,11 @@ steps:
       - yarn quality:test
 
   - name: e2e-tests
-    image: node:lts-stretch
+    image: docker:latest
+    depends_on:
+      - install-dependencies
     commands:
-      - docker compose --profile test up
+      - docker compose --profile test up --build --abort-on-container-exit test
 
 ---
 name: release
@@ -122,6 +124,6 @@ steps:
 
 ---
 kind: signature
-hmac: 03c27f9cda857eb0aa0a45ea7f952df573c11f979da527824141261546a6137c
+hmac: 9ff314da9cf82d4a61be1c045923c02f729389747eb953846228aaa0963db038
 
 ...
