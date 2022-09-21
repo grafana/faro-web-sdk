@@ -48,7 +48,7 @@ steps:
   - name: e2e-tests
     image: docker:latest
     commands:
-      - docker-entrypoint.sh docker compose --profile test up --build --abort-on-container-exit test
+      - docker-entrypoint.sh "docker compose --profile test up --build --abort-on-container-exit test"
 
 ---
 name: release
@@ -100,7 +100,7 @@ steps:
   - name: e2e-tests
     image: docker:latest
     commands:
-      - docker-entrypoint.sh docker compose --profile test up --build --abort-on-container-exit test
+      - docker-entrypoint.sh "docker compose --profile test up --build --abort-on-container-exit test"
 
   - name: publish
     image: node:lts-stretch
@@ -120,6 +120,6 @@ steps:
 
 ---
 kind: signature
-hmac: 5243d5d7c673c4af01f6d932012075227b9d4636c6e6697ad8f5ab2468e2eed6
+hmac: 9df3738091b723a383295f2f410297b5205e2986250108a6abd527f30f8d26c5
 
 ...
