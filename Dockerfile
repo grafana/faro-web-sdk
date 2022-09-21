@@ -1,4 +1,4 @@
-FROM node:16-alpine as dev
+FROM node:16-alpine
 
 ARG DEMO_DEMO_PATH
 ARG DEMO_PACKAGES_CORE_PATH
@@ -128,27 +128,3 @@ EXPOSE ${DEMO_PORT_HMR}
 
 # Start the demo
 CMD ["yarn", "start"]
-
-FROM cypress/included:10.8.0 as test
-
-ARG DEMO_WORKSPACE_PATH
-
-# Set the workspace path
-WORKDIR ${DEMO_WORKSPACE_PATH}
-
-# Install Node.js dependencies
-RUN apt-get install -y musl-dev
-RUN ln -s /usr/lib/x86_64-linux-musl/libc.so /lib/libc.musl-x86_64.so.1
-
-# Copy the files from the dev image
-COPY --from=dev ${DEMO_WORKSPACE_PATH} .
-
-# Copy Cypress files
-COPY cypress.config.ts ./cypress.config.ts
-COPY cypress/ cypress/
-
-# Expose the ports
-EXPOSE ${DEMO_PORT}
-
-# Start the demo
-ENTRYPOINT ["yarn", "quality:e2e:ci"]
