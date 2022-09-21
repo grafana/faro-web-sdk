@@ -102,7 +102,7 @@ steps:
     depends_on:
       - install-dependencies
     commands:
-      - yarn quality:e2e:ci
+      - docker compose --profile test up --build --abort-on-container-exit test
 
   - name: publish
     image: node:lts-stretch
