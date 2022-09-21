@@ -2,7 +2,7 @@ import { getTransportBody, LogEvent, LogLevel, TransportItem, TransportItemType 
 
 import { FetchTransport } from './transport';
 
-const fetch = jest.fn(() => setImmediate(() => Promise.resolve({})));
+const fetch = jest.fn(() => Promise.resolve({ status: 202 }));
 
 (global as any).fetch = fetch;
 
@@ -51,6 +51,83 @@ describe('FetchTransport', () => {
     }
 
     expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('will back off on 429 for default interval if no retry-after header present', async () => {
+    let now = Date.now();
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      defaultRateLimitBackoffMs: 1000,
+      getNow: () => now,
+    });
+
+    fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        status: 429,
+        headers: {
+          get: () => '',
+        },
+      })
+    );
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    now += 1001;
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('will back off on 429 for default interval if retry-after header present, with delay', async () => {
+    let now = Date.now();
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      defaultRateLimitBackoffMs: 1000,
+      getNow: () => now,
+    });
+
+    fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        status: 429,
+        headers: {
+          get: () => '2',
+        },
+      })
+    );
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    now += 1001;
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    now += 1001;
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('will back off on 429 for default interval if retry-after header present, with delay', async () => {
+    let now = Date.now();
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      defaultRateLimitBackoffMs: 1000,
+      getNow: () => now,
+    });
+
+    fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        status: 429,
+        headers: {
+          get: () => new Date(now + 3000).toISOString(),
+        },
+      })
+    );
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    now += 1001;
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    now += 2001;
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 });
 
