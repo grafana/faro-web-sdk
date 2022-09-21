@@ -3,10 +3,15 @@ import { env, verifyToken } from '../../utils';
 import type { Request, Response } from '../../utils';
 import type { renderToString } from './renderToString';
 
-export function renderPage(req: Request, res: Response, template: string, render: typeof renderToString): void {
+export async function renderPage(
+  req: Request,
+  res: Response,
+  template: string,
+  render: typeof renderToString
+): Promise<void> {
   const spanContext = getActiveSpanContext()!;
 
-  const userPublic = verifyToken((res as Response).locals.token) ?? null;
+  const userPublic = (await verifyToken((res as Response).locals.token)) ?? null;
 
   const preloadedState = {
     user: {

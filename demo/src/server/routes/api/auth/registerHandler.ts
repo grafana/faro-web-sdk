@@ -1,7 +1,5 @@
-import { hash } from 'bcrypt';
-
 import type { AuthRegisterPayload, AuthRegisterSuccessPayload } from '../../../../common';
-import { addUser, getUserByEmail, getUserPublicFromUser } from '../../../data';
+import { addUser, getUserByEmail, getUserPublicFromUser } from '../../../db';
 import { logger } from '../../../logger';
 import { sendError, sendFormValidationError, sendSuccess, setAuthorizationToken, signToken } from '../../../utils';
 import type { RequestHandler } from '../../../utils';
@@ -25,23 +23,21 @@ export const registerHandler: RequestHandler<{}, AuthRegisterSuccessPayload, Aut
       return sendFormValidationError(res, 'password', 'Field is required');
     }
 
-    const userByEmail = getUserByEmail(email);
+    const userByEmailRaw = await getUserByEmail(email);
 
-    if (userByEmail) {
+    if (userByEmailRaw) {
       return sendFormValidationError(res, 'email', 'Value is already taken');
     }
 
-    const encodedPassword = await hash(password, 10);
+    const userRaw = await addUser(req.body);
 
-    const user = addUser({ name, email, password: encodedPassword });
+    const user = await getUserPublicFromUser(userRaw);
 
-    const userPublic = getUserPublicFromUser(user);
-
-    const token = signToken(userPublic);
+    const token = signToken(user);
 
     setAuthorizationToken(res, token);
 
-    sendSuccess(res, userPublic, 201);
+    sendSuccess(res, user, 201);
   } catch (err) {
     logger.error(err);
 

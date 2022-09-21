@@ -2,6 +2,12 @@
 
 This small project demonstrates how to use the Grafana JavaScript Agent and its packages.
 
+The app itself contains a full boilerplate for a React application including:
+
+- server-side rendering (SSR)
+- full implementation of the Grafana JavaScript Agent in the frontend
+- full implementation of OTel in the backend
+
 ## Installation
 
 1. Clone the repository:
@@ -34,3 +40,7 @@ This small project demonstrates how to use the Grafana JavaScript Agent and its 
    // Alternatively you can run the demo using Docker
    docker compose up -d --profile demo
    ```
+
+## Journey
+
+TODO

@@ -46,9 +46,10 @@ describe('FetchTransport', () => {
       bufferSize: 3,
     });
 
-    for (let i = 0; i < 6; i++) {
+    for (let idx = 0; idx < 6; idx++) {
       transport.send(item);
     }
+
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 });

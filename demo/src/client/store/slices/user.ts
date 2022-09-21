@@ -1,16 +1,14 @@
-// import { createSlice } from '@reduxjs/toolkit';
-import * as toolkitRaw from '@reduxjs/toolkit';
-const { createSlice } = ((toolkitRaw as any).default ?? toolkitRaw) as typeof toolkitRaw;
 import type { PayloadAction } from '@reduxjs/toolkit';
 
 import { agent } from '@grafana/agent-integration-react';
 
-import type { UserPublic } from '../../../common';
+import type { UserPublicModel } from '../../../common';
 import { authAPI } from '../../api';
+import { createSlice } from '../../utils';
 import type { RootState } from '../store';
 
 export type UserState = {
-  data: UserPublic | null;
+  data: UserPublicModel | null;
 };
 
 export const initialState: UserState = {
@@ -21,7 +19,7 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<UserPublic | null>) => {
+    setUser: (state, action: PayloadAction<UserPublicModel | null>) => {
       state.data = action.payload;
     },
   },

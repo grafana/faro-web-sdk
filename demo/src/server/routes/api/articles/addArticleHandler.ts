@@ -1,5 +1,5 @@
 import type { ArticleAddPayload, ArticleAddSuccessPayload } from '../../../../common';
-import { addArticle, getArticlePublicFromArticle } from '../../../data';
+import { addArticle, getArticlePublicFromArticle } from '../../../db';
 import { logger } from '../../../logger';
 import { sendError, sendFormValidationError, sendSuccess } from '../../../utils';
 import type { RequestHandler } from '../../../utils';
@@ -19,9 +19,10 @@ export const addArticleHandler: RequestHandler<{}, ArticleAddSuccessPayload, Art
       return sendFormValidationError(res, 'text', 'Field is required');
     }
 
-    const article = addArticle({ name, text }, res.locals.user.id);
+    const articleRaw = await addArticle({ name, text }, res.locals.user.id);
+    const article = await getArticlePublicFromArticle(articleRaw);
 
-    sendSuccess(res, getArticlePublicFromArticle(article));
+    sendSuccess(res, article);
   } catch (err) {
     logger.error(err);
 

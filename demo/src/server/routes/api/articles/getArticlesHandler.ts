@@ -1,5 +1,5 @@
 import type { ArticlesGetPayload, ArticlesGetSuccessPayload } from '../../../../common';
-import { getArticlePublicFromArticle, getArticlesByPage, getArticlesLength } from '../../../data';
+import { getArticlesByPage, getArticlesLength, getArticlesPublicFromArticles } from '../../../db';
 import { logger } from '../../../logger';
 import { sendError, sendSuccess } from '../../../utils';
 import type { RequestHandler } from '../../../utils';
@@ -13,11 +13,14 @@ export const getArticlesHandler: RequestHandler<{}, ArticlesGetSuccessPayload, {
 
     const pageParam = !page ? 0 : parseInt(req.query['page'], 10);
 
-    const articles = getArticlesByPage(pageParam);
+    const articlesRaw = await getArticlesByPage(pageParam);
+    const articles = await getArticlesPublicFromArticles(articlesRaw);
+
+    const totalSize = await getArticlesLength();
 
     sendSuccess(res, {
-      items: articles.map(getArticlePublicFromArticle),
-      totalSize: getArticlesLength(),
+      items: articles,
+      totalSize,
     });
   } catch (err) {
     logger.error(err);

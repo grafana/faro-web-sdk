@@ -1,17 +1,17 @@
-export type User = {
+export type UserModel = {
   email: string;
   id: string;
   name: string;
   password: string;
 };
 
-export type UserPublic = {
+export type UserPublicModel = {
   email: string;
   id: string;
   name: string;
 };
 
-export type UserInput = {
+export type UserInputModel = {
   email: string;
   name: string;
   password: string;

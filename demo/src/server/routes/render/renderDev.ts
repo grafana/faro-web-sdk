@@ -31,7 +31,7 @@ export async function registerRenderDevRoutes(globalRouter: Router, _app: Expres
 
       const render = (await vite.ssrLoadModule('./src/server/routes/render/renderToString'))['renderToString'];
 
-      renderPage(req as Request, res as Response, template, render);
+      await renderPage(req as Request, res as Response, template, render);
     } catch (err) {
       logger.error(err);
 

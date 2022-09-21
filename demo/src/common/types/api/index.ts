@@ -11,6 +11,9 @@ export type {
   ArticlesGetErrorPayload,
   ArticlesGetPayload,
   ArticlesGetSuccessPayload,
+} from './article';
+
+export type {
   AuthGetAuthStateErrorPayload,
   AuthGetAuthStatePayload,
   AuthGetAuthStateSuccessPayload,
@@ -23,16 +26,6 @@ export type {
   AuthRegisterErrorPayload,
   AuthRegisterPayload,
   AuthRegisterSuccessPayload,
-} from './api';
+} from './auth';
 
-export type {
-  Article,
-  ArticleInput,
-  ArticlePublic,
-  Comment,
-  CommentInput,
-  CommentPublic,
-  User,
-  UserInput,
-  UserPublic,
-} from './data';
+export type { SeedGetErrorPayload, SeedGetPayload, SeedGetSuccessPayload } from './seed';

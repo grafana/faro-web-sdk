@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { resolve } from 'path';
 
-import { getEnvConfig } from '../../common';
+import { getEnvConfig, getPublicEnvConfig } from '../../common';
 
 config({
   path: resolve(process.cwd(), '../.env'),
@@ -14,4 +14,4 @@ config({
 
 export const env = getEnvConfig(process.env, process.env['NODE_ENV']);
 
-process.env['__APP_ENV__'] = JSON.stringify(env);
+process.env['__APP_ENV__'] = JSON.stringify(getPublicEnvConfig(env));

@@ -5,20 +5,25 @@ import { env, toAbsolutePath } from '../utils';
 import { setLogger } from './logger';
 
 export function initializeLogger(): Logger {
-  const combinedFormat = format.combine(format.errors({ stack: true }), format.metadata(), format.json());
-
   const logger = winstonCreateLogger({
     level: 'debug',
     defaultMeta: {
-      app: env.serverPackageName,
-      version: env.packageVersion,
+      app: env.server.packageName,
+      version: env.package.version,
       component: 'server',
     },
-    format: combinedFormat,
+    format: format.combine(format.timestamp(), format.errors({ stack: false }), format.metadata(), format.json()),
     transports: [
-      new transports.Console(),
+      new transports.Console({
+        format: format.prettyPrint({
+          colorize: true,
+        }),
+      }),
       new transports.File({
-        filename: toAbsolutePath(`${env.serverLogsPath}/${env.serverLogsName}`),
+        filename: toAbsolutePath(`${env.server.logsPath}/${env.server.logsName}`),
+        options: {
+          flags: 'w',
+        },
       }),
     ],
   });

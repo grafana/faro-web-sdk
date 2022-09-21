@@ -1,7 +1,6 @@
-import * as toolkitQueryReact from '@reduxjs/toolkit/query/react';
-const { fetchBaseQuery } = ((toolkitQueryReact as any).default ?? toolkitQueryReact) as typeof toolkitQueryReact;
-
 import { agent, isString, LogLevel } from '@grafana/agent-integration-react';
+
+import { fetchBaseQuery } from '../utils';
 
 export const baseQuery = fetchBaseQuery({
   baseUrl: '/api',

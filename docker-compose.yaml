@@ -57,7 +57,8 @@ services:
     image: 'grafana/agent:main'
     volumes:
       - '${AGENT_CONFIG_PATH_LOCAL}:${AGENT_CONFIG_PATH}'
-      - 'demo_logs:${AGENT_LOGS_PATH}'
+      - 'demo_demo_logs:${AGENT_LOGS_PATH}'
+    #      - './${DEMO_DEMO_PATH}/${DEMO_SERVER_LOGS_PATH}:${AGENT_LOGS_PATH}'
     entrypoint:
       - '/bin/agent'
       - '-config.file=${AGENT_CONFIG_PATH}/${AGENT_CONFIG_FILE}'
@@ -75,29 +76,43 @@ services:
       - 'loki'
       - 'tempo'
 
+  database:
+    env_file:
+      - './.env'
+    image: 'postgres:latest'
+    volumes:
+      - 'db_data:/var/lib/postgresql/data'
+    environment:
+      POSTGRES_PORT: '${DATABASE_PORT}'
+      POSTGRES_USER: '${DATABASE_USER}'
+      POSTGRES_PASSWORD: '${DATABASE_PASSWORD}'
+      POSTGRES_DB: '${DATABASE_NAME}'
+    ports:
+      - '${DATABASE_PORT}:${DATABASE_PORT}'
+
   demo:
     env_file:
       - './.env'
     profiles:
-      - 'demo'
+      - 'full'
     volumes:
       - './${DEMO_DEMO_PATH}:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}'
       - './${DEMO_PACKAGES_PATH}:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_PATH}'
-      - 'demo_logs:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/${DEMO_SERVER_LOGS_PATH}'
-      - '${DEMO_WORKSPACE_PATH}/.build-cache'
-      - '${DEMO_WORKSPACE_PATH}/node_modules'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/dist'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/node_modules'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/dist'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/node_modules'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH}/dist'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH}/node_modules'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/dist'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/node_modules'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_TRACING_WEB_PATH}/dist'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_TRACING_WEB_PATH}/node_modules'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_PATH}/dist'
-      - '${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_PATH}/node_modules'
+      - 'demo_build_cache:${DEMO_WORKSPACE_PATH}/.build-cache'
+      - 'demo_node_modules:${DEMO_WORKSPACE_PATH}/node_modules'
+      - 'demo_demo_dist:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/dist'
+      - 'demo_demo_logs:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/${DEMO_SERVER_LOGS_PATH}'
+      - 'demo_demo_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/node_modules'
+      - 'demo_core_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/dist'
+      - 'demo_core_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/node_modules'
+      - 'demo_integration_angular_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH}/dist'
+      - 'demo_integration_angular_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH}/node_modules'
+      - 'demo_integration_react_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/dist'
+      - 'demo_integration_react_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/node_modules'
+      - 'demo_tracing_web_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_TRACING_WEB_PATH}/dist'
+      - 'demo_tracing_web_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_TRACING_WEB_PATH}/node_modules'
+      - 'demo_web_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_PATH}/dist'
+      - 'demo_web_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_PATH}/node_modules'
     build:
       args:
         DEMO_PORT: '${DEMO_PORT}'
@@ -115,6 +130,27 @@ services:
       - '${DEMO_PORT_HMR}:${DEMO_PORT_HMR}'
     depends_on:
       - 'agent'
+      - 'database'
 
 volumes:
-  demo_logs:
+  db_data:
+  demo_build_cache:
+  demo_node_modules:
+  demo_demo_dist:
+  demo_demo_logs:
+    driver: 'local'
+    driver_opts:
+      type: 'none'
+      device: '${PWD}/${DEMO_DEMO_PATH}/${DEMO_SERVER_LOGS_PATH}'
+      o: 'bind'
+  demo_demo_node_modules:
+  demo_core_dist:
+  demo_core_node_modules:
+  demo_integration_angular_dist:
+  demo_integration_angular_node_modules:
+  demo_integration_react_dist:
+  demo_integration_react_node_modules:
+  demo_tracing_web_dist:
+  demo_tracing_web_node_modules:
+  demo_web_dist:
+  demo_web_node_modules:

@@ -1,7 +1,3 @@
-import * as toolkitQueryReact from '@reduxjs/toolkit/query/react';
-const { createApi } = ((toolkitQueryReact as any).default ?? toolkitQueryReact) as typeof toolkitQueryReact;
-// import { createApi } from '@reduxjs/toolkit/query/react';
-
 import type {
   ArticleAddPayload,
   ArticleAddSuccessPayload,
@@ -12,6 +8,7 @@ import type {
   ArticlesGetPayload,
   ArticlesGetSuccessPayload,
 } from '../../common';
+import { createApi } from '../utils';
 import { baseQuery } from './baseQuery';
 
 export const articlesAPI = createApi({

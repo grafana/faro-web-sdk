@@ -14,8 +14,8 @@ import { env } from '../utils';
 
 export function initializeGrafanaAgent(): Agent {
   const agent = coreInit({
-    url: `http://localhost:${env.agentPortAppReceiver}/collect`,
-    apiKey: env.agentApiKey,
+    url: `http://localhost:${env.agent.portAppReceiver}/collect`,
+    apiKey: env.agent.apiKey,
     instrumentations: [
       ...getWebInstrumentations({
         captureConsole: true,
@@ -36,8 +36,8 @@ export function initializeGrafanaAgent(): Agent {
     ],
     session: createSession(),
     app: {
-      name: env.clientPackageName,
-      version: env.packageVersion,
+      name: env.client.packageName,
+      version: env.package.version,
       environment: env.mode.name,
     },
   });

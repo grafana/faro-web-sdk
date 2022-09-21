@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
 
-import type { UserPublic } from '../../common';
-import { getUserById, getUserPublicFromUser } from '../data';
+import type { UserPublicModel } from '../../common';
+import { getUserById, getUserPublicFromUser } from '../db';
 import { logger } from '../logger';
 import { authorizationSecret } from './const';
 
-export function verifyToken(token: string | undefined): UserPublic | undefined {
+export async function verifyToken(token: string | undefined): Promise<UserPublicModel | undefined> {
   try {
     if (!token) {
       return undefined;
@@ -19,9 +19,9 @@ export function verifyToken(token: string | undefined): UserPublic | undefined {
       json: true,
     });
 
-    const user = getUserById(decodedToken?.['id']);
+    const user = await getUserById(decodedToken?.['id']);
 
-    return user ? getUserPublicFromUser(user) : undefined;
+    return user ? await getUserPublicFromUser(user) : undefined;
   } catch (err) {
     logger.error(err);
 

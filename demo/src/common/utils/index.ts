@@ -1,2 +1,2 @@
-export { getEnvConfig } from './env';
-export type { Env } from './env';
+export { getEnvConfig, getPublicEnvConfig } from './env';
+export type { Env, PublicEnv } from './env';

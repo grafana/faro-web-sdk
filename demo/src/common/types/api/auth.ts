@@ -1,9 +1,9 @@
-import type { UserInput, UserPublic } from '../data';
+import type { UserInputModel, UserPublicModel } from '../models';
 import type { ErrorResponse, SuccessResponse } from './generic';
 
-export type AuthRegisterPayload = UserInput;
+export type AuthRegisterPayload = UserInputModel;
 
-export type AuthRegisterSuccessPayload = UserPublic;
+export type AuthRegisterSuccessPayload = UserPublicModel;
 
 export type AuthRegisterErrorPayload = ErrorResponse;
 
@@ -12,7 +12,7 @@ export type AuthLoginPayload = {
   password: string;
 };
 
-export type AuthLoginSuccessPayload = UserPublic;
+export type AuthLoginSuccessPayload = UserPublicModel;
 
 export type AuthLoginErrorPayload = ErrorResponse;
 
@@ -24,6 +24,6 @@ export type AuthLogoutErrorPayload = ErrorResponse;
 
 export type AuthGetAuthStatePayload = {};
 
-export type AuthGetAuthStateSuccessPayload = UserPublic;
+export type AuthGetAuthStateSuccessPayload = UserPublicModel;
 
 export type AuthGetAuthStateErrorPayload = ErrorResponse;

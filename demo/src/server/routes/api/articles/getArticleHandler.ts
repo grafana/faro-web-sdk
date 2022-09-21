@@ -1,5 +1,5 @@
 import type { ArticleGetPayload, ArticleGetSuccessPayload } from '../../../../common';
-import { getArticleById, getArticlePublicFromArticle } from '../../../data';
+import { getArticleById, getArticlePublicFromArticle } from '../../../db';
 import { logger } from '../../../logger';
 import { sendError, sendSuccess } from '../../../utils';
 import type { RequestHandler } from '../../../utils';
@@ -15,13 +15,15 @@ export const getArticleHandler: RequestHandler<ArticleGetPayload, ArticleGetSucc
       return sendError(res, 'Article not found', 404);
     }
 
-    const article = getArticleById(id);
+    const articleRaw = await getArticleById(id);
 
-    if (!article) {
+    if (!articleRaw) {
       return sendError(res, 'Article not found', 404);
     }
 
-    sendSuccess(res, getArticlePublicFromArticle(article));
+    const article = await getArticlePublicFromArticle(articleRaw);
+
+    sendSuccess(res, article);
   } catch (err) {
     logger.error(err);
 

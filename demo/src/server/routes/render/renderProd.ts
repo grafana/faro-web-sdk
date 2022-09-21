@@ -19,7 +19,7 @@ export async function registerRenderProdRoutes(globalRouter: Router, _app: Expre
 
       const render = (await import('./renderToString'))['renderToString'];
 
-      renderPage(req as Request, res as Response, template, render);
+      await renderPage(req as Request, res as Response, template, render);
     } catch (err) {
       logger.error(err);
 

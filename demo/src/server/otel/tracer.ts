@@ -4,5 +4,5 @@ import type { Tracer } from '@opentelemetry/api';
 import { env } from '../utils';
 
 export function getTracer(): Tracer {
-  return trace.getTracer(env.serverPackageName, env.packageVersion);
+  return trace.getTracer(env.server.packageName, env.package.version);
 }

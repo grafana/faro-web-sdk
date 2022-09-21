@@ -1,11 +1,11 @@
-import type { ArticleInput, ArticlePublic, CommentInput, CommentPublic } from '../data';
+import type { ArticleInputModel, ArticlePublicModel, CommentInputModel, CommentPublicModel } from '../models';
 import type { ErrorResponse } from './generic';
 
 export type ArticleGetPayload = {
   id: string;
 };
 
-export type ArticleGetSuccessPayload = ArticlePublic;
+export type ArticleGetSuccessPayload = ArticlePublicModel;
 
 export type ArticleGetErrorPayload = ErrorResponse;
 
@@ -14,20 +14,20 @@ export type ArticlesGetPayload = {
 };
 
 export type ArticlesGetSuccessPayload = {
-  items: ArticlePublic[];
+  items: ArticlePublicModel[];
   totalSize: number;
 };
 
 export type ArticlesGetErrorPayload = ErrorResponse;
 
-export type ArticleAddPayload = ArticleInput;
+export type ArticleAddPayload = ArticleInputModel;
 
-export type ArticleAddSuccessPayload = ArticlePublic;
+export type ArticleAddSuccessPayload = ArticlePublicModel;
 
 export type ArticleAddErrorPayload = ErrorResponse;
 
-export type ArticleCommentAddPayload = CommentInput;
+export type ArticleCommentAddPayload = CommentInputModel;
 
-export type ArticleCommentAddSuccessPayload = CommentPublic;
+export type ArticleCommentAddSuccessPayload = CommentPublicModel;
 
 export type ArticleCommentAddErrorPayload = ErrorResponse;

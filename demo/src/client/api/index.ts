@@ -17,3 +17,5 @@ export {
 export { apiMiddleware } from './middleware';
 
 export { apiReducers } from './reducers';
+
+export { useLazyGetSeedQuery } from './seed';

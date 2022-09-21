@@ -1,7 +1,7 @@
 import { compare } from 'bcrypt';
 
 import type { AuthLoginPayload, AuthLoginSuccessPayload } from '../../../../common';
-import { getUserByEmail, getUserPublicFromUser } from '../../../data';
+import { getUserByEmail, getUserPublicFromUser } from '../../../db';
 import { logger } from '../../../logger';
 import { sendError, sendFormValidationError, sendSuccess, setAuthorizationToken, signToken } from '../../../utils';
 import type { RequestHandler } from '../../../utils';
@@ -18,25 +18,25 @@ export const loginHandler: RequestHandler<{}, AuthLoginSuccessPayload, AuthLogin
       return sendFormValidationError(res, 'password', 'Field is required');
     }
 
-    const user = getUserByEmail(email);
+    const userRaw = await getUserByEmail(email);
 
-    if (!user) {
+    if (!userRaw) {
       return sendFormValidationError(res, 'email', 'User does not exist', 401);
     }
 
-    const result = await compare(password, user.password);
+    const passwordMatchResult = await compare(password, userRaw.password);
 
-    if (!result) {
+    if (!passwordMatchResult) {
       return sendFormValidationError(res, 'password', 'Password is incorrect', 401);
     }
 
-    const userPublic = getUserPublicFromUser(user);
+    const user = await getUserPublicFromUser(userRaw);
 
-    const token = signToken(userPublic);
+    const token = signToken(user);
 
     setAuthorizationToken(res, token);
 
-    sendSuccess(res, userPublic, 201);
+    sendSuccess(res, user, 201);
   } catch (err) {
     logger.error(err);
 

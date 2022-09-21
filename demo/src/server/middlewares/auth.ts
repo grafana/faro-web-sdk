@@ -4,7 +4,7 @@ import type { RequestHandler } from '../utils';
 
 export const authMiddleware: RequestHandler = async (_req, res, next) => {
   try {
-    const user = verifyToken(res.locals.token);
+    const user = await verifyToken(res.locals.token);
 
     if (!user) {
       removeAuthorizationToken(res);
