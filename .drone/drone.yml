@@ -46,11 +46,9 @@ steps:
       - yarn quality:test
 
   - name: e2e-tests
-    image: cypress/included:10.0.3
-    depends_on:
-      - install-dependencies
+    image: node:lts-stretch
     commands:
-      - yarn quality:e2e:ci
+      - docker compose --profile test up
 
 ---
 name: release
@@ -100,7 +98,7 @@ steps:
       - yarn quality:test
 
   - name: e2e-tests
-    image: cypress/included:10.0.3
+    image: docker:latest
     depends_on:
       - install-dependencies
     commands:
@@ -124,6 +122,6 @@ steps:
 
 ---
 kind: signature
-hmac: c15566bb7536e896a7cbd6a1b96a3886d71fd11f1808808874ad2452e15e20af
+hmac: 26ae401670ddd52c5b4f8095000026d6512fc6e7f3933d4a15d577b8026bd7c8
 
 ...
