@@ -12,6 +12,7 @@ export class FetchTransport extends BaseTransport {
   readonly version = VERSION;
 
   promiseBuffer: PromiseBuffer<Response | void>;
+
   private reateLimitBackoffMs: number;
   private getNow: () => number;
   private disabledUntil: Date = new Date();
@@ -32,6 +33,7 @@ export class FetchTransport extends BaseTransport {
     try {
       if (this.disabledUntil > new Date(this.getNow())) {
         this.logWarn(`Dropping transport item due to too many requests. Backoff until ${this.disabledUntil}`);
+
         return Promise.resolve();
       }
 
@@ -58,6 +60,7 @@ export class FetchTransport extends BaseTransport {
               this.disabledUntil = this.getRetryAfterDate(response);
               this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
             }
+
             return response;
           })
           .catch((err) => {
@@ -76,16 +79,21 @@ export class FetchTransport extends BaseTransport {
   private getRetryAfterDate(response: Response): Date {
     const now = this.getNow();
     const retryAfterHeader = response.headers.get('Retry-After');
+
     if (retryAfterHeader) {
       const delay = Number(retryAfterHeader);
+
       if (!isNaN(delay)) {
         return new Date(delay * 1000 + now);
       }
+
       const date = Date.parse(retryAfterHeader);
+
       if (!isNaN(date)) {
         return new Date(date);
       }
     }
+
     return new Date(now + this.reateLimitBackoffMs);
   }
 }

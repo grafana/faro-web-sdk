@@ -55,6 +55,7 @@ describe('FetchTransport', () => {
 
   it('will back off on 429 for default interval if no retry-after header present', async () => {
     let now = Date.now();
+
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
       defaultRateLimitBackoffMs: 1000,
@@ -69,10 +70,13 @@ describe('FetchTransport', () => {
         },
       })
     );
+
     await transport.send(item);
     expect(fetch).toHaveBeenCalledTimes(1);
+
     await transport.send(item);
     expect(fetch).toHaveBeenCalledTimes(1);
+
     now += 1001;
     await transport.send(item);
     expect(fetch).toHaveBeenCalledTimes(2);
@@ -80,6 +84,7 @@ describe('FetchTransport', () => {
 
   it('will back off on 429 for default interval if retry-after header present, with delay', async () => {
     let now = Date.now();
+
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
       defaultRateLimitBackoffMs: 1000,
@@ -94,11 +99,14 @@ describe('FetchTransport', () => {
         },
       })
     );
+
     await transport.send(item);
     expect(fetch).toHaveBeenCalledTimes(1);
+
     now += 1001;
     await transport.send(item);
     expect(fetch).toHaveBeenCalledTimes(1);
+
     now += 1001;
     await transport.send(item);
     expect(fetch).toHaveBeenCalledTimes(2);
@@ -106,6 +114,7 @@ describe('FetchTransport', () => {
 
   it('will back off on 429 for default interval if retry-after header present, with delay', async () => {
     let now = Date.now();
+
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
       defaultRateLimitBackoffMs: 1000,
@@ -120,11 +129,14 @@ describe('FetchTransport', () => {
         },
       })
     );
+
     await transport.send(item);
     expect(fetch).toHaveBeenCalledTimes(1);
+
     now += 1001;
     await transport.send(item);
     expect(fetch).toHaveBeenCalledTimes(1);
+
     now += 2001;
     await transport.send(item);
     expect(fetch).toHaveBeenCalledTimes(2);
