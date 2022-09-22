@@ -13,14 +13,14 @@ export class FetchTransport extends BaseTransport {
 
   promiseBuffer: PromiseBuffer<Response | void>;
 
-  private reateLimitBackoffMs: number;
+  private rateLimitBackoffMs: number;
   private getNow: () => number;
   private disabledUntil: Date = new Date();
 
   constructor(private options: FetchTransportOptions) {
     super();
 
-    this.reateLimitBackoffMs = options.defaultRateLimitBackoffMs ?? DEFAULT_RATE_LIMIT_BACKOFF_MS;
+    this.rateLimitBackoffMs = options.defaultRateLimitBackoffMs ?? DEFAULT_RATE_LIMIT_BACKOFF_MS;
     this.getNow = options.getNow ?? (() => Date.now());
 
     this.promiseBuffer = createPromiseBuffer({
@@ -94,6 +94,6 @@ export class FetchTransport extends BaseTransport {
       }
     }
 
-    return new Date(now + this.reateLimitBackoffMs);
+    return new Date(now + this.rateLimitBackoffMs);
   }
 }
