@@ -6,6 +6,8 @@
   `SessionInstrumentation` that sends `session_start` event on initialization or when new session
   is set. `SessionProcessor` for OTel that will add `session_id` attribute to every span if available.
 - Added `agent.api.pushEvent` method for capturing RUM events
+- `FetchTransport` will back off after receiving 429 Too Many Requests response. Events will be dropped during backoff period.
+  Backoff period respects `Retry-After` header if present.
 
 ## 0.4.0 (2022-06-30)
 
