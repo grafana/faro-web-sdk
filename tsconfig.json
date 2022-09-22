@@ -1,21 +1,4 @@
 {
   "extends": "./tsconfig.base.json",
-  "files": [],
-  "references": [
-    {
-      "path": "packages/core"
-    },
-    {
-      "path": "packages/web"
-    },
-    {
-      "path": "packages/tracing-web"
-    },
-    {
-      "path": "packages/integration-react"
-    },
-    {
-      "path": "packages/integration-angular"
-    }
-  ]
+  "files": []
 }

@@ -2,7 +2,7 @@ import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import { isFunction } from '../utils';
 import { VERSION } from '../version';
-import type { Meta, Metas, MetaItem, MetasListener } from './types';
+import type { Meta, MetaItem, Metas, MetasListener } from './types';
 
 export function initializeMetas(internalLogger: InternalLogger, config: Config): Metas {
   let items: MetaItem[] = [];

@@ -1,4 +1,10 @@
-#!node
+#!/usr/bin/env node
+
+if (process.env.SKIP_GEN_VERSION && process.env.SKIP_GEN_VERSION === '1') {
+  console.info('Skipping generating version file due to "SKIP_GEN_VERSION" environment variable');
+  process.exit(0);
+}
+
 const { writeFileSync, readFileSync } = require('fs');
 
 const { version } = JSON.parse(readFileSync('package.json'));

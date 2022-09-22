@@ -22,6 +22,7 @@ export type {
   MeasurementEvent,
   MeasurementsAPI,
   MetaAPI,
+  OTELApi,
   PushErrorOptions,
   PushLogOptions,
   PushMeasurementOptions,

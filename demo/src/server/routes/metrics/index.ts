@@ -1,0 +1,1 @@
+export { registerMetricsRoutes } from './registerMetricsRoutes';

@@ -1,14 +1,51 @@
-const EXPECTED_VITALS = ['ttfb', 'fcp', 'lcp', 'cls'];
-
 context('Measurements', () => {
-  it('web vitals are collected', () => {
-    // load blank page to force page unload and sending
-    cy.loadBlank();
+  describe('Web Vitals', () => {
+    ['ttfb', 'fcp', 'cls'].forEach((expectedVital) => {
+      it(`will capture ${expectedVital}`, () => {
+        cy.interceptAgent((body) => {
+          const item = body.measurements?.[0]!;
 
-    cy.waitMeasurements((evts) => {
-      expect(evts).to.have.lengthOf(4);
-      const vitals = evts.flatMap((evt) => Object.keys(evt.values));
-      EXPECTED_VITALS.forEach((vital) => expect(vitals).to.include(vital));
-    }, 4);
+          if (item?.type === 'web-vitals' && Object.keys(item?.values).includes(expectedVital)) {
+            return 'measurement';
+          }
+
+          return undefined;
+        });
+
+        cy.visit('/features-page');
+
+        cy.get('body').click();
+
+        cy.wait('@measurement');
+      });
+    });
+  });
+
+  describe('Custom', () => {
+    [
+      {
+        title: 'custom measurement',
+        btnName: 'send-custom-metric',
+        metricName: 'my_custom_metric',
+      },
+    ].forEach(({ title, btnName, metricName }) => {
+      it(`will capture ${title}`, () => {
+        cy.interceptAgent((body) => {
+          const item = body.measurements?.[0]!;
+
+          if (item?.type === 'custom' && Object.keys(item?.values).includes(metricName)) {
+            return 'measurement';
+          }
+
+          return undefined;
+        });
+
+        cy.visit('/features-page');
+
+        cy.clickButton(`btn-${btnName}`);
+
+        cy.wait('@measurement');
+      });
+    });
   });
 });

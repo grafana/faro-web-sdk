@@ -3,20 +3,17 @@ import type { ExceptionStackFrame, ExtendedError } from '@grafana/agent-core';
 
 import { buildStackFrame } from './buildStackFrame';
 import {
-  chromeAddressAtString,
-  chromeAddressAtStringLength,
-  chromeEvalRegex,
-  chromeEvalString,
-  chromeLineRegex,
   evalString,
   firefoxEvalRegex,
   firefoxEvalString,
   firefoxLineRegex,
-  msLineRegex,
   newLineString,
-  opera10LineRegex,
-  opera11LineRegex,
   reactMinifiedRegex,
+  webkitAddressAtString,
+  webkitAddressAtStringLength,
+  webkitEvalRegex,
+  webkitEvalString,
+  webkitLineRegex,
 } from './const';
 import { getDataFromSafariExtensions } from './getDataFromSafariExtensions';
 
@@ -36,14 +33,14 @@ export function getStackFramesFromError(error: ExtendedError): ExceptionStackFra
     let lineno: string | undefined;
     let colno: string | undefined;
 
-    if ((parts = chromeLineRegex.exec(line))) {
+    if ((parts = webkitLineRegex.exec(line))) {
       func = parts[1];
       filename = parts[2];
       lineno = parts[3];
       colno = parts[4];
 
-      if (filename?.startsWith(chromeEvalString)) {
-        const submatch = chromeEvalRegex.exec(filename);
+      if (filename?.startsWith(webkitEvalString)) {
+        const submatch = webkitEvalRegex.exec(filename);
 
         if (submatch) {
           filename = submatch[1];
@@ -52,15 +49,10 @@ export function getStackFramesFromError(error: ExtendedError): ExceptionStackFra
         }
       }
 
-      filename = filename?.startsWith(chromeAddressAtString)
-        ? filename.substring(chromeAddressAtStringLength)
+      filename = filename?.startsWith(webkitAddressAtString)
+        ? filename.substring(webkitAddressAtStringLength)
         : filename;
       [func, filename] = getDataFromSafariExtensions(func, filename);
-    } else if ((parts = msLineRegex.exec(line))) {
-      func = parts[1];
-      filename = parts[2];
-      lineno = parts[3];
-      colno = parts[4];
     } else if ((parts = firefoxLineRegex.exec(line))) {
       func = parts[1];
       filename = parts[3];
@@ -80,15 +72,6 @@ export function getStackFramesFromError(error: ExtendedError): ExceptionStackFra
       }
 
       [func, filename] = getDataFromSafariExtensions(func, filename);
-    } else if ((parts = opera10LineRegex.exec(line))) {
-      filename = parts[2];
-      func = parts[3];
-      lineno = parts[1];
-    } else if ((parts = opera11LineRegex.exec(line))) {
-      filename = parts[6];
-      func = parts[3] || parts[4];
-      lineno = parts[1];
-      colno = parts[2];
     }
 
     if (filename || func) {
@@ -97,10 +80,6 @@ export function getStackFramesFromError(error: ExtendedError): ExceptionStackFra
 
     return acc;
   }, [] as ExceptionStackFrame[]);
-
-  if (error.framesToPop) {
-    return stackFrames.slice(error.framesToPop);
-  }
 
   if (reactMinifiedRegex.test(error.message)) {
     return stackFrames.slice(1);

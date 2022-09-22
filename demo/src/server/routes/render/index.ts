@@ -1,0 +1,1 @@
+export { registerRenderRoutes } from './registerRenderRoutes';

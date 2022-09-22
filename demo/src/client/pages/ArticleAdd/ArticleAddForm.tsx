@@ -1,0 +1,70 @@
+import { useEffect } from 'react';
+import Alert from 'react-bootstrap/Alert';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+
+import { agent } from '@grafana/agent-integration-react';
+
+import type { ArticleAddPayload } from '../../../common';
+import { usePostArticleMutation } from '../../api';
+
+export function ArticleAddForm() {
+  const navigate = useNavigate();
+
+  const [createArticle, createArticleResult] = usePostArticleMutation();
+
+  const { handleSubmit, register: registerField } = useForm<ArticleAddPayload>({
+    defaultValues: {
+      name: '',
+      text: '',
+    },
+  });
+
+  const onSubmit = handleSubmit((data) => {
+    agent.api.pushEvent('createArticleAttempt', {
+      name: data.name,
+    });
+
+    createArticle(data)
+      .then(() => {
+        agent.api.pushEvent('createArticleSuccessfully', {
+          name: data.name,
+        });
+      })
+      .catch(() => {
+        agent.api.pushEvent('createArticleSuccessfully', {
+          name: data.name,
+        });
+      });
+  });
+
+  useEffect(() => {
+    if (!createArticleResult.isUninitialized && !createArticleResult.isLoading && !createArticleResult.isError) {
+      navigate(`/articles/view/${createArticleResult.data.id}`);
+    }
+  }, [navigate, createArticleResult]);
+
+  return (
+    <Form onSubmit={onSubmit}>
+      {createArticleResult.isError && !createArticleResult.isLoading ? (
+        <Alert variant="danger">{(createArticleResult.error as any).data.message}</Alert>
+      ) : null}
+
+      <Form.Group className="mb-3" controlId="name">
+        <Form.Label>Article Name</Form.Label>
+        <Form.Control type="name" autoComplete="" {...registerField('name')} />
+      </Form.Group>
+
+      <Form.Group className="mb-3" controlId="text">
+        <Form.Label>Text</Form.Label>
+        <Form.Control type="text" autoComplete="" {...registerField('text')} />
+      </Form.Group>
+
+      <Button variant="primary" type="submit">
+        Create Article
+      </Button>
+    </Form>
+  );
+}

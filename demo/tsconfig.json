@@ -1,24 +1,57 @@
 {
-  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "isolatedModules": false,
-    "noUnusedLocals": false,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "tsBuildInfoFile": "../../.build-cache/demo.tsbuildinfo"
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "composite": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "importsNotUsedAsValues": "error",
+    "incremental": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "resolveJsonModule": true,
+    "rootDir": ".",
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "ESNext",
+    "tsBuildInfoFile": "../../.build-cache/demo.tsbuildinfo",
+    "types": ["vite/client"],
+    "useDefineForClassFields": true,
+    "useUnknownInCatchVariables": false
   },
-  "include": ["./src"],
+  "ts-node": {
+    "esm": true
+  },
+  "include": ["src/**/*", "vite.config.ts"],
   "references": [
     {
-      "path": "../packages/core/tsconfig.esm.json",
+      "path": "../packages/core/tsconfig.all.json",
       "prepend": false
     },
     {
-      "path": "../packages/web/tsconfig.esm.json",
+      "path": "../packages/integration-react/tsconfig.all.json",
       "prepend": false
     },
     {
-      "path": "../packages/tracing-web/tsconfig.esm.json",
+      "path": "../packages/tracing-web/tsconfig.all.json",
+      "prepend": false
+    },
+    {
+      "path": "../packages/web/tsconfig.all.json",
       "prepend": false
     }
   ]

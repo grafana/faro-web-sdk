@@ -1,4 +1,4 @@
-import { LogEvent, LogLevel, TransportItem, TransportItemType, getTransportBody } from '@grafana/agent-core';
+import { getTransportBody, LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/agent-core';
 
 import { FetchTransport } from './transport';
 
@@ -46,9 +46,10 @@ describe('FetchTransport', () => {
       bufferSize: 3,
     });
 
-    for (let i = 0; i < 6; i++) {
+    for (let idx = 0; idx < 6; idx++) {
       transport.send(item);
     }
+
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 });

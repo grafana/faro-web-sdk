@@ -15,6 +15,14 @@ module.exports = {
         alphabetize: { order: 'asc', caseInsensitive: true },
         'newlines-between': 'always',
         groups: [['builtin', 'external'], 'internal', ['parent', 'sibling', 'index']],
+        pathGroups: [
+          {
+            pattern: '@grafana/**',
+            group: 'internal',
+            position: 'before',
+          },
+        ],
+        pathGroupsExcludedImportTypes: ['@grafana/**'],
       },
     ],
     'no-duplicate-imports': 'off',
@@ -23,5 +31,12 @@ module.exports = {
     'react/prop-types': 'off',
     'react/react-in-jsx-scope': 'off',
     'react-hooks/exhaustive-deps': 'error',
+    'sort-imports': [
+      'error',
+      {
+        ignoreCase: true,
+        ignoreDeclarationSort: true,
+      },
+    ],
   },
 };

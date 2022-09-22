@@ -1,4 +1,4 @@
-import type { Config } from '@grafana/agent-core';
+import type { Config, LogLevel } from '@grafana/agent-core';
 
 export interface BrowserConfig extends Partial<Omit<Config, 'app' | 'parseStacktrace'>>, Pick<Config, 'app'> {
   url?: string;
@@ -7,4 +7,5 @@ export interface BrowserConfig extends Partial<Omit<Config, 'app' | 'parseStackt
 
 export interface GetWebInstrumentationsOptions {
   captureConsole?: boolean;
+  captureConsoleDisabledLevels?: LogLevel[];
 }

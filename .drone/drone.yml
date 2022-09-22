@@ -46,11 +46,21 @@ steps:
       - yarn quality:test
 
   - name: e2e-tests
-    image: cypress/included:10.0.3
+    image: cypress/included:10.8.0
     depends_on:
-      - install-dependencies
+      - build
     commands:
       - yarn quality:e2e:ci
+    environment:
+      IS_TEST: 1
+
+services:
+  - name: database
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: demo
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
 
 ---
 name: release
@@ -100,11 +110,13 @@ steps:
       - yarn quality:test
 
   - name: e2e-tests
-    image: cypress/included:10.0.3
+    image: cypress/included:10.8.0
     depends_on:
-      - install-dependencies
+      - build
     commands:
       - yarn quality:e2e:ci
+    environment:
+      IS_TEST: 1
 
   - name: publish
     image: node:lts-stretch
@@ -122,8 +134,16 @@ steps:
       NPM_TOKEN:
         from_secret: NPM_TOKEN
 
+services:
+  - name: database
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: demo
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+
 ---
 kind: signature
-hmac: c15566bb7536e896a7cbd6a1b96a3886d71fd11f1808808874ad2452e15e20af
+hmac: cfc7365615ebfee1b2a65c8f7c0bdcaa83f409f068fe73a7fd7ff245a6e1781e
 
 ...

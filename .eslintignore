@@ -10,6 +10,7 @@
 .cache
 .husky
 .parcel-cache
+!.lintstagedrc.js
 coverage
 dist
 node_modules

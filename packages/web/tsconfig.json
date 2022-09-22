@@ -8,7 +8,7 @@
   "include": ["./src"],
   "references": [
     {
-      "path": "../core/tsconfig.json",
+      "path": "../core/tsconfig.all.json",
       "prepend": false
     }
   ]

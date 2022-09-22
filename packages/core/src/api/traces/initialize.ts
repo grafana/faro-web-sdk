@@ -46,10 +46,13 @@ export function initializeTracesAPI(internalLogger: InternalLogger, transports: 
 
   const getOTEL: TracesAPI['getOTEL'] = () => otel;
 
+  const isOTELInitialized: TracesAPI['isOTELInitialized'] = () => !!otel;
+
   return {
     getOTEL,
     getTraceContext,
     initOTEL,
+    isOTELInitialized,
     pushTraces,
   };
 }

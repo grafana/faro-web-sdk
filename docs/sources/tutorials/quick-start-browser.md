@@ -104,7 +104,7 @@ This basic configuration sets up the Grafana Javascript Agent to automatically c
 and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements.
 Without tracing, there is small bundle size footprint.
 
-```javascript
+```ts
 import { initializeGrafanaAgent } from '@grafana/agent-web';
 
 const agent = initializeGrafanaAgent({
@@ -121,7 +121,7 @@ const agent = initializeGrafanaAgent({
 
 You can also explicitly specify and customize transports and instrumentations.
 
-```javascript
+```ts
 import {
   ConsoleInstrumentation,
   ConsoleTransport,
@@ -164,7 +164,7 @@ tracing support is provided in a separate `@grafana/agent-tracing-web` package.
 Using a provided default OTEL setup, which includes tracing instrumentations for user
 interaction, fetch and document load, W3C trace context propagation via `fetch` and `xhr`.
 
-```javascript
+```ts
 import { TracingInstrumentation } from '@grafana/agent-tracing-web';
 import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
 
@@ -194,7 +194,7 @@ context.with(trace.setSpan(context.active(), span), () => {
 Configure OTEL manually. Use `GrafanaAgentTraceExporter` and call `agent.api.initOTEL`
 with OTEL trace and context APIs.
 
-```javascript
+```ts
 import { trace, context } from '@opentelemetry/api';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
@@ -233,12 +233,16 @@ const resource = Resource.default().merge(
 );
 
 const provider = new WebTracerProvider({ resource });
+
 provider.addSpanProcessor(new SessionSpanProcessor(new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }))));
+
 provider.register({
   propagator: new W3CTraceContextPropagator(),
   contextManager: new ZoneContextManager(),
 });
+
 const ignoreUrls = [COLLECTOR_URL];
+
 registerInstrumentations({
   instrumentations: [
     new DocumentLoadInstrumentation(),
@@ -254,7 +258,7 @@ agent.api.initOTEL(trace, context);
 
 ## Use
 
-```javascript
+```ts
 import { LogLevel } from '@grafana/agent-core';
 
 // there's a global property
@@ -263,26 +267,26 @@ const agent = window.grafanaAgent;
 // send a log message
 // by default info, warn and error levels are captured.
 // trace, debug and log are not
-console.info("Hello world", 123);
+console.info('Hello world', 123);
 // or
-agent.api.pushLog(["Hello world", 123], { level: LogLevel.Debug });
+agent.api.pushLog(['Hello world', 123], { level: LogLevel.Debug });
 
 // log with context
-agent.api.pushLog(["Sending update"], {
+agent.api.pushLog(['Sending update'], {
   context: {
     payload: thePayload,
   },
-  level: LogLevel.Trace
+  level: LogLevel.TRACE,
 });
 
 // set user metadata, to be included with every event. All properties optional
 agent.api.setUser({
   email: 'bob@example.com',
-  id: '123abc'
-  username: 'bob'
+  id: '123abc',
+  username: 'bob',
   attributes: {
     role: 'manager',
-  }
+  },
 });
 
 // unset user
@@ -299,8 +303,8 @@ agent.api.pushMeasurement({
   type: 'cart-transaction',
   values: {
     delay: 122,
-    duration: 4000
-  }
+    duration: 4000,
+  },
 });
 
 // push an error
@@ -310,8 +314,8 @@ agent.api.pushError(new Error('everything went horribly wrong'));
 agent.api.pushEvent('navigation', { url: window.location.href });
 
 // pause agent, preventing events from being sent
-agent.pause()
+agent.pause();
 
 // resume sending events
-agent.unpause()
+agent.unpause();
 ```

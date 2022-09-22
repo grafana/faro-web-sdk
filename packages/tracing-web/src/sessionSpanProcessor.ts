@@ -1,6 +1,7 @@
-import { agent } from '@grafana/agent-core';
 import type { Context } from '@opentelemetry/api';
 import type { ReadableSpan, Span, SpanProcessor } from '@opentelemetry/sdk-trace-base';
+
+import { agent } from '@grafana/agent-core';
 
 // adds grafana agent session id to every span
 export class GrafanaAgentSessionSpanProcessor implements SpanProcessor {

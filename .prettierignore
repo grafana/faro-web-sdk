@@ -11,6 +11,7 @@
 .husky
 .parcel-cache
 coverage
+demo/stats.html
 dist
 node_modules
 

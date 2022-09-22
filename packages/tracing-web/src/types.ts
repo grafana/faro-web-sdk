@@ -1,8 +1,9 @@
-import type { Agent } from '@grafana/agent-core';
 import type { ContextManager, TextMapPropagator } from '@opentelemetry/api';
 import type { InstrumentationOption } from '@opentelemetry/instrumentation';
 import type { ResourceAttributes } from '@opentelemetry/resources';
 import type { SpanProcessor } from '@opentelemetry/sdk-trace-base';
+
+import type { Agent } from '@grafana/agent-core';
 
 export interface GrafanaAgentTraceExporterConfig {
   agent: Agent;

@@ -1,28 +1,57 @@
-import { Conventions } from '@grafana/agent-core';
+import type { TransportBody } from '@grafana/agent-core';
 
 context('Events', () => {
-  it('will capture a click event', () => {
-    cy.clickButton('btn-event-with-attrs');
-    cy.waitEvents(() => {}); // skip session event
-    cy.waitEvents((events) => {
-      expect(events).to.have.lengthOf(1);
-      const event = events[0]!;
-      expect(event).property('name').to.equal('click_button_with_attributes');
-      expect(event).property('attributes').property('foo').to.equal('bar');
-    });
-  });
+  [
+    {
+      title: 'an event',
+      btnName: 'event-with-attrs',
+      aliasGenerator: (body: TransportBody) => {
+        const item = body.events?.[0]!;
 
-  it('will capture starts session event', () => {
-    cy.waitEvents((events) => {
-      expect(events).to.have.lengthOf(1);
-      const event = events[0]!;
-      expect(event).property('name').to.equal(Conventions.EventNames.SESSION_START);
-    });
-    cy.clickButton('btn-new-session');
-    cy.waitEvents((events) => {
-      expect(events).to.have.lengthOf(1);
-      const event = events[0]!;
-      expect(event).property('name').to.equal(Conventions.EventNames.SESSION_START);
+        return item?.attributes?.['foo'] === 'bar' && item?.attributes?.['baz'] === 'bad' ? 'event' : undefined;
+      },
+    },
+    {
+      title: 'an event with different session',
+      btnName: 'new-session',
+      aliasGenerator: (body: TransportBody) => {
+        const item = body.events?.[0]!;
+
+        return item ? 'event' : undefined;
+      },
+      afterTest: () => {
+        let alias: string | undefined = undefined;
+
+        cy.interceptAgent((body) => {
+          if (!alias && body.meta.session?.id) {
+            alias = body.meta.session?.id;
+          }
+
+          if (alias && body.meta.session?.id && body.meta.session?.id !== alias) {
+            return 'new-session';
+          }
+
+          return undefined;
+        });
+
+        cy.clickButton('btn-event-without-attrs');
+
+        cy.clickButton('btn-new-session');
+
+        cy.wait('@new-session');
+      },
+    },
+  ].forEach(({ title, btnName, aliasGenerator, afterTest }) => {
+    it(`will capture ${title}`, () => {
+      cy.interceptAgent(aliasGenerator);
+
+      cy.visit('/features-page');
+
+      cy.clickButton(`btn-${btnName}`);
+
+      cy.wait('@event');
+
+      afterTest?.();
     });
   });
 });

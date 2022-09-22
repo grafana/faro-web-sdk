@@ -3,8 +3,8 @@ import type { Instrumentation } from '@grafana/agent-core';
 import {
   ConsoleInstrumentation,
   ErrorsInstrumentation,
-  WebVitalsInstrumentation,
   SessionInstrumentation,
+  WebVitalsInstrumentation,
 } from '../instrumentations';
 import type { GetWebInstrumentationsOptions } from './types';
 
@@ -16,7 +16,11 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
   ];
 
   if (options.captureConsole !== false) {
-    instrumentations.push(new ConsoleInstrumentation());
+    instrumentations.push(
+      new ConsoleInstrumentation({
+        disabledLevels: options.captureConsoleDisabledLevels,
+      })
+    );
   }
 
   return instrumentations;
