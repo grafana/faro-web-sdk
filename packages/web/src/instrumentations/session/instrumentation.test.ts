@@ -13,8 +13,11 @@ describe('SessionInstrumentation', () => {
       instrumentations: [new SessionInstrumentation()],
       session,
     });
+
     initializeGrafanaAgent(config);
+
     expect(transport.items).toHaveLength(1);
+
     const event = transport.items[0]! as TransportItem<EventEvent>;
     expect(event.payload.name).toEqual(Conventions.EventNames.SESSION_START);
     expect(event.meta.session?.attributes).toEqual({ foo: 'bar' });
@@ -29,8 +32,11 @@ describe('SessionInstrumentation', () => {
       instrumentations: [new SessionInstrumentation()],
       session,
     });
+
     const agent = initializeGrafanaAgent(config);
+
     expect(transport.items).toHaveLength(1);
+
     let event = transport.items[0]! as TransportItem<EventEvent>;
     expect(event.payload.name).toEqual(Conventions.EventNames.SESSION_START);
     expect(event.meta.session?.id).toEqual(session.id);
@@ -41,6 +47,7 @@ describe('SessionInstrumentation', () => {
     const newSession = createSession();
     agent.api.setSession(newSession);
     expect(transport.items).toHaveLength(2);
+
     event = transport.items[0]! as TransportItem<EventEvent>;
     expect(event.meta.session?.id).toEqual(session.id);
   });

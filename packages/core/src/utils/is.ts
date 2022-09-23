@@ -5,7 +5,7 @@ export function isTypeof<T = unknown>(value: unknown, type: string): value is T 
 }
 
 export function isToString<T = unknown>(value: unknown, type: string): value is T {
-  return Object.prototype.toString.call(value) === `'[object ${type}]'`;
+  return Object.prototype.toString.call(value) === `[object ${type}]`;
 }
 
 export function isInstanceOf<T extends Function = any>(value: unknown, reference: T): value is T {
@@ -45,9 +45,13 @@ export const isPrimitive = ((value) => !isObject(value) && !isFunction(value)) a
   string | number | bigint | boolean | symbol
 >;
 
-export const isEvent = ((value) => !isUndefined(Event) && isInstanceOf(value, Event)) as IsFnHelper<Event>;
+export const isEventDefined = !isUndefined(Event);
 
-export const isError = ((value) => !isUndefined(Error) && isInstanceOf(value, Error)) as IsFnHelper<Error>;
+export const isEvent = ((value) => isEventDefined && isInstanceOf(value, Event)) as IsFnHelper<Event>;
+
+export const isErrorDefined = typeof Error !== 'undefined';
+
+export const isError = ((value) => isErrorDefined && isInstanceOf(value, Error)) as IsFnHelper<Error>;
 
 export const isErrorEvent = ((value) => isToString(value, 'ErrorEvent')) as IsFnHelper<ErrorEvent>;
 
@@ -55,7 +59,13 @@ export const isDomError = ((value) => isToString(value, 'DOMError')) as IsFnHelp
 
 export const isDomException = ((value) => isToString(value, 'DOMException')) as IsFnHelper<DOMException>;
 
-export const isElement = ((value) => !isUndefined(Element) && isInstanceOf(value, Element)) as IsFnHelper<Element>;
+export const isElementDefined = typeof Element !== 'undefined';
+
+export const isElement = ((value) => isElementDefined && isInstanceOf(value, Element)) as IsFnHelper<Element>;
+
+export const isMapDefined = typeof Map !== 'undefined';
+
+export const isMap = ((value) => isMapDefined && isInstanceOf(value, Map)) as IsFnHelper<Map<any, any>>;
 
 export const isSyntheticEvent = ((value) =>
   isObject(value) &&

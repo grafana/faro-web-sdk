@@ -18,14 +18,14 @@ export function initializeAPI(
 ): API {
   internalLogger.debug('Initializing API');
 
-  const tracesApi = initializeTracesAPI(internalLogger, transports, metas);
+  const tracesApi = initializeTracesAPI(internalLogger, config, transports, metas);
 
   return {
     ...tracesApi,
     ...initializeExceptionsAPI(internalLogger, config, transports, metas, tracesApi),
-    ...initializeMetaAPI(internalLogger, transports, metas),
-    ...initializeLogsAPI(internalLogger, transports, metas, tracesApi),
-    ...initializeMeasurementsAPI(internalLogger, transports, metas, tracesApi),
+    ...initializeMetaAPI(internalLogger, config, transports, metas),
+    ...initializeLogsAPI(internalLogger, config, transports, metas, tracesApi),
+    ...initializeMeasurementsAPI(internalLogger, config, transports, metas, tracesApi),
     ...initializeEventsAPI(internalLogger, config, transports, metas, tracesApi),
   };
 }

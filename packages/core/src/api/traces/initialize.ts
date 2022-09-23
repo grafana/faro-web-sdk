@@ -1,9 +1,15 @@
+import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType, Transports } from '../../transports';
 import type { OTELApi, TraceEvent, TracesAPI } from './types';
 
-export function initializeTracesAPI(internalLogger: InternalLogger, transports: Transports, metas: Metas): TracesAPI {
+export function initializeTracesAPI(
+  internalLogger: InternalLogger,
+  _config: Config,
+  transports: Transports,
+  metas: Metas
+): TracesAPI {
   internalLogger.debug('Initializing traces API');
 
   let otel: OTELApi | undefined = undefined;

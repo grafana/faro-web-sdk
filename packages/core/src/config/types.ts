@@ -7,6 +7,7 @@ import type { UnpatchedConsole } from '../unpatchedConsole';
 
 export interface Config<P = APIEvent> {
   app: MetaApp;
+  dedupe: boolean;
   globalObjectKey: string;
   isolate: boolean;
   instrumentations: Instrumentation[];

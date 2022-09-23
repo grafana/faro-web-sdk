@@ -29,6 +29,7 @@ export interface ExceptionEvent {
 }
 
 export interface PushErrorOptions {
+  forcePush?: boolean;
   stackFrames?: ExceptionStackFrame[];
   type?: string;
 }
