@@ -24,6 +24,7 @@ The agent requires a configuration parameter with the following properties:
 | Property                | Description                                                             | Type                  | Default Value Variable                                   |
 | ----------------------- | ----------------------------------------------------------------------- | --------------------- | -------------------------------------------------------- |
 | `app`                   | Application metadata                                                    | `App`                 |                                                          |
+| `dedupe`                | A flag for toggling deduplication filter                                | `boolean`             |                                                          |
 | `globalObjectKey`       | String that should be used when defining the agent on the global object | `string`              | `defaultGlobalObjectKey = 'grafanaAgent'`                |
 | `instrumentations`      | Array of instrumentations that should be ran                            | `Instrumentation[]`   |                                                          |
 | `internalLoggerLevel`   | The level of information printed to console for internal messages       | `InternalLoggerLevel` | `defaultInternalLoggerLevel = InternalLoggerLevel.ERROR` |
@@ -71,6 +72,7 @@ The `api` property on the agent contains all the necessary methods to push new e
 - `pushError` - is a method to push an error/exception to the agent. It accepts a mandatory `message` parameter
   and an optional one where you can set:
 
+  - `forcePush` - a flag for enforcing event push even if the event is identical to the previous one.
   - `stackFrames` - an array of stack frames. Defaults to parsing `error.stack` if present.
   - `type` - the type of exception. Default value: `error.name` or `"error"`.
 
