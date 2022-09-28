@@ -38,7 +38,7 @@ The app itself contains a full boilerplate for a React application including:
    yarn start
 
    // Alternatively you can run the demo using Docker
-   docker compose up -d --profile demo
+   docker compose --profile demo up -d
    ```
 
 ## Journey
