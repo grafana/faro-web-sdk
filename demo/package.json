@@ -15,7 +15,7 @@
   "scripts": {
     "start": "yarn serve:dev",
     "serve:dev": "node --loader ts-node/esm --experimental-specifier-resolution=node src/server/index.ts",
-    "serve:prod": "cross-env NODE_ENV=production node --experimental-specifier-resolution=node dist/server/index.js",
+    "serve:prod": "cross-env NODE_ENV=production node --experimental-specifier-resolution=node --experimental-loader ./dist/server/otel.js dist/server/index.js",
     "build": "run-p build:*",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build --ssr src/server/index.ts --outDir dist/server",

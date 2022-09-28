@@ -18,8 +18,8 @@ export async function renderPage(
   const preloadedState = {
     agent: {
       session: createSession(),
-      rootSpanId: spanContext.spanId,
-      rootTraceId: spanContext.traceId,
+      rootSpanId: spanContext?.spanId ?? null,
+      rootTraceId: spanContext?.traceId ?? null,
     },
     user: {
       data: userPublic ?? null,
