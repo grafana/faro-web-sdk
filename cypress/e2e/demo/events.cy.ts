@@ -45,7 +45,7 @@ context('Events', () => {
     it(`will capture ${title}`, () => {
       cy.interceptAgent(aliasGenerator);
 
-      cy.visit('/features-page');
+      cy.visit('/features');
 
       cy.clickButton(`btn-${btnName}`);
 

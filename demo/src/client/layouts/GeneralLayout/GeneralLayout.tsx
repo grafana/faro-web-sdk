@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 
 import { agent } from '@grafana/agent-integration-react';
 
-import { useLazyGetLogoutQuery, useLazyGetSeedQuery } from '../../api';
+import { useLazyGetLogoutQuery } from '../../api';
 import { Navbar } from '../../components';
 import { useAppSelector } from '../../hooks';
 import { selectIsUserLoggedIn } from '../../store';
@@ -12,7 +12,6 @@ import { selectIsUserLoggedIn } from '../../store';
 export function GeneralLayout() {
   const isUserLoggedIn = useAppSelector(selectIsUserLoggedIn);
   const [logout] = useLazyGetLogoutQuery();
-  const [seed] = useLazyGetSeedQuery();
 
   const navigate = useNavigate();
 
@@ -26,24 +25,18 @@ export function GeneralLayout() {
             to: '/about',
           },
           {
-            title: 'Features Page',
-            to: '/features-page',
+            title: 'Features',
+            to: '/features',
           },
           {
-            title: 'Broken Page',
-            to: '/broken-page',
+            title: 'Broken',
+            to: '/broken',
           },
           ...(!isUserLoggedIn
             ? [
                 {
                   title: 'Seed',
-                  onClick: (evt: MouseEvent<HTMLElement>) => {
-                    evt.preventDefault();
-
-                    agent.api.pushEvent('seed');
-
-                    seed();
-                  },
+                  to: '/seed',
                 },
                 {
                   title: 'Login',

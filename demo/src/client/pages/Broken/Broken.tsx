@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Page } from '../../components';
 import { Counter } from './Counter';
 
-export function BrokenPage() {
+export function Broken() {
   const [counter, setCounter] = useState(0);
 
   if (counter === 3) {
@@ -11,7 +11,7 @@ export function BrokenPage() {
   }
 
   return (
-    <Page title="Broken Page">
+    <Page title="Broken">
       <p>The following content is going to fail once counter will get to 3.</p>
       <Counter value={counter} onChange={setCounter} />
     </Page>

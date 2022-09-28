@@ -2,7 +2,6 @@ import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigati
 
 import {
   initializeGrafanaAgent as coreInit,
-  createSession,
   getWebInstrumentations,
   ReactIntegration,
   ReactRouterVersion,
@@ -34,7 +33,7 @@ export function initializeGrafanaAgent(): Agent {
         },
       }),
     ],
-    session: createSession(),
+    session: (window as any).__PRELOADED_STATE__?.agent?.session,
     app: {
       name: env.client.packageName,
       version: env.package.version,

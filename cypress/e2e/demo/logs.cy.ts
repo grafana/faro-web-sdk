@@ -13,7 +13,7 @@ context('Logs', () => {
         return undefined;
       });
 
-      cy.visit('/features-page');
+      cy.visit('/features');
 
       cy.clickButton(`btn-log-${level}`);
 

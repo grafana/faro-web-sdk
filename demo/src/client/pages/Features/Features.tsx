@@ -7,9 +7,9 @@ import { Events } from './Events';
 import { MetricsMeasurements } from './MetricsMeasurements';
 import { TracingInstrumentation } from './TracingInstrumentation';
 
-export function FeaturesPage() {
+export function Features() {
   return (
-    <Page title="Features Page">
+    <Page title="Features">
       <Container as="article" className="pb-4 mb-4 border-bottom">
         <ConsoleInstrumentation />
       </Container>

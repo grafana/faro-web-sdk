@@ -12,7 +12,7 @@ context('Measurements', () => {
           return undefined;
         });
 
-        cy.visit('/features-page');
+        cy.visit('/features');
 
         cy.get('body').click();
 
@@ -40,7 +40,7 @@ context('Measurements', () => {
           return undefined;
         });
 
-        cy.visit('/features-page');
+        cy.visit('/features');
 
         cy.clickButton(`btn-${btnName}`);
 

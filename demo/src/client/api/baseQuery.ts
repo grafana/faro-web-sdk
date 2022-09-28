@@ -18,7 +18,7 @@ export const baseQuery = fetchBaseQuery({
       .catch((err) => {
         agent.api.pushLog([`Request to ${url} failed`], { level: LogLevel.ERROR });
 
-        return err;
+        throw err;
       });
   },
 });

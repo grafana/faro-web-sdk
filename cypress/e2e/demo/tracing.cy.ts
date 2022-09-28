@@ -38,7 +38,7 @@ context('Tracing', () => {
     it(`will capture ${title}`, () => {
       interceptor();
 
-      cy.visit('/features-page');
+      cy.visit('/features');
 
       cy.clickButton(`btn-${btnName}`);
 
