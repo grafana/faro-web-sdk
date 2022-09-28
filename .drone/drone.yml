@@ -48,9 +48,9 @@ steps:
   - name: e2e-tests
     image: cypress/included:10.8.0
     depends_on:
-      - build
+      - install-dependencies
     commands:
-      - yarn serve:prod
+      - yarn start:demo:prod
     environment:
       IS_TEST: 1
 
