@@ -18,7 +18,7 @@
   "scripts": {
     "start": "lerna run --parallel start",
     "start:demo": "lerna run start --scope @grafana/agent-demo",
-    "start:demo:prod": "lerna run serve:prod --scope @grafana/agent-demo",
+    "start:demo:prod": "lerna run serve:prod --scope @grafana/agent-demo --stream",
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "prepublish": "yarn build",
