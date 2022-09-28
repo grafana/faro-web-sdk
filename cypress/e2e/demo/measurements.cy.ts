@@ -16,7 +16,9 @@ context('Measurements', () => {
 
         cy.get('body').click();
 
-        cy.wait('@measurement');
+        cy.wait('@measurement', {
+          timeout: 60000,
+        });
       });
     });
   });
