@@ -50,7 +50,7 @@ steps:
     depends_on:
       - build
     commands:
-      - yarn quality:e2e:ci
+      - yarn serve:prod
     environment:
       IS_TEST: 1
 
@@ -144,6 +144,6 @@ services:
 
 ---
 kind: signature
-hmac: cfc7365615ebfee1b2a65c8f7c0bdcaa83f409f068fe73a7fd7ff245a6e1781e
+hmac: 8893b566b19aa834c1a354419bc9b320bf3ce4f39a1d34acb45a73631c98a153
 
 ...
