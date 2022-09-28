@@ -14,7 +14,9 @@ context('Measurements', () => {
 
         cy.visit('/features');
 
-        cy.get('body').click();
+        cy.reload();
+
+        cy.clickButton('btn-log-log');
 
         cy.wait('@measurement', {
           timeout: 60000,
