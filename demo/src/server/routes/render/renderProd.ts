@@ -1,5 +1,5 @@
 import type { Express, Router } from 'express';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 
 import { logger } from '../../logger';
 import { sendError, toAbsolutePath } from '../../utils';
@@ -13,13 +13,13 @@ export async function registerRenderProdRoutes(globalRouter: Router, _app: Expre
     })
   );
 
-  globalRouter.use('*', async (req, res) => {
+  globalRouter.use('*', async (req, res: Response) => {
     try {
       const template = readFileSync(toAbsolutePath('dist/client/index.html'), 'utf-8');
 
       const render = (await import('./renderToString'))['renderToString'];
 
-      await renderPage(req as Request, res as Response, template, render);
+      await renderPage(req as Request, res, template, render);
     } catch (err) {
       logger.error(err);
 

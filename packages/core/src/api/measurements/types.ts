@@ -8,7 +8,7 @@ export interface MeasurementEvent<V extends { [label: string]: number } = { [lab
 }
 
 export interface PushMeasurementOptions {
-  forcePush?: boolean;
+  skipDedupe?: boolean;
 }
 
 export interface MeasurementsAPI {

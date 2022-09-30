@@ -1,4 +1,4 @@
-export { GrafanaProfiler } from './GrafanaProfiler';
-export type { GrafanaProfilerProps } from './GrafanaProfiler';
+export { GrafanaAgentProfiler } from './GrafanaAgentProfiler';
+export type { GrafanaAgentProfilerProps } from './GrafanaAgentProfiler';
 
-export { withGrafanaProfiler } from './withGrafanaProfiler';
+export { withGrafanaAgentProfiler } from './withGrafanaAgentProfiler';

@@ -31,7 +31,7 @@ export function initializeExceptionsAPI(
 
   const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => stacktraceParser;
 
-  const pushError: ExceptionsAPI['pushError'] = (error, { forcePush, stackFrames, type } = {}) => {
+  const pushError: ExceptionsAPI['pushError'] = (error, { skipDedupe, stackFrames, type } = {}) => {
     type = type || error.name || defaultExceptionType;
 
     const item: TransportItem<ExceptionEvent> = {
@@ -59,7 +59,7 @@ export function initializeExceptionsAPI(
       stackTrace: item.payload.stacktrace,
     };
 
-    if (!forcePush && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
+    if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
       internalLogger.debug('Skipping error push because it is the same as the last one\n', item.payload);
 
       return;

@@ -111,7 +111,7 @@ import { GrafanaAgentRoute } from '@grafana/agent-integration-react';
 ### Profiler
 
 ```tsx
-import { withGrafanaProfiler } from '@grafana/agent-integration-react';
+import { withGrafanaAgentProfiler } from '@grafana/agent-integration-react';
 
-export default withGrafanaProfiler(App);
+export default withGrafanaAgentProfiler(App);
 ```

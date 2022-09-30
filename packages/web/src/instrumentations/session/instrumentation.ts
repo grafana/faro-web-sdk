@@ -18,7 +18,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
       this.notifiedSession = session;
       // no need to add attributes and session id, they are included as part of meta
       // automatically
-      this.agent.api.pushEvent(Conventions.EventNames.SESSION_START, {}, undefined, { forcePush: true });
+      this.agent.api.pushEvent(Conventions.EventNames.SESSION_START, {}, undefined, { skipDedupe: true });
     }
   }
 

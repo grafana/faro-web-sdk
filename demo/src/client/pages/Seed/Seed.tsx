@@ -41,7 +41,7 @@ export function Seed() {
       {!seedResult.isUninitialized && !seedResult.isLoading ? (
         seedResult.isError ? (
           <>
-            <Alert variant="danger">{(seedResult as any).error.data.message}</Alert>
+            <Alert variant="danger">{(seedResult as any).error.data.data.message}</Alert>
             <Alert variant="info">
               <b>Span ID:</b> {(seedResult as any).error.data.spanId} | <b>Trace ID:</b>{' '}
               {(seedResult as any).error.data.traceId}

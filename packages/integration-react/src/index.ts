@@ -13,8 +13,8 @@ export type {
 
 export { ReactIntegration } from './instrumentation';
 
-export { GrafanaProfiler, withGrafanaProfiler } from './profiler';
-export type { GrafanaProfilerProps } from './profiler';
+export { GrafanaAgentProfiler, withGrafanaAgentProfiler } from './profiler';
+export type { GrafanaAgentProfilerProps } from './profiler';
 
 export {
   GrafanaAgentRoute,

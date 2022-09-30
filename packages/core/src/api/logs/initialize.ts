@@ -18,7 +18,7 @@ export function initializeLogsAPI(
 
   let lastPayload: Pick<LogEvent, 'message' | 'level' | 'context'> | null = null;
 
-  const pushLog: LogsAPI['pushLog'] = (args, { context, level, forcePush } = {}) => {
+  const pushLog: LogsAPI['pushLog'] = (args, { context, level, skipDedupe } = {}) => {
     try {
       const item: TransportItem<LogEvent> = {
         type: TransportItemType.LOG,
@@ -46,7 +46,7 @@ export function initializeLogsAPI(
         context: item.payload.context,
       };
 
-      if (!forcePush && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
+      if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
         internalLogger.debug('Skipping log push because it is the same as the last one\n', item.payload);
 
         return;

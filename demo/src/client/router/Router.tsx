@@ -3,7 +3,7 @@ import { Route } from 'react-router-dom';
 import { GrafanaAgentRoutes } from '@grafana/agent-integration-react';
 
 import { GeneralLayout } from '../layouts';
-import { About, ArticleAdd, Articles, ArticleView, Broken, Features, Home, Login, Register, Seed } from '../pages';
+import { About, ArticleAdd, Articles, ArticleView, Features, Home, Login, Register, Seed } from '../pages';
 import { LoggedInGuard, LoggedOutGuard } from './guards';
 
 export function Router() {
@@ -38,7 +38,6 @@ export function Router() {
         <Route path="" element={<Home />} />
         <Route path="about" element={<About />} />
         <Route path="features" element={<Features />} />
-        <Route path="broken" element={<Broken />} />
         <Route path="seed" element={<Seed />} />
       </Route>
     </GrafanaAgentRoutes>

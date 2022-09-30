@@ -52,6 +52,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
         new GrafanaAgentSessionSpanProcessor(
           new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }), {
             scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
+            maxExportBatchSize: 30,
           })
         )
     );

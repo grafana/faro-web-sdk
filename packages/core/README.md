@@ -72,7 +72,7 @@ The `api` property on the agent contains all the necessary methods to push new e
 - `pushError` - is a method to push an error/exception to the agent. It accepts a mandatory `message` parameter
   and an optional one where you can set:
 
-  - `forcePush` - a flag for enforcing event push even if the event is identical to the previous one.
+  - `skipDedupe` - a flag for enforcing event push even if the event is identical to the previous one.
   - `stackFrames` - an array of stack frames. Defaults to parsing `error.stack` if present.
   - `type` - the type of exception. Default value: `error.name` or `"error"`.
 

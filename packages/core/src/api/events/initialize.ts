@@ -15,7 +15,7 @@ export function initializeEventsAPI(
 ): EventsAPI {
   let lastPayload: Pick<EventEvent, 'name' | 'domain' | 'attributes'> | null = null;
 
-  const pushEvent: EventsAPI['pushEvent'] = (name, attributes, domain, { forcePush } = {}) => {
+  const pushEvent: EventsAPI['pushEvent'] = (name, attributes, domain, { skipDedupe } = {}) => {
     try {
       const item: TransportItem<EventEvent> = {
         meta: metas.value,
@@ -35,7 +35,7 @@ export function initializeEventsAPI(
         domain: item.payload.domain,
       };
 
-      if (!forcePush && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
+      if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
         internalLogger.debug('Skipping event push because it is the same as the last one\n', item.payload);
 
         return;

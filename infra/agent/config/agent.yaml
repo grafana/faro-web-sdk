@@ -2,6 +2,7 @@ server:
   log_level: 'debug'
 
 metrics:
+  wal_directory: '${AGENT_TEMP_PATH}/${AGENT_WAL_PATH}'
   global:
     scrape_interval: '60s'
     remote_write:

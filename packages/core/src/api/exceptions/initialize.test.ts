@@ -152,14 +152,14 @@ describe('api.exceptions', () => {
         expect(transport.items).toHaveLength(2);
       });
 
-      it("doesn't filter when forcePush is true", () => {
+      it("doesn't filter when skipDedupe is true", () => {
         const error = new Error('test');
 
         api.pushError(error);
         expect(transport.items).toHaveLength(1);
 
         api.pushError(error, {
-          forcePush: true,
+          skipDedupe: true,
         });
         expect(transport.items).toHaveLength(2);
       });

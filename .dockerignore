@@ -1,3 +1,6 @@
+# Git
+.git
+
 # IDEs
 .idea
 .vscode
@@ -5,15 +8,19 @@
 # App-specifics
 .build-cache
 .cache
-.parcel-cache
+.drone
+.eslintcache
+.husky
 coverage
 cypress/videos
 cypress/screenshots
-dist
-node_modules
-.eslintcache
 demo/logs
 demo/stats.html
+demo/vite.config.ts.timestamp-*.mjs
+dist
+docs
+infra
+node_modules
 packages/core/src/version.ts
 
 # Logs

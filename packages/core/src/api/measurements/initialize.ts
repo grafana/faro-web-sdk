@@ -18,7 +18,7 @@ export function initializeMeasurementsAPI(
 
   let lastPayload: Pick<MeasurementEvent, 'type' | 'values'> | null = null;
 
-  const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload, { forcePush } = {}) => {
+  const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload, { skipDedupe } = {}) => {
     try {
       const item: TransportItem<MeasurementEvent> = {
         type: TransportItemType.MEASUREMENT,
@@ -34,7 +34,7 @@ export function initializeMeasurementsAPI(
         values: item.payload.values,
       };
 
-      if (!forcePush && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
+      if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
         internalLogger.debug('Skipping measurement push because it is the same as the last one\n', item.payload);
 
         return;

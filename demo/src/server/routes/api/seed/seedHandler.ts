@@ -4,10 +4,7 @@ import { logger } from '../../../logger';
 import { sendError, sendSuccess } from '../../../utils';
 import type { RequestHandler } from '../../../utils';
 
-export const seedHandler: RequestHandler<{}, SeedGetSuccessPayload, SeedGetPayload, {}> = async (req, res) => {
-  const { traceparent } = req.headers;
-  const [, traceId, spanId] = ((traceparent ?? '') as string).split('-');
-
+export const seedHandler: RequestHandler<{}, SeedGetSuccessPayload, SeedGetPayload, {}> = async (_req, res) => {
   try {
     const users: UserModel[] = [];
     const articles: ArticleModel[] = [];
@@ -28,10 +25,10 @@ export const seedHandler: RequestHandler<{}, SeedGetSuccessPayload, SeedGetPaylo
       await addComment(commentInput, articles[article]!.id, users[user]!.id);
     }
 
-    sendSuccess(res, { success: true, traceId, spanId }, 201);
+    sendSuccess(res, true, 201);
   } catch (err) {
     logger.error(err);
 
-    sendError(res, err, 500, { traceId, spanId });
+    sendError(res, err);
   }
 };

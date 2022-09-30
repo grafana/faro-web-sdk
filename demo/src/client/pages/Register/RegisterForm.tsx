@@ -39,7 +39,7 @@ export function RegisterForm() {
   return (
     <Form onSubmit={onSubmit}>
       {registerResult.isError && !registerResult.isLoading ? (
-        <Alert variant="danger">{(registerResult.error as any).data.message}</Alert>
+        <Alert variant="danger">{(registerResult.error as any).data.data.message}</Alert>
       ) : null}
 
       <Form.Group className="mb-3" controlId="name">

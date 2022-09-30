@@ -1,0 +1,8 @@
+{
+  "execMap": {
+    "ts": "node --loader ts-node/esm --experimental-specifier-resolution=node"
+  },
+  "ext": "ts,tsx,json,html",
+  "ignore": ["*.test.ts", "node_modules/**/node_modules"],
+  "watch": ["../node_modules", "node_modules", "src/server", "index.html", "vite.config.ts"]
+}

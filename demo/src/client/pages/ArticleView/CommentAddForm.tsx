@@ -48,7 +48,7 @@ export function CommentAddForm({ articleId }: CommentAddFormProps) {
   return (
     <Form onSubmit={onSubmit}>
       {createCommentResult.isError && !createCommentResult.isLoading ? (
-        <Alert variant="danger">{(createCommentResult.error as any).data.message}</Alert>
+        <Alert variant="danger">{(createCommentResult.error as any).data.data.message}</Alert>
       ) : null}
 
       <Form.Group className="mb-3" controlId="text">

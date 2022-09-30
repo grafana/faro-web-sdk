@@ -28,10 +28,6 @@ export function GeneralLayout() {
             title: 'Features',
             to: '/features',
           },
-          {
-            title: 'Broken',
-            to: '/broken',
-          },
           ...(!isUserLoggedIn
             ? [
                 {

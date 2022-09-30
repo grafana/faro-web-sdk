@@ -12,7 +12,7 @@ export interface EventEvent {
 }
 
 export interface PushEventOptions {
-  forcePush?: boolean;
+  skipDedupe?: boolean;
 }
 
 export interface EventsAPI {

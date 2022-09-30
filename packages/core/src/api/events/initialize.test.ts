@@ -93,11 +93,11 @@ describe('api.events', () => {
         expect(transport.items).toHaveLength(2);
       });
 
-      it("doesn't filter when forcePush is true", () => {
+      it("doesn't filter when skipDedupe is true", () => {
         api.pushEvent('test');
         expect(transport.items).toHaveLength(1);
 
-        api.pushEvent('test', {}, undefined, { forcePush: true });
+        api.pushEvent('test', {}, undefined, { skipDedupe: true });
         expect(transport.items).toHaveLength(2);
       });
     });

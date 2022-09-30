@@ -42,14 +42,14 @@ export function ArticleAddForm() {
 
   useEffect(() => {
     if (!createArticleResult.isUninitialized && !createArticleResult.isLoading && !createArticleResult.isError) {
-      navigate(`/articles/view/${createArticleResult.data.id}`);
+      navigate(`/articles/view/${createArticleResult.data.data.id}`);
     }
   }, [navigate, createArticleResult]);
 
   return (
     <Form onSubmit={onSubmit}>
       {createArticleResult.isError && !createArticleResult.isLoading ? (
-        <Alert variant="danger">{(createArticleResult.error as any).data.message}</Alert>
+        <Alert variant="danger">{(createArticleResult.error as any).data.data.message}</Alert>
       ) : null}
 
       <Form.Group className="mb-3" controlId="name">

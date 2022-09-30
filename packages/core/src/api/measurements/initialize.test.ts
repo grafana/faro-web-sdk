@@ -127,7 +127,7 @@ describe('api.measurements', () => {
         expect(transport.items).toHaveLength(2);
       });
 
-      it("doesn't filter when forcePush is true", () => {
+      it("doesn't filter when skipDedupe is true", () => {
         const measurement = {
           type: 'custom',
           values: {
@@ -138,7 +138,7 @@ describe('api.measurements', () => {
         api.pushMeasurement(measurement);
         expect(transport.items).toHaveLength(1);
 
-        api.pushMeasurement(measurement, { forcePush: true });
+        api.pushMeasurement(measurement, { skipDedupe: true });
         expect(transport.items).toHaveLength(2);
       });
     });
