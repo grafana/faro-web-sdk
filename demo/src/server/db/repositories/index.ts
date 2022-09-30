@@ -1,8 +1,8 @@
-export { Article } from './article';
+export { Article, initializeArticle } from './article';
 export type { ArticleShape } from './article';
 
-export { Comment } from './comment';
+export { Comment, initializeComment } from './comment';
 export type { CommentShape } from './comment';
 
-export { User } from './user';
+export { initializeUser, User } from './user';
 export type { UserShape } from './user';

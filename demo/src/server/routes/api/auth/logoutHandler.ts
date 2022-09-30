@@ -7,7 +7,7 @@ export const logoutHandler: RequestHandler<{}, AuthLogoutSuccessPayload, AuthLog
   try {
     removeAuthorizationToken(res);
 
-    sendSuccess(res, { success: true });
+    sendSuccess(res, true);
   } catch (err) {
     logger.error(err);
 

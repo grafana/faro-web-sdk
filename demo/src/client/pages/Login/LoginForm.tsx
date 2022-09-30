@@ -38,7 +38,7 @@ export function LoginForm() {
   return (
     <Form onSubmit={onSubmit}>
       {loginResult.isError && !loginResult.isLoading ? (
-        <Alert variant="danger">{(loginResult.error as any).data.message}</Alert>
+        <Alert variant="danger">{(loginResult.error as any).data.data.message}</Alert>
       ) : null}
 
       <Form.Group className="mb-3" controlId="email">

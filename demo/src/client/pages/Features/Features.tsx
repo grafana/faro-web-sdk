@@ -5,11 +5,12 @@ import { ConsoleInstrumentation } from './ConsoleInstrumentation';
 import { ErrorInstrumentation } from './ErrorInstrumentation';
 import { Events } from './Events';
 import { MetricsMeasurements } from './MetricsMeasurements';
+import { ReactInstrumentation } from './ReactInstrumentation';
 import { TracingInstrumentation } from './TracingInstrumentation';
 
-export function FeaturesPage() {
+export function Features() {
   return (
-    <Page title="Features Page">
+    <Page title="Features">
       <Container as="article" className="pb-4 mb-4 border-bottom">
         <ConsoleInstrumentation />
       </Container>
@@ -28,6 +29,10 @@ export function FeaturesPage() {
 
       <Container as="article" className="pb-4 mb-4 border-bottom">
         <Events />
+      </Container>
+
+      <Container as="article" className="pb-4 mb-4 border-bottom">
+        <ReactInstrumentation />
       </Container>
     </Page>
   );

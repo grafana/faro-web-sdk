@@ -15,6 +15,7 @@ export interface LogEvent {
 export interface PushLogOptions {
   context?: LogContext;
   level?: LogLevel;
+  skipDedupe?: boolean;
 }
 
 export interface LogsAPI {

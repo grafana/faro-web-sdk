@@ -19,7 +19,7 @@ export function setActiveEventRoute(route: string): void {
 }
 
 export function sendActiveEvent(): void {
-  agent.api.pushEvent('routeChange', activeEvent);
+  agent.api.pushEvent('routeChange', activeEvent, undefined, { skipDedupe: true });
 
   activeEvent = undefined;
 }

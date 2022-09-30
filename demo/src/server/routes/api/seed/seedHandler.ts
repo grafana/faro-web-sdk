@@ -25,7 +25,7 @@ export const seedHandler: RequestHandler<{}, SeedGetSuccessPayload, SeedGetPaylo
       await addComment(commentInput, articles[article]!.id, users[user]!.id);
     }
 
-    sendSuccess(res, { success: true }, 201);
+    sendSuccess(res, true, 201);
   } catch (err) {
     logger.error(err);
 

@@ -5,13 +5,13 @@ import type { ReactNode } from 'react';
 import type { OTELApi } from '@grafana/agent-web';
 import { agent, VERSION } from '@grafana/agent-web';
 
-export interface GrafanaProfilerProps {
+export interface GrafanaAgentProfilerProps {
   children: ReactNode;
   name: string;
   updateProps: Record<string, unknown>;
 }
 
-export class GrafanaProfiler extends Component<GrafanaProfilerProps> {
+export class GrafanaAgentProfiler extends Component<GrafanaAgentProfilerProps> {
   protected mountSpan: Span | undefined = undefined;
   protected mountSpanEndTime: number | undefined = undefined;
   protected updateSpan: Span | undefined = undefined;
@@ -63,7 +63,7 @@ export class GrafanaProfiler extends Component<GrafanaProfilerProps> {
     return span!;
   }
 
-  constructor(props: GrafanaProfilerProps) {
+  constructor(props: GrafanaAgentProfilerProps) {
     super(props);
 
     if (this.isOtelInitialized) {
@@ -82,7 +82,7 @@ export class GrafanaProfiler extends Component<GrafanaProfilerProps> {
     }
   }
 
-  override shouldComponentUpdate({ updateProps }: GrafanaProfilerProps): boolean {
+  override shouldComponentUpdate({ updateProps }: GrafanaAgentProfilerProps): boolean {
     if (this.isOtelInitialized && this.mountSpan && updateProps !== this.props.updateProps) {
       const changedProps = Object.keys(updateProps).filter((key) => updateProps[key] !== this.props.updateProps[key]);
 

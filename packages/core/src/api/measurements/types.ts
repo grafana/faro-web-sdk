@@ -7,7 +7,9 @@ export interface MeasurementEvent<V extends { [label: string]: number } = { [lab
   trace?: TraceContext;
 }
 
-export interface PushMeasurementOptions {}
+export interface PushMeasurementOptions {
+  skipDedupe?: boolean;
+}
 
 export interface MeasurementsAPI {
   pushMeasurement: (payload: MeasurementEvent, options?: PushMeasurementOptions) => void;

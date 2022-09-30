@@ -8,6 +8,7 @@ export function mockConfig(overrides: Partial<Config> = {}): Config {
       name: 'test',
       version: '1.0.0',
     },
+    dedupe: true,
     globalObjectKey: 'grafanaAgent',
     internalLoggerLevel: defaultInternalLoggerLevel,
     instrumentations: [],

@@ -3,9 +3,7 @@ import { Sequelize } from 'sequelize';
 import { logger } from '../logger';
 import { env } from '../utils';
 import { setDb } from './db';
-import { initializeArticle } from './repositories/article';
-import { initializeComment } from './repositories/comment';
-import { initializeUser } from './repositories/user';
+import { initializeArticle, initializeComment, initializeUser } from './repositories';
 
 export async function initializeDb(): Promise<void> {
   const db = new Sequelize({

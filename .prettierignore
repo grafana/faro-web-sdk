@@ -8,15 +8,27 @@
 # App-specifics
 .build-cache
 .cache
+# Drone sign step formats it in a way that prettier doesn't like
+.drone/drone.yml
+.eslintcache
 .husky
-.parcel-cache
 coverage
+cypress/videos
+cypress/screenshots
+demo/logs
 demo/stats.html
+demo/vite.config.ts.timestamp-*.mjs
 dist
+# Lerna reformats this as well
+lerna.json
 node_modules
 
-# drone sign step formats it in a way that prettier doesn't like
-.drone/drone.yml
+# Logs
+*.log
+lerna-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# lerna reformats this as well
-lerna.json
+# Misc
+.DS_Store

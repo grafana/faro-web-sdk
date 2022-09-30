@@ -4,6 +4,9 @@ import Nav from 'react-bootstrap/Nav';
 import BootstrapNavbar from 'react-bootstrap/Navbar';
 import { LinkContainer } from 'react-router-bootstrap';
 
+import { useAppSelector } from '../../hooks';
+import { selectRootSpanId, selectRootTraceId, selectSession } from '../../store';
+
 export type NavbarProps = {
   items: Array<{
     title: string;
@@ -15,9 +18,13 @@ export type NavbarProps = {
 };
 
 export function Navbar({ items, titleTo }: NavbarProps) {
+  const session = useAppSelector(selectSession);
+  const rootSpanId = useAppSelector(selectRootSpanId);
+  const rootTraceId = useAppSelector(selectRootTraceId);
+
   return (
     <>
-      <BootstrapNavbar bg="dark" variant="dark" expand="lg" className="mb-3">
+      <BootstrapNavbar bg="dark" variant="dark" expand="lg">
         <Container>
           <LinkContainer to={titleTo}>
             <BootstrapNavbar.Brand>Demo</BootstrapNavbar.Brand>
@@ -38,6 +45,25 @@ export function Navbar({ items, titleTo }: NavbarProps) {
               )}
             </Nav>
           </BootstrapNavbar.Collapse>
+        </Container>
+      </BootstrapNavbar>
+      <BootstrapNavbar bg="light" className="mb-3">
+        <Container className="flex-column align-items-start flex-lg-row">
+          <BootstrapNavbar.Text>
+            <b>Session ID:</b>
+            <br />
+            {session?.id ?? 'Unknown'}
+          </BootstrapNavbar.Text>
+          <BootstrapNavbar.Text>
+            <b>Span ID:</b>
+            <br />
+            {rootSpanId ?? 'Unknown'}
+          </BootstrapNavbar.Text>
+          <BootstrapNavbar.Text>
+            <b>Trace ID:</b>
+            <br />
+            {rootTraceId ?? 'Unknown'}
+          </BootstrapNavbar.Text>
         </Container>
       </BootstrapNavbar>
     </>

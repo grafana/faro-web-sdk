@@ -3,7 +3,7 @@ import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
-import { getCurrentTimestamp } from '../../utils';
+import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
 import type { TracesAPI } from '../traces';
 import { defaultExceptionType } from './const';
 import type { ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
@@ -19,6 +19,8 @@ export function initializeExceptionsAPI(
 ): ExceptionsAPI {
   internalLogger.debug('Initializing exceptions API');
 
+  let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace'> | null = null;
+
   stacktraceParser = config.parseStacktrace ?? stacktraceParser;
 
   const changeStacktraceParser: ExceptionsAPI['changeStacktraceParser'] = (newStacktraceParser) => {
@@ -29,8 +31,8 @@ export function initializeExceptionsAPI(
 
   const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => stacktraceParser;
 
-  const pushError: ExceptionsAPI['pushError'] = (error, options = {}) => {
-    const type = options.type || error.name || defaultExceptionType;
+  const pushError: ExceptionsAPI['pushError'] = (error, { skipDedupe, stackFrames, type } = {}) => {
+    type = type || error.name || defaultExceptionType;
 
     const item: TransportItem<ExceptionEvent> = {
       meta: metas.value,
@@ -43,13 +45,27 @@ export function initializeExceptionsAPI(
       type: TransportItemType.EXCEPTION,
     };
 
-    const stackFrames = options.stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
+    stackFrames = stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
 
     if (stackFrames?.length) {
       item.payload.stacktrace = {
         frames: stackFrames,
       };
     }
+
+    const testingPayload = {
+      type: item.payload.type,
+      value: item.payload.value,
+      stackTrace: item.payload.stacktrace,
+    };
+
+    if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
+      internalLogger.debug('Skipping error push because it is the same as the last one\n', item.payload);
+
+      return;
+    }
+
+    lastPayload = testingPayload;
 
     internalLogger.debug('Pushing exception\n', item);
 

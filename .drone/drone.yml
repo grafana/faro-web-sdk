@@ -48,7 +48,7 @@ steps:
   - name: e2e-tests
     image: cypress/included:10.8.0
     depends_on:
-      - build
+      - install-dependencies
     commands:
       - yarn quality:e2e:ci
     environment:
@@ -112,7 +112,7 @@ steps:
   - name: e2e-tests
     image: cypress/included:10.8.0
     depends_on:
-      - build
+      - install-dependencies
     commands:
       - yarn quality:e2e:ci
     environment:
@@ -144,6 +144,6 @@ services:
 
 ---
 kind: signature
-hmac: cfc7365615ebfee1b2a65c8f7c0bdcaa83f409f068fe73a7fd7ff245a6e1781e
+hmac: e7278e00625dfaca0f50b7421a8af9e9e696cff7b04aa148c5aa16e278900229
 
 ...

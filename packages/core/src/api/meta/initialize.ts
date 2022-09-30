@@ -1,9 +1,15 @@
+import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas, MetaSession, MetaUser } from '../../metas';
 import type { Transports } from '../../transports';
 import type { MetaAPI } from './types';
 
-export function initializeMetaAPI(internalLogger: InternalLogger, _transports: Transports, metas: Metas): MetaAPI {
+export function initializeMetaAPI(
+  internalLogger: InternalLogger,
+  _config: Config,
+  _transports: Transports,
+  metas: Metas
+): MetaAPI {
   internalLogger.debug('Initializing meta API');
 
   let metaSession: Partial<Meta> | undefined = undefined;
@@ -25,6 +31,7 @@ export function initializeMetaAPI(internalLogger: InternalLogger, _transports: T
     if (metaSession) {
       metas.remove(metaSession);
     }
+
     metaSession = {
       session,
     };

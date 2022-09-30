@@ -59,10 +59,9 @@ services:
     entrypoint:
       - '/bin/agent'
       - '-config.file=${AGENT_CONFIG_PATH}/${AGENT_CONFIG_FILE}'
-      - '-metrics.wal-directory=${AGENT_TEMP_PATH}/${AGENT_WAL_PATH}'
-      - '-enable-features=integrations-next'
       - '-config.expand-env'
       - '-config.enable-read-api'
+      - '-enable-features=integrations-next'
     ports:
       - '${AGENT_PORT}:${AGENT_PORT}'
       - '${AGENT_PORT_APP_RECEIVER}:${AGENT_PORT_APP_RECEIVER}'

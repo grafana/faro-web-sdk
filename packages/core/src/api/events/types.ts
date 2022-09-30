@@ -11,6 +11,10 @@ export interface EventEvent {
   trace?: TraceContext;
 }
 
+export interface PushEventOptions {
+  skipDedupe?: boolean;
+}
+
 export interface EventsAPI {
-  pushEvent: (name: string, attributes?: EventAttributes, domain?: string) => void;
+  pushEvent: (name: string, attributes?: EventAttributes, domain?: string, options?: PushEventOptions) => void;
 }

@@ -5,15 +5,16 @@
 # App-specifics
 .build-cache
 .cache
-.parcel-cache
+.eslintcache
+.husky/_
 coverage
 cypress/videos
 cypress/screenshots
-dist
-node_modules
-.eslintcache
 demo/logs
 demo/stats.html
+demo/vite.config.ts.timestamp-*.mjs
+dist
+node_modules
 packages/core/src/version.ts
 
 # Logs

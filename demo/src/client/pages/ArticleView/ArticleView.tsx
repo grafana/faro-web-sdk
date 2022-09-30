@@ -13,23 +13,23 @@ export function ArticleView() {
 
   const isReady = !getArticleResult.isUninitialized && !getArticleResult.isLoading;
 
-  const article = getArticleResult.data;
+  const article = getArticleResult.data?.data!;
 
   return (
-    <Page title={isReady ? article?.name! : 'Loading Article'}>
+    <Page title={isReady ? article.name! : 'Loading Article'}>
       {!isReady ? (
         <LoadingScreen />
       ) : (
         <>
           <Container as="article" className="pb-4 mb-4 border-bottom">
             <p className="mb-3">
-              {article?.user.name} | {formatDate(article?.date!)}
+              {article.user.name} | {formatDate(article.date!)}
             </p>
-            <div>{article?.text}</div>
+            <div>{article.text}</div>
           </Container>
           <h4 className="pb-2">Comments</h4>
-          {article?.comments.length ? (
-            article?.comments.map((comment) => (
+          {article.comments.length ? (
+            article.comments.map((comment) => (
               <Container key={comment.id} className="pb-2 mt-2 border-bottom">
                 <p className="mb-2">{comment.user.name}</p>
                 <p className="mb-0">{comment.text}</p>

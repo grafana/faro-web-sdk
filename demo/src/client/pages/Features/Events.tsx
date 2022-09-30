@@ -3,13 +3,22 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 
 import { agent, createSession } from '@grafana/agent-integration-react';
 
+import { useAppDispatch } from '../../hooks';
+import { setSession } from '../../store';
+
 export function Events() {
+  const dispatch = useAppDispatch();
+
   const captureEvent = (name: string, attributes?: Record<string, string>) => {
     agent.api.pushEvent(name, attributes);
   };
 
   const startNewSession = () => {
-    agent.api.setSession(createSession());
+    const session = createSession();
+
+    agent.api.setSession(session);
+
+    dispatch(setSession(session));
   };
 
   return (

@@ -18,6 +18,6 @@ export { signToken } from './signToken';
 
 export { toAbsolutePath } from './toAbsolutePath';
 
-export type { Request, RequestHandler, Response } from './types';
+export type { MiddlewareLocals, Request, RequestHandler, Response } from './types';
 
 export { verifyToken } from './verifyToken';

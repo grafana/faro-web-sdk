@@ -1,3 +1,5 @@
+import { createSession } from '@grafana/agent-integration-react';
+
 import { getActiveSpanContext } from '../../otel';
 import { env, verifyToken } from '../../utils';
 import type { Request, Response } from '../../utils';
@@ -14,6 +16,11 @@ export async function renderPage(
   const userPublic = (await verifyToken((res as Response).locals.token)) ?? null;
 
   const preloadedState = {
+    agent: {
+      session: createSession(),
+      rootSpanId: spanContext?.spanId ?? null,
+      rootTraceId: spanContext?.traceId ?? null,
+    },
     user: {
       data: userPublic ?? null,
     },

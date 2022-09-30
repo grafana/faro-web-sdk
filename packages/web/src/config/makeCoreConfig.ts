@@ -38,6 +38,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
 
   return {
     app: browserConfig.app,
+    dedupe: browserConfig.dedupe ?? true,
     globalObjectKey: browserConfig.globalObjectKey || defaultGlobalObjectKey,
     instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
     internalLoggerLevel: browserConfig.internalLoggerLevel ?? defaultInternalLoggerLevel,

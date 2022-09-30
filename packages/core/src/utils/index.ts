@@ -3,6 +3,8 @@ export type { Extension } from './extensions';
 
 export type { BaseObject, BaseObjectKey, BaseObjectPrimitiveValue, BaseObjectValue } from './baseObject';
 
+export { deepEqual } from './deepEqual';
+
 export { getCurrentTimestamp } from './getCurrentTimestamp';
 
 export {
@@ -11,12 +13,17 @@ export {
   isDomError,
   isDomException,
   isElement,
+  isElementDefined,
   isError,
+  isErrorDefined,
   isErrorEvent,
   isEvent,
+  isEventDefined,
   isFunction,
   isInstanceOf,
   isInt,
+  isMap,
+  isMapDefined,
   isNull,
   isNumber,
   isObject,

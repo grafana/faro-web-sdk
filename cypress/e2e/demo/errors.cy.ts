@@ -40,7 +40,7 @@ context('Errors', () => {
 
       cy.on('uncaught:exception', () => false);
 
-      cy.visit('/features-page');
+      cy.visit('/features');
 
       cy.clickButton(`btn-${btnName}`);
 

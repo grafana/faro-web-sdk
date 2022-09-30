@@ -29,6 +29,7 @@ export interface ExceptionEvent {
 }
 
 export interface PushErrorOptions {
+  skipDedupe?: boolean;
   stackFrames?: ExceptionStackFrame[];
   type?: string;
 }

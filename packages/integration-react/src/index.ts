@@ -13,8 +13,8 @@ export type {
 
 export { ReactIntegration } from './instrumentation';
 
-export { GrafanaProfiler, withGrafanaProfiler } from './profiler';
-export type { GrafanaProfilerProps } from './profiler';
+export { GrafanaAgentProfiler, withGrafanaAgentProfiler } from './profiler';
+export type { GrafanaAgentProfilerProps } from './profiler';
 
 export {
   GrafanaAgentRoute,
@@ -68,6 +68,7 @@ export {
   createInternalLogger,
   createPromiseBuffer,
   createSession,
+  deepEqual,
   defaultExceptionType,
   defaultEventDomain,
   defaultGlobalObjectKey,
@@ -90,13 +91,18 @@ export {
   isDomError,
   isDomException,
   isElement,
+  isElementDefined,
   isError,
+  isErrorDefined,
   isErrorEvent,
   isEvent,
+  isEventDefined,
   isFunction,
   isInstanceOf,
   isInt,
   isInternalAgentOnGlobalObject,
+  isMap,
+  isMapDefined,
   isNull,
   isNumber,
   isObject,

@@ -12,7 +12,7 @@ export function initializeLogger(): Logger {
       version: env.package.version,
       component: 'server',
     },
-    format: format.combine(format.timestamp(), format.errors({ stack: false }), format.metadata(), format.json()),
+    format: format.combine(format.timestamp(), format.metadata(), format.errors({ stack: true })),
     transports: [
       new transports.Console({
         format: format.prettyPrint({
@@ -21,6 +21,7 @@ export function initializeLogger(): Logger {
       }),
       new transports.File({
         filename: toAbsolutePath(`${env.server.logsPath}/${env.server.logsName}`),
+        format: format.json(),
         options: {
           flags: 'w',
         },

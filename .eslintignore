@@ -8,9 +8,24 @@
 # App-specifics
 .build-cache
 .cache
+.eslintcache
 .husky
-.parcel-cache
-!.lintstagedrc.js
 coverage
+cypress/videos
+cypress/screenshots
+demo/logs
+demo/stats.html
+demo/vite.config.ts.timestamp-*.mjs
 dist
 node_modules
+!.lintstagedrc.js
+
+# Logs
+*.log
+lerna-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.DS_Store
