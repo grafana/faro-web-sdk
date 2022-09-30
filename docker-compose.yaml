@@ -41,13 +41,11 @@ services:
     env_file:
       - './.env'
     image: 'grafana/tempo:latest'
+    volumes:
+      - '${TEMPO_CONFIG_PATH_LOCAL}:${TEMPO_CONFIG_PATH}'
     command:
-      - '-search.enabled=true'
-      - '-storage.trace.backend=local'
-      - '-storage.trace.local.path=${TEMPO_TEMP_PATH}/${TEMPO_TRACES_PATH}'
-      - '-storage.trace.wal.path=${TEMPO_TEMP_PATH}/${TEMPO_WAL_PATH}'
-      - '-auth.enabled=false'
-      - '-server.http-listen-port=${TEMPO_PORT}'
+      - '-config.file=${TEMPO_CONFIG_PATH}/${TEMPO_CONFIG_FILE}'
+      - '-config.expand-env=true'
     ports:
       - '${TEMPO_PORT}:${TEMPO_PORT}'
 
