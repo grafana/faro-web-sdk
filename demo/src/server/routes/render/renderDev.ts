@@ -23,14 +23,14 @@ export async function registerRenderDevRoutes(globalRouter: Router, _app: Expres
 
   globalRouter.use(vite.middlewares);
 
-  globalRouter.use('*', async (req, res: Response) => {
+  globalRouter.use('*', async (req: Request, res: Response) => {
     try {
       const indexHtml = readFileSync(toAbsolutePath('index.html'), 'utf-8');
       const template = await vite.transformIndexHtml(req.originalUrl, indexHtml);
 
       const render = (await vite.ssrLoadModule('./src/server/routes/render/renderToString'))['renderToString'];
 
-      await renderPage(req as Request, res, template, render);
+      await renderPage(req, res, template, render);
     } catch (err) {
       logger.error(err);
 
