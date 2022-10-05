@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -25,16 +26,20 @@ export function RegisterForm() {
   const onSubmit = handleSubmit((data) => {
     agent.api.pushEvent('registerAttempt');
 
-    register(data)
-      .then(() => {
+    register(data);
+  });
+
+  useEffect(() => {
+    if (!registerResult.isUninitialized && !registerResult.isLoading) {
+      if (registerResult.isError) {
+        agent.api.pushEvent('registerFailed');
+      } else {
         agent.api.pushEvent('registerSuccessfully');
 
         navigate('/articles');
-      })
-      .catch(() => {
-        agent.api.pushEvent('registerFailed');
-      });
-  });
+      }
+    }
+  }, [registerResult, navigate]);
 
   return (
     <Form onSubmit={onSubmit}>

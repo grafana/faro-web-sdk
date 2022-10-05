@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -24,16 +25,20 @@ export function LoginForm() {
   const onSubmit = handleSubmit((data) => {
     agent.api.pushEvent('loginAttempt');
 
-    login(data)
-      .then(() => {
+    login(data);
+  });
+
+  useEffect(() => {
+    if (!loginResult.isUninitialized && !loginResult.isLoading) {
+      if (loginResult.isError) {
+        agent.api.pushEvent('loginFailed');
+      } else {
         agent.api.pushEvent('loginSuccessfully');
 
         navigate('/articles');
-      })
-      .catch(() => {
-        agent.api.pushEvent('loginFailed');
-      });
-  });
+      }
+    }
+  }, [loginResult, navigate]);
 
   return (
     <Form onSubmit={onSubmit}>

@@ -3,7 +3,7 @@ export type { BrowserConfig } from './config';
 
 export { defaultEventDomain } from './consts';
 
-export { initializeAgent, initializeGrafanaAgent } from './initialize';
+export { initializeGrafanaAgent } from './initialize';
 
 export {
   buildStackFrame,

@@ -39,7 +39,7 @@ export type {
 export { globalObject } from './globalObject';
 export type { GlobalObject } from './globalObject';
 
-export { initializeAgentDeprecated as initializeAgent, initializeGrafanaAgent } from './initialize';
+export { initializeGrafanaAgent } from './initialize';
 
 export { defaultGlobalObjectKey } from './config';
 export type { Config, Patterns } from './config';

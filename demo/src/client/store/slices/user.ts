@@ -25,32 +25,32 @@ export const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addMatcher(authAPI.endpoints.postLogin.matchFulfilled, (state, action) => {
-      state.data = action.payload;
+      state.data = action.payload.data;
 
       agent.api.setUser({
-        email: action.payload.email,
-        id: action.payload.id,
-        username: action.payload.email,
+        email: action.payload.data.email,
+        id: action.payload.data.id,
+        username: action.payload.data.email,
       });
     });
 
     builder.addMatcher(authAPI.endpoints.postRegister.matchFulfilled, (state, action) => {
-      state.data = action.payload;
+      state.data = action.payload.data;
 
       agent.api.setUser({
-        email: action.payload.email,
-        id: action.payload.id,
-        username: action.payload.email,
+        email: action.payload.data.email,
+        id: action.payload.data.id,
+        username: action.payload.data.email,
       });
     });
 
     builder.addMatcher(authAPI.endpoints.getAuthState.matchFulfilled, (state, action) => {
-      state.data = action.payload;
+      state.data = action.payload.data;
 
       agent.api.setUser({
-        email: action.payload.email,
-        id: action.payload.id,
-        username: action.payload.email,
+        email: action.payload.data.email,
+        id: action.payload.data.id,
+        username: action.payload.data.email,
       });
     });
 

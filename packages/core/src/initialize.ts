@@ -47,12 +47,3 @@ export function initializeGrafanaAgent(config: Config): Agent {
 
   return agent;
 }
-
-// TODO: Remove this alias after the updating the projects where we dogfood
-export function initializeAgentDeprecated(config: Config): Agent {
-  const agent = initializeGrafanaAgent(config);
-
-  agent.internalLogger.warn('initializeAgent method is deprecated. Please use initializeGrafanaAgent method instead');
-
-  return agent;
-}
