@@ -48,7 +48,7 @@ instrumenting the resource loading for the document.
 
 ## Screenshots
 
-[<img src="../assets/features/tracesViewAppDocumentLoad.png" alt="Viewing trace info in the app" height="100" />](../assets/features/tracesViewAppSeed.png)
-[<img src="../assets/features/tracesViewAppDocumentLoad.png" alt="Viewing trace info in the app" height="100" />](../assets/features/tracesViewAppSeed.png)
+[<img src="../assets/features/tracesViewAppDocumentLoad.png" alt="Viewing trace info in the app" height="100" />](../assets/features/tracesViewAppDocumentLoad.png)
+[<img src="../assets/features/tracesViewAppSeed.png" alt="Viewing trace info in the app" height="100" />](../assets/features/tracesViewAppSeed.png)
 [<img src="../assets/features/tracesViewExploreDocumentLoad.png" alt="Viewing metas in Explore" height="100" />](../assets/features/tracesViewExploreDocumentLoad.png)
 [<img src="../assets/features/tracesViewExploreSeed.png" alt="Viewing metas in Explore" height="100" />](../assets/features/tracesViewExploreSeed.png)
