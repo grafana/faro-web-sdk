@@ -53,7 +53,7 @@ docker-compose --profile demo up -d
 
 This will automatically install dependencies, build the demo and start it in `development` mode.
 
-## Presentation
+## Instrumentation
 
 There is various data that is captured in this app. Some data is caught automatically while other data is automatically
 captured by the instrumentation provided by either Grafana JavaScript Agent and/or OpenTelemetry.
@@ -101,8 +101,8 @@ All the actions will be performed assuming that the demo is freshly ran and the 
      - The database calls
    - The `Trace ID` that appears under the button can be used to see the traces mentioned above
    - [<img src="docs/assets/userJourney/seedSuccess.png" alt="Seed page with successful run" height="100" />](docs/assets/userJourney/seedSuccess.png)
-     [<img src="docs/assets/userJourney/seedSuccessEvents.png" alt="Events for Seed page with successfull run" height="100" />](docs/assets/userJourney/seedSuccessEvents.png)
-     [<img src="docs/assets/userJourney/seedSuccessTraces.png" alt="Traces for Seed page with successfull run" height="100" />](docs/assets/userJourney/seedSuccessTraces.png)
+     [<img src="docs/assets/userJourney/seedSuccessEvents.png" alt="Events for Seed page with successfull run" height="100" />](docs/assets/userJourney/seedSuccessEvents.png)<!-- markdownlint-disable-line MD013 -->
+     [<img src="docs/assets/userJourney/seedSuccessTraces.png" alt="Traces for Seed page with successfull run" height="100" />](docs/assets/userJourney/seedSuccessTraces.png)<!-- markdownlint-disable-line MD013 -->
 1. Click on the `Seed` button again to generate an error:
    - The following events are registered:
      - `seed`

@@ -1,7 +1,6 @@
 # Measurements
 
-Measurements (aka metrics) are indicators for tracking mainly the performance and resource consumption but they can be
-used to track specific numeric differences.
+Measurements (aka metrics) are indicators for tracking performance or other numeric values.
 
 ## Description
 
