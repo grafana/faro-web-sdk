@@ -84,7 +84,7 @@ All the actions will be performed assuming that the demo is freshly ran and the 
    - The `Session ID` at the top can be used to filter out the data collected during the current user journey
    - [<img src="docs/assets/userJourney/homepage.png" alt="Homepage" height="100" />](docs/assets/userJourney/homepage.png)
      [<img src="docs/assets/userJourney/homepageTraces.png" alt="Homepage traces" height="100" />](docs/assets/userJourney/homepageTraces.png)
-     [<img src="docs/assets/userJourney/homepageWebVitals.png" alt="Homepage Web Vitals" height="100" />](docs/assets/userJourney/homepageWebvitals.png)
+     [<img src="docs/assets/userJourney/homepageWebVitals.png" alt="Homepage Web Vitals" height="100" />](docs/assets/userJourney/homepageWebVitals.png)
 1. Navigate to the [Seed page](http://localhost:5173/seed)
    - `routeChange` event is registered with the new URL and the React route associated to that specific URL
    - [<img src="docs/assets/userJourney/seed.png" alt="Seed page" height="100" />](docs/assets/userJourney/seed.png)
