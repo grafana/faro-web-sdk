@@ -19,7 +19,7 @@ JavaScript Agent provides an API called `pushLog` which can be used.
 The logs that are captured server side are reported manually by writing them to a file which is then read by the
 [Grafana Agent](https://github.com/grafana/agent).
 
-**The captured errors are stored in Loki.**
+**Captured logs are stored in Loki.**
 
 ## Testing Scenario
 
