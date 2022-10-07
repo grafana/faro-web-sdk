@@ -11,7 +11,7 @@ In the case of errors (i.e. HTTP calls that return `4xx` or `5xx` status codes),
 for `async/await` operations or using `then` and `catch` for promises and use the `pushError` API provided by Grafana
 JavaScript Agent to report them.
 
-The Grafana JavaScript Agent automatically captures exceptions. Errors Instrumentation is listening to the `onerror`
+The Grafana JavaScript Agent Errors Instrumentation automatically captures uncaught exceptions. It is listening to the `onerror`
 and `onunhandledrejection`, then it parses the events in order to extract the stacktrace and finally they are reported.
 
 **The captured errors are stored in Loki.**
