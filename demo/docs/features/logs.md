@@ -1,6 +1,6 @@
 # Logs
 
-Sometimes logs are important to debug an error that appeared in your app.
+Logs can provide context and detail into what is going on in your application and be critical to troubleshooting errors.
 
 ## Description
 
