@@ -1,7 +1,7 @@
 # Events
 
 Events are actions performed by the user while using your application and/or specific events that happened and have
-a clear business meaning (i.e. the user arrived on the page with a specific query parameter).
+a clear business meaning (i.e. the user arrived on the page with a specific query parameter). Events differ from logs in that they have pre-determined structure and attributes.
 
 ## Description
 
