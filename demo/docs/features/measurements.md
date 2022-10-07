@@ -11,7 +11,7 @@ Measurements (aka metrics) are indicators for tracking performance or other nume
 Besides the automatically captured measurements, Grafana JavaScript Agent API also provides a `pushMeasurement` method
 that can be used to track measurements.
 
-**The captured measurements are stored in Loki instead of Prometheus to avoid scalability issues caused by labels.**
+**Captured frontend measurements are stored in Loki instead of Prometheus to avoid cardinality issues.**
 
 ### API
 
