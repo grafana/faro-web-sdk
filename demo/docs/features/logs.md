@@ -12,7 +12,7 @@ too verbose.
 But sometimes you may need to manually submit a log without it appearing in the browser console. For this, Grafana
 JavaScript Agent provides an API called `pushLog` which can be used.
 
-**The captured errors are stored in Loki.**
+**Captured logs are stored in Loki.**
 
 ### API
 
