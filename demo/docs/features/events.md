@@ -11,7 +11,7 @@ The app contains a lot of automatically captured events (i.e. page navigations c
 provided by the Grafana JavaScript Agent) but also manually created events (i.e. creating an article, adding a comment,
 logging in and logging out etc.).
 
-**The captured errors are stored in Loki.**
+**Captured errors are stored in Loki.**
 
 ### API
 
