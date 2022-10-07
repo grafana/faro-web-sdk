@@ -76,7 +76,7 @@ visualize the data, you can refer the one of the docs from the **Presentation** 
 All the actions will be performed assuming that the demo is freshly ran and the database is empty.
 
 1. Navigate to the [Homepage](http://localhost:5173/)
-   - Web Vitals are captured. They can be observed in the
+   - [Web Vitals](https://web.dev/vitals/) are captured. They can be observed in the
      [Frontend dashboard in Grafana](http://localhost:3000/dashboards?query=Frontend)
    - Traces for the document load are created. They can be found in the
      [Explore page in Grafana](http://localhost:3000/explore) using the `Trace ID` property at the top of the page
