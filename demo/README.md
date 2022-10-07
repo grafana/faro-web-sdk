@@ -69,7 +69,7 @@ You can have a look over the following pages to understand what and how data is 
 
 ## User Journey
 
-The next section will try to present the steps that a user usually does when navigating through a basic app and what
+The next section will present the steps that a user usually does when navigating through the app and what
 useful data is collected from those actions. In some cases the mechanism behind is also explained. To check how to
 visualize the data, you can refer the one of the docs from the **Presentation** chapter.
 
