@@ -19,8 +19,8 @@ On the server side, [prom-client](https://github.com/siimon/prom-client) is used
 measurements, which are exposed publicly on the [Metrics page](http://localhost:5173/metrics).
 [Grafana Agent](https://github.com/grafana/agent) scrapes and records metrics at a specified time interval.
 
-**Given that we use [prom-client]https://github.com/siimon/prom-client) for pushing server-side metrics, they are stored
-in Prometheus rather than Loki.**
+**Given that we use [prom-client](https://github.com/siimon/prom-client) for pushing server-side metrics, they are
+stored in Prometheus rather than Loki.**
 
 ## Testing Scenario
 
@@ -49,6 +49,6 @@ in Prometheus rather than Loki.**
 
 ## Screenshots
 
-[<img src="../assets/features/measurementsViewExploreLoki.png" alt="Viewing measurements in Explore" height="100" />](../assets/features/measurementsViewExploreLoki.png)
-[<img src="../assets/features/measurementsViewExploreCortex.png" alt="Viewing measurements in Explore" height="100" />](../assets/features/measurementsViewExploreCortex.png)
-[<img src="../assets/features/measurementsViewDashboard.png" alt="Viewing measurements in Dashboard" height="100" />](../assets/features/measurementsViewDashboard.png)
+[<img src="../assets/instrumentations/measurementsViewExploreLoki.png" alt="Viewing measurements in Explore" height="100" />](../assets/instrumentations/measurementsViewExploreLoki.png)<!-- markdownlint-disable-line MD013 -->
+[<img src="../assets/instrumentations/measurementsViewExploreCortex.png" alt="Viewing measurements in Explore" height="100" />](../assets/instrumentations/measurementsViewExploreCortex.png)<!-- markdownlint-disable-line MD013 -->
+[<img src="../assets/instrumentations/measurementsViewDashboard.png" alt="Viewing measurements in Dashboard" height="100" />](../assets/instrumentations/measurementsViewDashboard.png)<!-- markdownlint-disable-line MD013 -->

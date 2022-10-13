@@ -1,2 +1,2 @@
 export { FetchTransport } from './transport';
-export type { FetchTransportOptions, FetchTransportRequestOptions } from './types';
+export type { ClockFn, FetchTransportOptions, FetchTransportRequestOptions } from './types';

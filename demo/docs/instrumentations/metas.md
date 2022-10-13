@@ -1,7 +1,7 @@
 # Metas
 
-Metas can be seen as labels. They are additional data that accompany the errors, events etc. in order to filter them
-better.
+Metas (aka metadata) can be seen as labels or. They are additional data that accompany the errors, events etc. in order
+to provide context and allow granular filtering.
 
 ## Description
 
@@ -38,6 +38,6 @@ Metas in the API are similar to the ones provided by Grafana JavaScript Agent bu
 
 ## Screenshots
 
-[<img src="../assets/features/metasViewApp.png" alt="Viewing metas in the app" height="100" />](../assets/features/metasViewApp.png)
-[<img src="../assets/features/metasViewExploreSession.png" alt="Viewing metas in Explore" height="100" />](../assets/features/metasViewExploreSession.png)
-[<img src="../assets/features/metasViewExploreUser.png" alt="Viewing metas in Explore" height="100" />](../assets/features/metasViewExploreUser.png)
+[<img src="../assets/instrumentations/metasViewApp.png" alt="Viewing metas in the app" height="100" />](../assets/instrumentations/metasViewApp.png)
+[<img src="../assets/instrumentations/metasViewExploreSession.png" alt="Viewing metas in Explore" height="100" />](../assets/instrumentations/metasViewExploreSession.png)
+[<img src="../assets/instrumentations/metasViewExploreUser.png" alt="Viewing metas in Explore" height="100" />](../assets/instrumentations/metasViewExploreUser.png)

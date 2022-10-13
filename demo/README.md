@@ -55,17 +55,17 @@ This will automatically install dependencies, build the demo and start it in `de
 
 ## Instrumentation
 
-There is various data that is captured in this app. Some data is caught automatically while other data is automatically
+There is various data that is captured in this app. Some data is captured manually while other data is automatically
 captured by the instrumentation provided by either Grafana JavaScript Agent and/or OpenTelemetry.
 
 You can have a look over the following pages to understand what and how data is collected.
 
-- [Errors](docs/features/errors.md)
-- [Events](docs/features/events.md)
-- [Logs](docs/features/logs.md)
-- [Measurements](docs/features/measurements.md)
-- [Metas](docs/features/metas.md)
-- [Traces](docs/features/traces.md)
+- [Errors](docs/instrumentations/errors.md)
+- [Events](docs/instrumentations/events.md)
+- [Logs](docs/instrumentations/logs.md)
+- [Measurements](docs/instrumentations/measurements.md)
+- [Metas](docs/instrumentations/metas.md)
+- [Traces](docs/instrumentations/traces.md)
 
 ## User Journey
 

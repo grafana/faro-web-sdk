@@ -6,8 +6,8 @@ Logs can provide context and detail into what is going on in your application an
 
 ### Client
 
-Out of the box, Grafana JavaScript Agent captures all logs levels, except for `debug`, `trace` and `log` since they are
-too verbose.
+Out of the box, Grafana JavaScript Agent captures all logs provided by invoking `console.info()`, `console.error()` and
+`console.warn()`.
 
 But sometimes you may need to manually submit a log without it appearing in the browser console. For this, Grafana
 JavaScript Agent provides an API called `pushLog` which can be used.
@@ -28,8 +28,8 @@ The logs that are captured server side are reported manually by writing them to 
 - There are two modes available:
   - `Console mode` - enabled by default - when this mode is activated, clicking the buttons will print the messages to
     the browser console and the Grafana JavaScript Agent Console Instrumentation picks it automatically from there.
-  - `API mode` - enabled by clicking on the toggle - when this mode is activated, clicking the buttons will call the Grafana JavaScript
-    Agent API and sends the log directly to the collector.
+  - `API mode` - enabled by clicking on the toggle - when this mode is activated, clicking the buttons will call the
+    Grafana JavaScript Agent API and sends the log directly to the collector.
 
 ## Visualizing the Data
 
@@ -39,4 +39,4 @@ The logs that are captured server side are reported manually by writing them to 
 
 ## Screenshots
 
-[<img src="../assets/features/logsViewExplore.png" alt="Viewing logs in Explore" height="100" />](../assets/features/logsViewExplore.png)
+[<img src="../assets/instrumentations/logsViewExplore.png" alt="Viewing logs in Explore" height="100" />](../assets/instrumentations/logsViewExplore.png)

@@ -48,7 +48,7 @@ instrumenting the resource loading for the document.
 
 ## Screenshots
 
-[<img src="../assets/features/tracesViewAppDocumentLoad.png" alt="Viewing trace info in the app" height="100" />](../assets/features/tracesViewAppDocumentLoad.png)
-[<img src="../assets/features/tracesViewAppSeed.png" alt="Viewing trace info in the app" height="100" />](../assets/features/tracesViewAppSeed.png)
-[<img src="../assets/features/tracesViewExploreDocumentLoad.png" alt="Viewing metas in Explore" height="100" />](../assets/features/tracesViewExploreDocumentLoad.png)
-[<img src="../assets/features/tracesViewExploreSeed.png" alt="Viewing metas in Explore" height="100" />](../assets/features/tracesViewExploreSeed.png)
+[<img src="../assets/instrumentations/tracesViewAppDocumentLoad.png" alt="Viewing trace info in the app" height="100" />](../assets/instrumentations/tracesViewAppDocumentLoad.png)
+[<img src="../assets/instrumentations/tracesViewAppSeed.png" alt="Viewing trace info in the app" height="100" />](../assets/instrumentations/tracesViewAppSeed.png)
+[<img src="../assets/instrumentations/tracesViewExploreDocumentLoad.png" alt="Viewing metas in Explore" height="100" />](../assets/instrumentations/tracesViewExploreDocumentLoad.png)
+[<img src="../assets/instrumentations/tracesViewExploreSeed.png" alt="Viewing metas in Explore" height="100" />](../assets/instrumentations/tracesViewExploreSeed.png)

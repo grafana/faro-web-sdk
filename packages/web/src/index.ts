@@ -21,7 +21,12 @@ export { browserMeta, defaultMetas, pageMeta } from './metas';
 export { createSession } from './session';
 
 export { ConsoleTransport, FetchTransport } from './transports';
-export type { ConsoleTransportOptions, FetchTransportOptions, FetchTransportRequestOptions } from './transports';
+export type {
+  ClockFn,
+  ConsoleTransportOptions,
+  FetchTransportOptions,
+  FetchTransportRequestOptions,
+} from './transports';
 
 export {
   agent,

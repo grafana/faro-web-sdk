@@ -1,7 +1,8 @@
 # Events
 
 Events are actions performed by the user while using your application and/or specific events that happened and have
-a clear business meaning (i.e. the user arrived on the page with a specific query parameter). Events differ from logs in that they have pre-determined structure and attributes.
+a clear business meaning (i.e. the user arrived on the page with a specific query parameter). Events differ from logs
+in that they have pre-determined structure and attributes.
 
 ## Description
 
@@ -34,10 +35,10 @@ For the time being the API does not provide any events.
 - Navigate to the [Explore page in Grafana](http://localhost:3000/explore)
 - Select the `Loki` datasource
 - Select `kind=event` in the filters
-- Some events (i.e. `Request Completed`) are tied to a span or a series of spans. Expanding such an event allows you to access the corresponding
-  spans by clicking the `Tempo` button.
+- Some events (i.e. `Request Completed`) are tied to a span or a series of spans. Expanding such an event allows you to
+  access the corresponding spans by clicking the `Tempo` button.
 
 ## Screenshots
 
-[<img src="../assets/features/eventsViewExplore.png" alt="Viewing events in Explore" height="100" />](../assets/features/eventsViewExplore.png)
-[<img src="../assets/features/eventsViewExploreTraces.png" alt="Viewing events in Explore and the corresponding traces" height="100" />](../assets/features/eventsViewExploreTraces.png)
+[<img src="../assets/instrumentations/eventsViewExplore.png" alt="Viewing events in Explore" height="100" />](../assets/instrumentations/eventsViewExplore.png)
+[<img src="../assets/instrumentations/eventsViewExploreTraces.png" alt="Viewing events in Explore and the corresponding traces" height="100" />](../assets/instrumentations/eventsViewExploreTraces.png)<!-- markdownlint-disable-line MD013 -->
