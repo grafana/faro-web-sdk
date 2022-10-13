@@ -27,22 +27,18 @@ export function ArticleAddForm() {
       name: data.name,
     });
 
-    createArticle(data)
-      .then(() => {
-        agent.api.pushEvent('createArticleSuccessfully', {
-          name: data.name,
-        });
-      })
-      .catch(() => {
-        agent.api.pushEvent('createArticleSuccessfully', {
-          name: data.name,
-        });
-      });
+    createArticle(data);
   });
 
   useEffect(() => {
-    if (!createArticleResult.isUninitialized && !createArticleResult.isLoading && !createArticleResult.isError) {
-      navigate(`/articles/view/${createArticleResult.data.data.id}`);
+    if (!createArticleResult.isUninitialized && !createArticleResult.isLoading) {
+      if (createArticleResult.isError) {
+        agent.api.pushEvent('createArticleFailed');
+      } else {
+        agent.api.pushEvent('createArticleSuccessfully');
+
+        navigate(`/articles/view/${createArticleResult.data.data.id}`);
+      }
     }
   }, [navigate, createArticleResult]);
 

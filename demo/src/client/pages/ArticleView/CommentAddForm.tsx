@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -30,20 +31,24 @@ export function CommentAddForm({ articleId }: CommentAddFormProps) {
       articleId,
     });
 
-    createComment({ ...data, articleId })
-      .then(() => {
+    createComment({ ...data, articleId });
+  });
+
+  useEffect(() => {
+    if (!createCommentResult.isUninitialized && !createCommentResult.isLoading) {
+      if (createCommentResult.isError) {
+        agent.api.pushEvent('createArticleCommentFailed', {
+          articleId,
+        });
+      } else {
         agent.api.pushEvent('createArticleCommentSuccessfully', {
           articleId,
         });
 
         reset();
-      })
-      .catch(() => {
-        agent.api.pushEvent('createArticleSuccessfully', {
-          articleId,
-        });
-      });
-  });
+      }
+    }
+  }, [articleId, createCommentResult, reset]);
 
   return (
     <Form onSubmit={onSubmit}>

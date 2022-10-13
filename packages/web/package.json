@@ -36,7 +36,7 @@
   "dependencies": {
     "@grafana/agent-core": "~0.4.0",
     "ua-parser-js": "^1.0.2",
-    "web-vitals": "^3.0.2"
+    "web-vitals": "^3.0.3"
   },
   "devDependencies": {
     "@types/ua-parser-js": "^0.7.36"

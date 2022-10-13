@@ -1,6 +1,7 @@
 # IDEs
 .idea
 .vscode
+*.iml
 
 # App-specifics
 .build-cache

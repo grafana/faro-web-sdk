@@ -7,7 +7,7 @@ import { fetchBaseQuery } from '../utils';
 export const baseQuery = fetchBaseQuery({
   baseUrl: '/api',
   fetchFn: (input, init) => {
-    const url = isString(input) ? input : input.url;
+    const url = isString(input) ? input : (input as Request).url;
 
     const otel = agent.api.getOTEL();
 
@@ -20,15 +20,30 @@ export const baseQuery = fetchBaseQuery({
           agent.api.pushEvent('Sending request', { url });
 
           fetch(input, init)
-            .then((response) => {
-              agent.api.pushEvent('Request completed', { url });
+            .then(async (response) => {
+              if (!response.ok) {
+                const body = await response.clone().json();
 
-              span.setStatus({ code: SpanStatusCode.OK });
+                agent.api.pushEvent('Request failed', { url });
+
+                const error = new Error(body.data.message);
+                error.cause = response;
+
+                agent.api.pushError(error);
+
+                span.setStatus({ code: SpanStatusCode.ERROR });
+              } else {
+                agent.api.pushEvent('Request completed', { url });
+
+                span.setStatus({ code: SpanStatusCode.OK });
+              }
 
               resolve(response);
             })
             .catch((err) => {
               agent.api.pushEvent('Request failed', { url });
+
+              agent.api.pushError(err);
 
               span.setStatus({ code: SpanStatusCode.ERROR });
 
@@ -44,13 +59,26 @@ export const baseQuery = fetchBaseQuery({
     agent.api.pushEvent('Sending request', { url });
 
     return fetch(input, init)
-      .then((response) => {
-        agent.api.pushEvent('Request completed', { url });
+      .then(async (response) => {
+        if (!response.ok) {
+          const body = await response.clone().json();
+
+          agent.api.pushEvent('Request failed', { url });
+
+          const error = new Error(body.data.message);
+          error.cause = response;
+
+          agent.api.pushError(error);
+        } else {
+          agent.api.pushEvent('Request completed', { url });
+        }
 
         return response;
       })
       .catch((err) => {
         agent.api.pushEvent('Request failed', { url });
+
+        agent.api.pushError(err);
 
         throw err;
       });

@@ -17,9 +17,9 @@ export interface FetchTransportOptions {
   // intermediate events will be dropped, not buffered
   defaultRateLimitBackoffMs?: number;
   // get current date. for mocking purposes in tests
-  getNow?: clockFn;
+  getNow?: ClockFn;
   // addition options for global.Fetch
   requestOptions?: FetchTransportRequestOptions;
 }
 
-type clockFn = () => number;
+export type ClockFn = () => number;
