@@ -1,0 +1,12 @@
+apiVersion: 1
+
+apps:
+  - type: grafana-kowalski-app
+    org_id: 1
+    org_name: Grafana
+    jsonData:
+      api_url: http://host.docker.internal:8000
+      org_id: 1
+      stack_id: 1
+    secureJsonData:
+      api_key: auth_token_value

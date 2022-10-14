@@ -22,6 +22,7 @@ services:
       - '${GRAFANA_DATASOURCES_PATH_LOCAL}:${GRAFANA_DATASOURCES_PATH}'
       - '${GRAFANA_DASHBOARDS_PROVISIONING_PATH_LOCAL}:${GRAFANA_DASHBOARDS_PROVISIONING_PATH}'
       - '${GRAFANA_DASHBOARDS_PATH_LOCAL}:${GRAFANA_DASHBOARDS_PATH}'
+      - '${KWL_DIST_PATH_LOCAL}:/var/lib/grafana/plugins/kowalski-app'
     entrypoint:
       - '${GRAFANA_HOME_PATH}/bin/grafana-server'
       - '--homepath=${GRAFANA_HOME_PATH}'
