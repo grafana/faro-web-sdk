@@ -48,7 +48,7 @@ The app will be available at [http://localhost:5173](http://localhost:5173) and 
 To start everything up, simply run:
 
 ```shell
-docker-compose --profile demo up -d
+docker compose --profile demo up -d
 ```
 
 This will automatically install dependencies, build the demo and start it in `development` mode.

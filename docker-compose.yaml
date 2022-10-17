@@ -109,6 +109,7 @@ services:
       - 'demo_web_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_PATH}/dist'
       - 'demo_web_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_PATH}/node_modules'
     build:
+      context: '.'
       args:
         DEMO_WORKSPACE_PATH: '${DEMO_WORKSPACE_PATH}'
         DEMO_DEMO_PATH: '${DEMO_DEMO_PATH}'
