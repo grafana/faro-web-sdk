@@ -11,7 +11,7 @@
 coverage
 cypress/videos
 cypress/screenshots
-demo/logs
+demo/logs/*.log
 demo/stats.html
 demo/vite.config.ts.timestamp-*.mjs
 dist
