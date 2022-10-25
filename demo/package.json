@@ -1,6 +1,6 @@
 {
   "name": "@grafana/agent-demo",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Demo of Grafana JavaScript Agent.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -30,10 +30,10 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/agent-core": "~0.4.0",
-    "@grafana/agent-integration-react": "~0.4.0",
-    "@grafana/agent-tracing-web": "~0.4.0",
-    "@grafana/agent-web": "~0.4.0",
+    "@grafana/agent-core": "^0.5.0",
+    "@grafana/agent-integration-react": "^0.5.0",
+    "@grafana/agent-tracing-web": "^0.5.0",
+    "@grafana/agent-web": "^0.5.0",
     "@opentelemetry/api": "^1.2.0",
     "@opentelemetry/core": "^1.7.0",
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.33.0",
@@ -83,8 +83,8 @@
     "@types/jsonwebtoken": "^8.5.9",
     "@types/react": "^18.0.22",
     "@types/react-dom": "^18.0.7",
-    "@types/react-router-bootstrap": "^0.24.5",
     "@types/react-redux": "^7.1.24",
+    "@types/react-router-bootstrap": "^0.24.5",
     "@types/serve-static": "^1.15.0",
     "@vitejs/plugin-react": "^2.1.0",
     "cross-env": "^7.0.3",
