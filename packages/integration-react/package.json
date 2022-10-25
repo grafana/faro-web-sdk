@@ -4,7 +4,6 @@
   "description": "Grafana JavaScript Agent package that enables easier integration in projects built with React.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "private": true,
   "homepage": "https://github.com/grafana/grafana-javascript-agent",
   "repository": {
     "type": "git",
