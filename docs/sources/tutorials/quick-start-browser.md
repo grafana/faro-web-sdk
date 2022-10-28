@@ -87,10 +87,10 @@ integrations:
 
    ```bash
    #npm
-   npm i -S @grafana/faro-tracing-web
+   npm i -S @grafana/faro-web-tracing
 
    #yarn
-   yarn add @grafana/faro-tracing-web
+   yarn add @grafana/faro-web-tracing
    ```
 
 ## Initialize Grafana Faro Web SDK
@@ -106,9 +106,9 @@ and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements.
 Without tracing, the bundle footprint is small.
 
 ```ts
-import { initializeGrafanaAgent } from '@grafana/faro-web-sdk';
+import { initializeFaro } from '@grafana/faro-web-sdk';
 
-const agent = initializeGrafanaAgent({
+const agent = initializeFaro({
   url: 'https://collector-host:12345/collect',
   apiKey: 'secret',
   app: {
@@ -128,13 +128,13 @@ import {
   ConsoleTransport,
   ErrorsInstrumentation,
   FetchTransport,
-  initializeGrafanaAgent,
+  initializeFaro,
   LogLevel,
   WebVitalsInstrumentation,
   SessionInstrumentation,
 } from '@grafana/faro-web-sdk';
 
-const agent = initializeGrafanaAgent({
+const agent = initializeFaro({
   instrumentations: [
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
@@ -160,16 +160,16 @@ const agent = initializeGrafanaAgent({
 ### With Open Telemetry tracing using the included instrumentation
 
 Due to it's large size, [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/)
-tracing support is provided in a separate `@grafana/faro-tracing-web` package.
+tracing support is provided in a separate `@grafana/faro-web-tracing` package.
 
 The provided default OTEL setup includes tracing instrumentations for user interaction,
 fetch and document load, and W3C trace context propagation via `fetch` and `xhr`.
 
 ```ts
-import { TracingInstrumentation } from '@grafana/faro-tracing-web';
-import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/faro-web-sdk';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+import { initializeFaro, getWebInstrumentations } from '@grafana/faro-web-sdk';
 
-const agent = initializeGrafanaAgent({
+const faro = initializeFaro({
   url: 'http://localhost:12345/collect',
   apiKey: 'secret',
   instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
@@ -180,7 +180,7 @@ const agent = initializeGrafanaAgent({
 });
 
 // get otel trace and context apis
-const { trace, context } = agent.api.getOTEL();
+const { trace, context } = faro.api.getOTEL();
 
 const tracer = trace.getTracer('default');
 const span = tracer.startSpan('click');
@@ -192,8 +192,8 @@ context.with(trace.setSpan(context.active(), span), () => {
 
 ### With custom Open Telemetry tracing configuration
 
-The following example configure OTEL manually and uses `GrafanaAgentTraceExporter`
-and call `agent.api.initOTEL` with OTEL trace and context APIs.
+The following example configure OTEL manually and uses `FaroTraceExporter`
+and call `faro.api.initOTEL` with OTEL trace and context APIs.
 
 ```ts
 import { trace, context } from '@opentelemetry/api';
@@ -208,15 +208,15 @@ import { Resource } from '@opentelemetry/resources';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { initializeGrafanaAgent } from '@grafana/faro-web-sdk';
+import { initializeFaro } from '@grafana/faro-web-sdk';
 import { GrafanaAgentTraceExporter, SessionProcessor } from '@grafana/faro-tracing-web';
 
 const VERSION = '1.0.0';
 const NAME = 'frontend';
 const COLLECTOR_URL = 'http://localhost:12345/collect';
 
-// initialize agent
-const agent = initializeGrafanaAgent({
+// initialize faro
+const faro = initializeFaro({
   url: COLLECTOR_URL,
   apiKey: 'secret',
   app: {
@@ -235,7 +235,7 @@ const resource = Resource.default().merge(
 
 const provider = new WebTracerProvider({ resource });
 
-provider.addSpanProcessor(new SessionSpanProcessor(new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }))));
+provider.addSpanProcessor(new SessionSpanProcessor(new BatchSpanProcessor(new GrafanaAgentTraceExporter({ faro }))));
 
 provider.register({
   propagator: new W3CTraceContextPropagator(),
@@ -253,8 +253,8 @@ registerInstrumentations({
   ],
 });
 
-// register otel with agent
-agent.api.initOTEL(trace, context);
+// register OTel with Faro
+faro.api.initOTEL(trace, context);
 ```
 
 ## Usage examples

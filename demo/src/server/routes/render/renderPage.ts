@@ -1,4 +1,4 @@
-import { createSession } from '@grafana/agent-integration-react';
+import { createSession } from '@grafana/faro-react';
 
 import { getActiveSpanContext } from '../../otel';
 import { env, verifyToken } from '../../utils';

@@ -83,7 +83,7 @@ export {
   TransportItemType,
   transportItemTypeToBodyKey,
   VERSION,
-} from '@grafana/agent-core';
+} from '@grafana/faro-core';
 
 export type {
   Agent,
@@ -145,4 +145,4 @@ export type {
   UnpatchedConsole,
   EventEvent,
   EventsAPI,
-} from '@grafana/agent-core';
+} from '@grafana/faro-core';

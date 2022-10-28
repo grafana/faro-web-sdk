@@ -1,4 +1,4 @@
-import { Agent, isPrimitive } from '@grafana/agent-core';
+import { Agent, isPrimitive } from '@grafana/faro-core';
 
 import { primitiveUnhandledType, primitiveUnhandledValue } from './const';
 import { getErrorDetails } from './getErrorDetails';

@@ -3,7 +3,7 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Form from 'react-bootstrap/Form';
 
-import { agent, LogLevel } from '@grafana/agent-integration-react';
+import { agent, LogLevel } from '@grafana/faro-react';
 
 export function ConsoleInstrumentation() {
   const [isApiMode, setIsApiMode] = useState(false);

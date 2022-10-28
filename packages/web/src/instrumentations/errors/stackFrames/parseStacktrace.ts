@@ -1,4 +1,4 @@
-import type { ExtendedError, Stacktrace } from '@grafana/agent-core';
+import type { ExtendedError, Stacktrace } from '@grafana/faro-core';
 
 import { getStackFramesFromError } from './getStackFramesFromError';
 

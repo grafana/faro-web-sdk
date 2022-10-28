@@ -1,4 +1,4 @@
-import type { Instrumentation } from '@grafana/agent-core';
+import type { Instrumentation } from '@grafana/faro-core';
 
 import {
   ConsoleInstrumentation,

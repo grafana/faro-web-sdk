@@ -1,6 +1,6 @@
-# @grafana/agent-core
+# @grafana/faro-core
 
-Core package of Grafana JavaScript Agent.
+Core package of Faro.
 
 _Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.
 
@@ -10,7 +10,7 @@ logs etc. but it offers an API to capture them.
 ## Installation
 
 ```ts
-import { initializeGrafanaAgent } from '@grafana/agent-core';
+import { initializeGrafanaAgent } from '@grafana/faro-core';
 
 initializeGrafanaAgent({
   // ...
@@ -52,7 +52,7 @@ global object (`window` in browsers and `global` in Node.js).
 
 ```ts
 // Browser/Node.js
-import { agent } from '@grafana/agent-core';
+import { agent } from '@grafana/faro-core';
 
 agent.api.pushLog(/* ... */);
 
@@ -146,12 +146,12 @@ Instrumentations are packages that leverage the agent API to provide automatic m
 just simple functions that are executed when the agent is initialized.
 
 Please note that the `core` package does not contain any instrumentations out of the box and they should be provided by
-platform specific packages like [@grafana/agent-web](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/web)
+platform specific packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web)
 
 You can also write your own instrumentations:
 
 ```ts
-import { agent, initializeGrafanaAgent, BaseInstrumentation } from '@grafana/agent-core';
+import { agent, initializeGrafanaAgent, BaseInstrumentation } from '@grafana/faro-core';
 
 export class MyInstrumentation extends BaseInstrumentation {
   readonly version = '1.0.0';
@@ -172,13 +172,13 @@ initializeGrafanaAgent({
 Metas are objects that will be attached to every event that is triggered by the API.
 
 Out of the box, only one meta is provided: `sdk` which contains information about the agent and its version. Additional
-metas can be provided by external packages like [@grafana/agent-meta-browser](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/meta-browser)
-and [@grafana/agent-meta-page](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/meta-page).
+metas can be provided by external packages like [@grafana/agent-meta-browser](https://github.com/grafana/faro-web-sdk/tree/main/packages/meta-browser)
+and [@grafana/agent-meta-page](https://github.com/grafana/faro-web-sdk/tree/main/packages/meta-page).
 
 You can also define your own metas:
 
 ```ts
-import { agent, initializeGrafanaAgent } from '@grafana/agent-core';
+import { agent, initializeGrafanaAgent } from '@grafana/faro-core';
 
 initializeGrafanaAgent({
   metas: [
@@ -208,12 +208,12 @@ Transports are functions that will be called for every event that is triggered b
 something with the data after collecting it.
 
 Out of the box, no transports are provided in the `core` package and they should be provided by platform specific
-packages like [@grafana/agent-web](https://github.com/grafana/grafana-javascript-agent/tree/main/packages/web)
+packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web)
 
 You can also define your own transports:
 
 ```ts
-import { agent, initializeGrafanaAgent, BaseTransport, TransportItem } from '@grafana/agent-core';
+import { agent, initializeGrafanaAgent, BaseTransport, TransportItem } from '@grafana/faro-core';
 
 class MyTransport extends BaseTransport {
   send(item: TransportItem) {
@@ -278,4 +278,4 @@ Although an isolated agent may sound like a great idea, there are some limitatio
 - some instrumentations will still register globally (i.e. exceptions instrumentation or console instrumentation)
 - an isolated agent will not be available on the global object
 - the agent reference should be stored by the project as it won't be available via
-  `import { agent } from '@grafana/agent-core';`
+  `import { agent } from '@grafana/faro-core';`

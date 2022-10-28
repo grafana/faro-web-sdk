@@ -1,6 +1,6 @@
 import Button from 'react-bootstrap/Button';
 
-import { withGrafanaAgentErrorBoundary, withGrafanaAgentProfiler } from '@grafana/agent-integration-react';
+import { withGrafanaAgentErrorBoundary, withGrafanaAgentProfiler } from '@grafana/faro-react';
 
 export type CounterProps = {
   description: string;

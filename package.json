@@ -1,13 +1,13 @@
 {
-  "name": "grafana-javascript-agent",
+  "name": "faro-web-sdk",
   "version": "0.0.0",
-  "description": "Monorepo for Grafana JavaScript Agent",
+  "description": "Monorepo for Faro Web SDK",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "homepage": "https://github.com/grafana/grafana-javascript-agent#readme",
+  "homepage": "https://github.com/grafana/faro-web-sdk#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grafana/grafana-javascript-agent.git"
+    "url": "https://github.com/grafana/faro-web-sdk.git"
   },
   "private": true,
   "workspaces": [
@@ -17,8 +17,8 @@
   "main": "index.js",
   "scripts": {
     "start": "lerna run --parallel start",
-    "start:demo": "lerna run start --scope @grafana/agent-demo",
-    "start:demo:prod": "lerna run serve:prod --scope @grafana/agent-demo --stream",
+    "start:demo": "lerna run start --scope @grafana/faro-demo",
+    "start:demo:prod": "lerna run serve:prod --scope @grafana/faro-demo --stream",
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "prepublish": "yarn build",
@@ -48,7 +48,7 @@
     "git-hooks:pre-commit": "lint-staged",
     "drone": "run-s drone:lint drone:sign",
     "drone:lint": "drone lint .drone/drone.yml --trusted",
-    "drone:sign": "drone --server https://drone.grafana.net sign --save grafana/grafana-javascript-agent .drone/drone.yml"
+    "drone:sign": "drone --server https://drone.grafana.net sign --save grafana/faro-web-sdk .drone/drone.yml"
   },
   "devDependencies": {
     "@grafana/eslint-config": "^5.0.0",

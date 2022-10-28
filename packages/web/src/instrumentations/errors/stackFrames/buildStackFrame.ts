@@ -1,4 +1,4 @@
-import type { ExceptionStackFrame } from '@grafana/agent-core';
+import type { ExceptionStackFrame } from '@grafana/faro-core';
 
 import { unknownString } from './const';
 

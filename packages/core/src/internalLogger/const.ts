@@ -9,7 +9,7 @@ export enum InternalLoggerLevel {
   VERBOSE = 4,
 }
 
-export const defaultInternalLoggerPrefix = 'Grafana JavaScript Agent';
+export const defaultInternalLoggerPrefix = 'Faro';
 
 export const defaultInternalLogger: InternalLogger = {
   debug: noop,

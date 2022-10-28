@@ -3,7 +3,7 @@ import Container from 'react-bootstrap/Container';
 import Pagination from 'react-bootstrap/Pagination';
 import { Link } from 'react-router-dom';
 
-import { withGrafanaAgentProfiler } from '@grafana/agent-integration-react';
+import { withGrafanaAgentProfiler } from '@grafana/faro-react';
 
 import { useGetArticlesQuery } from '../../api';
 import { LoadingScreen, Page } from '../../components';

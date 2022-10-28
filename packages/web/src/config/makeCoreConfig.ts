@@ -3,8 +3,8 @@ import {
   defaultGlobalObjectKey,
   defaultInternalLoggerLevel,
   defaultUnpatchedConsole,
-} from '@grafana/agent-core';
-import type { Config, Transport } from '@grafana/agent-core';
+} from '@grafana/faro-core';
+import type { Config, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';

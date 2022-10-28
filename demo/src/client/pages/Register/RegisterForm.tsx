@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { agent } from '@grafana/agent-integration-react';
+import { agent } from '@grafana/faro-react';
 
 import type { AuthRegisterPayload } from '../../../common';
 import { usePostRegisterMutation } from '../../api';

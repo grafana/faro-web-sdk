@@ -5,9 +5,9 @@ import {
   getWebInstrumentations,
   ReactIntegration,
   ReactRouterVersion,
-} from '@grafana/agent-integration-react';
-import type { Agent } from '@grafana/agent-integration-react';
-import { TracingInstrumentation } from '@grafana/agent-tracing-web';
+} from '@grafana/faro-react';
+import type { Agent } from '@grafana/faro-react';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
 import { env } from '../utils';
 

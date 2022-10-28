@@ -2,7 +2,7 @@ import type { MouseEvent } from 'react';
 import Container from 'react-bootstrap/Container';
 import { Outlet, useNavigate } from 'react-router-dom';
 
-import { agent } from '@grafana/agent-integration-react';
+import { agent } from '@grafana/faro-react';
 
 import { useLazyGetLogoutQuery } from '../../api';
 import { Navbar } from '../../components';

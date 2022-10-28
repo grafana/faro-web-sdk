@@ -1,4 +1,4 @@
-# @grafana/agent-web
+# @grafana/faro-web-sdk
 
 Instrumentations, metas and transports for web applications.
 
@@ -25,7 +25,7 @@ _Warning_: currently pre-release and subject to frequent breaking changes. Use a
 Basic set up, will automatically report errors and web vitals:
 
 ```ts
-import { initializeGrafanaAgent } from '@grafana/agent-web';
+import { initializeGrafanaAgent } from '@grafana/faro-web-sdk';
 
 const agent = initializeGrafanaAgent({
   url: 'https://agent.myapp/collect',
@@ -49,8 +49,8 @@ agent.api.pushError(new Error('oh no'));
 With OTel tracing and browser console capture:
 
 ```ts
-import { TracingInstrumentation } from '@grafana/agent-tracing-web';
-import { ConsoleInstrumentation, initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+import { ConsoleInstrumentation, initializeGrafanaAgent, getWebInstrumentations } from '@grafana/faro-web-sdk';
 
 const agent = initializeGrafanaAgent({
   url: 'https://agent.myapp/collect',

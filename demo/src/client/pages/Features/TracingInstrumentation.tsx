@@ -2,7 +2,7 @@ import { SpanStatusCode } from '@opentelemetry/api';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 
-import { agent } from '@grafana/agent-integration-react';
+import { agent } from '@grafana/faro-react';
 
 export function TracingInstrumentation() {
   const fetchSuccess = () => {

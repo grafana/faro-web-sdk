@@ -1,9 +1,9 @@
-import { allLogLevels, BaseInstrumentation, LogLevel, VERSION } from '@grafana/agent-core';
+import { allLogLevels, BaseInstrumentation, LogLevel, VERSION } from '@grafana/faro-core';
 
 import type { ConsoleInstrumentationOptions } from './types';
 
 export class ConsoleInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/agent-web:instrumentation-console';
+  readonly name = '@grafana/faro-web-sdk:instrumentation-console';
   readonly version = VERSION;
 
   static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];

@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useForm } from 'react-hook-form';
 
-import { agent } from '@grafana/agent-integration-react';
+import { agent } from '@grafana/faro-react';
 
 import type { ArticleCommentAddPayload } from '../../../common';
 import { usePostArticleCommentMutation } from '../../api';

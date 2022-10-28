@@ -1,5 +1,5 @@
-import { Agent, isString } from '@grafana/agent-core';
-import type { ExceptionStackFrame } from '@grafana/agent-core';
+import { Agent, isString } from '@grafana/faro-core';
+import type { ExceptionStackFrame } from '@grafana/faro-core';
 
 import { unknownString } from './const';
 import { getErrorDetails } from './getErrorDetails';

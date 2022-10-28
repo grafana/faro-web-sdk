@@ -1,4 +1,4 @@
-import { LogLevel } from '@grafana/agent-core';
+import { LogLevel } from '@grafana/faro-core';
 
 context('Logs', () => {
   [LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR].forEach((level) => {

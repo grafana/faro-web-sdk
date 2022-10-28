@@ -1,6 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-import { agent } from '@grafana/agent-integration-react';
+import { agent } from '@grafana/faro-react';
 
 import type { UserPublicModel } from '../../../common';
 import { authAPI } from '../../api';

@@ -1,5 +1,5 @@
-import { isNumber } from '@grafana/agent-core';
-import type { ExceptionStackFrame, ExtendedError } from '@grafana/agent-core';
+import { isNumber } from '@grafana/faro-core';
+import type { ExceptionStackFrame, ExtendedError } from '@grafana/faro-core';
 
 import { buildStackFrame } from './buildStackFrame';
 import {

@@ -1,5 +1,5 @@
-import { Conventions, EventEvent, initializeGrafanaAgent, TransportItem } from '@grafana/agent-core';
-import { mockConfig, MockTransport } from '@grafana/agent-core/src/testUtils';
+import { Conventions, EventEvent, initializeGrafanaAgent, TransportItem } from '@grafana/faro-core';
+import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { createSession } from '../../session';
 import { SessionInstrumentation } from './instrumentation';

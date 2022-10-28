@@ -1,6 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-import type { MetaSession } from '@grafana/agent-integration-react';
+import type { MetaSession } from '@grafana/faro-react';
 
 import { createSlice } from '../../utils';
 import type { RootState } from '../store';

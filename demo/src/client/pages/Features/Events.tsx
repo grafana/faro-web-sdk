@@ -1,7 +1,7 @@
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 
-import { agent, createSession } from '@grafana/agent-integration-react';
+import { agent, createSession } from '@grafana/faro-react';
 
 import { useAppDispatch } from '../../hooks';
 import { setSession } from '../../store';

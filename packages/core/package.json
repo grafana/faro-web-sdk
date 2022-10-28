@@ -1,14 +1,14 @@
 {
-  "name": "@grafana/agent-core",
+  "name": "@grafana/faro-core",
   "version": "0.5.0",
-  "description": "Core package of Grafana JavaScript Agent.",
+  "description": "Core package of Faro.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
-  "homepage": "https://github.com/grafana/grafana-javascript-agent",
+  "homepage": "https://github.com/grafana/faro-web-sdk",
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/grafana/grafana-javascript-agent.git",
+    "url": "https://github.com/grafana/faro-web-sdk.git",
     "directory": "packages/core"
   },
   "main": "dist/cjs/index.js",

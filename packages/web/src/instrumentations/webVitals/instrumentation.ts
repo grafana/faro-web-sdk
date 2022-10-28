@@ -1,9 +1,9 @@
 import { getCLS, getFCP, getFID, getINP, getLCP, getTTFB } from 'web-vitals';
 
-import { BaseInstrumentation, VERSION } from '@grafana/agent-core';
+import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
 export class WebVitalsInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/agent-web:instrumentation-web-vitals';
+  readonly name = '@grafana/faro-web-sdk:instrumentation-web-vitals';
   readonly version = VERSION;
 
   static mapping = {

@@ -5,7 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Provider as ReduxProvider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 
-import { GrafanaAgentErrorBoundary } from '@grafana/agent-integration-react';
+import { GrafanaAgentErrorBoundary } from '@grafana/faro-react';
 
 import { App } from './App';
 import { initializeGrafanaAgent } from './grafanaAgent';

@@ -9,7 +9,7 @@ in that they have pre-determined structure and attributes.
 ### Client
 
 The app contains a lot of automatically captured events (i.e. page navigations captured by the React Instrumentation
-provided by the Grafana JavaScript Agent) but also manually created events (i.e. creating an article, adding a comment,
+provided by the Faro) but also manually created events (i.e. creating an article, adding a comment,
 logging in and logging out etc.).
 
 **Captured errors are stored in Loki.**

@@ -1,4 +1,4 @@
-import type { TraceContext } from '@grafana/agent-core';
+import type { TraceContext } from '@grafana/faro-core';
 
 context('Tracing', () => {
   [

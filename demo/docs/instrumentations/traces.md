@@ -7,25 +7,25 @@ happens in the API when a request is received from the client).
 
 ### Client
 
-Grafana JavaScript Agent provides auto-instrumentation for traces. This contains: resources loaded when the page loads,
+Faro provides auto-instrumentation for traces. This contains: resources loaded when the page loads,
 fetch requests and user interactions (clicks etc.).
 
 When executing fetch requests, an additional `traceparent` header is added to the request. This header is then read by
 OpenTelemetry in the API to associate and server side actions with the spans captured on the client.
 
-Besides auto-instrumentation, Grafana JavaScript Agent also provides an API called `pushTraces` to manually report a
+Besides auto-instrumentation, Faro also provides an API called `pushTraces` to manually report a
 span etc.
 
 **The captured traces are stored in Tempo.**
 
 ### API
 
-At the API level, OpenTelemetry is used to create traces for internal and external services. A couple of the  
+At the API level, OpenTelemetry is used to create traces for internal and external services. A couple of the
 instrumented services are: the app server, the logger, the database etc.
 
 When initial document is loaded, OpenTelemetry instrumentation creates a series of spans for the server-side events
 (i.e. database calls). The primary span ID and the trace ID are sent back to the client via the `traceparent` meta. The
-Tracing Instrumentation provided by Grafana JavaScript Agent automatically reads the `traceparent` meta and uses it when
+Tracing Instrumentation provided by Faro automatically reads the `traceparent` meta and uses it when
 instrumenting the resource loading for the document.
 
 **The captured traces are stored in Tempo.**

@@ -1,10 +1,10 @@
 import { VERSION } from 'ua-parser-js';
 
-import { BaseInstrumentation, Conventions, Meta, MetaSession } from '@grafana/agent-core';
+import { BaseInstrumentation, Conventions, Meta, MetaSession } from '@grafana/faro-core';
 
 // all this does is send SESSION_START event
 export class SessionInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/agent-web:instrumentation-session';
+  readonly name = '@grafana/faro-web-sdk:instrumentation-session';
   readonly version = VERSION;
 
   // previously notified session, to ensure we don't send session start

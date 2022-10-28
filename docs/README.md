@@ -1,3 +1,3 @@
-# Grafana Javascript Agent Documentation
+# Faro Documentation
 
-This directory contains documentation for Grafana Javascript Agent.
+This directory contains documentation for Faro.

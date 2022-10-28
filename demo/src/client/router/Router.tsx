@@ -1,6 +1,6 @@
 import { Route } from 'react-router-dom';
 
-import { GrafanaAgentRoutes } from '@grafana/agent-integration-react';
+import { GrafanaAgentRoutes } from '@grafana/faro-react';
 
 import { GeneralLayout } from '../layouts';
 import { About, ArticleAdd, Articles, ArticleView, Features, Home, Login, Register, Seed } from '../pages';

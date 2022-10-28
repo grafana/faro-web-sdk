@@ -1,4 +1,4 @@
-import { getTransportBody, LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/agent-core';
+import { getTransportBody, LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
 
 import { FetchTransport } from './transport';
 

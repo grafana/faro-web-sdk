@@ -1,6 +1,6 @@
 import { SpanStatusCode } from '@opentelemetry/api';
 
-import { agent, isString } from '@grafana/agent-integration-react';
+import { agent, isString } from '@grafana/faro-react';
 
 import { fetchBaseQuery } from '../utils';
 

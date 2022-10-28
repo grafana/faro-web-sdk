@@ -1,4 +1,4 @@
-import type { LogLevel } from '@grafana/agent-core';
+import type { LogLevel } from '@grafana/faro-core';
 
 export interface ConsoleTransportOptions {
   level?: LogLevel;

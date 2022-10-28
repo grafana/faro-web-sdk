@@ -1,4 +1,4 @@
-import type { Agent } from '@grafana/agent-core';
+import type { Agent } from '@grafana/faro-core';
 
 declare global {
   interface Window {

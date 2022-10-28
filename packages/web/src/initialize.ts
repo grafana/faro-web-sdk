@@ -1,5 +1,5 @@
-import { initializeGrafanaAgent as coreInit } from '@grafana/agent-core';
-import type { Agent } from '@grafana/agent-core';
+import { initializeGrafanaAgent as coreInit } from '@grafana/faro-core';
+import type { Agent } from '@grafana/faro-core';
 
 import { makeCoreConfig } from './config';
 import type { BrowserConfig } from './config';

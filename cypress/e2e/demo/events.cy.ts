@@ -1,4 +1,4 @@
-import type { TransportBody } from '@grafana/agent-core';
+import type { TransportBody } from '@grafana/faro-core';
 
 context('Events', () => {
   [

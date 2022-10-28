@@ -1,7 +1,7 @@
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 
-import { agent } from '@grafana/agent-integration-react';
+import { agent } from '@grafana/faro-react';
 
 import { useLazyGetSeedQuery } from '../../api';
 import { Page } from '../../components';

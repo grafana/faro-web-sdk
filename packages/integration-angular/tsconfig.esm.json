@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig.base.esm.json",
-  "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist/esm",
-    "tsBuildInfoFile": "../../.build-cache/integration-angular.esm.tsbuildinfo"
-  },
-  "include": ["./src"]
-}
