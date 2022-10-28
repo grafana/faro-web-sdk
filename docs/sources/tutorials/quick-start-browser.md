@@ -255,7 +255,7 @@ agent.api.initOTEL(trace, context);
 
 ## Usage examples
 
-Below are some examples of how to use the SDK to manually push data, set user & session.
+The following examples show how to use the SDK to push data manually and set users and sessions.
 
 ```ts
 import { LogLevel } from '@grafana/faro-core';
