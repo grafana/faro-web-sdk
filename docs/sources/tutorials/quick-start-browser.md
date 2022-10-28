@@ -99,7 +99,7 @@ Choose one initialization method, add it to your application code, and customize
 
 ### Basic
 
-The following basic configuration sets up the Grafana Faro Web SDK to automatically collect uncaught errors
+The following basic configuration sets up the Grafana Faro Web SDK to automatically collect uncaught errors, logs
 and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements.
 Without tracing, the bundle footprint is small.
 
@@ -253,7 +253,9 @@ registerInstrumentations({
 agent.api.initOTEL(trace, context);
 ```
 
-## Use
+## Usage examples
+
+Below are some examples of how to use the SDK to manually push data, set user & session.
 
 ```ts
 import { LogLevel } from '@grafana/faro-core';
