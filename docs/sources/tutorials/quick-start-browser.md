@@ -81,7 +81,7 @@ integrations:
    yarn add @grafana/faro-web-sdk
    ```
 
-1. To enable [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/)-based tracing, run one of the following commands.
+1. To enable [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/) based tracing, run one of the following commands.
 
    ```bash
    #npm
@@ -93,7 +93,7 @@ integrations:
 
 ## Initialize Grafana Faro Web SDK
 
-Grafana Faro Web SDK must initialized when your web application starts.
+Grafana Faro Web SDK must be initialized when your web application starts.
 The following sections provide several initialization examples.
 Choose one initialization method, add it to your application code, and customize it as required.
 
@@ -118,7 +118,7 @@ const agent = initializeGrafanaAgent({
 
 ### Advanced
 
-The following example shows how you can specify and customize transports and instrumentations.
+The following example shows you how to specify and customize transports and instrumentations.
 
 ```ts
 import {
