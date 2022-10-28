@@ -6,7 +6,7 @@ This document describes how to set up and use Grafana Faro Web SDK. For more inf
 
 - Set up a Grafana Agent instance. For more information, refer to [Set up Grafana Agent](https://grafana.com/docs/agent/latest/set-up/).
 - Configure your instance with `app-agent-receiver` integration. The integration exposes
-an http collection endpoint and runs with the `integrations-next` flag enabled.
+  an http collection endpoint and runs with the `integrations-next` flag enabled.
 
 The following example shows a basic Grafana Agent configuration that exposes a collector endpoint
 at [http://host:12345/collect](http://host:12345/collect) and forwards collected telemetry to Loki,
@@ -83,7 +83,7 @@ integrations:
    ```
 
 1. To enable [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/) based tracing,
-run one of the following commands.
+   run one of the following commands.
 
    ```bash
    #npm
