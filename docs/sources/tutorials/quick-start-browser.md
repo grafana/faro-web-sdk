@@ -5,7 +5,8 @@ This document describes how to set up and use Grafana Faro Web SDK. For more inf
 ## Before you begin
 
 - Set up a Grafana Agent instance. For more information, refer to [Set up Grafana Agent](https://grafana.com/docs/agent/latest/set-up/).
-- Configure your instance with `app-agent-receiver` integration. The integration exposes an http collection endpoint and runs with the `integrations-next` flag enabled.
+- Configure your instance with `app-agent-receiver` integration. The integration exposes
+an http collection endpoint and runs with the `integrations-next` flag enabled.
 
 The following example shows a basic Grafana Agent configuration that exposes a collector endpoint
 at [http://host:12345/collect](http://host:12345/collect) and forwards collected telemetry to Loki,
@@ -81,7 +82,8 @@ integrations:
    yarn add @grafana/faro-web-sdk
    ```
 
-1. To enable [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/) based tracing, run one of the following commands.
+1. To enable [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/) based tracing,
+run one of the following commands.
 
    ```bash
    #npm
@@ -160,7 +162,8 @@ const agent = initializeGrafanaAgent({
 Due to it's large size, [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/)
 tracing support is provided in a separate `@grafana/faro-tracing-web` package.
 
-The provided default OTEL setup includes tracing instrumentations for user interaction, fetch and document load, and W3C trace context propagation via `fetch` and `xhr`.
+The provided default OTEL setup includes tracing instrumentations for user interaction,
+fetch and document load, and W3C trace context propagation via `fetch` and `xhr`.
 
 ```ts
 import { TracingInstrumentation } from '@grafana/faro-tracing-web';
@@ -189,7 +192,8 @@ context.with(trace.setSpan(context.active(), span), () => {
 
 ### With custom Open Telemetry tracing configuration
 
-The following example configure OTEL manually and uses `GrafanaAgentTraceExporter` and call `agent.api.initOTEL` with OTEL trace and context APIs.
+The following example configure OTEL manually and uses `GrafanaAgentTraceExporter`
+and call `agent.api.initOTEL` with OTEL trace and context APIs.
 
 ```ts
 import { trace, context } from '@opentelemetry/api';
