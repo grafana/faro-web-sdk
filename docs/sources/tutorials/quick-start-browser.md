@@ -1,16 +1,16 @@
-# Get started with Grafana Javascript Agent
+# Get started with Grafana Faro Web SDK
 
-This document describes how to set up and use Grafana Javascript Agent. For more information, refer to [demo application](https://github.com/grafana/grafana-javascript-agent/tree/main/demo).
+This document describes how to set up and use Grafana Faro Web SDK. For more information, refer to the [demo application](https://github.com/grafana/grafana-javascript-agent/tree/main/demo).
 
 ## Before you begin
 
-- Set up a Grafana Agent instance. For more information , refer to [Grafana Agent set up documentation](https://grafana.com/docs/agent/latest/set-up/).
-- Configure your instance with `app-agent-receiver` integration to expose a http collection
-  endpoint and run with the `integrations-next` flag enabled.
+- Set up a Grafana Agent instance. For more information, refer to [Set up Grafana Agent](https://grafana.com/docs/agent/latest/set-up/).
+- Configure your instance with `app-agent-receiver` integration. The integration exposes
+  an http collection endpoint and runs with the `integrations-next` flag enabled.
 
-The following is an example of a basic Grafana Agent configuration that exposes a collector endpoint
+The following example shows a basic Grafana Agent configuration that exposes a collector endpoint
 at [http://host:12345/collect](http://host:12345/collect) and forwards collected telemetry to Loki,
-Tempo, and Prometheus instances. For more information, refer to [agent app receiver integration documentation](https://github.com/grafana/agent/blob/main/docs/user/configuration/integrations/integrations-next/app-agent-receiver-config.md).
+Tempo, and Prometheus instances. For more information about the agent app receiver integration, refer to [app_agent_receiver_config](https://grafana.com/docs/agent/latest/configuration/integrations/integrations-next/app-agent-receiver-config/).
 
 ```yaml
 metrics:
@@ -70,42 +70,43 @@ integrations:
         # download source map and use it to transform stack trace locations
 ```
 
-## 1. Install Grafana Javascript Agent
+## Install Grafana Faro Web SDK
 
-Add `@grafana/agent-web` dependency to your project.
+1. Run one of the following commands, depending on your package manager. The command installs the library in your project.
 
-```bash
-#npm
-npm i -S @grafana/agent-web
+   ```bash
+   #npm
+   npm i -S @grafana/faro-web-sdk
 
-#yarn
-yarn add @grafana/agent-web
-```
+   #yarn
+   yarn add @grafana/faro-web-sdk
+   ```
 
-If you want to enable [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/) based tracing, also add `@grafana/agent-tracing-web`.
+1. To enable [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/) based tracing,
+   run one of the following commands.
 
-```bash
-#npm
-npm i -S @grafana/agent-tracing-web
+   ```bash
+   #npm
+   npm i -S @grafana/faro-tracing-web
 
-#yarn
-yarn add @grafana/agent-tracing-web
-```
+   #yarn
+   yarn add @grafana/faro-tracing-web
+   ```
 
-## 2. Initialize Grafana Javascript Agent
+## Initialize Grafana Faro Web SDK
 
-Grafana Javascript Agent has to be initialized when your web application starts.
-Several initialization snippet examples are included below.
-Choose one, add it to your application code, and customize it as required.
+Grafana Faro Web SDK must be initialized when your web application starts.
+The following sections provide several initialization examples.
+Choose one initialization method, add it to your application code, and customize it as required.
 
 ### Basic
 
-This basic configuration sets up the Grafana Javascript Agent to automatically collect uncaught errors
+The following basic configuration sets up the Grafana Faro Web SDK to automatically collect uncaught errors, logs
 and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements.
-Without tracing, there is small bundle size footprint.
+Without tracing, the bundle footprint is small.
 
 ```ts
-import { initializeGrafanaAgent } from '@grafana/agent-web';
+import { initializeGrafanaAgent } from '@grafana/faro-web-sdk';
 
 const agent = initializeGrafanaAgent({
   url: 'https://collector-host:12345/collect',
@@ -119,7 +120,7 @@ const agent = initializeGrafanaAgent({
 
 ### Advanced
 
-You can also explicitly specify and customize transports and instrumentations.
+The following example shows you how to specify and customize transports and instrumentations.
 
 ```ts
 import {
@@ -131,7 +132,7 @@ import {
   LogLevel,
   WebVitalsInstrumentation,
   SessionInstrumentation,
-} from '@grafana/agent-web';
+} from '@grafana/faro-web-sdk';
 
 const agent = initializeGrafanaAgent({
   instrumentations: [
@@ -159,14 +160,14 @@ const agent = initializeGrafanaAgent({
 ### With Open Telemetry tracing using the included instrumentation
 
 Due to it's large size, [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/)
-tracing support is provided in a separate `@grafana/agent-tracing-web` package.
+tracing support is provided in a separate `@grafana/faro-tracing-web` package.
 
-Using a provided default OTEL setup, which includes tracing instrumentations for user
-interaction, fetch and document load, W3C trace context propagation via `fetch` and `xhr`.
+The provided default OTEL setup includes tracing instrumentations for user interaction,
+fetch and document load, and W3C trace context propagation via `fetch` and `xhr`.
 
 ```ts
-import { TracingInstrumentation } from '@grafana/agent-tracing-web';
-import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
+import { TracingInstrumentation } from '@grafana/faro-tracing-web';
+import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/faro-web-sdk';
 
 const agent = initializeGrafanaAgent({
   url: 'http://localhost:12345/collect',
@@ -191,8 +192,8 @@ context.with(trace.setSpan(context.active(), span), () => {
 
 ### With custom Open Telemetry tracing configuration
 
-Configure OTEL manually. Use `GrafanaAgentTraceExporter` and call `agent.api.initOTEL`
-with OTEL trace and context APIs.
+The following example configure OTEL manually and uses `GrafanaAgentTraceExporter`
+and call `agent.api.initOTEL` with OTEL trace and context APIs.
 
 ```ts
 import { trace, context } from '@opentelemetry/api';
@@ -207,8 +208,8 @@ import { Resource } from '@opentelemetry/resources';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { initializeGrafanaAgent } from '@grafana/agent-web';
-import { GrafanaAgentTraceExporter, SessionProcessor } from '@grafana/agent-trace-web';
+import { initializeGrafanaAgent } from '@grafana/faro-web-sdk';
+import { GrafanaAgentTraceExporter, SessionProcessor } from '@grafana/faro-tracing-web';
 
 const VERSION = '1.0.0';
 const NAME = 'frontend';
@@ -256,10 +257,12 @@ registerInstrumentations({
 agent.api.initOTEL(trace, context);
 ```
 
-## Use
+## Usage examples
+
+The following examples show how to use the SDK to push data manually and set users and sessions.
 
 ```ts
-import { LogLevel } from '@grafana/agent-core';
+import { LogLevel } from '@grafana/faro-core';
 
 // there's a global property
 const agent = window.grafanaAgent;
