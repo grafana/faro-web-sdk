@@ -22,7 +22,7 @@ context('Events', () => {
       afterTest: () => {
         let alias: string | undefined = undefined;
 
-        cy.interceptAgent((body) => {
+        cy.interceptCollector((body) => {
           if (!alias && body.meta.session?.id) {
             alias = body.meta.session?.id;
           }
@@ -43,7 +43,7 @@ context('Events', () => {
     },
   ].forEach(({ title, btnName, aliasGenerator, afterTest }) => {
     it(`will capture ${title}`, () => {
-      cy.interceptAgent(aliasGenerator);
+      cy.interceptCollector(aliasGenerator);
 
       cy.visit('/features');
 

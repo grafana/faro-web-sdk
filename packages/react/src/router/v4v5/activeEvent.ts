@@ -1,4 +1,4 @@
-import { agent } from './dependencies';
+import { faro } from './dependencies';
 import type { ReactRouterV4V5ActiveEvent } from './types';
 
 export let activeEvent: ReactRouterV4V5ActiveEvent | undefined = undefined;
@@ -19,7 +19,7 @@ export function setActiveEventRoute(route: string): void {
 }
 
 export function sendActiveEvent(): void {
-  agent.api.pushEvent('routeChange', activeEvent, undefined, { skipDedupe: true });
+  faro.api.pushEvent('routeChange', activeEvent, undefined, { skipDedupe: true });
 
   activeEvent = undefined;
 }

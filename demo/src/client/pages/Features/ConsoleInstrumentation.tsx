@@ -3,7 +3,7 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Form from 'react-bootstrap/Form';
 
-import { agent, LogLevel } from '@grafana/faro-react';
+import { faro, LogLevel } from '@grafana/faro-react';
 
 export function ConsoleInstrumentation() {
   const [isApiMode, setIsApiMode] = useState(false);
@@ -14,7 +14,7 @@ export function ConsoleInstrumentation() {
   };
 
   const sendToApi = (method: LogLevel) => {
-    agent.api.pushLog([`This is a console ${method} message`], {
+    faro.api.pushLog([`This is a console ${method} message`], {
       level: method,
     });
   };
@@ -33,7 +33,7 @@ export function ConsoleInstrumentation() {
       <Form.Group>
         <Form.Check type="switch" label="API Mode" onChange={() => setIsApiMode(!isApiMode)} />
         <Form.Text>
-          By checking this, the messages are send directly to the Grafana Agent API instead of printing to console
+          By checking this, the messages are send directly to the Faro API instead of printing to console
         </Form.Text>
       </Form.Group>
       <ButtonGroup>

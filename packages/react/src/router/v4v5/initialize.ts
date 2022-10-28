@@ -2,24 +2,21 @@ import hoistNonReactStatics from 'hoist-non-react-statics';
 import type { FunctionComponent } from 'react';
 
 import { globalObject } from '@grafana/faro-web-sdk';
-import type { Agent } from '@grafana/faro-web-sdk';
+import type { Faro } from '@grafana/faro-web-sdk';
 
 import { NavigationType } from '../types';
 import { createNewActiveEvent, sendActiveEvent } from './activeEvent';
 import { setDependencies } from './dependencies';
-import { GrafanaAgentRoute } from './GrafanaAgentRoute';
+import { FaroRoute } from './FaroRoute';
 import type { ReactRouterV4V5Dependencies } from './types';
 
-export function initializeReactRouterV4V5Instrumentation(
-  dependencies: ReactRouterV4V5Dependencies,
-  agent: Agent
-): void {
+export function initializeReactRouterV4V5Instrumentation(dependencies: ReactRouterV4V5Dependencies, faro: Faro): void {
   const Route = dependencies.Route as FunctionComponent;
   const componentDisplayName = Route.displayName ?? Route.name;
-  (GrafanaAgentRoute as FunctionComponent).displayName = `grafanaAgentRoute(${componentDisplayName})`;
-  hoistNonReactStatics(GrafanaAgentRoute, Route);
+  (FaroRoute as FunctionComponent).displayName = `faroRoute(${componentDisplayName})`;
+  hoistNonReactStatics(FaroRoute, Route);
 
-  setDependencies(dependencies, agent);
+  setDependencies(dependencies, faro);
 
   createNewActiveEvent(globalObject.location?.href);
 

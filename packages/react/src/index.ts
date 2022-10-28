@@ -1,24 +1,20 @@
-export {
-  GrafanaAgentErrorBoundary,
-  grafanaAgentErrorBoundaryInitialState,
-  withGrafanaAgentErrorBoundary,
-} from './errorBoundary';
+export { FaroErrorBoundary, faroErrorBoundaryInitialState, withFaroErrorBoundary } from './errorBoundary';
 export type {
-  GrafanaAgentErrorBoundaryFallbackRender,
-  GrafanaAgentErrorBoundaryProps,
-  GrafanaAgentErrorBoundaryState,
+  FaroErrorBoundaryFallbackRender,
+  FaroErrorBoundaryProps,
+  FaroErrorBoundaryState,
   ReactNodeRender,
   ReactProps,
 } from './errorBoundary';
 
 export { ReactIntegration } from './instrumentation';
 
-export { GrafanaAgentProfiler, withGrafanaAgentProfiler } from './profiler';
-export type { GrafanaAgentProfilerProps } from './profiler';
+export { FaroProfiler, withFaroProfiler } from './profiler';
+export type { FaroProfilerProps } from './profiler';
 
 export {
-  GrafanaAgentRoute,
-  GrafanaAgentRoutes,
+  FaroRoute,
+  FaroRoutes,
   NavigationType,
   ReactRouterVersion,
   setReactRouterV4V5SSRDependencies,
@@ -55,7 +51,7 @@ export {
 } from './utils';
 
 export {
-  agent,
+  faro,
   allLogLevels,
   BaseExtension,
   BaseInstrumentation,
@@ -79,12 +75,12 @@ export {
   FetchTransport,
   getCurrentTimestamp,
   getDataFromSafariExtensions,
-  getInternalAgentFromGlobalObject,
+  getInternalFaroFromGlobalObject,
   getStackFramesFromError,
   getTransportBody,
   getWebInstrumentations,
   globalObject,
-  initializeGrafanaAgent,
+  initializeFaro,
   internalGlobalObjectKey,
   isArray,
   isBoolean,
@@ -100,7 +96,7 @@ export {
   isFunction,
   isInstanceOf,
   isInt,
-  isInternalAgentOnGlobalObject,
+  isInternalFaroOnGlobalObject,
   isMap,
   isMapDefined,
   isNull,
@@ -121,7 +117,7 @@ export {
   noop,
   pageMeta,
   parseStacktrace,
-  setInternalAgentOnGlobalObject,
+  setInternalFaroOnGlobalObject,
   TransportItemType,
   transportItemTypeToBodyKey,
   VERSION,
@@ -129,7 +125,7 @@ export {
 } from '@grafana/faro-web-sdk';
 
 export type {
-  Agent,
+  Faro,
   API,
   APIEvent,
   BaseObject,

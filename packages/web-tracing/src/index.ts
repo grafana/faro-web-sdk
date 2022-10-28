@@ -1,9 +1,9 @@
-export { GrafanaAgentTraceExporter } from './agentExporter';
+export { FaroTraceExporter } from './faroExporter';
 
-export { GrafanaAgentSessionSpanProcessor } from './sessionSpanProcessor';
+export { FaroSessionSpanProcessor } from './sessionSpanProcessor';
 
 export { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 
 export { TracingInstrumentation } from './instrumentation';
 
-export type { GrafanaAgentTraceExporterConfig, TracingInstrumentationOptions } from './types';
+export type { FaroTraceExporterConfig, TracingInstrumentationOptions } from './types';

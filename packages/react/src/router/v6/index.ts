@@ -1,6 +1,6 @@
 export { setReactRouterV6SSRDependencies } from './dependencies';
 
-export { GrafanaAgentRoutes } from './GrafanaAgentRoutes';
+export { FaroRoutes } from './FaroRoutes';
 
 export { initializeReactRouterV6Instrumentation } from './initialize';
 

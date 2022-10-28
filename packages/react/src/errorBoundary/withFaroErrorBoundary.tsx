@@ -2,22 +2,22 @@ import hoistNonReactStatics from 'hoist-non-react-statics';
 import type { ComponentType, FC } from 'react';
 
 import { unknownString } from '../utils';
-import { GrafanaAgentErrorBoundary } from './GrafanaAgentErrorBoundary';
-import type { GrafanaAgentErrorBoundaryProps, ReactProps } from './types';
+import { FaroErrorBoundary } from './FaroErrorBoundary';
+import type { FaroErrorBoundaryProps, ReactProps } from './types';
 
-export function withGrafanaAgentErrorBoundary<P extends ReactProps = {}>(
+export function withFaroErrorBoundary<P extends ReactProps = {}>(
   WrappedComponent: ComponentType<P>,
-  errorBoundaryProps: GrafanaAgentErrorBoundaryProps
+  errorBoundaryProps: FaroErrorBoundaryProps
 ): FC<P> {
   const componentDisplayName = WrappedComponent.displayName ?? WrappedComponent.name ?? unknownString;
 
   const Component: FC<P> = (wrappedComponentProps: P) => (
-    <GrafanaAgentErrorBoundary {...errorBoundaryProps}>
+    <FaroErrorBoundary {...errorBoundaryProps}>
       <WrappedComponent {...wrappedComponentProps} />
-    </GrafanaAgentErrorBoundary>
+    </FaroErrorBoundary>
   );
 
-  Component.displayName = `grafanaAgentErrorBoundary(${componentDisplayName})`;
+  Component.displayName = `faroErrorBoundary(${componentDisplayName})`;
 
   hoistNonReactStatics(Component, WrappedComponent);
 

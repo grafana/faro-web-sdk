@@ -5,18 +5,18 @@ import { HelmetProvider } from 'react-helmet-async';
 import { Provider as ReduxProvider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 
-import { GrafanaAgentErrorBoundary } from '@grafana/faro-react';
+import { FaroErrorBoundary } from '@grafana/faro-react';
 
 import { App } from './App';
-import { initializeGrafanaAgent } from './grafanaAgent';
+import { initializeFaro } from './faro';
 import { createStore } from './store';
 
-initializeGrafanaAgent();
+initializeFaro();
 
 hydrateRoot(
   document.getElementById('app') as HTMLElement,
   <StrictMode>
-    <GrafanaAgentErrorBoundary>
+    <FaroErrorBoundary>
       <ReduxProvider store={createStore((window as any).__PRELOADED_STATE__)}>
         <HelmetProvider>
           <BrowserRouter>
@@ -26,6 +26,6 @@ hydrateRoot(
           </BrowserRouter>
         </HelmetProvider>
       </ReduxProvider>
-    </GrafanaAgentErrorBoundary>
+    </FaroErrorBoundary>
   </StrictMode>
 );

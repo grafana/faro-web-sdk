@@ -1,6 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-import { agent } from '@grafana/faro-react';
+import { faro } from '@grafana/faro-react';
 
 import type { UserPublicModel } from '../../../common';
 import { authAPI } from '../../api';
@@ -27,7 +27,7 @@ export const userSlice = createSlice({
     builder.addMatcher(authAPI.endpoints.postLogin.matchFulfilled, (state, action) => {
       state.data = action.payload.data;
 
-      agent.api.setUser({
+      faro.api.setUser({
         email: action.payload.data.email,
         id: action.payload.data.id,
         username: action.payload.data.email,
@@ -37,7 +37,7 @@ export const userSlice = createSlice({
     builder.addMatcher(authAPI.endpoints.postRegister.matchFulfilled, (state, action) => {
       state.data = action.payload.data;
 
-      agent.api.setUser({
+      faro.api.setUser({
         email: action.payload.data.email,
         id: action.payload.data.id,
         username: action.payload.data.email,
@@ -47,7 +47,7 @@ export const userSlice = createSlice({
     builder.addMatcher(authAPI.endpoints.getAuthState.matchFulfilled, (state, action) => {
       state.data = action.payload.data;
 
-      agent.api.setUser({
+      faro.api.setUser({
         email: action.payload.data.email,
         id: action.payload.data.id,
         username: action.payload.data.email,
@@ -57,7 +57,7 @@ export const userSlice = createSlice({
     builder.addMatcher(authAPI.endpoints.getLogout.matchFulfilled, (state) => {
       state.data = null;
 
-      agent.api.setUser({
+      faro.api.setUser({
         email: undefined,
         id: undefined,
         username: undefined,

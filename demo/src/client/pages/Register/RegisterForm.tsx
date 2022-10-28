@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { agent } from '@grafana/faro-react';
+import { faro } from '@grafana/faro-react';
 
 import type { AuthRegisterPayload } from '../../../common';
 import { usePostRegisterMutation } from '../../api';
@@ -24,7 +24,7 @@ export function RegisterForm() {
   });
 
   const onSubmit = handleSubmit((data) => {
-    agent.api.pushEvent('registerAttempt');
+    faro.api.pushEvent('registerAttempt');
 
     register(data);
   });
@@ -32,9 +32,9 @@ export function RegisterForm() {
   useEffect(() => {
     if (!registerResult.isUninitialized && !registerResult.isLoading) {
       if (registerResult.isError) {
-        agent.api.pushEvent('registerFailed');
+        faro.api.pushEvent('registerFailed');
       } else {
-        agent.api.pushEvent('registerSuccessfully');
+        faro.api.pushEvent('registerSuccessfully');
 
         navigate('/articles');
       }

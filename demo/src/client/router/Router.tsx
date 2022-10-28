@@ -1,6 +1,6 @@
 import { Route } from 'react-router-dom';
 
-import { GrafanaAgentRoutes } from '@grafana/faro-react';
+import { FaroRoutes } from '@grafana/faro-react';
 
 import { GeneralLayout } from '../layouts';
 import { About, ArticleAdd, Articles, ArticleView, Features, Home, Login, Register, Seed } from '../pages';
@@ -8,7 +8,7 @@ import { LoggedInGuard, LoggedOutGuard } from './guards';
 
 export function Router() {
   return (
-    <GrafanaAgentRoutes>
+    <FaroRoutes>
       <Route
         path="/auth"
         element={
@@ -40,6 +40,6 @@ export function Router() {
         <Route path="features" element={<Features />} />
         <Route path="seed" element={<Seed />} />
       </Route>
-    </GrafanaAgentRoutes>
+    </FaroRoutes>
   );
 }

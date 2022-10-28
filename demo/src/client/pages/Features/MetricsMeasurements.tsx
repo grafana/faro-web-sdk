@@ -1,11 +1,11 @@
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 
-import { agent } from '@grafana/faro-react';
+import { faro } from '@grafana/faro-react';
 
 export function MetricsMeasurements() {
   const sendCustomMetric = () => {
-    agent.api.pushMeasurement({
+    faro.api.pushMeasurement({
       type: 'custom',
       values: {
         my_custom_metric: Math.random(),

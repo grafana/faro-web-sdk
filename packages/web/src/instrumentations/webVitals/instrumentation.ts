@@ -20,7 +20,7 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
 
     Object.entries(WebVitalsInstrumentation.mapping).forEach(([indicator, executor]) => {
       executor((metric) => {
-        this.agent.api.pushMeasurement({
+        this.faro.api.pushMeasurement({
           type: 'web-vitals',
           values: {
             [indicator]: metric.value,

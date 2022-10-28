@@ -16,7 +16,7 @@ export async function renderPage(
   const userPublic = (await verifyToken((res as Response).locals.token)) ?? null;
 
   const preloadedState = {
-    agent: {
+    faro: {
       session: createSession(),
       rootSpanId: spanContext?.spanId ?? null,
       rootTraceId: spanContext?.traceId ?? null,

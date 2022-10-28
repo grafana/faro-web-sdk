@@ -2,7 +2,7 @@ import { SpanStatusCode } from '@opentelemetry/api';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 
-import { agent } from '@grafana/faro-react';
+import { faro } from '@grafana/faro-react';
 
 export function TracingInstrumentation() {
   const fetchSuccess = () => {
@@ -10,13 +10,13 @@ export function TracingInstrumentation() {
   };
 
   const traceWithLog = () => {
-    const otel = agent.api.getOTEL();
+    const otel = faro.api.getOTEL();
 
     if (otel) {
       const span = otel.trace.getTracer('default').startSpan('trace with log');
 
       otel.context.with(otel.trace.setSpan(otel.context.active(), span), () => {
-        agent.api.pushLog(['trace with log button clicked']);
+        faro.api.pushLog(['trace with log button clicked']);
         span.setStatus({ code: SpanStatusCode.OK });
         span.end();
       });

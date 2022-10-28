@@ -6,15 +6,15 @@ import type { ReadableSpan, SpanExporter } from '@opentelemetry/sdk-trace-base';
 
 import type { TraceEvent } from '@grafana/faro-core';
 
-import type { GrafanaAgentTraceExporterConfig } from './types';
+import type { FaroTraceExporterConfig } from './types';
 
-export class GrafanaAgentTraceExporter implements SpanExporter {
-  constructor(private config: GrafanaAgentTraceExporterConfig) {}
+export class FaroTraceExporter implements SpanExporter {
+  constructor(private config: FaroTraceExporterConfig) {}
 
   export(spans: ReadableSpan[], resultCallback: (result: ExportResult) => void): void {
     const traceEvent = exportTraceServiceRequestToTraceEvent(createExportTraceServiceRequest(spans, true));
 
-    this.config.agent.api.pushTraces(traceEvent);
+    this.config.faro.api.pushTraces(traceEvent);
 
     resultCallback({ code: ExportResultCode.SUCCESS });
   }

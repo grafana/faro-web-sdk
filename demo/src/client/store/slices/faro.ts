@@ -5,20 +5,20 @@ import type { MetaSession } from '@grafana/faro-react';
 import { createSlice } from '../../utils';
 import type { RootState } from '../store';
 
-export type AgentState = {
+export type FaroState = {
   rootSpanId: string | null;
   rootTraceId: string | null;
   session: MetaSession | null;
 };
 
-export const initialState: AgentState = {
+export const initialState: FaroState = {
   rootSpanId: null,
   rootTraceId: null,
   session: null,
 };
 
-export const agentSlice = createSlice({
-  name: 'agent',
+export const faroSlice = createSlice({
+  name: 'faro',
   initialState,
   reducers: {
     setSession: (state, action: PayloadAction<MetaSession>) => {
@@ -27,8 +27,8 @@ export const agentSlice = createSlice({
   },
 });
 
-export const { setSession } = agentSlice.actions;
+export const { setSession } = faroSlice.actions;
 
-export const selectSession = (state: RootState) => state.agent.session;
-export const selectRootSpanId = (state: RootState) => state.agent.rootSpanId;
-export const selectRootTraceId = (state: RootState) => state.agent.rootTraceId;
+export const selectSession = (state: RootState) => state.faro.session;
+export const selectRootSpanId = (state: RootState) => state.faro.rootSpanId;
+export const selectRootTraceId = (state: RootState) => state.faro.rootTraceId;

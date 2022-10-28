@@ -9,7 +9,7 @@ export function mockConfig(overrides: Partial<Config> = {}): Config {
       version: '1.0.0',
     },
     dedupe: true,
-    globalObjectKey: 'grafanaAgent',
+    globalObjectKey: 'faro',
     internalLoggerLevel: defaultInternalLoggerLevel,
     instrumentations: [],
     isolate: true,

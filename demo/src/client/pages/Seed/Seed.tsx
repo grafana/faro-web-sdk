@@ -1,7 +1,7 @@
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 
-import { agent } from '@grafana/faro-react';
+import { faro } from '@grafana/faro-react';
 
 import { useLazyGetSeedQuery } from '../../api';
 import { Page } from '../../components';
@@ -10,15 +10,15 @@ export function Seed() {
   const [seed, seedResult] = useLazyGetSeedQuery();
 
   const handleSeed = () => {
-    const otel = agent.api.getOTEL();
+    const otel = faro.api.getOTEL();
 
     if (otel) {
       const span = otel.trace.getTracer('default').startSpan('seeding default data');
 
       otel.context.with(otel.trace.setSpan(otel.context.active(), span), () => {
-        agent.api.pushEvent('seed');
+        faro.api.pushEvent('seed');
 
-        agent.api.pushLog(['seeding default data...']);
+        faro.api.pushLog(['seeding default data...']);
 
         seed();
 

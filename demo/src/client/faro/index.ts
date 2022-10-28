@@ -1,0 +1,1 @@
+export { initializeFaro } from './initialize';

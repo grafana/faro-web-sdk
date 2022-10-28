@@ -2,22 +2,22 @@ import hoistNonReactStatics from 'hoist-non-react-statics';
 import type { ComponentType, FC } from 'react';
 
 import { unknownString } from '../utils';
-import { GrafanaAgentProfiler } from './GrafanaAgentProfiler';
-import type { GrafanaAgentProfilerProps } from './GrafanaAgentProfiler';
+import { FaroProfiler } from './FaroProfiler';
+import type { FaroProfilerProps } from './FaroProfiler';
 
-export function withGrafanaAgentProfiler<P extends Record<string, any>>(
+export function withFaroProfiler<P extends Record<string, any>>(
   WrappedComponent: ComponentType<P>,
-  options?: Omit<GrafanaAgentProfilerProps, 'updateProps'>
+  options?: Omit<FaroProfilerProps, 'updateProps'>
 ): FC<P> {
   const componentDisplayName = options?.name ?? WrappedComponent.displayName ?? WrappedComponent.name ?? unknownString;
 
   const Component: FC<P> = (props: P) => (
-    <GrafanaAgentProfiler name={componentDisplayName} updateProps={props}>
+    <FaroProfiler name={componentDisplayName} updateProps={props}>
       <WrappedComponent {...props} />
-    </GrafanaAgentProfiler>
+    </FaroProfiler>
   );
 
-  Component.displayName = `grafanaAgentProfiler(${componentDisplayName})`;
+  Component.displayName = `faroProfiler(${componentDisplayName})`;
 
   hoistNonReactStatics(Component, WrappedComponent);
 

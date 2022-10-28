@@ -1,7 +1,7 @@
-import type { Agent } from '@grafana/faro-core';
+import type { Faro } from '@grafana/faro-core';
 
 declare global {
   interface Window {
-    grafanaAgent: Agent;
+    faro: Faro;
   }
 }

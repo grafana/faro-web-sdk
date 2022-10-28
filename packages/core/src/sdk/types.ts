@@ -6,7 +6,7 @@ import type { Metas } from '../metas';
 import type { Transports } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 
-export interface Agent {
+export interface Faro {
   api: API;
   config: Config;
   instrumentations: Instrumentations;

@@ -1,7 +1,7 @@
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 
-import { agent } from '@grafana/faro-react';
+import { faro } from '@grafana/faro-react';
 
 export function ErrorInstrumentation() {
   const throwError = () => {
@@ -26,7 +26,7 @@ export function ErrorInstrumentation() {
   };
 
   const pushError = () => {
-    agent.api.pushError(new Error('This is a manually generated error'));
+    faro.api.pushError(new Error('This is a manually generated error'));
   };
 
   return (

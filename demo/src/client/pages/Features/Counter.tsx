@@ -1,6 +1,6 @@
 import Button from 'react-bootstrap/Button';
 
-import { withGrafanaAgentErrorBoundary, withGrafanaAgentProfiler } from '@grafana/faro-react';
+import { withFaroErrorBoundary, withFaroProfiler } from '@grafana/faro-react';
 
 export type CounterProps = {
   description: string;
@@ -21,8 +21,8 @@ export function CounterComponent({ description, title, value, onChange }: Counte
   );
 }
 
-export const CounterWithErrorBoundary = withGrafanaAgentErrorBoundary(CounterComponent, {
+export const CounterWithErrorBoundary = withFaroErrorBoundary(CounterComponent, {
   fallback: <>The content was broken</>,
 });
 
-export const CounterWithProfiler = withGrafanaAgentProfiler(CounterComponent);
+export const CounterWithProfiler = withFaroProfiler(CounterComponent);

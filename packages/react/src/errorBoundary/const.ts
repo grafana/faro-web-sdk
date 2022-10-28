@@ -1,6 +1,6 @@
-import type { GrafanaAgentErrorBoundaryState } from './types';
+import type { FaroErrorBoundaryState } from './types';
 
-export const grafanaAgentErrorBoundaryInitialState: GrafanaAgentErrorBoundaryState = {
+export const faroErrorBoundaryInitialState: FaroErrorBoundaryState = {
   hasError: false,
   error: null,
 } as const;

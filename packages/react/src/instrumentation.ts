@@ -12,6 +12,6 @@ export class ReactIntegration extends BaseInstrumentation {
   }
 
   initialize(): void {
-    initializeReactRouterInstrumentation(this.config, this.agent);
+    initializeReactRouterInstrumentation(this.config, this.faro);
   }
 }

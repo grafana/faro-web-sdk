@@ -3,11 +3,11 @@ import { useEffect, useMemo } from 'react';
 import { globalObject } from '@grafana/faro-web-sdk';
 
 import { NavigationType } from '../types';
-import { agent, createRoutesFromChildren, isInitialized, Routes, useLocation, useNavigationType } from './dependencies';
+import { createRoutesFromChildren, faro, isInitialized, Routes, useLocation, useNavigationType } from './dependencies';
 import type { ReactRouterV6RoutesProps } from './types';
 import { getRouteFromLocation } from './utils';
 
-export function GrafanaAgentRoutes(props: ReactRouterV6RoutesProps) {
+export function FaroRoutes(props: ReactRouterV6RoutesProps) {
   const location = useLocation?.();
   const navigationType = useNavigationType?.();
 
@@ -15,7 +15,7 @@ export function GrafanaAgentRoutes(props: ReactRouterV6RoutesProps) {
 
   useEffect(() => {
     if (isInitialized && (navigationType === NavigationType.Push || navigationType === NavigationType.Pop)) {
-      agent.api.pushEvent('routeChange', {
+      faro.api.pushEvent('routeChange', {
         url: globalObject.location?.href,
         route: getRouteFromLocation(routes, location),
       });

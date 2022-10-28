@@ -1,6 +1,6 @@
 import type { TransportBody } from '@grafana/faro-core';
 
-Cypress.Commands.add('interceptAgent', (aliasGenerator) => {
+Cypress.Commands.add('interceptCollector', (aliasGenerator) => {
   cy.intercept('POST', '**/collect', (req) => {
     req.alias = aliasGenerator(req.body as TransportBody);
 
@@ -21,7 +21,7 @@ declare global {
   namespace Cypress {
     interface Chainable {
       clickButton(btnId: string): Chainable<void>;
-      interceptAgent(aliasGenerator: (body: TransportBody) => string | undefined): Chainable<void>;
+      interceptCollector(aliasGenerator: (body: TransportBody) => string | undefined): Chainable<void>;
     }
   }
 }

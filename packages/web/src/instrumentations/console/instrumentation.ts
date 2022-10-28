@@ -21,11 +21,11 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         /* eslint-disable-next-line no-console */
         console[level] = (...args) => {
           try {
-            this.agent.api.pushLog(args, { level });
+            this.faro.api.pushLog(args, { level });
           } catch (err) {
             this.logError(err);
           } finally {
-            this.agent.unpatchedConsole[level](...args);
+            this.faro.unpatchedConsole[level](...args);
           }
         };
       });

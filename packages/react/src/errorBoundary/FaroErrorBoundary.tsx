@@ -1,19 +1,16 @@
 import { Component, isValidElement } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 
-import { agent, isFunction } from '@grafana/faro-web-sdk';
+import { faro, isFunction } from '@grafana/faro-web-sdk';
 
 import { isReactVersionAtLeast17 } from '../utils';
-import { grafanaAgentErrorBoundaryInitialState } from './const';
-import type { GrafanaAgentErrorBoundaryProps, GrafanaAgentErrorBoundaryState } from './types';
+import { faroErrorBoundaryInitialState } from './const';
+import type { FaroErrorBoundaryProps, FaroErrorBoundaryState } from './types';
 
-export class GrafanaAgentErrorBoundary extends Component<
-  GrafanaAgentErrorBoundaryProps,
-  GrafanaAgentErrorBoundaryState
-> {
-  override state: GrafanaAgentErrorBoundaryState = grafanaAgentErrorBoundaryInitialState;
+export class FaroErrorBoundary extends Component<FaroErrorBoundaryProps, FaroErrorBoundaryState> {
+  override state: FaroErrorBoundaryState = faroErrorBoundaryInitialState;
 
-  constructor(props: GrafanaAgentErrorBoundaryProps) {
+  constructor(props: FaroErrorBoundaryProps) {
     super(props);
 
     this.resetErrorBoundary = this.resetErrorBoundary.bind(this);
@@ -32,7 +29,7 @@ export class GrafanaAgentErrorBoundary extends Component<
     return newError;
   }
 
-  static getDerivedStateFromError(error: Error): GrafanaAgentErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): FaroErrorBoundaryState {
     return {
       hasError: true,
       error,
@@ -44,7 +41,7 @@ export class GrafanaAgentErrorBoundary extends Component<
 
     this.props.beforeCapture?.(errorWithComponentStack);
 
-    agent.api.pushError(errorWithComponentStack);
+    faro.api.pushError(errorWithComponentStack);
 
     this.props.onError?.(errorWithComponentStack);
 
@@ -62,7 +59,7 @@ export class GrafanaAgentErrorBoundary extends Component<
   resetErrorBoundary(): void {
     this.props.onReset?.(this.state.error);
 
-    this.setState(grafanaAgentErrorBoundaryInitialState);
+    this.setState(faroErrorBoundaryInitialState);
   }
 
   override render(): ReactNode {
@@ -79,7 +76,7 @@ export class GrafanaAgentErrorBoundary extends Component<
     }
 
     if (this.props.fallback) {
-      agent.internalLogger.warn('ErrorBoundary\n', 'Cannot get a valid ReactElement from "fallback"');
+      faro.internalLogger.warn('ErrorBoundary\n', 'Cannot get a valid ReactElement from "fallback"');
     }
 
     return null;

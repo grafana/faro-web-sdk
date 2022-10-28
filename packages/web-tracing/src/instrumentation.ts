@@ -7,15 +7,15 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 
-import { agent, BaseInstrumentation, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
 
-import { GrafanaAgentTraceExporter } from './agentExporter';
+import { FaroTraceExporter } from './faroExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
-import { GrafanaAgentSessionSpanProcessor } from './sessionSpanProcessor';
+import { FaroSessionSpanProcessor } from './sessionSpanProcessor';
 import type { TracingInstrumentationOptions } from './types';
 
 // the providing of app name here is not great
-// should delay initialization and provide the full agent config,
+// should delay initialization and provide the full Faro config,
 // taking app name from it
 
 export class TracingInstrumentation extends BaseInstrumentation {
@@ -29,7 +29,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
   }
 
   initialize(): void {
-    const config = this.agent.config;
+    const config = this.faro.config;
     const options = this.options;
     const attributes: ResourceAttributes = {};
 
@@ -49,8 +49,8 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     provider.addSpanProcessor(
       options.spanProcessor ??
-        new GrafanaAgentSessionSpanProcessor(
-          new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }), {
+        new FaroSessionSpanProcessor(
+          new BatchSpanProcessor(new FaroTraceExporter({ faro: faro }), {
             scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
             maxExportBatchSize: 30,
           })
@@ -66,10 +66,10 @@ export class TracingInstrumentation extends BaseInstrumentation {
       instrumentations: options.instrumentations ?? getDefaultOTELInstrumentations(this.getIgnoreUrls()),
     });
 
-    agent.api.initOTEL(trace, context);
+    faro.api.initOTEL(trace, context);
   }
 
   private getIgnoreUrls(): Array<string | RegExp> {
-    return this.agent.transports.transports.flatMap((transport) => transport.getIgnoreUrls());
+    return this.faro.transports.transports.flatMap((transport) => transport.getIgnoreUrls());
   }
 }

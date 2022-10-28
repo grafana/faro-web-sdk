@@ -1,13 +1,13 @@
 import hoistNonReactStatics from 'hoist-non-react-statics';
 
-import type { Agent } from '@grafana/faro-web-sdk';
+import type { Faro } from '@grafana/faro-web-sdk';
 
 import { setDependencies } from './dependencies';
-import { GrafanaAgentRoutes } from './GrafanaAgentRoutes';
+import { FaroRoutes } from './FaroRoutes';
 import type { ReactRouterV6Dependencies } from './types';
 
-export function initializeReactRouterV6Instrumentation(dependencies: ReactRouterV6Dependencies, agent: Agent): void {
-  hoistNonReactStatics(GrafanaAgentRoutes, dependencies.Routes);
+export function initializeReactRouterV6Instrumentation(dependencies: ReactRouterV6Dependencies, faro: Faro): void {
+  hoistNonReactStatics(FaroRoutes, dependencies.Routes);
 
-  setDependencies(dependencies, agent);
+  setDependencies(dependencies, faro);
 }

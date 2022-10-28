@@ -1,20 +1,20 @@
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
 
 import {
-  initializeGrafanaAgent as coreInit,
+  initializeFaro as coreInit,
   getWebInstrumentations,
   ReactIntegration,
   ReactRouterVersion,
 } from '@grafana/faro-react';
-import type { Agent } from '@grafana/faro-react';
+import type { Faro } from '@grafana/faro-react';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
 import { env } from '../utils';
 
-export function initializeGrafanaAgent(): Agent {
-  const agent = coreInit({
-    url: `http://localhost:${env.agent.portAppReceiver}/collect`,
-    apiKey: env.agent.apiKey,
+export function initializeFaro(): Faro {
+  const faro = coreInit({
+    url: `http://localhost:${env.faro.portAppReceiver}/collect`,
+    apiKey: env.faro.apiKey,
     instrumentations: [
       ...getWebInstrumentations({
         captureConsole: true,
@@ -33,7 +33,7 @@ export function initializeGrafanaAgent(): Agent {
         },
       }),
     ],
-    session: (window as any).__PRELOADED_STATE__?.agent?.session,
+    session: (window as any).__PRELOADED_STATE__?.faro?.session,
     app: {
       name: env.client.packageName,
       version: env.package.version,
@@ -41,7 +41,7 @@ export function initializeGrafanaAgent(): Agent {
     },
   });
 
-  agent.api.pushLog(['GrafanaAgent was initialized']);
+  faro.api.pushLog(['Faro was initialized']);
 
-  return agent;
+  return faro;
 }
