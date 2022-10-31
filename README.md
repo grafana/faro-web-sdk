@@ -1,6 +1,8 @@
-# Faro
+# Grafana Faro Web SDK
 
 [![Build Status](https://drone.grafana.net/api/badges/grafana/faro-web-sdk/status.svg)](https://drone.grafana.net/grafana/faro-web-sdk)
+
+<p align="left"><img src="docs/faro_logo.png" alt="Grafana Faro logo" width="400"></p>
 
 _Warning_
 This feature is currently pre-release and subject to frequent breaking changes.
