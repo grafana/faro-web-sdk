@@ -1,14 +1,23 @@
 # @grafana/faro-web-sdk
 
-Instrumentations, metas and transports for web applications.
+Faro is a SDK that can instrument frontend JavaScript applications to collect
+telemetry and forward it to the [Grafana Agent](https://grafana.com/docs/agent/latest/)
+(with app agent receiver integration enabled).
+Grafana Agent can then send this data to
+[Loki](https://grafana.com/logs/), or [Tempo](https://grafana.com/traces/).
 
 _Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.
+
+## Get started
+
+See [quick start for web applications](docs/sources/tutorials/quick-start-browser.md).
 
 ## Instrumentations
 
 - console - captures messages logged to `console` global object. Only `warn`, `info` and `error` levels by default.
 - errors - captures unhandled top level exceptions
 - web-vitals - captures performance metrics reported by web vitals API
+- session - sends session start event
 
 ## Metas
 
