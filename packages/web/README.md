@@ -10,7 +10,7 @@ _Warning_: currently pre-release and subject to frequent breaking changes. Use a
 
 ## Get started
 
-See [quick start for web applications](docs/sources/tutorials/quick-start-browser.md).
+See [quick start for web applications](https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/quick-start-browser.md).
 
 ## Instrumentations
 

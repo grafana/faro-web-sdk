@@ -19,7 +19,7 @@ which can be run by following the [README.md file](https://github.com/grafana/fa
 
 ## Get started
 
-See [quick start for web applications](docs/sources/tutorials/quick-start-browser.md).
+See [quick start for web applications](https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/quick-start-browser.md).
 
 ## Packages
 

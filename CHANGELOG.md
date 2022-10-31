@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0.beta1 (2022-10-31)
+## 1.0.0.beta1, 1.0.0.beta2 (2022-10-31)
 
 - Rename to "Faro Web SDK"
 
