@@ -1,4 +1,4 @@
-export { FaroTraceExporter } from './faroExporter';
+export { FaroTraceExporter } from './faroTraceExporter';
 
 export { FaroSessionSpanProcessor } from './sessionSpanProcessor';
 

@@ -1,6 +1,6 @@
 # Get started with Grafana Faro Web SDK
 
-This document describes how to set up and use Grafana Faro Web SDK. For more information, refer to the [demo application](https://github.com/grafana/grafana-javascript-agent/tree/main/demo).
+This document describes how to set up and use Grafana Faro Web SDK. For more information, refer to the [demo application](https://github.com/grafana/faro-web-sdk/tree/main/demo).
 
 ## Before you begin
 
@@ -10,7 +10,8 @@ This document describes how to set up and use Grafana Faro Web SDK. For more inf
 
 The following example shows a basic Grafana Agent configuration that exposes a collector endpoint
 at [http://host:12345/collect](http://host:12345/collect) and forwards collected telemetry to Loki,
-Tempo, and Prometheus instances. For more information about the agent app receiver integration, refer to [app_agent_receiver_config](https://grafana.com/docs/agent/latest/configuration/integrations/integrations-next/app-agent-receiver-config/).
+Tempo, and Prometheus instances. This collector endpoint has to be accessible by your web application.
+For more information about the agent app receiver integration, refer to [app_agent_receiver_config](https://grafana.com/docs/agent/latest/configuration/integrations/integrations-next/app-agent-receiver-config/).
 
 ```yaml
 metrics:
@@ -108,7 +109,7 @@ Without tracing, the bundle footprint is small.
 ```ts
 import { initializeFaro } from '@grafana/faro-web-sdk';
 
-const agent = initializeFaro({
+const faro = initializeFaro({
   url: 'https://collector-host:12345/collect',
   apiKey: 'secret',
   app: {
@@ -134,7 +135,7 @@ import {
   SessionInstrumentation,
 } from '@grafana/faro-web-sdk';
 
-const agent = initializeFaro({
+const faro = initializeFaro({
   instrumentations: [
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
@@ -179,7 +180,7 @@ const faro = initializeFaro({
   },
 });
 
-// get otel trace and context apis
+// get OTEL trace and context APIs
 const { trace, context } = faro.api.getOTEL();
 
 const tracer = trace.getTracer('default');
@@ -209,7 +210,7 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { initializeFaro } from '@grafana/faro-web-sdk';
-import { GrafanaAgentTraceExporter, SessionProcessor } from '@grafana/faro-tracing-web';
+import { FaroTraceExporter, FaroSessionSpanProcessor } from '@grafana/faro-web-tracing';
 
 const VERSION = '1.0.0';
 const NAME = 'frontend';
@@ -235,7 +236,7 @@ const resource = Resource.default().merge(
 
 const provider = new WebTracerProvider({ resource });
 
-provider.addSpanProcessor(new SessionSpanProcessor(new BatchSpanProcessor(new GrafanaAgentTraceExporter({ faro }))));
+provider.addSpanProcessor(new FaroSessionSpanProcessor(new BatchSpanProcessor(new FaroTraceExporter({ faro }))));
 
 provider.register({
   propagator: new W3CTraceContextPropagator(),
@@ -262,20 +263,20 @@ faro.api.initOTEL(trace, context);
 The following examples show how to use the SDK to push data manually and set users and sessions.
 
 ```ts
-import { LogLevel } from '@grafana/faro-core';
+import { LogLevel } from '@grafana/faro-web-sdk';
 
 // there's a global property
-const agent = window.grafanaAgent;
+const faro = window.faro;
 
 // send a log message
 // by default info, warn and error levels are captured.
 // trace, debug and log are not
 console.info('Hello world', 123);
 // or
-agent.api.pushLog(['Hello world', 123], { level: LogLevel.Debug });
+faro.api.pushLog(['Hello world', 123], { level: LogLevel.Debug });
 
 // log with context
-agent.api.pushLog(['Sending update'], {
+faro.api.pushLog(['Sending update'], {
   context: {
     payload: thePayload,
   },
@@ -283,7 +284,7 @@ agent.api.pushLog(['Sending update'], {
 });
 
 // set user metadata, to be included with every event. All properties optional
-agent.api.setUser({
+faro.api.setUser({
   email: 'bob@example.com',
   id: '123abc',
   username: 'bob',
@@ -293,16 +294,16 @@ agent.api.setUser({
 });
 
 // unset user
-agent.api.resetUser();
+faro.api.resetUser();
 
 // set session metadata, to be included with every event
-agent.api.setSession(createSession({ plan: 'paid' }));
+faro.api.setSession(createSession({ plan: 'paid' }));
 
 // unset session
-agent.api.resetSession();
+faro.api.resetSession();
 
 // push measurement
-agent.api.pushMeasurement({
+faro.api.pushMeasurement({
   type: 'cart-transaction',
   values: {
     delay: 122,
@@ -311,14 +312,14 @@ agent.api.pushMeasurement({
 });
 
 // push an error
-agent.api.pushError(new Error('everything went horribly wrong'));
+faro.api.pushError(new Error('everything went horribly wrong'));
 
 // push an event
-agent.api.pushEvent('navigation', { url: window.location.href });
+faro.api.pushEvent('navigation', { url: window.location.href });
 
-// pause agent, preventing events from being sent
-agent.pause();
+// pause faro, preventing events from being sent
+faro.pause();
 
 // resume sending events
-agent.unpause();
+faro.unpause();
 ```
