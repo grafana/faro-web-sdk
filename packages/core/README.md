@@ -10,32 +10,32 @@ logs etc. but it offers an API to capture them.
 ## Installation
 
 ```ts
-import { initializeGrafanaAgent } from '@grafana/faro-core';
+import { initializeFaro } from '@grafana/faro-core';
 
-initializeGrafanaAgent({
+initializeFaro({
   // ...
 });
 ```
 
 ## Options
 
-The agent requires a configuration parameter with the following properties:
+Faro Web SDK requires a configuration object parameter with the following properties:
 
-| Property                | Description                                                             | Type                  | Default Value Variable                                   |
-| ----------------------- | ----------------------------------------------------------------------- | --------------------- | -------------------------------------------------------- |
-| `app`                   | Application metadata                                                    | `App`                 |                                                          |
-| `dedupe`                | A flag for toggling deduplication filter                                | `boolean`             |                                                          |
-| `globalObjectKey`       | String that should be used when defining the agent on the global object | `string`              | `defaultGlobalObjectKey = 'grafanaAgent'`                |
-| `instrumentations`      | Array of instrumentations that should be ran                            | `Instrumentation[]`   |                                                          |
-| `internalLoggerLevel`   | The level of information printed to console for internal messages       | `InternalLoggerLevel` | `defaultInternalLoggerLevel = InternalLoggerLevel.ERROR` |
-| `isolate`               | A flag that will create an isolated agent                               | `boolean`             |                                                          |
-| `metas`                 | Array of metas that should be logged                                    | `MetaItem[]`          |                                                          |
-| `parseStacktrace`       | A function used to parse stack traces                                   | `StacktraceParser`    |                                                          |
-| `paused`                | Flag for initializing the agent as paused                               | `boolean`             |                                                          |
-| `preventGlobalExposure` | Flag for toggling the definition on the global object                   | `boolean`             |                                                          |
-| `transports`            | Array of transports that should be used                                 | `Transport[]`         |                                                          |
+| Property                | Description                                                                              | Type                  | Default Value Variable                                   |
+| ----------------------- | ---------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------- |
+| `app`                   | Application metadata                                                                     | `App`                 |                                                          |
+| `dedupe`                | A flag for toggling deduplication filter                                                 | `boolean`             |                                                          |
+| `globalObjectKey`       | String that should be used when defining the Faro instance property on the global object | `string`              | `defaultGlobalObjectKey = 'grafanaAgent'`                |
+| `instrumentations`      | Array of instrumentations that should be ran                                             | `Instrumentation[]`   |                                                          |
+| `internalLoggerLevel`   | The level of information printed to console for internal messages                        | `InternalLoggerLevel` | `defaultInternalLoggerLevel = InternalLoggerLevel.ERROR` |
+| `isolate`               | A flag that will create an isolated Faro instance                                        | `boolean`             |                                                          |
+| `metas`                 | Array of metas that should be logged                                                     | `MetaItem[]`          |                                                          |
+| `parseStacktrace`       | A function used to parse stack traces                                                    | `StacktraceParser`    |                                                          |
+| `paused`                | Flag for initializing the Faro instance as paused                                        | `boolean`             |                                                          |
+| `preventGlobalExposure` | Flag for toggling the definition on the global object                                    | `boolean`             |                                                          |
+| `transports`            | Array of transports that should be used                                                  | `Transport[]`         |                                                          |
 
-Besides the mandatory properties, the agent also supports the following optional properties:
+Besides the mandatory properties, Faro configuration also supports the following optional properties:
 
 | Property       | Description                                                                            | Type             | Default Value |
 | -------------- | -------------------------------------------------------------------------------------- | ---------------- | ------------- |
@@ -45,31 +45,31 @@ Besides the mandatory properties, the agent also supports the following optional
 | `session`      | Session metadata                                                                       | `Session`        | `undefined`   |
 | `user`         | User metadata                                                                          | `User`           | `undefined`   |
 
-## Agent
+## Faro instance
 
-The agent is an object which can be accessed by either importing it from the package or by referencing it from the
+Faro instance is an object which can be accessed by either importing it from the package or by referencing it from the
 global object (`window` in browsers and `global` in Node.js).
 
 ```ts
 // Browser/Node.js
-import { agent } from '@grafana/faro-core';
+import { faro } from '@grafana/faro-core';
 
-agent.api.pushLog(/* ... */);
+faro.api.pushLog(/* ... */);
 
 // Browser
-window.grafanaAgent.api.pushLog(/* ... */);
+window.faro.api.pushLog(/* ... */);
 
 // Node.js
-global.grafanaAgent.api.pushLog(/* ... */);
+global.faro.api.pushLog(/* ... */);
 ```
 
 ## API
 
-The `api` property on the agent contains all the necessary methods to push new events.
+The `api` property on the Faro instance contains all the necessary methods to push new events.
 
 ## Errors
 
-- `pushError` - is a method to push an error/exception to the agent. It accepts a mandatory `message` parameter
+- `pushError` - is a method to push an error/exception to the Faro instance. It accepts a mandatory `message` parameter
   and an optional one where you can set:
 
   - `skipDedupe` - a flag for enforcing event push even if the event is identical to the previous one.
@@ -77,11 +77,11 @@ The `api` property on the agent contains all the necessary methods to push new e
   - `type` - the type of exception. Default value: `error.name` or `"error"`.
 
   ```ts
-  agent.api.pushError(new Error('This is an error'));
+  faro.api.pushError(new Error('This is an error'));
 
-  agent.api.pushError(new Error('This is an unhandled exception'), { type: 'unhandledException' });
+  faro.api.pushError(new Error('This is an unhandled exception'), { type: 'unhandledException' });
 
-  agent.api.pushError(new Error('This is an error with stack frames'), {
+  faro.api.pushError(new Error('This is an error with stack frames'), {
     stackFrames: [
       {
         filename: 'file.js',
@@ -101,11 +101,11 @@ The `api` property on the agent contains all the necessary methods to push new e
   recorded along with the message.
 
   ```ts
-  agent.api.pushLog(['This is a log', 'With another message']);
+  faro.api.pushLog(['This is a log', 'With another message']);
 
-  agent.api.pushLog(['This is a warning'], { level: LogLevel.WARN });
+  faro.api.pushLog(['This is a warning'], { level: LogLevel.WARN });
 
-  agent.api.pushLog(['This is a log with context'], {
+  faro.api.pushLog(['This is a log with context'], {
     context: {
       randomNumber: Math.random(),
     },
@@ -120,14 +120,14 @@ The `api` property on the agent contains all the necessary methods to push new e
   - `span` - the span where the exception has occurred. Default value: `undefined`.
 
   ```ts
-  agent.api.pushMeasurement({
+  faro.api.pushMeasurement({
     type: 'custom',
     values: {
       my_custom_metric: Math.random(),
     },
   });
 
-  agent.api.pushMeasurement(
+  faro.api.pushMeasurement(
     {
       type: 'custom',
       values: {
@@ -142,7 +142,7 @@ The `api` property on the agent contains all the necessary methods to push new e
 
 ## Instrumentations
 
-Instrumentations are packages that leverage the agent API to provide automatic mechanisms for collecting data. They are
+Instrumentations are packages that leverage the Faro Web SDK API to provide automatic mechanisms for collecting data. They are
 just simple functions that are executed when the agent is initialized.
 
 Please note that the `core` package does not contain any instrumentations out of the box and they should be provided by
@@ -151,18 +151,19 @@ platform specific packages like [@grafana/faro-web-sdk](https://github.com/grafa
 You can also write your own instrumentations:
 
 ```ts
-import { agent, initializeGrafanaAgent, BaseInstrumentation } from '@grafana/faro-core';
+import { initializeFaro, BaseInstrumentation } from '@grafana/faro-core';
 
 export class MyInstrumentation extends BaseInstrumentation {
   readonly version = '1.0.0';
   readonly name = 'my-instrumentation';
 
   initialize(): void {
-    this.agent.api.pushLog(['hello from my instrumentation']);
+    this.faro.api.pushLog(['hello from my instrumentation']);
   }
 }
 
-initializeGrafanaAgent({
+initializeFaro({
+  // ...
   instrumentations: [new MyInstrumentation()],
 });
 ```
@@ -171,16 +172,16 @@ initializeGrafanaAgent({
 
 Metas are objects that will be attached to every event that is triggered by the API.
 
-Out of the box, only one meta is provided: `sdk` which contains information about the agent and its version. Additional
+Out of the box, only one meta is provided: `sdk` which contains information about the Faro instance and its version. Additional
 metas can be provided by external packages like [@grafana/agent-meta-browser](https://github.com/grafana/faro-web-sdk/tree/main/packages/meta-browser)
 and [@grafana/agent-meta-page](https://github.com/grafana/faro-web-sdk/tree/main/packages/meta-page).
 
 You can also define your own metas:
 
 ```ts
-import { agent, initializeGrafanaAgent } from '@grafana/faro-core';
+import { initializeFaro } from '@grafana/faro-core';
 
-initializeGrafanaAgent({
+initializeFaro({
   metas: [
     // Define a static meta
     {
@@ -213,7 +214,7 @@ packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tr
 You can also define your own transports:
 
 ```ts
-import { agent, initializeGrafanaAgent, BaseTransport, TransportItem } from '@grafana/faro-core';
+import { initializeFaro, BaseTransport, TransportItem } from '@grafana/faro-core';
 
 class MyTransport extends BaseTransport {
   send(item: TransportItem) {
@@ -221,53 +222,53 @@ class MyTransport extends BaseTransport {
   }
 }
 
-initializeGrafanaAgent({
+initializeFaro({
   transports: [new MyTransport()],
 });
 ```
 
 ## Unpatched console
 
-Some instrumentations might override the default console methods but the agent provides a way to access the
+Some instrumentations might override the default console methods but Faro instance provides a way to access the
 unmodified console methods.
 
 ```ts
-agent.unpatchedConsole.log('This is a log');
-agent.unpatchedConsole.warn('This is a warning');
+faro.unpatchedConsole.log('This is a log');
+faro.unpatchedConsole.warn('This is a warning');
 ```
 
 ## Pause / unpause
 
-Agent can be paused by invoking `agent.pause()`.
+Faro instance can be paused by invoking `faro.pause()`.
 This will prevent events from being sent to transports.
-Call `agent.unpause()` to resume capturing events.
+Call `faro.unpause()` to resume capturing events.
 
-## Isolated agents
+## Isolated Faro instances
 
-Sometimes you may want to create one or more isolated agents. For example:
+Sometimes you may want to create one or more isolated Faro instances. For example:
 
-- you want to bundle the agent in a reusable library and report certain events only for it while the project where the
-  library is used has its own agent
+- you want to bundle Faro in a reusable library and report certain events only for it while the project where the
+  library is used has its own Faro instance
 - you want to log certain events in one system while other events in other systems
-- E2E libraries that may create multiple agents without refreshing the page
+- E2E libraries that may create multiple Faro instances without refreshing the page
 
 In order to achieve this, you can use the `isolate` flag when initializing the agent:
 
 ```ts
-// agent 1 will be isolated
-const agent1 = initializeGrafanaAgent({
+// faro 1 will be isolated
+const faro1 = initializeFaro({
   // ...
   isolate: true,
 });
 
-// globalAgent will be available globally
-const globalAgent = initializeGrafanaAgent({
+// globalFaro will be available globally
+const globalFaro = initializeFaro({
   // ...
-  isolate: true,
+  isolate: false,
 });
 
-// another isolated agent
-const agent2 = initializeGrafanaAgent({
+// another isolated Faro instance
+const faro2 = initializeFaro({
   // ...
   isolate: true,
 });
@@ -276,6 +277,6 @@ const agent2 = initializeGrafanaAgent({
 Although an isolated agent may sound like a great idea, there are some limitations which apply to them:
 
 - some instrumentations will still register globally (i.e. exceptions instrumentation or console instrumentation)
-- an isolated agent will not be available on the global object
-- the agent reference should be stored by the project as it won't be available via
-  `import { agent } from '@grafana/faro-core';`
+- an isolated Faro instance will not be available on the global object
+- the Faro reference should be stored by the project as it won't be available via
+  `import { faro } from '@grafana/faro-core';`

@@ -11,7 +11,7 @@ This document describes how to set up and use Grafana Faro Web SDK. For more inf
 The following example shows a basic Grafana Agent configuration that exposes a collector endpoint
 at [http://host:12345/collect](http://host:12345/collect) and forwards collected telemetry to Loki,
 Tempo, and Prometheus instances. This collector endpoint has to be accessible by your web application.
-For more information about the agent app receiver integration, refer to [app_agent_receiver_config](https://grafana.com/docs/agent/latest/configuration/integrations/integrations-next/app-agent-receiver-config/).
+For more information about the app agent receiver integration, refer to [app_agent_receiver_config](https://grafana.com/docs/agent/latest/configuration/integrations/integrations-next/app-agent-receiver-config/).
 
 ```yaml
 metrics:

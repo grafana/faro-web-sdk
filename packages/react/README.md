@@ -16,15 +16,10 @@ Out of the box, the package provides you the following features:
 ```ts
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
 
-import {
-  getWebInstrumentations,
-  initializeGrafanaAgent,
-  ReactIntegration,
-  ReactRouterVersion,
-} from '@grafana/faro-react';
+import { getWebInstrumentations, initializeFaro, ReactIntegration, ReactRouterVersion } from '@grafana/faro-react';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
-initializeGrafanaAgent({
+initializeFaro({
   // ...
   instrumentations: [
     // Load the default Web instrumentations

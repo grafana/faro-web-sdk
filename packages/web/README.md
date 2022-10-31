@@ -25,9 +25,9 @@ _Warning_: currently pre-release and subject to frequent breaking changes. Use a
 Basic set up, will automatically report errors and web vitals:
 
 ```ts
-import { initializeGrafanaAgent } from '@grafana/faro-web-sdk';
+import { initializeFaro } from '@grafana/faro-web-sdk';
 
-const agent = initializeGrafanaAgent({
+const faro = initializeFaro({
   url: 'https://agent.myapp/collect',
   apiKey: 'secret',
   app: {
@@ -37,22 +37,22 @@ const agent = initializeGrafanaAgent({
 });
 
 // send a log message
-agent.api.pushLog(['hello world']);
+faro.api.pushLog(['hello world']);
 
 // will be captured
 throw new Error('oh no');
 
 // push error manually
-agent.api.pushError(new Error('oh no'));
+faro.api.pushError(new Error('oh no'));
 ```
 
-With OTel tracing and browser console capture:
+With OTEL tracing and browser console capture:
 
 ```ts
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
-import { ConsoleInstrumentation, initializeGrafanaAgent, getWebInstrumentations } from '@grafana/faro-web-sdk';
+import { ConsoleInstrumentation, initializeFaro, getWebInstrumentations } from '@grafana/faro-web-sdk';
 
-const agent = initializeGrafanaAgent({
+const faro = initializeFaro({
   url: 'https://agent.myapp/collect',
   apiKey: 'secret',
   instrumentations: [...getWebInstrumentations({ captureConsole: true }), new TracingInstrumentation()],
@@ -63,12 +63,12 @@ const agent = initializeGrafanaAgent({
 });
 
 // start a span
-agent.api
+faro.api
   .getOTEL()
   ?.trace.getTracer('frontend')
   .startActiveSpan('hello world', (span) => {
     // send a log message
-    agent.api.pushLog(['hello world']);
+    faro.api.pushLog(['hello world']);
     span.end();
   });
 
