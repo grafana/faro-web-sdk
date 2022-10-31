@@ -1,6 +1,6 @@
 {
   "name": "@grafana/agent-integration-angular",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Grafana JavaScript Agent package that enables easier integration in projects built with Angular.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -33,7 +33,7 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/agent-tracing-web": "^0.5.0",
-    "@grafana/agent-web": "^0.5.0"
+    "@grafana/agent-tracing-web": "^0.6.0",
+    "@grafana/agent-web": "^0.6.0"
   }
 }

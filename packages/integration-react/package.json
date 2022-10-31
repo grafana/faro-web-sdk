@@ -1,6 +1,6 @@
 {
   "name": "@grafana/agent-integration-react",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Grafana JavaScript Agent package that enables easier integration in projects built with React.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -32,8 +32,8 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/agent-tracing-web": "^0.5.0",
-    "@grafana/agent-web": "^0.5.0",
+    "@grafana/agent-tracing-web": "^0.6.0",
+    "@grafana/agent-web": "^0.6.0",
     "hoist-non-react-statics": "^3.3.2"
   },
   "devDependencies": {
