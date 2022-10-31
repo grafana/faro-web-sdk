@@ -59,12 +59,12 @@ initializeFaro({
 ### Error Boundary
 
 ```tsx
-import { GrafanaAgentErrorBoundary } from '@grafana/faro-react';
+import { FaroErrorBoundary } from '@grafana/faro-react';
 
 // during render
-<GrafanaAgentErrorBoundary>
+<FaroErrorBoundary>
   <App />
-</GrafanaAgentErrorBoundary>;
+</FaroErrorBoundary>;
 ```
 
 or
@@ -80,25 +80,25 @@ export default withErrorBoundary(App);
 ### V6
 
 ```tsx
-import { GrafanaAgentRoutes } from '@grafana/faro-react';
+import { FaroRoutes } from '@grafana/faro-react';
 
 // during render
-<GrafanaAgentRoutes>
+<FaroRoutes>
   <Route path="/" element={<Home />} />
   {/* ... */}
-</GrafanaAgentRoutes>;
+</FaroRoutes>;
 ```
 
 ### V4/v5
 
 ```tsx
-import { GrafanaAgentRoute } from '@grafana/faro-react';
+import { FaroRoute } from '@grafana/faro-react';
 
 // during render
 <Switch>
-  <GrafanaAgentRoute path="/">
+  <FarpRoute path="/">
     <Home />
-  </GrafanaAgentRoute>
+  </FaroRoute>
   {/* ... */}
 </Switch>;
 ```
@@ -106,7 +106,7 @@ import { GrafanaAgentRoute } from '@grafana/faro-react';
 ### Profiler
 
 ```tsx
-import { withGrafanaAgentProfiler } from '@grafana/faro-react';
+import { withFaroProfiler } from '@grafana/faro-react';
 
-export default withGrafanaAgentProfiler(App);
+export default withFaroProfiler(App);
 ```

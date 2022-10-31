@@ -25,7 +25,7 @@ Faro Web SDK requires a configuration object parameter with the following proper
 | ----------------------- | ---------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------- |
 | `app`                   | Application metadata                                                                     | `App`                 |                                                          |
 | `dedupe`                | A flag for toggling deduplication filter                                                 | `boolean`             |                                                          |
-| `globalObjectKey`       | String that should be used when defining the Faro instance property on the global object | `string`              | `defaultGlobalObjectKey = 'grafanaAgent'`                |
+| `globalObjectKey`       | String that should be used when defining the Faro instance property on the global object | `string`              | `defaultGlobalObjectKey = 'faro'`                        |
 | `instrumentations`      | Array of instrumentations that should be ran                                             | `Instrumentation[]`   |                                                          |
 | `internalLoggerLevel`   | The level of information printed to console for internal messages                        | `InternalLoggerLevel` | `defaultInternalLoggerLevel = InternalLoggerLevel.ERROR` |
 | `isolate`               | A flag that will create an isolated Faro instance                                        | `boolean`             |                                                          |
