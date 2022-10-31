@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-web-sdk",
-  "version": "0.5.0",
+  "version": "1.0.0-beta1",
   "description": "Faro instrumentations, metas, transports for web.",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -34,7 +34,7 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-core": "^0.5.0",
+    "@grafana/faro-core": "^1.0.0-beta1",
     "ua-parser-js": "^1.0.32",
     "web-vitals": "^3.0.4"
   },
