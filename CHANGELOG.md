@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0.beta1 (2022-10-31)
+
+- Rename to "Faro Web SDK"
+
 ## 0.5.0 (2022-10-25)
 
 - Added basic session tracking: web SDK automatically creates new session id when agent is initialized.
