@@ -1,5 +1,7 @@
 # @grafana/agent-core
 
+**DEPRECATED** _Project has been moved to [@grafana/faro-core](https://www.npmjs.com/package/@grafana/faro-core)_
+
 Core package of Grafana JavaScript Agent.
 
 _Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.

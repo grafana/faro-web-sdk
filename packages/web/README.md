@@ -1,5 +1,7 @@
 # @grafana/agent-web
 
+**DEPRECATED** _Project has been moved to [@grafana/faro-web-sdk](https://www.npmjs.com/package/@grafana/faro-web-sdk)_
+
 Instrumentations, metas and transports for web applications.
 
 _Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.

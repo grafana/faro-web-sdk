@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0 (2022-10-31)
+
+- Add deprecation notices to README files. Project rename to Faro Web SDK, republished on NPM to `@grafana/faro-*`
+
 ## 0.5.0 (2022-10-25)
 
 - Added basic session tracking: web SDK automatically creates new session id when agent is initialized.

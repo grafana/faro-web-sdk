@@ -1,5 +1,7 @@
 # @grafana/agent-integration-react
 
+**DEPRECATED** _Project has been moved to [@grafana/faro-react](https://www.npmjs.com/package/@grafana/faro-react)_
+
 Grafana JavaScript Agent package that enables easier integration in projects built with React.
 
 _Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.

@@ -1,5 +1,7 @@
 # Grafana JavaScript Agent
 
+**DEPRECATED** _Project has been moved to [Faro Web SDK](https://github.com/grafana/faro-web-sdk)_
+
 [![Build Status](https://drone.grafana.net/api/badges/grafana/grafana-javascript-agent/status.svg)](https://drone.grafana.net/grafana/grafana-javascript-agent)
 
 _Warning_
