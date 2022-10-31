@@ -142,8 +142,8 @@ The `api` property on the Faro instance contains all the necessary methods to pu
 
 ## Instrumentations
 
-Instrumentations are packages that leverage the Faro Web SDK API to provide automatic mechanisms for collecting data. They are
-just simple functions that are executed when the agent is initialized.
+Instrumentations are packages that leverage the Faro Web SDK API to provide automatic mechanisms
+for collecting data. They are just simple functions that are executed when the agent is initialized.
 
 Please note that the `core` package does not contain any instrumentations out of the box and they should be provided by
 platform specific packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web)
