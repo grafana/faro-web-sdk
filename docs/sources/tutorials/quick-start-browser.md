@@ -323,3 +323,16 @@ faro.pause();
 // resume sending events
 faro.unpause();
 ```
+
+## Dashboards
+
+Two example Grafana dashboards are included in this repository. Add them to your
+Grafana instance using the dashboard import function.
+
+[Web Application Dashboard](https://github.com/grafana/faro-web-sdk/blob/main/dashboards/frontend-application.json)
+
+- monitor a web application using data collected by Faro Web SDK
+
+[Grafana Agent app agent receiver dashboard](https://github.com/grafana/faro-web-sdk/blob/main/dashboards/app-agent-receiver.json)
+
+- monitor Grafana Agent app receiver integration
