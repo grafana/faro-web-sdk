@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useForm } from 'react-hook-form';
 
-import { agent } from '@grafana/agent-integration-react';
+import { faro } from '@grafana/faro-react';
 
 import type { ArticleCommentAddPayload } from '../../../common';
 import { usePostArticleCommentMutation } from '../../api';
@@ -27,7 +27,7 @@ export function CommentAddForm({ articleId }: CommentAddFormProps) {
   });
 
   const onSubmit = handleSubmit((data) => {
-    agent.api.pushEvent('createArticleCommentAttempt', {
+    faro.api.pushEvent('createArticleCommentAttempt', {
       articleId,
     });
 
@@ -37,11 +37,11 @@ export function CommentAddForm({ articleId }: CommentAddFormProps) {
   useEffect(() => {
     if (!createCommentResult.isUninitialized && !createCommentResult.isLoading) {
       if (createCommentResult.isError) {
-        agent.api.pushEvent('createArticleCommentFailed', {
+        faro.api.pushEvent('createArticleCommentFailed', {
           articleId,
         });
       } else {
-        agent.api.pushEvent('createArticleCommentSuccessfully', {
+        faro.api.pushEvent('createArticleCommentSuccessfully', {
           articleId,
         });
 

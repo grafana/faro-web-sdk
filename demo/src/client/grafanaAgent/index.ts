@@ -1,1 +1,0 @@
-export { initializeGrafanaAgent } from './initialize';

@@ -2,13 +2,13 @@ import { combineReducers } from 'redux';
 
 import { apiMiddleware, apiReducers } from '../api';
 import { configureStore, setupListeners } from '../utils';
-import { agentSlice, userSlice } from './slices';
+import { faroSlice, userSlice } from './slices';
 
 export function createStore(preloadedState: {}) {
   const store = configureStore({
     preloadedState,
     reducer: combineReducers({
-      agent: agentSlice.reducer,
+      faro: faroSlice.reducer,
       user: userSlice.reducer,
       ...apiReducers,
     }),

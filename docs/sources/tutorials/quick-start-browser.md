@@ -1,6 +1,6 @@
 # Get started with Grafana Faro Web SDK
 
-This document describes how to set up and use Grafana Faro Web SDK. For more information, refer to the [demo application](https://github.com/grafana/grafana-javascript-agent/tree/main/demo).
+This document describes how to set up and use Grafana Faro Web SDK. For more information, refer to the [demo application](https://github.com/grafana/faro-web-sdk/tree/main/demo).
 
 ## Before you begin
 
@@ -10,7 +10,8 @@ This document describes how to set up and use Grafana Faro Web SDK. For more inf
 
 The following example shows a basic Grafana Agent configuration that exposes a collector endpoint
 at [http://host:12345/collect](http://host:12345/collect) and forwards collected telemetry to Loki,
-Tempo, and Prometheus instances. For more information about the agent app receiver integration, refer to [app_agent_receiver_config](https://grafana.com/docs/agent/latest/configuration/integrations/integrations-next/app-agent-receiver-config/).
+Tempo, and Prometheus instances. This collector endpoint has to be accessible by your web application.
+For more information about the app agent receiver integration, refer to [app_agent_receiver_config](https://grafana.com/docs/agent/latest/configuration/integrations/integrations-next/app-agent-receiver-config/).
 
 ```yaml
 metrics:
@@ -87,10 +88,10 @@ integrations:
 
    ```bash
    #npm
-   npm i -S @grafana/faro-tracing-web
+   npm i -S @grafana/faro-web-tracing
 
    #yarn
-   yarn add @grafana/faro-tracing-web
+   yarn add @grafana/faro-web-tracing
    ```
 
 ## Initialize Grafana Faro Web SDK
@@ -106,9 +107,9 @@ and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements.
 Without tracing, the bundle footprint is small.
 
 ```ts
-import { initializeGrafanaAgent } from '@grafana/faro-web-sdk';
+import { initializeFaro } from '@grafana/faro-web-sdk';
 
-const agent = initializeGrafanaAgent({
+const faro = initializeFaro({
   url: 'https://collector-host:12345/collect',
   apiKey: 'secret',
   app: {
@@ -128,13 +129,13 @@ import {
   ConsoleTransport,
   ErrorsInstrumentation,
   FetchTransport,
-  initializeGrafanaAgent,
+  initializeFaro,
   LogLevel,
   WebVitalsInstrumentation,
   SessionInstrumentation,
 } from '@grafana/faro-web-sdk';
 
-const agent = initializeGrafanaAgent({
+const faro = initializeFaro({
   instrumentations: [
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
@@ -160,16 +161,16 @@ const agent = initializeGrafanaAgent({
 ### With Open Telemetry tracing using the included instrumentation
 
 Due to it's large size, [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/)
-tracing support is provided in a separate `@grafana/faro-tracing-web` package.
+tracing support is provided in a separate `@grafana/faro-web-tracing` package.
 
 The provided default OTEL setup includes tracing instrumentations for user interaction,
 fetch and document load, and W3C trace context propagation via `fetch` and `xhr`.
 
 ```ts
-import { TracingInstrumentation } from '@grafana/faro-tracing-web';
-import { initializeGrafanaAgent, getWebInstrumentations } from '@grafana/faro-web-sdk';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+import { initializeFaro, getWebInstrumentations } from '@grafana/faro-web-sdk';
 
-const agent = initializeGrafanaAgent({
+const faro = initializeFaro({
   url: 'http://localhost:12345/collect',
   apiKey: 'secret',
   instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
@@ -179,8 +180,8 @@ const agent = initializeGrafanaAgent({
   },
 });
 
-// get otel trace and context apis
-const { trace, context } = agent.api.getOTEL();
+// get OTEL trace and context APIs
+const { trace, context } = faro.api.getOTEL();
 
 const tracer = trace.getTracer('default');
 const span = tracer.startSpan('click');
@@ -192,8 +193,8 @@ context.with(trace.setSpan(context.active(), span), () => {
 
 ### With custom Open Telemetry tracing configuration
 
-The following example configure OTEL manually and uses `GrafanaAgentTraceExporter`
-and call `agent.api.initOTEL` with OTEL trace and context APIs.
+The following example configure OTEL manually and uses `FaroTraceExporter`
+and call `faro.api.initOTEL` with OTEL trace and context APIs.
 
 ```ts
 import { trace, context } from '@opentelemetry/api';
@@ -208,15 +209,15 @@ import { Resource } from '@opentelemetry/resources';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { initializeGrafanaAgent } from '@grafana/faro-web-sdk';
-import { GrafanaAgentTraceExporter, SessionProcessor } from '@grafana/faro-tracing-web';
+import { initializeFaro } from '@grafana/faro-web-sdk';
+import { FaroTraceExporter, FaroSessionSpanProcessor } from '@grafana/faro-web-tracing';
 
 const VERSION = '1.0.0';
 const NAME = 'frontend';
 const COLLECTOR_URL = 'http://localhost:12345/collect';
 
-// initialize agent
-const agent = initializeGrafanaAgent({
+// initialize faro
+const faro = initializeFaro({
   url: COLLECTOR_URL,
   apiKey: 'secret',
   app: {
@@ -235,7 +236,7 @@ const resource = Resource.default().merge(
 
 const provider = new WebTracerProvider({ resource });
 
-provider.addSpanProcessor(new SessionSpanProcessor(new BatchSpanProcessor(new GrafanaAgentTraceExporter({ agent }))));
+provider.addSpanProcessor(new FaroSessionSpanProcessor(new BatchSpanProcessor(new FaroTraceExporter({ faro }))));
 
 provider.register({
   propagator: new W3CTraceContextPropagator(),
@@ -253,8 +254,8 @@ registerInstrumentations({
   ],
 });
 
-// register otel with agent
-agent.api.initOTEL(trace, context);
+// register OTel with Faro
+faro.api.initOTEL(trace, context);
 ```
 
 ## Usage examples
@@ -262,20 +263,20 @@ agent.api.initOTEL(trace, context);
 The following examples show how to use the SDK to push data manually and set users and sessions.
 
 ```ts
-import { LogLevel } from '@grafana/faro-core';
+import { LogLevel } from '@grafana/faro-web-sdk';
 
 // there's a global property
-const agent = window.grafanaAgent;
+const faro = window.faro;
 
 // send a log message
 // by default info, warn and error levels are captured.
 // trace, debug and log are not
 console.info('Hello world', 123);
 // or
-agent.api.pushLog(['Hello world', 123], { level: LogLevel.Debug });
+faro.api.pushLog(['Hello world', 123], { level: LogLevel.Debug });
 
 // log with context
-agent.api.pushLog(['Sending update'], {
+faro.api.pushLog(['Sending update'], {
   context: {
     payload: thePayload,
   },
@@ -283,7 +284,7 @@ agent.api.pushLog(['Sending update'], {
 });
 
 // set user metadata, to be included with every event. All properties optional
-agent.api.setUser({
+faro.api.setUser({
   email: 'bob@example.com',
   id: '123abc',
   username: 'bob',
@@ -293,16 +294,16 @@ agent.api.setUser({
 });
 
 // unset user
-agent.api.resetUser();
+faro.api.resetUser();
 
 // set session metadata, to be included with every event
-agent.api.setSession(createSession({ plan: 'paid' }));
+faro.api.setSession(createSession({ plan: 'paid' }));
 
 // unset session
-agent.api.resetSession();
+faro.api.resetSession();
 
 // push measurement
-agent.api.pushMeasurement({
+faro.api.pushMeasurement({
   type: 'cart-transaction',
   values: {
     delay: 122,
@@ -311,14 +312,27 @@ agent.api.pushMeasurement({
 });
 
 // push an error
-agent.api.pushError(new Error('everything went horribly wrong'));
+faro.api.pushError(new Error('everything went horribly wrong'));
 
 // push an event
-agent.api.pushEvent('navigation', { url: window.location.href });
+faro.api.pushEvent('navigation', { url: window.location.href });
 
-// pause agent, preventing events from being sent
-agent.pause();
+// pause faro, preventing events from being sent
+faro.pause();
 
 // resume sending events
-agent.unpause();
+faro.unpause();
 ```
+
+## Dashboards
+
+Two example Grafana dashboards are included in this repository. Add them to your
+Grafana instance using the dashboard import function.
+
+[Web Application Dashboard](https://github.com/grafana/faro-web-sdk/blob/main/dashboards/frontend-application.json)
+
+- monitor a web application using data collected by Faro Web SDK
+
+[Grafana Agent app agent receiver dashboard](https://github.com/grafana/faro-web-sdk/blob/main/dashboards/app-agent-receiver.json)
+
+- monitor Grafana Agent app receiver integration

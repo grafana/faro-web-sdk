@@ -1,4 +1,4 @@
-import type { MetaItem } from '@grafana/agent-core';
+import type { MetaItem } from '@grafana/faro-core';
 
 import { browserMeta } from './browser';
 import { pageMeta } from './page';

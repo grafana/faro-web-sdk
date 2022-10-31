@@ -7,7 +7,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { Routes } from 'react-router-dom';
 import { StaticRouter } from 'react-router-dom/server';
 
-import { GrafanaAgentErrorBoundary, setReactRouterV6SSRDependencies } from '@grafana/agent-integration-react';
+import { FaroErrorBoundary, setReactRouterV6SSRDependencies } from '@grafana/faro-react';
 
 import { App } from '../../../client/App';
 import { createStore } from '../../../client/store';
@@ -20,7 +20,7 @@ export function renderToString(url: string, preloadedState: {}): [string, Filled
   return [
     reactRenderToString(
       <StrictMode>
-        <GrafanaAgentErrorBoundary>
+        <FaroErrorBoundary>
           <ReduxProvider store={createStore(preloadedState)}>
             <HelmetProvider context={helmetContext}>
               <StaticRouter location={url}>
@@ -30,7 +30,7 @@ export function renderToString(url: string, preloadedState: {}): [string, Filled
               </StaticRouter>
             </HelmetProvider>
           </ReduxProvider>
-        </GrafanaAgentErrorBoundary>
+        </FaroErrorBoundary>
       </StrictMode>
     ),
     helmetContext,

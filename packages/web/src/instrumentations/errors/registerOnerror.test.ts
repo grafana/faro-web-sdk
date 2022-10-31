@@ -1,6 +1,6 @@
-import { mockConfig, MockTransport } from '@grafana/agent-core/src/testUtils';
+import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
-import { initializeGrafanaAgent } from '../../initialize';
+import { initializeFaro } from '../../initialize';
 import { registerOnerror } from './registerOnerror';
 
 describe('registerOnerror', () => {
@@ -13,8 +13,8 @@ describe('registerOnerror', () => {
     const config = mockConfig({
       transports: [transport],
     });
-    const agent = initializeGrafanaAgent(config);
-    registerOnerror(agent);
+    const faro = initializeFaro(config);
+    registerOnerror(faro);
 
     window.onerror('boo', 'some file', 10, 10, new Error('boo'));
     expect(called).toBe(true);

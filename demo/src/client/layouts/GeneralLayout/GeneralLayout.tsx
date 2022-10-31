@@ -2,7 +2,7 @@ import type { MouseEvent } from 'react';
 import Container from 'react-bootstrap/Container';
 import { Outlet, useNavigate } from 'react-router-dom';
 
-import { agent } from '@grafana/agent-integration-react';
+import { faro } from '@grafana/faro-react';
 
 import { useLazyGetLogoutQuery } from '../../api';
 import { Navbar } from '../../components';
@@ -57,7 +57,7 @@ export function GeneralLayout() {
                   onClick: (evt: MouseEvent<HTMLElement>) => {
                     evt.preventDefault();
 
-                    agent.api.pushEvent('logout');
+                    faro.api.pushEvent('logout');
 
                     logout().then(() => {
                       navigate('/');

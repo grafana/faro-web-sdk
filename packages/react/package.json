@@ -1,0 +1,52 @@
+{
+  "name": "@grafana/faro-react",
+  "version": "0.5.0",
+  "description": "Faro package that enables easier integration in projects built with React.",
+  "license": "Apache-2.0",
+  "author": "Grafana Labs",
+  "homepage": "https://github.com/grafana/faro-web-sdk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/faro-web-sdk.git",
+    "directory": "packages/react"
+  },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/cjs/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "yarn build -w",
+    "build": "tsc --build tsconfig.all.json",
+    "clean": "rimraf dist/ yarn-error.log",
+    "quality": "run-s quality:*",
+    "quality:test": "exit 0",
+    "quality:format": "prettier --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint": "run-s quality:lint:*",
+    "quality:lint:eslint": "eslint --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:md": "markdownlint README.md",
+    "quality:circular-deps": "madge --circular ."
+  },
+  "dependencies": {
+    "@grafana/faro-web-tracing": "^0.5.0",
+    "@grafana/faro-web-sdk": "^0.5.0",
+    "hoist-non-react-statics": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/hoist-non-react-statics": "^3.3.1",
+    "@types/react": "^18.0.22",
+    "react": "^18.1.0",
+    "react-router-dom": "^6.4.2"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "react-router-dom": "^4.0.0 || ^5.0.0 || ^6.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

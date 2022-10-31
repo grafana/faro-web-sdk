@@ -1,22 +1,22 @@
-import { initializeAgent, isInternalAgentOnGlobalObject } from './agent';
-import type { Agent } from './agent';
 import { initializeAPI } from './api';
 import type { Config } from './config';
 import { initializeInstrumentations } from './instrumentations';
 import { initializeInternalLogger } from './internalLogger';
 import { initializeMetas } from './metas';
+import type { Faro } from './sdk';
+import { isInternalFaroOnGlobalObject, registerFaro } from './sdk';
 import { initializeTransports } from './transports';
 import { initializeUnpatchedConsole } from './unpatchedConsole';
 
-export function initializeGrafanaAgent(config: Config): Agent {
+export function initializeFaro(config: Config): Faro {
   const unpatchedConsole = initializeUnpatchedConsole(config);
   const internalLogger = initializeInternalLogger(unpatchedConsole, config);
 
   internalLogger.debug('Initializing');
 
-  if (isInternalAgentOnGlobalObject() && !config.isolate) {
+  if (isInternalFaroOnGlobalObject() && !config.isolate) {
     internalLogger.error(
-      'An agent is already registered. Either add instrumentations, transports etc. to the global agent or use the "isolate" property'
+      'Faro is already registered. Either add instrumentations, transports etc. to the global faro instance or use the "isolate" property'
     );
 
     return undefined!;
@@ -30,7 +30,7 @@ export function initializeGrafanaAgent(config: Config): Agent {
     api.setSession(config.session);
   }
 
-  const agent = initializeAgent(internalLogger, {
+  const faro = registerFaro(internalLogger, {
     api,
     config,
     internalLogger,
@@ -42,8 +42,8 @@ export function initializeGrafanaAgent(config: Config): Agent {
     instrumentations: initializeInstrumentations(internalLogger, config),
   });
 
-  // make sure agent is initialized before initializing instrumentations
-  agent.instrumentations.add(...config.instrumentations);
+  // make sure Faro is initialized before initializing instrumentations
+  faro.instrumentations.add(...config.instrumentations);
 
-  return agent;
+  return faro;
 }

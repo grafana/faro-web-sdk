@@ -3,7 +3,7 @@ export type { BrowserConfig } from './config';
 
 export { defaultEventDomain } from './consts';
 
-export { initializeGrafanaAgent } from './initialize';
+export { initializeFaro } from './initialize';
 
 export {
   buildStackFrame,
@@ -29,7 +29,7 @@ export type {
 } from './transports';
 
 export {
-  agent,
+  faro,
   allLogLevels,
   BaseExtension,
   BaseInstrumentation,
@@ -43,7 +43,7 @@ export {
   defaultInternalLoggerLevel,
   defaultLogLevel,
   getCurrentTimestamp,
-  getInternalAgentFromGlobalObject,
+  getInternalFaroFromGlobalObject,
   getTransportBody,
   globalObject,
   internalGlobalObjectKey,
@@ -61,7 +61,7 @@ export {
   isFunction,
   isInstanceOf,
   isInt,
-  isInternalAgentOnGlobalObject,
+  isInternalFaroOnGlobalObject,
   isMap,
   isMapDefined,
   isNull,
@@ -79,14 +79,14 @@ export {
   InternalLoggerLevel,
   LogLevel,
   noop,
-  setInternalAgentOnGlobalObject,
+  setInternalFaroOnGlobalObject,
   TransportItemType,
   transportItemTypeToBodyKey,
   VERSION,
-} from '@grafana/agent-core';
+} from '@grafana/faro-core';
 
 export type {
-  Agent,
+  Faro,
   API,
   APIEvent,
   BaseObject,
@@ -145,4 +145,4 @@ export type {
   UnpatchedConsole,
   EventEvent,
   EventsAPI,
-} from '@grafana/agent-core';
+} from '@grafana/faro-core';

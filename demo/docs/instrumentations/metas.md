@@ -7,7 +7,7 @@ to provide context and allow granular filtering.
 
 ### Client
 
-Grafana JavaScript Agent requires `app` meta as the only mandatory meta when initializing the library. Besides `app`,
+Faro requires `app` meta as the only mandatory meta when initializing the library. Besides `app`,
 it automatically creates a `session` meta which can also be set manually in some cases (i.e. sharing the same session
 with the API, storing the session ID etc.).
 
@@ -19,7 +19,7 @@ be combined to track the activity of a user prior to logging in.
 
 ### API
 
-Metas in the API are similar to the ones provided by Grafana JavaScript Agent but they are required by OpenTelemetry.
+Metas in the API are similar to the ones provided by Faro but they are required by OpenTelemetry.
 
 ## Testing Scenario
 

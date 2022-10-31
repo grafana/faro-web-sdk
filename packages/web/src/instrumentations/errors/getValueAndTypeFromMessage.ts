@@ -1,4 +1,4 @@
-import { defaultExceptionType } from '@grafana/agent-core';
+import { defaultExceptionType } from '@grafana/faro-core';
 
 import { valueTypeRegex } from './const';
 

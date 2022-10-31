@@ -1,4 +1,4 @@
-import type { TraceContext } from '@grafana/agent-core';
+import type { TraceContext } from '@grafana/faro-core';
 
 context('Tracing', () => {
   [
@@ -8,7 +8,7 @@ context('Tracing', () => {
       interceptor: () => {
         let trace: TraceContext | undefined = undefined;
 
-        cy.interceptAgent((body) => {
+        cy.interceptCollector((body) => {
           const logItem = body.logs?.[0];
 
           if (!trace && logItem && logItem.message === 'trace with log button clicked') {

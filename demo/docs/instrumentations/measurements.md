@@ -6,9 +6,9 @@ Measurements (aka metrics) are indicators for tracking performance or other nume
 
 ### Client
 
-[Web Vitals](https://web.dev/vitals/) are the only measurements captured automatically by Grafana JavaScript Agent.
+[Web Vitals](https://web.dev/vitals/) are the only measurements captured automatically by Faro.
 
-Besides the automatically captured measurements, Grafana JavaScript Agent API also provides a `pushMeasurement` method
+Besides the automatically captured measurements, Faro API also provides a `pushMeasurement` method
 that can be used to track measurements.
 
 **Captured frontend measurements are stored in Loki instead of Prometheus to avoid cardinality issues.**

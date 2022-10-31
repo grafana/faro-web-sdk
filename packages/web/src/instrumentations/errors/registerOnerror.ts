@@ -1,12 +1,12 @@
-import { Agent, isString } from '@grafana/agent-core';
-import type { ExceptionStackFrame } from '@grafana/agent-core';
+import { Faro, isString } from '@grafana/faro-core';
+import type { ExceptionStackFrame } from '@grafana/faro-core';
 
 import { unknownString } from './const';
 import { getErrorDetails } from './getErrorDetails';
 import { getValueAndTypeFromMessage } from './getValueAndTypeFromMessage';
 import { buildStackFrame } from './stackFrames';
 
-export function registerOnerror(agent: Agent): void {
+export function registerOnerror(faro: Faro): void {
   // The error event is a little bit different than other events when it comes to the listener
   // window.addEventListener does not provide all parameters, hence we need to use the window.onerror syntax
   // TODO: investigate https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror
@@ -34,7 +34,7 @@ export function registerOnerror(agent: Agent): void {
       }
 
       if (value) {
-        agent.api.pushError(new Error(value), { type, stackFrames });
+        faro.api.pushError(new Error(value), { type, stackFrames });
       }
     } finally {
       oldOnerror?.apply(window, args);

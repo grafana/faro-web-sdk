@@ -1,4 +1,4 @@
-import { isInstanceOf } from '@grafana/agent-core';
+import { isInstanceOf } from '@grafana/faro-core';
 
 import type { Response } from './types';
 

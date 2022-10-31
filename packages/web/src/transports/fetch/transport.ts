@@ -1,5 +1,5 @@
-import { BaseTransport, createPromiseBuffer, getTransportBody, PromiseBuffer, VERSION } from '@grafana/agent-core';
-import type { TransportItem } from '@grafana/agent-core';
+import { BaseTransport, createPromiseBuffer, getTransportBody, PromiseBuffer, VERSION } from '@grafana/faro-core';
+import type { TransportItem } from '@grafana/faro-core';
 
 import type { FetchTransportOptions } from './types';
 
@@ -8,7 +8,7 @@ const DEFAULT_CONCURRENCY = 5; // chrome supports 10 total, firefox 17
 const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
 
 export class FetchTransport extends BaseTransport {
-  readonly name = '@grafana/agent-web:transport-fetch';
+  readonly name = '@grafana/faro-web-sdk:transport-fetch';
   readonly version = VERSION;
 
   promiseBuffer: PromiseBuffer<Response | void>;

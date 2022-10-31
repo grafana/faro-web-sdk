@@ -43,11 +43,11 @@
       "prepend": false
     },
     {
-      "path": "../packages/integration-react/tsconfig.all.json",
+      "path": "../packages/react/tsconfig.all.json",
       "prepend": false
     },
     {
-      "path": "../packages/tracing-web/tsconfig.all.json",
+      "path": "../packages/web-tracing/tsconfig.all.json",
       "prepend": false
     },
     {

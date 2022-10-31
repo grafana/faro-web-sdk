@@ -1,5 +1,5 @@
-import { isDomError, isDomException, isError, isErrorEvent, isEvent, isObject } from '@grafana/agent-core';
-import type { ExceptionStackFrame } from '@grafana/agent-core';
+import { isDomError, isDomException, isError, isErrorEvent, isEvent, isObject } from '@grafana/faro-core';
+import type { ExceptionStackFrame } from '@grafana/faro-core';
 
 import { domErrorType, domExceptionType, objectEventValue } from './const';
 import { getStackFramesFromError } from './stackFrames';

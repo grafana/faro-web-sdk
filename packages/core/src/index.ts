@@ -1,11 +1,11 @@
 export {
-  agent,
-  getInternalAgentFromGlobalObject,
+  faro,
+  getInternalFaroFromGlobalObject,
   internalGlobalObjectKey,
-  isInternalAgentOnGlobalObject,
-  setInternalAgentOnGlobalObject,
-} from './agent';
-export type { Agent } from './agent';
+  isInternalFaroOnGlobalObject,
+  setInternalFaroOnGlobalObject,
+} from './sdk';
+export type { Faro } from './sdk';
 
 export { defaultExceptionType } from './api';
 export type {
@@ -39,7 +39,7 @@ export type {
 export { globalObject } from './globalObject';
 export type { GlobalObject } from './globalObject';
 
-export { initializeGrafanaAgent } from './initialize';
+export { initializeFaro } from './initialize';
 
 export { defaultGlobalObjectKey } from './config';
 export type { Config, Patterns } from './config';

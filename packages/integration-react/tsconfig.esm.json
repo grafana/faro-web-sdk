@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig.base.esm.json",
-  "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist/esm",
-    "tsBuildInfoFile": "../../.build-cache/integration-react.esm.tsbuildinfo"
-  },
-  "include": ["./src"]
-}

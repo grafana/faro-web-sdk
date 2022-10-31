@@ -2,7 +2,7 @@ context('Measurements', () => {
   describe('Web Vitals', () => {
     ['ttfb', 'fcp', 'cls'].forEach((expectedVital) => {
       it(`will capture ${expectedVital}`, () => {
-        cy.interceptAgent((body) => {
+        cy.interceptCollector((body) => {
           const item = body.measurements?.[0]!;
 
           if (item?.type === 'web-vitals' && Object.keys(item?.values).includes(expectedVital)) {
@@ -34,7 +34,7 @@ context('Measurements', () => {
       },
     ].forEach(({ title, btnName, metricName }) => {
       it(`will capture ${title}`, () => {
-        cy.interceptAgent((body) => {
+        cy.interceptCollector((body) => {
           const item = body.measurements?.[0]!;
 
           if (item?.type === 'custom' && Object.keys(item?.values).includes(metricName)) {

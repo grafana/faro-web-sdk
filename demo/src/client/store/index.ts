@@ -10,4 +10,4 @@ export {
   setSession,
   setUser,
 } from './slices';
-export type { AgentState, UserState } from './slices';
+export type { FaroState, UserState } from './slices';

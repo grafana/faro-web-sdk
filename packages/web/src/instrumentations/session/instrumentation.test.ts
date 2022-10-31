@@ -1,5 +1,5 @@
-import { Conventions, EventEvent, initializeGrafanaAgent, TransportItem } from '@grafana/agent-core';
-import { mockConfig, MockTransport } from '@grafana/agent-core/src/testUtils';
+import { Conventions, EventEvent, initializeFaro, TransportItem } from '@grafana/faro-core';
+import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { createSession } from '../../session';
 import { SessionInstrumentation } from './instrumentation';
@@ -14,7 +14,7 @@ describe('SessionInstrumentation', () => {
       session,
     });
 
-    initializeGrafanaAgent(config);
+    initializeFaro(config);
 
     expect(transport.items).toHaveLength(1);
 
@@ -33,7 +33,7 @@ describe('SessionInstrumentation', () => {
       session,
     });
 
-    const agent = initializeGrafanaAgent(config);
+    const faro = initializeFaro(config);
 
     expect(transport.items).toHaveLength(1);
 
@@ -41,11 +41,11 @@ describe('SessionInstrumentation', () => {
     expect(event.payload.name).toEqual(Conventions.EventNames.SESSION_START);
     expect(event.meta.session?.id).toEqual(session.id);
 
-    agent.metas.add({ user: { id: 'foo' } });
+    faro.metas.add({ user: { id: 'foo' } });
     expect(transport.items).toHaveLength(1);
 
     const newSession = createSession();
-    agent.api.setSession(newSession);
+    faro.api.setSession(newSession);
     expect(transport.items).toHaveLength(2);
 
     event = transport.items[0]! as TransportItem<EventEvent>;

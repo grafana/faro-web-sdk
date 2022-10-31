@@ -1,14 +1,23 @@
-# @grafana/agent-web
+# @grafana/faro-web-sdk
 
-Instrumentations, metas and transports for web applications.
+Faro is a SDK that can instrument frontend JavaScript applications to collect
+telemetry and forward it to the [Grafana Agent](https://grafana.com/docs/agent/latest/)
+(with app agent receiver integration enabled).
+Grafana Agent can then send this data to
+[Loki](https://grafana.com/logs/), or [Tempo](https://grafana.com/traces/).
 
 _Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.
+
+## Get started
+
+See [quick start for web applications](docs/sources/tutorials/quick-start-browser.md).
 
 ## Instrumentations
 
 - console - captures messages logged to `console` global object. Only `warn`, `info` and `error` levels by default.
 - errors - captures unhandled top level exceptions
 - web-vitals - captures performance metrics reported by web vitals API
+- session - sends session start event
 
 ## Metas
 
@@ -25,9 +34,9 @@ _Warning_: currently pre-release and subject to frequent breaking changes. Use a
 Basic set up, will automatically report errors and web vitals:
 
 ```ts
-import { initializeGrafanaAgent } from '@grafana/agent-web';
+import { initializeFaro } from '@grafana/faro-web-sdk';
 
-const agent = initializeGrafanaAgent({
+const faro = initializeFaro({
   url: 'https://agent.myapp/collect',
   apiKey: 'secret',
   app: {
@@ -37,22 +46,22 @@ const agent = initializeGrafanaAgent({
 });
 
 // send a log message
-agent.api.pushLog(['hello world']);
+faro.api.pushLog(['hello world']);
 
 // will be captured
 throw new Error('oh no');
 
 // push error manually
-agent.api.pushError(new Error('oh no'));
+faro.api.pushError(new Error('oh no'));
 ```
 
-With OTel tracing and browser console capture:
+With OTEL tracing and browser console capture:
 
 ```ts
-import { TracingInstrumentation } from '@grafana/agent-tracing-web';
-import { ConsoleInstrumentation, initializeGrafanaAgent, getWebInstrumentations } from '@grafana/agent-web';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+import { ConsoleInstrumentation, initializeFaro, getWebInstrumentations } from '@grafana/faro-web-sdk';
 
-const agent = initializeGrafanaAgent({
+const faro = initializeFaro({
   url: 'https://agent.myapp/collect',
   apiKey: 'secret',
   instrumentations: [...getWebInstrumentations({ captureConsole: true }), new TracingInstrumentation()],
@@ -63,12 +72,12 @@ const agent = initializeGrafanaAgent({
 });
 
 // start a span
-agent.api
+faro.api
   .getOTEL()
   ?.trace.getTracer('frontend')
   .startActiveSpan('hello world', (span) => {
     // send a log message
-    agent.api.pushLog(['hello world']);
+    faro.api.pushLog(['hello world']);
     span.end();
   });
 

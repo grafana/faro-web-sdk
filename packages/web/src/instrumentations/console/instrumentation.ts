@@ -1,9 +1,9 @@
-import { allLogLevels, BaseInstrumentation, LogLevel, VERSION } from '@grafana/agent-core';
+import { allLogLevels, BaseInstrumentation, LogLevel, VERSION } from '@grafana/faro-core';
 
 import type { ConsoleInstrumentationOptions } from './types';
 
 export class ConsoleInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/agent-web:instrumentation-console';
+  readonly name = '@grafana/faro-web-sdk:instrumentation-console';
   readonly version = VERSION;
 
   static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];
@@ -21,11 +21,11 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         /* eslint-disable-next-line no-console */
         console[level] = (...args) => {
           try {
-            this.agent.api.pushLog(args, { level });
+            this.faro.api.pushLog(args, { level });
           } catch (err) {
             this.logError(err);
           } finally {
-            this.agent.unpatchedConsole[level](...args);
+            this.faro.unpatchedConsole[level](...args);
           }
         };
       });

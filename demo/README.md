@@ -1,6 +1,6 @@
-# Grafana JavaScript Agent Demo
+# Faro Demo
 
-This small project demonstrates how to use the Grafana JavaScript Agent and its packages.
+This small project demonstrates how to use the Faro and its packages.
 
 The app is built using:
 
@@ -10,7 +10,7 @@ The app is built using:
   - [Redux](https://redux.js.org/)
   - [Redux Toolkit](https://redux-toolkit.js.org/)
   - [Redux Toolkit Query](https://redux-toolkit.js.org/rtk-query/overview)
-  - [Grafana JavaScript Agent](https://github.com/grafana/grafana-javascript-agent)
+  - [Faro](https://github.com/grafana/faro-web-sdk)
   - [Server-side rendering (SSR)](https://reactjs.org/docs/react-dom-server.html)
   - [React Bootstrap](https://react-bootstrap.github.io/)
   - [React Hook Form](https://react-hook-form.com/)
@@ -30,7 +30,7 @@ The app is built using:
   - [dotenv](https://github.com/motdotla/dotenv)
   - [Vite](https://vitejs.dev/)
 
-Besides the app itself, the demo can also spawn the entire architecture for testing Grafana JavaScript Agent:
+Besides the app itself, the demo can also spawn the entire architecture for testing Faro:
 
 - [Grafana](https://grafana.com/oss/grafana/)
 - [Loki](https://grafana.com/oss/loki/)
@@ -56,7 +56,7 @@ This will automatically install dependencies, build the demo and start it in `de
 ## Instrumentation
 
 There is various data that is captured in this app. Some data is captured manually while other data is automatically
-captured by the instrumentation provided by either Grafana JavaScript Agent and/or OpenTelemetry.
+captured by the instrumentation provided by either Faro and/or OpenTelemetry.
 
 You can have a look over the following pages to understand what and how data is collected.
 

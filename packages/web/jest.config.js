@@ -4,6 +4,6 @@ module.exports = {
   rootDir: '../',
   roots: ['web/src'],
   moduleNameMapper: {
-    '@grafana/agent-core/src/(.*)': '<rootDir>/core/src/$1',
+    '@grafana/faro-core/src/(.*)': '<rootDir>/core/src/$1',
   },
 };

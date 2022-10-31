@@ -31,7 +31,7 @@ export function initializeMetas(internalLogger: InternalLogger, config: Config):
 
   const initial: Meta = {
     sdk: {
-      name: '@grafana/agent-core',
+      name: '@grafana/faro-core',
       version: VERSION,
       integrations: config.instrumentations.map(({ name, version }) => ({ name, version })),
     },

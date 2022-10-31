@@ -1,9 +1,9 @@
-import type { Agent, internalGlobalObjectKey } from '../agent';
+import type { Faro, internalGlobalObjectKey } from '../sdk';
 
 export type GlobalObject<T = typeof window | typeof global> = T & {
-  [label: string]: Agent;
+  [label: string]: Faro;
 
-  [internalGlobalObjectKey]: Agent;
+  [internalGlobalObjectKey]: Faro;
 };
 
 // This does not uses isUndefined method because it will throw an error in non-browser environments

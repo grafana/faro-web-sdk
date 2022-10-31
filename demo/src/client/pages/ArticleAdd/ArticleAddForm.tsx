@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { agent } from '@grafana/agent-integration-react';
+import { faro } from '@grafana/faro-react';
 
 import type { ArticleAddPayload } from '../../../common';
 import { usePostArticleMutation } from '../../api';
@@ -23,7 +23,7 @@ export function ArticleAddForm() {
   });
 
   const onSubmit = handleSubmit((data) => {
-    agent.api.pushEvent('createArticleAttempt', {
+    faro.api.pushEvent('createArticleAttempt', {
       name: data.name,
     });
 
@@ -33,9 +33,9 @@ export function ArticleAddForm() {
   useEffect(() => {
     if (!createArticleResult.isUninitialized && !createArticleResult.isLoading) {
       if (createArticleResult.isError) {
-        agent.api.pushEvent('createArticleFailed');
+        faro.api.pushEvent('createArticleFailed');
       } else {
-        agent.api.pushEvent('createArticleSuccessfully');
+        faro.api.pushEvent('createArticleSuccessfully');
 
         navigate(`/articles/view/${createArticleResult.data.data.id}`);
       }

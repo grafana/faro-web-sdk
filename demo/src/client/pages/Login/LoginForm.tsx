@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { agent } from '@grafana/agent-integration-react';
+import { faro } from '@grafana/faro-react';
 
 import type { AuthLoginPayload } from '../../../common';
 import { usePostLoginMutation } from '../../api';
@@ -23,7 +23,7 @@ export function LoginForm() {
   });
 
   const onSubmit = handleSubmit((data) => {
-    agent.api.pushEvent('loginAttempt');
+    faro.api.pushEvent('loginAttempt');
 
     login(data);
   });
@@ -31,9 +31,9 @@ export function LoginForm() {
   useEffect(() => {
     if (!loginResult.isUninitialized && !loginResult.isLoading) {
       if (loginResult.isError) {
-        agent.api.pushEvent('loginFailed');
+        faro.api.pushEvent('loginFailed');
       } else {
-        agent.api.pushEvent('loginSuccessfully');
+        faro.api.pushEvent('loginSuccessfully');
 
         navigate('/articles');
       }
