@@ -4,9 +4,6 @@
 
 <p align="left"><img src="docs/faro_logo.png" alt="Grafana Faro logo" width="400"></p>
 
-_Warning_
-This feature is currently pre-release and subject to frequent breaking changes.
-
 Faro is a SDK that can instrument frontend JavaScript applications to collect
 telemetry and forward it to the [Grafana Agent](https://grafana.com/docs/agent/latest/)
 (with app agent receiver integration enabled).
