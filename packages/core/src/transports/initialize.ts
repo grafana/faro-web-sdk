@@ -41,7 +41,7 @@ export function initializeTransports(internalLogger: InternalLogger, config: Con
     newTransports.forEach((newTransport) => {
       internalLogger.debug(`Adding "${newTransport.name}" transport`);
 
-      const exists = transports.some((existingTransport) => existingTransport.name === newTransport.name);
+      const exists = transports.some((existingTransport) => existingTransport === newTransport);
 
       if (exists) {
         internalLogger.warn(`Transport ${newTransport.name} is already added`);
@@ -111,18 +111,9 @@ export function initializeTransports(internalLogger: InternalLogger, config: Con
     transportsToRemove.forEach((transportToRemove) => {
       internalLogger.debug(`Removing "${transportToRemove.name}" transport`);
 
-      const existingTransportIndex = transports.reduce<number | null>(
-        (acc, existingTransport, existingTransportIndex) => {
-          if (acc === null && existingTransport.name === transportToRemove.name) {
-            return existingTransportIndex;
-          }
+      const existingTransportIndex = transports.indexOf(transportToRemove);
 
-          return null;
-        },
-        null
-      );
-
-      if (!existingTransportIndex) {
+      if (existingTransportIndex === -1) {
         internalLogger.warn(`Transport "${transportToRemove.name}" is not added`);
 
         return;

@@ -93,6 +93,29 @@ describe('transports', () => {
       expect((transport.sentItems[0]?.payload as ErrorEvent).type).toEqual('NewType');
     });
   });
+
+  describe('multiple transports of the same type', () => {
+    const transport1 = new MockTransport();
+    const transport2 = new MockTransport();
+
+    const config = {
+      transports: [transport1, transport2],
+    } as any as Config;
+    const transports = initializeTransports(mockInternalLogger, config);
+
+    it('will all be added and receive events', () => {
+      transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));
+      expect(transport1.sentItems).toHaveLength(1);
+      expect(transport2.sentItems).toHaveLength(1);
+    });
+
+    it('one of them can be removed by instance', () => {
+      transports.remove(transport1);
+      transports.execute(makeExceptionTransportItem('Error', 'Kaboom'));
+      expect(transport1.sentItems).toHaveLength(1);
+      expect(transport2.sentItems).toHaveLength(2);
+    });
+  });
 });
 
 function makeExceptionTransportItem(type: string, value: string): TransportItem<ExceptionEvent> {

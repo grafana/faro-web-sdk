@@ -1,5 +1,9 @@
 # Changelog
 
+## unreleased
+
+- Fix bug where if multiple instances of a transport class where configured, only one would be used
+
 ## 1.0.0.beta1, 1.0.0.beta2 (2022-10-31)
 
 - Rename to "Faro Web SDK"
