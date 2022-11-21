@@ -1,3 +1,3 @@
 export { initializeTracesAPI } from './initialize';
 
-export type { InstrumentationLibrarySpan, OTELApi, ResourceSpan, TraceContext, TraceEvent, TracesAPI } from './types';
+export type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './types';
