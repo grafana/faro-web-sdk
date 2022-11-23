@@ -170,7 +170,7 @@ The `api` property on the Faro instance contains all the necessary methods to pu
 
 ## Traces
 
-- `pushTrace` - is a method for manually sending traces through the transports. The method only accepts a mandatory
+- `pushTraces` - is a method for manually sending traces through the transports. The method only accepts a mandatory
   `payload`.
 
   ```ts
