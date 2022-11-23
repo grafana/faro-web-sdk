@@ -3,6 +3,7 @@
 ## unreleased
 
 - Fix bug where if multiple instances of a transport class where configured, only one would be used
+- **Breaking change** No longer supports sending traces to Grafana Agent < 0.29.0.
 
 ## 1.0.0.beta1, 1.0.0.beta2 (2022-10-31)
 
