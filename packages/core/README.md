@@ -228,7 +228,7 @@ Metas are objects that will be attached to every event that is triggered by the 
 
 Out of the box, only one meta is provided: `sdk` which contains information about the Faro instance and its version.
 
-Additional metas should be provided by platform packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/).
+Additional metas may be provided by platform packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/).
 
 You can also define your own metas:
 
