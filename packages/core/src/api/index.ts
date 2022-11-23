@@ -1,6 +1,8 @@
 export { initializeAPI } from './initialize';
 export type { API, APIEvent } from './types';
 
+export type { EventAttributes, EventEvent, EventsAPI } from './events';
+
 export { defaultExceptionType } from './exceptions';
 export type {
   ExceptionEvent,
@@ -19,5 +21,3 @@ export type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '
 export type { MetaAPI } from './meta';
 
 export type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './traces';
-
-export type { EventEvent, EventsAPI } from './events';

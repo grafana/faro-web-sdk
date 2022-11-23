@@ -1,10 +1,9 @@
 # @grafana/faro-web-sdk
 
-Faro is a SDK that can instrument frontend JavaScript applications to collect
-telemetry and forward it to the [Grafana Agent](https://grafana.com/docs/agent/latest/)
+Faro is a SDK that can instrument frontend JavaScript applications to collect telemetry and forward it to the [Grafana Agent](https://grafana.com/docs/agent/latest/)
 (with app agent receiver integration enabled).
-Grafana Agent can then send this data to
-[Loki](https://grafana.com/logs/), or [Tempo](https://grafana.com/traces/).
+
+Grafana Agent can then send this data to either [Loki](https://grafana.com/logs/) or [Tempo](https://grafana.com/traces/).
 
 _Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.
 

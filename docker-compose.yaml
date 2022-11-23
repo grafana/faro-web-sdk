@@ -102,8 +102,6 @@ services:
       - 'demo_demo_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/node_modules'
       - 'demo_core_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/dist'
       - 'demo_core_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/node_modules'
-      - 'demo_integration_angular_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH}/dist'
-      - 'demo_integration_angular_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH}/node_modules'
       - 'demo_integration_react_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/dist'
       - 'demo_integration_react_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/node_modules'
       - 'demo_tracing_web_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_TRACING_WEB_PATH}/dist'
@@ -117,7 +115,6 @@ services:
         DEMO_DEMO_PATH: '${DEMO_DEMO_PATH}'
         DEMO_PACKAGES_CORE_PATH: '${DEMO_PACKAGES_CORE_PATH}'
         DEMO_PACKAGES_PATH: '${DEMO_PACKAGES_PATH}'
-        DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH: '${DEMO_PACKAGES_INTEGRATION_ANGULAR_PATH}'
         DEMO_PACKAGES_INTEGRATION_REACT_PATH: '${DEMO_PACKAGES_INTEGRATION_REACT_PATH}'
         DEMO_PACKAGES_TRACING_WEB_PATH: '${DEMO_PACKAGES_TRACING_WEB_PATH}'
         DEMO_PACKAGES_WEB_PATH: '${DEMO_PACKAGES_WEB_PATH}'
@@ -144,8 +141,6 @@ volumes:
   demo_demo_node_modules:
   demo_core_dist:
   demo_core_node_modules:
-  demo_integration_angular_dist:
-  demo_integration_angular_node_modules:
   demo_integration_react_dist:
   demo_integration_react_node_modules:
   demo_tracing_web_dist:
