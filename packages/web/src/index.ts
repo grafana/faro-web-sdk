@@ -96,6 +96,9 @@ export type {
   BeforeSendHook,
   BufferItem,
   Config,
+  EventAttributes,
+  EventEvent,
+  EventsAPI,
   ExceptionEvent,
   ExceptionStackFrame,
   ExceptionsAPI,
@@ -141,6 +144,4 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
-  EventEvent,
-  EventsAPI,
 } from '@grafana/faro-core';

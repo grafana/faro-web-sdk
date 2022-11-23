@@ -2,6 +2,14 @@
   "name": "@grafana/faro-core",
   "version": "1.0.0-beta2",
   "description": "Core package of Faro.",
+  "keywords": [
+    "observability",
+    "apm",
+    "rum",
+    "logs",
+    "traces",
+    "metrics"
+  ],
   "license": "Apache-2.0",
   "author": "Grafana Labs",
   "homepage": "https://github.com/grafana/faro-web-sdk",
@@ -35,9 +43,9 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@opentelemetry/api": "^1.1.0",
+    "@opentelemetry/api": "^1.3.0",
     "@opentelemetry/api-metrics": "^0.33.0",
-    "@opentelemetry/otlp-transformer": "^0.33.0",
+    "@opentelemetry/otlp-transformer": "^0.34.0",
     "fast-deep-equal": "^3.1.3"
   },
   "publishConfig": {

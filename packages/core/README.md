@@ -72,12 +72,14 @@ The `api` property on the Faro instance contains all the necessary methods to pu
 - `pushError` - is a method to push an error/exception to the Faro instance. It accepts a mandatory `message` parameter
   and an optional one where you can set:
 
-  - `skipDedupe` - a flag for enforcing event push even if the event is identical to the previous one.
+  - `skipDedupe` - a flag for enforcing error push even if the error is identical to the previous one.
   - `stackFrames` - an array of stack frames. Defaults to parsing `error.stack` if present.
   - `type` - the type of exception. Default value: `error.name` or `"error"`.
 
   ```ts
   faro.api.pushError(new Error('This is an error'));
+
+  faro.api.pushError(new Error('This is an unhandled exception'), { skipDedupe: true });
 
   faro.api.pushError(new Error('This is an unhandled exception'), { type: 'unhandledException' });
 
@@ -93,15 +95,43 @@ The `api` property on the Faro instance contains all the necessary methods to pu
   });
   ```
 
+## Events
+
+- `pushEvent` - is a method to push an event to the Faro instance. It accepts a mandatory `name` parameter and a couple
+  of optional parameters.
+
+  The first optional parameter is called `attributes` and it is a key-value object where you can set additional
+  properties for your event.
+
+  The second optional parameter is called `domain` and it is a string that's used to group events together.
+
+  The third optional parameter is an optional `options` object where you can set:
+
+  - `skipDedupe` - a flag for enforcing event push even if the event is identical to the previous one.
+
+  ```ts
+  faro.api.pushEvent('user-logged-in');
+
+  faro.api.pushEvent('user-logged-in', { username: 'the-user-id' });
+
+  faro.api.pushEvent('user-logged-in', { username: 'the-user-id' }, 'auth');
+
+  faro.api.pushEvent('user-logged-in', { username: 'the-user-id' }, 'auth', { skipDedupe: true });
+  ```
+
 ## Logs
 
 - `pushLog` - is a method to register a log event. The method accepts a mandatory `args` parameter which is an array of
-  arguments that will be stringified and send to the transports. The other two parameters are optional: `logLevel` is
-  the type of message that we register and `context` is a plain object containing primitive values that will be
-  recorded along with the message.
+  arguments that will be stringified and sent to the transports and an optional one where you can set:
+
+  - `skipDedupe` - a flag for enforcing log push even if the log is identical to the previous one.
+  - `logLevel` - the type of message that we register.
+  - `context` - a plain object containing primitive values that will be recorded along with the message.
 
   ```ts
   faro.api.pushLog(['This is a log', 'With another message']);
+
+  faro.api.pushLog(['This is a log'], { skipDedupe: true });
 
   faro.api.pushLog(['This is a warning'], { level: LogLevel.WARN });
 
@@ -117,7 +147,7 @@ The `api` property on the Faro instance contains all the necessary methods to pu
 - `pushMeasurement` - is a method for registering metrics. The method accepts a mandatory `payload` parameter and an
   optional parameter for passing additional options:
 
-  - `span` - the span where the exception has occurred. Default value: `undefined`.
+  - `skipDedupe` - a flag for enforcing measurement push even if the measurement is identical to the previous one.
 
   ```ts
   faro.api.pushMeasurement({
@@ -134,16 +164,40 @@ The `api` property on the Faro instance contains all the necessary methods to pu
         my_custom_metric: Math.random(),
       },
     },
-    {
-      span: mySpan,
-    }
+    { skipDedupe: true }
   );
+  ```
+
+## Traces
+
+- `pushTrace` - is a method for manually sending traces through the transports. The method only accepts a mandatory
+  `payload`.
+
+  ```ts
+  faro.api.pushTraces({
+    resourceSpans: [
+      /* OTel Traces */
+    ],
+  });
+  ```
+
+- `getOTEL` - is a method for getting the OpenTelemetry instance used by Faro.
+
+  ```ts
+  const otel = faro.api.getOTEL();
+  ```
+
+- `isOTELInitialized` - is a method for checking if OpenTelemetry package was correctly initialized and there is an
+  OpenTelemetry instance used by Faro.
+
+  ```ts
+  const isInitialized = faro.api.isOTELInitialized();
   ```
 
 ## Instrumentations
 
-Instrumentations are packages that leverage the Faro Web SDK API to provide automatic mechanisms
-for collecting data. They are just simple functions that are executed when the agent is initialized.
+Instrumentations are packages that leverage the Faro Web SDK API to provide automatic mechanisms for collecting data.
+They are just simple functions that are executed when the agent is initialized.
 
 Please note that the `core` package does not contain any instrumentations out of the box and they should be provided by
 platform specific packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web)
@@ -172,9 +226,9 @@ initializeFaro({
 
 Metas are objects that will be attached to every event that is triggered by the API.
 
-Out of the box, only one meta is provided: `sdk` which contains information about the Faro instance and its version. Additional
-metas can be provided by external packages like [@grafana/agent-meta-browser](https://github.com/grafana/faro-web-sdk/tree/main/packages/meta-browser)
-and [@grafana/agent-meta-page](https://github.com/grafana/faro-web-sdk/tree/main/packages/meta-page).
+Out of the box, only one meta is provided: `sdk` which contains information about the Faro instance and its version.
+
+Additional metas should be provided by platform packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/).
 
 You can also define your own metas:
 

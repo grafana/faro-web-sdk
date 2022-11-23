@@ -11,6 +11,9 @@ export { defaultExceptionType } from './api';
 export type {
   API,
   APIEvent,
+  EventAttributes,
+  EventEvent,
+  EventsAPI,
   ExceptionEvent,
   ExceptionStackFrame,
   ExceptionsAPI,
@@ -30,8 +33,6 @@ export type {
   TraceContext,
   TraceEvent,
   TracesAPI,
-  EventEvent,
-  EventsAPI,
 } from './api';
 
 export { globalObject } from './globalObject';

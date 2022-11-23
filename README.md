@@ -32,17 +32,14 @@ file provides an overview of the architecture and the API of library.
 provides instrumentations, metas and transports for use in web applications.
 See The [README.md](https://github.com/grafana/faro-web-sdk/tree/main/packages/web/README.md) for more information.
 
-### Tracing-web
+### Web Tracing
 
 [@grafana/faro-web-tracing](https://github.com/grafana/faro-web-sdk/tree/main/packages/web-tracing)
 provides implementation for tracing web applications.
 See The [README.md](https://github.com/grafana/faro-web-sdk/tree/main/packages/web-tracing/README.md)
 for more information.
 
-### Integrations
+### React Support
 
-1. [@grafana/faro-angular](https://github.com/grafana/faro-web-sdk/tree/main/packages/angular)
-   is a package that enables easier integration in projects built with Angular. FOR THE TIME BEING
-   THIS PACKAGE IS A PLACEHOLDER.
-1. [@grafana/faro-react](https://github.com/grafana/faro-web-sdk/tree/main/packages/transport-fetch)
-   is a package that enables easier integration in projects built with React.
+[@grafana/faro-react](https://github.com/grafana/faro-web-sdk/tree/main/packages/transport-fetch)
+is a package that enables easier integration in projects built with React.
