@@ -20,9 +20,7 @@ context('Tracing', () => {
           if (trace && traceItem) {
             const spans =
               traceItem.resourceSpans?.flatMap((resourceSpan) =>
-                resourceSpan.instrumentationLibrarySpans.flatMap(
-                  (instrumentationLibrarySpan) => instrumentationLibrarySpan.spans!
-                )
+                resourceSpan.scopeSpans.flatMap((scopeSpan) => scopeSpan.spans!)
               ) ?? [];
 
             if (!!spans.find((span) => span.traceId === trace!['trace_id'] && span.spanId === trace!['span_id'])!!) {
