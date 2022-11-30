@@ -41,5 +41,5 @@ for more information.
 
 ### React Support
 
-[@grafana/faro-react](https://github.com/grafana/faro-web-sdk/tree/main/packages/transport-fetch)
+[@grafana/faro-react](https://github.com/grafana/faro-web-sdk/tree/main/packages/react)
 is a package that enables easier integration in projects built with React.
