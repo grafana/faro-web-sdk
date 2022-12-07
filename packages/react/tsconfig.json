@@ -1,23 +1,16 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist/cjs",
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/esm",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.build-cache/react.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/react.esm.tsbuildinfo"
   },
   "include": ["./src"],
+  "exclude": ["./**/*.test.ts"],
   "references": [
-    {
-      "path": "../core/tsconfig.all.json",
-      "prepend": false
-    },
-    {
-      "path": "../web-tracing/tsconfig.all.json",
-      "prepend": false
-    },
-    {
-      "path": "../web/tsconfig.all.json",
-      "prepend": false
-    }
+    { "path": "../core/tsconfig.json" },
+    { "path": "../web-tracing/tsconfig.json" },
+    { "path": "../web/tsconfig.json" }
   ]
 }

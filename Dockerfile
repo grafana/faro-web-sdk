@@ -55,7 +55,7 @@ COPY ${DEMO_PACKAGES_CORE_PATH}/package.json \
      ${DEMO_PACKAGES_CORE_PATH}/tsconfig.json \
      ${DEMO_PACKAGES_CORE_PATH}/
 
-COPY ${DEMO_PACKAGES_CORE_PATH}/bin/gen-version.js \
+COPY ${DEMO_PACKAGES_CORE_PATH}/bin/genVersion.js \
      ${DEMO_PACKAGES_CORE_PATH}/bin/
 
 RUN mkdir ${DEMO_PACKAGES_CORE_PATH}/src

@@ -1,19 +1,12 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist/cjs",
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/esm",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.build-cache/web-tracing.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/web-tracing.esm.tsbuildinfo"
   },
   "include": ["./src"],
-  "references": [
-    {
-      "path": "../core/tsconfig.all.json",
-      "prepend": false
-    },
-    {
-      "path": "../web/tsconfig.all.json",
-      "prepend": false
-    }
-  ]
+  "exclude": ["./**/*.test.ts"],
+  "references": [{ "path": "../core/tsconfig.json" }, { "path": "../web/tsconfig.json" }]
 }

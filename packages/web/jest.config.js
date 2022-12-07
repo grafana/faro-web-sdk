@@ -1,5 +1,7 @@
+const { jestBaseConfig } = require('../../jest.config.base');
+
 module.exports = {
-  ...require('../../jest.config'),
+  ...jestBaseConfig,
   testEnvironment: 'jsdom',
   rootDir: '../',
   roots: ['web/src'],

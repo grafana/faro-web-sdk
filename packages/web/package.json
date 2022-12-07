@@ -20,9 +20,17 @@
     "url": "https://github.com/grafana/faro-web-sdk.git",
     "directory": "packages/web"
   },
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/cjs/index.d.ts",
+  "browser": "./dist/bundle/faro-core.iife.js",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js"
+    }
+  },
   "files": [
     "dist",
     "globals.ts",
@@ -31,14 +39,18 @@
   ],
   "scripts": {
     "start": "yarn build -w",
-    "build": "tsc --build tsconfig.all.json",
+    "build": "run-s build:*",
+    "build:compile": "run-p build:compile:*",
+    "build:compile:esm": "tsc --build tsconfig.json",
+    "build:compile:cjs": "tsc --build tsconfig.cjs.json",
+    "build:compile:bundle": "rollup -c ./rollup.config.js",
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "jest",
-    "quality:format": "prettier --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/web --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s quality:lint:*",
-    "quality:lint:eslint": "eslint --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
-    "quality:lint:prettier": "prettier --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/web --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/web --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
   },

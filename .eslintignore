@@ -6,7 +6,6 @@
 .vscode
 
 # App-specifics
-.build-cache
 .cache
 .eslintcache
 .husky

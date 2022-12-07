@@ -28,7 +28,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "ESNext",
-    "tsBuildInfoFile": "../../.build-cache/demo.tsbuildinfo",
+    "tsBuildInfoFile": "../../.cache/tsc/demo.tsbuildinfo",
     "types": ["vite/client"],
     "useDefineForClassFields": true,
     "useUnknownInCatchVariables": false
@@ -36,23 +36,11 @@
   "ts-node": {
     "esm": true
   },
-  "include": ["src/**/*", "vite.config.ts"],
+  "include": ["./src/**/*", "./vite.config.ts"],
   "references": [
-    {
-      "path": "../packages/core/tsconfig.all.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/react/tsconfig.all.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/web-tracing/tsconfig.all.json",
-      "prepend": false
-    },
-    {
-      "path": "../packages/web/tsconfig.all.json",
-      "prepend": false
-    }
+    { "path": "../packages/core/tsconfig.json" },
+    { "path": "../packages/react/tsconfig.json" },
+    { "path": "../packages/web-tracing/tsconfig.json" },
+    { "path": "../packages/web/tsconfig.json" }
   ]
 }
