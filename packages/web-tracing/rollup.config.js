@@ -1,3 +1,3 @@
-const { getRollupConfigBase } = require('../../rollup.config.base.js');
+import { getRollupConfigBase } from '../../rollup.config.base.js';
 
-module.exports = getRollupConfigBase('webTracing');
+export default getRollupConfigBase('webTracing');

@@ -1,5 +1,5 @@
-const { readFileSync, writeFileSync } = require('fs');
-const { join } = require('path');
+const { readFileSync, writeFileSync } = require('node:fs');
+const { join } = require('node:path');
 
 if (process.env['SKIP_GEN_VERSION'] && process.env['SKIP_GEN_VERSION'] === '1') {
   console.info('Skipping generating version file due to "SKIP_GEN_VERSION" environment variable');

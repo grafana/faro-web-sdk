@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.esm.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/esm",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.cache/tsc/react.esm.tsbuildinfo"
+  },
+  "include": ["./src"],
+  "exclude": ["./**/*.test.ts"],
+  "references": [
+    { "path": "../core/tsconfig.esm.json" },
+    { "path": "../web-tracing/tsconfig.esm.json" },
+    { "path": "../web/tsconfig.esm.json" }
+  ]
+}

@@ -1,6 +1,6 @@
 const { join } = require('node:path');
 
-const jestBaseConfig = {
+exports.jestBaseConfig = {
   extensionsToTreatAsEsm: ['.ts'],
   roots: ['src'],
   testEnvironment: 'node',
@@ -9,12 +9,8 @@ const jestBaseConfig = {
       'ts-jest',
       {
         tsconfig: join(__dirname, 'tsconfig.spec.json'),
-        useESM: true
-      }
-    ]
-  }
-};
-
-module.exports = {
-  jestBaseConfig,
+        useESM: true,
+      },
+    ],
+  },
 };

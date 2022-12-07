@@ -21,29 +21,25 @@
     "url": "https://github.com/grafana/faro-web-sdk.git",
     "directory": "packages/web-tracing"
   },
+  "type": "module",
   "browser": "./dist/bundle/faro-core.iife.js",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/types/index.d.ts",
-      "require": "./dist/cjs/index.js",
-      "import": "./dist/esm/index.js"
-    }
-  },
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "start": "yarn build -w",
+    "start": "yarn watch",
     "build": "run-s build:*",
     "build:compile": "run-p build:compile:*",
-    "build:compile:esm": "tsc --build tsconfig.json",
-    "build:compile:cjs": "tsc --build tsconfig.cjs.json",
+    "build:compile:cjs": "tsc --build tsconfig.json",
+    "build:compile:esm": "tsc --build tsconfig.esm.json",
     "build:compile:bundle": "rollup -c ./rollup.config.js",
+    "watch": "run-s watch:compile",
+    "watch:compile": "yarn build:compile:cjs -w",
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "exit 0",

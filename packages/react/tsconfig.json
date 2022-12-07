@@ -2,9 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declarationDir": "./dist/types",
-    "outDir": "./dist/esm",
+    "outDir": "./dist/cjs",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.cache/tsc/react.esm.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/react.cjs.tsbuildinfo"
   },
   "include": ["./src"],
   "exclude": ["./**/*.test.ts"],

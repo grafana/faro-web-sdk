@@ -3,7 +3,5 @@
   "compilerOptions": {
     "types": ["jest"]
   },
-  "include": [
-    "packages/*/src/**/*.ts",
-  ],
+  "include": ["packages/*/src/**/*.ts"]
 }
