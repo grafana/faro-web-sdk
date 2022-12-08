@@ -142,5 +142,3 @@ describe('FetchTransport', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 });
-
-export {};

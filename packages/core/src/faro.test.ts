@@ -46,5 +46,3 @@ describe('faro', () => {
     expect(items[1]?.payload.message).toEqual('test3');
   });
 });
-
-export {};

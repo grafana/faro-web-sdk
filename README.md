@@ -26,11 +26,11 @@ See [quick start for web applications](https://github.com/grafana/faro-web-sdk/b
 main package that provides the core functionality of the SDK. The [README.md](https://github.com/grafana/faro-web-sdk/tree/main/packages/core/README.md)
 file provides an overview of the architecture and the API of library.
 
-### Web
+### Web SDK
 
-[@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web)
+[@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk)
 provides instrumentations, metas and transports for use in web applications.
-See The [README.md](https://github.com/grafana/faro-web-sdk/tree/main/packages/web/README.md) for more information.
+See The [README.md](https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk/README.md) for more information.
 
 ### Web Tracing
 

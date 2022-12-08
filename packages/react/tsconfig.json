@@ -1,16 +1,7 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "declarationDir": "./dist/types",
-    "outDir": "./dist/cjs",
-    "rootDir": "./src",
-    "tsBuildInfoFile": "../../.cache/tsc/react.cjs.tsbuildinfo"
-  },
-  "include": ["./src"],
-  "exclude": ["./**/*.test.ts"],
   "references": [
-    { "path": "../core/tsconfig.json" },
-    { "path": "../web-tracing/tsconfig.json" },
-    { "path": "../web/tsconfig.json" }
+    { "path": "./tsconfig.cjs.json" },
+    { "path": "./tsconfig.esm.json" },
+    { "path": "./tsconfig.spec.json" }
   ]
 }

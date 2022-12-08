@@ -52,5 +52,3 @@ describe('SessionInstrumentation', () => {
     expect(event.meta.session?.id).toEqual(session.id);
   });
 });
-
-export {};

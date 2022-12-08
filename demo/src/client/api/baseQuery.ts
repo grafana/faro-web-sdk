@@ -27,7 +27,7 @@ export const baseQuery = fetchBaseQuery({
                 faro.api.pushEvent('Request failed', { url });
 
                 const error = new Error(body.data.message);
-                error.cause = response;
+                error.cause = response as any;
 
                 faro.api.pushError(error);
 
@@ -66,7 +66,7 @@ export const baseQuery = fetchBaseQuery({
           faro.api.pushEvent('Request failed', { url });
 
           const error = new Error(body.data.message);
-          error.cause = response;
+          error.cause = response as any;
 
           faro.api.pushError(error);
         } else {

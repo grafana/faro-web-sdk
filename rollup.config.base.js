@@ -14,9 +14,9 @@ const modules = {
     name: '@grafana/react',
     bundleName: 'faro-react',
     globalName: 'GrafanaFaroReact',
-    externals: ['web', 'webTracing'],
+    externals: ['webSdk', 'webTracing'],
   },
-  web: {
+  webSdk: {
     name: '@grafana/faro-web-sdk',
     bundleName: 'faro-web-sdk',
     globalName: 'GrafanaFaroWebSdk',
@@ -26,7 +26,7 @@ const modules = {
     name: '@grafana/faro-web-tracing',
     bundleName: 'faro-web-tracing',
     globalName: 'GrafanaFaroWebTracing',
-    externals: ['web'],
+    externals: ['webSdk'],
   },
 };
 
@@ -34,7 +34,7 @@ exports.getRollupConfigBase = (moduleName) => {
   const module = modules[moduleName];
 
   return {
-    input: 'src/index.ts',
+    input: './src/index.ts',
     output: {
       file: `./dist/bundle/${module.bundleName}.iife.js`,
       format: 'iife',
@@ -54,10 +54,11 @@ exports.getRollupConfigBase = (moduleName) => {
       }),
       commonjs(),
       typescript({
-        inlineSources: false,
-        sourceMap: false,
         cacheDir: '../../.cache/rollup',
-        outputToFilesystem: false,
+        inlineSources: false,
+        outputToFilesystem: true,
+        sourceMap: false,
+        tsconfig: './tsconfig.cjs.json',
       }),
       terser(),
     ],

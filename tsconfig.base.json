@@ -2,18 +2,17 @@
   "compilerOptions": {
     "baseUrl": ".",
     "composite": true,
-    "incremental": true,
     "declaration": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "importsNotUsedAsValues": "error",
+    "incremental": true,
     "inlineSources": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
     "lib": ["DOM", "ES6"],
-    "module": "CommonJS",
     "moduleResolution": "Node",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
@@ -23,16 +22,14 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "paths": {
-      "@grafana/faro-*": ["*/src"]
-    },
     "resolveJsonModule": true,
     "rootDir": ".",
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "strict": true,
-    "target": "ES5",
-    "tsBuildInfoFile": "./.cache/tsc/root.cjs.tsbuildinfo"
+    "strict": true
+  },
+  "ts-node": {
+    "esm": true
   }
 }

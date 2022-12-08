@@ -20,5 +20,3 @@ describe('metas', () => {
     expect(listener).toHaveBeenCalledTimes(2);
   });
 });
-
-export {};

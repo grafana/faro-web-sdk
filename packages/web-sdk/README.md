@@ -54,11 +54,11 @@ throw new Error('oh no');
 faro.api.pushError(new Error('oh no'));
 ```
 
-With OTEL tracing and browser console capture:
+With OTel tracing and browser console capture:
 
 ```ts
+import { ConsoleInstrumentation, getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
-import { ConsoleInstrumentation, initializeFaro, getWebInstrumentations } from '@grafana/faro-web-sdk';
 
 const faro = initializeFaro({
   url: 'https://agent.myapp/collect',

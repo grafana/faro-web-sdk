@@ -1,10 +1,16 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.cjs.json",
   "compilerOptions": {
-    "types": ["cypress", "node"],
-    "isolatedModules": false
+    "baseUrl": ".",
+    "isolatedModules": false,
+    "noEmit": true,
+    "paths": {
+      "@grafana/faro-*": ["../packages/*/dist/cjs/index.js"]
+    },
+    "rootDir": ".",
+    "types": ["cypress", "node"]
   },
-  "include": ["./src/**/*.ts"],
+  "include": ["./e2e", "./support"],
   "exclude": ["**/*.test.ts"],
-  "references": [{ "path": "../packages/core" }]
+  "references": [{ "path": "../packages/core/tsconfig.cjs.json" }]
 }

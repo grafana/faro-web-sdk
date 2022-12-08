@@ -132,5 +132,3 @@ function makeExceptionTransportItem(type: string, value: string): TransportItem<
     meta: {},
   };
 }
-
-export {};

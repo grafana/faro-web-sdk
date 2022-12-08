@@ -166,5 +166,3 @@ describe('api.exceptions', () => {
     });
   });
 });
-
-export {};

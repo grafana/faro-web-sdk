@@ -4,7 +4,7 @@ module.exports = {
   ...jestBaseConfig,
   testEnvironment: 'jsdom',
   rootDir: '../',
-  roots: ['web/src'],
+  roots: ['web-sdk/src'],
   moduleNameMapper: {
     '@grafana/faro-core/src/(.*)': '<rootDir>/core/src/$1',
   },

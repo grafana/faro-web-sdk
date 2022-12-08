@@ -102,12 +102,12 @@ services:
       - 'demo_demo_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/node_modules'
       - 'demo_core_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/dist'
       - 'demo_core_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/node_modules'
-      - 'demo_integration_react_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/dist'
-      - 'demo_integration_react_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/node_modules'
-      - 'demo_tracing_web_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_TRACING_WEB_PATH}/dist'
-      - 'demo_tracing_web_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_TRACING_WEB_PATH}/node_modules'
-      - 'demo_web_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_PATH}/dist'
-      - 'demo_web_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_PATH}/node_modules'
+      - 'demo_react_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_REACT_PATH}/dist'
+      - 'demo_react_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_REACT_PATH}/node_modules'
+      - 'demo_web_sdk_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_SDK_PATH}/dist'
+      - 'demo_web_sdk_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_SDK_PATH}/node_modules'
+      - 'demo_web_tracing_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_TRACING_PATH}/dist'
+      - 'demo_web_tracing_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_TRACING_PATH}/node_modules'
     build:
       context: '.'
       args:
@@ -115,9 +115,9 @@ services:
         DEMO_DEMO_PATH: '${DEMO_DEMO_PATH}'
         DEMO_PACKAGES_CORE_PATH: '${DEMO_PACKAGES_CORE_PATH}'
         DEMO_PACKAGES_PATH: '${DEMO_PACKAGES_PATH}'
-        DEMO_PACKAGES_INTEGRATION_REACT_PATH: '${DEMO_PACKAGES_INTEGRATION_REACT_PATH}'
-        DEMO_PACKAGES_TRACING_WEB_PATH: '${DEMO_PACKAGES_TRACING_WEB_PATH}'
-        DEMO_PACKAGES_WEB_PATH: '${DEMO_PACKAGES_WEB_PATH}'
+        DEMO_PACKAGES_REACT_PATH: '${DEMO_PACKAGES_REACT_PATH}'
+        DEMO_PACKAGES_WEB_SDK_PATH: '${DEMO_PACKAGES_WEB_SDK_PATH}'
+        DEMO_PACKAGES_WEB_TRACING_PATH: '${DEMO_PACKAGES_WEB_TRACING_PATH}'
         DEMO_PORT: '${DEMO_PORT}'
         DEMO_PORT_HMR: '${DEMO_PORT_HMR}'
     ports:
@@ -141,9 +141,9 @@ volumes:
   demo_demo_node_modules:
   demo_core_dist:
   demo_core_node_modules:
-  demo_integration_react_dist:
-  demo_integration_react_node_modules:
-  demo_tracing_web_dist:
-  demo_tracing_web_node_modules:
-  demo_web_dist:
-  demo_web_node_modules:
+  demo_react_dist:
+  demo_react_node_modules:
+  demo_web_sdk_dist:
+  demo_web_sdk_node_modules:
+  demo_web_tracing_dist:
+  demo_web_tracing_node_modules:

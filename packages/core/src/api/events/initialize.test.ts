@@ -103,5 +103,3 @@ describe('api.events', () => {
     });
   });
 });
-
-export {};

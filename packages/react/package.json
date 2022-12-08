@@ -34,7 +34,7 @@
     "start": "yarn watch",
     "build": "run-s build:*",
     "build:compile": "run-p build:compile:*",
-    "build:compile:cjs": "tsc --build tsconfig.json",
+    "build:compile:cjs": "tsc --build tsconfig.cjs.json",
     "build:compile:esm": "tsc --build tsconfig.esm.json",
     "build:compile:bundle": "rollup -c ./rollup.config.js",
     "watch": "run-s watch:compile",
