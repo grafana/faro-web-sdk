@@ -3,7 +3,7 @@
   "compilerOptions": {
     "declarationDir": "./dist/types",
     "outDir": "./dist/spec",
-    "rootDir": "./src",
+    "rootDir": "..",
     "tsBuildInfoFile": "../../.cache/tsc/webSdk.spec.tsbuildinfo"
   },
   "include": ["./src"],

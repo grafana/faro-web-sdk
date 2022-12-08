@@ -1,5 +1,8 @@
 exports.jestBaseConfig = {
-  roots: ['src'],
+  moduleNameMapper: {
+    '@grafana/faro-core/src/(.*)': '<rootDir>/core/src/$1',
+  },
+  rootDir: '../',
   testEnvironment: 'node',
   transform: {
     '^.+\\.ts?$': [
