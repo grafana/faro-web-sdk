@@ -58,7 +58,7 @@ exports.getRollupConfigBase = (moduleName) => {
         inlineSources: false,
         outputToFilesystem: true,
         sourceMap: false,
-        tsconfig: './tsconfig.cjs.json',
+        tsconfig: './tsconfig.esm.json',
       }),
       terser(),
     ],
