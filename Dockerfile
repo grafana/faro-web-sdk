@@ -28,6 +28,7 @@ RUN echo "export {};" >> index.ts
 COPY .env \
      lerna.json \
      package.json \
+     rollup.config.base.js \
      tsconfig.base.json \
      tsconfig.base.cjs.json \
      tsconfig.base.esm.json \
@@ -47,6 +48,7 @@ RUN touch index.scss ${DEMO_DEMO_PATH}/src/client
 
 # Packages - Core
 COPY ${DEMO_PACKAGES_CORE_PATH}/package.json \
+     ${DEMO_PACKAGES_CORE_PATH}/rollup.config.js \
      ${DEMO_PACKAGES_CORE_PATH}/tsconfig.cjs.json \
      ${DEMO_PACKAGES_CORE_PATH}/tsconfig.esm.json \
      ${DEMO_PACKAGES_CORE_PATH}/tsconfig.spec.json \
@@ -61,6 +63,7 @@ RUN cp index.ts ${DEMO_PACKAGES_CORE_PATH}/src
 
 # Packages - React
 COPY ${DEMO_PACKAGES_REACT_PATH}/package.json \
+     ${DEMO_PACKAGES_REACT_PATH}/rollup.config.js \
      ${DEMO_PACKAGES_REACT_PATH}/tsconfig.cjs.json \
      ${DEMO_PACKAGES_REACT_PATH}/tsconfig.esm.json \
      ${DEMO_PACKAGES_REACT_PATH}/tsconfig.spec.json \
@@ -72,6 +75,7 @@ RUN cp index.ts ${DEMO_PACKAGES_REACT_PATH}/src
 
 # Packages - Web Sdk
 COPY ${DEMO_PACKAGES_WEB_SDK_PATH}/package.json \
+     ${DEMO_PACKAGES_WEB_SDK_PATH}/rollup.config.js \
      ${DEMO_PACKAGES_WEB_SDK_PATH}/tsconfig.cjs.json \
      ${DEMO_PACKAGES_WEB_SDK_PATH}/tsconfig.esm.json \
      ${DEMO_PACKAGES_WEB_SDK_PATH}/tsconfig.spec.json \
@@ -83,6 +87,7 @@ RUN cp index.ts ${DEMO_PACKAGES_WEB_SDK_PATH}/src
 
 # Packages - Web Tracing
 COPY ${DEMO_PACKAGES_WEB_TRACING_PATH}/package.json \
+     ${DEMO_PACKAGES_WEB_TRACING_PATH}/rollup.config.js \
      ${DEMO_PACKAGES_WEB_TRACING_PATH}/tsconfig.cjs.json \
      ${DEMO_PACKAGES_WEB_TRACING_PATH}/tsconfig.esm.json \
      ${DEMO_PACKAGES_WEB_TRACING_PATH}/tsconfig.spec.json \
