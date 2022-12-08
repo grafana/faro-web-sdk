@@ -17,31 +17,38 @@ steps:
     commands:
       - yarn install --frozen-lockfile
 
-  - name: lint
+  - name: build
     image: node:lts-stretch
     depends_on:
       - install-dependencies
+    commands:
+      - yarn build
+
+  - name: lint
+    image: node:lts-stretch
+    depends_on:
+      - build
     commands:
       - yarn quality:lint
 
   - name: circular-dependencies-test
     image: node:lts-stretch
     depends_on:
-      - install-dependencies
+      - build
     commands:
       - yarn quality:circular-deps
 
   - name: unit-tests
     image: node:lts-stretch
     depends_on:
-      - install-dependencies
+      - build
     commands:
       - yarn quality:test
 
   - name: e2e-tests
     image: cypress/included:10.8.0
     depends_on:
-      - install-dependencies
+      - build
     commands:
       - yarn quality:e2e:ci
     environment:
@@ -74,31 +81,38 @@ steps:
     commands:
       - yarn install --frozen-lockfile
 
-  - name: lint
+  - name: build
     image: node:lts-stretch
     depends_on:
       - install-dependencies
+    commands:
+      - yarn build
+
+  - name: lint
+    image: node:lts-stretch
+    depends_on:
+      - build
     commands:
       - yarn quality:lint
 
   - name: circular-dependencies-test
     image: node:lts-stretch
     depends_on:
-      - install-dependencies
+      - build
     commands:
       - yarn quality:circular-deps
 
   - name: unit-tests
     image: node:lts-stretch
     depends_on:
-      - install-dependencies
+      - build
     commands:
       - yarn quality:test
 
   - name: e2e-tests
     image: cypress/included:10.8.0
     depends_on:
-      - install-dependencies
+      - build
     commands:
       - yarn quality:e2e:ci
     environment:
@@ -129,6 +143,6 @@ services:
 
 ---
 kind: signature
-hmac: 038c11bf8b18b8307d7c94e1da108f6a0fb143b7dc07c2fe7b76f20cc75d1204
+hmac: ce41f8918fd0a84df7f0d64406dc040089d489c1d79d9c41ba03cdf04b6af800
 
 ...
