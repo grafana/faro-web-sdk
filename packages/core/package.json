@@ -19,7 +19,6 @@
     "url": "https://github.com/grafana/faro-web-sdk.git",
     "directory": "packages/core"
   },
-  "browser": "./dist/bundle/faro-core.iife.js",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
