@@ -17,13 +17,6 @@ steps:
     commands:
       - yarn install --frozen-lockfile
 
-  - name: build
-    image: node:lts-stretch
-    depends_on:
-      - install-dependencies
-    commands:
-      - yarn build
-
   - name: lint
     image: node:lts-stretch
     depends_on:
@@ -81,13 +74,6 @@ steps:
     commands:
       - yarn install --frozen-lockfile
 
-  - name: build
-    image: node:lts-stretch
-    depends_on:
-      - install-dependencies
-    commands:
-      - yarn build
-
   - name: lint
     image: node:lts-stretch
     depends_on:
@@ -121,7 +107,6 @@ steps:
   - name: publish
     image: node:lts-stretch
     depends_on:
-      - build
       - lint
       - circular-dependencies-test
       - unit-tests
@@ -144,6 +129,6 @@ services:
 
 ---
 kind: signature
-hmac: e7278e00625dfaca0f50b7421a8af9e9e696cff7b04aa148c5aa16e278900229
+hmac: 038c11bf8b18b8307d7c94e1da108f6a0fb143b7dc07c2fe7b76f20cc75d1204
 
 ...
