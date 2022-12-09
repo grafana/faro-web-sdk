@@ -1,8 +1,9 @@
-**What is this feature and why do we need it?**
+**Description**
 
-[Add a brief description of what the feature or update does.]
+Add a clear and concise description of what the PR does. Example: This PR adds support for auto instrumenting ... using
+the ... API...
 
-**Which issue(s) does this PR fix?**:
+**Fixes**
 
 Fixes #
 
