@@ -2,10 +2,10 @@ FROM node:16-alpine
 
 ARG DEMO_DEMO_PATH
 ARG DEMO_PACKAGES_CORE_PATH
-ARG DEMO_PACKAGES_INTEGRATION_REACT_PATH
 ARG DEMO_PACKAGES_PATH
-ARG DEMO_PACKAGES_TRACING_WEB_PATH
-ARG DEMO_PACKAGES_WEB_PATH
+ARG DEMO_PACKAGES_REACT_PATH
+ARG DEMO_PACKAGES_WEB_SDK_PATH
+ARG DEMO_PACKAGES_WEB_TRACING_PATH
 ARG DEMO_PORT
 ARG DEMO_PORT_HMR
 ARG DEMO_WORKSPACE_PATH
@@ -28,9 +28,11 @@ RUN echo "export {};" >> index.ts
 COPY .env \
      lerna.json \
      package.json \
-     tsconfig.base.esm.json \
+     rollup.config.base.js \
      tsconfig.base.json \
-     tsconfig.json \
+     tsconfig.base.cjs.json \
+     tsconfig.base.esm.json \
+     tsconfig.base.spec.json \
      yarn.lock \
      ./
 
@@ -44,52 +46,56 @@ RUN cp index.ts ${DEMO_DEMO_PATH}/src/client/index.tsx
 RUN cp index.ts ${DEMO_DEMO_PATH}/src/server
 RUN touch index.scss ${DEMO_DEMO_PATH}/src/client
 
-# Packages - Root
-COPY ${DEMO_PACKAGES_PATH}/tsconfig.json \
-     ${DEMO_PACKAGES_PATH}/
-
 # Packages - Core
 COPY ${DEMO_PACKAGES_CORE_PATH}/package.json \
-     ${DEMO_PACKAGES_CORE_PATH}/tsconfig.all.json \
+     ${DEMO_PACKAGES_CORE_PATH}/rollup.config.js \
+     ${DEMO_PACKAGES_CORE_PATH}/tsconfig.cjs.json \
      ${DEMO_PACKAGES_CORE_PATH}/tsconfig.esm.json \
+     ${DEMO_PACKAGES_CORE_PATH}/tsconfig.spec.json \
      ${DEMO_PACKAGES_CORE_PATH}/tsconfig.json \
      ${DEMO_PACKAGES_CORE_PATH}/
 
-COPY ${DEMO_PACKAGES_CORE_PATH}/bin/gen-version.js \
+COPY ${DEMO_PACKAGES_CORE_PATH}/bin/genVersion.js \
      ${DEMO_PACKAGES_CORE_PATH}/bin/
 
 RUN mkdir ${DEMO_PACKAGES_CORE_PATH}/src
 RUN cp index.ts ${DEMO_PACKAGES_CORE_PATH}/src
 
 # Packages - React
-COPY ${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/package.json \
-     ${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/tsconfig.all.json \
-     ${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/tsconfig.esm.json \
-     ${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/tsconfig.json \
-     ${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/
+COPY ${DEMO_PACKAGES_REACT_PATH}/package.json \
+     ${DEMO_PACKAGES_REACT_PATH}/rollup.config.js \
+     ${DEMO_PACKAGES_REACT_PATH}/tsconfig.cjs.json \
+     ${DEMO_PACKAGES_REACT_PATH}/tsconfig.esm.json \
+     ${DEMO_PACKAGES_REACT_PATH}/tsconfig.spec.json \
+     ${DEMO_PACKAGES_REACT_PATH}/tsconfig.json \
+     ${DEMO_PACKAGES_REACT_PATH}/
 
-RUN mkdir ${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/src
-RUN cp index.ts ${DEMO_PACKAGES_INTEGRATION_REACT_PATH}/src
+RUN mkdir ${DEMO_PACKAGES_REACT_PATH}/src
+RUN cp index.ts ${DEMO_PACKAGES_REACT_PATH}/src
 
-# Packages - Tracing Web
-COPY ${DEMO_PACKAGES_TRACING_WEB_PATH}/package.json \
-     ${DEMO_PACKAGES_TRACING_WEB_PATH}/tsconfig.all.json \
-     ${DEMO_PACKAGES_TRACING_WEB_PATH}/tsconfig.esm.json \
-     ${DEMO_PACKAGES_TRACING_WEB_PATH}/tsconfig.json \
-     ${DEMO_PACKAGES_TRACING_WEB_PATH}/
+# Packages - Web Sdk
+COPY ${DEMO_PACKAGES_WEB_SDK_PATH}/package.json \
+     ${DEMO_PACKAGES_WEB_SDK_PATH}/rollup.config.js \
+     ${DEMO_PACKAGES_WEB_SDK_PATH}/tsconfig.cjs.json \
+     ${DEMO_PACKAGES_WEB_SDK_PATH}/tsconfig.esm.json \
+     ${DEMO_PACKAGES_WEB_SDK_PATH}/tsconfig.spec.json \
+     ${DEMO_PACKAGES_WEB_SDK_PATH}/tsconfig.json \
+     ${DEMO_PACKAGES_WEB_SDK_PATH}/
 
-RUN mkdir ${DEMO_PACKAGES_TRACING_WEB_PATH}/src
-RUN cp index.ts ${DEMO_PACKAGES_TRACING_WEB_PATH}/src
+RUN mkdir ${DEMO_PACKAGES_WEB_SDK_PATH}/src
+RUN cp index.ts ${DEMO_PACKAGES_WEB_SDK_PATH}/src
 
-# Packages - Web
-COPY ${DEMO_PACKAGES_WEB_PATH}/package.json \
-     ${DEMO_PACKAGES_WEB_PATH}/tsconfig.all.json \
-     ${DEMO_PACKAGES_WEB_PATH}/tsconfig.esm.json \
-     ${DEMO_PACKAGES_WEB_PATH}/tsconfig.json \
-     ${DEMO_PACKAGES_WEB_PATH}/
+# Packages - Web Tracing
+COPY ${DEMO_PACKAGES_WEB_TRACING_PATH}/package.json \
+     ${DEMO_PACKAGES_WEB_TRACING_PATH}/rollup.config.js \
+     ${DEMO_PACKAGES_WEB_TRACING_PATH}/tsconfig.cjs.json \
+     ${DEMO_PACKAGES_WEB_TRACING_PATH}/tsconfig.esm.json \
+     ${DEMO_PACKAGES_WEB_TRACING_PATH}/tsconfig.spec.json \
+     ${DEMO_PACKAGES_WEB_TRACING_PATH}/tsconfig.json \
+     ${DEMO_PACKAGES_WEB_TRACING_PATH}/
 
-RUN mkdir ${DEMO_PACKAGES_WEB_PATH}/src
-RUN cp index.ts ${DEMO_PACKAGES_WEB_PATH}/src
+RUN mkdir ${DEMO_PACKAGES_WEB_TRACING_PATH}/src
+RUN cp index.ts ${DEMO_PACKAGES_WEB_TRACING_PATH}/src
 
 RUN rm index.ts
 

@@ -83,5 +83,3 @@ describe('PromiseBuffer', () => {
     });
   });
 });
-
-export {};

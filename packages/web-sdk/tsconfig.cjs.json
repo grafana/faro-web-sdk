@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.cjs.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/cjs",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.cache/tsc/webSdk.cjs.tsbuildinfo"
+  },
+  "include": ["./src"],
+  "exclude": ["**/*.test.ts"],
+  "references": [{ "path": "../core/tsconfig.cjs.json" }]
+}

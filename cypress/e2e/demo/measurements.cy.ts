@@ -1,6 +1,6 @@
 context('Measurements', () => {
   describe('Web Vitals', () => {
-    ['ttfb', 'fcp', 'cls'].forEach((expectedVital) => {
+    ['ttfb', 'fcp'].forEach((expectedVital) => {
       it(`will capture ${expectedVital}`, () => {
         cy.interceptCollector((body) => {
           const item = body.measurements?.[0]!;

@@ -144,5 +144,3 @@ describe('api.measurements', () => {
     });
   });
 });
-
-export {};

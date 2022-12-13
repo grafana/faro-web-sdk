@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.spec.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/spec",
+    "rootDir": "..",
+    "tsBuildInfoFile": "../../.cache/tsc/core.spec.tsbuildinfo"
+  },
+  "include": ["./src"]
+}

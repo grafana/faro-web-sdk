@@ -7,7 +7,7 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 
-import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-web-sdk';
 
 import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
@@ -29,7 +29,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
   }
 
   initialize(): void {
-    const config = this.faro.config;
+    const config = faro.config;
     const options = this.options;
     const attributes: ResourceAttributes = {};
 
@@ -50,7 +50,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
     provider.addSpanProcessor(
       options.spanProcessor ??
         new FaroSessionSpanProcessor(
-          new BatchSpanProcessor(new FaroTraceExporter({ faro: faro }), {
+          new BatchSpanProcessor(new FaroTraceExporter({ faro }), {
             scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
             maxExportBatchSize: 30,
           })
@@ -70,6 +70,6 @@ export class TracingInstrumentation extends BaseInstrumentation {
   }
 
   private getIgnoreUrls(): Array<string | RegExp> {
-    return this.faro.transports.transports.flatMap((transport) => transport.getIgnoreUrls());
+    return faro.transports.transports.flatMap((transport) => transport.getIgnoreUrls());
   }
 }

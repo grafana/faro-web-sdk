@@ -101,5 +101,3 @@ describe('api.logs', () => {
     });
   });
 });
-
-export {};

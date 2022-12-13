@@ -11,6 +11,9 @@ _Warning_: currently pre-release and subject to frequent breaking changes. Use a
 
 See [quick start for web applications](https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/quick-start-browser.md).
 
+Alternatively, you can use the CDN version of the library. See [use cdn library](https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/use-cdn-library.md)
+for details on how to do so.
+
 ## Instrumentations
 
 - console - captures messages logged to `console` global object. Only `warn`, `info` and `error` levels by default.
@@ -54,11 +57,11 @@ throw new Error('oh no');
 faro.api.pushError(new Error('oh no'));
 ```
 
-With OTEL tracing and browser console capture:
+With OTel tracing and browser console capture:
 
 ```ts
+import { ConsoleInstrumentation, getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
-import { ConsoleInstrumentation, initializeFaro, getWebInstrumentations } from '@grafana/faro-web-sdk';
 
 const faro = initializeFaro({
   url: 'https://agent.myapp/collect',

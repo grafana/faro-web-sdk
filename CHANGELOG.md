@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0-beta4
+
+- Add support for CDN
+- Updated dependencies
+- Boilerplate updates
+- Improve final build
+
 ## 1.0.0-beta3
 
 - **Breaking change** No longer supports sending traces to Grafana Agent < 0.29.0.

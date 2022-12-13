@@ -1,9 +1,12 @@
 {
   "extends": "../../tsconfig.base.esm.json",
   "compilerOptions": {
-    "rootDir": "./src",
+    "declarationDir": "./dist/types",
     "outDir": "./dist/esm",
-    "tsBuildInfoFile": "../../.build-cache/web-tracing.esm.tsbuildinfo"
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.cache/tsc/webTracing.esm.tsbuildinfo"
   },
-  "include": ["./src"]
+  "include": ["./src"],
+  "exclude": ["**/*.test.ts"],
+  "references": [{ "path": "../core/tsconfig.esm.json" }, { "path": "../web-sdk/tsconfig.esm.json" }]
 }

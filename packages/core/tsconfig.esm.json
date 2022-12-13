@@ -1,9 +1,11 @@
 {
   "extends": "../../tsconfig.base.esm.json",
   "compilerOptions": {
-    "rootDir": "./src",
+    "declarationDir": "./dist/types",
     "outDir": "./dist/esm",
-    "tsBuildInfoFile": "../../.build-cache/core.esm.tsbuildinfo"
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.cache/tsc/core.esm.tsbuildinfo"
   },
-  "include": ["./src"]
+  "include": ["./src"],
+  "exclude": ["./**/*.test.ts"]
 }

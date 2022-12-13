@@ -21,5 +21,3 @@ describe('registerOnerror', () => {
     expect(transport.items).toHaveLength(1);
   });
 });
-
-export {};

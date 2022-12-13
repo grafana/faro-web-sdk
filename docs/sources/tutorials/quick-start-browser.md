@@ -131,8 +131,8 @@ import {
   FetchTransport,
   initializeFaro,
   LogLevel,
-  WebVitalsInstrumentation,
   SessionInstrumentation,
+  WebVitalsInstrumentation,
 } from '@grafana/faro-web-sdk';
 
 const faro = initializeFaro({
@@ -163,12 +163,12 @@ const faro = initializeFaro({
 Due to it's large size, [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/)
 tracing support is provided in a separate `@grafana/faro-web-tracing` package.
 
-The provided default OTEL setup includes tracing instrumentations for user interaction,
+The provided default OTel setup includes tracing instrumentations for user interaction,
 fetch and document load, and W3C trace context propagation via `fetch` and `xhr`.
 
 ```ts
+import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
-import { initializeFaro, getWebInstrumentations } from '@grafana/faro-web-sdk';
 
 const faro = initializeFaro({
   url: 'http://localhost:12345/collect',
@@ -180,7 +180,7 @@ const faro = initializeFaro({
   },
 });
 
-// get OTEL trace and context APIs
+// get OTel trace and context APIs
 const { trace, context } = faro.api.getOTEL();
 
 const tracer = trace.getTracer('default');
@@ -193,8 +193,8 @@ context.with(trace.setSpan(context.active(), span), () => {
 
 ### With custom Open Telemetry tracing configuration
 
-The following example configure OTEL manually and uses `FaroTraceExporter`
-and call `faro.api.initOTEL` with OTEL trace and context APIs.
+The following example configure OTel manually and uses `FaroTraceExporter`
+and call `faro.api.initOTEL` with OTel trace and context APIs.
 
 ```ts
 import { trace, context } from '@opentelemetry/api';
@@ -210,7 +210,7 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { initializeFaro } from '@grafana/faro-web-sdk';
-import { FaroTraceExporter, FaroSessionSpanProcessor } from '@grafana/faro-web-tracing';
+import { FaroSessionSpanProcessor, FaroTraceExporter } from '@grafana/faro-web-tracing';
 
 const VERSION = '1.0.0';
 const NAME = 'frontend';

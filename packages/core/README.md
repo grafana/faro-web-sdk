@@ -200,7 +200,7 @@ Instrumentations are packages that leverage the Faro Web SDK API to provide auto
 They are just simple functions that are executed when the agent is initialized.
 
 Please note that the `core` package does not contain any instrumentations out of the box and they should be provided by
-platform specific packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web)
+platform specific packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk)
 
 You can also write your own instrumentations:
 
@@ -263,7 +263,7 @@ Transports are functions that will be called for every event that is triggered b
 something with the data after collecting it.
 
 Out of the box, no transports are provided in the `core` package and they should be provided by platform specific
-packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web)
+packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk)
 
 You can also define your own transports:
 
