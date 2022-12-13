@@ -1,12 +1,18 @@
-**What is this feature and why do we need it?**
+## Description
 
-[Add a brief description of what the feature or update does.]
+<!-- Add a clear and concise description of what the PR does. -->
+<!-- Example -->
+<!-- This PR adds support for auto instrumenting ... using the ... API... -->
 
-**Which issue(s) does this PR fix?**:
+## Fixes
 
 Fixes #
 
-**Checklist**:
+<!-- Every PR should have a reference to an issue as changes need to be discussed before they are implemented. -->
+<!-- Example -->
+<!-- Fixes #123456 -->
+
+## Checklist
 
 - [ ] Tests added
 - [ ] Changelog updated
