@@ -2,36 +2,58 @@
 name: Bug report
 about: Report a bug
 title: ''
-labels: 'T: bug'
+labels: 'bug'
 assignees: ''
 ---
 
-**Description**
-Add a clear and concise description of what the bug is. Example: Capturing metrics manually does not work properly.
+## Description
 
-**Steps to reproduce**
+<!-- Add a clear and concise description of what the bug is. -->
+<!-- Example -->
+<!-- Capturing metrics manually does not work properly. -->
 
-1. Add Faro to the project
-2. Send a metric manually using the Faro API
-3. ...
+## Steps to reproduce
 
-**Expected behavior**
-Add a clear and concise description of what is expected to happen. Example: The following metric should be captured ...
+<!-- Example -->
+<!-- 1. Add Faro to the project -->
+<!-- 2. Send a metric manually using the Faro API -->
+<!-- 3. ... -->
 
-**Actual behavior**
-Add a clear and concise description of what is happening. Example: Metric ... does not get captured.
+## Expected behavior
 
-**Environment**
+<!-- Add a clear and concise description of what is expected to happen. -->
+<!-- Example -->
+<!-- The following metric should be captured ... -->
 
-- SDK version: 1.0.0
-- SDK instrumentations: Web SDK, Web Tracing, React
-- Device type: desktop, tablet, mobile
-- Device name: MacBook Pro 13", iPhone 6, Samsung Galaxy S20
-- OS: macOS Ventura, Windows 11
-- Browser: Chrome 106, Safari 11
+## Actual behavior
 
-**Demo**
-(Optional) Add screenshots or videos to help explain the problem.
+<!-- Add a clear and concise description of what is happening. -->
+<!-- Example -->
+<!-- Metric ... does not get captured. -->
 
-**Context**
-(Optional) Add any additional context: links etc.
+## Environment
+
+- **SDK version:**
+- **SDK instrumentations:**
+- **Device type:**
+- **Device name:**
+- **OS:**
+- **Browser:**
+
+<!-- Example -->
+<!-- - **SDK version:** 1.0.0 -->
+<!-- - **SDK instrumentations:** Web SDK, Web Tracing, React -->
+<!-- - **Device type:** desktop, tablet, mobile -->
+<!-- - **Device name:** MacBook Pro 13", iPhone 6, Samsung Galaxy S20 -->
+<!-- - **OS:** macOS Ventura, Windows 11 -->
+<!-- - **Browser:** Chrome 106, Safari 11 -->
+
+## Demo
+
+<!-- Optional -->
+<!-- Add screenshots or videos to help explain the problem. -->
+
+## Context
+
+<!-- Optional -->
+<!-- Add any additional context: links etc. -->
