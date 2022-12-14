@@ -1,9 +1,12 @@
 # @grafana/faro-web-tracing
 
-This package provides tools for integrating [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/) based
-tracing with the [Faro for the web](https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk).
+This package provides tools for integrating [OpenTelemetry][opentelemetry-js] based tracing with the
+[Faro for the web][faro-web-sdk-package].
 
-See [quick start document](https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/quick-start-browser.md)
-for instructions how to set up and use.
+See [quick start document][quick-start] for instructions how to set up and use.
 
 _Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.
+
+[faro-web-sdk-package]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk
+[opentelemetry-js]: https://opentelemetry.io/docs/instrumentation/js/
+[quick-start]: https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/quick-start-browser.md

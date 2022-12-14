@@ -1,18 +1,17 @@
 # @grafana/faro-web-sdk
 
-Faro is a SDK that can instrument frontend JavaScript applications to collect telemetry and forward it to the [Grafana Agent](https://grafana.com/docs/agent/latest/)
-(with app agent receiver integration enabled).
+Faro is a SDK that can instrument frontend JavaScript applications to collect telemetry and forward it to the
+[Grafana Agent][grafana-agent-docs] (with app agent receiver integration enabled).
 
-Grafana Agent can then send this data to either [Loki](https://grafana.com/logs/) or [Tempo](https://grafana.com/traces/).
+Grafana Agent can then send this data to either [Loki][grafana-logs] or [Tempo][grafana-traces].
 
 _Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.
 
 ## Get started
 
-See [quick start for web applications](https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/quick-start-browser.md).
+See [quick start for web applications][quick-start].
 
-Alternatively, you can use the CDN version of the library. See [use cdn library](https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/use-cdn-library.md)
-for details on how to do so.
+Alternatively, you can use the CDN version of the library. See [use cdn library][use-cdn] for details on how to do so.
 
 ## Instrumentations
 
@@ -86,3 +85,9 @@ faro.api
 // will be captured
 throw new Error('oh no');
 ```
+
+[grafana-agent-docs]: https://grafana.com/docs/agent/latest/
+[grafana-logs]: https://grafana.com/logs/
+[grafana-traces]: https://grafana.com/traces/
+[quick-start]: https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/quick-start-browser.md
+[use-cdn]: https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/use-cdn-library.md

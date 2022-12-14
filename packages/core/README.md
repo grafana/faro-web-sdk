@@ -200,7 +200,7 @@ Instrumentations are packages that leverage the Faro Web SDK API to provide auto
 They are just simple functions that are executed when the agent is initialized.
 
 Please note that the `core` package does not contain any instrumentations out of the box and they should be provided by
-platform specific packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk)
+platform specific packages like [@grafana/faro-web-sdk][faro-web-sdk-package].
 
 You can also write your own instrumentations:
 
@@ -228,7 +228,7 @@ Metas are objects that will be attached to every event that is triggered by the 
 
 Out of the box, only one meta is provided: `sdk` which contains information about the Faro instance and its version.
 
-Additional metas may be provided by platform packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/).
+Additional metas may be provided by platform packages like [@grafana/faro-web-sdk][faro-web-sdk-package].
 
 You can also define your own metas:
 
@@ -259,11 +259,11 @@ initializeFaro({
 
 ## Transports
 
-Transports are functions that will be called for every event that is triggered by the API. They are used to do
-something with the data after collecting it.
+Transports are functions that will be called for every event that is triggered by the API. They are used to do something
+with the data after collecting it.
 
 Out of the box, no transports are provided in the `core` package and they should be provided by platform specific
-packages like [@grafana/faro-web-sdk](https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk)
+packages like [@grafana/faro-web-sdk][faro-web-sdk-package].
 
 You can also define your own transports:
 
@@ -293,9 +293,8 @@ faro.unpatchedConsole.warn('This is a warning');
 
 ## Pause / unpause
 
-Faro instance can be paused by invoking `faro.pause()`.
-This will prevent events from being sent to transports.
-Call `faro.unpause()` to resume capturing events.
+Faro instance can be paused by invoking `faro.pause()`. This will prevent events from being sent to transports. Call
+`faro.unpause()` to resume capturing events.
 
 ## Isolated Faro instances
 
@@ -334,3 +333,5 @@ Although an isolated agent may sound like a great idea, there are some limitatio
 - an isolated Faro instance will not be available on the global object
 - the Faro reference should be stored by the project as it won't be available via
   `import { faro } from '@grafana/faro-core';`
+
+[faro-web-sdk-package]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk
