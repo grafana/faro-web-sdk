@@ -37,19 +37,19 @@ the [README.md][faro-web-sdk-readme] for more information.
 [@grafana/faro-react][faro-react] is a package that enables easier integration in projects built with React. See the
 [README.md][faro-react-readme] for more information.
 
-[faro-core]: packages/core
-[faro-core-readme]: https://github.com/grafana/faro-web-sdk/tree/main/packages/core/README.md
-[faro-demo]: https://github.com/grafana/faro-web-sdk/tree/main/demo
-[faro-demo-readme]: https://github.com/grafana/faro-web-sdk/tree/main/demo/README.md
 [faro-drone]: https://drone.grafana.net/grafana/faro-web-sdk
 [faro-drone-status]: https://drone.grafana.net/api/badges/grafana/faro-web-sdk/status.svg
-[faro-quick-start]: https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/quick-start-browser.md
-[faro-react]: https://github.com/grafana/faro-web-sdk/tree/main/packages/react
-[faro-react-readme]: https://github.com/grafana/faro-web-sdk/tree/main/packages/react/README.md
-[faro-web-sdk]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk
-[faro-web-sdk-readme]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk/README.md
-[faro-web-tracing]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-tracing
-[faro-web-tracing-readme]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-tracing/README.md
 [grafana-agent-docs]: https://grafana.com/docs/agent/latest/
 [grafana-logs]: https://grafana.com/logs/
 [grafana-traces]: https://grafana.com/traces/
+[faro-core]: ./packages/core
+[faro-core-readme]: ./packages/core/README.md
+[faro-demo]: ./demo
+[faro-demo-readme]: ./demo/README.md
+[faro-quick-start]: ./docs/sources/tutorials/quick-start-browser.md
+[faro-react]: ./packages/react
+[faro-react-readme]: ./packages/react/README.md
+[faro-web-sdk]: ./packages/web-sdk
+[faro-web-sdk-readme]: ./packages/web-sdk/README.md
+[faro-web-tracing]: ./packages/web-tracing
+[faro-web-tracing-readme]: ./packages/web-tracing/README.md

@@ -337,11 +337,11 @@ import function.
 
 - monitor Grafana Agent app receiver integration
 
-[demo-app]: https://github.com/grafana/faro-web-sdk/tree/main/demo
-[faro-agent-dashboard]: https://github.com/grafana/faro-web-sdk/blob/main/dashboards/app-agent-receiver.json
-[faro-app-dashboard]: https://github.com/grafana/faro-web-sdk/blob/main/dashboards/frontend-application.json
 [grafana-agent-collect]: http://host:12345/collect
 [grafana-agent-receiver-config]: https://grafana.com/docs/agent/latest/configuration/integrations/integrations-next/app-agent-receiver-config/
 [grafana-agent-setup]: https://grafana.com/docs/agent/latest/set-up/
 [opentelemetry-js]: https://opentelemetry.io/docs/instrumentation/js/
 [web-vitals]: https://github.com/GoogleChrome/web-vitals
+[demo-app]: ../../../demo
+[faro-agent-dashboard]: ../../../dashboards/app-agent-receiver.json
+[faro-app-dashboard]: ../../../dashboards/frontend-application.json
