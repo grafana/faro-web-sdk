@@ -49,9 +49,9 @@ than Loki.**
 
 ## Screenshots
 
-[<img src="../assets/instrumentations/measurementsViewExploreLoki.png" alt="Viewing measurements in Explore" height="100" />][assets-measurements-view-explore-loki]
-[<img src="../assets/instrumentations/measurementsViewExploreCortex.png" alt="Viewing measurements in Explore" height="100" />][assets-measurements-view-explore-cortex]
-[<img src="../assets/instrumentations/measurementsViewDashboard.png" alt="Viewing measurements in Dashboard" height="100" />][assets-measurements-view-dashboard]
+[<img src="../assets/instrumentations/measurementsViewExploreLoki.png" alt="Viewing measurements in Explore" height="100" />][assets-measurements-view-explore-loki]<!-- markdownlint-disable-line MD013 -->
+[<img src="../assets/instrumentations/measurementsViewExploreCortex.png" alt="Viewing measurements in Explore" height="100" />][assets-measurements-view-explore-cortex]<!-- markdownlint-disable-line MD013 -->
+[<img src="../assets/instrumentations/measurementsViewDashboard.png" alt="Viewing measurements in Dashboard" height="100" />][assets-measurements-view-dashboard]<!-- markdownlint-disable-line MD013 -->
 
 [demo-features-page]: http://localhost:5173/features
 [demo-grafana-explore]: http://localhost:3000/explore

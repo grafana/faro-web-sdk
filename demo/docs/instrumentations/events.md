@@ -41,7 +41,7 @@ For the time being the API does not provide any events.
 ## Screenshots
 
 [<img src="../assets/instrumentations/eventsViewExplore.png" alt="Viewing events in Explore" height="100" />][assets-events-view-explore]
-[<img src="../assets/instrumentations/eventsViewExploreTraces.png" alt="Viewing events in Explore and the corresponding traces" height="100" />][assets-events-view-traces]
+[<img src="../assets/instrumentations/eventsViewExploreTraces.png" alt="Viewing events in Explore and the corresponding traces" height="100" />][assets-events-view-traces]<!-- markdownlint-disable-line MD013 -->
 
 [demo-articles-add-page]: http://localhost:5173/articles/add
 [demo-grafana-explore]: http://localhost:3000/explore

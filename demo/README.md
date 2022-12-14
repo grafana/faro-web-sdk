@@ -102,8 +102,8 @@ All the actions will be performed assuming that the demo is freshly ran and the 
      - The database calls
    - The `Trace ID` that appears under the button can be used to see the traces mentioned above
    - [<img src="docs/assets/userJourney/seedSuccess.png" alt="Seed page with successful run" height="100" />][assets-seed-success]
-     [<img src="docs/assets/userJourney/seedSuccessEvents.png" alt="Events for Seed page with successfull run" height="100" />][assets-seed-success-events]
-     [<img src="docs/assets/userJourney/seedSuccessTraces.png" alt="Traces for Seed page with successfull run" height="100" />][assets-seed-success-traces]
+     [<img src="docs/assets/userJourney/seedSuccessEvents.png" alt="Events for Seed page with successfull run" height="100" />][assets-seed-success-events]<!-- markdownlint-disable-line MD013 -->
+     [<img src="docs/assets/userJourney/seedSuccessTraces.png" alt="Traces for Seed page with successfull run" height="100" />][assets-seed-success-traces]<!-- markdownlint-disable-line MD013 -->
 1. Click on the `Seed` button again to generate an error:
    - The following events are registered:
      - `seed`
