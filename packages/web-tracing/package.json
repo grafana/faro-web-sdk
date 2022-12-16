@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-web-tracing",
-  "version": "1.0.0-beta3",
+  "version": "1.0.0-beta4",
   "description": "Faro web tracing implementation.",
   "keywords": [
     "observability",
@@ -52,7 +52,7 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "^1.0.0-beta3",
+    "@grafana/faro-web-sdk": "^1.0.0-beta4",
     "@opentelemetry/api": "^1.3.0",
     "@opentelemetry/context-zone": "^1.8.0",
     "@opentelemetry/core": "^1.8.0",

@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-demo",
-  "version": "1.0.0-beta3",
+  "version": "1.0.0-beta4",
   "description": "Demo of Faro",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -30,10 +30,10 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-core": "^1.0.0-beta3",
-    "@grafana/faro-react": "^1.0.0-beta3",
-    "@grafana/faro-web-sdk": "^1.0.0-beta3",
-    "@grafana/faro-web-tracing": "^1.0.0-beta3",
+    "@grafana/faro-core": "^1.0.0-beta4",
+    "@grafana/faro-react": "^1.0.0-beta4",
+    "@grafana/faro-web-sdk": "^1.0.0-beta4",
+    "@grafana/faro-web-tracing": "^1.0.0-beta4",
     "@opentelemetry/api": "^1.3.0",
     "@opentelemetry/core": "^1.8.0",
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.34.0",
