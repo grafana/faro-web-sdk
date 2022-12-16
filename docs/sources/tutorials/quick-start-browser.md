@@ -1,17 +1,18 @@
 # Get started with Grafana Faro Web SDK
 
-This document describes how to set up and use Grafana Faro Web SDK. For more information, refer to the [demo application](https://github.com/grafana/faro-web-sdk/tree/main/demo).
+This document describes how to set up and use Grafana Faro Web SDK. For more information, refer to the
+[demo application][demo-app].
 
 ## Before you begin
 
-- Set up a Grafana Agent instance. For more information, refer to [Set up Grafana Agent](https://grafana.com/docs/agent/latest/set-up/).
-- Configure your instance with `app-agent-receiver` integration. The integration exposes
-  an http collection endpoint and runs with the `integrations-next` flag enabled.
+- Set up a Grafana Agent instance. For more information, refer to [Set up Grafana Agent][grafana-agent-setup].
+- Configure your instance with `app-agent-receiver` integration. The integration exposes an http collection endpoint and
+  runs with the `integrations-next` flag enabled.
 
-The following example shows a basic Grafana Agent configuration that exposes a collector endpoint
-at [http://host:12345/collect](http://host:12345/collect) and forwards collected telemetry to Loki,
-Tempo, and Prometheus instances. This collector endpoint has to be accessible by your web application.
-For more information about the app agent receiver integration, refer to [app_agent_receiver_config](https://grafana.com/docs/agent/latest/configuration/integrations/integrations-next/app-agent-receiver-config/).
+The following example shows a basic Grafana Agent configuration that exposes a collector endpoint at
+[http://host:12345/collect][grafana-agent-collect] and forwards collected telemetry to Loki, Tempo, and Prometheus
+instances. This collector endpoint has to be accessible by your web application. For more information about the app
+agent receiver integration, refer to [app_agent_receiver_config][grafana-agent-receiver-config].
 
 ```yaml
 metrics:
@@ -73,7 +74,8 @@ integrations:
 
 ## Install Grafana Faro Web SDK
 
-1. Run one of the following commands, depending on your package manager. The command installs the library in your project.
+1. Run one of the following commands, depending on your package manager. The command installs the library in your
+   project.
 
    ```bash
    #npm
@@ -83,8 +85,7 @@ integrations:
    yarn add @grafana/faro-web-sdk
    ```
 
-1. To enable [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/) based tracing,
-   run one of the following commands.
+1. To enable [OpenTelemetry][opentelemetry-js] based tracing, run one of the following commands.
 
    ```bash
    #npm
@@ -96,15 +97,14 @@ integrations:
 
 ## Initialize Grafana Faro Web SDK
 
-Grafana Faro Web SDK must be initialized when your web application starts.
-The following sections provide several initialization examples.
-Choose one initialization method, add it to your application code, and customize it as required.
+Grafana Faro Web SDK must be initialized when your web application starts. The following sections provide several
+initialization examples. Choose one initialization method, add it to your application code, and customize it as
+required.
 
 ### Basic
 
-The following basic configuration sets up the Grafana Faro Web SDK to automatically collect uncaught errors, logs
-and [web vitals](https://github.com/GoogleChrome/web-vitals) measurements.
-Without tracing, the bundle footprint is small.
+The following basic configuration sets up the Grafana Faro Web SDK to automatically collect uncaught errors, logs and
+[web vitals][web-vitals] measurements. Without tracing, the bundle footprint is small.
 
 ```ts
 import { initializeFaro } from '@grafana/faro-web-sdk';
@@ -158,13 +158,13 @@ const faro = initializeFaro({
 });
 ```
 
-### With Open Telemetry tracing using the included instrumentation
+### With OpenTelemetry tracing using the included instrumentation
 
-Due to it's large size, [Open Telemetry](https://opentelemetry.io/docs/instrumentation/js/)
-tracing support is provided in a separate `@grafana/faro-web-tracing` package.
+Due to it's large size, [OpenTelemetry][opentelemetry-js] tracing support is provided in a separate
+`@grafana/faro-web-tracing` package.
 
-The provided default OTel setup includes tracing instrumentations for user interaction,
-fetch and document load, and W3C trace context propagation via `fetch` and `xhr`.
+The provided default OTel setup includes tracing instrumentations for user interaction, fetch and document load, and W3C
+trace context propagation via `fetch` and `xhr`.
 
 ```ts
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
@@ -191,10 +191,10 @@ context.with(trace.setSpan(context.active(), span), () => {
 });
 ```
 
-### With custom Open Telemetry tracing configuration
+### With custom OpenTelemetry tracing configuration
 
-The following example configure OTel manually and uses `FaroTraceExporter`
-and call `faro.api.initOTEL` with OTel trace and context APIs.
+The following example configure OTel manually and uses `FaroTraceExporter` and call `faro.api.initOTEL` with OTel trace
+and context APIs.
 
 ```ts
 import { trace, context } from '@opentelemetry/api';
@@ -326,13 +326,22 @@ faro.unpause();
 
 ## Dashboards
 
-Two example Grafana dashboards are included in this repository. Add them to your
-Grafana instance using the dashboard import function.
+Two example Grafana dashboards are included in this repository. Add them to your Grafana instance using the dashboard
+import function.
 
-[Web Application Dashboard](https://github.com/grafana/faro-web-sdk/blob/main/dashboards/frontend-application.json)
+[Web Application Dashboard][faro-app-dashboard]
 
 - monitor a web application using data collected by Faro Web SDK
 
-[Grafana Agent app agent receiver dashboard](https://github.com/grafana/faro-web-sdk/blob/main/dashboards/app-agent-receiver.json)
+[Grafana Agent app agent receiver dashboard][faro-agent-dashboard]
 
 - monitor Grafana Agent app receiver integration
+
+[grafana-agent-collect]: http://host:12345/collect
+[grafana-agent-receiver-config]: https://grafana.com/docs/agent/latest/configuration/integrations/integrations-next/app-agent-receiver-config/
+[grafana-agent-setup]: https://grafana.com/docs/agent/latest/set-up/
+[opentelemetry-js]: https://opentelemetry.io/docs/instrumentation/js/
+[web-vitals]: https://github.com/GoogleChrome/web-vitals
+[demo-app]: ../../../demo
+[faro-agent-dashboard]: ../../../dashboards/app-agent-receiver.json
+[faro-app-dashboard]: ../../../dashboards/frontend-application.json
