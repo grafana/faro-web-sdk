@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-beta5
+
+- Remove type module from package.json in web-tracing package
+
 ## 1.0.0-beta4
 
 - Add support for CDN
