@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-web-tracing",
-  "version": "1.0.0-beta4",
+  "version": "1.0.0-beta5",
   "description": "Faro web tracing implementation.",
   "keywords": [
     "observability",
