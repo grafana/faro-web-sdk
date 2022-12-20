@@ -13,4 +13,5 @@ export type {
   MetaSDKIntegration,
   MetaSession,
   MetaUser,
+  MetaView,
 } from './types';

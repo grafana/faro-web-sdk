@@ -58,6 +58,10 @@ export interface MetaBrowser {
   mobile?: boolean;
 }
 
+export interface MetaView {
+  name: string;
+}
+
 export interface Meta {
   sdk?: MetaSDK;
   app?: MetaApp;
@@ -65,4 +69,5 @@ export interface Meta {
   session?: MetaSession;
   page?: MetaPage;
   browser?: MetaBrowser;
+  view?: MetaView;
 }

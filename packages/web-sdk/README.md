@@ -19,6 +19,7 @@ Alternatively, you can use the CDN version of the library. See [use cdn library]
 - errors - captures unhandled top level exceptions
 - web-vitals - captures performance metrics reported by web vitals API
 - session - sends session start event
+- view - sends view changed event
 
 ## Metas
 

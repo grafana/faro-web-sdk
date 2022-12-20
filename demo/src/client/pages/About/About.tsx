@@ -2,7 +2,7 @@ import { Page } from '../../components';
 
 export function About() {
   return (
-    <Page title="About">
+    <Page title="About" view="general">
       <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel leo at turpis pretium dignissim. Praesent
         eget justo gravida, lacinia felis sit amet, pharetra sapien. Pellentesque finibus aliquet libero id tincidunt.

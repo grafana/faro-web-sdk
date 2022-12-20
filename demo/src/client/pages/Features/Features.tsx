@@ -10,7 +10,7 @@ import { TracingInstrumentation } from './TracingInstrumentation';
 
 export function Features() {
   return (
-    <Page title="Features">
+    <Page title="Features" view="features">
       <Container as="article" className="pb-4 mb-4 border-bottom">
         <ConsoleInstrumentation />
       </Container>

@@ -16,7 +16,7 @@ export function ArticleView() {
   const article = getArticleResult.data?.data!;
 
   return (
-    <Page title={isReady ? article.name! : 'Loading Article'}>
+    <Page title={isReady ? article.name! : 'Loading Article'} view="articles">
       {!isReady ? (
         <LoadingScreen />
       ) : (

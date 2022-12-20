@@ -8,8 +8,7 @@ import type { Config, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
-import { defaultMetas } from '../metas';
-import { createSession } from '../session';
+import { createSession, defaultMetas, defaultViewMeta } from '../metas';
 import { FetchTransport } from '../transports';
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
@@ -51,9 +50,10 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     unpatchedConsole: browserConfig.unpatchedConsole ?? defaultUnpatchedConsole,
 
     beforeSend: browserConfig.beforeSend,
+    eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
     ignoreErrors: browserConfig.ignoreErrors,
     session: browserConfig.session ?? createSession(),
     user: browserConfig.user,
-    eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
+    view: browserConfig.view ?? defaultViewMeta,
   };
 }

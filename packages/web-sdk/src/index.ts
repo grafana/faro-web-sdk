@@ -12,13 +12,12 @@ export {
   getDataFromSafariExtensions,
   getStackFramesFromError,
   parseStacktrace,
+  ViewInstrumentation,
   WebVitalsInstrumentation,
 } from './instrumentations';
 export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
-export { browserMeta, defaultMetas, pageMeta } from './metas';
-
-export { createSession } from './session';
+export { browserMeta, createSession, defaultMetas, defaultViewMeta, pageMeta } from './metas';
 
 export { ConsoleTransport, FetchTransport } from './transports';
 export type {
@@ -125,6 +124,7 @@ export type {
   MetaSDKIntegration,
   MetaSession,
   MetaUser,
+  MetaView,
   OTELApi,
   Patterns,
   PromiseBuffer,
