@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-beta6
+
+- Remove internal references to global Faro object
+
 ## 1.0.0-beta5
 
 - Remove type module from package.json in web-tracing package
