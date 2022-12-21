@@ -8,13 +8,14 @@ describe('SessionInstrumentation', () => {
   it('will send session start event on initialize', () => {
     const transport = new MockTransport();
     const session = createSession({ foo: 'bar' });
-    const config = mockConfig({
-      transports: [transport],
-      instrumentations: [new SessionInstrumentation()],
-      session,
-    });
 
-    initializeFaro(config);
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        session,
+      })
+    );
 
     expect(transport.items).toHaveLength(1);
 
@@ -27,13 +28,14 @@ describe('SessionInstrumentation', () => {
   it('will send session new start event if setSession is called.', () => {
     const transport = new MockTransport();
     const session = createSession({ foo: 'bar' });
-    const config = mockConfig({
-      transports: [transport],
-      instrumentations: [new SessionInstrumentation()],
-      session,
-    });
 
-    const faro = initializeFaro(config);
+    const { api, metas } = initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        session,
+      })
+    );
 
     expect(transport.items).toHaveLength(1);
 
@@ -41,11 +43,11 @@ describe('SessionInstrumentation', () => {
     expect(event.payload.name).toEqual(Conventions.EventNames.SESSION_START);
     expect(event.meta.session?.id).toEqual(session.id);
 
-    faro.metas.add({ user: { id: 'foo' } });
+    metas.add({ user: { id: 'foo' } });
     expect(transport.items).toHaveLength(1);
 
     const newSession = createSession();
-    faro.api.setSession(newSession);
+    api.setSession(newSession);
     expect(transport.items).toHaveLength(2);
 
     event = transport.items[0]! as TransportItem<EventEvent>;

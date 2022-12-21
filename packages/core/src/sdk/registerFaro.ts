@@ -12,9 +12,9 @@ import type { Faro } from './types';
 export let faro: Faro = {} as Faro;
 
 export function registerFaro(
+  unpatchedConsole: UnpatchedConsole,
   internalLogger: InternalLogger,
   config: Config,
-  unpatchedConsole: UnpatchedConsole,
   metas: Metas,
   transports: Transports,
   api: API,

@@ -6,15 +6,19 @@ import { registerOnerror } from './registerOnerror';
 describe('registerOnerror', () => {
   it('will preserve the old callback', () => {
     let called = false;
+
     window.onerror = () => {
       called = true;
     };
+
     const transport = new MockTransport();
-    const config = mockConfig({
-      transports: [transport],
-    });
-    const faro = initializeFaro(config);
-    registerOnerror(faro);
+    const { api } = initializeFaro(
+      mockConfig({
+        transports: [transport],
+      })
+    );
+
+    registerOnerror(api);
 
     window.onerror('boo', 'some file', 10, 10, new Error('boo'));
     expect(called).toBe(true);

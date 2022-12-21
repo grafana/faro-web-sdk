@@ -1,17 +1,13 @@
-import type { Faro } from '@grafana/faro-web-sdk';
-
 import type { ReactRouterHistory } from '../types';
 import type { ReactRouterV4V5Dependencies, ReactRouterV4V5RouteShape } from './types';
 
 export let isInitialized = false;
-export let faro: Faro;
 export let history: ReactRouterHistory;
 export let Route: ReactRouterV4V5RouteShape;
 
-export function setDependencies(dependencies: ReactRouterV4V5Dependencies, newFaro: Faro): void {
+export function setReactRouterV4V5Dependencies(dependencies: ReactRouterV4V5Dependencies): void {
   isInitialized = true;
 
-  faro = newFaro;
   history = dependencies.history;
   Route = dependencies.Route;
 }

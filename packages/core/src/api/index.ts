@@ -21,5 +21,3 @@ export type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '
 export type { MetaAPI } from './meta';
 
 export type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './traces';
-
-export type { TransportsAPI } from './transports';

@@ -1,22 +1,18 @@
 import type { Context } from '@opentelemetry/api';
 import type { ReadableSpan, Span, SpanProcessor } from '@opentelemetry/sdk-trace-base';
 
-import { faro } from '@grafana/faro-web-sdk';
+import type { Metas } from '@grafana/faro-web-sdk';
 
 // adds Faro session id to every span
 export class FaroSessionSpanProcessor implements SpanProcessor {
-  private processor: SpanProcessor;
-
-  constructor(processor: SpanProcessor) {
-    this.processor = processor;
-  }
+  constructor(private processor: SpanProcessor, private metas: Metas) {}
 
   forceFlush(): Promise<void> {
     return this.processor.forceFlush();
   }
 
   onStart(span: Span, parentContext: Context): void {
-    const session = faro.metas.value.session;
+    const session = this.metas.value.session;
 
     if (session?.id) {
       span.attributes['session_id'] = session.id;

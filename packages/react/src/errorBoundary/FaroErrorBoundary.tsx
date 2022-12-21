@@ -1,8 +1,9 @@
 import { Component, isValidElement } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 
-import { faro, isFunction } from '@grafana/faro-web-sdk';
+import { isFunction } from '@grafana/faro-web-sdk';
 
+import { api, internalLogger } from '../dependencies';
 import { isReactVersionAtLeast17 } from '../utils';
 import { faroErrorBoundaryInitialState } from './const';
 import type { FaroErrorBoundaryProps, FaroErrorBoundaryState } from './types';
@@ -41,7 +42,7 @@ export class FaroErrorBoundary extends Component<FaroErrorBoundaryProps, FaroErr
 
     this.props.beforeCapture?.(errorWithComponentStack);
 
-    faro.api.pushError(errorWithComponentStack);
+    api.pushError(errorWithComponentStack);
 
     this.props.onError?.(errorWithComponentStack);
 
@@ -76,7 +77,7 @@ export class FaroErrorBoundary extends Component<FaroErrorBoundaryProps, FaroErr
     }
 
     if (this.props.fallback) {
-      faro.internalLogger.warn('ErrorBoundary\n', 'Cannot get a valid ReactElement from "fallback"');
+      internalLogger?.warn('ErrorBoundary\n', 'Cannot get a valid ReactElement from "fallback"');
     }
 
     return null;

@@ -3,15 +3,17 @@ import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
+import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, defaultLogLevel, getCurrentTimestamp, isNull } from '../../utils';
 import type { TracesAPI } from '../traces';
 import type { LogEvent, LogsAPI } from './types';
 
 export function initializeLogsAPI(
+  _unpatchedConsole: UnpatchedConsole,
   internalLogger: InternalLogger,
   config: Config,
-  transports: Transports,
   metas: Metas,
+  transports: Transports,
   tracesApi: TracesAPI
 ): LogsAPI {
   internalLogger.debug('Initializing logs API');

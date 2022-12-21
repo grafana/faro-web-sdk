@@ -12,6 +12,6 @@ export class ConsoleTransport extends BaseTransport {
   }
 
   send(item: TransportItem): void {
-    return this.faro.unpatchedConsole[this.options.level ?? LogLevel.DEBUG]('New event', getTransportBody(item));
+    return this.unpatchedConsole[this.options.level ?? LogLevel.DEBUG]('New event', getTransportBody(item));
   }
 }

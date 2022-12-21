@@ -10,8 +10,8 @@ export class ErrorsInstrumentation extends BaseInstrumentation {
   initialize(): void {
     this.logDebug('Initializing');
 
-    registerOnerror(this.faro);
+    registerOnerror(this.api);
 
-    registerOnunhandledrejection(this.faro);
+    registerOnunhandledrejection(this.api);
   }
 }

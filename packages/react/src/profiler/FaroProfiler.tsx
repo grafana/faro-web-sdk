@@ -3,7 +3,9 @@ import { Component } from 'react';
 import type { ReactNode } from 'react';
 
 import type { OTELApi } from '@grafana/faro-web-sdk';
-import { faro, VERSION } from '@grafana/faro-web-sdk';
+import { VERSION } from '@grafana/faro-web-sdk';
+
+import { api, internalLogger } from '../dependencies';
 
 export interface FaroProfilerProps {
   children: ReactNode;
@@ -17,11 +19,11 @@ export class FaroProfiler extends Component<FaroProfilerProps> {
   protected updateSpan: Span | undefined = undefined;
 
   private get isOtelInitialized(): boolean {
-    return !!faro.api?.isOTELInitialized();
+    return !!api?.isOTELInitialized();
   }
 
   private get otel(): OTELApi | undefined {
-    return faro.api?.getOTEL()!;
+    return api?.getOTEL()!;
   }
 
   private get tracer(): Tracer {
@@ -69,7 +71,7 @@ export class FaroProfiler extends Component<FaroProfilerProps> {
     if (this.isOtelInitialized) {
       this.mountSpan = this.createSpan('componentMount');
     } else {
-      faro.internalLogger?.error(
+      internalLogger?.error(
         'The Faro React Profiler requires tracing instrumentation. Please enable it in the "instrumentations" section of your config.'
       );
     }

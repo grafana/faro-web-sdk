@@ -1,10 +1,11 @@
-import { Faro, isPrimitive } from '@grafana/faro-core';
+import { isPrimitive } from '@grafana/faro-core';
+import type { API } from '@grafana/faro-core';
 
 import { primitiveUnhandledType, primitiveUnhandledValue } from './const';
 import { getErrorDetails } from './getErrorDetails';
 import type { ExtendedPromiseRejectionEvent } from './types';
 
-export function registerOnunhandledrejection(faro: Faro): void {
+export function registerOnunhandledrejection(api: API): void {
   window.addEventListener('unhandledrejection', (evt: ExtendedPromiseRejectionEvent) => {
     let error = evt;
 
@@ -25,7 +26,7 @@ export function registerOnunhandledrejection(faro: Faro): void {
     }
 
     if (value) {
-      faro.api.pushError(new Error(value), { type });
+      api.pushError(new Error(value), { type });
     }
   });
 }

@@ -23,8 +23,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   initialize() {
-    this.sendSessionStartEvent(this.faro.metas.value);
+    this.sendSessionStartEvent(this.metas.value);
 
-    this.faro.metas.addListener(this.sendSessionStartEvent.bind(this));
+    this.metas.addListener(this.sendSessionStartEvent.bind(this));
   }
 }

@@ -1,10 +1,10 @@
-import { mockConfig, mockInternalLogger } from '../testUtils';
-import { initializeMetas } from './initialize';
+import { initializeFaro } from '../initialize';
+import { mockConfig } from '../testUtils';
 
 describe('metas', () => {
   it('can set listeners and they will be notified on meta changes', () => {
-    const config = mockConfig();
-    const metas = initializeMetas(mockInternalLogger, config);
+    const { metas } = initializeFaro(mockConfig());
+
     const listener = jest.fn(() => {});
     metas.addListener(listener);
 

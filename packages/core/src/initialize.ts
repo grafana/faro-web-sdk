@@ -13,8 +13,6 @@ export function initializeFaro(config: Config): Faro {
   const unpatchedConsole = initializeUnpatchedConsole(config);
   const internalLogger = initializeInternalLogger(unpatchedConsole, config);
 
-  internalLogger.debug('Initializing');
-
   if (isInternalFaroOnGlobalObject() && !config.isolate) {
     internalLogger.error(
       'Faro is already registered. Either add instrumentations, transports etc. to the global faro instance or use the "isolate" property'
@@ -23,12 +21,14 @@ export function initializeFaro(config: Config): Faro {
     return undefined!;
   }
 
+  internalLogger.debug('Initializing');
+
   // Initializing the APIs
-  const metas = initializeMetas(internalLogger, config);
-  const transports = initializeTransports(internalLogger, config);
-  const api = initializeAPI(internalLogger, config, transports, metas);
-  const instrumentations = initializeInstrumentations(internalLogger, config, api);
-  const faro = registerFaro(internalLogger, config, unpatchedConsole, metas, transports, api, instrumentations);
+  const metas = initializeMetas(unpatchedConsole, internalLogger, config);
+  const transports = initializeTransports(unpatchedConsole, internalLogger, config, metas);
+  const api = initializeAPI(unpatchedConsole, internalLogger, config, metas, transports);
+  const instrumentations = initializeInstrumentations(unpatchedConsole, internalLogger, config, metas, transports, api);
+  const faro = registerFaro(unpatchedConsole, internalLogger, config, metas, transports, api, instrumentations);
 
   // make sure Faro is initialized before registering default metas, instrumentations, transports etc.
   const initial: Meta = {

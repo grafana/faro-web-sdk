@@ -1,6 +1,8 @@
 import type { ExceptionEvent } from '../api';
 import type { Config, Patterns } from '../config';
 import type { InternalLogger } from '../internalLogger';
+import type { Metas } from '../metas';
+import type { UnpatchedConsole } from '../unpatchedConsole';
 import { isString } from '../utils';
 import { TransportItemType } from './const';
 import type { BeforeSendHook, Transport, Transports } from './types';
@@ -26,7 +28,12 @@ export function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): Befo
   };
 }
 
-export function initializeTransports(internalLogger: InternalLogger, config: Config): Transports {
+export function initializeTransports(
+  unpatchedConsole: UnpatchedConsole,
+  internalLogger: InternalLogger,
+  config: Config,
+  metas: Metas
+): Transports {
   internalLogger.debug('Initializing transports');
 
   const transports: Transport[] = [];
@@ -49,8 +56,10 @@ export function initializeTransports(internalLogger: InternalLogger, config: Con
         return;
       }
 
-      newTransport.config = config;
+      newTransport.unpatchedConsole = unpatchedConsole;
       newTransport.internalLogger = internalLogger;
+      newTransport.config = config;
+      newTransport.metas = metas;
 
       transports.push(newTransport);
     });

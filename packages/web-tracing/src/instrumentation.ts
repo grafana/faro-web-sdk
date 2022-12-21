@@ -52,7 +52,8 @@ export class TracingInstrumentation extends BaseInstrumentation {
           new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
             scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
             maxExportBatchSize: 30,
-          })
+          }),
+          this.metas
         )
     );
 
@@ -69,6 +70,6 @@ export class TracingInstrumentation extends BaseInstrumentation {
   }
 
   private getIgnoreUrls(): Array<string | RegExp> {
-    return this.api.getAllIgnoreUrls();
+    return this.transports.transports.flatMap((transport) => transport.getIgnoreUrls());
   }
 }

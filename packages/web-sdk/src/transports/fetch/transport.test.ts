@@ -1,4 +1,5 @@
 import { getTransportBody, LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import { FetchTransport } from './transport';
 
@@ -27,6 +28,8 @@ describe('FetchTransport', () => {
       url: 'http://example.com/collect',
     });
 
+    transport.internalLogger = mockInternalLogger;
+
     transport.send(item);
 
     expect(fetch).toHaveBeenCalledTimes(1);
@@ -46,6 +49,8 @@ describe('FetchTransport', () => {
       bufferSize: 3,
     });
 
+    transport.internalLogger = mockInternalLogger;
+
     for (let idx = 0; idx < 6; idx++) {
       transport.send(item);
     }
@@ -61,6 +66,8 @@ describe('FetchTransport', () => {
       defaultRateLimitBackoffMs: 1000,
       getNow: () => now,
     });
+
+    transport.internalLogger = mockInternalLogger;
 
     fetch.mockImplementationOnce(() =>
       Promise.resolve({
@@ -91,6 +98,8 @@ describe('FetchTransport', () => {
       getNow: () => now,
     });
 
+    transport.internalLogger = mockInternalLogger;
+
     fetch.mockImplementationOnce(() =>
       Promise.resolve({
         status: 429,
@@ -120,6 +129,8 @@ describe('FetchTransport', () => {
       defaultRateLimitBackoffMs: 1000,
       getNow: () => now,
     });
+
+    transport.internalLogger = mockInternalLogger;
 
     fetch.mockImplementationOnce(() =>
       Promise.resolve({

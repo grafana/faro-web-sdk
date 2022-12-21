@@ -1,27 +1,24 @@
-import { initializeMetas } from '../../metas';
-import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
-import { initializeTransports, TransportItemType } from '../../transports';
-import { initializeTracesAPI } from '../traces';
-import { initializeExceptionsAPI } from './initialize';
-import type { ExceptionEvent, ExceptionsAPI, ExceptionStackFrame } from './types';
+import { initializeFaro } from '../../initialize';
+import { mockConfig, MockTransport } from '../../testUtils';
+import { TransportItemType } from '../../transports';
+import type { API } from '../types';
+import type { ExceptionEvent, ExceptionStackFrame } from './types';
 
 describe('api.exceptions', () => {
-  function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [ExceptionsAPI, MockTransport] {
+  function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [API, MockTransport] {
     const transport = new MockTransport();
     const config = mockConfig({
       dedupe,
       transports: [transport],
     });
-    const transports = initializeTransports(mockInternalLogger, config);
-    const metas = initializeMetas(mockInternalLogger, config);
-    const tracesAPI = initializeTracesAPI(mockInternalLogger, config, transports, metas);
-    const api = initializeExceptionsAPI(mockInternalLogger, config, transports, metas, tracesAPI);
+
+    const { api } = initializeFaro(config);
 
     return [api, transport];
   }
 
   describe('pushError', () => {
-    let api: ExceptionsAPI;
+    let api: API;
     let transport: MockTransport;
 
     beforeEach(() => {

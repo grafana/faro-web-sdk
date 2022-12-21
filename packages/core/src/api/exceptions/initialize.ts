@@ -3,6 +3,7 @@ import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
+import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
 import type { TracesAPI } from '../traces';
 import { defaultExceptionType } from './const';
@@ -11,10 +12,11 @@ import type { ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
 let stacktraceParser: StacktraceParser | undefined;
 
 export function initializeExceptionsAPI(
+  _unpatchedConsole: UnpatchedConsole,
   internalLogger: InternalLogger,
   config: Config,
-  transports: Transports,
   metas: Metas,
+  transports: Transports,
   tracesApi: TracesAPI
 ): ExceptionsAPI {
   internalLogger.debug('Initializing exceptions API');
