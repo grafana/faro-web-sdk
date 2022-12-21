@@ -1,6 +1,6 @@
 export { internalGlobalObjectKey } from './const';
 
-export { faro, registerFaro } from './register';
+export { faro, registerFaro } from './registerFaro';
 
 export {
   getInternalFromGlobalObject as getInternalFaroFromGlobalObject,

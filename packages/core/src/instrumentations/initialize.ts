@@ -1,8 +1,9 @@
+import type { API } from '../api';
 import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Instrumentation, Instrumentations } from './types';
 
-export function initializeInstrumentations(internalLogger: InternalLogger, _config: Config): Instrumentations {
+export function initializeInstrumentations(internalLogger: InternalLogger, config: Config, api: API): Instrumentations {
   internalLogger.debug('Initializing instrumentations');
 
   const instrumentations: Instrumentation[] = [];
@@ -18,12 +19,17 @@ export function initializeInstrumentations(internalLogger: InternalLogger, _conf
       );
 
       if (exists) {
-        internalLogger.warn(`Transport ${newInstrumentation.name} is already added`);
+        internalLogger.warn(`Instrumentation ${newInstrumentation.name} is already added`);
 
         return;
       }
 
+      newInstrumentation.internalLogger = internalLogger;
+      newInstrumentation.config = config;
+      newInstrumentation.api = api;
+
       instrumentations.push(newInstrumentation);
+
       newInstrumentation.initialize();
     });
   };
@@ -52,6 +58,7 @@ export function initializeInstrumentations(internalLogger: InternalLogger, _conf
       }
 
       instrumentations[existingInstrumentationIndex]!.destroy?.();
+
       instrumentations.splice(existingInstrumentationIndex, 1);
     });
   };

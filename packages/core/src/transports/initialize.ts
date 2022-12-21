@@ -49,6 +49,9 @@ export function initializeTransports(internalLogger: InternalLogger, config: Con
         return;
       }
 
+      newTransport.config = config;
+      newTransport.internalLogger = internalLogger;
+
       transports.push(newTransport);
     });
   };
@@ -132,10 +135,6 @@ export function initializeTransports(internalLogger: InternalLogger, config: Con
 
     paused = false;
   };
-
-  add(...config.transports);
-  addBeforeSendHooks(config.beforeSend);
-  addIgnoreErrorsPatterns(config.ignoreErrors);
 
   return {
     add,

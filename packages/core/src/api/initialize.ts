@@ -8,6 +8,7 @@ import { initializeLogsAPI } from './logs';
 import { initializeMeasurementsAPI } from './measurements';
 import { initializeMetaAPI } from './meta';
 import { initializeTracesAPI } from './traces';
+import { initializeTransportsAPI } from './transports';
 import type { API } from './types';
 
 export function initializeAPI(
@@ -27,5 +28,6 @@ export function initializeAPI(
     ...initializeLogsAPI(internalLogger, config, transports, metas, tracesApi),
     ...initializeMeasurementsAPI(internalLogger, config, transports, metas, tracesApi),
     ...initializeEventsAPI(internalLogger, config, transports, metas, tracesApi),
+    ...initializeTransportsAPI(internalLogger, config, transports),
   };
 }

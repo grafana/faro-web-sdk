@@ -1,6 +1,9 @@
+import type { API } from '../api';
 import type { Extension } from '../utils';
 
 export interface Instrumentation extends Extension {
+  api: API;
+
   initialize: VoidFunction;
 
   destroy?: VoidFunction;

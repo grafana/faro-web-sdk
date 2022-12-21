@@ -1,10 +1,9 @@
 import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import { isFunction } from '../utils';
-import { VERSION } from '../version';
 import type { Meta, MetaItem, Metas, MetasListener } from './types';
 
-export function initializeMetas(internalLogger: InternalLogger, config: Config): Metas {
+export function initializeMetas(internalLogger: InternalLogger, _config: Config): Metas {
   let items: MetaItem[] = [];
   let listeners: MetasListener[] = [];
 
@@ -13,46 +12,37 @@ export function initializeMetas(internalLogger: InternalLogger, config: Config):
   const notifyListeners = () => {
     if (listeners.length) {
       const value = getValue();
+
       listeners.forEach((listener) => listener(value));
     }
   };
 
   const add: Metas['add'] = (...newItems) => {
     internalLogger.debug('Adding metas\n', newItems);
+
     items.push(...newItems);
+
     notifyListeners();
   };
 
   const remove: Metas['remove'] = (...itemsToRemove) => {
     internalLogger.debug('Removing metas\n', itemsToRemove);
+
     items = items.filter((currentItem) => !itemsToRemove.includes(currentItem));
+
     notifyListeners();
   };
 
-  const initial: Meta = {
-    sdk: {
-      name: '@grafana/faro-core',
-      version: VERSION,
-      integrations: config.instrumentations.map(({ name, version }) => ({ name, version })),
-    },
-  };
-
-  if (config.app) {
-    initial.app = config.app;
-  }
-
-  if (config.user) {
-    initial.user = config.user;
-  }
-
-  add(initial, ...(config.metas ?? []));
-
   const addListener: Metas['addListener'] = (listener) => {
+    internalLogger.debug('Adding metas listener\n', listener);
+
     listeners.push(listener);
   };
 
   const removeListener: Metas['removeListener'] = (listener) => {
-    listeners = listeners.filter((l) => l !== listener);
+    internalLogger.debug('Removing metas listener\n', listener);
+
+    listeners = listeners.filter((currentListener) => currentListener !== listener);
   };
 
   return {

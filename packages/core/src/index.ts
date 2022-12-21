@@ -1,12 +1,3 @@
-export {
-  faro,
-  getInternalFaroFromGlobalObject,
-  internalGlobalObjectKey,
-  isInternalFaroOnGlobalObject,
-  setInternalFaroOnGlobalObject,
-} from './sdk';
-export type { Faro } from './sdk';
-
 export { defaultExceptionType } from './api';
 export type {
   API,
@@ -63,6 +54,17 @@ export type {
   MetaSession,
   MetaUser,
 } from './metas';
+
+export {
+  faro,
+  getInternalFaroFromGlobalObject,
+  internalGlobalObjectKey,
+  isInternalFaroOnGlobalObject,
+  setInternalFaroOnGlobalObject,
+} from './sdk';
+export type { Faro } from './sdk';
+
+export { Conventions } from './semantic';
 
 export { BaseTransport, getTransportBody, TransportItemType, transportItemTypeToBodyKey } from './transports';
 export type {
@@ -128,5 +130,3 @@ export type {
 } from './utils';
 
 export { VERSION } from './version';
-
-export { Conventions } from './semantic';
