@@ -4,6 +4,8 @@ export { BaseTransport } from './base';
 
 export { TransportItemType, transportItemTypeToBodyKey } from './const';
 
+export { registerInitialTransports } from './registerInitial';
+
 export type {
   BeforeSendHook,
   Transport,

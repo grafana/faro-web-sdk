@@ -1,5 +1,7 @@
 export { initializeMetas } from './initialize';
 
+export { registerInitialMetas } from './registerInitial';
+
 export type {
   Meta,
   MetaApp,
