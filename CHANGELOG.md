@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-beta6
+
+- Add view meta
+- Updated dependencies
+
 ## 1.0.0-beta5
 
 - Remove type module from package.json in web-tracing package

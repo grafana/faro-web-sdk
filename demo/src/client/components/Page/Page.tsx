@@ -10,7 +10,7 @@ export type PageProps = {
 };
 
 export function Page({ children, title, view }: PageProps) {
-  faro?.api.setView({ name: view });
+  faro?.api?.setView({ name: view });
 
   return (
     <>

@@ -25,6 +25,7 @@ Alternatively, you can use the CDN version of the library. See [use cdn library]
 
 - browser - captures browser metadata: name, version, etc
 - page - captures current URL
+- view - the web SDK enforces a `default` value for the view meta
 
 ## Transports
 
