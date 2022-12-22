@@ -96,7 +96,7 @@ import { FaroRoute } from '@grafana/faro-react';
 
 // during render
 <Switch>
-  <FarpRoute path="/">
+  <FaroRoute path="/">
     <Home />
   </FaroRoute>
   {/* ... */}
