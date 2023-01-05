@@ -2,6 +2,7 @@
 
 ## 1.0.0-beta6
 
+- **Breaking change** Instrumentations and transports no longer receive a `faro` instance and they should not rely on the global `faro` instance as it would break the isolation mode. Various APIs are passed individually (i.e. `this.api` vs `this.faro.api`, `this.unpatchedConsole` vs `this.faro.unpatchedConsole`).
 - Remove internal references to global Faro object
 
 ## 1.0.0-beta5
