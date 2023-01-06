@@ -12,4 +12,6 @@ export {
 } from './errors';
 export type { ErrorEvent, ExtendedPromiseRejectionEvent } from './errors';
 
+export { ViewInstrumentation } from './view';
+
 export { WebVitalsInstrumentation } from './webVitals';

@@ -23,5 +23,9 @@ export function registerInitialMetas(faro: Faro): void {
     initial.user = faro.config.user;
   }
 
+  if (faro.config.view) {
+    initial.view = faro.config.view;
+  }
+
   faro.metas.add(initial, ...(faro.config.metas ?? []));
 }

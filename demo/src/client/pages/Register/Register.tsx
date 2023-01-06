@@ -3,7 +3,7 @@ import { RegisterForm } from './RegisterForm';
 
 export function Register() {
   return (
-    <Page title="Register">
+    <Page title="Register" view="auth">
       <RegisterForm />
     </Page>
   );

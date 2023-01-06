@@ -71,6 +71,7 @@ export {
   defaultInternalLoggerLevel,
   defaultLogLevel,
   defaultMetas,
+  defaultViewMeta,
   ErrorsInstrumentation,
   FetchTransport,
   getCurrentTimestamp,
@@ -121,6 +122,7 @@ export {
   TransportItemType,
   transportItemTypeToBodyKey,
   VERSION,
+  ViewInstrumentation,
   WebVitalsInstrumentation,
 } from '@grafana/faro-web-sdk';
 
@@ -170,6 +172,7 @@ export type {
   MetaSDKIntegration,
   MetaSession,
   MetaUser,
+  MetaView,
   OTELApi,
   Patterns,
   PushErrorOptions,

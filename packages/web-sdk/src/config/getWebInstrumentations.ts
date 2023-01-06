@@ -4,6 +4,7 @@ import {
   ConsoleInstrumentation,
   ErrorsInstrumentation,
   SessionInstrumentation,
+  ViewInstrumentation,
   WebVitalsInstrumentation,
 } from '../instrumentations';
 import type { GetWebInstrumentationsOptions } from './types';
@@ -13,6 +14,7 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
+    new ViewInstrumentation(),
   ];
 
   if (options.captureConsole !== false) {

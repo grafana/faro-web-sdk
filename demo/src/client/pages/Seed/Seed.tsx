@@ -28,7 +28,7 @@ export function Seed() {
   };
 
   return (
-    <Page title="Seed">
+    <Page title="Seed" view="system">
       <p>
         Clicking the button below will add some data to the database. This is useful to check the entire tracing
         instrumentation coming together.

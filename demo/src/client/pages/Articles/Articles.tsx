@@ -14,7 +14,7 @@ export function ArticlesComponent() {
   const getArticlesResult = useGetArticlesQuery({ page: page.toString() });
 
   return (
-    <Page title="Articles">
+    <Page title="Articles" view="articles">
       {getArticlesResult.isLoading ? (
         <LoadingScreen />
       ) : (

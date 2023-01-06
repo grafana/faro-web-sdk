@@ -6,6 +6,8 @@
   the global `faro` instance as it would break the isolation mode. Various APIs are passed individually (i.e.
   `this.api` vs `this.faro.api`, `this.unpatchedConsole` vs `this.faro.unpatchedConsole`)
 - Remove internal references to global Faro object
+- Add view meta
+- Updated dependencies
 
 ## 1.0.0-beta5
 

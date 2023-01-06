@@ -53,6 +53,7 @@ export type {
   MetaSDKIntegration,
   MetaSession,
   MetaUser,
+  MetaView,
 } from './metas';
 
 export {

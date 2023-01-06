@@ -1,0 +1,1 @@
+export { defaultViewMeta } from './const';
