@@ -1,0 +1,1 @@
+export { ViewInstrumentation } from './instrumentation';

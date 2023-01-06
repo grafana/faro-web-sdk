@@ -3,7 +3,7 @@ import { LoginForm } from './LoginForm';
 
 export function Login() {
   return (
-    <Page title="Login">
+    <Page title="Login" view="auth">
       <LoginForm />
     </Page>
   );

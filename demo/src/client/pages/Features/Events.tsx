@@ -21,6 +21,10 @@ export function Events() {
     dispatch(setSession(session));
   };
 
+  const changeView = () => {
+    faro.api.setView({ name: `randomly-changed-view-${Math.random()}` });
+  };
+
   return (
     <>
       <h3>Events</h3>
@@ -36,6 +40,9 @@ export function Events() {
         </Button>
         <Button data-cy="btn-new-session" onClick={startNewSession}>
           Start new session
+        </Button>
+        <Button data-cy="btn-change-view" onClick={changeView}>
+          Change view
         </Button>
       </ButtonGroup>
     </>

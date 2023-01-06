@@ -44,6 +44,7 @@ Besides the mandatory properties, Faro configuration also supports the following
 | `ignoreErrors` | Error message patterns for errors that should be ignored                               | `Patterns`       | `[]`          |
 | `session`      | Session metadata                                                                       | `Session`        | `undefined`   |
 | `user`         | User metadata                                                                          | `User`           | `undefined`   |
+| `view`         | View metadata                                                                          | `View`           | `undefined`   |
 
 ## Faro instance
 

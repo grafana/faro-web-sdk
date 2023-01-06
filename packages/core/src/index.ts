@@ -62,6 +62,7 @@ export type {
   MetaSDKIntegration,
   MetaSession,
   MetaUser,
+  MetaView,
 } from './metas';
 
 export { BaseTransport, getTransportBody, TransportItemType, transportItemTypeToBodyKey } from './transports';

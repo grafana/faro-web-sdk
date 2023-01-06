@@ -13,19 +13,24 @@ export function initializeMetas(internalLogger: InternalLogger, config: Config):
   const notifyListeners = () => {
     if (listeners.length) {
       const value = getValue();
+
       listeners.forEach((listener) => listener(value));
     }
   };
 
   const add: Metas['add'] = (...newItems) => {
     internalLogger.debug('Adding metas\n', newItems);
+
     items.push(...newItems);
+
     notifyListeners();
   };
 
   const remove: Metas['remove'] = (...itemsToRemove) => {
     internalLogger.debug('Removing metas\n', itemsToRemove);
+
     items = items.filter((currentItem) => !itemsToRemove.includes(currentItem));
+
     notifyListeners();
   };
 

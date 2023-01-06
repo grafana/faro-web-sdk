@@ -30,6 +30,10 @@ export function initializeFaro(config: Config): Faro {
     api.setSession(config.session);
   }
 
+  if (config.view) {
+    api.setView(config.view);
+  }
+
   const faro = registerFaro(internalLogger, {
     api,
     config,
