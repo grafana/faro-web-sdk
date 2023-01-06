@@ -1,11 +1,18 @@
-import { faro } from '../sdk';
-import type { Faro } from '../sdk';
+import type { Config } from '../config';
+import { defaultInternalLogger } from '../internalLogger';
+import type { InternalLogger } from '../internalLogger';
+import type { Metas } from '../metas';
+import { defaultUnpatchedConsole } from '../unpatchedConsole';
+import type { UnpatchedConsole } from '../unpatchedConsole';
 
 export interface Extension {
   readonly name: string;
   readonly version: string;
 
-  get faro(): Faro;
+  internalLogger: InternalLogger;
+  unpatchedConsole: UnpatchedConsole;
+  config: Config;
+  metas: Metas;
 
   logDebug(...args: unknown[]): void;
   logInfo(...args: unknown[]): void;
@@ -17,23 +24,24 @@ export abstract class BaseExtension implements Extension {
   abstract readonly name: string;
   abstract readonly version: string;
 
-  get faro(): Faro {
-    return faro;
-  }
+  unpatchedConsole = defaultUnpatchedConsole;
+  internalLogger = defaultInternalLogger;
+  config = {} as Config;
+  metas = {} as Metas;
 
   logDebug(...args: unknown[]): void {
-    this.faro?.internalLogger?.debug(`${this.name}\n`, ...args);
+    this.internalLogger.debug(`${this.name}\n`, ...args);
   }
 
   logInfo(...args: unknown[]): void {
-    this.faro?.internalLogger?.info(`${this.name}\n`, ...args);
+    this.internalLogger.info(`${this.name}\n`, ...args);
   }
 
   logWarn(...args: unknown[]): void {
-    this.faro?.internalLogger?.warn(`${this.name}\n`, ...args);
+    this.internalLogger.warn(`${this.name}\n`, ...args);
   }
 
   logError(...args: unknown[]): void {
-    this.faro?.internalLogger?.error(`${this.name}\n`, ...args);
+    this.internalLogger.error(`${this.name}\n`, ...args);
   }
 }

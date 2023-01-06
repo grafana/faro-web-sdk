@@ -2,13 +2,15 @@ import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas } from '../../metas';
 import type { Transports } from '../../transports';
+import type { UnpatchedConsole } from '../../unpatchedConsole';
 import type { MetaAPI } from './types';
 
 export function initializeMetaAPI(
+  _unpatchedConsole: UnpatchedConsole,
   internalLogger: InternalLogger,
   _config: Config,
-  _transports: Transports,
-  metas: Metas
+  metas: Metas,
+  _transports: Transports
 ): MetaAPI {
   internalLogger.debug('Initializing meta API');
 

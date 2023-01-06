@@ -17,13 +17,13 @@ export class ViewInstrumentation extends BaseInstrumentation {
     if (view && view !== this.notifiedView) {
       this.notifiedView = view;
 
-      this.faro.api.pushEvent(Conventions.EventNames.VIEW_CHANGED, {}, undefined, { skipDedupe: true });
+      this.api.pushEvent(Conventions.EventNames.VIEW_CHANGED, {}, undefined, { skipDedupe: true });
     }
   }
 
   initialize() {
-    this.sendViewChangedEvent(this.faro.metas.value);
+    this.sendViewChangedEvent(this.metas.value);
 
-    this.faro.metas.addListener(this.sendViewChangedEvent.bind(this));
+    this.metas.addListener(this.sendViewChangedEvent.bind(this));
   }
 }

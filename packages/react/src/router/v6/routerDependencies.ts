@@ -1,5 +1,3 @@
-import type { Faro } from '@grafana/faro-web-sdk';
-
 import type {
   ReactRouterV6CreateRoutesFromChildren,
   ReactRouterV6Dependencies,
@@ -10,17 +8,15 @@ import type {
 } from './types';
 
 export let isInitialized = false;
-export let faro: Faro;
 export let createRoutesFromChildren: ReactRouterV6CreateRoutesFromChildren;
 export let matchRoutes: ReactRouterV6MatchRoutes;
 export let Routes: ReactRouterV6RoutesShape;
 export let useLocation: ReactRouterV6UseLocation;
 export let useNavigationType: ReactRouterV6UseNavigationType;
 
-export function setDependencies(newDependencies: ReactRouterV6Dependencies, newFaro: Faro): void {
+export function setReactRouterV6Dependencies(newDependencies: ReactRouterV6Dependencies): void {
   isInitialized = true;
 
-  faro = newFaro;
   createRoutesFromChildren = newDependencies.createRoutesFromChildren;
   matchRoutes = newDependencies.matchRoutes;
   Routes = newDependencies.Routes;

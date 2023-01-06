@@ -18,13 +18,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
       this.notifiedSession = session;
       // no need to add attributes and session id, they are included as part of meta
       // automatically
-      this.faro.api.pushEvent(Conventions.EventNames.SESSION_START, {}, undefined, { skipDedupe: true });
+      this.api.pushEvent(Conventions.EventNames.SESSION_START, {}, undefined, { skipDedupe: true });
     }
   }
 
   initialize() {
-    this.sendSessionStartEvent(this.faro.metas.value);
+    this.sendSessionStartEvent(this.metas.value);
 
-    this.faro.metas.addListener(this.sendSessionStartEvent.bind(this));
+    this.metas.addListener(this.sendSessionStartEvent.bind(this));
   }
 }

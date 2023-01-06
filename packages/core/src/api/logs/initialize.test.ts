@@ -1,28 +1,23 @@
-import { initializeMetas } from '../../metas';
-import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
-import { initializeTransports } from '../../transports';
+import { initializeFaro } from '../../initialize';
+import { mockConfig, MockTransport } from '../../testUtils';
 import { LogLevel } from '../../utils';
-import { initializeTracesAPI } from '../traces';
-import { initializeLogsAPI } from './initialize';
-import type { LogsAPI } from './types';
+import type { API } from '../types';
 
 describe('api.logs', () => {
-  function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [LogsAPI, MockTransport] {
+  function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [API, MockTransport] {
     const transport = new MockTransport();
     const config = mockConfig({
       dedupe,
       transports: [transport],
     });
-    const transports = initializeTransports(mockInternalLogger, config);
-    const metas = initializeMetas(mockInternalLogger, config);
-    const tracesAPI = initializeTracesAPI(mockInternalLogger, config, transports, metas);
-    const api = initializeLogsAPI(mockInternalLogger, config, transports, metas, tracesAPI);
+
+    const { api } = initializeFaro(config);
 
     return [api, transport];
   }
 
   describe('pushLog', () => {
-    let api: LogsAPI;
+    let api: API;
     let transport: MockTransport;
 
     beforeEach(() => {

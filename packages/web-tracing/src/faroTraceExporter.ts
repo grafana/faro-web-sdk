@@ -11,7 +11,7 @@ export class FaroTraceExporter implements SpanExporter {
   export(spans: ReadableSpan[], resultCallback: (result: ExportResult) => void): void {
     const traceEvent = createExportTraceServiceRequest(spans, true);
 
-    this.config.faro.api.pushTraces(traceEvent);
+    this.config.api.pushTraces(traceEvent);
 
     resultCallback({ code: ExportResultCode.SUCCESS });
   }

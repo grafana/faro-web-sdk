@@ -2,15 +2,17 @@ import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType, Transports } from '../../transports';
+import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
 import type { TracesAPI } from '../traces';
 import type { EventEvent, EventsAPI } from './types';
 
 export function initializeEventsAPI(
+  _unpatchedConsole: UnpatchedConsole,
   internalLogger: InternalLogger,
   config: Config,
-  transports: Transports,
   metas: Metas,
+  transports: Transports,
   tracesApi: TracesAPI
 ): EventsAPI {
   let lastPayload: Pick<EventEvent, 'name' | 'domain' | 'attributes'> | null = null;

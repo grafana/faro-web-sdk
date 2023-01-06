@@ -1,11 +1,10 @@
 import type { ExceptionEvent } from '../api';
-import type { Config } from '../config';
-import { mockInternalLogger } from '../testUtils';
+import { initializeFaro } from '../initialize';
+import { mockConfig } from '../testUtils';
 import { getCurrentTimestamp } from '../utils';
 import { VERSION } from '../version';
 import { BaseTransport } from './base';
 import { TransportItemType } from './const';
-import { initializeTransports } from './initialize';
 import type { Transport, TransportItem } from './types';
 
 class MockTransport extends BaseTransport implements Transport {
@@ -23,12 +22,13 @@ describe('transports', () => {
   describe('config.ignoreErrors', () => {
     it('will filter out errors by string or regex', () => {
       const transport = new MockTransport();
-      const config = {
-        transports: [transport],
-        ignoreErrors: ['Error: ResizeObserver', /FetchError[:\s\w\/]*pwc/],
-      } as any as Config;
 
-      const transports = initializeTransports(mockInternalLogger, config);
+      const { transports } = initializeFaro(
+        mockConfig({
+          transports: [transport],
+          ignoreErrors: ['Error: ResizeObserver', /FetchError[:\s\w\/]*pwc/],
+        })
+      );
 
       transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));
       transports.execute(makeExceptionTransportItem('TypeError', '_.viz is undefined'));
@@ -50,20 +50,25 @@ describe('transports', () => {
     it('will not send events that are rejected by beforeSend hook', () => {
       const transport = new MockTransport();
       const hookedItems: TransportItem[] = [];
-      const config = {
-        transports: [transport],
-        beforeSend: (item: TransportItem) => {
-          hookedItems.push(item);
-          if (item.type === TransportItemType.EXCEPTION && (item.payload as ErrorEvent).type === 'TypeError') {
-            return null;
-          }
-          return item;
-        },
-      } as any as Config;
 
-      const transports = initializeTransports(mockInternalLogger, config);
+      const { transports } = initializeFaro(
+        mockConfig({
+          transports: [transport],
+          beforeSend: (item: TransportItem) => {
+            hookedItems.push(item);
+
+            if (item.type === TransportItemType.EXCEPTION && (item.payload as ErrorEvent).type === 'TypeError') {
+              return null;
+            }
+
+            return item;
+          },
+        })
+      );
+
       transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));
       transports.execute(makeExceptionTransportItem('TypeError', '_.viz is undefined'));
+
       expect(transport.sentItems).toHaveLength(1);
       expect(hookedItems).toHaveLength(2);
       expect((transport.sentItems[0]?.payload as ErrorEvent).type).toEqual('Error');
@@ -71,23 +76,25 @@ describe('transports', () => {
 
     it('events can be modified by beforeSend hook', () => {
       const transport = new MockTransport();
-      const config = {
-        transports: [transport],
-        beforeSend: (item: TransportItem) => {
-          if (item.type === TransportItemType.EXCEPTION) {
-            return {
-              ...item,
-              payload: {
-                ...item.payload,
-                type: 'NewType',
-              },
-            };
-          }
-          return item;
-        },
-      } as any as Config;
 
-      const transports = initializeTransports(mockInternalLogger, config);
+      const { transports } = initializeFaro(
+        mockConfig({
+          transports: [transport],
+          beforeSend: (item: TransportItem) => {
+            if (item.type === TransportItemType.EXCEPTION) {
+              return {
+                ...item,
+                payload: {
+                  ...item.payload,
+                  type: 'NewType',
+                },
+              };
+            }
+            return item;
+          },
+        })
+      );
+
       transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));
       expect(transport.sentItems).toHaveLength(1);
       expect((transport.sentItems[0]?.payload as ErrorEvent).type).toEqual('NewType');
@@ -98,10 +105,13 @@ describe('transports', () => {
     const transport1 = new MockTransport();
     const transport2 = new MockTransport();
 
-    const config = {
-      transports: [transport1, transport2],
-    } as any as Config;
-    const transports = initializeTransports(mockInternalLogger, config);
+    const { transports } = initializeFaro(
+      mockConfig({
+        isolate: true,
+        instrumentations: [],
+        transports: [transport1, transport2],
+      })
+    );
 
     it('will all be added and receive events', () => {
       transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));

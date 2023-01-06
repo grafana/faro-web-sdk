@@ -1,7 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
 
-import type { Faro } from '@grafana/faro-web-sdk';
-
 export type ReactNodeRender = () => ReactNode;
 
 export type ReactProps = Record<string, any>;
@@ -9,7 +7,6 @@ export type ReactProps = Record<string, any>;
 export type FaroErrorBoundaryFallbackRender = (error: Error, resetError: VoidFunction) => ReactElement;
 
 export interface FaroErrorBoundaryProps {
-  faro?: Faro;
   beforeCapture?: (error: Error | null) => void;
   children?: ReactNode | ReactNodeRender;
   fallback?: ReactElement | FaroErrorBoundaryFallbackRender;

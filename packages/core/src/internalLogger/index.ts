@@ -1,4 +1,4 @@
-export { defaultInternalLoggerLevel, InternalLoggerLevel } from './const';
+export { defaultInternalLogger, defaultInternalLoggerLevel, InternalLoggerLevel } from './const';
 
 export { createInternalLogger } from './createInternalLogger';
 

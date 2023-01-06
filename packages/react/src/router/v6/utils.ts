@@ -1,5 +1,5 @@
 import type { ReactRouterLocation } from '../types';
-import { matchRoutes } from './dependencies';
+import { matchRoutes } from './routerDependencies';
 import type { ReactRouterV6RouteObject } from './types';
 
 export function getNumberOfUrlSegments(url: string): number {

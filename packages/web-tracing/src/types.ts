@@ -3,10 +3,10 @@ import type { InstrumentationOption } from '@opentelemetry/instrumentation';
 import type { ResourceAttributes } from '@opentelemetry/resources';
 import type { SpanProcessor } from '@opentelemetry/sdk-trace-base';
 
-import type { Faro } from '@grafana/faro-web-sdk';
+import type { API } from '@grafana/faro-web-sdk';
 
 export interface FaroTraceExporterConfig {
-  faro: Faro;
+  api: API;
 }
 
 export interface TracingInstrumentationOptions {

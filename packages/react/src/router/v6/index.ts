@@ -1,8 +1,8 @@
-export { setReactRouterV6SSRDependencies } from './dependencies';
-
 export { FaroRoutes } from './FaroRoutes';
 
 export { initializeReactRouterV6Instrumentation } from './initialize';
+
+export { setReactRouterV6SSRDependencies } from './routerDependencies';
 
 export type {
   ReactRouterV6CreateRoutesFromChildren,
