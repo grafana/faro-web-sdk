@@ -7,13 +7,14 @@ describe('ViewInstrumentation', () => {
   it('will send view start event on initialize', () => {
     const transport = new MockTransport();
     const view = { name: 'my-view' };
-    const config = mockConfig({
-      transports: [transport],
-      instrumentations: [new ViewInstrumentation()],
-      view,
-    });
 
-    initializeFaro(config);
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new ViewInstrumentation()],
+        view,
+      })
+    );
 
     expect(transport.items).toHaveLength(1);
 
@@ -25,13 +26,14 @@ describe('ViewInstrumentation', () => {
   it('will send view changed event if setView is called.', () => {
     const transport = new MockTransport();
     const view = { name: 'my-view' };
-    const config = mockConfig({
-      transports: [transport],
-      instrumentations: [new ViewInstrumentation()],
-      view,
-    });
 
-    const faro = initializeFaro(config);
+    const { api, metas } = initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new ViewInstrumentation()],
+        view,
+      })
+    );
 
     expect(transport.items).toHaveLength(1);
 
@@ -39,11 +41,11 @@ describe('ViewInstrumentation', () => {
     expect(event.payload.name).toEqual(Conventions.EventNames.VIEW_CHANGED);
     expect(event.meta.view?.name).toEqual(view.name);
 
-    faro.metas.add({ user: { id: 'foo' } });
+    metas.add({ user: { id: 'foo' } });
     expect(transport.items).toHaveLength(1);
 
     const newView = { name: 'my-changed-view' };
-    faro.api.setView(newView);
+    api.setView(newView);
     expect(transport.items).toHaveLength(2);
 
     event = transport.items[0]! as TransportItem<EventEvent>;
