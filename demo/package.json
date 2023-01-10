@@ -19,7 +19,11 @@
     "build": "run-p build:*",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build --ssr src/server/index.ts --outDir dist/server",
-    "clean": "rimraf dist/ logs/ yarn-error.log",
+    "clean": "run-s clean:*",
+    "clean:remove": "rimraf dist/ logs/ yarn-error.log",
+    "clean:recreate": "run-s clean:recreate:*",
+    "clean:recreate:folders": "mkdirp logs",
+    "clean:recreate:files": "nodetouch logs/.gitkeep",
     "quality": "run-s quality:*",
     "quality:test": "exit 0",
     "quality:format": "prettier --cache --cache-location=../.cache/prettier/demo --ignore-path ../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
@@ -88,7 +92,9 @@
     "@types/serve-static": "^1.15.0",
     "@vitejs/plugin-react": "^3.0.1",
     "cross-env": "^7.0.3",
+    "mkdirp": "^1.0.4",
     "nodemon": "^2.0.20",
+    "touch": "^3.1.0",
     "vite": "^4.0.4"
   }
 }
