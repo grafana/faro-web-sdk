@@ -26,6 +26,9 @@ export type {
   TracesAPI,
 } from './api';
 
+export { BaseExtension } from './extensions';
+export type { Extension } from './extensions';
+
 export { globalObject } from './globalObject';
 export type { GlobalObject } from './globalObject';
 
@@ -82,7 +85,6 @@ export type { UnpatchedConsole } from './unpatchedConsole';
 
 export {
   allLogLevels,
-  BaseExtension,
   createPromiseBuffer,
   deepEqual,
   defaultLogLevel,

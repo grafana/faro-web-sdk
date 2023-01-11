@@ -1,6 +1,3 @@
-export { BaseExtension } from './extensions';
-export type { Extension } from './extensions';
-
 export type { BaseObject, BaseObjectKey, BaseObjectPrimitiveValue, BaseObjectValue } from './baseObject';
 
 export { deepEqual } from './deepEqual';
