@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0-beta7 (unreleased)
+
+- Fix circular dependency in the `core` package
+- Added export for the `Extension` interface in `core`, `web-sdk` and `react` packages
+- Added export for `genShortID` function in `core`, `web-sdk` and `react` packages
+- Updated dependencies
+
 ## 1.0.0-beta6
 
 - **Breaking change** Instrumentations and transports no longer receive a `faro` instance and they should not rely on

@@ -1,24 +1,8 @@
 import type { Config } from '../config';
 import { defaultInternalLogger } from '../internalLogger';
-import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import { defaultUnpatchedConsole } from '../unpatchedConsole';
-import type { UnpatchedConsole } from '../unpatchedConsole';
-
-export interface Extension {
-  readonly name: string;
-  readonly version: string;
-
-  internalLogger: InternalLogger;
-  unpatchedConsole: UnpatchedConsole;
-  config: Config;
-  metas: Metas;
-
-  logDebug(...args: unknown[]): void;
-  logInfo(...args: unknown[]): void;
-  logWarn(...args: unknown[]): void;
-  logError(...args: unknown[]): void;
-}
+import type { Extension } from './types';
 
 export abstract class BaseExtension implements Extension {
   abstract readonly name: string;
