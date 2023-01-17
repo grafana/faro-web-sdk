@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { globalObject } from '@grafana/faro-web-sdk';
 
@@ -15,24 +15,14 @@ export function FaroRoutes(props: ReactRouterV6RoutesProps) {
 
   const routes = useMemo(() => createRoutesFromChildren?.(props.children) ?? [], [props.children]);
 
-  const [prevRoute, setPrevRoute] = useState<{ route: string; url: string }>({ route: '', url: '' });
-
   useEffect(() => {
     if (isInitialized && (navigationType === NavigationType.Push || navigationType === NavigationType.Pop)) {
-      const payload = {
+      api.pushEvent('routeChange', {
         route: getRouteFromLocation(routes, location),
         url: globalObject.location?.href,
-      };
-
-      api.pushEvent('routeChange', {
-        prevRoute: prevRoute.route,
-        prevUrl: prevRoute.url,
-        ...payload,
       });
-
-      setPrevRoute(payload);
     }
-  }, [location, navigationType, prevRoute.route, prevRoute.url, routes]);
+  }, [location, navigationType, routes]);
 
   const ActualRoutes = props.routesComponent ?? Routes;
 

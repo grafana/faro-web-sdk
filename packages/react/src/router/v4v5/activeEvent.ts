@@ -6,8 +6,6 @@ export let activeEvent: ReactRouterV4V5ActiveEvent | undefined = undefined;
 
 export function createNewActiveEvent(url: string): ReactRouterV4V5ActiveEvent {
   activeEvent = {
-    prevRoute: activeEvent?.route ?? '',
-    prevUrl: activeEvent?.url ?? '',
     route: '',
     url,
   };

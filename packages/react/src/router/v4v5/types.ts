@@ -15,8 +15,6 @@ export interface ReactRouterV4V5Dependencies {
 }
 
 export interface ReactRouterV4V5ActiveEvent extends Record<string, string> {
-  prevRoute: string;
-  prevUrl: string;
   route: string;
   url: string;
 }
