@@ -3,6 +3,7 @@ import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { Transports } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
+
 import { initializeEventsAPI } from './events';
 import { initializeExceptionsAPI } from './exceptions';
 import { initializeLogsAPI } from './logs';

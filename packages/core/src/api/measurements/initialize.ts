@@ -6,6 +6,7 @@ import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, isNull } from '../../utils';
 import type { TracesAPI } from '../traces';
+
 import type { MeasurementEvent, MeasurementsAPI } from './types';
 
 export function initializeMeasurementsAPI(

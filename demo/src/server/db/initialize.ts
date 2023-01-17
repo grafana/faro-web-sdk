@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize';
 
 import { logger } from '../logger';
 import { env } from '../utils';
+
 import { setDb } from './db';
 import { initializeArticle, initializeComment, initializeUser } from './repositories';
 

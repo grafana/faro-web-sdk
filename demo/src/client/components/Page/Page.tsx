@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
 
@@ -10,7 +11,9 @@ export type PageProps = {
 };
 
 export function Page({ children, title, view }: PageProps) {
-  faro?.api?.setView({ name: view });
+  useEffect(() => {
+    faro?.api?.setView({ name: view });
+  }, [view]);
 
   return (
     <>

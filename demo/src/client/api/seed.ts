@@ -1,5 +1,6 @@
 import type { SeedGetSuccessPayload } from '../../common';
 import { createApi } from '../utils';
+
 import { baseQuery } from './baseQuery';
 
 export const seedAPI = createApi({

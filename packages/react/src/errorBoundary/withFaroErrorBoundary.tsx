@@ -2,6 +2,7 @@ import hoistNonReactStatics from 'hoist-non-react-statics';
 import type { ComponentType, FC } from 'react';
 
 import { unknownString } from '../utils';
+
 import { FaroErrorBoundary } from './FaroErrorBoundary';
 import type { FaroErrorBoundaryProps, ReactProps } from './types';
 

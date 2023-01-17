@@ -1,5 +1,6 @@
 import type { ArticleInputModel, ArticleModel, ArticlePublicModel, UserModel } from '../../../common';
 import { Article } from '../repositories';
+
 import { getCommentsByArticleId, getCommentsPublicFromComments } from './comments';
 import { getUserById, getUserPublicFromUser } from './users';
 

@@ -4,6 +4,7 @@ import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 import { isString } from '../utils';
+
 import { TransportItemType } from './const';
 import type { BeforeSendHook, Transport, Transports } from './types';
 

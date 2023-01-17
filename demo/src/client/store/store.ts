@@ -2,6 +2,7 @@ import { combineReducers } from 'redux';
 
 import { apiMiddleware, apiReducers } from '../api';
 import { configureStore, setupListeners } from '../utils';
+
 import { faroSlice, userSlice } from './slices';
 
 export function createStore(preloadedState: {}) {

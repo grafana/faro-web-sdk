@@ -10,6 +10,7 @@ import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { createSession, defaultMetas, defaultViewMeta } from '../metas';
 import { FetchTransport } from '../transports';
+
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
 

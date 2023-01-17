@@ -1,4 +1,5 @@
 import type { ReactRouterHistory } from '../types';
+
 import type { ReactRouterV4V5Dependencies, ReactRouterV4V5RouteShape } from './types';
 
 export let isInitialized = false;

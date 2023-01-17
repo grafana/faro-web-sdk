@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { Express } from 'express';
 
 import { authMiddleware } from '../../../middlewares';
+
 import { loginHandler } from './loginHandler';
 import { logoutHandler } from './logoutHandler';
 import { registerHandler } from './registerHandler';

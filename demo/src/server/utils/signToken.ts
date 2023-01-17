@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 import type { UserPublicModel } from '../../common';
+
 import { authorizationSecret } from './const';
 
 export function signToken(userPublic: UserPublicModel): string {

@@ -1,4 +1,5 @@
 import { createTestPromise, TestPromise } from '../testUtils';
+
 import { createPromiseBuffer } from './promiseBuffer';
 
 async function defer(fn: () => void) {

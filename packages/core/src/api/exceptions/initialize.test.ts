@@ -2,6 +2,7 @@ import { initializeFaro } from '../../initialize';
 import { mockConfig, MockTransport } from '../../testUtils';
 import { TransportItemType } from '../../transports';
 import type { API } from '../types';
+
 import type { ExceptionEvent, ExceptionStackFrame } from './types';
 
 describe('api.exceptions', () => {

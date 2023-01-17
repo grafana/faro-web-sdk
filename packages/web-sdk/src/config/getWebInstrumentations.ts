@@ -7,6 +7,7 @@ import {
   ViewInstrumentation,
   WebVitalsInstrumentation,
 } from '../instrumentations';
+
 import type { GetWebInstrumentationsOptions } from './types';
 
 export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {

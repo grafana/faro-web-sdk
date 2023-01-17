@@ -1,6 +1,7 @@
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { initializeFaro } from '../../initialize';
+
 import { registerOnerror } from './registerOnerror';
 
 describe('registerOnerror', () => {

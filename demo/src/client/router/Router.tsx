@@ -4,6 +4,7 @@ import { FaroRoutes } from '@grafana/faro-react';
 
 import { GeneralLayout } from '../layouts';
 import { About, ArticleAdd, Articles, ArticleView, Features, Home, Login, Register, Seed } from '../pages';
+
 import { LoggedInGuard, LoggedOutGuard } from './guards';
 
 export function Router() {

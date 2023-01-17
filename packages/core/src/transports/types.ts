@@ -2,6 +2,7 @@ import type { APIEvent, EventEvent, ExceptionEvent, LogEvent, MeasurementEvent, 
 import type { Patterns } from '../config';
 import type { Extension } from '../extensions';
 import type { Meta } from '../metas';
+
 import type { TransportItemType } from './const';
 
 export type TransportItemPayload<P = APIEvent> = P;

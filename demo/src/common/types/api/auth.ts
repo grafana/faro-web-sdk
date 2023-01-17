@@ -1,4 +1,5 @@
 import type { UserInputModel, UserPublicModel } from '../models';
+
 import type { ErrorResponse, SuccessResponse } from './generic';
 
 export type AuthRegisterPayload = UserInputModel;

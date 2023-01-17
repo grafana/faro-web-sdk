@@ -3,6 +3,7 @@ import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
+
 import type { OTELApi, TraceEvent, TracesAPI } from './types';
 
 export function initializeTracesAPI(

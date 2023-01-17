@@ -1,5 +1,6 @@
 import type { Config } from '../config';
 import type { UnpatchedConsole } from '../unpatchedConsole';
+
 import { defaultInternalLogger } from './const';
 import { createInternalLogger } from './createInternalLogger';
 import type { InternalLogger } from './types';

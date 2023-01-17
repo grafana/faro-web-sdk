@@ -1,6 +1,7 @@
 import { Express, Router } from 'express';
 
 import { tokenMiddleware, traceparentMiddleware } from '../middlewares';
+
 import { registerApiRoutes } from './api';
 import { registerMetricsRoutes } from './metrics';
 import { registerRenderRoutes } from './render';

@@ -3,6 +3,7 @@ import { initializeFaro } from '../initialize';
 import { mockConfig } from '../testUtils';
 import { getCurrentTimestamp } from '../utils';
 import { VERSION } from '../version';
+
 import { BaseTransport } from './base';
 import { TransportItemType } from './const';
 import type { Transport, TransportItem } from './types';

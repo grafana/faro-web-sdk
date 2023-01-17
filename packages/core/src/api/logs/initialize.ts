@@ -6,6 +6,7 @@ import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, defaultLogLevel, getCurrentTimestamp, isNull } from '../../utils';
 import type { TracesAPI } from '../traces';
+
 import type { LogEvent, LogsAPI } from './types';
 
 export function initializeLogsAPI(

@@ -1,5 +1,6 @@
 import { internalLogger } from '../dependencies';
 import type { ReactIntegrationConfig } from '../types';
+
 import { ReactRouterVersion } from './types';
 import { initializeReactRouterV4V5Instrumentation } from './v4v5';
 import { initializeReactRouterV6Instrumentation } from './v6';
