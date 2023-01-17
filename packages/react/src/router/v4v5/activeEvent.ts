@@ -1,12 +1,15 @@
 import { api } from '../../dependencies';
+
 import type { ReactRouterV4V5ActiveEvent } from './types';
 
 export let activeEvent: ReactRouterV4V5ActiveEvent | undefined = undefined;
 
 export function createNewActiveEvent(url: string): ReactRouterV4V5ActiveEvent {
   activeEvent = {
-    url,
+    prevRoute: activeEvent?.route ?? '',
+    prevUrl: activeEvent?.url ?? '',
     route: '',
+    url,
   };
 
   return activeEvent;
