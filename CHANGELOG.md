@@ -5,7 +5,6 @@
 - Fix circular dependency in the `core` package
 - Added export for the `Extension` interface in `core`, `web-sdk` and `react` packages
 - Added export for `genShortID` function in `core`, `web-sdk` and `react` packages
-- Added `prevRoute` and `prevUrl` properties to the `routeChange` event in the `react` package
 - Fixed span timings
 - Updated dependencies
 
