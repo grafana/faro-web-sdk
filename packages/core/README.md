@@ -1,11 +1,11 @@
 # @grafana/faro-core
 
-Core package of Faro.
-
 _Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.
 
-The entire architecture of the library is contained within this package. Out of the box, it doesn't collect any metrics,
-logs etc. but it offers an API to capture them.
+Core package of Faro.
+
+The entire architecture of the library is contained within this package. Out of the box, it doesn't collect any signals,
+but it provides the API to do it as well as multiple helper methods.
 
 ## Installation
 
