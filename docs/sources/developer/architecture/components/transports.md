@@ -3,7 +3,7 @@
 Transports are the final data processors in the Faro architecture. They are responsible for doing something with the
 data once it was collected by the instrumentations and processed by the internal API.
 
-By default, the core library does not provide any transports out of the box and they are either prvovided by wrapper
+By default, the core library does not provide any transports out of the box and they are either provided by wrapper
 packages like `web-sdk` or by the user.
 
 ## Transports SDK

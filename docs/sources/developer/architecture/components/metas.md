@@ -2,8 +2,10 @@
 
 Metas are key-value properties that are sent with each payload.
 
-Metas can be either static metas that once defined they are not changing across a session but they can be also dynamic
-metas that are either computed automatically for each payload or they are changed programatically by the end-user.
+Metas can be either:
+
+- static - once defined, they are not changing across a session
+- dynamic - either computed automatically for each payload or they are changed programmatically by the end-user.
 
 ## Available Metas
 
@@ -59,18 +61,17 @@ The `sdk` meta is handled internally by the core package and the end-user should
 
 The `session` meta is a static meta that is used to link signals between them. It is not handled automatically by the
 core package and wrapper packages like `web-sdk` can handle it automatically. But unlike other metas, it can be also
-overwritten by the end-user if they have a different way of defining what a session in.
+overwritten by the end-user if they have a different way of defining what a session is.
 
 Properties
 
 - `id` - the name of the browser
-- `started` - the date when the session started
 - `attributes` - a key-value object with additional attributes about the session page
 
 ### User
 
 The `user` meta ties signals with a specific user. It is not required but it can be provided during initialization as
-well as programatically once the Faro library was initialized.
+well as programmatically once the Faro library was initialized.
 
 Properties:
 
@@ -81,11 +82,12 @@ Properties:
 
 ### View
 
-The `view` meta helps developers identify the view where a specific signal is coming from. Sometimes apps do not rely on
-URLs to define sections of it but on views. For example, a view can be a category called `auth` for that contains sign
-in and sign up pages. The `view` meta is not changing automatically across a session and even though it is not handled
-set automatically by the core package, wrapper packages like `web-sdk` should give a value default to it. But unlike
-other metas, it can be also overwritten by the end-user during initialization or programatically afterwards.
+The view meta lets developers define a view to associate signals occured within that view to it. This makes it easy to
+track specific sections in the UI which may dynamically change without any route changes. For example, a view can be a
+category called `auth` for that contains sign in and sign up pages. The `view` meta is not changing automatically across
+a session and even though it is not handled set automatically by the core package, wrapper packages like `web-sdk`
+should give a value default to it. But unlike other metas, it can be also overwritten by the end-user during
+initialization or programmatically afterwards.
 
 Properties:
 

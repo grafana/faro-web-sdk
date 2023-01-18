@@ -1,7 +1,7 @@
 # Initialization process
 
 The initialization process is pretty complex as it has to deal with a lot of components. Below is a step by step
-description of how is initialized under the hood.
+description of how it is initialized under the hood.
 
 Please refer to the components documentation for more details about each component.
 
@@ -63,7 +63,7 @@ require the API methods to be available in order to inject them in every instrum
 
 The instrumentations component is the last component that is initialized. They are initialized after everything else
 since they do rely on the others. For example, the API methods are used to send signals, the metas are used to take
-decisions on they value etc.
+decisions on the value etc.
 
 However, the instrumentations passed in the config are not registered now (check the Initial values section below for
 more details).
