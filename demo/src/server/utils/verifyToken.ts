@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import type { UserPublicModel } from '../../common';
 import { getUserById, getUserPublicFromUser } from '../db';
 import { logger } from '../logger';
+
 import { authorizationSecret } from './const';
 
 export async function verifyToken(token: string | undefined): Promise<UserPublicModel | undefined> {

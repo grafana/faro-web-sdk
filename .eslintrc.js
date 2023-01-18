@@ -12,9 +12,9 @@ module.exports = {
     'import/order': [
       'error',
       {
-        alphabetize: { order: 'asc', caseInsensitive: true },
+        alphabetize: { order: 'asc', orderImportKind: 'desc', caseInsensitive: true },
         'newlines-between': 'always',
-        groups: [['builtin', 'external'], 'internal', ['parent', 'sibling', 'index']],
+        groups: [['builtin', 'external'], ['internal'], ['parent'], ['sibling', 'index']],
         pathGroups: [
           {
             pattern: '@grafana/**',

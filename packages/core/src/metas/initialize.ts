@@ -2,6 +2,7 @@ import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 import { isFunction } from '../utils';
+
 import type { Meta, MetaItem, Metas, MetasListener } from './types';
 
 export function initializeMetas(

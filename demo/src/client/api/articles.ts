@@ -9,6 +9,7 @@ import type {
   ArticlesGetSuccessPayload,
 } from '../../common';
 import { createApi } from '../utils';
+
 import { baseQuery } from './baseQuery';
 
 export const articlesAPI = createApi({

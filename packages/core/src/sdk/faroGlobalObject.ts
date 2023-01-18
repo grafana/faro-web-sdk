@@ -1,4 +1,5 @@
 import { globalObject } from '../globalObject';
+
 import type { Faro } from './types';
 
 export function setFaroOnGlobalObject(faro: Faro): void {

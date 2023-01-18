@@ -1,5 +1,6 @@
 import type { ArticleModel, CommentInputModel, CommentModel, CommentPublicModel, UserModel } from '../../../common';
 import { Comment } from '../repositories';
+
 import { getUserById, getUserPublicFromUser } from './users';
 
 export async function getCommentPublicFromComment({

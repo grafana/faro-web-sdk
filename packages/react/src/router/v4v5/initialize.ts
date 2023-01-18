@@ -4,6 +4,7 @@ import type { FunctionComponent } from 'react';
 import { globalObject } from '@grafana/faro-web-sdk';
 
 import { NavigationType } from '../types';
+
 import { createNewActiveEvent, sendActiveEvent } from './activeEvent';
 import { FaroRoute } from './FaroRoute';
 import { setReactRouterV4V5Dependencies } from './routerDependencies';

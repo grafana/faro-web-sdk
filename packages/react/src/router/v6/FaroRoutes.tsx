@@ -4,6 +4,7 @@ import { globalObject } from '@grafana/faro-web-sdk';
 
 import { api } from '../../dependencies';
 import { NavigationType } from '../types';
+
 import { createRoutesFromChildren, isInitialized, Routes, useLocation, useNavigationType } from './routerDependencies';
 import type { ReactRouterV6RoutesProps } from './types';
 import { getRouteFromLocation } from './utils';
@@ -17,8 +18,8 @@ export function FaroRoutes(props: ReactRouterV6RoutesProps) {
   useEffect(() => {
     if (isInitialized && (navigationType === NavigationType.Push || navigationType === NavigationType.Pop)) {
       api.pushEvent('routeChange', {
-        url: globalObject.location?.href,
         route: getRouteFromLocation(routes, location),
+        url: globalObject.location?.href,
       });
     }
   }, [location, navigationType, routes]);

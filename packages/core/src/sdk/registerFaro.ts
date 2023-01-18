@@ -5,6 +5,7 @@ import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { Transports } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
+
 import { setFaroOnGlobalObject } from './faroGlobalObject';
 import { setInternalFaroOnGlobalObject } from './internalFaroGlobalObject';
 import type { Faro } from './types';

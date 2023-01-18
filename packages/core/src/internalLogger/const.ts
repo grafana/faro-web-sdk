@@ -1,4 +1,5 @@
 import { noop } from '../utils';
+
 import type { InternalLogger } from './types';
 
 export enum InternalLoggerLevel {

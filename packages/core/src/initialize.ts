@@ -3,8 +3,8 @@ import type { Config } from './config';
 import { initializeInstrumentations, registerInitialInstrumentations } from './instrumentations';
 import { initializeInternalLogger } from './internalLogger';
 import { initializeMetas, registerInitialMetas } from './metas';
-import type { Faro } from './sdk';
 import { isInternalFaroOnGlobalObject, registerFaro } from './sdk';
+import type { Faro } from './sdk';
 import { initializeTransports, registerInitialTransports } from './transports';
 import { initializeUnpatchedConsole } from './unpatchedConsole';
 

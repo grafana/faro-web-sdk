@@ -2,6 +2,7 @@ import type { Config } from '../config';
 import { defaultInternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import { defaultUnpatchedConsole } from '../unpatchedConsole';
+
 import type { Extension } from './types';
 
 export abstract class BaseExtension implements Extension {

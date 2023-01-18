@@ -1,6 +1,7 @@
 import { defaultUnpatchedConsole } from '../unpatchedConsole';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 import { noop } from '../utils';
+
 import { defaultInternalLogger, defaultInternalLoggerLevel, InternalLoggerLevel } from './const';
 import type { InternalLogger } from './types';
 

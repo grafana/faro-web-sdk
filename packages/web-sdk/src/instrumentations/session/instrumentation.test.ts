@@ -2,6 +2,7 @@ import { Conventions, EventEvent, initializeFaro, TransportItem } from '@grafana
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { createSession } from '../../metas';
+
 import { SessionInstrumentation } from './instrumentation';
 
 describe('SessionInstrumentation', () => {

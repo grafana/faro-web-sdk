@@ -2,8 +2,8 @@ import type { Attributes, Span, Tracer } from '@opentelemetry/api';
 import { Component } from 'react';
 import type { ReactNode } from 'react';
 
-import type { OTELApi } from '@grafana/faro-web-sdk';
 import { VERSION } from '@grafana/faro-web-sdk';
+import type { OTELApi } from '@grafana/faro-web-sdk';
 
 import { api, internalLogger } from '../dependencies';
 

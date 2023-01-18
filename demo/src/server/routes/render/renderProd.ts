@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { logger } from '../../logger';
 import { sendError, toAbsolutePath } from '../../utils';
 import type { Request, Response } from '../../utils';
+
 import { renderPage } from './renderPage';
 
 export async function registerRenderProdRoutes(globalRouter: Router, _app: Express): Promise<void> {

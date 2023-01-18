@@ -5,6 +5,7 @@ import { isFunction } from '@grafana/faro-web-sdk';
 
 import { api, internalLogger } from '../dependencies';
 import { isReactVersionAtLeast17 } from '../utils';
+
 import { faroErrorBoundaryInitialState } from './const';
 import type { FaroErrorBoundaryProps, FaroErrorBoundaryState } from './types';
 

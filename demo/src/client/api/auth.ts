@@ -7,6 +7,7 @@ import type {
   AuthRegisterSuccessPayload,
 } from '../../common';
 import { createApi } from '../utils';
+
 import { baseQuery } from './baseQuery';
 
 export const authAPI = createApi({

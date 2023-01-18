@@ -1,4 +1,5 @@
 import { globalObject } from '../globalObject';
+
 import { internalGlobalObjectKey } from './const';
 import type { Faro } from './types';
 

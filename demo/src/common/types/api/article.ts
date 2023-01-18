@@ -1,4 +1,5 @@
 import type { ArticleInputModel, ArticlePublicModel, CommentInputModel, CommentPublicModel } from '../models';
+
 import type { ErrorResponse, SuccessResponse } from './generic';
 
 export type ArticleGetPayload = {

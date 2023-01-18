@@ -1,4 +1,5 @@
 import type { Config } from '../config';
+
 import { defaultUnpatchedConsole } from './const';
 import type { UnpatchedConsole } from './types';
 

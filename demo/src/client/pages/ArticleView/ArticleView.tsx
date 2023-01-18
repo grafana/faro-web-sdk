@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useGetArticleQuery } from '../../api';
 import { LoadingScreen, Page } from '../../components';
 import { formatDate } from '../../utils';
+
 import { CommentAddForm } from './CommentAddForm';
 
 export function ArticleView() {

@@ -15,6 +15,6 @@ export interface ReactRouterV4V5Dependencies {
 }
 
 export interface ReactRouterV4V5ActiveEvent extends Record<string, string> {
-  url: string;
   route: string;
+  url: string;
 }

@@ -2,6 +2,7 @@ import { format, transports, createLogger as winstonCreateLogger } from 'winston
 import type { Logger } from 'winston';
 
 import { env, toAbsolutePath } from '../utils';
+
 import { setLogger } from './logger';
 
 export function initializeLogger(): Logger {

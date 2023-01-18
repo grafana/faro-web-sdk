@@ -1,6 +1,7 @@
 import Container from 'react-bootstrap/Container';
 
 import { Page } from '../../components';
+
 import { ConsoleInstrumentation } from './ConsoleInstrumentation';
 import { ErrorInstrumentation } from './ErrorInstrumentation';
 import { Events } from './Events';

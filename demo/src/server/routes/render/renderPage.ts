@@ -3,6 +3,7 @@ import { createSession } from '@grafana/faro-react';
 import { getActiveSpanContext } from '../../otel';
 import { env, verifyToken } from '../../utils';
 import type { Request, Response } from '../../utils';
+
 import type { renderToString } from './renderToString';
 
 export async function renderPage(

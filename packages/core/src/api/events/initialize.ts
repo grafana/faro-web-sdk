@@ -5,6 +5,7 @@ import { TransportItem, TransportItemType, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
 import type { TracesAPI } from '../traces';
+
 import type { EventEvent, EventsAPI } from './types';
 
 export function initializeEventsAPI(
