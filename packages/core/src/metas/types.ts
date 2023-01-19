@@ -41,7 +41,6 @@ export interface MetaUser {
 
 export interface MetaSession {
   id?: string;
-  started?: string;
   attributes?: MetaAttributes;
 }
 
