@@ -7,6 +7,7 @@
 - Added export for `genShortID` function in `core`, `web-sdk` and `react` packages
 - Fixed span timings
 - Updated dependencies
+- Remove `started` property from `MetaSession` interface
 
 ## 1.0.0-beta6
 
