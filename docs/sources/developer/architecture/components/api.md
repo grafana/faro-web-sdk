@@ -1,14 +1,14 @@
 # API
 
-The Faro API is the primary interface for end-users to interact with Faro. It is the central place where signals are
-sent to but it also contains helpers methods for other components like metas.
+The Faro API is the primary interface for end-users to interact with Faro. It is the central collector of signals, and
+also exposes helper methods for extensions such as metas.
 
 ## Signals
 
 ### Events
 
-Events are signals related to tracking various actions like mouse clicks as well as other events like transitioning to
-another page.
+Events are signals that can be used to record user interactions, such as mouse clicks, page navigation, or client-side
+application events like page transitions.
 
 Methods:
 
@@ -30,8 +30,8 @@ Methods:
 
 ### Logs
 
-Logs are signals which capture events that happen within the app itself. They do not have a business meaning but a
-technical meaning.
+Logs are signals which capture events that happen within the app itself. They do not have a business meaning but they
+have a use for operators as a means of troubleshooting or observing historic (or current) application behaviour.
 
 Methods:
 
