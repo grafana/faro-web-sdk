@@ -1,6 +1,6 @@
 import { TelemetrySdkLanguageValues } from '@opentelemetry/semantic-conventions';
 
-import type { APIEvent, TransportItem } from 'packages/core/dist/types';
+import type { APIEvent, Meta, TransportItem } from 'packages/core/dist/types';
 import { attributeValueType, toAttribute, toNestedAttributes } from './attributeUtils';
 import { faroResourceAttributes } from './semanticResourceAttributes';
 import type { Attribute, FaroResourceAttributes, PayloadResourceChild } from './types';
@@ -15,7 +15,7 @@ export class Resource implements PayloadResourceChild<PayloadResource> {
   private attributes: Attribute<FaroResourceAttributes>[] = [];
   private droppedAttributesCount = 0;
 
-  constructor(transportItem: TransportItem<Exclude<APIEvent, 'TraceEvent'>>) {
+  constructor(private transportItem: TransportItem<Exclude<APIEvent, 'TraceEvent'>>) {
     const { browser, sdk, session, user, app } = transportItem.meta;
 
     this.attributes = [
@@ -45,6 +45,10 @@ export class Resource implements PayloadResourceChild<PayloadResource> {
       toAttribute(faroResourceAttributes.APP_ENVIRONMENT, app?.environment),
       toAttribute(faroResourceAttributes.APP_RELEASE, app?.release),
     ].filter((item): item is Attribute<FaroResourceAttributes> => Boolean(item));
+  }
+
+  isSameMeta(meta: Meta) {
+    // isDeepEqual(this.transportItem.meta, meta )
   }
 
   getPayloadObject() {

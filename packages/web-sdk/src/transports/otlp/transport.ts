@@ -12,6 +12,7 @@ import {
   VERSION,
 } from '@grafana/faro-core';
 import type { TraceEvent } from 'packages/core/src/api';
+import { Resource } from './transform/Resource';
 import type { OtlpTransportOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;
@@ -33,7 +34,10 @@ export class OtlpTransport extends BaseTransport {
   private readonly sendBatchSize: number;
   private readonly sendTimeoutMs: number;
 
-  private readonly signalsBuffer: TransportItem<APIEvent>[] = [];
+  // private readonly signalsBuffer: TransportItem<APIEvent>[] = [];
+
+  private otelPayload: OtelPayload;
+  private signalCount = 0;
 
   promiseBuffer: PromiseBuffer<Response | void>;
 
@@ -49,24 +53,48 @@ export class OtlpTransport extends BaseTransport {
     this.sendBatchSize = options.sendBatchSize ?? DEFAULT_SEND_BATCH_SIZE;
     this.sendTimeoutMs = options.timeout ?? DEFAULT_TIMEOUT_MS;
     this.getNow = options.getNow ?? (() => Date.now());
+
+    this.otelPayload = new OtelPayload();
   }
 
   send(item: TransportItem<APIEvent>): void {
     let timeoutId;
 
-    if (this.signalsBuffer.length === 0) {
-      timeoutId = setTimeout(() => this.sendSignals(this.signalsBuffer), this.sendTimeoutMs);
+    // TODO: Pseudo code how counting and adding scope item could  work
+    if (this.signalCount >= DEFAULT_SEND_BATCH_SIZE) {
+      // sendPayload()
+      this.signalCount = 0;
+    } else {
+      // add to resource*
+
+      // if resource* has same resource header object
+      //   add scope* item
+
+      if (this.otelPayload.ressource.isSameMeta(item.meta)) {
+        if (type === log) {
+          this.otelPayload.addLog(); // or event/metric ...
+        }
+        ///...
+      } else {
+        this.otelPayload.ressource = new Resource(item);
+      }
+
+      this.signalCount++;
     }
 
-    if (this.signalsBuffer.length < this.sendBatchSize) {
-      this.signalsBuffer.push(item);
-    }
+    // if (this.signalsBuffer.length === 0) {
+    //   timeoutId = setTimeout(() => this.sendSignals(this.signalsBuffer), this.sendTimeoutMs);
+    // }
 
-    if (this.signalsBuffer.length > this.sendBatchSize) {
-      this.signalsBuffer.length = 0;
-      this.sendSignals(this.signalsBuffer);
-      clearTimeout(timeoutId);
-    }
+    // if (this.signalsBuffer.length < this.sendBatchSize) {
+    //   this.signalsBuffer.push(item);
+    // }
+
+    // if (this.signalsBuffer.length > this.sendBatchSize) {
+    //   this.signalsBuffer.length = 0;
+    //   this.sendSignals(this.signalsBuffer);
+    //   clearTimeout(timeoutId);
+    // }
   }
 
   private async sendSignals(items: TransportItem[]): Promise<void> {
