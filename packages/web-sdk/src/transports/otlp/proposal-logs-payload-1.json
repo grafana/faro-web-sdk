@@ -1,0 +1,464 @@
+{
+  "resourceLogs": [
+    {
+      "resource": {
+        "attributes": [
+          // Taken from BROWSER CONVENTIONS. Some may differ from Faro, some only exist in Faro.
+          // https://opentelemetry.io/docs/reference/specification/resource/semantic_conventions/browser/
+          {
+            "key": "browser.mobile", // OTEL SEMANTIC CONVENTIONS
+            "value": { "boolValue": false }
+          },
+          {
+            "key": "browser.name", // FARO
+            "value": { "stringValue": "Firefox" }
+          },
+          {
+            "key": "browser.version", // FARO
+            "value": { "stringValue": "109.0" }
+          },
+          {
+            "key": "browser.platform", // OTEL SEMANTIC CONVENTIONS
+            "value": { "stringValue": "Mac OS 13.2" }
+          },
+
+          // Taken from TELEMETRY CONVENTIONS. Some may differ from Faro, some only exist in Faro.
+          // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/semantic_conventions/README.md#telemetry-sdk
+          {
+            "key": "telemetry.sdk.name", // OTEL SEMANTIC CONVENTIONS
+            "value": { "stringValue": "@grafana/faro-core" }
+          },
+          {
+            "key": "telemetry.sdk.language", // OTEL SEMANTIC CONVENTIONS
+            "value": { "stringValue": "javascript" } // or nodejs
+          },
+          {
+            "key": "telemetry.sdk.version", // OTEL SEMANTIC CONVENTIONS
+            "value": { "stringValue": "1.0.0-beta2" }
+          },
+
+          {
+            "key": "session.id", // FARO
+            "value": { "stringValue": "abcdefg" }
+          },
+          {
+            "key": "session.attributes", // FARO
+            "value": { "kvlistValue": [] }
+          },
+
+          // Taken from GENERAL IDENDITY ATTRIBUTES. Some may differ from Faro, some only exist in Faro.
+          // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/span-general.md#general-identity-attributes
+          {
+            "key": "enduser.id", // OTEL SEMANTIC CONVENTIONS
+            "value": { "stringValue": "119" }
+          },
+          {
+            "key": "enduser.name", // FARO
+            "value": { "stringValue": "119" }
+          },
+          {
+            "key": "enduser.email", // FARO
+            "value": { "stringValue": "119" }
+          },
+          {
+            "key": "enduser.attributes", // FARO
+            "value": { "kvlistValue": [] }
+          },
+
+          {
+            "key": "app.name", // FARO
+            "value": { "stringValue": "foo" }
+          },
+          {
+            "key": "app.release", // FARO
+            "value": { "stringValue": "6.6.7." }
+          },
+          {
+            "key": "app.version", // FARO
+            "value": { "stringValue": "1.23" }
+          },
+          {
+            "key": "app.environment", // FARO
+            "value": { "stringValue": "production" }
+          }
+        ],
+
+        // We'll hardcode this to 0
+        "droppedAttributesCount": 0
+      },
+
+      "scopeLogs": [
+        {
+          // The scope should originate from the instrumentation that captured this
+          // For the time being we don't have this information
+          // We will use the sdk as the source of information
+          "scope": {
+            "name": "@grafana/faro-core",
+            "version": "1.0.0-beta4"
+          },
+          "logRecords": [
+            // +++ EVENT +++
+            {
+              // We convert the timestamp to milliseconds and then multiply them by 1 million
+              // The timestamp comes from the timestamp property on the payload
+              "timeUnixNano": 1674464646296000000,
+              // We'll use the same value from timestamp property on the payload
+              "observedTimeUnixNano": 1674464646296000000,
+              // We can just use 1 and TRACE as values for event signals
+              "severityNumber": 1,
+              "severityText": "TRACE",
+              "body": {
+                "stringValue": "click_button_with_attributes"
+              },
+              "attributes": [
+                // This should be a convention to identify events from the other logs
+                {
+                  "key": "faro.event", // FARO
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                // Taken from SEMANTIC CONVENTION FOR EVENT ATTRIBUTES. Some may differ from Faro, some only exist in Faro.
+                // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/semantic_conventions/events.md
+                {
+                  "key": "event.name", // OTEL SEMANTIC CONVENTIONS
+                  "value": {
+                    "stringValue": "click_button_with_attributes"
+                  }
+                },
+                {
+                  "key": "event.domain", // OTEL SEMANTIC CONVENTIONS
+                  "value": {
+                    "stringValue": "browser"
+                  }
+                },
+                {
+                  "key": "event.attributes", // FARO
+                  "value": {
+                    "kvlistValue": [
+                      {
+                        "key": "foo",
+                        "value": {
+                          "stringValue": "bar"
+                        }
+                      },
+                      {
+                        "key": "baz",
+                        "value": {
+                          "stringValue": "bad"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": "view.name", // FARO
+                  "value": {
+                    "stringValue": "default"
+                  }
+                },
+                {
+                  "key": "page.url", // FARO
+                  "value": {
+                    "stringValue": "http://localhost:5173"
+                  }
+                }
+              ],
+              // We hardcode it to 0 for now
+              "droppedAttributesCount": 0,
+              // This is optional, so we can omit it completely
+              // "flags": 0,
+              // The following are taken from the trace property
+              // We can just omit them if they don't exist in the original payload
+              "traceId": "582d698467d6d4edd62011c11335a13d",
+              "spanId": "e0668e8ad9e6badc"
+            },
+
+            // +++ ERROR +++
+            {
+              // We convert the timestamp to milliseconds and then multiply them by 1 million
+              // The timestamp comes from the timestamp property on the payload
+              "timeUnixNano": 1674468151431000000,
+              // We'll use the same value from timestamp property on the payload
+              "observedTimeUnixNano": 1674468151431000000,
+              // We can just use 21 and FATAL as values for errors signals
+              "severityNumber": 21,
+              "severityText": "FATAL",
+              "body": {
+                "stringValue": "This is a thrown error"
+              },
+              "attributes": [
+                // This should be a convention to identify errors from the other logs
+                {
+                  "key": "faro.error",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "error.stacktrace", // FARO
+                  "value": {
+                    "kvlistValue": [
+                      {
+                        "key": "filename",
+                        "value": {
+                          "arrayValue": {
+                            "values": [
+                              {
+                                "stringValue": "http://localhost:5173/src/client/pages/Features/ErrorInstrumentation.tsx"
+                              },
+                              {
+                                "stringValue": "http://localhost:5173/node_modules/.vite/deps/chunk-63FLCSTF.js?v=502c6d22"
+                              },
+                              {
+                                "stringValue": "http://localhost:5173/node_modules/.vite/deps/@opentelemetry_context-zone.js?v=02a1e0ae"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "key": "function",
+                        "value": {
+                          "arrayValue": {
+                            "values": [
+                              {
+                                "stringValue": "throwError"
+                              },
+                              {
+                                "stringValue": "HTMLUnknownElement.callCallback2"
+                              },
+                              {
+                                "stringValue": "_ZoneDelegate.invokeTask"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "key": "lineno",
+                        "value": {
+                          "arrayValue": {
+                            "values": [
+                              {
+                                "intValue": 21
+                              },
+                              {
+                                "intValue": 3674
+                              },
+                              {
+                                "intValue": 460
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "key": "colno",
+                        "value": {
+                          "arraylue": {
+                            "values": [
+                              {
+                                "intValue": 11
+                              },
+                              {
+                                "intValue": 22
+                              },
+                              {
+                                "intValue": 171
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                // Taken from Semantic CONVENTIONS FOR EXCEPTIONS. Some may differ from Faro, some only exist in Faro.
+                // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/semantic_conventions/exceptions.md
+                {
+                  "key": "exception.message", // OTEL SEMANTIC CONVENTIONS
+                  "value": {
+                    "stringValue": "The exception message."
+                  }
+                },
+                {
+                  "key": "exception.stacktrace", // OTEL SEMANTIC CONVENTIONS
+                  "value": {
+                    "stringValue": "A stacktrace as a string in the natural representation for the language runtime. The representation is to be determined and documented by each language SIG."
+                  }
+                },
+                {
+                  "key": "exception.type", // OTEL SEMANTIC CONVENTIONS
+                  "value": {
+                    "stringValue": "The type of the exception (its fully-qualified class name, if applicable). The dynamic type of the exception should be preferred over the static type in languages that support it."
+                  }
+                },
+
+                {
+                  "key": "view.name", // FARO
+                  "value": {
+                    "stringValue": "default"
+                  }
+                },
+                {
+                  "key": "page.url", // FARO
+                  "value": {
+                    "stringValue": "http://localhost:5173"
+                  }
+                }
+              ],
+              // We hardcode it to 0 for now
+              "droppedAttributesCount": 0,
+              // This is optional, so we can omit it completely
+              // "flags": 0,
+              // The following are taken from the trace property
+              // We can just omit them if they don't exist in the original payload
+              "traceId": "33cd71f73e44814794b2472917c71f81",
+              "spanId": "00fdd358b506931a"
+            },
+
+            // +++ LOG +++
+            {
+              // We convert the timestamp to milliseconds and then multiply them by 1 million
+              // The timestamp comes from the timestamp property on the payload
+              "timeUnixNano": 1674472561805000000,
+              // We'll use the same value from timestamp property on the payload
+              "observedTimeUnixNano": 1674472561805000000,
+              // For severity we can have the following convention:
+              // console.log - 10 / INFO2 -> this is a special case
+              // console.trace - 1 / TRACE
+              // console.debug - 5 / DEBUG
+              // console.info - 9 / INFO
+              // console.warn - 13 / WARN
+              // console.error - 17 / ERROR
+              "severityNumber": 10,
+              "severityText": "INFO2",
+              "body": {
+                "stringValue": "Faro was initialized"
+              },
+              "attributes": [
+                {
+                  "key": "foo",
+                  "value": {
+                    "stringValue": "bar"
+                  }
+                },
+                // This should be a convention to Faro logs from other logs
+                {
+                  "key": "faro.log",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+
+                {
+                  "key": "view.name",
+                  "value": {
+                    "stringValue": "default"
+                  }
+                },
+                {
+                  "key": "page.url",
+                  "value": {
+                    "stringValue": "http://localhost:5173"
+                  }
+                }
+              ],
+              // Just hardcode it to 0 for now
+              "droppedAttributesCount": 0
+              // This is optional, so we can omit it completely
+              // "flags": 0,
+              // The following are taken from the trace property
+              // We can just omit them if they don't exist in the original payload
+              // "traceId": "",
+              // "spanId": ""
+            },
+
+            // +++ METRICS +++
+            // Custom metric
+            {
+              // We don't have a timestamp in our payload
+              // We'll just default to Date.now() * 1000000
+              "startTimeUnixNano": 1674472126907000000,
+              // Same as above
+              "timeUnixNano": 1674472126907000000,
+              // The actual value of the metric
+              // We'll use asDouble by default for now
+              "asDouble": 0.2509985978371605,
+
+              "attributes": [
+                // This should be a convention to identify events from the other logs
+                {
+                  "key": "faro.measurement", // FARO
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "faro.measurement.type", // FARO
+                  "value": {
+                    "stringValue": "custom"
+                  }
+                },
+                {
+                  "key": "faro.measurement.name", // FARO
+                  "value": {
+                    "stringValue": "my_custom_metric"
+                  }
+                },
+                // This field does not exist in our payload
+                // We'll default to the name of the metric
+                {
+                  "key": "faro.measurement.description", // FARO
+                  "value": {
+                    "stringValue": "my_custom_metric"
+                  }
+                },
+                // This field does not exist in our payload
+                // We can leave it empty or fill it with "custom" if it's actually needed
+                {
+                  "key": "faro.measurement.unit", // FARO
+                  "value": {
+                    "stringValue": ""
+                  }
+                },
+                {
+                  "key": "faro.measurement.metric.type", // FARO
+                  "value": {
+                    "stringValue": "gauge"
+                  }
+                },
+                {
+                  "key": "faro.measurement.metric.datapoints", // FARO
+                  "value": {
+                    "kvlistValue": {
+                      "values": [
+                        // We don't have exemplars in our payload
+                        // We'll just leave an empty array
+                        {
+                          "key": "exemplars",
+                          "value": {
+                            "arrayValue": []
+                          }
+                        },
+                        // This is optional, so we can omit it completely
+                        // "flags": 0,
+                        {
+                          "key": "flags",
+                          "value": {
+                            "stringValue": "0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
