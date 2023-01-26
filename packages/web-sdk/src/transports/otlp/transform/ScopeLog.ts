@@ -1,28 +1,23 @@
 import type { LogRecord, LogRecordPayload } from './LogRecord';
+import type { Scope, ScopePayload } from './ScopePayload';
 import type { PayloadMember } from './types';
 
-type ScopePayload = {
-  name: string;
-  version: string;
-};
-
-type ScopeLogPayload = {
+export type ScopeLogPayload = {
   scope: ScopePayload;
   logRecords: LogRecordPayload[];
 };
 
 export class ScopeLog implements PayloadMember<ScopeLogPayload> {
   private logRecords: LogRecord[] = [];
-  constructor(private scope: ScopePayload, logRecord: LogRecord) {
+
+  constructor(private scope: Scope, logRecord: LogRecord) {
     this.logRecords.push(logRecord);
   }
 
   getPayloadObject(): ScopeLogPayload {
     return {
-      scope: this.scope,
-      logRecords: this.logRecords.map((logRecord) => {
-        return logRecord.getPayloadObject();
-      }),
-    };
+      scope: this.scope.getPayloadObject(),
+      logRecords: this.logRecords.map((logRecord) => logRecord.getPayloadObject()),
+    } as const;
   }
 }

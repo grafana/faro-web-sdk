@@ -1,3 +1,5 @@
+import type { APIEvent, Meta, TransportItem } from 'packages/web-sdk/src';
+
 import type { Attribute, PayloadMember } from './types';
 
 export type LogRecordPayload = {
@@ -13,7 +15,8 @@ export type LogRecordPayload = {
 };
 
 export class LogRecord implements PayloadMember<LogRecordPayload> {
-  constructor() {}
+  constructor(private transportItem: TransportItem<Exclude<APIEvent, 'TraceEvent'>>) {}
+
   getPayloadObject(): LogRecordPayload {
     return {} as LogRecordPayload;
   }

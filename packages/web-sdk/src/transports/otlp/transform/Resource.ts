@@ -1,6 +1,6 @@
 import { TelemetrySdkLanguageValues } from '@opentelemetry/semantic-conventions';
+import type { APIEvent, Meta, TransportItem } from 'packages/web-sdk/src';
 
-import type { APIEvent, Meta, TransportItem } from 'packages/core/dist/types';
 import { attributeValueType, toAttribute, toNestedAttributes } from './attributeUtils';
 import { faroResourceAttributes } from './semanticResourceAttributes';
 import type { Attribute, FaroResourceAttributes, PayloadMember } from './types';

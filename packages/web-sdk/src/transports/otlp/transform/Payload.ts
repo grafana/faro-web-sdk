@@ -25,6 +25,6 @@ export class Payload implements PayloadMember<OtelPayload> {
   getPayloadObject() {
     return {
       resourceLogs: this.resLogs,
-    };
+    } as const;
   }
 }
