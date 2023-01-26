@@ -37,3 +37,8 @@ export const faroResourceAttributes = {
   APP_VERSION: 'app.version', // FARO
   APP_ENVIRONMENT: 'app.environment', // FARO
 } as const;
+
+export const faroAttributes = {
+  VIEW_NAME: 'view.name',
+  PAGE_URL: 'page.url',
+} as const;

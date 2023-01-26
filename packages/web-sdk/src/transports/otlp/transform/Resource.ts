@@ -51,7 +51,7 @@ export class Resource implements PayloadMember<ResourcePayload> {
           toAttribute(faroResourceAttributes.APP_VERSION, app?.version),
           toAttribute(faroResourceAttributes.APP_ENVIRONMENT, app?.environment),
           toAttribute(faroResourceAttributes.APP_RELEASE, app?.release),
-        ].filter((item): item is Attribute<FaroResourceAttributes> => Boolean(item));,
+        ].filter((item): item is Attribute<FaroResourceAttributes> => Boolean(item)),
         droppedAttributesCount: 0,
       },
     } as const;

@@ -22,12 +22,6 @@ export function toAttribute<T>(
   };
 }
 
-export function toAttributesList(attributes: MetaAttributes) {
-  return Object.entries(attributes).map(([attributeName, attributeValue]) =>
-    toAttribute(attributeName, attributeValue)
-  );
-}
-
 export function toNestedAttributes(attributeName: FaroResourceAttributes, attributes?: MetaAttributes) {
   if (!attributes || Object.keys(attributes).length === 0) {
     return;
@@ -36,7 +30,9 @@ export function toNestedAttributes(attributeName: FaroResourceAttributes, attrib
   return toAttribute(
     attributeName,
     {
-      values: toAttributesList(attributes),
+      values: Object.entries(attributes).map(([attributeName, attributeValue]) =>
+        toAttribute(attributeName, attributeValue)
+      ),
     },
     attributeValueType.kvList
   );
