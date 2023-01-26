@@ -1,5 +1,5 @@
 import type { LogRecord, LogRecordPayload } from './LogRecord';
-import type { Scope, ScopePayload } from './ScopePayload';
+import type { Scope, ScopePayload } from './Scope';
 import type { PayloadMember } from './types';
 
 export type ScopeLogPayload = {

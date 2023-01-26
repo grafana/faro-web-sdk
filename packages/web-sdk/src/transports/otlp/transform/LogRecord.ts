@@ -1,4 +1,4 @@
-import type { APIEvent, Meta, TransportItem } from 'packages/web-sdk/src';
+import type { APIEvent, TransportItem } from 'packages/web-sdk/src';
 
 import type { Attribute, PayloadMember } from './types';
 

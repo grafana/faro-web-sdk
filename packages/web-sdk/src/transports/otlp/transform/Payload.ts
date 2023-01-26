@@ -1,5 +1,3 @@
-// Contains all the resource* Items i. e. resourceLop and resourceSpans for traces
-
 import type { ResourceLog } from './ResourceLog';
 import type { PayloadMember } from './types';
 

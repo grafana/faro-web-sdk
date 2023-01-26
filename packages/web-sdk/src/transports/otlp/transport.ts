@@ -17,7 +17,7 @@ import { Payload } from './transform/Payload';
 import { Resource } from './transform/Resource';
 import { ResourceLog } from './transform/ResourceLog';
 import { ScopeLog } from './transform/ScopeLog';
-import { Scope } from './transform/ScopePayload';
+import { Scope } from './transform/Scope';
 import type { OtlpTransportOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;
