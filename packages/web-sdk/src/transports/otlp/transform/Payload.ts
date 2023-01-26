@@ -9,13 +9,17 @@ type OtelPayload = {
 };
 
 export class Payload implements PayloadMember<OtelPayload> {
-  private resourceLogs: ResourceLog[] = [];
+  private resLogs: ResourceLog[] = [];
   //   private resourceSpans: ResourceSpan[];
 
   constructor() {}
 
   addResourceLog(log: ResourceLog) {
-    this.resourceLogs.push(log);
+    this.resLogs.push(log);
+  }
+
+  get ressourceLogs() {
+    return this.resLogs;
   }
 
   getPayloadObject() {

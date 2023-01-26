@@ -14,6 +14,7 @@ import {
 import type { TraceEvent } from 'packages/core/src/api';
 import { Payload } from './transform/Payload';
 import { Resource } from './transform/Resource';
+import { ResourceLog } from './transform/ResourceLog';
 import type { OtlpTransportOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;
@@ -59,8 +60,6 @@ export class OtlpTransport extends BaseTransport {
   }
 
   send(item: TransportItem<APIEvent>): void {
-    let timeoutId;
-
     // TODO: Pseudo code how counting and adding scope item could work
     if (this.signalCount >= DEFAULT_SEND_BATCH_SIZE) {
       // TODO: sendPayload();
@@ -68,11 +67,22 @@ export class OtlpTransport extends BaseTransport {
       this.payload = new Payload();
     } else {
       // add to resource*
+      const { type, meta } = item;
 
-      // if we have a resource for the specific in payload resource* which has the same resource object,
-      // then add it
+      if (type === TransportItemType.LOG) {
+        const resourceLog = this.payload.ressourceLogs.find((log) => log.resource?.isSameMeta(meta));
 
-      this.signalCount++;
+        if (resourceLog) {
+          resourceLog.addScopeLog();
+        } else {
+          this.payload.addResourceLog(new ResourceLog(new Resource(item)));
+        }
+
+        // if we have a resource for the specific in payload resource* which has the same resource object,
+        // then add it
+
+        this.signalCount++;
+      }
     }
   }
 

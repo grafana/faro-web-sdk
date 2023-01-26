@@ -1,3 +1,6 @@
+import type { Resource } from './Resource';
+
 export class ResourceLog {
-  constructor() {}
+  // may chnage this to getter/setters later
+  constructor(public resource?: Resource) {}
 }
