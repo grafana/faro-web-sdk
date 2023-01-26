@@ -50,7 +50,7 @@ describe('attributeUtils', () => {
             {
               key: 'attribute.two',
               value: {
-                stringValue: 'def',
+                stringValue: 'world',
               },
             },
           ],
