@@ -5,7 +5,7 @@ import { attributeValueType, toAttribute, toNestedAttributes } from './attribute
 import { faroResourceAttributes } from './semanticResourceAttributes';
 import type { Attribute, FaroResourceAttributes, PayloadMember } from './types';
 
-type ResourcePayload = {
+export type ResourcePayload = {
   resource: {
     attributes: Attribute<FaroResourceAttributes>[];
     droppedAttributesCount: number;
@@ -52,7 +52,7 @@ export class Resource implements PayloadMember<ResourcePayload> {
     // isDeepEqual(this.transportItem.meta, meta )
   }
 
-  getPayloadObject() {
+  getPayloadObject(): ResourcePayload {
     return {
       resource: {
         attributes: this.attributes,

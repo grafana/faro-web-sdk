@@ -18,13 +18,13 @@ export class Payload implements PayloadMember<OtelPayload> {
     this.resLogs.push(log);
   }
 
-  get ressourceLogs() {
+  get resourceLogs() {
     return this.resLogs;
   }
 
   getPayloadObject() {
     return {
-      resourceLogs: this.resourceLogs,
+      resourceLogs: this.resLogs,
     };
   }
 }

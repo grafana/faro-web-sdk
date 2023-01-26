@@ -1,6 +1,15 @@
-import type { Resource } from './Resource';
+import type { Resource, ResourcePayload } from './Resource';
+import type { PayloadMember } from './types';
 
-export class ResourceLog {
-  // may chnage this to getter/setters later
-  constructor(public resource?: Resource) {}
+export type ResourceLogPayload = {
+  resource: ResourcePayload;
+  scopeLogs: [];
+};
+
+export class ResourceLog implements PayloadMember<ResourceLogPayload> {
+  constructor(public resource?: Resource, public scopeLog: ScopeLog) {}
+
+  getPayloadObject(): ResourceLogPayload {
+    throw new Error('Method not implemented.');
+  }
 }

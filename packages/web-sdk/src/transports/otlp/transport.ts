@@ -66,23 +66,20 @@ export class OtlpTransport extends BaseTransport {
       this.signalCount = 0;
       this.payload = new Payload();
     } else {
-      // add to resource*
       const { type, meta } = item;
 
       if (type === TransportItemType.LOG) {
-        const resourceLog = this.payload.ressourceLogs.find((log) => log.resource?.isSameMeta(meta));
+        const resourceLog = this.payload.resourceLogs.find((log) => log.resource?.isSameMeta(meta));
 
         if (resourceLog) {
           resourceLog.addScopeLog();
         } else {
           this.payload.addResourceLog(new ResourceLog(new Resource(item)));
         }
-
-        // if we have a resource for the specific in payload resource* which has the same resource object,
-        // then add it
-
-        this.signalCount++;
       }
+
+      // if (type === TransportItemType.EXCEPTION) { }
+      this.signalCount++;
     }
   }
 
