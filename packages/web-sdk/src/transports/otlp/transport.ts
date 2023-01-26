@@ -12,6 +12,7 @@ import {
   VERSION,
 } from '@grafana/faro-core';
 import type { TraceEvent } from 'packages/core/src/api';
+import { Payload } from './transform/Payload';
 import { Resource } from './transform/Resource';
 import type { OtlpTransportOptions } from './types';
 
@@ -36,7 +37,7 @@ export class OtlpTransport extends BaseTransport {
 
   // private readonly signalsBuffer: TransportItem<APIEvent>[] = [];
 
-  private otelPayload: OtelPayload;
+  private payload: Payload;
   private signalCount = 0;
 
   promiseBuffer: PromiseBuffer<Response | void>;
@@ -54,47 +55,25 @@ export class OtlpTransport extends BaseTransport {
     this.sendTimeoutMs = options.timeout ?? DEFAULT_TIMEOUT_MS;
     this.getNow = options.getNow ?? (() => Date.now());
 
-    this.otelPayload = new OtelPayload();
+    this.payload = new Payload();
   }
 
   send(item: TransportItem<APIEvent>): void {
     let timeoutId;
 
-    // TODO: Pseudo code how counting and adding scope item could  work
+    // TODO: Pseudo code how counting and adding scope item could work
     if (this.signalCount >= DEFAULT_SEND_BATCH_SIZE) {
-      // sendPayload()
+      // TODO: sendPayload();
       this.signalCount = 0;
+      this.payload = new Payload();
     } else {
       // add to resource*
 
-      // if resource* has same resource header object
-      //   add scope* item
-
-      if (this.otelPayload.ressource.isSameMeta(item.meta)) {
-        if (type === log) {
-          this.otelPayload.addLog(); // or event/metric ...
-        }
-        ///...
-      } else {
-        this.otelPayload.ressource = new Resource(item);
-      }
+      // if we have a resource for the specific in payload resource* which has the same resource object,
+      // then add it
 
       this.signalCount++;
     }
-
-    // if (this.signalsBuffer.length === 0) {
-    //   timeoutId = setTimeout(() => this.sendSignals(this.signalsBuffer), this.sendTimeoutMs);
-    // }
-
-    // if (this.signalsBuffer.length < this.sendBatchSize) {
-    //   this.signalsBuffer.push(item);
-    // }
-
-    // if (this.signalsBuffer.length > this.sendBatchSize) {
-    //   this.signalsBuffer.length = 0;
-    //   this.sendSignals(this.signalsBuffer);
-    //   clearTimeout(timeoutId);
-    // }
   }
 
   private async sendSignals(items: TransportItem[]): Promise<void> {
