@@ -4,8 +4,8 @@ Metas are key-value properties that are sent with each payload.
 
 Metas can be either:
 
-- static - once defined, they are not changing across a session
-- dynamic - either computed automatically for each payload or they are changed programmatically by the end-user.
+- static - once defined, they do not change across a session
+- dynamic - either computed automatically for each payload or they are changed programmatically by the end-user
 
 ## Available Metas
 
@@ -24,7 +24,7 @@ Properties:
 ### Browser
 
 The `browser` meta helps with identifying the environment where the app is running and it should not change across a
-session. Altough it is not handled automatically by the core package, nor it is the responsability of the end-user to
+session. Altough it is not handled automatically by the core package, nor is it the responsability of the end-user to
 define it. Wrapper packages like `web-sdk` should handle it.
 
 Properties:
@@ -36,7 +36,7 @@ Properties:
 
 ### Page
 
-The `page` meta helps developers identify the page where a specific signal is coming from. It is changing automatically
+The `page` meta helps developers identify the page where a specific signal is coming from. It changes automatically
 across a session and even though it is not handled automatically by the core package, wrapper packages like `web-sdk`
 should handle it. But unlike other metas, it can be also overwritten by the end-user if they have a custom mechanism for
 tracking the current page.
@@ -53,7 +53,7 @@ The `sdk` meta defines the following properties about the Faro library itself:
 
 - `name` - the name of the core library
 - `version` - the version of the library
-- `integrations` - the list of instrumentations that are used, identified with by the name and the version
+- `integrations` - the list of instrumentations that are used, identified by by the name and the version
 
 The `sdk` meta is handled internally by the core package and the end-user should not change it.
 
@@ -66,12 +66,12 @@ overwritten by the end-user if they have a different way of defining what a sess
 Properties
 
 - `id` - the name of the browser
-- `attributes` - a key-value object with additional attributes about the session page
+- `attributes` - a key-value object with additional attributes about the session
 
 ### User
 
-The `user` meta ties signals with a specific user. It is not required but it can be provided during initialization as
-well as programmatically once the Faro library was initialized.
+The `user` meta ties signals with a specific user. It is not required but it can be provided during initialization, or
+programmatically, once the Faro library was initialized.
 
 Properties:
 
@@ -82,12 +82,12 @@ Properties:
 
 ### View
 
-The view meta lets developers define a view to associate signals occured within that view to it. This makes it easy to
-track specific sections in the UI which may dynamically change without any route changes. For example, a view can be a
-category called `auth` for that contains sign in and sign up pages. The `view` meta is not changing automatically across
-a session and even though it is not handled set automatically by the core package, wrapper packages like `web-sdk`
-should give a value default to it. But unlike other metas, it can be also overwritten by the end-user during
-initialization or programmatically afterwards.
+The `view` meta lets developers define a view to associate with signals that occured within that view. This makes it
+easy to track specific sections in the UI which may dynamically change without any route changes. For example, a view
+can be a category called `auth` that contains sign in and sign up pages. The `view` meta is not changing automatically
+across a session and even though it is not handled automatically by the core package, wrapper packages like `web-sdk`
+should give a value default to it. Unlike other metas, it can be also overwritten by the end-user during initialization
+or programmatically afterwards.
 
 Properties:
 
@@ -101,7 +101,7 @@ values as well as the getters for the dynamic metas.
 Methods and properties:
 
 - `add()` - adds a new meta
-- `remove()` - remove a specific meta
+- `remove()` - removes a specific meta
 - `addListener()` - adds a new listener
 - `removeListener()` - removes a specific listener
-- `value` - the current value of the static metas
+- `value` - accesses the current value of the static metas

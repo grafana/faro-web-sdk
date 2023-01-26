@@ -9,13 +9,13 @@ Please refer to the components documentation for more details about each compone
 
 ### 1. Unpatched Console
 
-The first component that is initialized is the unpatched console. This is needed because it is needed by the internal
-logger component. By default, the unpatched console is initialized with the global `console` object but it can be
-overwritten by the user if is provided in the config object.
+The first component that is initialized is the unpatched console because it is needed because it is needed by the
+internal logger component. By default, the unpatched console is initialized with the global `console` object but it can
+be overwritten by the user if it is provided in the config object.
 
 ### 2. Internal Logger
 
-The internal logger is initialized immediate after the unpatched console but before anything else happens because it
+The internal logger is initialized immediately after the unpatched console but before anything else happens because it
 is needed to print out debug messages. The internal logger relies on the unpatched console and not on the `console`
 object because the latter can be overwritten by instrumentations and we don't want to send those debug messages as
 signals.
@@ -38,12 +38,13 @@ can still be exposed on the global object independently of each other.
 
 ### 3. Metas
 
-The metas are the next component that is initialized as they are required by all other subsequent components. The API
-requires it because whenever a signal is sent, the immediate meta values are added to it in order to keep them in sync.
-The instrumentations and transports require the metas for exposing them to the developers that are writing their own
+The metas are the next component that is initialized as they are required by all subsequent components. The API requires
+it because whenever a signal is sent, the immediate meta values are added to it in order to keep them in sync. The
+instrumentations and transports require the metas for exposing them to the developers that are writing their own
 instrumentations and transports.
 
-However, the default metas values are not registered now (check the Initial values section below for more details).
+However, the default metas values are not registered at this stage (check the Initial values section below for more
+details).
 
 ### 4. Transports
 

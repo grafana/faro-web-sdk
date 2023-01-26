@@ -55,7 +55,7 @@ pretty simple because all the logic is externalized to other packages like `web-
 Methods:
 
 - `getOTEL` - returns the OpenTelemetry instance if it is initialized
-- `getTraceContext` - return the OpenTelemetry context API
+- `getTraceContext` - returns the OpenTelemetry context API
 - `initOTEL` - initializes the OpenTelemetry instance
 - `isOTELInitialized` - returns whether the OpenTelemetry instance is initialized
 - `pushTraces` - sends traces
@@ -69,8 +69,8 @@ barebones.
 
 Methods:
 
-- `getSession` - return the current session meta value
-- `getView` - return the current view meta value
+- `getSession` - returns the current session meta value
+- `getView` - returns the current view meta value
 - `resetSession` - resets the session meta to an undefined state
 - `resetUser` - resets the user meta to an undefined state
 - `setSession` - replaces the session meta with a new one
