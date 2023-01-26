@@ -12,12 +12,12 @@ import {
   VERSION,
 } from '@grafana/faro-core';
 import type { TraceEvent } from 'packages/core/src/api';
-import { LogRecord } from './transform/LogLogRecord';
+import { LogRecordFactory } from './transform';
 import { Payload } from './transform/Payload';
 import { Resource } from './transform/Resource';
 import { ResourceLog } from './transform/ResourceLog';
-import { ScopeLog } from './transform/ScopeLog';
 import { Scope } from './transform/Scope';
+import { ScopeLog } from './transform/ScopeLog';
 import type { OtlpTransportOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;
@@ -70,7 +70,9 @@ export class OtlpTransport extends BaseTransport {
     } else {
       const { type, meta } = item;
 
-      if (type === TransportItemType.LOG) {
+      if (type === TransportItemType.TRACE) {
+        // TODO: implement traces payload transform
+      } else {
         const resourceLog = this.payload.resourceLogs.find((log) => log.resource?.isSameMeta(meta));
 
         if (resourceLog) {
@@ -78,15 +80,14 @@ export class OtlpTransport extends BaseTransport {
           // For the time being we don't have this information
           // We will use the sdk as the source of information
           // Thus using new Scope() to retrieve the scope log
-          resourceLog.getScopeLog(new Scope())?.addLogRecord(new LogRecord(item));
+          resourceLog.getScopeLog(new Scope())?.addLogRecord(LogRecordFactory.getNewLogRecord(item));
         } else {
-          const scopeLog = new ScopeLog(new Scope(), new LogRecord(item));
+          const scopeLog = new ScopeLog(new Scope(), LogRecordFactory.getNewLogRecord(item));
           const resourceLog = new ResourceLog(new Resource(item), scopeLog);
           this.payload.addResourceLog(resourceLog);
         }
       }
 
-      // if (type === TransportItemType.EXCEPTION) { }
       this.signalCount++;
     }
   }

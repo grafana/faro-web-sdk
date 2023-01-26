@@ -1,6 +1,7 @@
-import type { EventEvent, ExceptionEvent, LogEvent, TransportItemPayload } from 'packages/web-sdk/src';
+import type { MeasurementEvent } from 'packages/core/src/api';
+import type { TransportItem } from 'packages/core/src/transports';
 
-import type { Attribute, LogTransportItem, PayloadMember } from './types';
+import type { Attribute, PayloadMember } from './types';
 
 // console.log - 10 / INFO2 -> this is a special case
 // console.trace - 1 / TRACE
@@ -21,19 +22,10 @@ export type MeasurementLogRecordPayload = {
   // spanId: string;
 };
 
-type TimestampedEvent = LogEvent | ExceptionEvent | EventEvent;
 export class MeasurementLogRecord implements PayloadMember<MeasurementLogRecordPayload> {
-  constructor(private transportItem: LogTransportItem) {}
+  constructor(private transportItem: TransportItem<MeasurementEvent>) {}
 
   getPayloadObject(): MeasurementLogRecordPayload {
-    const { type, payload } = this.transportItem;
-
-    return {
-      timeUnixNano: payload,
-    } as MeasurementLogRecordPayload;
+    return {} as MeasurementLogRecordPayload;
   }
-
-  // getSeverityNumber(type: TransportItemType) {
-
-  // }
 }

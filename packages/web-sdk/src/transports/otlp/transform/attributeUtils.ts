@@ -7,22 +7,6 @@ export const attributeValueType = {
   kvList: 'kvListValue',
 } as const;
 
-export function toNestedAttributes(attributeName: FaroResourceAttributes, attributes?: MetaAttributes) {
-  if (!attributes || Object.keys(attributes).length === 0) {
-    return;
-  }
-
-  return toAttribute(
-    attributeName,
-    {
-      values: Object.entries(attributes).map(([attributeName, attributeValue]) =>
-        toAttribute(attributeName, attributeValue)
-      ),
-    },
-    attributeValueType.kvList
-  );
-}
-
 export function toAttribute<T>(
   attributeName: T,
   attributeValue: any,
@@ -36,4 +20,24 @@ export function toAttribute<T>(
     key: attributeName,
     value: { [attributeType]: attributeValue },
   };
+}
+
+export function toAttributesList(attributes: MetaAttributes) {
+  return Object.entries(attributes).map(([attributeName, attributeValue]) =>
+    toAttribute(attributeName, attributeValue)
+  );
+}
+
+export function toNestedAttributes(attributeName: FaroResourceAttributes, attributes?: MetaAttributes) {
+  if (!attributes || Object.keys(attributes).length === 0) {
+    return;
+  }
+
+  return toAttribute(
+    attributeName,
+    {
+      values: toAttributesList(attributes),
+    },
+    attributeValueType.kvList
+  );
 }

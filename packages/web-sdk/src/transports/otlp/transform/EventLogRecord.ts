@@ -1,4 +1,6 @@
-import type { Attribute, LogTransportItem, PayloadMember } from './types';
+import type { EventEvent } from 'packages/core/src/api';
+import type { TransportItem } from 'packages/core/src/transports';
+import type { Attribute, PayloadMember } from './types';
 
 export type EventLogRecordPayload = {
   timeUnixNano: number;
@@ -13,7 +15,7 @@ export type EventLogRecordPayload = {
 };
 
 export class EventLogRecord implements PayloadMember<EventLogRecordPayload> {
-  constructor(private transportItem: LogTransportItem) {}
+  constructor(private transportItem: TransportItem<EventEvent>) {}
   getPayloadObject(): EventLogRecordPayload {
     throw new Error('Method not implemented.');
   }

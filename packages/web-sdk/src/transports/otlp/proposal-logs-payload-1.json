@@ -334,9 +334,11 @@
               // console.error - 17 / ERROR
               "severityNumber": 10,
               "severityText": "INFO2",
-              "body": {
-                "stringValue": "Faro was initialized"
-              },
+              // TODO: Q: seems that this is a string insetad of an object?
+              "body": "Faro was initialized",
+              // "body": {
+              //   "stringValue": "Faro was initialized"
+              // },
               "attributes": [
                 {
                   "key": "foo",
