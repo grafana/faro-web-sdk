@@ -5,8 +5,8 @@
 <p align="left"><img src="docs/faro_logo.png" alt="Grafana Faro logo" width="400"></p>
 
 The Grafana Faro Web SDK can instrument frontend JavaScript applications to collect telemetry and forward it to the
-[Grafana Agent][grafana-agent-docs] (with app agent receiver integration enabled). Grafana Agent can then send this data
-to [Loki][grafana-logs] or [Tempo][grafana-traces].
+[Grafana Agent][grafana-agent-docs] (with app agent receiver integration enabled), to a Grafana Cloud instance or to a
+custom receiver. Grafana Agent can then send this data to [Loki][grafana-logs] or [Tempo][grafana-traces].
 
 The repository consists of multiple packages that can be combined depending on your requirements, as well as a
 [demo][faro-demo], which can be run by following the [README.md file][faro-demo-readme].
