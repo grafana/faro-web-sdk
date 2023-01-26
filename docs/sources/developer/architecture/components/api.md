@@ -48,9 +48,9 @@ Methods:
 ### Traces
 
 Traces are a special type of signal which are used to track the behaviour of an app. Because Faro does not have an
-internal tracing mechanism, we rely on OpenTelemetry's tracing mechanism to provide this functionality. However,
-OpenTelemetry is quite a heavy system and we do not want to force users to use it. Therefore, the traces API is
-pretty simple because all the logic is externalized to other packages like `web-tracing`.
+internal tracing mechanism, we rely on OpenTelemetry library to provide this functionality. However, OpenTelemetry is
+quite a heavy system and we do not want to force users to use it. Therefore, the traces API is pretty simple because all
+the logic is externalized to other packages like `web-tracing`.
 
 Methods:
 
