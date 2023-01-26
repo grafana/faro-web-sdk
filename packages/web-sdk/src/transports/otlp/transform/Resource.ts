@@ -1,9 +1,9 @@
 import { TelemetrySdkLanguageValues } from '@opentelemetry/semantic-conventions';
-import type { APIEvent, Meta, TransportItem } from 'packages/web-sdk/src';
+import type { Meta } from 'packages/web-sdk/src';
 
 import { attributeValueType, toAttribute, toNestedAttributes } from './attributeUtils';
 import { faroResourceAttributes } from './semanticResourceAttributes';
-import type { Attribute, FaroResourceAttributes, PayloadMember } from './types';
+import type { Attribute, FaroResourceAttributes, LogTransportItem, PayloadMember } from './types';
 
 export type ResourcePayload = {
   resource: {
@@ -13,7 +13,7 @@ export type ResourcePayload = {
 };
 
 export class Resource implements PayloadMember<ResourcePayload> {
-  constructor(private transportItem: TransportItem<Exclude<APIEvent, 'TraceEvent'>>) {}
+  constructor(private transportItem: LogTransportItem) {}
 
   isSameMeta(_meta: Meta) {
     // isDeepEqual(this.transportItem.meta, meta )

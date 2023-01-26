@@ -1,6 +1,9 @@
 export { attributeValueType, toAttribute, toNestedAttributes } from './attributeUtils';
 export { SemanticBrowserAttributes, faroResourceAttributes } from './semanticResourceAttributes';
-export { LogRecord } from './LogRecord';
+export { LogRecordFactory } from './LogRecordFactory';
+export { LogRecord } from './LogLogRecord';
+export { ErrorLogRecord as ErrorRecord } from './ErrorLogRecord';
+export { EventRecord } from './EventLogRecord';
 export { Payload } from './Payload';
 export { Resource } from './Resource';
 export { ResourceLog } from './ResourceLog';

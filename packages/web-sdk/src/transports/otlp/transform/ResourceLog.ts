@@ -1,4 +1,5 @@
 import type { Resource, ResourcePayload } from './Resource';
+import type { Scope } from './Scope';
 import type { ScopeLog, ScopeLogPayload } from './ScopeLog';
 import type { PayloadMember } from './types';
 
@@ -16,6 +17,10 @@ export class ResourceLog implements PayloadMember<ResourceLogPayload> {
 
   addScopeLog(log: ScopeLog) {
     this.scopeLogs.push(log);
+  }
+
+  getScopeLog(scope: Scope): ScopeLog | undefined {
+    return this.scopeLogs.find((log) => log.getScope().isSameScope(scope));
   }
 
   getPayloadObject(): ResourceLogPayload {

@@ -12,7 +12,7 @@ import {
   VERSION,
 } from '@grafana/faro-core';
 import type { TraceEvent } from 'packages/core/src/api';
-import { LogRecord } from './transform/LogRecord';
+import { LogRecord } from './transform/LogLogRecord';
 import { Payload } from './transform/Payload';
 import { Resource } from './transform/Resource';
 import { ResourceLog } from './transform/ResourceLog';
@@ -72,12 +72,17 @@ export class OtlpTransport extends BaseTransport {
 
       if (type === TransportItemType.LOG) {
         const resourceLog = this.payload.resourceLogs.find((log) => log.resource?.isSameMeta(meta));
-        const scopeLog = new ScopeLog(new Scope(), new LogRecord(item));
 
         if (resourceLog) {
-          resourceLog.addScopeLog(scopeLog);
+          // The scope should originate from the instrumentation that captured this
+          // For the time being we don't have this information
+          // We will use the sdk as the source of information
+          // Thus using new Scope() to retrieve the scope log
+          resourceLog.getScopeLog(new Scope())?.addLogRecord(new LogRecord(item));
         } else {
-          this.payload.addResourceLog(new ResourceLog(new Resource(item), scopeLog));
+          const scopeLog = new ScopeLog(new Scope(), new LogRecord(item));
+          const resourceLog = new ResourceLog(new Resource(item), scopeLog);
+          this.payload.addResourceLog(resourceLog);
         }
       }
 

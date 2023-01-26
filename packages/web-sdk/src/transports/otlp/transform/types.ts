@@ -1,6 +1,8 @@
 import type { faroResourceAttributes } from './semanticResourceAttributes';
 import type { Resource } from './Resource';
 import type { attributeValueType } from './attributeUtils';
+import type { TransportItem } from 'packages/core/src/transports';
+import type { APIEvent } from 'packages/core/src/api';
 
 export interface PayloadMember<T> {
   getPayloadObject(): T;
@@ -19,3 +21,5 @@ export type Attribute<T> = {
 };
 
 export type AttributeTypes = typeof attributeValueType[keyof typeof attributeValueType];
+
+export type LogTransportItem = TransportItem<Exclude<APIEvent, 'TraceEvent'>>;
