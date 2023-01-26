@@ -390,19 +390,19 @@
               "attributes": [
                 // This should be a convention to identify events from the other logs
                 {
-                  "key": "faro.measurement", // FARO
+                  "key": "measurement", // FARO
                   "value": {
                     "boolValue": true
                   }
                 },
                 {
-                  "key": "faro.measurement.type", // FARO
+                  "key": "measurement.type", // FARO
                   "value": {
                     "stringValue": "custom"
                   }
                 },
                 {
-                  "key": "faro.measurement.name", // FARO
+                  "key": "measurement.name", // FARO
                   "value": {
                     "stringValue": "my_custom_metric"
                   }
@@ -410,7 +410,7 @@
                 // This field does not exist in our payload
                 // We'll default to the name of the metric
                 {
-                  "key": "faro.measurement.description", // FARO
+                  "key": "measurement.description", // FARO
                   "value": {
                     "stringValue": "my_custom_metric"
                   }
@@ -418,19 +418,19 @@
                 // This field does not exist in our payload
                 // We can leave it empty or fill it with "custom" if it's actually needed
                 {
-                  "key": "faro.measurement.unit", // FARO
+                  "key": "measurement.unit", // FARO
                   "value": {
                     "stringValue": ""
                   }
                 },
                 {
-                  "key": "faro.measurement.metric.type", // FARO
+                  "key": "measurement.metric.type", // FARO
                   "value": {
                     "stringValue": "gauge"
                   }
                 },
                 {
-                  "key": "faro.measurement.metric.datapoints", // FARO
+                  "key": "measurement.metric.datapoints", // FARO
                   "value": {
                     "kvlistValue": {
                       "values": [

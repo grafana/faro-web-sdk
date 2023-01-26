@@ -18,6 +18,8 @@ export class LogRecord implements PayloadMember<LogRecordPayload> {
   constructor(private transportItem: TransportItem<Exclude<APIEvent, 'TraceEvent'>>) {}
 
   getPayloadObject(): LogRecordPayload {
-    return {} as LogRecordPayload;
+    return {
+      timeUnixNano: this.transportItem(),
+    };
   }
 }
