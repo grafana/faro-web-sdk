@@ -346,7 +346,6 @@
                     "stringValue": "bar"
                   }
                 },
-                // This should be a convention to Faro logs from other logs
                 {
                   "key": "faro.log",
                   "value": {

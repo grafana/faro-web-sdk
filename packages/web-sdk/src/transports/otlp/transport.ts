@@ -75,6 +75,8 @@ export class OtlpTransport extends BaseTransport {
       } else {
         const resourceLog = this.payload.resourceLogs.find((log) => log.resource?.isSameMeta(meta));
 
+        // TODO: logs creation may be moved to Payload, I don't want to create to generic functions before having the final picture
+
         if (resourceLog) {
           // The scope should originate from the instrumentation that captured this
           // For the time being we don't have this information

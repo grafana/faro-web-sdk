@@ -1,6 +1,7 @@
-import type { LogEvent, TransportItem } from 'packages/web-sdk/src';
-import { toAttribute } from './attributeUtils';
-import { faroAttributes } from './semanticResourceAttributes';
+import type { LogEvent, TransportItem } from '@grafana/faro-core';
+
+import { attributeValueType, toAttribute } from './attributeUtils';
+import { sematicAttributes } from './semanticResourceAttributes';
 
 import type { Attribute, PayloadMember } from './types';
 
@@ -19,17 +20,19 @@ export class LogLogRecord implements PayloadMember<LogLogRecordPayload> {
 
   getPayloadObject(): LogLogRecordPayload {
     const { meta, payload } = this.transportItem;
-    const timeUnixNano = new Date(payload.timestamp).getMilliseconds() * 1e6;
+    const timeUnixNano = Date.parse(payload.timestamp) * 1e6;
 
     return {
       timeUnixNano,
       observedTimeUnixNano: timeUnixNano,
       severityNumber: 10,
       severityText: 'INFO2',
-      body: payload.message,
+      body: { [attributeValueType.string]: payload.message },
       attributes: [
-        toAttribute(faroAttributes.VIEW_NAME, meta.view?.name),
-        toAttribute(faroAttributes.PAGE_URL, meta.page?.url),
+        toAttribute(sematicAttributes.FARO_LOG, true, attributeValueType.bool),
+        toAttribute(sematicAttributes.VIEW_NAME, meta.view?.name),
+        toAttribute(sematicAttributes.PAGE_URL, meta.page?.url),
+        // TODO: Q: shall we also add the pageId?
       ].filter((item): item is Attribute<any> => Boolean(item)), // TODO: Q: will context also be converted to attributes?
       droppedAttributesCount: 0,
     };

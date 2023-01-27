@@ -38,7 +38,12 @@ export const faroResourceAttributes = {
   APP_ENVIRONMENT: 'app.environment', // FARO
 } as const;
 
-export const faroAttributes = {
+export const sematicAttributes = {
   VIEW_NAME: 'view.name',
   PAGE_URL: 'page.url',
+  FARO_LOG: 'faro.log', // bool
+  FARO_EVENT: 'faro.event', // bool
+  // Missing in sematic-conventions package
+  EVENT_NAME: 'event.name',
+  EVENT_DOMAIN: 'event.domain',
 } as const;
