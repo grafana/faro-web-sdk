@@ -1,5 +1,5 @@
 import { LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { LogLogRecord } from './LogLogRecord';
+import { getLogLogRecord } from './transfomers';
 
 const item: TransportItem<LogEvent> = {
   type: TransportItemType.LOG,
@@ -57,8 +57,8 @@ const logLogRecordPayload = {
 };
 
 describe('LogLogRecord', () => {
-  test('Builds resource payload object for given transport item.', () => {
-    const logLogRecord = new LogLogRecord(item);
-    expect(logLogRecord.getPayloadObject()).toMatchObject(logLogRecordPayload);
+  it('Builds resource payload object for given transport item.', () => {
+    const logLogRecord = getLogLogRecord(item);
+    expect(logLogRecord).toMatchObject(logLogRecordPayload);
   });
 });

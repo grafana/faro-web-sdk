@@ -1,7 +1,6 @@
 describe.skip('FetchTransport', () => {
-    // TODO:
-
-    // beforeEach(() => {
-    //   fetch.mockClear();
-    // });
-})
+  // TODO:
+  // beforeEach(() => {
+  //   fetch.mockClear();
+  // });
+});

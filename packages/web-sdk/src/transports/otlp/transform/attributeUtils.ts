@@ -1,19 +1,19 @@
 import type { MetaAttributes } from 'packages/core/dist/types';
 import type { AttributeTypes, FaroResourceAttributes } from './types';
 
-export const attributeValueType = {
-  bool: 'boolValue',
-  string: 'stringValue',
-  kvList: 'kvListValue',
-} as const;
+export enum AttributeValueType {
+  BOOL = 'boolValue',
+  STRING = 'stringValue',
+  KV_LIST = 'kvListValue',
+}
 
 export function toAttribute<T>(
   attributeName: T,
   attributeValue: any,
-  attributeType: AttributeTypes = attributeValueType.string
+  attributeType: AttributeTypes = AttributeValueType.STRING
 ) {
   if (attributeValue == null || attributeValue === '') {
-    return;
+    return undefined;
   }
 
   return {
@@ -34,6 +34,6 @@ export function toNestedAttributes(attributeName: FaroResourceAttributes, attrib
         toAttribute(attributeName, attributeValue)
       ),
     },
-    attributeValueType.kvList
+    AttributeValueType.KV_LIST
   );
 }

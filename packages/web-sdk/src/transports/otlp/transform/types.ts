@@ -1,25 +1,50 @@
 import type { faroResourceAttributes } from './semanticResourceAttributes';
-import type { Resource } from './Resource';
-import type { attributeValueType } from './attributeUtils';
+
+import type { AttributeValueType } from './attributeUtils';
 import type { TransportItem } from 'packages/core/src/transports';
 import type { APIEvent } from 'packages/core/src/api';
 
-export interface PayloadMember<T> {
-  getPayloadObject(): T;
-}
-
 export type FaroResourceAttributes = typeof faroResourceAttributes[keyof typeof faroResourceAttributes];
 
-export type ResourceLogs = {
-  resource: Resource;
-  scopeLogs: unknown[]; // TODO: add correct type once defined
-};
+export interface ResourcePayload {
+  attributes: Attribute<string>[];
+  droppedAttributesCount: number;
+}
 
-export type Attribute<T> = {
+export interface LogLogRecordPayload {
+  timeUnixNano: number;
+  observedTimeUnixNano: number;
+  severityNumber: number;
+  severityText: string;
+  body: { stringValue: string };
+  attributes: Attribute<any>[]; // TODO: Q: will context also be converted to attributes?
+  droppedAttributesCount: number;
+  traceId: string | undefined;
+  spanId: string | undefined;
+}
+
+export interface EventLogRecordPayload {
+  timeUnixNano: number;
+  observedTimeUnixNano: number;
+  severityNumber: number;
+  severityText: string;
+  body: { stringValue: string };
+  attributes: Attribute<any>[]; // TODO: Q: will context also be converted to attributes?
+  droppedAttributesCount: number;
+  traceId: string | undefined;
+  spanId: string | undefined;
+}
+
+export interface ResourceLogs {
+  resource: ResourcePayload;
+  scopeLogs: unknown[]; // TODO: add correct type once defined
+}
+
+export interface Attribute<T> {
   key: T;
   value: { [key: string]: any };
-};
+}
 
-export type AttributeTypes = typeof attributeValueType[keyof typeof attributeValueType];
+export type AttributeTypes = typeof AttributeValueType[keyof typeof AttributeValueType];
 
 export type LogTransportItem = TransportItem<Exclude<APIEvent, 'TraceEvent'>>;

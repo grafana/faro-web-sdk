@@ -13,11 +13,11 @@ import {
 } from '@grafana/faro-core';
 import type { TraceEvent } from 'packages/core/src/api';
 import { LogRecordFactory } from './transform';
-import { Payload } from './transform/Payload';
-import { Resource } from './transform/Resource';
-import { ResourceLog } from './transform/ResourceLog';
-import { Scope } from './transform/Scope';
-import { ScopeLog } from './transform/ScopeLog';
+import { Payload } from './transform/deprecated/Payload';
+import { Resource } from './transform/deprecated/Resource';
+import { ResourceLog } from './transform/deprecated/ResourceLog';
+import { Scope } from './transform/deprecated/Scope';
+import { ScopeLog } from './transform/deprecated/ScopeLog';
 import type { OtlpTransportOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;
@@ -41,7 +41,7 @@ export class OtlpTransport extends BaseTransport {
 
   // private readonly signalsBuffer: TransportItem<APIEvent>[] = [];
 
-  private payload: Payload;
+  private payload: {}; // TODO: create and add type
   private signalCount = 0;
 
   promiseBuffer: PromiseBuffer<Response | void>;
@@ -66,28 +66,26 @@ export class OtlpTransport extends BaseTransport {
     if (this.signalCount >= DEFAULT_SEND_BATCH_SIZE) {
       // TODO: sendPayload();
       this.signalCount = 0;
-      this.payload = new Payload();
+      // this.payload = new Payload();
     } else {
       const { type, meta } = item;
 
       if (type === TransportItemType.TRACE) {
         // TODO: implement traces payload transform
       } else {
-        const resourceLog = this.payload.resourceLogs.find((log) => log.resource?.isSameMeta(meta));
-
+        // const resourceLog = this.payload.resourceLogs.find((log) => log.resource?.isSameMeta(meta));
         // TODO: logs creation may be moved to Payload, I don't want to create to generic functions before having the final picture
-
-        if (resourceLog) {
-          // The scope should originate from the instrumentation that captured this
-          // For the time being we don't have this information
-          // We will use the sdk as the source of information
-          // Thus using new Scope() to retrieve the scope log
-          resourceLog.getScopeLog(new Scope())?.addLogRecord(LogRecordFactory.getNewLogRecord(item));
-        } else {
-          const scopeLog = new ScopeLog(new Scope(), LogRecordFactory.getNewLogRecord(item));
-          const resourceLog = new ResourceLog(new Resource(item), scopeLog);
-          this.payload.addResourceLog(resourceLog);
-        }
+        // if (resourceLog) {
+        //   // The scope should originate from the instrumentation that captured this
+        //   // For the time being we don't have this information
+        //   // We will use the sdk as the source of information
+        //   // Thus using new Scope() to retrieve the scope log
+        //   resourceLog.getScopeLog(new Scope())?.addLogRecord(LogRecordFactory.getNewLogRecord(item));
+        // } else {
+        //   const scopeLog = new ScopeLog(new Scope(), LogRecordFactory.getNewLogRecord(item));
+        //   const resourceLog = new ResourceLog(new Resource(item), scopeLog);
+        //   this.payload.addResourceLog(resourceLog);
+        // }
       }
 
       this.signalCount++;
