@@ -1,7 +1,7 @@
 import { LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
 import { getResource } from './transfomers';
 
-const item: TransportItem<LogEvent> = {
+const item: Readonly<TransportItem<LogEvent>> = {
   type: TransportItemType.LOG,
   payload: {
     context: {},

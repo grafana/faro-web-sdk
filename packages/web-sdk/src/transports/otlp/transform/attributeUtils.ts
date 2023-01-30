@@ -1,4 +1,4 @@
-import type { MetaAttributes } from 'packages/core/dist/types';
+import type { MetaAttributes } from '@grafana/faro-core';
 import type { AttributeTypes, FaroResourceAttributes } from './types';
 
 export enum AttributeValueType {

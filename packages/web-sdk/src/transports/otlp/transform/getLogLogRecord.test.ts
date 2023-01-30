@@ -22,7 +22,7 @@ const item: TransportItem<LogEvent> = {
       },
     },
   },
-};
+} as const;
 
 const logLogRecordPayload = {
   timeUnixNano: 1674813181035000000,
@@ -54,7 +54,7 @@ const logLogRecordPayload = {
     },
   ],
   droppedAttributesCount: 0,
-};
+} as const;
 
 describe('LogLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {

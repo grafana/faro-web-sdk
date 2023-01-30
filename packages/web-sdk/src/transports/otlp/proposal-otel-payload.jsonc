@@ -132,7 +132,7 @@
                 {
                   "key": "page.url", // FARO
                   // DISCUSS WITH TEAM
-                  // The page meta may also contains page.id and page.attributes
+                  // The page meta may also contain page.id and page.attributes
                   // Shall we remove those? or add them as page.id and page.attributes attributes?
                   // Shall we remove page.url as we already have http.url? if so, how will the above be named
                   "value": { "stringValue": "http://localhost:5173" }
@@ -227,7 +227,7 @@
                       {
                         "key": "colno",
                         "value": {
-                          "arraylue": {
+                          "arrayValue": {
                             "values": [{ "intValue": 11 }, { "intValue": 22 }, { "intValue": 171 }]
                           }
                         }
