@@ -11,6 +11,11 @@ export interface ResourcePayload {
   droppedAttributesCount: number;
 }
 
+export interface ScopeLog {
+  scope: { name: string; version: string };
+  logRecords: (unknown | undefined)[]; // TODO add correct type
+}
+
 export interface LogLogRecordPayload {
   timeUnixNano: number;
   observedTimeUnixNano: number;
@@ -35,9 +40,9 @@ export interface EventLogRecordPayload {
   spanId: string | undefined;
 }
 
-export interface ResourceLogs {
+export interface ResourceLog {
   resource: ResourcePayload;
-  scopeLogs: unknown[]; // TODO: add correct type once defined
+  scopeLogs: ScopeLog;
 }
 
 export interface Attribute<T> {

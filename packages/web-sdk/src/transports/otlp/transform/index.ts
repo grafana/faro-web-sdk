@@ -1,12 +1,3 @@
 export { AttributeValueType, toAttribute, toNestedAttributes } from './attributeUtils';
 export { SemanticBrowserAttributes, faroResourceAttributes } from './semanticResourceAttributes';
-export { LogRecordFactory } from './deprecated/LogRecordFactory';
-export { LogRecord } from './deprecated/LogLogRecord';
-export { ErrorLogRecord as ErrorRecord } from './deprecated/ErrorLogRecord';
-export { EventRecord } from './EventLogRecord';
-export { Payload } from './deprecated/Payload';
-export { Resource } from './deprecated/Resource';
-export { ResourceLog } from './deprecated/ResourceLog';
-export { Scope } from './deprecated/Scope';
-export { ScopeLog } from './deprecated/ScopeLog';
-export { Attribute, AttributeTypes, FaroResourceAttributes, PayloadMember, ResourceLogs } from './types';
+export { Attribute, AttributeTypes, FaroResourceAttributes, ResourceLog } from './types';

@@ -1,4 +1,3 @@
-import { TelemetrySdkLanguageValues } from '@opentelemetry/semantic-conventions';
 import {
   EventEvent,
   ExceptionEvent,
@@ -6,8 +5,9 @@ import {
   MeasurementEvent,
   TransportItem,
   TransportItemType,
-  createInternalLogger,
 } from '@grafana/faro-core';
+import { TelemetrySdkLanguageValues } from '@opentelemetry/semantic-conventions';
+import { internalLogger } from '../otlpPayloadLogger';
 
 import { AttributeValueType, toAttribute, toNestedAttributes } from './attributeUtils';
 import { faroResourceAttributes, sematicAttributes } from './semanticResourceAttributes';
@@ -20,22 +20,16 @@ import type {
   ResourcePayload,
 } from './types';
 
-const internalLogger = createInternalLogger();
-
-export function getPayload(transportItem: LogTransportItem) {
+export function getResourceLogPayload(transportItem: LogTransportItem) {
   const resource = getResource(transportItem);
 
   return {
-    resourceLogs: [
-      {
-        resource,
-        scopeLogs: [getScopeLog(transportItem)],
-      },
-    ],
+    resource,
+    scopeLogs: [getScopeLog(transportItem)],
   };
 }
 
-export function getResource(transportItem: LogTransportItem): ResourcePayload {
+function getResource(transportItem: LogTransportItem): ResourcePayload {
   const { browser, sdk, session, user, app } = transportItem.meta;
 
   return {
@@ -66,10 +60,10 @@ export function getResource(transportItem: LogTransportItem): ResourcePayload {
       toAttribute(faroResourceAttributes.APP_RELEASE, app?.release),
     ].filter((item): item is Attribute<FaroResourceAttributes> => Boolean(item)),
     droppedAttributesCount: 0,
-  } as const;
+  };
 }
 
-function getScopeLog(transportItem: LogTransportItem) {
+export function getScopeLog(transportItem: LogTransportItem) {
   return {
     scope: {
       name: '@grafana/faro-core',
@@ -97,7 +91,7 @@ function getLogRecord(transportItem: LogTransportItem) {
   }
 }
 
-export function getLogLogRecord(transportItem: TransportItem<LogEvent>): Readonly<LogLogRecordPayload> {
+function getLogLogRecord(transportItem: TransportItem<LogEvent>): Readonly<LogLogRecordPayload> {
   const { meta, payload } = transportItem;
   const timeUnixNano = Date.parse(payload.timestamp) * 1e6;
 
@@ -116,7 +110,7 @@ export function getLogLogRecord(transportItem: TransportItem<LogEvent>): Readonl
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
     droppedAttributesCount: 0,
-  } as const;
+  };
 }
 
 function getEventLogRecord(transportItem: TransportItem<EventEvent>): Readonly<EventLogRecordPayload> {
