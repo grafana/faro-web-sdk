@@ -3,14 +3,15 @@ import {
   ExceptionEvent,
   LogEvent,
   MeasurementEvent,
+  Meta,
   TransportItem,
   TransportItemType,
 } from '@grafana/faro-core';
-import { TelemetrySdkLanguageValues } from '@opentelemetry/semantic-conventions';
+import { SemanticAttributes, TelemetrySdkLanguageValues } from '@opentelemetry/semantic-conventions';
 import { internalLogger } from '../otlpPayloadLogger';
 
 import { AttributeValueType, toAttribute, toNestedAttributes } from './attributeUtils';
-import { faroResourceAttributes, sematicAttributes } from './semanticResourceAttributes';
+import { faroResourceAttributes, sematicAttributes as semanticAttributes } from './semanticResourceAttributes';
 import type {
   Attribute,
   EventLogRecordPayload,
@@ -18,6 +19,7 @@ import type {
   LogLogRecordPayload,
   LogTransportItem,
   ResourcePayload,
+  ScopeLog,
 } from './types';
 
 export function getResourceLogPayload(transportItem: LogTransportItem) {
@@ -29,8 +31,8 @@ export function getResourceLogPayload(transportItem: LogTransportItem) {
   };
 }
 
-function getResource(transportItem: LogTransportItem): ResourcePayload {
-  const { browser, sdk, session, user, app } = transportItem.meta;
+function getResource(transportItem: LogTransportItem): Readonly<ResourcePayload> {
+  const { browser, sdk, app } = transportItem.meta;
 
   return {
     attributes: [
@@ -46,24 +48,16 @@ function getResource(transportItem: LogTransportItem): ResourcePayload {
         ? toAttribute(faroResourceAttributes.TELEMETRY_SDK_LANGUAGE, TelemetrySdkLanguageValues.WEBJS)
         : undefined,
 
-      toAttribute(faroResourceAttributes.SESSION_ID, session?.id),
-      toNestedAttributes(faroResourceAttributes.SESSION_ATTRIBUTES, session?.attributes),
-
-      toAttribute(faroResourceAttributes.ENDUSER_ID, user?.id),
-      toAttribute(faroResourceAttributes.ENDUSER_NAME, user?.username),
-      toAttribute(faroResourceAttributes.ENDUSER_EMAIL, user?.email),
-      toNestedAttributes(faroResourceAttributes.ENDUSER_ATTRIBUTES, user?.attributes),
-
-      toAttribute(faroResourceAttributes.APP_NAME, app?.name),
-      toAttribute(faroResourceAttributes.APP_VERSION, app?.version),
-      toAttribute(faroResourceAttributes.APP_ENVIRONMENT, app?.environment),
+      toAttribute(faroResourceAttributes.SERVICE_NAME, app?.name),
+      toAttribute(faroResourceAttributes.SERVICE_VERSION, app?.version),
+      toAttribute(faroResourceAttributes.DEPLOYMENT_ENVIRONMENT, app?.environment),
       toAttribute(faroResourceAttributes.APP_RELEASE, app?.release),
     ].filter((item): item is Attribute<FaroResourceAttributes> => Boolean(item)),
     droppedAttributesCount: 0,
   };
 }
 
-export function getScopeLog(transportItem: LogTransportItem) {
+export function getScopeLog(transportItem: LogTransportItem): ScopeLog {
   return {
     scope: {
       name: '@grafana/faro-core',
@@ -91,7 +85,7 @@ function getLogRecord(transportItem: LogTransportItem) {
   }
 }
 
-function getLogLogRecord(transportItem: TransportItem<LogEvent>): Readonly<LogLogRecordPayload> {
+function getLogLogRecord(transportItem: TransportItem<LogEvent>): LogLogRecordPayload {
   const { meta, payload } = transportItem;
   const timeUnixNano = Date.parse(payload.timestamp) * 1e6;
 
@@ -101,19 +95,14 @@ function getLogLogRecord(transportItem: TransportItem<LogEvent>): Readonly<LogLo
     severityNumber: 10,
     severityText: 'INFO2',
     body: { [AttributeValueType.STRING]: payload.message },
-    attributes: [
-      toAttribute(sematicAttributes.FARO_LOG, true, AttributeValueType.BOOL),
-      toAttribute(sematicAttributes.VIEW_NAME, meta.view?.name),
-      toAttribute(sematicAttributes.PAGE_URL, meta.page?.url),
-      // TODO: Q: shall we also add the pageId?
-    ].filter((item): item is Attribute<any> => Boolean(item)), // TODO: Q: will context also be converted to attributes?
+    attributes: getCommonLogAttributes(meta), // TODO: Q: will context also be converted to attributes?
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
     droppedAttributesCount: 0,
-  };
+  } as const;
 }
 
-function getEventLogRecord(transportItem: TransportItem<EventEvent>): Readonly<EventLogRecordPayload> {
+function getEventLogRecord(transportItem: TransportItem<EventEvent>): EventLogRecordPayload {
   const { meta, payload } = transportItem;
   const timeUnixNano = Date.parse(payload.timestamp) * 1e6;
 
@@ -124,13 +113,12 @@ function getEventLogRecord(transportItem: TransportItem<EventEvent>): Readonly<E
     severityText: 'TRACE',
     body: { [AttributeValueType.STRING]: payload.name },
     attributes: [
-      toAttribute(sematicAttributes.FARO_EVENT, true, AttributeValueType.BOOL),
-      toAttribute(sematicAttributes.EVENT_NAME, payload.name),
-      toAttribute(sematicAttributes.EVENT_DOMAIN, payload.domain),
+      ...getCommonLogAttributes(meta),
+      toAttribute(semanticAttributes.FARO_EVENT, true, AttributeValueType.BOOL),
+      toAttribute(semanticAttributes.EVENT_NAME, payload.name),
+      toAttribute(semanticAttributes.EVENT_DOMAIN, payload.domain),
       toNestedAttributes('event.attributes', payload.attributes),
-      toAttribute(sematicAttributes.VIEW_NAME, meta.view?.name),
-      toAttribute(sematicAttributes.PAGE_URL, meta.page?.url),
-    ].filter((item): item is Attribute<any> => Boolean(item)), // TODO: Q: will context also be converted to attributes?
+    ].filter((item): item is Attribute<any> => Boolean(item)),
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
     droppedAttributesCount: 0,
@@ -147,4 +135,19 @@ function getErrorLogRecord(_transportItem: TransportItem<ExceptionEvent>) {
 function getMeasurementLogRecord(_transportItem: TransportItem<MeasurementEvent>) {
   // TODO: implement
   return {};
+}
+
+function getCommonLogAttributes(meta: Meta): Attribute<unknown>[] {
+  const { view, page, session, user } = meta;
+
+  return [
+    toAttribute(semanticAttributes.VIEW_NAME, view?.name),
+    toAttribute(SemanticAttributes.HTTP_URL, page?.url),
+    toAttribute(faroResourceAttributes.SESSION_ID, session?.id),
+    toNestedAttributes(faroResourceAttributes.SESSION_ATTRIBUTES, session?.attributes),
+    toAttribute(faroResourceAttributes.ENDUSER_ID, user?.id),
+    toAttribute(faroResourceAttributes.ENDUSER_NAME, user?.username),
+    toAttribute(faroResourceAttributes.ENDUSER_EMAIL, user?.email),
+    toNestedAttributes(faroResourceAttributes.ENDUSER_ATTRIBUTES, user?.attributes),
+  ].filter((item): item is Attribute<any> => Boolean(item));
 }

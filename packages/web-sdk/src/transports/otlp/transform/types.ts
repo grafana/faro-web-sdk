@@ -40,9 +40,9 @@ export interface EventLogRecordPayload {
   spanId: string | undefined;
 }
 
-export interface ResourceLog {
+export interface ResourceLogPayload {
   resource: ResourcePayload;
-  scopeLogs: ScopeLog;
+  scopeLogs: ScopeLog[];
 }
 
 export interface Attribute<T> {

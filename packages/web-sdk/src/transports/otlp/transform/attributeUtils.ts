@@ -19,7 +19,7 @@ export function toAttribute<T>(
   return {
     key: attributeName,
     value: { [attributeType]: attributeValue },
-  };
+  } as const;
 }
 
 export function toNestedAttributes(attributeName: FaroResourceAttributes, attributes?: MetaAttributes) {

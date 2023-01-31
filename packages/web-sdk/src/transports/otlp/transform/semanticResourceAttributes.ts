@@ -32,18 +32,17 @@ export const faroResourceAttributes = {
   ENDUSER_EMAIL: 'enduser.email', // FARO
   ENDUSER_ATTRIBUTES: 'enduser.attributes', // FARO
 
-  APP_NAME: 'app.name', // FARO
+  SERVICE_NAME: SemanticResourceAttributes.SERVICE_NAME,
+  SERVICE_VERSION: SemanticResourceAttributes.SERVICE_VERSION,
+  DEPLOYMENT_ENVIRONMENT: SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT,
   APP_RELEASE: 'app.release', // FARO
-  APP_VERSION: 'app.version', // FARO
-  APP_ENVIRONMENT: 'app.environment', // FARO
 } as const;
 
 export const sematicAttributes = {
   VIEW_NAME: 'view.name',
-  PAGE_URL: 'page.url',
   FARO_LOG: 'faro.log', // bool
   FARO_EVENT: 'faro.event', // bool
-  // Missing in sematic-conventions package
+  // Currently missing in sematic-conventions npm package
   EVENT_NAME: 'event.name',
   EVENT_DOMAIN: 'event.domain',
 } as const;

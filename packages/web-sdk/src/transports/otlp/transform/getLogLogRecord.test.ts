@@ -1,5 +1,5 @@
 import { LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { getLogLogRecord } from './transfomers';
+import { getScopeLog } from './transfomers';
 
 const item: TransportItem<LogEvent> = {
   type: TransportItemType.LOG,
@@ -21,6 +21,22 @@ const item: TransportItem<LogEvent> = {
         pageAttribute2: 'page-attribute-two',
       },
     },
+    session: {
+      id: 'session-abcd1234',
+      attributes: {
+        sessionAttribute1: 'one',
+        sessionAttribute2: 'two',
+      },
+    },
+    user: {
+      email: 'user@example.com',
+      id: 'user-abc123',
+      username: 'user-joe',
+      attributes: {
+        userAttribute1: 'one',
+        userAttribute2: 'two',
+      },
+    },
   },
 } as const;
 
@@ -34,31 +50,82 @@ const logLogRecordPayload = {
   },
   attributes: [
     {
-      key: 'faro.log',
-      value: {
-        boolValue: true,
-      },
-    },
-
-    {
       key: 'view.name',
       value: {
         stringValue: 'view-default',
       },
     },
     {
-      key: 'page.url',
+      key: 'http.url',
       value: {
         stringValue: 'http://localhost:5173',
+      },
+    },
+    {
+      key: 'session.id',
+      value: { stringValue: 'session-abcd1234' },
+    },
+    {
+      key: 'session.attributes',
+      value: {
+        kvListValue: {
+          values: [
+            {
+              key: 'sessionAttribute1',
+              value: {
+                stringValue: 'one',
+              },
+            },
+            {
+              key: 'sessionAttribute2',
+              value: {
+                stringValue: 'two',
+              },
+            },
+          ],
+        },
+      },
+    },
+    {
+      key: 'enduser.id',
+      value: { stringValue: 'user-abc123' },
+    },
+    {
+      key: 'enduser.name',
+      value: { stringValue: 'user-joe' },
+    },
+    {
+      key: 'enduser.email',
+      value: { stringValue: 'user@example.com' },
+    },
+    {
+      key: 'enduser.attributes',
+      value: {
+        kvListValue: {
+          values: [
+            {
+              key: 'userAttribute1',
+              value: {
+                stringValue: 'one',
+              },
+            },
+            {
+              key: 'userAttribute2',
+              value: {
+                stringValue: 'two',
+              },
+            },
+          ],
+        },
       },
     },
   ],
   droppedAttributesCount: 0,
 } as const;
 
-describe('LogLogRecord', () => {
+describe('getLogLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
-    const logLogRecord = getLogLogRecord(item);
+    const logLogRecord = getScopeLog(item).logRecords[0];
     expect(logLogRecord).toMatchObject(logLogRecordPayload);
   });
 });
