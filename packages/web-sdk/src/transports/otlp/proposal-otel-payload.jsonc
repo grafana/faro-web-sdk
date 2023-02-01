@@ -313,11 +313,11 @@
               },
               "attributes": [
                 {
-                  "key": "foo", // FARO: THIS IS THE LOG CONTEXT
-                  // DISCUSS WITH TEAM
-                  // Should we have everything set as log.context and all the context be a value of that?
-                  // Or should we spread that object in the attributes object
-                  "value": { "stringValue": "bar" }
+                  "key": "context", // FARO: THIS IS THE LOG CONTEXT
+                  "kvlistValue": [
+                    { "key": "foo", "value": { "stringValue": "bar" } },
+                    { "key": "baz", "value": { "stringValue": "bam" } }
+                  ]
                 },
                 {
                   "key": "view.name", // FARO

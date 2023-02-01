@@ -8,7 +8,6 @@ export type FaroResourceAttributes = typeof faroResourceAttributes[keyof typeof 
 
 export interface ResourcePayload {
   attributes: Attribute<string>[];
-  droppedAttributesCount: number;
 }
 
 export interface ScopeLog {
@@ -18,24 +17,18 @@ export interface ScopeLog {
 
 export interface LogLogRecordPayload {
   timeUnixNano: number;
-  observedTimeUnixNano: number;
   severityNumber: number;
   severityText: string;
   body: { stringValue: string };
   attributes: Attribute<any>[]; // TODO: Q: will context also be converted to attributes?
-  droppedAttributesCount: number;
   traceId: string | undefined;
   spanId: string | undefined;
 }
 
 export interface EventLogRecordPayload {
   timeUnixNano: number;
-  observedTimeUnixNano: number;
-  severityNumber: number;
-  severityText: string;
   body: { stringValue: string };
   attributes: Attribute<any>[]; // TODO: Q: will context also be converted to attributes?
-  droppedAttributesCount: number;
   traceId: string | undefined;
   spanId: string | undefined;
 }

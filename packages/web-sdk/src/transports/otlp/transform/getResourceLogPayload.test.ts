@@ -49,10 +49,10 @@ const resourcePayload = {
       key: 'browser.name',
       value: { stringValue: 'browser-name' },
     },
-    {
-      key: 'browser.platform',
-      value: { stringValue: 'browser-MyOperationSystem' },
-    },
+    // {
+    //   key: 'browser.platform',
+    //   value: { stringValue: 'browser-MyOperationSystem' },
+    // },
     {
       key: 'browser.version',
       value: { stringValue: 'browser-v109.0' },
@@ -87,7 +87,6 @@ const resourcePayload = {
       value: { stringValue: 'app-v1.23' },
     },
   ],
-  droppedAttributesCount: 0,
 } as const;
 
 describe('getResourceLogPayload()', () => {
@@ -123,16 +122,15 @@ describe('getResourceLogPayload()', () => {
           key: 'browser.name',
           value: { stringValue: 'browser-name' },
         },
-        {
-          key: 'browser.platform',
-          value: { stringValue: 'browser-MyOperationSystem' },
-        },
+        // {
+        //   key: 'browser.platform',
+        //   value: { stringValue: 'browser-MyOperationSystem' },
+        // },
         {
           key: 'browser.version',
           value: { stringValue: 'browser-v109.0' },
         },
       ],
-      droppedAttributesCount: 0,
     });
 
     const { resource: resourceEmptyAttributes } = getResourceLogPayload({
@@ -143,7 +141,6 @@ describe('getResourceLogPayload()', () => {
 
     expect(resourceEmptyAttributes).toMatchObject({
       attributes: [],
-      droppedAttributesCount: 0,
     });
   });
 

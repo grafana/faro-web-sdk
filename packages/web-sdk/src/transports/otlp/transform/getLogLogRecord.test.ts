@@ -42,7 +42,6 @@ const item: TransportItem<LogEvent> = {
 
 const logLogRecordPayload = {
   timeUnixNano: 1674813181035000000,
-  observedTimeUnixNano: 1674813181035000000,
   severityNumber: 10,
   severityText: 'INFO2',
   body: {
@@ -120,7 +119,6 @@ const logLogRecordPayload = {
       },
     },
   ],
-  droppedAttributesCount: 0,
 } as const;
 
 describe('getLogLogRecord', () => {

@@ -1,5 +1,3 @@
-import { SemanticAttributes, SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-
 /**
  * Seems currently to be missing in the semantic-conventions npm package.
  * See: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/semantic_conventions/README.md#todos
@@ -15,33 +13,22 @@ export const SemanticBrowserAttributes = {
 } as const;
 
 export const faroResourceAttributes = {
-  BROWSER_MOBILE: SemanticBrowserAttributes.BROWSER_MOBILE, // browser.mobile
   BROWSER_NAME: 'browser.name', // FARO
   BROWSER_VERSION: 'browser.version', // FARO
-  BROWSER_PLATFORM: SemanticBrowserAttributes.BROWSER_PLATFORM, // 'browser.platform'
-
-  TELEMETRY_SDK_NAME: SemanticResourceAttributes.TELEMETRY_SDK_NAME, // 'telemetry.sdk.name',
-  TELEMETRY_SDK_LANGUAGE: SemanticResourceAttributes.TELEMETRY_SDK_LANGUAGE, // 'telemetry.sdk.language',
-  TELEMETRY_SDK_VERSION: SemanticResourceAttributes.TELEMETRY_SDK_VERSION, //'telemetry.sdk.version',
 
   SESSION_ID: 'session.id', // FARO
   SESSION_ATTRIBUTES: 'session.attributes', // FARO
 
-  ENDUSER_ID: SemanticAttributes.ENDUSER_ID, // 'enduser.id',
   ENDUSER_NAME: 'enduser.name', // FARO
   ENDUSER_EMAIL: 'enduser.email', // FARO
   ENDUSER_ATTRIBUTES: 'enduser.attributes', // FARO
 
-  SERVICE_NAME: SemanticResourceAttributes.SERVICE_NAME,
-  SERVICE_VERSION: SemanticResourceAttributes.SERVICE_VERSION,
-  DEPLOYMENT_ENVIRONMENT: SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT,
   APP_RELEASE: 'app.release', // FARO
 } as const;
 
+// TODO: put in different objects
 export const sematicAttributes = {
   VIEW_NAME: 'view.name',
-  FARO_LOG: 'faro.log', // bool
-  FARO_EVENT: 'faro.event', // bool
   // Currently missing in sematic-conventions npm package
   EVENT_NAME: 'event.name',
   EVENT_DOMAIN: 'event.domain',

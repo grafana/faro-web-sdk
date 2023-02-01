@@ -1,5 +1,5 @@
 import type { MetaAttributes } from 'packages/core/src/metas';
-import { toAttribute, toNestedAttributes } from './attributeUtils';
+import { toAttribute } from './attributeUtils';
 
 describe('attributeUtils', () => {
   test.each([undefined, null, ''])('toAttribute() returns "undefined" if attributeValue is: %p.', (attributeValue) => {
@@ -24,22 +24,17 @@ describe('attributeUtils', () => {
     });
   });
 
-  test.each([undefined, {}])('toNestedAttribute() returns "undefined" if attributeValue is: %p.', (attributeValue) => {
-    const attribute = toNestedAttributes('attribute.name', attributeValue);
-    expect(attribute).toBe(undefined);
-  });
-
   test('toNestedAttribute() returns a nested attributes object.', () => {
     const metaAttributes: MetaAttributes = {
       'attribute.one': 'hello',
       'attribute.two': 'world',
     };
 
-    const attribute = toNestedAttributes('attribute.name', metaAttributes);
+    const attribute = toAttribute('attribute.name', metaAttributes);
     expect(attribute).toMatchObject({
       key: 'attribute.name',
       value: {
-        kvListValue: {
+        kvlistValue: {
           values: [
             {
               key: 'attribute.one',
