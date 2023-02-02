@@ -8,6 +8,10 @@ const item: TransportItem<LogEvent> = {
     level: LogLevel.INFO,
     message: 'Faro was initialized',
     timestamp: '2023-01-27T09:53:01.035Z',
+    trace: {
+      trace_id: 'trace-id',
+      span_id: 'span-id',
+    },
   },
   meta: {
     view: {
@@ -42,6 +46,8 @@ const item: TransportItem<LogEvent> = {
 
 const logLogRecordPayload = {
   timeUnixNano: 1674813181035000000,
+  severityNumber: 10, // static value
+  severityText: 'INFO2', // static value
   body: {
     stringValue: 'Faro was initialized',
   },

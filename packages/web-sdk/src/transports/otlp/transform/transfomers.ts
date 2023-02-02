@@ -13,17 +13,16 @@ import {
   TelemetrySdkLanguageValues,
 } from '@opentelemetry/semantic-conventions';
 import { internalLogger } from '../otlpPayloadLogger';
+import { Attribute, isAttribute, toAttribute, toAttributeValue } from './attributes';
 
-import { AttributeValueType, toAttribute } from './attributeUtils';
 import {
   faroResourceAttributes,
   SemanticBrowserAttributes,
   sematicAttributes as semanticAttributes,
 } from './semanticResourceAttributes';
 import type {
-  Attribute,
+  ErrorLogRecordPayload,
   EventLogRecordPayload,
-  FaroResourceAttributes,
   LogLogRecordPayload,
   LogTransportItem,
   ResourcePayload,
@@ -61,7 +60,7 @@ function getResource(transportItem: LogTransportItem): Readonly<ResourcePayload>
       toAttribute(SemanticResourceAttributes.SERVICE_VERSION, app?.version),
       toAttribute(SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT, app?.environment),
       toAttribute(faroResourceAttributes.APP_RELEASE, app?.release),
-    ].filter((item): item is Attribute<FaroResourceAttributes> => Boolean(item)),
+    ].filter(isAttribute),
   };
 }
 
@@ -96,13 +95,14 @@ function getLogRecord(transportItem: LogTransportItem) {
 function getLogLogRecord(transportItem: TransportItem<LogEvent>): LogLogRecordPayload {
   const { meta, payload } = transportItem;
   const timeUnixNano = getTimeUnixNano(payload.timestamp);
+  const body = toAttributeValue(payload.message) as { stringValue: string; key: string };
 
   return {
     timeUnixNano,
     severityNumber: 10,
     severityText: 'INFO2',
-    body: { [AttributeValueType.STRING]: payload.message },
-    attributes: getCommonLogAttributes(meta), // TODO: Q: will context also be converted to attributes?
+    body,
+    attributes: getCommonLogAttributes(meta),
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
   } as const;
@@ -111,22 +111,23 @@ function getLogLogRecord(transportItem: TransportItem<LogEvent>): LogLogRecordPa
 function getEventLogRecord(transportItem: TransportItem<EventEvent>): EventLogRecordPayload {
   const { meta, payload } = transportItem;
   const timeUnixNano = getTimeUnixNano(payload.timestamp);
+  const body = toAttributeValue(payload.name) as { stringValue: string; key: string };
 
   return {
     timeUnixNano,
-    body: { [AttributeValueType.STRING]: payload.name },
+    body,
     attributes: [
       ...getCommonLogAttributes(meta),
       toAttribute(semanticAttributes.EVENT_NAME, payload.name),
       toAttribute(semanticAttributes.EVENT_DOMAIN, payload.domain),
       toAttribute('event.attributes', payload.attributes),
-    ].filter((item): item is Attribute<any> => Boolean(item)),
+    ].filter((item): item is Attribute => Boolean(item)),
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
   } as const;
 }
 
-function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>) {
+function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorLogRecordPayload {
   const { meta, payload } = transportItem;
   const timeUnixNano = getTimeUnixNano(payload.timestamp);
 
@@ -134,12 +135,11 @@ function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>) {
     timeUnixNano,
     attributes: [
       ...getCommonLogAttributes(meta),
+      toAttribute(SemanticAttributes.EXCEPTION_TYPE, payload.type),
       toAttribute(SemanticAttributes.EXCEPTION_MESSAGE, payload.value),
-      toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined),
-      toAttribute(SemanticAttributes.EXCEPTION_TYPE, undefined),
-
-      toAttribute('faro.error.stacktrace', undefined), // TODO: implement once we decided if we keep the faro format or not
-    ],
+      // toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined), // TODO: currently we don't have the value yet in teh respective payload
+      toAttribute('faro.error.stacktrace', payload.stacktrace),
+    ].filter(isAttribute),
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
   } as const;
@@ -151,7 +151,7 @@ function getMeasurementLogRecord(_transportItem: TransportItem<MeasurementEvent>
   return {};
 }
 
-function getCommonLogAttributes(meta: Meta): Attribute<unknown>[] {
+function getCommonLogAttributes(meta: Meta): Attribute[] {
   const { view, page, session, user } = meta;
 
   return [
@@ -165,7 +165,7 @@ function getCommonLogAttributes(meta: Meta): Attribute<unknown>[] {
     toAttribute(faroResourceAttributes.ENDUSER_NAME, user?.username),
     toAttribute(faroResourceAttributes.ENDUSER_EMAIL, user?.email),
     toAttribute(faroResourceAttributes.ENDUSER_ATTRIBUTES, user?.attributes),
-  ].filter((item): item is Attribute<any> => Boolean(item));
+  ].filter(isAttribute);
 }
 
 function getTimeUnixNano(timestamp: string): number {
