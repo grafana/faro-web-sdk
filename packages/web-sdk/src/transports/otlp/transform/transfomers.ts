@@ -14,7 +14,7 @@ import {
 } from '@opentelemetry/semantic-conventions';
 import { internalLogger } from '../otlpPayloadLogger';
 
-import { AttributeValueType, toAttribute, toNestedAttributes } from './attributeUtils';
+import { AttributeValueType, toAttribute } from './attributeUtils';
 import {
   faroResourceAttributes,
   SemanticBrowserAttributes,
@@ -119,7 +119,7 @@ function getEventLogRecord(transportItem: TransportItem<EventEvent>): EventLogRe
       ...getCommonLogAttributes(meta),
       toAttribute(semanticAttributes.EVENT_NAME, payload.name),
       toAttribute(semanticAttributes.EVENT_DOMAIN, payload.domain),
-      toNestedAttributes('event.attributes', payload.attributes),
+      toAttribute('event.attributes', payload.attributes),
     ].filter((item): item is Attribute<any> => Boolean(item)),
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
@@ -138,7 +138,7 @@ function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>) {
       toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined),
       toAttribute(SemanticAttributes.EXCEPTION_TYPE, undefined),
 
-      toNestedAttributes('faro.error.stacktrace', undefined), // TODO: implement once we decided if we keep the faro format or not
+      toAttribute('faro.error.stacktrace', undefined), // TODO: implement once we decided if we keep the faro format or not
     ],
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
@@ -157,12 +157,14 @@ function getCommonLogAttributes(meta: Meta): Attribute<unknown>[] {
   return [
     toAttribute(semanticAttributes.VIEW_NAME, view?.name),
     toAttribute(SemanticAttributes.HTTP_URL, page?.url),
+    toAttribute(faroResourceAttributes.PAGE_ID, page?.id),
+    toAttribute(faroResourceAttributes.PAGE_ATTRIBUTES, page?.attributes),
     toAttribute(faroResourceAttributes.SESSION_ID, session?.id),
-    toNestedAttributes(faroResourceAttributes.SESSION_ATTRIBUTES, session?.attributes),
+    toAttribute(faroResourceAttributes.SESSION_ATTRIBUTES, session?.attributes),
     toAttribute(SemanticAttributes.ENDUSER_ID, user?.id),
     toAttribute(faroResourceAttributes.ENDUSER_NAME, user?.username),
     toAttribute(faroResourceAttributes.ENDUSER_EMAIL, user?.email),
-    toNestedAttributes(faroResourceAttributes.ENDUSER_ATTRIBUTES, user?.attributes),
+    toAttribute(faroResourceAttributes.ENDUSER_ATTRIBUTES, user?.attributes),
   ].filter((item): item is Attribute<any> => Boolean(item));
 }
 

@@ -13,17 +13,20 @@ export const SemanticBrowserAttributes = {
 } as const;
 
 export const faroResourceAttributes = {
-  BROWSER_NAME: 'browser.name', // FARO
-  BROWSER_VERSION: 'browser.version', // FARO
+  PAGE_ID: 'page.id',
+  PAGE_ATTRIBUTES: 'page.attributes',
 
-  SESSION_ID: 'session.id', // FARO
-  SESSION_ATTRIBUTES: 'session.attributes', // FARO
+  BROWSER_NAME: 'browser.name',
+  BROWSER_VERSION: 'browser.version',
 
-  ENDUSER_NAME: 'enduser.name', // FARO
-  ENDUSER_EMAIL: 'enduser.email', // FARO
-  ENDUSER_ATTRIBUTES: 'enduser.attributes', // FARO
+  SESSION_ID: 'session.id',
+  SESSION_ATTRIBUTES: 'session.attributes',
 
-  APP_RELEASE: 'app.release', // FARO
+  ENDUSER_NAME: 'enduser.name',
+  ENDUSER_EMAIL: 'enduser.email',
+  ENDUSER_ATTRIBUTES: 'enduser.attributes',
+
+  APP_RELEASE: 'app.release',
 } as const;
 
 // TODO: put in different objects

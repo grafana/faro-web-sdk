@@ -1,5 +1,3 @@
-import type { MetaAttributes } from '@grafana/faro-core';
-
 import { isArray, isBoolean, isInt, isNumber, isObject, isString } from '@grafana/faro-core';
 
 export enum AttributeValueType {
@@ -53,15 +51,15 @@ export function toAttribute<T>(attributeName: T, attributeValue: any): any {
   } as const;
 }
 
-// TODO: maybe rename toKvListValue
-export function toNestedAttributes(attributeName: string, attributes?: MetaAttributes) {
-  if (!attributes || Object.keys(attributes).length === 0) {
-    return;
-  }
+// // TODO: maybe rename toKvListValue
+// export function toNestedAttributes(attributeName: string, attributes?: MetaAttributes) {
+//   if (!attributes || Object.keys(attributes).length === 0) {
+//     return;
+//   }
 
-  return toAttribute(attributeName, {
-    values: Object.entries(attributes).map(([attributeName, attributeValue]) =>
-      toAttribute(attributeName, attributeValue)
-    ),
-  });
-}
+//   return toAttribute(attributeName, {
+//     values: Object.entries(attributes).map(([attributeName, attributeValue]) =>
+//       toAttribute(attributeName, attributeValue)
+//     ),
+//   });
+// }

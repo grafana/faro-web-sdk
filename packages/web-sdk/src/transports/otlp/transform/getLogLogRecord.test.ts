@@ -14,11 +14,11 @@ const item: TransportItem<LogEvent> = {
       name: 'view-default',
     },
     page: {
-      // id: '',
+      id: 'page-id',
       url: 'http://localhost:5173',
       attributes: {
-        pageAttribute1: 'page-attribute-one',
-        pageAttribute2: 'page-attribute-two',
+        pageAttribute1: 'one',
+        pageAttribute2: 'two',
       },
     },
     session: {
@@ -42,8 +42,6 @@ const item: TransportItem<LogEvent> = {
 
 const logLogRecordPayload = {
   timeUnixNano: 1674813181035000000,
-  severityNumber: 10,
-  severityText: 'INFO2',
   body: {
     stringValue: 'Faro was initialized',
   },
@@ -61,13 +59,40 @@ const logLogRecordPayload = {
       },
     },
     {
+      key: 'page.id',
+      value: {
+        stringValue: 'page-id',
+      },
+    },
+    {
+      key: 'page.attributes',
+      value: {
+        kvlistValue: {
+          values: [
+            {
+              key: 'pageAttribute1',
+              value: {
+                stringValue: 'one',
+              },
+            },
+            {
+              key: 'pageAttribute2',
+              value: {
+                stringValue: 'two',
+              },
+            },
+          ],
+        },
+      },
+    },
+    {
       key: 'session.id',
       value: { stringValue: 'session-abcd1234' },
     },
     {
       key: 'session.attributes',
       value: {
-        kvListValue: {
+        kvlistValue: {
           values: [
             {
               key: 'sessionAttribute1',
@@ -100,7 +125,7 @@ const logLogRecordPayload = {
     {
       key: 'enduser.attributes',
       value: {
-        kvListValue: {
+        kvlistValue: {
           values: [
             {
               key: 'userAttribute1',
