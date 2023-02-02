@@ -6,6 +6,7 @@ import {
   Meta,
   TransportItem,
   TransportItemType,
+  VERSION,
 } from '@grafana/faro-core';
 import {
   SemanticAttributes,
@@ -15,11 +16,6 @@ import {
 import { internalLogger } from '../otlpPayloadLogger';
 import { Attribute, isAttribute, toAttribute, toAttributeValue } from './attributes';
 
-import {
-  faroResourceAttributes,
-  SemanticBrowserAttributes,
-  sematicAttributes as semanticAttributes,
-} from './semanticResourceAttributes';
 import type {
   ErrorLogRecordPayload,
   EventLogRecordPayload,
@@ -28,6 +24,20 @@ import type {
   ResourcePayload,
   ScopeLog,
 } from './types';
+
+/**
+ * Seems currently to be missing in the semantic-conventions npm package.
+ * See: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/semantic_conventions/README.md#todos
+ *
+ * Took the few attributes as defined in the docs
+ */
+const SemanticBrowserAttributes = {
+  BROWSER_BRANDS: 'browser.brands', // TODO: Q: shall we add this to meta.ts => navigator.userAgentData.brands. !The spec is still experimental!
+  BROWSER_PLATFORM: 'browser.platform',
+  BROWSER_MOBILE: 'browser.mobile',
+  BROWSER_USER_AGENT: 'browser.user_agent', // TODO: Q: shall we add this to meta.ts => parser.getUA()
+  BROWSER_LANGUAGE: 'browser.language', // TODO: Q: shall we add this to meta.ts => window.navigator.language
+} as const;
 
 export function getResourceLogPayload(transportItem: LogTransportItem) {
   const resource = getResource(transportItem);
@@ -47,8 +57,8 @@ function getResource(transportItem: LogTransportItem): Readonly<ResourcePayload>
       toAttribute(SemanticBrowserAttributes.BROWSER_USER_AGENT, undefined),
       // toAttribute(SemanticBrowserAttributes.BROWSER_PLATFORM, browser?.os),
       // toAttribute(SemanticBrowserAttributes.BROWSER_BRANDS, browser?.brands),
-      toAttribute(faroResourceAttributes.BROWSER_NAME, browser?.name),
-      toAttribute(faroResourceAttributes.BROWSER_VERSION, browser?.version),
+      toAttribute('browser.name', browser?.name),
+      toAttribute('browser.version', browser?.version),
 
       toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_NAME, sdk?.name),
       toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_VERSION, sdk?.version),
@@ -59,7 +69,6 @@ function getResource(transportItem: LogTransportItem): Readonly<ResourcePayload>
       toAttribute(SemanticResourceAttributes.SERVICE_NAME, app?.name),
       toAttribute(SemanticResourceAttributes.SERVICE_VERSION, app?.version),
       toAttribute(SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT, app?.environment),
-      toAttribute(faroResourceAttributes.APP_RELEASE, app?.release),
     ].filter(isAttribute),
   };
 }
@@ -67,8 +76,8 @@ function getResource(transportItem: LogTransportItem): Readonly<ResourcePayload>
 export function getScopeLog(transportItem: LogTransportItem): ScopeLog {
   return {
     scope: {
-      name: '@grafana/faro-core',
-      version: '1.0.0-beta4',
+      name: '@grafana/faro-web-sdk',
+      version: VERSION,
     },
     logRecords: [getLogRecord(transportItem)],
   };
@@ -118,8 +127,8 @@ function getEventLogRecord(transportItem: TransportItem<EventEvent>): EventLogRe
     body,
     attributes: [
       ...getCommonLogAttributes(meta),
-      toAttribute(semanticAttributes.EVENT_NAME, payload.name),
-      toAttribute(semanticAttributes.EVENT_DOMAIN, payload.domain),
+      toAttribute('event.name', payload.name), // event.name constant is currently missing in sematic-conventions npm package
+      toAttribute('event.domain', payload.domain), // event.domain constant is currently missing in sematic-conventions npm package
       toAttribute('event.attributes', payload.attributes),
     ].filter((item): item is Attribute => Boolean(item)),
     traceId: payload.trace?.trace_id,
@@ -138,33 +147,44 @@ function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorL
       toAttribute(SemanticAttributes.EXCEPTION_TYPE, payload.type),
       toAttribute(SemanticAttributes.EXCEPTION_MESSAGE, payload.value),
       // toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined), // TODO: currently we don't have the value yet in teh respective payload
-      toAttribute('faro.error.stacktrace', payload.stacktrace),
+      toAttribute('error.stacktrace', payload.stacktrace),
     ].filter(isAttribute),
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
   } as const;
 }
 
-// TODO remove _ prefix after implementation
-function getMeasurementLogRecord(_transportItem: TransportItem<MeasurementEvent>) {
-  // TODO: implement
-  return {};
+function getMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>) {
+  const { meta, payload } = transportItem;
+  // const timeUnixNano = getTimeUnixNano(payload);
+
+  return {
+    // timeUnixNano,
+    attributes: [
+      ...getCommonLogAttributes(meta),
+      toAttribute('measurement.type', payload.type),
+      toAttribute('measurement.name', undefined),
+      toAttribute('measurement.values', payload.values),
+    ].filter(isAttribute),
+    traceId: payload.trace?.trace_id,
+    spanId: payload.trace?.trace_id,
+  } as const;
 }
 
 function getCommonLogAttributes(meta: Meta): Attribute[] {
   const { view, page, session, user } = meta;
 
   return [
-    toAttribute(semanticAttributes.VIEW_NAME, view?.name),
+    toAttribute('view.name', view?.name),
     toAttribute(SemanticAttributes.HTTP_URL, page?.url),
-    toAttribute(faroResourceAttributes.PAGE_ID, page?.id),
-    toAttribute(faroResourceAttributes.PAGE_ATTRIBUTES, page?.attributes),
-    toAttribute(faroResourceAttributes.SESSION_ID, session?.id),
-    toAttribute(faroResourceAttributes.SESSION_ATTRIBUTES, session?.attributes),
+    toAttribute('page.id', page?.id),
+    toAttribute('page.attributes', page?.attributes),
+    toAttribute('session.id', session?.id),
+    toAttribute('session.attributes', session?.attributes),
     toAttribute(SemanticAttributes.ENDUSER_ID, user?.id),
-    toAttribute(faroResourceAttributes.ENDUSER_NAME, user?.username),
-    toAttribute(faroResourceAttributes.ENDUSER_EMAIL, user?.email),
-    toAttribute(faroResourceAttributes.ENDUSER_ATTRIBUTES, user?.attributes),
+    toAttribute('enduser.name', user?.username),
+    toAttribute('enduser.email', user?.email),
+    toAttribute('enduser.attributes', user?.attributes),
   ].filter(isAttribute);
 }
 

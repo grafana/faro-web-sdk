@@ -344,22 +344,18 @@
               "timeUnixNano": 1674472126907000000,
               "attributes": [
                 {
-                  "key": "faro.measurement.type", // FARO
+                  "key": "measurement.type", // FARO
                   // DISCUSS WITH TEAM
                   // HOW TO DIFFERENTIATE FARO MEASUREMENTS IN THIS CASE
                   // What should be the name of this attribute?
                   "value": { "stringValue": "custom" }
                 },
                 {
-                  "key": "faro.measurement.name", // FARO
+                  "key": "measurement.name", // FARO
                   "value": { "stringValue": "my_custom_metric" }
                 },
                 {
-                  "key": "faro.measurement.name", // FARO
-                  "value": { "stringValue": "my_custom_metric" }
-                },
-                {
-                  "key": "faro.measurement.value", // FARO
+                  "key": "measurement.value", // FARO
                   "value": { "doubleValue": 0.2509985978371605 }
                 },
                 {

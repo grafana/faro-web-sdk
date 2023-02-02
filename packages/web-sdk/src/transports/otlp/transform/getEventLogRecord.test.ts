@@ -1,5 +1,5 @@
 import { EventEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { getScopeLog } from './transfomers';
+import { getScopeLog } from './transfoms';
 
 const item: TransportItem<EventEvent> = {
   type: TransportItemType.EVENT,

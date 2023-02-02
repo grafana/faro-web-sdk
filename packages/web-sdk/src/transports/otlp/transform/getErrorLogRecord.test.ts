@@ -1,5 +1,5 @@
 import { ExceptionEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { getScopeLog } from './transfomers';
+import { getScopeLog } from './transfoms';
 
 const item: TransportItem<ExceptionEvent> = {
   type: TransportItemType.EXCEPTION,
@@ -174,7 +174,7 @@ const errorLogRecordPayload = {
     //   value: { stringValue: 'The unparsed stacktrace' },
     // },
     {
-      key: 'faro.error.stacktrace',
+      key: 'error.stacktrace',
       value: {
         kvlistValue: {
           values: [

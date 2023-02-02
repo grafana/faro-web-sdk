@@ -1,5 +1,5 @@
 import { LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { getResourceLogPayload } from './transfomers';
+import { getResourceLogPayload } from './transfoms';
 
 const item: Readonly<TransportItem<LogEvent>> = {
   type: TransportItemType.LOG,
@@ -81,10 +81,6 @@ const resourcePayload = {
     {
       key: 'deployment.environment',
       value: { stringValue: 'app-production' },
-    },
-    {
-      key: 'app.release',
-      value: { stringValue: 'app-v1.23' },
     },
   ],
 } as const;
