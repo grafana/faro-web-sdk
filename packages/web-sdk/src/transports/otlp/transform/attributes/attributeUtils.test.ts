@@ -1,18 +1,18 @@
 import type { MetaAttributes } from 'packages/core/src/metas';
-import { toAttribute } from './attributeUtils';
+import { toAttribute, toAttributeValue } from './attributeUtils';
 
-describe('attributeUtils', () => {
-  test.each([undefined, null, ''])('toAttribute() returns "undefined" if attributeValue is: %p.', (attributeValue) => {
+describe('toAttribute()', () => {
+  it.each([undefined, null, ''])('toAttribute() returns "undefined" if attributeValue is: %p.', (attributeValue) => {
     const attribute = toAttribute('attribute.name', attributeValue);
     expect(attribute).toBe(undefined);
   });
 
-  test('toAttribute() parameter "attributeType" is set to string by default.', () => {
+  it(' parameter "attributeType" is set to string by default.', () => {
     const attribute = toAttribute('attribute.name', 'abc');
     expect(attribute?.value).toHaveProperty('stringValue');
   });
 
-  test('toAttribute() returns valid attribute objects for given parameters.', () => {
+  it('returns valid attribute objects for given parameters.', () => {
     const attributeName = 'attribute.name';
     const attributeValue = 'string-value';
 
@@ -24,7 +24,7 @@ describe('attributeUtils', () => {
     });
   });
 
-  test('toNestedAttribute() returns a nested attributes object.', () => {
+  it('toNestedAttribute() returns a nested attributes object.', () => {
     const metaAttributes: MetaAttributes = {
       'attribute.one': 'hello',
       'attribute.two': 'world',
@@ -52,5 +52,78 @@ describe('attributeUtils', () => {
         },
       },
     });
+  });
+});
+
+describe('toAttributeValue()', () => {
+  const cases = [
+    { v: 'hello', expected: { stringValue: 'hello' } },
+    { v: 1, expected: { intValue: 1 } },
+    { v: 1.23, expected: { doubleValue: 1.23 } },
+    { v: true, expected: { boolValue: true } },
+    { v: ['foo', 'bar'], expected: { arrayValue: { values: [{ stringValue: 'foo' }, { stringValue: 'bar' }] } } },
+    {
+      v: {
+        a: 'a',
+        o1: { f: 'f' },
+        list: ['c', { obj2: { e: 'e' } }],
+      },
+      expected: {
+        kvlistValue: {
+          values: [
+            {
+              key: 'a',
+              value: { stringValue: 'a' },
+            },
+            {
+              key: 'o1',
+              value: {
+                kvlistValue: {
+                  values: [
+                    {
+                      key: 'f',
+                      value: { stringValue: 'f' },
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              key: 'list',
+              value: {
+                arrayValue: {
+                  values: [
+                    { stringValue: 'c' },
+                    {
+                      kvlistValue: {
+                        values: [
+                          {
+                            key: 'obj2',
+                            value: {
+                              kvlistValue: {
+                                values: [
+                                  {
+                                    key: 'e',
+                                    value: { stringValue: 'e' },
+                                  },
+                                ],
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+  ] as const;
+
+  it.each(cases)('Returns $expected for value $v.', ({ v, expected }) => {
+    expect(toAttributeValue(v)).toMatchObject(expected);
   });
 });
