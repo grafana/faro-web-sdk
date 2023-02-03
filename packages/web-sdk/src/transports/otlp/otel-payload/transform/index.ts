@@ -8,4 +8,4 @@ export {
   ScopeLog,
 } from './types';
 
-export { getScopeLog, getResourceLogPayload } from './transforms';
+export { getScopeLog, getResourceLogPayload } from './transform';

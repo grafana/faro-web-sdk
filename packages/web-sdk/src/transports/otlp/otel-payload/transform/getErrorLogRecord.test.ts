@@ -1,5 +1,5 @@
 import { ExceptionEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { getScopeLog } from './transforms';
+import { getScopeLog } from './transform';
 
 const item: TransportItem<ExceptionEvent> = {
   type: TransportItemType.EXCEPTION,
