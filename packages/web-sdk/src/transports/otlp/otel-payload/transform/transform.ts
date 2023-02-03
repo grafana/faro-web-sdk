@@ -6,7 +6,7 @@ import {
   Meta,
   TransportItem,
   TransportItemType,
-  VERSION,
+  VERSION as SDK_VERSION,
 } from '@grafana/faro-core';
 import {
   SemanticAttributes,
@@ -56,7 +56,7 @@ function getResource(transportItem: LogTransportItem): Readonly<ResourcePayload>
       toAttribute(SemanticBrowserAttributes.BROWSER_USER_AGENT, browser?.userAgent),
       toAttribute(SemanticBrowserAttributes.BROWSER_LANGUAGE, browser?.language),
       toAttribute('browser.os', browser?.os),
-      // toAttribute(SemanticBrowserAttributes.BROWSER_BRANDS, browser?.brands),
+      // toAttribute(SemanticBrowserAttributes.BROWSER_BRANDS, browser?.brands), // TODO: shall we provide this to browser which already support Navigator.userAgentData an
       toAttribute('browser.name', browser?.name),
       toAttribute('browser.version', browser?.version),
 
@@ -77,7 +77,7 @@ export function getScopeLog(transportItem: LogTransportItem): ScopeLog {
   return {
     scope: {
       name: '@grafana/faro-web-sdk',
-      version: VERSION,
+      version: SDK_VERSION,
     },
     logRecords: [getLogRecord(transportItem)],
   };

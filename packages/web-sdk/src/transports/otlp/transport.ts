@@ -14,8 +14,8 @@ const DEFAULT_BUFFER_SIZE = 30;
 const DEFAULT_CONCURRENCY = 5; // chrome supports 10 total, firefox 17
 
 const DEFAULT_SEND_BATCH_SIZE = 30;
-const DEFAULT_TIMEOUT_MS = 200; // same as default in Otel processor
-const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
+// const DEFAULT_TIMEOUT_MS = 200; // same as default in Otel processor
+// const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
 
 export class OtlpTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-fetch';
@@ -36,7 +36,7 @@ export class OtlpTransport extends BaseTransport {
 
   promiseBuffer: PromiseBuffer<Response | void>;
 
-  constructor(private options: OtlpTransportOptions) {
+  constructor(options: OtlpTransportOptions) {
     super();
 
     this.promiseBuffer = createPromiseBuffer({

@@ -15,6 +15,8 @@ const item: Readonly<TransportItem<LogEvent>> = {
       version: 'browser-v109.0',
       os: 'browser-MyOperationSystem',
       mobile: false,
+      userAgent: 'browser-ua-string',
+      language: 'browser-LANGUAGE',
     },
     sdk: {
       name: 'integration-web-sdk-name',
@@ -45,14 +47,27 @@ const resourcePayload = {
       key: 'browser.mobile',
       value: { boolValue: false },
     },
+
     {
-      key: 'browser.name',
+      key: 'browser.userAgent',
+      value: { stringValue: 'browser-name' },
+    },
+    {
+      key: 'browser.language',
+      value: { stringValue: 'browser-name' },
+    },
+    {
+      key: 'browser.os',
       value: { stringValue: 'browser-name' },
     },
     // {
     //   key: 'browser.platform',
     //   value: { stringValue: 'browser-MyOperationSystem' },
     // },
+    {
+      key: 'browser.name',
+      value: { stringValue: 'browser-name' },
+    },
     {
       key: 'browser.version',
       value: { stringValue: 'browser-v109.0' },
