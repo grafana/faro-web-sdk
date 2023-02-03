@@ -54,7 +54,10 @@ export class OtlpTransport extends BaseTransport {
 
   send(item: TransportItem<APIEvent>): void {
     if (this.signalCount >= DEFAULT_SEND_BATCH_SIZE) {
+      // Traces, Metrics, Logs need to be sent to separate Apis each
+      // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md#otlphttp-request
       // TODO: sendPayload();
+
       this.signalCount = 0;
       this.payload = new OtelPayload();
       return undefined;
