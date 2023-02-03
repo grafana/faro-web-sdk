@@ -1,4 +1,4 @@
-import { isArray, isBoolean, isInt, isNumber, isObject, isString } from 'packages/web-sdk/src';
+import { isArray, isBoolean, isInt, isNumber, isObject, isString } from '@grafana/faro-core';
 import type { Attribute, AttributeValue } from './types';
 
 export function toAttributeValue(value: unknown): AttributeValue {

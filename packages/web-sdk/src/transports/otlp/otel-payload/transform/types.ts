@@ -1,4 +1,4 @@
-import type { APIEvent, TransportItem } from 'packages/web-sdk/src';
+import type { APIEvent, TransportItem } from '@grafana/faro-core';
 import type { Attribute } from '../attribute';
 
 export interface ResourcePayload {

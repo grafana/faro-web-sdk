@@ -1,4 +1,4 @@
-import { EventEvent, TransportItem, TransportItemType } from 'packages/web-sdk/src';
+import { EventEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
 import { getScopeLog } from './transform';
 
 const item: TransportItem<EventEvent> = {

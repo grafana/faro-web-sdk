@@ -1,4 +1,4 @@
-import type { MetaAttributes } from 'packages/web-sdk/src';
+import type { MetaAttributes } from '@grafana/faro-core';
 import { toAttribute, toAttributeValue } from './attributeUtils';
 
 describe('toAttribute()', () => {

@@ -7,7 +7,7 @@ import {
   TransportItem,
   TransportItemType,
   VERSION as SDK_VERSION,
-} from 'packages/web-sdk/src';
+} from '@grafana/faro-core';
 import {
   SemanticAttributes,
   SemanticResourceAttributes,

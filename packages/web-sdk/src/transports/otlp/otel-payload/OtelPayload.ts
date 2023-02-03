@@ -1,8 +1,9 @@
-import { Meta, TransportItem, TransportItemType } from 'packages/web-sdk/src';
+import { Meta, TransportItem, TransportItemType } from '@grafana/faro-core';
 import { getResourceLogPayload, getScopeLog } from './transform/transform';
 import { internalLogger } from '../otlpPayloadLogger';
 
 import type { ResourceLogPayload } from './transform';
+import type { OtelTransportPayload } from './types';
 
 interface ResourceLogsMetaMap {
   resourceLog: ResourceLogPayload;
@@ -12,16 +13,13 @@ interface ResourceLogsMetaMap {
 export class OtelPayload {
   private resourceLogsWithMetas = [] as ResourceLogsMetaMap[];
 
-  constructor(private transportItem?: TransportItem) {
-    if (this.transportItem) {
-      this.resourceLogsWithMetas.push({
-        resourceLog: getResourceLogPayload(this.transportItem),
-        meta: this.transportItem.meta,
-      });
+  constructor(transportItem?: TransportItem) {
+    if (transportItem) {
+      this.addResourceItem(transportItem);
     }
   }
 
-  public getPayload() {
+  public getPayload(): OtelTransportPayload {
     return {
       resourceLogs: this.resourceLogsWithMetas.map(({ resourceLog }) => resourceLog),
       resourceSpans: [],
