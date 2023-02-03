@@ -1,4 +1,4 @@
-import { Meta, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { Meta, TransportItem, TransportItemType } from 'packages/web-sdk/src';
 import { getResourceLogPayload, getScopeLog } from './transform/transform';
 import { internalLogger } from '../otlpPayloadLogger';
 

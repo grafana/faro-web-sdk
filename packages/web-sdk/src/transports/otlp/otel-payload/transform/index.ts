@@ -6,6 +6,7 @@ export type {
   ResourceLogPayload,
   ResourcePayload,
   ScopeLog,
+  LogRecordPayload,
 } from './types';
 
 export { getScopeLog, getResourceLogPayload } from './transform';

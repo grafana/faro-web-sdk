@@ -1,4 +1,4 @@
-import type { MetaAttributes } from 'packages/core/src/metas';
+import type { MetaAttributes } from 'packages/web-sdk/src';
 import { toAttribute, toAttributeValue } from './attributeUtils';
 
 describe('toAttribute()', () => {

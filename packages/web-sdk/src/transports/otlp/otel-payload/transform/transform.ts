@@ -7,7 +7,7 @@ import {
   TransportItem,
   TransportItemType,
   VERSION as SDK_VERSION,
-} from '@grafana/faro-core';
+} from 'packages/web-sdk/src';
 import {
   SemanticAttributes,
   SemanticResourceAttributes,
@@ -22,13 +22,14 @@ import type {
   LogLogRecordPayload,
   EventLogRecordPayload,
   ErrorLogRecordPayload,
+  LogRecordPayload,
 } from './types';
 
 /**
  * Seems currently to be missing in the semantic-conventions npm package.
  * See: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/semantic_conventions/README.md#todos
  *
- * Took the few attributes as defined in the docs
+ * Attributes are as defined by the Otel docs
  */
 const SemanticBrowserAttributes = {
   BROWSER_BRANDS: 'browser.brands', // TODO: Q: shall we add this to meta.ts => navigator.userAgentData.brands. !The spec is still experimental!
@@ -83,7 +84,7 @@ export function getScopeLog(transportItem: LogTransportItem): ScopeLog {
   };
 }
 
-function getLogRecord(transportItem: LogTransportItem) {
+function getLogRecord(transportItem: LogTransportItem): LogRecordPayload {
   const { type } = transportItem;
 
   switch (type) {
@@ -96,8 +97,9 @@ function getLogRecord(transportItem: LogTransportItem) {
     case TransportItemType.MEASUREMENT:
       return getMeasurementLogRecord(transportItem as TransportItem<MeasurementEvent>);
     default:
-      internalLogger.error(`Unknown TransportItemType: ${type}`);
-      return;
+      const error = `Unknown TransportItemType: ${type}`;
+      internalLogger.error(error);
+      throw new Error(error);
   }
 }
 
