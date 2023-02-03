@@ -101,7 +101,7 @@ const resourcePayload = {
 } as const;
 
 describe('getResourceLogPayload()', () => {
-  it('Is valid ResourceLogPayload structure', () => {
+  it('Builds a valid ResourceLogPayload structure', () => {
     const resourceLogPayload = getResourceLogPayload(item);
     expect(resourceLogPayload).toBeTruthy();
     expect(resourceLogPayload.resource).toBeTruthy();
@@ -135,5 +135,10 @@ describe('getResourceLogPayload()', () => {
       },
     });
     expect(resourceNoSdkMeta.resource.attributes.some(({ key }) => key === 'telemetry.sdk.language')).toBe(false);
+  });
+
+  it('Adds a ScopeLog.', () => {
+    const scopeLog = getResourceLogPayload(item).scopeLogs[0];
+    expect(scopeLog).toBeTruthy();
   });
 });

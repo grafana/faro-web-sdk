@@ -146,7 +146,7 @@ function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorL
       ...getCommonLogAttributes(meta),
       toAttribute(SemanticAttributes.EXCEPTION_TYPE, payload.type),
       toAttribute(SemanticAttributes.EXCEPTION_MESSAGE, payload.value),
-      // toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined), // TODO: currently we don't have the value yet in teh respective payload
+      // toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined), // TODO: currently we don't have the value yet in the respective payload. Will be done in a separate PR
       toAttribute('error.stacktrace', payload.stacktrace),
     ].filter(isAttribute),
     traceId: payload.trace?.trace_id,
