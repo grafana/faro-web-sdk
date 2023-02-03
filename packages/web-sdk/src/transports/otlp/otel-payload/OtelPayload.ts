@@ -1,7 +1,8 @@
 import { Meta, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { getResourceLogPayload, getScopeLog } from './transfoms';
+import { getResourceLogPayload, getScopeLog } from './transform/transforms';
 import { internalLogger } from '../otlpPayloadLogger';
-import type { ResourceLogPayload } from './types';
+
+import type { ResourceLogPayload } from './transform';
 
 interface ResourceLogsMetaMap {
   resourceLog: ResourceLogPayload;

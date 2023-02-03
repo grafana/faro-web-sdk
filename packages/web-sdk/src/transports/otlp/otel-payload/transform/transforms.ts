@@ -13,16 +13,15 @@ import {
   SemanticResourceAttributes,
   TelemetrySdkLanguageValues,
 } from '@opentelemetry/semantic-conventions';
-import { internalLogger } from '../otlpPayloadLogger';
-import { Attribute, isAttribute, toAttribute, toAttributeValue } from './attributes';
-
+import { internalLogger } from '../../otlpPayloadLogger';
+import { Attribute, isAttribute, toAttribute, toAttributeValue } from '../attributes';
 import type {
-  ErrorLogRecordPayload,
-  EventLogRecordPayload,
-  LogLogRecordPayload,
   LogTransportItem,
   ResourcePayload,
   ScopeLog,
+  LogLogRecordPayload,
+  EventLogRecordPayload,
+  ErrorLogRecordPayload,
 } from './types';
 
 /**
@@ -154,6 +153,7 @@ function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorL
   } as const;
 }
 
+// TODO: finiosh after we agreed on data structure
 function getMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>) {
   const { meta, payload } = transportItem;
   // const timeUnixNano = getTimeUnixNano(payload);

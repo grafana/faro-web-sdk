@@ -1,5 +1,5 @@
 import { LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { getResourceLogPayload } from './transfoms';
+import { getResourceLogPayload } from './transforms';
 
 const item: Readonly<TransportItem<LogEvent>> = {
   type: TransportItemType.LOG,

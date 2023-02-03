@@ -2,17 +2,12 @@ import {
   APIEvent,
   BaseTransport,
   createPromiseBuffer,
-  EventEvent,
-  ExceptionEvent,
-  LogEvent,
-  MeasurementEvent,
   PromiseBuffer,
   TransportItem,
-  TransportItemType,
   VERSION,
 } from '@grafana/faro-core';
-import type { TraceEvent } from 'packages/core/src/api';
-import { OtelPayload } from './transform/OtelPayload';
+import { OtelPayload } from './otel-payload';
+
 import type { OtlpTransportOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;
@@ -165,10 +160,4 @@ export class OtlpTransport extends BaseTransport {
 
   //   return new Date(now + this.rateLimitBackoffMs);
   // }
-}
-
-interface OtlpTransportBody {
-  resourceMetrics: MeasurementEvent[];
-  resourceLogs: (LogEvent | ExceptionEvent | EventEvent)[];
-  resourceSpans: TraceEvent[];
 }

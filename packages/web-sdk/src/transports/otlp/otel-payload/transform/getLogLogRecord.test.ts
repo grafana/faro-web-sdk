@@ -1,20 +1,17 @@
-import { EventEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { getScopeLog } from './transfoms';
+import { LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { getScopeLog } from './transforms';
 
-const item: TransportItem<EventEvent> = {
-  type: TransportItemType.EVENT,
+const item: TransportItem<LogEvent> = {
+  type: TransportItemType.LOG,
   payload: {
-    name: 'event-name',
-    domain: 'event-domain',
+    context: {},
+    level: LogLevel.INFO,
+    message: 'Faro was initialized',
     timestamp: '2023-01-27T09:53:01.035Z',
-    attributes: {
-      eventAttribute1: 'one',
-      eventAttribute2: 'two',
-    },
     trace: {
       trace_id: 'trace-id',
       span_id: 'span-id',
-    } as const,
+    },
   },
   meta: {
     view: {
@@ -43,13 +40,17 @@ const item: TransportItem<EventEvent> = {
         userAttribute1: 'one',
         userAttribute2: 'two',
       },
-    } as const,
-  } as const,
-};
+    },
+  },
+} as const;
 
-const errorLogRecordPayload = {
+const logLogRecordPayload = {
   timeUnixNano: 1674813181035000000,
-
+  severityNumber: 10, // static value
+  severityText: 'INFO2', // static value
+  body: {
+    stringValue: 'Faro was initialized',
+  },
   attributes: [
     {
       key: 'view.name',
@@ -148,41 +149,12 @@ const errorLogRecordPayload = {
         },
       },
     },
-    {
-      key: 'event.name',
-      value: { stringValue: 'event-name' },
-    },
-    {
-      key: 'event.domain',
-      value: { stringValue: 'event-domain' },
-    },
-    {
-      key: 'event.attributes',
-      value: {
-        kvlistValue: {
-          values: [
-            {
-              key: 'eventAttribute1',
-              value: {
-                stringValue: 'one',
-              },
-            },
-            {
-              key: 'eventAttribute2',
-              value: {
-                stringValue: 'two',
-              },
-            },
-          ],
-        },
-      },
-    },
   ],
 } as const;
 
-describe('getErrorLogRecord', () => {
+describe('getLogLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const logLogRecord = getScopeLog(item).logRecords[0];
-    expect(logLogRecord).toMatchObject(errorLogRecordPayload);
+    expect(logLogRecord).toMatchObject(logLogRecordPayload);
   });
 });

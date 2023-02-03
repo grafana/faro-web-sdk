@@ -1,6 +1,6 @@
 import type { APIEvent } from 'packages/core/src/api';
 import type { TransportItem } from 'packages/core/src/transports';
-import type { Attribute } from './attributes';
+import type { Attribute } from '../attributes';
 
 export interface ResourcePayload {
   attributes: Attribute[];
