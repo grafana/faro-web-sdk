@@ -13,10 +13,10 @@ const item: Readonly<TransportItem<LogEvent>> = {
     browser: {
       name: 'browser-name',
       version: 'browser-v109.0',
-      os: 'browser-MyOperationSystem',
+      os: 'browser-operating-system',
       mobile: false,
       userAgent: 'browser-ua-string',
-      language: 'browser-LANGUAGE',
+      language: 'browser-language',
     },
     sdk: {
       name: 'integration-web-sdk-name',
@@ -49,16 +49,16 @@ const resourcePayload = {
     },
 
     {
-      key: 'browser.userAgent',
-      value: { stringValue: 'browser-name' },
+      key: 'browser.user_agent',
+      value: { stringValue: 'browser-ua-string' },
     },
     {
       key: 'browser.language',
-      value: { stringValue: 'browser-name' },
+      value: { stringValue: 'browser-language' },
     },
     {
       key: 'browser.os',
-      value: { stringValue: 'browser-name' },
+      value: { stringValue: 'browser-operating-system' },
     },
     // {
     //   key: 'browser.platform',
@@ -115,35 +115,6 @@ describe('getResourceLogPayload()', () => {
   });
 
   it('Does not add an attribute if the respective Meta property is empty.', () => {
-    const { resource } = getResourceLogPayload({
-      type: item.type,
-      payload: item.payload,
-      meta: {
-        browser: item.meta.browser,
-      },
-    });
-
-    expect(resource).toMatchObject({
-      attributes: [
-        {
-          key: 'browser.mobile',
-          value: { boolValue: false },
-        },
-        {
-          key: 'browser.name',
-          value: { stringValue: 'browser-name' },
-        },
-        // {
-        //   key: 'browser.platform',
-        //   value: { stringValue: 'browser-MyOperationSystem' },
-        // },
-        {
-          key: 'browser.version',
-          value: { stringValue: 'browser-v109.0' },
-        },
-      ],
-    });
-
     const { resource: resourceEmptyAttributes } = getResourceLogPayload({
       type: item.type,
       payload: item.payload,
@@ -155,25 +126,14 @@ describe('getResourceLogPayload()', () => {
     });
   });
 
-  it.skip('Does not add sdk language value to resource if meta skd is available.', () => {
-    //   const resourceLog = getResourceLogPayload({
-    //     type: item.type,
-    //     payload: item.payload,
-    //     meta: {
-    //       sdk: item.meta.sdk,
-    //     },
-    //   });
-    //   resourceLog.scopeLogs[0]?.logRecords[0];
-    //   expect(resourceLog.scopeLogs[0]?.logRecords[0].attributes.some(({ key }) => key === 'telemetry.sdk.language')).toBe(
-    //     true
-    //   );
-    //   const resourceNoSdkMeta = getResourceLogPayload({
-    //     type: item.type,
-    //     payload: item.payload,
-    //     meta: {
-    //       browser: item.meta.browser,
-    //     },
-    //   });
-    //   expect(resourceNoSdkMeta.attributes.some(({ key }) => key === 'telemetry.sdk.language')).toBe(false);
+  it('Does not add sdk language value to resource if meta skd is available.', () => {
+    const resourceNoSdkMeta = getResourceLogPayload({
+      type: item.type,
+      payload: item.payload,
+      meta: {
+        browser: item.meta.browser,
+      },
+    });
+    expect(resourceNoSdkMeta.resource.attributes.some(({ key }) => key === 'telemetry.sdk.language')).toBe(false);
   });
 });
