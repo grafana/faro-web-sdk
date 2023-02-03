@@ -34,8 +34,8 @@ const SemanticBrowserAttributes = {
   BROWSER_BRANDS: 'browser.brands', // TODO: Q: shall we add this to meta.ts => navigator.userAgentData.brands. !The spec is still experimental!
   BROWSER_PLATFORM: 'browser.platform',
   BROWSER_MOBILE: 'browser.mobile',
-  BROWSER_USER_AGENT: 'browser.user_agent', // TODO: Q: shall we add this to meta.ts => parser.getUA()
-  BROWSER_LANGUAGE: 'browser.language', // TODO: Q: shall we add this to meta.ts => window.navigator.language
+  BROWSER_USER_AGENT: 'browser.user_agent',
+  BROWSER_LANGUAGE: 'browser.language',
 } as const;
 
 export function getResourceLogPayload(transportItem: LogTransportItem) {
@@ -154,10 +154,9 @@ function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorL
   } as const;
 }
 
-// TODO: finiosh after we agreed on data structure
 function getMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>) {
   const { meta, payload } = transportItem;
-  // const timeUnixNano = getTimeUnixNano(payload);
+  // const timeUnixNano = getTimeUnixNano(payload); // TODO: currently we don't have that information in the respective payload. Will be done in a separate PR
 
   return {
     // timeUnixNano,
