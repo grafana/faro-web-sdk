@@ -1,6 +1,4 @@
-import { VERSION } from 'ua-parser-js';
-
-import { BaseInstrumentation, Conventions, Meta, MetaView } from '@grafana/faro-core';
+import { BaseInstrumentation, Conventions, Meta, MetaView, VERSION } from '@grafana/faro-core';
 
 // all this does is send VIEW_CHANGED event
 export class ViewInstrumentation extends BaseInstrumentation {
