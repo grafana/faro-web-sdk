@@ -1,9 +1,10 @@
-import type { ResourceLogPayload } from './transform';
-import type { OtelTransportPayload } from './types';
-
 import { Meta, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { getResourceLogPayload, getScopeLog } from './transform/transform';
+
 import { internalLogger } from '../otlpPayloadLogger';
+
+import type { ResourceLogPayload } from './transform';
+import { getResourceLogPayload, getScopeLog } from './transform/transform';
+import type { OtelTransportPayload } from './types';
 
 interface ResourceLogsMetaMap {
   resourceLog: ResourceLogPayload;
@@ -19,7 +20,7 @@ export class OtelPayload {
     }
   }
 
-  public getPayload(): OtelTransportPayload {
+  getPayload(): OtelTransportPayload {
     return {
       resourceLogs: this.resourceLogsWithMetas.map(({ resourceLog }) => resourceLog),
       resourceSpans: [],

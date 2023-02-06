@@ -1,4 +1,4 @@
-import { ExceptionEvent, TransportItem, TransportItemType, VERSION as SDK_VERSION } from '@grafana/faro-core';
+import { ExceptionEvent, TransportItem, TransportItemType, VERSION } from '@grafana/faro-core';
 
 import { getScopeLog } from './transform';
 
@@ -33,7 +33,7 @@ describe('getScopeLog', () => {
     const { scope, logRecords } = getScopeLog(item);
     expect(scope).toMatchObject({
       name: '@grafana/faro-web-sdk',
-      version: SDK_VERSION,
+      version: VERSION,
     });
     expect(logRecords[0]).toBeTruthy();
   });

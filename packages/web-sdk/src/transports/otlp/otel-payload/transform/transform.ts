@@ -1,4 +1,10 @@
 import {
+  SemanticAttributes,
+  SemanticResourceAttributes,
+  TelemetrySdkLanguageValues,
+} from '@opentelemetry/semantic-conventions';
+
+import {
   EventEvent,
   ExceptionEvent,
   LogEvent,
@@ -6,23 +12,20 @@ import {
   Meta,
   TransportItem,
   TransportItemType,
-  VERSION as SDK_VERSION,
+  VERSION,
 } from '@grafana/faro-core';
-import {
-  SemanticAttributes,
-  SemanticResourceAttributes,
-  TelemetrySdkLanguageValues,
-} from '@opentelemetry/semantic-conventions';
+
 import { internalLogger } from '../../otlpPayloadLogger';
 import { Attribute, isAttribute, toAttribute, toAttributeValue } from '../attribute';
+
 import type {
+  ErrorLogRecordPayload,
+  EventLogRecordPayload,
+  LogLogRecordPayload,
+  LogRecordPayload,
   LogTransportItem,
   ResourcePayload,
   ScopeLog,
-  LogLogRecordPayload,
-  EventLogRecordPayload,
-  ErrorLogRecordPayload,
-  LogRecordPayload,
 } from './types';
 
 /**
@@ -78,7 +81,7 @@ export function getScopeLog(transportItem: LogTransportItem): ScopeLog {
   return {
     scope: {
       name: '@grafana/faro-web-sdk',
-      version: SDK_VERSION,
+      version: VERSION,
     },
     logRecords: [getLogRecord(transportItem)],
   };
