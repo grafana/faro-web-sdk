@@ -1,4 +1,5 @@
 import { EventEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
+
 import { OtelPayload } from './OtelPayload';
 
 describe('OtelPayload', () => {

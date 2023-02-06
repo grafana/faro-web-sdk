@@ -1,4 +1,5 @@
 import { ExceptionEvent, TransportItem, TransportItemType, VERSION as SDK_VERSION } from '@grafana/faro-core';
+
 import { getScopeLog } from './transform';
 
 const item: TransportItem<ExceptionEvent> = {
