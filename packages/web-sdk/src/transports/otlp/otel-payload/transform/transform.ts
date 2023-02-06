@@ -32,7 +32,7 @@ import type {
  * Attributes are as defined by the Otel docs
  */
 const SemanticBrowserAttributes = {
-  BROWSER_BRANDS: 'browser.brands', // TODO: Q: shall we add this to meta.ts => navigator.userAgentData.brands. !The spec is still experimental!
+  BROWSER_BRANDS: 'browser.brands',
   BROWSER_PLATFORM: 'browser.platform',
   BROWSER_MOBILE: 'browser.mobile',
   BROWSER_USER_AGENT: 'browser.user_agent',
@@ -57,7 +57,7 @@ function getResource(transportItem: LogTransportItem): Readonly<ResourcePayload>
       toAttribute(SemanticBrowserAttributes.BROWSER_USER_AGENT, browser?.userAgent),
       toAttribute(SemanticBrowserAttributes.BROWSER_LANGUAGE, browser?.language),
       toAttribute('grafana.browser.os', browser?.os),
-      // toAttribute(SemanticBrowserAttributes.BROWSER_BRANDS, browser?.brands), // TODO: shall we provide this to browser which already support Navigator.userAgentData an
+      // toAttribute(SemanticBrowserAttributes.BROWSER_BRANDS, browser?.brands),
       toAttribute('grafana.browser.name', browser?.name),
       toAttribute('grafana.browser.version', browser?.version),
 
@@ -148,7 +148,7 @@ function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorL
       ...getCommonLogAttributes(meta),
       toAttribute(SemanticAttributes.EXCEPTION_TYPE, payload.type),
       toAttribute(SemanticAttributes.EXCEPTION_MESSAGE, payload.value),
-      // toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined), // TODO: currently we don't have the value yet in the respective payload. Will be done in a separate PR
+      // toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined),
       toAttribute('grafana.error.stacktrace', payload.stacktrace),
     ].filter(isAttribute),
     traceId: payload.trace?.trace_id,
@@ -159,10 +159,6 @@ function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorL
 function getMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>) {
   const { meta, payload } = transportItem;
   const timeUnixNano = getTimeUnixNano(payload.timestamp);
-  // TODO: Currently the values object allows to add multiple entries.
-  // But we do not use this and only add a single metric.
-  // We should align the respective Type and Functions to reflect that we only can add a single entry.
-  // We need to deprecate the old behavior.
   const [measurementName, measurementValue] = Object.entries(payload.values);
 
   return {

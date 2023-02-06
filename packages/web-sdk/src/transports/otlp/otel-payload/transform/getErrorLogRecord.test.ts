@@ -168,7 +168,6 @@ const errorLogRecordPayload = {
       key: 'exception.message',
       value: { stringValue: 'Error message' },
     },
-    // TODO: exception.stacktrace is not supported yet. It needs a little change in the code
     // {
     //   key: 'exception.stacktrace',
     //   value: { stringValue: 'The unparsed stacktrace' },

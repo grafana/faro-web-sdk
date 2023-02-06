@@ -48,7 +48,6 @@ export class OtelPayload {
 
         break;
       case TransportItemType.TRACE:
-        // TODO: implement trace transform
         break;
       default:
         internalLogger.error(`Unknown TransportItemType: ${type}`);
