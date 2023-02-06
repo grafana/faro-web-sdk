@@ -57,7 +57,7 @@ const resourcePayload = {
       value: { stringValue: 'browser-language' },
     },
     {
-      key: 'browser.os',
+      key: 'grafana.browser.os',
       value: { stringValue: 'browser-operating-system' },
     },
     // {
@@ -65,11 +65,11 @@ const resourcePayload = {
     //   value: { stringValue: 'browser-MyOperationSystem' },
     // },
     {
-      key: 'browser.name',
+      key: 'grafana.browser.name',
       value: { stringValue: 'browser-name' },
     },
     {
-      key: 'browser.version',
+      key: 'grafana.browser.version',
       value: { stringValue: 'browser-v109.0' },
     },
     {

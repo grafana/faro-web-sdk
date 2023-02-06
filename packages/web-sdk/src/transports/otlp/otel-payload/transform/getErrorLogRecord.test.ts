@@ -64,7 +64,7 @@ const errorLogRecordPayload = {
 
   attributes: [
     {
-      key: 'view.name',
+      key: 'grafana.view.name',
       value: {
         stringValue: 'view-default',
       },
@@ -76,13 +76,13 @@ const errorLogRecordPayload = {
       },
     },
     {
-      key: 'page.id',
+      key: 'grafana.page.id',
       value: {
         stringValue: 'page-id',
       },
     },
     {
-      key: 'page.attributes',
+      key: 'grafana.page.attributes',
       value: {
         kvlistValue: {
           values: [
@@ -103,11 +103,11 @@ const errorLogRecordPayload = {
       },
     },
     {
-      key: 'session.id',
+      key: 'grafana.session.id',
       value: { stringValue: 'session-abcd1234' },
     },
     {
-      key: 'session.attributes',
+      key: 'grafana.session.attributes',
       value: {
         kvlistValue: {
           values: [
@@ -132,15 +132,15 @@ const errorLogRecordPayload = {
       value: { stringValue: 'user-abc123' },
     },
     {
-      key: 'enduser.name',
+      key: 'grafana.enduser.name',
       value: { stringValue: 'user-joe' },
     },
     {
-      key: 'enduser.email',
+      key: 'grafana.enduser.email',
       value: { stringValue: 'user@example.com' },
     },
     {
-      key: 'enduser.attributes',
+      key: 'grafana.enduser.attributes',
       value: {
         kvlistValue: {
           values: [
@@ -173,7 +173,7 @@ const errorLogRecordPayload = {
     //   value: { stringValue: 'The unparsed stacktrace' },
     // },
     {
-      key: 'error.stacktrace',
+      key: 'grafana.error.stacktrace',
       value: {
         kvlistValue: {
           values: [
