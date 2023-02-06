@@ -1,4 +1,4 @@
-import { getCLS, getFCP, getFID, getINP, getLCP, getTTFB } from 'web-vitals';
+import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB } from 'web-vitals';
 
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
@@ -7,12 +7,12 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   static mapping = {
-    cls: getCLS,
-    fcp: getFCP,
-    fid: getFID,
-    inp: getINP,
-    lcp: getLCP,
-    ttfb: getTTFB,
+    cls: onCLS,
+    fcp: onFCP,
+    fid: onFID,
+    inp: onINP,
+    lcp: onLCP,
+    ttfb: onTTFB,
   };
 
   initialize(): void {
