@@ -4,6 +4,7 @@ export interface MeasurementEvent<V extends { [label: string]: number } = { [lab
   type: string;
   values: V;
 
+  timestamp: string;
   trace?: TraceContext;
 }
 

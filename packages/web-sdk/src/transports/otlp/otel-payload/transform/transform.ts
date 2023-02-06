@@ -158,15 +158,20 @@ function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorL
 
 function getMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>) {
   const { meta, payload } = transportItem;
-  // const timeUnixNano = getTimeUnixNano(payload); // TODO: currently we don't have that information in the respective payload. Will be done in a separate PR
+  const timeUnixNano = getTimeUnixNano(payload.timestamp);
+  // TODO: Currently the values object allows to add multiple entries.
+  // But we do not use this and only add a single metric.
+  // We should align the respective Type and Functions to reflect that we only can add a single entry.
+  // We need to deprecate the old behavior.
+  const [measurementName, measurementValue] = Object.entries(payload.values);
 
   return {
-    // timeUnixNano,
+    timeUnixNano,
     attributes: [
       ...getCommonLogAttributes(meta),
       toAttribute('measurement.type', payload.type),
-      toAttribute('measurement.name', undefined),
-      toAttribute('measurement.values', payload.values),
+      toAttribute('measurement.name', measurementName),
+      toAttribute('measurement.value', measurementValue),
     ].filter(isAttribute),
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
