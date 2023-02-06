@@ -8,7 +8,7 @@ export interface ResourcePayload {
 
 export interface ScopeLog {
   scope: { name: string; version: string };
-  logRecords: (unknown | undefined)[]; // TODO add correct type
+  logRecords: LogRecordPayload[];
 }
 
 export type LogRecordPayload =
