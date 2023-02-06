@@ -13,5 +13,9 @@ export interface PushMeasurementOptions {
 }
 
 export interface MeasurementsAPI {
-  pushMeasurement: (payload: MeasurementEvent, options?: PushMeasurementOptions) => void;
+  pushMeasurement: (
+    // TODO: change this back once we have aligned the measurement event types: See: https://github.com/grafana/faro-web-sdk/issues/110
+    payload: Omit<MeasurementEvent, 'timestamp'> & Partial<Pick<MeasurementEvent, 'timestamp'>>,
+    options?: PushMeasurementOptions
+  ) => void;
 }
