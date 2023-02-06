@@ -159,7 +159,7 @@ function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorL
 function getMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>) {
   const { meta, payload } = transportItem;
   const timeUnixNano = getTimeUnixNano(payload.timestamp);
-  const [measurementName, measurementValue] = Object.entries(payload.values);
+  const [measurementName, measurementValue] = Object.entries(payload.values).flat();
 
   return {
     timeUnixNano,

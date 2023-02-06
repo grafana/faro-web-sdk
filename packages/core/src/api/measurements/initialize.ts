@@ -28,7 +28,7 @@ export function initializeMeasurementsAPI(
         payload: {
           ...payload,
           trace: tracesApi.getTraceContext(),
-          timestamp: getCurrentTimestamp(),
+          timestamp: payload.timestamp ?? getCurrentTimestamp(),
         },
         meta: metas.value,
       };
