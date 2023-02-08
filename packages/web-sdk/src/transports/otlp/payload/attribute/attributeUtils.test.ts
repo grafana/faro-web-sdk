@@ -63,6 +63,7 @@ describe('toAttributeValue()', () => {
     { v: 1.23, expected: { doubleValue: 1.23 } },
     { v: true, expected: { boolValue: true } },
     { v: ['foo', 'bar'], expected: { arrayValue: { values: [{ stringValue: 'foo' }, { stringValue: 'bar' }] } } },
+    { v: new Uint8Array(2), expected: { bytesValue: { '0': 0, '1': 0 } } },
     {
       v: {
         a: 'a',

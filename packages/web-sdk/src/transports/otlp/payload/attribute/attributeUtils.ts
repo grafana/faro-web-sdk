@@ -23,6 +23,10 @@ export function toAttributeValue(value: unknown): AttributeValue {
     return { arrayValue: { values: value.map(toAttributeValue) } };
   }
 
+  if (value instanceof Uint8Array) {
+    return { bytesValue: value };
+  }
+
   if (isObject(value)) {
     return {
       kvlistValue: {
