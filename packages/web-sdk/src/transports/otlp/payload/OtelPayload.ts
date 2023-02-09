@@ -24,6 +24,7 @@ export class OtelPayload {
     return {
       resourceLogs: this.resourceLogsWithMetas.map(({ resourceLog }) => resourceLog),
       resourceSpans: [],
+      resourceMetrics: [],
     } as const;
   }
 
