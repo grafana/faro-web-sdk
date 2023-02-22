@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0-beta7 (unreleased)
+## 1.0.0
 
 - Fix circular dependency in the `core` package
 - Added export for the `Extension` interface in `core`, `web-sdk` and `react` packages
