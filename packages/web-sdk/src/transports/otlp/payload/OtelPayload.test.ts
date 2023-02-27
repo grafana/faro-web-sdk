@@ -72,4 +72,41 @@ describe('OtelPayload', () => {
     });
     expect(payload.resourceSpans.length).toBe(0);
   });
+
+  it('Add adds a new ScopeLog to existing resource log because they have the same meta', () => {
+    const transportItem = {
+      ...logItem,
+      meta: { browser: { name: 'Firefox' } },
+    };
+
+    const otelPayload = new OtelPayload(transportItem);
+
+    otelPayload.addResourceItem({
+      ...transportItem,
+      payload: {
+        ...transportItem.payload,
+        name: 'event-name-2',
+      },
+    });
+
+    const payload = otelPayload.getPayload();
+    expect(payload.resourceLogs.length).toBe(1);
+    expect(payload.resourceLogs[0]?.scopeLogs.length).toBe(2);
+  });
+
+  it('Add creates a new ResourceLog because they have different metas', () => {
+    const otelPayload = new OtelPayload({
+      ...logItem,
+      meta: { browser: { name: 'Firefox' } },
+    });
+
+    otelPayload.addResourceItem({
+      ...logItem,
+      meta: { browser: { name: 'Chrome' } },
+    });
+
+    const payload = otelPayload.getPayload();
+    expect(payload.resourceLogs.length).toBe(2);
+    expect(payload.resourceLogs[0]?.resource).not.toMatchObject(payload.resourceLogs[1]?.resource ?? {});
+  });
 });

@@ -1,4 +1,4 @@
-import { Meta, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { deepEqual, Meta, TransportItem, TransportItemType } from '@grafana/faro-core';
 
 import { internalLogger } from '../otlpPayloadLogger';
 
@@ -36,7 +36,7 @@ export class OtelPayload {
       case TransportItemType.EXCEPTION:
       case TransportItemType.EVENT:
       case TransportItemType.MEASUREMENT:
-        const resourceLogWithMeta = this.resourceLogsWithMetas.find(({ resourceLog }) => resourceLog);
+        const resourceLogWithMeta = this.resourceLogsWithMetas.find(({ meta }) => deepEqual(transportItem.meta, meta));
 
         if (resourceLogWithMeta) {
           const { resourceLog } = resourceLogWithMeta;
