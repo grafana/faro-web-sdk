@@ -1,3 +1,5 @@
+import type { IKeyValue } from '@opentelemetry/otlp-transformer';
+
 import {
   SemanticAttributes,
   SemanticResourceAttributes,
@@ -16,7 +18,7 @@ import {
 } from '@grafana/faro-core';
 
 import { internalLogger } from '../../otlpPayloadLogger';
-import { Attribute, isAttribute, toAttribute, toAttributeValue } from '../attribute';
+import { isAttribute, toAttribute, toAttributeValue } from '../attribute';
 
 import type {
   ErrorLogRecordPayload,
@@ -135,7 +137,7 @@ function getEventLogRecord(transportItem: TransportItem<EventEvent>): EventLogRe
       toAttribute('event.name', payload.name), // No prefix because this is a semantic attribute. But event.name constant is currently missing in sematic-conventions npm package
       toAttribute('event.domain', payload.domain), // No prefix because this is a semantic attribute. But event.domain constant is currently missing in sematic-conventions npm package
       toAttribute('grafana.event.attributes', payload.attributes),
-    ].filter((item): item is Attribute => Boolean(item)),
+    ].filter(isAttribute),
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
   } as const;
@@ -177,7 +179,7 @@ function getMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>)
   } as const;
 }
 
-function getCommonLogAttributes(meta: Meta): Attribute[] {
+function getCommonLogAttributes(meta: Meta): IKeyValue[] {
   const { view, page, session, user } = meta;
 
   return [

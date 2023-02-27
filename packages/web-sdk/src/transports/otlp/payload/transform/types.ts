@@ -1,9 +1,9 @@
+import type { IKeyValue } from '@opentelemetry/otlp-transformer';
+
 import type { APIEvent, TransportItem } from '@grafana/faro-core';
 
-import type { Attribute } from '../attribute';
-
 export interface ResourcePayload {
-  attributes: Attribute[];
+  attributes: IKeyValue[];
 }
 
 export interface ScopeLog {
@@ -23,7 +23,7 @@ export interface LogLogRecordPayload {
   severityNumber: number;
   severityText: string;
   body: { stringValue: string };
-  attributes: Attribute[];
+  attributes: IKeyValue[];
   traceId?: string;
   spanId?: string;
 }
@@ -31,20 +31,20 @@ export interface LogLogRecordPayload {
 export interface EventLogRecordPayload {
   timeUnixNano: number;
   body: { stringValue: string };
-  attributes: Attribute[];
+  attributes: IKeyValue[];
   traceId?: string;
   spanId?: string;
 }
 
 export interface ErrorLogRecordPayload {
   readonly timeUnixNano: number;
-  readonly attributes: Attribute[];
+  readonly attributes: IKeyValue[];
   readonly traceId?: string;
   readonly spanId?: string;
 }
 
 export interface MeasurementLogRecord {
-  readonly attributes: Attribute[];
+  readonly attributes: IKeyValue[];
   readonly traceId?: string;
   readonly spanId?: string;
 }

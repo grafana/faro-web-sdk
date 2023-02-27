@@ -1,8 +1,8 @@
+import type { IAnyValue, IKeyValue } from '@opentelemetry/otlp-transformer';
+
 import { isArray, isBoolean, isInt, isNumber, isObject, isString } from '@grafana/faro-core';
 
-import type { Attribute, AttributeValue } from './types';
-
-export function toAttributeValue(value: unknown): AttributeValue {
+export function toAttributeValue(value: unknown): IAnyValue {
   if (isString(value)) {
     return { stringValue: value };
   }
@@ -40,7 +40,7 @@ export function toAttributeValue(value: unknown): AttributeValue {
   return {};
 }
 
-export function toAttribute(attributeName: string, attributeValue: any): Attribute | undefined {
+export function toAttribute(attributeName: string, attributeValue: any): IKeyValue | undefined {
   if (attributeValue == null || attributeValue === '') {
     return undefined;
   }
@@ -51,6 +51,6 @@ export function toAttribute(attributeName: string, attributeValue: any): Attribu
   };
 }
 
-export function isAttribute(item: any): item is Attribute {
+export function isAttribute(item: any): item is IKeyValue {
   return Boolean(item) && typeof item?.key === 'string' && typeof item?.value !== 'undefined';
 }
