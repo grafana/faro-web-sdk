@@ -1,6 +1,4 @@
-import { VERSION } from 'ua-parser-js';
-
-import { BaseInstrumentation, Conventions, Meta, MetaSession } from '@grafana/faro-core';
+import { BaseInstrumentation, Conventions, Meta, MetaSession, VERSION } from '@grafana/faro-core';
 
 // all this does is send SESSION_START event
 export class SessionInstrumentation extends BaseInstrumentation {
