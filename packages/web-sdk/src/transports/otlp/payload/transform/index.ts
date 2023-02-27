@@ -9,4 +9,4 @@ export type {
   LogRecordPayload,
 } from './types';
 
-export { getScopeLog, getResourceLogPayload } from './transform';
+export { toScopeLog, toResourceLog } from './transform';

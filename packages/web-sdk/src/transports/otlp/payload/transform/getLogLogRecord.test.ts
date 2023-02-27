@@ -1,6 +1,6 @@
 import { LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
 
-import { getScopeLog } from './transform';
+import { toScopeLog } from './transform';
 
 const item: TransportItem<LogEvent> = {
   type: TransportItemType.LOG,
@@ -155,7 +155,7 @@ const logLogRecordPayload = {
 
 describe('getLogLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
-    const logLogRecord = getScopeLog(item).logRecords[0];
+    const logLogRecord = toScopeLog(item).logRecords[0];
     expect(logLogRecord).toMatchObject(logLogRecordPayload);
   });
 });

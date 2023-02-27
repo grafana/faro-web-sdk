@@ -1,6 +1,6 @@
 import { MeasurementEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
 
-import { getScopeLog } from './transform';
+import { toScopeLog } from './transform';
 
 const item: TransportItem<MeasurementEvent> = {
   type: TransportItemType.MEASUREMENT,
@@ -162,7 +162,7 @@ const measurementLogRecordPayload = {
 
 describe('getMeasurementLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
-    const measurementLogRecord = getScopeLog(item).logRecords[0];
+    const measurementLogRecord = toScopeLog(item).logRecords[0];
     expect(measurementLogRecord).toMatchObject(measurementLogRecordPayload);
   });
 });

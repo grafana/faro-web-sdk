@@ -2,7 +2,7 @@ import { deepEqual, Meta, TransportItem, TransportItemType } from '@grafana/faro
 
 import { internalLogger } from '../otlpPayloadLogger';
 
-import { getResourceLogPayload, getScopeLog } from './transform';
+import { toResourceLog, toScopeLog } from './transform';
 import type { ResourceLogPayload } from './transform';
 import type { OtelTransportPayload } from './types';
 
@@ -40,10 +40,10 @@ export class OtelPayload {
 
         if (resourceLogWithMeta) {
           const { resourceLog } = resourceLogWithMeta;
-          resourceLog.scopeLogs.push(getScopeLog(transportItem));
+          resourceLog.scopeLogs.push(toScopeLog(transportItem));
         } else {
           this.resourceLogsWithMetas.push({
-            resourceLog: getResourceLogPayload(transportItem),
+            resourceLog: toResourceLog(transportItem),
             meta,
           });
         }

@@ -44,16 +44,16 @@ const SemanticBrowserAttributes = {
   BROWSER_LANGUAGE: 'browser.language',
 } as const;
 
-export function getResourceLogPayload(transportItem: LogTransportItem) {
-  const resource = getResource(transportItem);
+export function toResourceLog(transportItem: LogTransportItem) {
+  const resource = toResource(transportItem);
 
   return {
     resource,
-    scopeLogs: [getScopeLog(transportItem)],
+    scopeLogs: [toScopeLog(transportItem)],
   };
 }
 
-function getResource(transportItem: LogTransportItem): Readonly<ResourcePayload> {
+function toResource(transportItem: LogTransportItem): Readonly<ResourcePayload> {
   const { browser, sdk, app } = transportItem.meta;
 
   return {
@@ -79,28 +79,28 @@ function getResource(transportItem: LogTransportItem): Readonly<ResourcePayload>
   };
 }
 
-export function getScopeLog(transportItem: LogTransportItem): ScopeLog {
+export function toScopeLog(transportItem: LogTransportItem): ScopeLog {
   return {
     scope: {
       name: '@grafana/faro-web-sdk',
       version: VERSION,
     },
-    logRecords: [getLogRecord(transportItem)],
+    logRecords: [toLogRecord(transportItem)],
   };
 }
 
-function getLogRecord(transportItem: LogTransportItem): LogRecordPayload {
+function toLogRecord(transportItem: LogTransportItem): LogRecordPayload {
   const { type } = transportItem;
 
   switch (type) {
     case TransportItemType.LOG:
-      return getLogLogRecord(transportItem as TransportItem<LogEvent>);
+      return toLogLogRecord(transportItem as TransportItem<LogEvent>);
     case TransportItemType.EXCEPTION:
-      return getErrorLogRecord(transportItem as TransportItem<ExceptionEvent>);
+      return toErrorLogRecord(transportItem as TransportItem<ExceptionEvent>);
     case TransportItemType.EVENT:
-      return getEventLogRecord(transportItem as TransportItem<EventEvent>);
+      return toEventLogRecord(transportItem as TransportItem<EventEvent>);
     case TransportItemType.MEASUREMENT:
-      return getMeasurementLogRecord(transportItem as TransportItem<MeasurementEvent>);
+      return toMeasurementLogRecord(transportItem as TransportItem<MeasurementEvent>);
     default:
       const error = `Unknown TransportItemType: ${type}`;
       internalLogger.error(error);
@@ -108,9 +108,9 @@ function getLogRecord(transportItem: LogTransportItem): LogRecordPayload {
   }
 }
 
-function getLogLogRecord(transportItem: TransportItem<LogEvent>): LogLogRecordPayload {
+function toLogLogRecord(transportItem: TransportItem<LogEvent>): LogLogRecordPayload {
   const { meta, payload } = transportItem;
-  const timeUnixNano = getTimeUnixNano(payload.timestamp);
+  const timeUnixNano = toTimeUnixNano(payload.timestamp);
   const body = toAttributeValue(payload.message) as { stringValue: string; key: string };
 
   return {
@@ -124,9 +124,9 @@ function getLogLogRecord(transportItem: TransportItem<LogEvent>): LogLogRecordPa
   } as const;
 }
 
-function getEventLogRecord(transportItem: TransportItem<EventEvent>): EventLogRecordPayload {
+function toEventLogRecord(transportItem: TransportItem<EventEvent>): EventLogRecordPayload {
   const { meta, payload } = transportItem;
-  const timeUnixNano = getTimeUnixNano(payload.timestamp);
+  const timeUnixNano = toTimeUnixNano(payload.timestamp);
   const body = toAttributeValue(payload.name) as { stringValue: string; key: string };
 
   return {
@@ -143,9 +143,9 @@ function getEventLogRecord(transportItem: TransportItem<EventEvent>): EventLogRe
   } as const;
 }
 
-function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorLogRecordPayload {
+function toErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorLogRecordPayload {
   const { meta, payload } = transportItem;
-  const timeUnixNano = getTimeUnixNano(payload.timestamp);
+  const timeUnixNano = toTimeUnixNano(payload.timestamp);
 
   return {
     timeUnixNano,
@@ -161,9 +161,9 @@ function getErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorL
   } as const;
 }
 
-function getMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>) {
+function toMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>) {
   const { meta, payload } = transportItem;
-  const timeUnixNano = getTimeUnixNano(payload.timestamp);
+  const timeUnixNano = toTimeUnixNano(payload.timestamp);
   const [measurementName, measurementValue] = Object.entries(payload.values).flat();
 
   return {
@@ -196,6 +196,6 @@ function getCommonLogAttributes(meta: Meta): IKeyValue[] {
   ].filter(isAttribute);
 }
 
-function getTimeUnixNano(timestamp: string): number {
+function toTimeUnixNano(timestamp: string): number {
   return Date.parse(timestamp) * 1e6;
 }

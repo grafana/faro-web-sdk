@@ -1,6 +1,6 @@
 import { LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
 
-import { getResourceLogPayload } from './transform';
+import { toResourceLog } from './transform';
 
 const item: Readonly<TransportItem<LogEvent>> = {
   type: TransportItemType.LOG,
@@ -103,7 +103,7 @@ const resourcePayload = {
 
 describe('getResourceLogPayload()', () => {
   it('Builds a valid ResourceLogPayload structure', () => {
-    const resourceLogPayload = getResourceLogPayload(item);
+    const resourceLogPayload = toResourceLog(item);
     expect(resourceLogPayload).toBeTruthy();
     expect(resourceLogPayload.resource).toBeTruthy();
     expect(resourceLogPayload.scopeLogs).toBeTruthy();
@@ -111,12 +111,12 @@ describe('getResourceLogPayload()', () => {
   });
 
   it('Builds resource payload object for given transport item.', () => {
-    const { resource } = getResourceLogPayload(item);
+    const { resource } = toResourceLog(item);
     expect(resource).toMatchObject(resourcePayload);
   });
 
   it('Does not add an attribute if the respective Meta property is empty.', () => {
-    const { resource: resourceEmptyAttributes } = getResourceLogPayload({
+    const { resource: resourceEmptyAttributes } = toResourceLog({
       type: item.type,
       payload: item.payload,
       meta: {},
@@ -128,7 +128,7 @@ describe('getResourceLogPayload()', () => {
   });
 
   it('Does not add sdk language value to resource if meta skd is available.', () => {
-    const resourceNoSdkMeta = getResourceLogPayload({
+    const resourceNoSdkMeta = toResourceLog({
       type: item.type,
       payload: item.payload,
       meta: {
@@ -139,7 +139,7 @@ describe('getResourceLogPayload()', () => {
   });
 
   it('Adds a ScopeLog.', () => {
-    const scopeLog = getResourceLogPayload(item).scopeLogs[0];
+    const scopeLog = toResourceLog(item).scopeLogs[0];
     expect(scopeLog).toBeTruthy();
   });
 });

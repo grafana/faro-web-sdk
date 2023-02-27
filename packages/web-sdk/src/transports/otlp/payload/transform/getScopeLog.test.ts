@@ -1,6 +1,6 @@
 import { ExceptionEvent, TransportItem, TransportItemType, VERSION } from '@grafana/faro-core';
 
-import { getScopeLog } from './transform';
+import { toScopeLog } from './transform';
 
 const item: TransportItem<ExceptionEvent> = {
   type: TransportItemType.EXCEPTION,
@@ -30,7 +30,7 @@ const item: TransportItem<ExceptionEvent> = {
 
 describe('getScopeLog', () => {
   it('Builds valid ScopeLog.', () => {
-    const { scope, logRecords } = getScopeLog(item);
+    const { scope, logRecords } = toScopeLog(item);
     expect(scope).toMatchObject({
       name: '@grafana/faro-web-sdk',
       version: VERSION,
