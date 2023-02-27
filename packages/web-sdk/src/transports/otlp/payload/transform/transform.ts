@@ -20,15 +20,7 @@ import {
 import { internalLogger } from '../../otlpPayloadLogger';
 import { isAttribute, toAttribute, toAttributeValue } from '../attribute';
 
-import type {
-  ErrorLogRecordPayload,
-  EventLogRecordPayload,
-  LogLogRecordPayload,
-  LogRecordPayload,
-  LogTransportItem,
-  ResourcePayload,
-  ScopeLog,
-} from './types';
+import type { LogRecord, LogTransportItem, Resource, ScopeLog } from './types';
 
 /**
  * Seems currently to be missing in the semantic-conventions npm package.
@@ -53,7 +45,7 @@ export function toResourceLog(transportItem: LogTransportItem) {
   };
 }
 
-function toResource(transportItem: LogTransportItem): Readonly<ResourcePayload> {
+function toResource(transportItem: LogTransportItem): Readonly<Resource> {
   const { browser, sdk, app } = transportItem.meta;
 
   return {
@@ -89,7 +81,7 @@ export function toScopeLog(transportItem: LogTransportItem): ScopeLog {
   };
 }
 
-function toLogRecord(transportItem: LogTransportItem): LogRecordPayload {
+function toLogRecord(transportItem: LogTransportItem): LogRecord {
   const { type } = transportItem;
 
   switch (type) {
@@ -108,7 +100,7 @@ function toLogRecord(transportItem: LogTransportItem): LogRecordPayload {
   }
 }
 
-function toLogLogRecord(transportItem: TransportItem<LogEvent>): LogLogRecordPayload {
+function toLogLogRecord(transportItem: TransportItem<LogEvent>): LogRecord {
   const { meta, payload } = transportItem;
   const timeUnixNano = toTimeUnixNano(payload.timestamp);
   const body = toAttributeValue(payload.message) as { stringValue: string; key: string };
@@ -124,7 +116,7 @@ function toLogLogRecord(transportItem: TransportItem<LogEvent>): LogLogRecordPay
   } as const;
 }
 
-function toEventLogRecord(transportItem: TransportItem<EventEvent>): EventLogRecordPayload {
+function toEventLogRecord(transportItem: TransportItem<EventEvent>): LogRecord {
   const { meta, payload } = transportItem;
   const timeUnixNano = toTimeUnixNano(payload.timestamp);
   const body = toAttributeValue(payload.name) as { stringValue: string; key: string };
@@ -143,7 +135,7 @@ function toEventLogRecord(transportItem: TransportItem<EventEvent>): EventLogRec
   } as const;
 }
 
-function toErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorLogRecordPayload {
+function toErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): LogRecord {
   const { meta, payload } = transportItem;
   const timeUnixNano = toTimeUnixNano(payload.timestamp);
 
@@ -161,7 +153,7 @@ function toErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): ErrorLo
   } as const;
 }
 
-function toMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>) {
+function toMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>): LogRecord {
   const { meta, payload } = transportItem;
   const timeUnixNano = toTimeUnixNano(payload.timestamp);
   const [measurementName, measurementValue] = Object.entries(payload.values).flat();

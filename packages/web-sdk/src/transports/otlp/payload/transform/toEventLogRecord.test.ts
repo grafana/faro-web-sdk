@@ -1,28 +1,16 @@
-import { ExceptionEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { EventEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
 
 import { toScopeLog } from './transform';
 
-const item: TransportItem<ExceptionEvent> = {
-  type: TransportItemType.EXCEPTION,
+const item: TransportItem<EventEvent> = {
+  type: TransportItemType.EVENT,
   payload: {
+    name: 'event-name',
+    domain: 'event-domain',
     timestamp: '2023-01-27T09:53:01.035Z',
-    type: 'Error',
-    value: 'Error message',
-    stacktrace: {
-      frames: [
-        {
-          filename: 'filename-one',
-          function: 'throwError',
-          colno: 21,
-          lineno: 11,
-        },
-        {
-          filename: 'filename-two',
-          function: 'HTMLUnknownElement.callCallback2',
-          colno: 2345,
-          lineno: 42,
-        },
-      ],
+    attributes: {
+      eventAttribute1: 'one',
+      eventAttribute2: 'two',
     },
     trace: {
       trace_id: 'trace-id',
@@ -60,7 +48,7 @@ const item: TransportItem<ExceptionEvent> = {
   } as const,
 };
 
-const errorLogRecordPayload = {
+const matchEventLogRecord = {
   timeUnixNano: 1674813181035000000,
 
   attributes: [
@@ -162,73 +150,28 @@ const errorLogRecordPayload = {
       },
     },
     {
-      key: 'exception.type',
-      value: { stringValue: 'Error' },
+      key: 'event.name',
+      value: { stringValue: 'event-name' },
     },
     {
-      key: 'exception.message',
-      value: { stringValue: 'Error message' },
+      key: 'event.domain',
+      value: { stringValue: 'event-domain' },
     },
-    // {
-    //   key: 'exception.stacktrace',
-    //   value: { stringValue: 'The unparsed stacktrace' },
-    // },
     {
-      key: 'grafana.error.stacktrace',
+      key: 'grafana.event.attributes',
       value: {
         kvlistValue: {
           values: [
             {
-              key: 'frames',
+              key: 'eventAttribute1',
               value: {
-                arrayValue: {
-                  values: [
-                    {
-                      kvlistValue: {
-                        values: [
-                          {
-                            key: 'filename',
-                            value: { stringValue: 'filename-one' },
-                          },
-                          {
-                            key: 'function',
-                            value: { stringValue: 'throwError' },
-                          },
-                          {
-                            key: 'colno',
-                            value: { intValue: 21 },
-                          },
-                          {
-                            key: 'lineno',
-                            value: { intValue: 11 },
-                          },
-                        ],
-                      },
-                    },
-                    {
-                      kvlistValue: {
-                        values: [
-                          {
-                            key: 'filename',
-                            value: { stringValue: 'filename-two' },
-                          },
-                          {
-                            key: 'function',
-                            value: { stringValue: 'HTMLUnknownElement.callCallback2' },
-                          },
-                          {
-                            key: 'colno',
-                            value: { intValue: 2345 },
-                          },
-                          {
-                            key: 'lineno',
-                            value: { intValue: 42 },
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
+                stringValue: 'one',
+              },
+            },
+            {
+              key: 'eventAttribute2',
+              value: {
+                stringValue: 'two',
               },
             },
           ],
@@ -238,9 +181,9 @@ const errorLogRecordPayload = {
   ],
 } as const;
 
-describe('getErrorLogRecord', () => {
+describe('toEventLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
-    const logLogRecord = toScopeLog(item).logRecords[0];
-    expect(logLogRecord).toMatchObject(errorLogRecordPayload);
+    const eventLogRecord = toScopeLog(item).logRecords[0];
+    expect(eventLogRecord).toMatchObject(matchEventLogRecord);
   });
 });

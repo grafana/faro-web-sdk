@@ -28,8 +28,8 @@ const item: TransportItem<ExceptionEvent> = {
   meta: {} as const,
 };
 
-describe('getScopeLog', () => {
-  it('Builds valid ScopeLog.', () => {
+describe('toScopeLog', () => {
+  it('Builds a valid ScopeLog.', () => {
     const { scope, logRecords } = toScopeLog(item);
     expect(scope).toMatchObject({
       name: '@grafana/faro-web-sdk',

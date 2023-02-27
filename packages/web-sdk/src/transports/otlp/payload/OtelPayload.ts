@@ -3,11 +3,11 @@ import { deepEqual, Meta, TransportItem, TransportItemType } from '@grafana/faro
 import { internalLogger } from '../otlpPayloadLogger';
 
 import { toResourceLog, toScopeLog } from './transform';
-import type { ResourceLogPayload } from './transform';
+import type { ResourceLog } from './transform';
 import type { OtelTransportPayload } from './types';
 
 interface ResourceLogsMetaMap {
-  resourceLog: ResourceLogPayload;
+  resourceLog: ResourceLog;
   meta: Meta;
 }
 

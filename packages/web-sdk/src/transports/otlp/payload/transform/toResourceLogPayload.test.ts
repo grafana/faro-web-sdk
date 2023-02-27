@@ -42,7 +42,7 @@ const item: Readonly<TransportItem<LogEvent>> = {
   },
 };
 
-const resourcePayload = {
+const matchResourcePayload = {
   attributes: [
     {
       key: 'browser.mobile',
@@ -101,18 +101,18 @@ const resourcePayload = {
   ],
 } as const;
 
-describe('getResourceLogPayload()', () => {
-  it('Builds a valid ResourceLogPayload structure', () => {
-    const resourceLogPayload = toResourceLog(item);
-    expect(resourceLogPayload).toBeTruthy();
-    expect(resourceLogPayload.resource).toBeTruthy();
-    expect(resourceLogPayload.scopeLogs).toBeTruthy();
-    expect(Array.isArray(resourceLogPayload.scopeLogs)).toBe(true);
+describe('toResourceLog()', () => {
+  it('Builds a valid ResourceLog structure', () => {
+    const resourceLog = toResourceLog(item);
+    expect(resourceLog).toBeTruthy();
+    expect(resourceLog.resource).toBeTruthy();
+    expect(resourceLog.scopeLogs).toBeTruthy();
+    expect(Array.isArray(resourceLog.scopeLogs)).toBe(true);
   });
 
   it('Builds resource payload object for given transport item.', () => {
     const { resource } = toResourceLog(item);
-    expect(resource).toMatchObject(resourcePayload);
+    expect(resource).toMatchObject(matchResourcePayload);
   });
 
   it('Does not add an attribute if the respective Meta property is empty.', () => {

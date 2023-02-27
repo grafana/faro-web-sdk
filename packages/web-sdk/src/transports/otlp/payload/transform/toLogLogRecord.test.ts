@@ -45,7 +45,7 @@ const item: TransportItem<LogEvent> = {
   },
 } as const;
 
-const logLogRecordPayload = {
+const matchLogLogRecord = {
   timeUnixNano: 1674813181035000000,
   severityNumber: 10, // static value
   severityText: 'INFO2', // static value
@@ -153,9 +153,9 @@ const logLogRecordPayload = {
   ],
 } as const;
 
-describe('getLogLogRecord', () => {
+describe('toLogLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const logLogRecord = toScopeLog(item).logRecords[0];
-    expect(logLogRecord).toMatchObject(logLogRecordPayload);
+    expect(logLogRecord).toMatchObject(matchLogLogRecord);
   });
 });

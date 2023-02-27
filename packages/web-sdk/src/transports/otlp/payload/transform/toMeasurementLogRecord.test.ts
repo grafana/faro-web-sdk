@@ -44,7 +44,7 @@ const item: TransportItem<MeasurementEvent> = {
   } as const,
 };
 
-const measurementLogRecordPayload = {
+const matchMeasurementLogRecord = {
   timeUnixNano: 1674813181035000000,
 
   attributes: [
@@ -160,9 +160,9 @@ const measurementLogRecordPayload = {
   ],
 } as const;
 
-describe('getMeasurementLogRecord', () => {
+describe('toMeasurementLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const measurementLogRecord = toScopeLog(item).logRecords[0];
-    expect(measurementLogRecord).toMatchObject(measurementLogRecordPayload);
+    expect(measurementLogRecord).toMatchObject(matchMeasurementLogRecord);
   });
 });
