@@ -1,5 +1,4 @@
 import type { IKeyValue } from '@opentelemetry/otlp-transformer';
-
 import {
   SemanticAttributes,
   SemanticResourceAttributes,
