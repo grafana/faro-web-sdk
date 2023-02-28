@@ -1,10 +1,12 @@
 import { LogEvent, LogLevel, TransportItem, TransportItemType, VERSION } from '@grafana/faro-core';
 
 import type { OtelTransportPayload } from './payload';
-import type { LogLogRecordPayload } from './payload/transform';
+import type { LogRecord } from './payload/transform';
 
 import { OtlpHttpTransport } from './transport';
 import type { OtlpHttpTransportOptions } from './types';
+
+import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 const item: TransportItem<LogEvent> = {
   type: TransportItemType.LOG,
@@ -37,7 +39,7 @@ const otelTransportPayload: OtelTransportPayload['resourceLogs'] = [
               stringValue: 'hi',
             },
             attributes: [],
-          } as LogLogRecordPayload,
+          } as LogRecord,
         ],
       },
     ],
@@ -58,6 +60,8 @@ describe('OtlpHttpTransport', () => {
       batchSendCount: 1,
     } as OtlpHttpTransportOptions);
 
+    transport.internalLogger = mockInternalLogger;
+
     const mockSendPayloadFn = jest.fn();
     jest.spyOn(transport as any, 'sendPayload').mockImplementation(mockSendPayloadFn);
 
@@ -75,6 +79,8 @@ describe('OtlpHttpTransport', () => {
     const transport = new OtlpHttpTransport({
       batchSendTimeout: timeoutValue,
     } as OtlpHttpTransportOptions);
+
+    transport.internalLogger = mockInternalLogger;
 
     jest.useFakeTimers();
 
@@ -95,6 +101,7 @@ describe('OtlpHttpTransport', () => {
 
   it('Clears timeout on every send call', () => {
     const transport = new OtlpHttpTransport({} as OtlpHttpTransportOptions);
+    transport.internalLogger = mockInternalLogger;
 
     const mockClearTimeout = jest.fn();
     jest.spyOn(global, 'clearTimeout').mockImplementation(mockClearTimeout);
@@ -110,6 +117,7 @@ describe('OtlpHttpTransport', () => {
       host: 'example.com',
       batchSendCount: 1,
     });
+    transport.internalLogger = mockInternalLogger;
 
     transport.send(item);
 
@@ -132,6 +140,7 @@ describe('OtlpHttpTransport', () => {
       bufferSize: 3,
       batchSendCount: 1,
     });
+    transport.internalLogger = mockInternalLogger;
 
     for (let idx = 0; idx < 6; idx++) {
       transport.send(item);
