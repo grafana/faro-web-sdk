@@ -22,6 +22,7 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
       executor((metric) => {
         this.api.pushMeasurement({
           type: 'web-vitals',
+
           values: {
             [indicator]: metric.value,
           },

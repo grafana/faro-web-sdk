@@ -4,7 +4,7 @@ import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, isNull } from '../../utils';
+import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
 import type { TracesAPI } from '../traces';
 
 import type { MeasurementEvent, MeasurementsAPI } from './types';
@@ -28,6 +28,7 @@ export function initializeMeasurementsAPI(
         payload: {
           ...payload,
           trace: tracesApi.getTraceContext(),
+          timestamp: payload.timestamp ?? getCurrentTimestamp(),
         },
         meta: metas.value,
       };

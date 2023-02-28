@@ -55,6 +55,8 @@ export interface MetaBrowser {
   version?: string;
   os?: string;
   mobile?: boolean;
+  userAgent?: string;
+  language?: string;
 }
 
 export interface MetaView {
