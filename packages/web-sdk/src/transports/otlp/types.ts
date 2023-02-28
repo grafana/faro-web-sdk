@@ -9,14 +9,8 @@ export interface OtlpHttpTransportOptions
   readonly batchSendTimeout?: number;
   // Buffer "batchSendCount" signals before sending the payload
   readonly batchSendCount?: number;
-  // Protocol, https is default
-  readonly scheme?: 'http' | 'https';
-  // The host for the standard otlp endpoints. The paths for traces logs and metric will be attached to this.
-  readonly host?: string;
-  // Custom URL override for trace data
-  readonly overwriteTracesURL?: string;
-  // Custom URL override for log data
-  readonly overwriteLogsURL?: string;
-  // Custom URL override for metric data
-  readonly overwriteMetricsURL?: string;
+  // The Otel spec defines separate endpoint oer signal
+  readonly tracesURL?: string;
+  readonly logsURL?: string;
+  readonly metricsURL?: string;
 }

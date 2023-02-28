@@ -57,20 +57,22 @@ describe('OtelPayload', () => {
     const otelPayload = new OtelPayload();
     const payload = otelPayload.getPayload();
 
-    expect(payload.resourceLogs.length).toBe(0);
-    expect(payload.resourceSpans.length).toBe(0);
+    expect(payload.resourceLogs?.length).toBeUndefined();
+    expect(payload.resourceSpans?.length).toBeUndefined();
+    expect(payload.resourceMetrics?.length).toBeUndefined();
   });
 
   it('Creates an instance containing the correct resourceLog for the given TransportItem', () => {
     const otelPayload = new OtelPayload(logItem);
     const payload = otelPayload.getPayload();
 
-    expect(payload.resourceLogs.length).toBe(1);
-    expect(payload.resourceLogs[0]).toMatchObject({
+    expect(payload.resourceLogs?.length).toBe(1);
+    expect(payload.resourceLogs?.[0]).toMatchObject({
       resource: { attributes: [] },
       scopeLogs: [{ logRecords: [resourceLog] }],
     });
-    expect(payload.resourceSpans.length).toBe(0);
+    expect(payload.resourceSpans?.length).toBeUndefined();
+    expect(payload.resourceMetrics?.length).toBeUndefined();
   });
 
   it('Add adds a new ScopeLog to existing resource log because they have the same meta', () => {
@@ -90,8 +92,8 @@ describe('OtelPayload', () => {
     });
 
     const payload = otelPayload.getPayload();
-    expect(payload.resourceLogs.length).toBe(1);
-    expect(payload.resourceLogs[0]?.scopeLogs.length).toBe(2);
+    expect(payload.resourceLogs?.length).toBe(1);
+    expect(payload.resourceLogs?.[0]?.scopeLogs.length).toBe(2);
   });
 
   it('Add creates a new ResourceLog because they have different metas', () => {
@@ -106,7 +108,7 @@ describe('OtelPayload', () => {
     });
 
     const payload = otelPayload.getPayload();
-    expect(payload.resourceLogs.length).toBe(2);
-    expect(payload.resourceLogs[0]?.resource).not.toMatchObject(payload.resourceLogs[1]?.resource ?? {});
+    expect(payload.resourceLogs?.length).toBe(2);
+    expect(payload.resourceLogs?.[0]?.resource).not.toMatchObject(payload.resourceLogs?.[1]?.resource ?? {});
   });
 });

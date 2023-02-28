@@ -50,9 +50,10 @@ const fetch = jest.fn(() => Promise.resolve({ status: 200 }));
 (global as any).fetch = fetch;
 
 describe('OtlpHttpTransport', () => {
-  beforeEach(() => {
+  afterEach(() => {
     fetch.mockClear();
     jest.restoreAllMocks();
+    jest.useRealTimers();
   });
 
   it('Sends payload after number of signals is >= "batchSendCount" and resets count and payload.', () => {
@@ -113,8 +114,7 @@ describe('OtlpHttpTransport', () => {
 
   it('Sends OTEL resources over fetch to their configured endpoints.', () => {
     const transport = new OtlpHttpTransport({
-      scheme: 'http',
-      host: 'example.com',
+      logsURL: 'https://www.example.com/v1/logs',
       batchSendCount: 1,
     });
     transport.internalLogger = mockInternalLogger;
@@ -123,7 +123,7 @@ describe('OtlpHttpTransport', () => {
 
     expect(fetch).toHaveBeenCalledTimes(1);
 
-    expect(fetch).toHaveBeenCalledWith('http://example.com/v1/logs', {
+    expect(fetch).toHaveBeenCalledWith('https://www.example.com/v1/logs', {
       body: JSON.stringify(otelTransportPayload),
       headers: {
         'Content-Type': 'application/json',
@@ -135,8 +135,7 @@ describe('OtlpHttpTransport', () => {
 
   it('will not send events if buffer size is exhausted', () => {
     const transport = new OtlpHttpTransport({
-      scheme: 'http',
-      host: 'example.com',
+      logsURL: 'www.example.com/v1/logs',
       bufferSize: 3,
       batchSendCount: 1,
     });
@@ -147,5 +146,101 @@ describe('OtlpHttpTransport', () => {
     }
 
     expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('will back off on 429 for default interval if no retry-after header present', async () => {
+    jest.useFakeTimers();
+
+    const transport = new OtlpHttpTransport({
+      logsURL: 'www.example.com/v1/logs',
+      batchSendCount: 1,
+      defaultRateLimitBackoffMs: 1000,
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        status: 429,
+        headers: {
+          get: () => '',
+        },
+      })
+    );
+
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('will back off on 429 for default interval if retry-after header present, with delay', async () => {
+    jest.useFakeTimers();
+
+    const transport = new OtlpHttpTransport({
+      logsURL: 'www.example.com/v1/logs',
+      batchSendCount: 1,
+      defaultRateLimitBackoffMs: 1000,
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        status: 429,
+        headers: {
+          get: () => '2',
+        },
+      })
+    );
+
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
+
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('will back off on 429 for default interval if retry-after header present, with date', async () => {
+    jest.useFakeTimers();
+
+    const transport = new OtlpHttpTransport({
+      logsURL: 'www.example.com/v1/logs',
+      batchSendCount: 1,
+      defaultRateLimitBackoffMs: 1000,
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        status: 429,
+        headers: {
+          get: () => new Date(Date.now() + 3000).toISOString(),
+        },
+      })
+    );
+
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    jest.setSystemTime(new Date(Date.now() + 2001).valueOf());
+    await transport.send(item);
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 });

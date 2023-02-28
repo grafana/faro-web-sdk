@@ -8,17 +8,15 @@ const DEFAULT_CONCURRENCY = 5; // chrome supports 10 total, firefox 17
 const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
 const DEFAULT_BATCH_SEND_TIMEOUT_MS = 250;
 const DEFAULT_BATCH_SEND_COUNT = 50;
-const DEFAULT_SCHEME = 'https';
 
 export class OtlpHttpTransport extends BaseTransport {
-  readonly name = '@grafana/faro-web-sdk:transport-otlp';
+  readonly name = '@grafana/faro-web-sdk:transport-otlp-http';
   readonly version = VERSION;
 
   private readonly promiseBuffer: PromiseBuffer<Response | void>;
   private readonly rateLimitBackoffMs: number;
   private readonly batchSendCount: number;
   private readonly batchSendTimeout: number;
-  private readonly resourceURL;
 
   private signalCount = 0;
   private otelPayload = new OtelPayload(undefined, this.internalLogger);
@@ -32,13 +30,6 @@ export class OtlpHttpTransport extends BaseTransport {
 
     this.batchSendCount = options.batchSendCount ?? DEFAULT_BATCH_SEND_COUNT;
     this.batchSendTimeout = options.batchSendTimeout ?? DEFAULT_BATCH_SEND_TIMEOUT_MS;
-
-    const schemeAndHost = `${options.scheme ?? DEFAULT_SCHEME}://${removeTrailingSlash(options.host)}`;
-    this.resourceURL = {
-      traces: options.overwriteTracesURL ?? `${schemeAndHost}/v1/traces`,
-      logs: options.overwriteLogsURL ?? `${schemeAndHost}/v1/logs`,
-      metrics: options.overwriteMetricsURL ?? `${schemeAndHost}/v1/metrics`,
-    } as const;
 
     this.promiseBuffer = createPromiseBuffer({
       size: options?.bufferSize ?? DEFAULT_BUFFER_SIZE,
@@ -57,7 +48,8 @@ export class OtlpHttpTransport extends BaseTransport {
   }
 
   override getIgnoreUrls(): Array<string | RegExp> {
-    return Object.values(this.resourceURL);
+    const { tracesURL = '', logsURL = '', metricsURL = '' } = this.options;
+    return [tracesURL, logsURL, metricsURL].filter(Boolean);
   }
 
   send(item: TransportItem): void {
@@ -90,17 +82,19 @@ export class OtlpHttpTransport extends BaseTransport {
         return undefined;
       }
 
+      const { tracesURL = '', logsURL = '', metricsURL = '' } = this.options;
+
       for (const [key, value] of Object.entries(payload)) {
         let url = '';
         switch (key) {
           case 'resourceSpans':
-            url = this.resourceURL.traces;
+            url = tracesURL;
             break;
           case 'resourceLogs':
-            url = this.resourceURL.logs;
+            url = logsURL;
             break;
           case 'resourceMetrics':
-            url = this.resourceURL.metrics;
+            url = metricsURL;
             break;
         }
 
@@ -159,8 +153,4 @@ export class OtlpHttpTransport extends BaseTransport {
 
     return new Date(now + this.rateLimitBackoffMs);
   }
-}
-
-function removeTrailingSlash(str: string = ''): string {
-  return str.replace(/\/$/, '');
 }
