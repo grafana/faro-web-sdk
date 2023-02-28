@@ -121,7 +121,7 @@ describe('FetchTransport', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
-  it('will back off on 429 for default interval if retry-after header present, with delay', async () => {
+  it('will back off on 429 for default interval if retry-after header present, with date', async () => {
     let now = Date.now();
 
     const transport = new FetchTransport({
