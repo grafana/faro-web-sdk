@@ -49,7 +49,7 @@ const matchMeasurementLogRecord = {
 
   attributes: [
     {
-      key: 'grafana.view.name',
+      key: 'view.name',
       value: {
         stringValue: 'view-default',
       },
@@ -61,13 +61,13 @@ const matchMeasurementLogRecord = {
       },
     },
     {
-      key: 'grafana.page.id',
+      key: 'page.id',
       value: {
         stringValue: 'page-id',
       },
     },
     {
-      key: 'grafana.page.attributes',
+      key: 'page.attributes',
       value: {
         kvlistValue: {
           values: [
@@ -88,11 +88,11 @@ const matchMeasurementLogRecord = {
       },
     },
     {
-      key: 'grafana.session.id',
+      key: 'session.id',
       value: { stringValue: 'session-abcd1234' },
     },
     {
-      key: 'grafana.session.attributes',
+      key: 'session.attributes',
       value: {
         kvlistValue: {
           values: [
@@ -117,15 +117,15 @@ const matchMeasurementLogRecord = {
       value: { stringValue: 'user-abc123' },
     },
     {
-      key: 'grafana.enduser.name',
+      key: 'enduser.name',
       value: { stringValue: 'user-joe' },
     },
     {
-      key: 'grafana.enduser.email',
+      key: 'enduser.email',
       value: { stringValue: 'user@example.com' },
     },
     {
-      key: 'grafana.enduser.attributes',
+      key: 'enduser.attributes',
       value: {
         kvlistValue: {
           values: [
@@ -146,15 +146,15 @@ const matchMeasurementLogRecord = {
       },
     },
     {
-      key: 'grafana.measurement.type',
+      key: 'measurement.type',
       value: { stringValue: 'web-vitals' },
     },
     {
-      key: 'grafana.measurement.name',
+      key: 'measurement.name',
       value: { stringValue: 'fcp' },
     },
     {
-      key: 'grafana.measurement.value',
+      key: 'measurement.value',
       value: { doubleValue: 213.7000000011176 },
     },
   ],

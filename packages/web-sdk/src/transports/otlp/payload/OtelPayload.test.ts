@@ -30,7 +30,7 @@ describe('OtelPayload', () => {
         value: { stringValue: 'event-domain' },
       },
       {
-        key: 'grafana.event.attributes',
+        key: 'event.attributes',
         value: {
           kvlistValue: {
             values: [

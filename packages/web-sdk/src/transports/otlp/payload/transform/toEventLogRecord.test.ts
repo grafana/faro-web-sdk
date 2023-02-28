@@ -53,7 +53,7 @@ const matchEventLogRecord = {
 
   attributes: [
     {
-      key: 'grafana.view.name',
+      key: 'view.name',
       value: {
         stringValue: 'view-default',
       },
@@ -65,13 +65,13 @@ const matchEventLogRecord = {
       },
     },
     {
-      key: 'grafana.page.id',
+      key: 'page.id',
       value: {
         stringValue: 'page-id',
       },
     },
     {
-      key: 'grafana.page.attributes',
+      key: 'page.attributes',
       value: {
         kvlistValue: {
           values: [
@@ -92,11 +92,11 @@ const matchEventLogRecord = {
       },
     },
     {
-      key: 'grafana.session.id',
+      key: 'session.id',
       value: { stringValue: 'session-abcd1234' },
     },
     {
-      key: 'grafana.session.attributes',
+      key: 'session.attributes',
       value: {
         kvlistValue: {
           values: [
@@ -121,15 +121,15 @@ const matchEventLogRecord = {
       value: { stringValue: 'user-abc123' },
     },
     {
-      key: 'grafana.enduser.name',
+      key: 'enduser.name',
       value: { stringValue: 'user-joe' },
     },
     {
-      key: 'grafana.enduser.email',
+      key: 'enduser.email',
       value: { stringValue: 'user@example.com' },
     },
     {
-      key: 'grafana.enduser.attributes',
+      key: 'enduser.attributes',
       value: {
         kvlistValue: {
           values: [
@@ -158,7 +158,7 @@ const matchEventLogRecord = {
       value: { stringValue: 'event-domain' },
     },
     {
-      key: 'grafana.event.attributes',
+      key: 'event.attributes',
       value: {
         kvlistValue: {
           values: [

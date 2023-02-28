@@ -52,10 +52,10 @@ function toResource(transportItem: LogTransportItem): Readonly<Resource> {
       toAttribute(SemanticBrowserAttributes.BROWSER_MOBILE, browser?.mobile),
       toAttribute(SemanticBrowserAttributes.BROWSER_USER_AGENT, browser?.userAgent),
       toAttribute(SemanticBrowserAttributes.BROWSER_LANGUAGE, browser?.language),
-      toAttribute('grafana.browser.os', browser?.os),
+      toAttribute('browser.os', browser?.os),
       // toAttribute(SemanticBrowserAttributes.BROWSER_BRANDS, browser?.brands),
-      toAttribute('grafana.browser.name', browser?.name),
-      toAttribute('grafana.browser.version', browser?.version),
+      toAttribute('browser.name', browser?.name),
+      toAttribute('browser.version', browser?.version),
 
       toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_NAME, sdk?.name),
       toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_VERSION, sdk?.version),
@@ -127,7 +127,7 @@ function toEventLogRecord(transportItem: TransportItem<EventEvent>): LogRecord {
       ...getCommonLogAttributes(meta),
       toAttribute('event.name', payload.name), // No prefix because this is a semantic attribute. But event.name constant is currently missing in sematic-conventions npm package
       toAttribute('event.domain', payload.domain), // No prefix because this is a semantic attribute. But event.domain constant is currently missing in sematic-conventions npm package
-      toAttribute('grafana.event.attributes', payload.attributes),
+      toAttribute('event.attributes', payload.attributes),
     ].filter(isAttribute),
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
@@ -145,7 +145,7 @@ function toErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): LogReco
       toAttribute(SemanticAttributes.EXCEPTION_TYPE, payload.type),
       toAttribute(SemanticAttributes.EXCEPTION_MESSAGE, payload.value),
       // toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined),
-      toAttribute('grafana.error.stacktrace', payload.stacktrace),
+      toAttribute('faro.error.stacktrace', payload.stacktrace),
     ].filter(isAttribute),
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
@@ -161,9 +161,9 @@ function toMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>):
     timeUnixNano,
     attributes: [
       ...getCommonLogAttributes(meta),
-      toAttribute('grafana.measurement.type', payload.type),
-      toAttribute('grafana.measurement.name', measurementName),
-      toAttribute('grafana.measurement.value', measurementValue),
+      toAttribute('measurement.type', payload.type),
+      toAttribute('measurement.name', measurementName),
+      toAttribute('measurement.value', measurementValue),
     ].filter(isAttribute),
     traceId: payload.trace?.trace_id,
     spanId: payload.trace?.trace_id,
@@ -174,16 +174,16 @@ function getCommonLogAttributes(meta: Meta): IKeyValue[] {
   const { view, page, session, user } = meta;
 
   return [
-    toAttribute('grafana.view.name', view?.name),
+    toAttribute('view.name', view?.name),
     toAttribute(SemanticAttributes.HTTP_URL, page?.url),
-    toAttribute('grafana.page.id', page?.id),
-    toAttribute('grafana.page.attributes', page?.attributes),
-    toAttribute('grafana.session.id', session?.id),
-    toAttribute('grafana.session.attributes', session?.attributes),
+    toAttribute('page.id', page?.id),
+    toAttribute('page.attributes', page?.attributes),
+    toAttribute('session.id', session?.id),
+    toAttribute('session.attributes', session?.attributes),
     toAttribute(SemanticAttributes.ENDUSER_ID, user?.id),
-    toAttribute('grafana.enduser.name', user?.username),
-    toAttribute('grafana.enduser.email', user?.email),
-    toAttribute('grafana.enduser.attributes', user?.attributes),
+    toAttribute('enduser.name', user?.username),
+    toAttribute('enduser.email', user?.email),
+    toAttribute('enduser.attributes', user?.attributes),
   ].filter(isAttribute);
 }
 
