@@ -9,7 +9,7 @@ export interface OtlpHttpTransportOptions
   readonly batchSendTimeout?: number;
   // Buffer "batchSendCount" signals before sending the payload
   readonly batchSendCount?: number;
-  // The Otel spec defines separate endpoint oer signal
+  // The Otel spec defines separate endpoints per signal
   readonly tracesURL?: string;
   readonly logsURL?: string;
   readonly metricsURL?: string;
