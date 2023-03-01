@@ -1,4 +1,11 @@
-import { BaseTransport, createPromiseBuffer, PromiseBuffer, TransportItem, VERSION } from '@grafana/faro-core';
+import {
+  BaseTransport,
+  BatchBaseTransport,
+  createPromiseBuffer,
+  PromiseBuffer,
+  TransportItem,
+  VERSION,
+} from '@grafana/faro-core';
 
 import { OtelPayload, OtelTransportPayload } from './payload';
 import type { OtlpHttpTransportOptions } from './types';
@@ -6,21 +13,13 @@ import type { OtlpHttpTransportOptions } from './types';
 const DEFAULT_BUFFER_SIZE = 30;
 const DEFAULT_CONCURRENCY = 5; // chrome supports 10 total, firefox 17
 const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
-const DEFAULT_BATCH_SEND_TIMEOUT_MS = 250;
-const DEFAULT_BATCH_SEND_COUNT = 50;
 
-export class OtlpHttpTransport extends BaseTransport {
+export class OtlpHttpTransport extends BaseTransport implements BatchBaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-otlp-http';
   readonly version = VERSION;
 
   private readonly promiseBuffer: PromiseBuffer<Response | void>;
   private readonly rateLimitBackoffMs: number;
-  private readonly batchSendCount: number;
-  private readonly batchSendTimeout: number;
-
-  private signalCount = 0;
-  private otelPayload = new OtelPayload(undefined, this.internalLogger);
-  private timeoutId?: number = undefined;
 
   private disabledUntil: Date = new Date();
 
@@ -28,21 +27,9 @@ export class OtlpHttpTransport extends BaseTransport {
     super();
     this.rateLimitBackoffMs = options.defaultRateLimitBackoffMs ?? DEFAULT_RATE_LIMIT_BACKOFF_MS;
 
-    this.batchSendCount = options.batchSendCount ?? DEFAULT_BATCH_SEND_COUNT;
-    this.batchSendTimeout = options.batchSendTimeout ?? DEFAULT_BATCH_SEND_TIMEOUT_MS;
-
     this.promiseBuffer = createPromiseBuffer({
       size: options?.bufferSize ?? DEFAULT_BUFFER_SIZE,
       concurrency: options?.concurrency ?? DEFAULT_CONCURRENCY,
-    });
-
-    // Send batched/buffered data when user navigates to new page, switches or closes the tab, minimizes or closes the browser.
-    // If on mobile, it also sends data if user switches from the browser to a different app.
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
-        this.sendPayload(this.otelPayload.getPayload());
-        this.reset();
-      }
     });
   }
 
@@ -52,26 +39,14 @@ export class OtlpHttpTransport extends BaseTransport {
   }
 
   send(item: TransportItem): void {
-    clearTimeout(this.timeoutId);
-
-    this.otelPayload.addResourceItem(item);
-    this.signalCount++;
-
-    if (this.signalCount >= this.batchSendCount) {
-      this.sendPayload(this.otelPayload.getPayload());
-      this.reset();
-      return;
-    }
-
-    this.timeoutId = window.setTimeout(() => {
-      this.sendPayload(this.otelPayload.getPayload());
-      this.reset();
-    }, this.batchSendTimeout);
+    const otelPayload = new OtelPayload(item, this.internalLogger);
+    this.sendPayload(otelPayload.getPayload());
   }
 
-  private reset(): void {
-    this.signalCount = 0;
-    this.otelPayload = new OtelPayload(undefined, this.internalLogger);
+  sendBatch(items: TransportItem[]): void {
+    const otelPayload = new OtelPayload(undefined, this.internalLogger);
+    items.forEach(otelPayload.addResourceItem);
+    this.sendPayload(otelPayload.getPayload());
   }
 
   private sendPayload(payload: OtelTransportPayload): void {

@@ -70,7 +70,13 @@ export type { Faro } from './sdk';
 
 export { Conventions } from './semantic';
 
-export { BaseTransport, getTransportBody, TransportItemType, transportItemTypeToBodyKey } from './transports';
+export {
+  BaseTransport,
+  BatchBaseTransport,
+  getTransportBody,
+  TransportItemType,
+  transportItemTypeToBodyKey,
+} from './transports';
 export type {
   BeforeSendHook,
   Transport,
@@ -78,6 +84,7 @@ export type {
   TransportItem,
   TransportItemPayload,
   Transports,
+  BatchTransport,
 } from './transports';
 
 export { defaultUnpatchedConsole } from './unpatchedConsole';

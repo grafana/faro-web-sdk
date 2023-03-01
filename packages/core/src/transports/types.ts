@@ -22,6 +22,13 @@ export interface Transport extends Extension {
   getIgnoreUrls(): Patterns;
 }
 
+export interface BatchTransport extends Extension {
+  sendBatch(items: TransportItem[]): void | Promise<void>;
+
+  // returns URLs to be ignored by tracing, to not cause a feedback loop
+  getIgnoreUrls(): Patterns;
+}
+
 export interface TransportBody {
   meta: Meta;
 
