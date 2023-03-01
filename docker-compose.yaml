@@ -42,7 +42,7 @@ services:
   tempo:
     env_file:
       - './.env'
-    image: 'grafana/tempo:latest'
+    image: 'grafana/tempo:2.0.0'
     volumes:
       - '${TEMPO_CONFIG_PATH_LOCAL}:${TEMPO_CONFIG_PATH}'
     command:
