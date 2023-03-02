@@ -1,7 +1,8 @@
 import { deepEqual, InternalLogger, Meta, TransportItem, TransportItemType } from '@grafana/faro-core';
 
-import { toResourceLog, toScopeLog } from './transform';
 import type { ResourceLog } from './transform';
+import { toResourceLog } from './transform';
+import { toLogRecord } from './transform/transform';
 import type { OtelTransportPayload } from './types';
 
 interface ResourceLogsMetaMap {
@@ -43,7 +44,9 @@ export class OtelPayload {
 
           if (resourceLogWithMeta) {
             const { resourceLog } = resourceLogWithMeta;
-            resourceLog.scopeLogs.push(toScopeLog(transportItem));
+            // Currently the scope is fixed to '@grafana/faro-web-sdk'.
+            // Once we are able to drive the scope by instrumentation this will change and we need to align this function
+            resourceLog.scopeLogs[0]?.logRecords.push(toLogRecord(transportItem));
           } else {
             this.resourceLogsWithMetas.push({
               resourceLog: toResourceLog(transportItem),

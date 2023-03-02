@@ -75,7 +75,7 @@ describe('OtelPayload', () => {
     expect(payload.resourceMetrics?.length).toBeUndefined();
   });
 
-  it('Add adds a new ScopeLog to existing resource log because they have the same meta', () => {
+  it('Add adds a new LogRecord to existing logRecords array because they have the same meta and same scope', () => {
     const transportItem = {
       ...logItem,
       meta: { browser: { name: 'Firefox' } },
@@ -93,7 +93,7 @@ describe('OtelPayload', () => {
 
     const payload = otelPayload.getPayload();
     expect(payload.resourceLogs?.length).toBe(1);
-    expect(payload.resourceLogs?.[0]?.scopeLogs.length).toBe(2);
+    expect(payload.resourceLogs?.[0]?.scopeLogs[0]?.logRecords.length).toBe(2);
   });
 
   it('Add creates a new ResourceLog because they have different metas', () => {
