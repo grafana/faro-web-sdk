@@ -193,39 +193,41 @@ describe('OtlpHttpTransport', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
 
     expect(fetch).toHaveBeenCalledWith('https://www.example.com/v1/logs', {
-      body: JSON.stringify({
-        resource: {
-          attributes: [],
-        },
-        scopeLogs: [
-          {
-            scope: {
-              name: '@grafana/faro-web-sdk',
-              version: VERSION,
-            },
-            logRecords: [
-              {
-                timeUnixNano: 1674813181035000000,
-                severityNumber: 10,
-                severityText: 'INFO2',
-                body: {
-                  stringValue: 'hi',
-                },
-                attributes: [],
-              } as LogRecord,
-              {
-                timeUnixNano: 1674813181035000000,
-                severityNumber: 10,
-                severityText: 'INFO2',
-                body: {
-                  stringValue: 'foo',
-                },
-                attributes: [],
-              } as LogRecord,
-            ],
+      body: JSON.stringify([
+        {
+          resource: {
+            attributes: [],
           },
-        ],
-      }),
+          scopeLogs: [
+            {
+              scope: {
+                name: '@grafana/faro-web-sdk',
+                version: VERSION,
+              },
+              logRecords: [
+                {
+                  timeUnixNano: 1674813181035000000,
+                  severityNumber: 10,
+                  severityText: 'INFO2',
+                  body: {
+                    stringValue: 'hi',
+                  },
+                  attributes: [],
+                } as LogRecord,
+                {
+                  timeUnixNano: 1674813181035000000,
+                  severityNumber: 10,
+                  severityText: 'INFO2',
+                  body: {
+                    stringValue: 'foo',
+                  },
+                  attributes: [],
+                } as LogRecord,
+              ],
+            },
+          ],
+        },
+      ]),
       headers: {
         'Content-Type': 'application/json',
       },
