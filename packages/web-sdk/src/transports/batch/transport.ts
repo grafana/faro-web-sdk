@@ -39,8 +39,6 @@ export class BatchTransport extends BaseTransport {
     this.signalCount++;
 
     if (this.signalCount >= this.batchSendCount) {
-      console.log('count', this.signalCount, this.batchSendCount);
-
       this.flush();
       return;
     }
