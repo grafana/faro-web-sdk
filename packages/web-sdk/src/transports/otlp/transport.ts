@@ -1,11 +1,4 @@
-import {
-  BaseTransport,
-  BatchBaseTransport,
-  createPromiseBuffer,
-  PromiseBuffer,
-  TransportItem,
-  VERSION,
-} from '@grafana/faro-core';
+import { BaseTransport, createPromiseBuffer, isArray, PromiseBuffer, TransportItem, VERSION } from '@grafana/faro-core';
 
 import { OtelPayload, OtelTransportPayload } from './payload';
 import type { OtlpHttpTransportOptions } from './types';
@@ -14,7 +7,7 @@ const DEFAULT_BUFFER_SIZE = 30;
 const DEFAULT_CONCURRENCY = 5; // chrome supports 10 total, firefox 17
 const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
 
-export class OtlpHttpTransport extends BaseTransport implements BatchBaseTransport {
+export class OtlpHttpTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-otlp-http';
   readonly version = VERSION;
 
@@ -38,13 +31,10 @@ export class OtlpHttpTransport extends BaseTransport implements BatchBaseTranspo
     return [tracesURL, logsURL, metricsURL].filter(Boolean);
   }
 
-  send(item: TransportItem): void {
-    const otelPayload = new OtelPayload(item, this.internalLogger);
-    this.sendPayload(otelPayload.getPayload());
-  }
-
-  sendBatch(items: TransportItem[]): void {
+  send(item: TransportItem | TransportItem[]): void {
     const otelPayload = new OtelPayload(undefined, this.internalLogger);
+    const items = isArray(item) ? item : [item];
+
     items.forEach((item) => otelPayload.addResourceItem(item));
     this.sendPayload(otelPayload.getPayload());
   }

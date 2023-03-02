@@ -1,4 +1,4 @@
-import { BaseTransport, BatchBaseTransport, TransportItem, VERSION } from '@grafana/faro-core';
+import { BaseTransport, TransportItem, VERSION } from '@grafana/faro-core';
 
 import type { BatchTransportOptions } from './types';
 
@@ -17,7 +17,7 @@ export class BatchTransport extends BaseTransport {
 
   private signalBuffer: TransportItem[] = [];
 
-  constructor(private transport: BatchBaseTransport, options: BatchTransportOptions) {
+  constructor(private transport: BaseTransport, options: BatchTransportOptions) {
     super();
 
     this.batchSendCount = options.batchSendCount ?? DEFAULT_BATCH_SEND_COUNT;
@@ -49,7 +49,7 @@ export class BatchTransport extends BaseTransport {
   }
 
   private flush() {
-    this.transport.sendBatch(this.signalBuffer);
+    this.transport.send(this.signalBuffer);
     this.signalCount = 0;
     this.signalBuffer = [];
   }

@@ -1,4 +1,4 @@
-import { BatchBaseTransport, LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { BaseTransport, LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import { BatchTransport } from './transport';
@@ -28,9 +28,9 @@ describe('BatchTransport', () => {
   it('Sends payload after no new signal has arrived for "batchSendCount" milliseconds after the last one and resets count and payload.', () => {
     jest.useFakeTimers();
 
-    const mockSendBatchFunction = jest.fn();
+    const mockSendFunction = jest.fn();
 
-    class MockTransport extends BatchBaseTransport {
+    class MockTransport extends BaseTransport {
       readonly name = 'mock-transport';
       readonly version = '123';
 
@@ -38,7 +38,7 @@ describe('BatchTransport', () => {
         super();
       }
 
-      sendBatch = mockSendBatchFunction;
+      send = mockSendFunction;
     }
 
     const timeoutValue = 500;
@@ -50,16 +50,16 @@ describe('BatchTransport', () => {
     transport.internalLogger = mockInternalLogger;
 
     transport.send(item);
-    expect(mockSendBatchFunction).not.toBeCalled();
+    expect(mockSendFunction).not.toBeCalled();
 
     jest.advanceTimersByTime(timeoutValue + 1);
-    expect(mockSendBatchFunction).toBeCalledTimes(1);
+    expect(mockSendFunction).toBeCalledTimes(1);
   });
 
   it('Sends payload after number of signals is >= "batchSendCount" and resets count and payload.', () => {
-    const mockSendBatchFunction = jest.fn();
+    const mockSendFunction = jest.fn();
 
-    class MockTransport extends BatchBaseTransport {
+    class MockTransport extends BaseTransport {
       readonly name = 'mock-transport';
       readonly version = '123';
 
@@ -67,7 +67,7 @@ describe('BatchTransport', () => {
         super();
       }
 
-      sendBatch = mockSendBatchFunction;
+      send = mockSendFunction;
     }
 
     const transport = new BatchTransport(new MockTransport(), {
@@ -78,13 +78,13 @@ describe('BatchTransport', () => {
 
     transport.send(item);
     transport.send(item);
-    expect(mockSendBatchFunction).toBeCalledTimes(1);
+    expect(mockSendFunction).toBeCalledTimes(1);
   });
 
   it('Clears timeout on every send call', () => {
-    const mockSendBatchFunction = jest.fn();
+    const mockSendFunction = jest.fn();
 
-    class MockTransport extends BatchBaseTransport {
+    class MockTransport extends BaseTransport {
       readonly name = 'mock-transport';
       readonly version = '123';
 
@@ -92,7 +92,7 @@ describe('BatchTransport', () => {
         super();
       }
 
-      sendBatch = mockSendBatchFunction;
+      send = mockSendFunction;
     }
 
     const transport = new BatchTransport(new MockTransport(), {} as BatchTransportOptions);

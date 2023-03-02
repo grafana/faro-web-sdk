@@ -188,7 +188,7 @@ describe('OtlpHttpTransport', () => {
 
     const secondItem = { ...item, payload: { ...item.payload, message: 'foo' } };
 
-    transport.sendBatch([item, secondItem]);
+    transport.send([item, secondItem]);
 
     expect(fetch).toHaveBeenCalledTimes(1);
 
