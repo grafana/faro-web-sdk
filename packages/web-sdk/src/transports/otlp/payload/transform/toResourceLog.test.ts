@@ -104,6 +104,7 @@ const matchResourcePayload = {
 describe('toResourceLog()', () => {
   it('Builds a valid ResourceLog structure', () => {
     const resourceLog = toResourceLog(item);
+
     expect(resourceLog).toBeTruthy();
     expect(resourceLog.resource).toBeTruthy();
     expect(resourceLog.scopeLogs).toBeTruthy();

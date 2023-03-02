@@ -1,4 +1,4 @@
-import { LogEvent, LogLevel, TransportItem, TransportItemType, BatchBaseTransport } from '@grafana/faro-core';
+import { BatchBaseTransport, LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import { BatchTransport } from './transport';

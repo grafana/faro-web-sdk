@@ -1,4 +1,4 @@
-import { BatchBaseTransport, BaseTransport, TransportItem, VERSION } from '@grafana/faro-core';
+import { BaseTransport, BatchBaseTransport, TransportItem, VERSION } from '@grafana/faro-core';
 
 import type { BatchTransportOptions } from './types';
 

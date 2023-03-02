@@ -1,7 +1,7 @@
 import { LogEvent, LogLevel, TransportItem, TransportItemType, VERSION } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
-import type { OtelTransportPayload, LogRecord } from './payload';
+import type { LogRecord, OtelTransportPayload } from './payload';
 import { OtlpHttpTransport } from './transport';
 
 const item: TransportItem<LogEvent> = {

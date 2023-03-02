@@ -1,8 +1,7 @@
 import { deepEqual, InternalLogger, Meta, TransportItem, TransportItemType } from '@grafana/faro-core';
 
+import { toLogRecord, toResourceLog } from './transform';
 import type { ResourceLog } from './transform';
-import { toResourceLog } from './transform';
-import { toLogRecord } from './transform/transform';
 import type { OtelTransportPayload } from './types';
 
 interface ResourceLogsMetaMap {
