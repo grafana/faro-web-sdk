@@ -16,7 +16,6 @@ import {
   VERSION,
 } from '@grafana/faro-core';
 
-import { internalLogger } from '../../otlpPayloadLogger';
 import { isAttribute, toAttribute, toAttributeValue } from '../attribute';
 
 import type { LogRecord, LogTransportItem, Resource, ScopeLog } from './types';
@@ -80,7 +79,7 @@ export function toScopeLog(transportItem: LogTransportItem): ScopeLog {
   };
 }
 
-function toLogRecord(transportItem: LogTransportItem): LogRecord {
+export function toLogRecord(transportItem: LogTransportItem): LogRecord {
   const { type } = transportItem;
 
   switch (type) {
@@ -94,7 +93,6 @@ function toLogRecord(transportItem: LogTransportItem): LogRecord {
       return toMeasurementLogRecord(transportItem as TransportItem<MeasurementEvent>);
     default:
       const error = `Unknown TransportItemType: ${type}`;
-      internalLogger.error(error);
       throw new Error(error);
   }
 }

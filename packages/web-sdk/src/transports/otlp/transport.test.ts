@@ -1,10 +1,8 @@
 import { LogEvent, LogLevel, TransportItem, TransportItemType, VERSION } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
-import type { OtelTransportPayload } from './payload';
-import type { LogRecord } from './payload/transform';
+import type { OtelTransportPayload, LogRecord } from './payload';
 import { OtlpHttpTransport } from './transport';
-// import type { OtlpHttpTransportOptions } from './types';
 
 const item: TransportItem<LogEvent> = {
   type: TransportItemType.LOG,
@@ -54,66 +52,9 @@ describe('OtlpHttpTransport', () => {
     jest.useRealTimers();
   });
 
-  // it('Sends payload after number of signals is >= "batchSendCount" and resets count and payload.', () => {
-  //   const transport = new OtlpHttpTransport({
-  //     batchSendCount: 1,
-  //   } as OtlpHttpTransportOptions);
-
-  //   transport.internalLogger = mockInternalLogger;
-
-  //   const mockSendPayloadFn = jest.fn();
-  //   jest.spyOn(transport as any, 'sendPayload').mockImplementation(mockSendPayloadFn);
-
-  //   const mockResetFn = jest.fn();
-  //   jest.spyOn(transport as any, 'reset').mockImplementation(mockResetFn);
-
-  //   transport.send(item);
-  //   expect(mockSendPayloadFn).toBeCalledTimes(1);
-  //   expect(mockResetFn).toBeCalledTimes(1);
-  // });
-
-  // it('Sends payload after no new signal has arrived for "batchSendCount" milliseconds after the last one and resets count and payload.', () => {
-  //   const timeoutValue = 500;
-
-  //   const transport = new OtlpHttpTransport({
-  //     batchSendTimeout: timeoutValue,
-  //   } as OtlpHttpTransportOptions);
-
-  //   transport.internalLogger = mockInternalLogger;
-
-  //   jest.useFakeTimers();
-
-  //   const mockSendPayloadFn = jest.fn();
-  //   jest.spyOn(transport as any, 'sendPayload').mockImplementation(mockSendPayloadFn);
-
-  //   const mockResetFn = jest.fn();
-  //   jest.spyOn(transport as any, 'reset').mockImplementation(mockResetFn);
-
-  //   transport.send(item);
-  //   expect(mockSendPayloadFn).not.toBeCalled();
-  //   expect(mockResetFn).not.toBeCalled();
-
-  //   jest.advanceTimersByTime(timeoutValue);
-  //   expect(mockSendPayloadFn).toBeCalledTimes(1);
-  //   expect(mockResetFn).toBeCalledTimes(1);
-  // });
-
-  // it('Clears timeout on every send call', () => {
-  //   const transport = new OtlpHttpTransport({} as OtlpHttpTransportOptions);
-  //   transport.internalLogger = mockInternalLogger;
-
-  //   const mockClearTimeout = jest.fn();
-  //   jest.spyOn(global, 'clearTimeout').mockImplementation(mockClearTimeout);
-
-  //   transport.send(item);
-  //   transport.send(item);
-  //   expect(mockClearTimeout).toBeCalledTimes(2);
-  // });
-
   it('Sends OTEL resources over fetch to their configured endpoints.', () => {
     const transport = new OtlpHttpTransport({
       logsURL: 'https://www.example.com/v1/logs',
-      // batchSendCount: 1,
     });
     transport.internalLogger = mockInternalLogger;
 
@@ -135,7 +76,6 @@ describe('OtlpHttpTransport', () => {
     const transport = new OtlpHttpTransport({
       logsURL: 'www.example.com/v1/logs',
       bufferSize: 3,
-      // batchSendCount: 1,
     });
     transport.internalLogger = mockInternalLogger;
 
@@ -151,7 +91,6 @@ describe('OtlpHttpTransport', () => {
 
     const transport = new OtlpHttpTransport({
       logsURL: 'www.example.com/v1/logs',
-      // batchSendCount: 1,
       defaultRateLimitBackoffMs: 1000,
     });
 
@@ -182,7 +121,6 @@ describe('OtlpHttpTransport', () => {
 
     const transport = new OtlpHttpTransport({
       logsURL: 'www.example.com/v1/logs',
-      // batchSendCount: 1,
       defaultRateLimitBackoffMs: 1000,
     });
 
@@ -215,7 +153,6 @@ describe('OtlpHttpTransport', () => {
 
     const transport = new OtlpHttpTransport({
       logsURL: 'www.example.com/v1/logs',
-      // batchSendCount: 1,
       defaultRateLimitBackoffMs: 1000,
     });
 
@@ -240,5 +177,60 @@ describe('OtlpHttpTransport', () => {
     jest.setSystemTime(new Date(Date.now() + 2001).valueOf());
     await transport.send(item);
     expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('sends batched items', () => {
+    const transport = new OtlpHttpTransport({
+      logsURL: 'https://www.example.com/v1/logs',
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    const secondItem = { ...item, payload: { ...item.payload, message: 'foo' } };
+
+    transport.sendBatch([item, secondItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    expect(fetch).toHaveBeenCalledWith('https://www.example.com/v1/logs', {
+      body: JSON.stringify({
+        resource: {
+          attributes: [],
+        },
+        scopeLogs: [
+          {
+            scope: {
+              name: '@grafana/faro-web-sdk',
+              version: VERSION,
+            },
+            logRecords: [
+              {
+                timeUnixNano: 1674813181035000000,
+                severityNumber: 10,
+                severityText: 'INFO2',
+                body: {
+                  stringValue: 'hi',
+                },
+                attributes: [],
+              } as LogRecord,
+              {
+                timeUnixNano: 1674813181035000000,
+                severityNumber: 10,
+                severityText: 'INFO2',
+                body: {
+                  stringValue: 'foo',
+                },
+                attributes: [],
+              } as LogRecord,
+            ],
+          },
+        ],
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      keepalive: true,
+      method: 'POST',
+    });
   });
 });

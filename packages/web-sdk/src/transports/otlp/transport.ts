@@ -45,7 +45,7 @@ export class OtlpHttpTransport extends BaseTransport implements BatchBaseTranspo
 
   sendBatch(items: TransportItem[]): void {
     const otelPayload = new OtelPayload(undefined, this.internalLogger);
-    items.forEach(otelPayload.addResourceItem);
+    items.forEach((item) => otelPayload.addResourceItem(item));
     this.sendPayload(otelPayload.getPayload());
   }
 
