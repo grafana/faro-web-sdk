@@ -14,18 +14,22 @@ export {
   parseStacktrace,
   ViewInstrumentation,
   WebVitalsInstrumentation,
+  PerformanceTimelineInstrumentation,
+  DEFAULT_PERFORMANCE_TIMELINE_ENTRY_TYPES,
   SessionInstrumentation,
 } from './instrumentations';
 export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
 export { browserMeta, createSession, defaultMetas, defaultViewMeta, pageMeta } from './metas';
 
-export { ConsoleTransport, FetchTransport } from './transports';
+export { ConsoleTransport, FetchTransport, BatchTransport, OtlpHttpTransport } from './transports';
 export type {
   ClockFn,
   ConsoleTransportOptions,
   FetchTransportOptions,
   FetchTransportRequestOptions,
+  BatchTransportOptions,
+  OtlpHttpTransportOptions,
 } from './transports';
 
 export {

@@ -15,3 +15,5 @@ export type { ErrorEvent, ExtendedPromiseRejectionEvent } from './errors';
 export { ViewInstrumentation } from './view';
 
 export { WebVitalsInstrumentation } from './webVitals';
+
+export { PerformanceTimelineInstrumentation, DEFAULT_PERFORMANCE_TIMELINE_ENTRY_TYPES } from './performance';
