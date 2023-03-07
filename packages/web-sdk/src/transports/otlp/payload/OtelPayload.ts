@@ -22,9 +22,7 @@ export class OtelPayload {
 
   getPayload(): OtelTransportPayload {
     return {
-      resourceLogs: this.resourceLogsWithMetas.length
-        ? this.resourceLogsWithMetas.map(({ resourceLog }) => resourceLog)
-        : undefined,
+      resourceLogs: this.resourceLogsWithMetas.map(({ resourceLog }) => resourceLog),
     } as const;
   }
 

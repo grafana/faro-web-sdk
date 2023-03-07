@@ -49,6 +49,10 @@ export class OtlpHttpTransport extends BaseTransport {
       const { tracesURL = '', logsURL = '', metricsURL = '' } = this.options;
 
       for (const [key, value] of Object.entries(payload)) {
+        if (!(isArray(value) && value.length > 0)) {
+          continue;
+        }
+
         let url = '';
         switch (key) {
           case 'resourceSpans':

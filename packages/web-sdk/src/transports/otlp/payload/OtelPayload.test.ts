@@ -57,9 +57,7 @@ describe('OtelPayload', () => {
     const otelPayload = new OtelPayload();
     const payload = otelPayload.getPayload();
 
-    expect(payload.resourceLogs?.length).toBeUndefined();
-    expect(payload.resourceSpans?.length).toBeUndefined();
-    expect(payload.resourceMetrics?.length).toBeUndefined();
+    expect(payload.resourceLogs).toHaveLength(0);
   });
 
   it('Creates an instance containing the correct resourceLog for the given TransportItem', () => {
@@ -71,8 +69,6 @@ describe('OtelPayload', () => {
       resource: { attributes: [] },
       scopeLogs: [{ logRecords: [resourceLog] }],
     });
-    expect(payload.resourceSpans?.length).toBeUndefined();
-    expect(payload.resourceMetrics?.length).toBeUndefined();
   });
 
   it('Add adds a new LogRecord to existing logRecords array because they have the same meta and same scope', () => {
@@ -92,8 +88,8 @@ describe('OtelPayload', () => {
     });
 
     const payload = otelPayload.getPayload();
-    expect(payload.resourceLogs?.length).toBe(1);
-    expect(payload.resourceLogs?.[0]?.scopeLogs[0]?.logRecords.length).toBe(2);
+    expect(payload.resourceLogs).toHaveLength(1);
+    expect(payload.resourceLogs?.[0]?.scopeLogs[0]?.logRecords).toHaveLength(2);
   });
 
   it('Add creates a new ResourceLog because they have different metas', () => {
@@ -108,7 +104,7 @@ describe('OtelPayload', () => {
     });
 
     const payload = otelPayload.getPayload();
-    expect(payload.resourceLogs?.length).toBe(2);
+    expect(payload.resourceLogs).toHaveLength(2);
     expect(payload.resourceLogs?.[0]?.resource).not.toMatchObject(payload.resourceLogs?.[1]?.resource ?? {});
   });
 });
