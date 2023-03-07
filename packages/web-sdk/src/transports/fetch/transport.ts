@@ -56,6 +56,8 @@ export class FetchTransport extends BaseTransport {
           ...(restOfRequestOptions ?? {}),
         })
           .then((response) => {
+            // read the body so the connection can be closed
+            response.text().then(() => {}).catch(() => {});
             if (response.status === 429) {
               this.disabledUntil = this.getRetryAfterDate(response);
               this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
