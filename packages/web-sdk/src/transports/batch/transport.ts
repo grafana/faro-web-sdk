@@ -1,7 +1,8 @@
-import { BaseTransport, TransportItem, VERSION } from '@grafana/faro-core';
+import { BaseTransport, isArray, TransportItem, VERSION } from '@grafana/faro-core';
 
 import type { BatchTransportOptions } from './types';
 
+const DEFAULT_FORCE_BATCH_SEND_TIMEOUT_MS = 500;
 const DEFAULT_BATCH_SEND_TIMEOUT_MS = 250;
 const DEFAULT_BATCH_SEND_COUNT = 50;
 
@@ -11,10 +12,9 @@ export class BatchTransport extends BaseTransport {
 
   private readonly batchSendCount: number;
   private readonly batchSendTimeout: number;
+  private readonly batchForceSendTimeout: number;
 
-  private signalCount = 0;
   private timeoutId?: number = undefined;
-
   private signalBuffer: TransportItem[] = [];
 
   constructor(private transport: BaseTransport, options: BatchTransportOptions) {
@@ -22,6 +22,7 @@ export class BatchTransport extends BaseTransport {
 
     this.batchSendCount = options.batchSendCount ?? DEFAULT_BATCH_SEND_COUNT;
     this.batchSendTimeout = options.batchSendTimeout ?? DEFAULT_BATCH_SEND_TIMEOUT_MS;
+    this.batchForceSendTimeout = options.batchForceSendTimeout ?? DEFAULT_FORCE_BATCH_SEND_TIMEOUT_MS;
 
     // Send batched/buffered data when user navigates to new page, switches or closes the tab, minimizes or closes the browser.
     // If on mobile, it also sends data if user switches from the browser to a different app.
@@ -32,23 +33,28 @@ export class BatchTransport extends BaseTransport {
     });
   }
 
-  send(item: TransportItem): void {
+  send(item: TransportItem | TransportItem[]): void {
     clearTimeout(this.timeoutId);
 
-    this.signalBuffer.push(item);
-    this.signalCount++;
+    const items = isArray(item) ? item : [item];
 
-    if (this.signalCount >= this.batchSendCount) {
-      this.flush();
-      return;
-    }
+    items.forEach((item) => {
+      this.signalBuffer.push(item);
+
+      if (this.signalBuffer.length >= this.batchSendCount) {
+        this.flush();
+      }
+    });
 
     this.timeoutId = window.setTimeout(() => this.flush(), this.batchSendTimeout);
+
+    if (this.batchForceSendTimeout > 0) {
+      window.setTimeout(() => this.flush(), this.batchForceSendTimeout);
+    }
   }
 
   private flush() {
     this.transport.send(this.signalBuffer);
-    this.signalCount = 0;
     this.signalBuffer = [];
   }
 }

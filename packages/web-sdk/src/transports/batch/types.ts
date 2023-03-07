@@ -3,4 +3,6 @@ export interface BatchTransportOptions {
   readonly batchSendTimeout?: number;
   // Buffer "batchSendCount" signals before sending the payload
   readonly batchSendCount?: number;
+  // Force to send batches after "batchSendTimeout" ms. If set to 0, force timeout is disabled
+  readonly batchForceSendTimeout?: number;
 }
