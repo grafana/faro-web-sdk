@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Have FetchTransport consume response body. Otherwise requests are not considered closed
+
 ## 1.0.0
 
 - Fix circular dependency in the `core` package
