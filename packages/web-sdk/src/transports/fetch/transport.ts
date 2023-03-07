@@ -1,4 +1,4 @@
-import { BaseTransport, createPromiseBuffer, getTransportBody, PromiseBuffer, VERSION } from '@grafana/faro-core';
+import { BaseTransport, createPromiseBuffer, getTransportBody, noop, PromiseBuffer, VERSION } from '@grafana/faro-core';
 import type { TransportItem } from '@grafana/faro-core';
 
 import type { FetchTransportOptions } from './types';
@@ -61,10 +61,7 @@ export class FetchTransport extends BaseTransport {
               this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
             }
             // read the body so the connection can be closed
-            response
-              .text()
-              .then(() => {})
-              .catch(() => {});
+            response.text().catch(noop);
 
             return response;
           })
