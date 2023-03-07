@@ -65,9 +65,9 @@ export class FetchTransport extends BaseTransport {
               .text()
               .then(() => {})
               .catch(() => {});
+
             return response;
           })
-
           .catch((err) => {
             this.logError('Failed sending payload to the receiver\n', JSON.parse(body), err);
           });
