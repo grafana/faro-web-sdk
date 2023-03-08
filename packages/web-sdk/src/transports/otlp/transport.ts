@@ -14,7 +14,8 @@ export class OtlpHttpTransport extends BaseTransport {
   private readonly promiseBuffer: PromiseBuffer<Response | void>;
   private readonly rateLimitBackoffMs: number;
 
-  private disabledUntil: Date = new Date();
+  private sendingTracesDisabledUntil: Date = new Date();
+  private sendingLogsDisabledUntil: Date = new Date();
 
   constructor(private options: OtlpHttpTransportOptions) {
     super();
@@ -27,8 +28,8 @@ export class OtlpHttpTransport extends BaseTransport {
   }
 
   override getIgnoreUrls(): Array<string | RegExp> {
-    const { tracesURL = '', logsURL = '', metricsURL = '' } = this.options;
-    return [tracesURL, logsURL, metricsURL].filter(Boolean);
+    const { tracesURL = '', logsURL = '' } = this.options;
+    return [tracesURL, logsURL].filter(Boolean);
   }
 
   send(item: TransportItem | TransportItem[]): void {
@@ -41,29 +42,37 @@ export class OtlpHttpTransport extends BaseTransport {
 
   private sendPayload(payload: OtelTransportPayload): void {
     try {
-      if (this.disabledUntil > new Date(Date.now())) {
-        this.logWarn(`Dropping transport item due to too many requests. Backoff until ${this.disabledUntil}`);
-        return undefined;
-      }
-
-      const { tracesURL = '', logsURL = '', metricsURL = '' } = this.options;
+      const { tracesURL = '', logsURL = '' } = this.options;
 
       for (const [key, value] of Object.entries(payload)) {
         if (!(isArray(value) && value.length > 0)) {
           continue;
         }
 
+        let disabledUntil: Date | undefined;
+        let updateDisabledUntil = (_: Date) => {};
         let url = '';
+
         switch (key) {
           case 'resourceSpans':
             url = tracesURL;
+            disabledUntil = this.sendingTracesDisabledUntil;
+            updateDisabledUntil = (retryAfterDate: Date) => {
+              this.sendingTracesDisabledUntil = retryAfterDate;
+            };
             break;
           case 'resourceLogs':
             url = logsURL;
+            disabledUntil = this.sendingLogsDisabledUntil;
+            updateDisabledUntil = (retryAfterDate: Date) => {
+              this.sendingLogsDisabledUntil = retryAfterDate;
+            };
             break;
-          case 'resourceMetrics':
-            url = metricsURL;
-            break;
+        }
+
+        if (disabledUntil && disabledUntil > new Date(Date.now())) {
+          this.logWarn(`Dropping transport item due to too many requests. Backoff until ${disabledUntil}`);
+          return undefined;
         }
 
         const body = JSON.stringify(value);
@@ -85,8 +94,8 @@ export class OtlpHttpTransport extends BaseTransport {
           })
             .then((response) => {
               if (response.status === 429) {
-                this.disabledUntil = this.getRetryAfterDate(response);
-                this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
+                updateDisabledUntil(this.getRetryAfterDate(response));
+                this.logWarn(`Too many requests, backing off until ${disabledUntil}`);
               }
 
               return response;

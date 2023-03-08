@@ -86,98 +86,111 @@ describe('OtlpHttpTransport', () => {
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 
-  it('will back off on 429 for default interval if no retry-after header present', async () => {
-    jest.useFakeTimers();
+  // TODO: add case for resourceSpans once the respective transform is implemented
+  it.each([{ v: item, type: 'resourceLogs' }])(
+    `will back off on 429 for default interval if no retry-after header present while sending $type`,
+    async ({ v }) => {
+      jest.useFakeTimers();
 
-    const transport = new OtlpHttpTransport({
-      logsURL: 'www.example.com/v1/logs',
-      defaultRateLimitBackoffMs: 1000,
-    });
+      const transport = new OtlpHttpTransport({
+        logsURL: 'www.example.com/v1/logs',
+        tracesURL: 'www.example.com/v1/traces',
+        defaultRateLimitBackoffMs: 1000,
+      });
 
-    transport.internalLogger = mockInternalLogger;
+      transport.internalLogger = mockInternalLogger;
 
-    fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        status: 429,
-        headers: {
-          get: () => '',
-        },
-      })
-    );
+      fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          status: 429,
+          headers: {
+            get: () => '',
+          },
+        })
+      );
 
-    await transport.send(item);
-    expect(fetch).toHaveBeenCalledTimes(1);
+      await transport.send(v);
+      expect(fetch).toHaveBeenCalledTimes(1);
 
-    await transport.send(item);
-    expect(fetch).toHaveBeenCalledTimes(1);
+      await transport.send(v);
+      expect(fetch).toHaveBeenCalledTimes(1);
 
-    jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
-    await transport.send(item);
-    expect(fetch).toHaveBeenCalledTimes(2);
-  });
+      jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
+      await transport.send(v);
+      expect(fetch).toHaveBeenCalledTimes(2);
+    }
+  );
 
-  it('will back off on 429 for default interval if retry-after header present, with delay', async () => {
-    jest.useFakeTimers();
+  // TODO: add case for resourceSpans once the respective transform is implemented
+  it.each([{ v: item, type: 'resourceLogs' }])(
+    'will back off on 429 for default interval if retry-after header present, with delay while sending $type',
+    async ({ v }) => {
+      jest.useFakeTimers();
 
-    const transport = new OtlpHttpTransport({
-      logsURL: 'www.example.com/v1/logs',
-      defaultRateLimitBackoffMs: 1000,
-    });
+      const transport = new OtlpHttpTransport({
+        logsURL: 'www.example.com/v1/logs',
+        defaultRateLimitBackoffMs: 1000,
+      });
 
-    transport.internalLogger = mockInternalLogger;
+      transport.internalLogger = mockInternalLogger;
 
-    fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        status: 429,
-        headers: {
-          get: () => '2',
-        },
-      })
-    );
+      fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          status: 429,
+          headers: {
+            get: () => '2',
+          },
+        })
+      );
 
-    await transport.send(item);
-    expect(fetch).toHaveBeenCalledTimes(1);
+      await transport.send(v);
+      expect(fetch).toHaveBeenCalledTimes(1);
 
-    jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
+      jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
 
-    await transport.send(item);
-    expect(fetch).toHaveBeenCalledTimes(1);
+      await transport.send(v);
+      expect(fetch).toHaveBeenCalledTimes(1);
 
-    jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
-    await transport.send(item);
-    expect(fetch).toHaveBeenCalledTimes(2);
-  });
+      jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
+      await transport.send(v);
+      expect(fetch).toHaveBeenCalledTimes(2);
+    }
+  );
 
-  it('will back off on 429 for default interval if retry-after header present, with date', async () => {
-    jest.useFakeTimers();
+  // TODO: add case for resourceSpans once the respective transform is implemented
+  it.each([{ v: item, type: 'resourceLogs' }])(
+    'will back off on 429 for default interval if retry-after header present, with date while sending $type',
+    async ({ v }) => {
+      jest.useFakeTimers();
 
-    const transport = new OtlpHttpTransport({
-      logsURL: 'www.example.com/v1/logs',
-      defaultRateLimitBackoffMs: 1000,
-    });
+      const transport = new OtlpHttpTransport({
+        logsURL: 'www.example.com/v1/logs',
+        defaultRateLimitBackoffMs: 1000,
+      });
 
-    transport.internalLogger = mockInternalLogger;
+      transport.internalLogger = mockInternalLogger;
 
-    fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        status: 429,
-        headers: {
-          get: () => new Date(Date.now() + 3000).toISOString(),
-        },
-      })
-    );
+      fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          status: 429,
+          headers: {
+            get: () => new Date(Date.now() + 3000).toISOString(),
+          },
+        })
+      );
 
-    await transport.send(item);
-    expect(fetch).toHaveBeenCalledTimes(1);
+      await transport.send(v);
+      expect(fetch).toHaveBeenCalledTimes(1);
 
-    jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
-    await transport.send(item);
-    expect(fetch).toHaveBeenCalledTimes(1);
+      jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
+      await transport.send(v);
+      expect(fetch).toHaveBeenCalledTimes(1);
 
-    jest.setSystemTime(new Date(Date.now() + 2001).valueOf());
-    await transport.send(item);
-    expect(fetch).toHaveBeenCalledTimes(2);
-  });
+      jest.setSystemTime(new Date(Date.now() + 2001).valueOf());
+      await transport.send(v);
+      expect(fetch).toHaveBeenCalledTimes(2);
+    }
+  );
 
   it('sends batched items', () => {
     const transport = new OtlpHttpTransport({

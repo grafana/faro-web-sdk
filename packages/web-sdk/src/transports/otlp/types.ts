@@ -8,5 +8,5 @@ export interface OtlpHttpTransportOptions
   // The Otel spec defines separate endpoints per signal
   readonly tracesURL?: string;
   readonly logsURL?: string;
-  readonly metricsURL?: string;
+  // readonly metricsURL?: string;
 }

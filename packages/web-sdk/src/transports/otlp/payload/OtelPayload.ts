@@ -23,6 +23,7 @@ export class OtelPayload {
   getPayload(): OtelTransportPayload {
     return {
       resourceLogs: this.resourceLogsWithMetas.map(({ resourceLog }) => resourceLog),
+      resourceSpans: [],
     } as const;
   }
 
