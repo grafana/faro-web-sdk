@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.0.1
 
 - Have FetchTransport consume response body. Otherwise requests are not considered closed
+- Fix a bug where View and Session Instrumentation had wrong version applied
+- Use Change to use the new functions names from WebVitals instead of the deprecated ones
 
 ## 1.0.0
 
