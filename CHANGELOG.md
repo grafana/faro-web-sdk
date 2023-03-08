@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.1 — 1.0.12
+## 1.0.1 - 1.0.2
 
 - Have FetchTransport consume response body. Otherwise requests are not considered closed
 - Fix a bug where View and Session Instrumentation had wrong version applied
