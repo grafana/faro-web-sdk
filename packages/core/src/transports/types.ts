@@ -16,7 +16,7 @@ export interface TransportItem<P = APIEvent> {
 }
 
 export interface Transport extends Extension {
-  send(item: TransportItem): void | Promise<void>;
+  send(items: TransportItem | TransportItem[]): void | Promise<void>;
 
   // returns URLs to be ignored by tracing, to not cause a feedback loop
   getIgnoreUrls(): Patterns;

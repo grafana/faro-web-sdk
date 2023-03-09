@@ -1,6 +1,7 @@
 import type { Patterns } from '../config';
 import { BaseTransport } from '../transports';
 import type { Transport, TransportItem } from '../transports';
+import { isArray } from '../utils';
 import { VERSION } from '../version';
 
 export class MockTransport extends BaseTransport implements Transport {
@@ -13,8 +14,9 @@ export class MockTransport extends BaseTransport implements Transport {
     super();
   }
 
-  send(item: TransportItem): void | Promise<void> {
-    this.items.push(item);
+  send(item: TransportItem | TransportItem[]): void | Promise<void> {
+    const items = isArray(item) ? item : [item];
+    this.items.push(...items);
   }
 
   override getIgnoreUrls(): Patterns {

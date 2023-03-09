@@ -1,4 +1,5 @@
 import { EventEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import { OtelPayload } from './OtelPayload';
 
@@ -54,32 +55,30 @@ describe('OtelPayload', () => {
   };
 
   it('Creates an instance with empty OtelPayload', () => {
-    const otelPayload = new OtelPayload();
+    const otelPayload = new OtelPayload(mockInternalLogger);
     const payload = otelPayload.getPayload();
 
-    expect(payload.resourceLogs.length).toBe(0);
-    expect(payload.resourceSpans.length).toBe(0);
+    expect(payload.resourceLogs).toHaveLength(0);
   });
 
   it('Creates an instance containing the correct resourceLog for the given TransportItem', () => {
-    const otelPayload = new OtelPayload(logItem);
+    const otelPayload = new OtelPayload(mockInternalLogger, logItem);
     const payload = otelPayload.getPayload();
 
-    expect(payload.resourceLogs.length).toBe(1);
-    expect(payload.resourceLogs[0]).toMatchObject({
+    expect(payload.resourceLogs?.length).toBe(1);
+    expect(payload.resourceLogs?.[0]).toMatchObject({
       resource: { attributes: [] },
       scopeLogs: [{ logRecords: [resourceLog] }],
     });
-    expect(payload.resourceSpans.length).toBe(0);
   });
 
-  it('Add adds a new ScopeLog to existing resource log because they have the same meta', () => {
+  it('Add adds a new LogRecord to existing logRecords array because they have the same meta and same scope', () => {
     const transportItem = {
       ...logItem,
       meta: { browser: { name: 'Firefox' } },
     };
 
-    const otelPayload = new OtelPayload(transportItem);
+    const otelPayload = new OtelPayload(mockInternalLogger, transportItem);
 
     otelPayload.addResourceItem({
       ...transportItem,
@@ -90,12 +89,12 @@ describe('OtelPayload', () => {
     });
 
     const payload = otelPayload.getPayload();
-    expect(payload.resourceLogs.length).toBe(1);
-    expect(payload.resourceLogs[0]?.scopeLogs.length).toBe(2);
+    expect(payload.resourceLogs).toHaveLength(1);
+    expect(payload.resourceLogs?.[0]?.scopeLogs[0]?.logRecords).toHaveLength(2);
   });
 
   it('Add creates a new ResourceLog because they have different metas', () => {
-    const otelPayload = new OtelPayload({
+    const otelPayload = new OtelPayload(mockInternalLogger, {
       ...logItem,
       meta: { browser: { name: 'Firefox' } },
     });
@@ -106,7 +105,7 @@ describe('OtelPayload', () => {
     });
 
     const payload = otelPayload.getPayload();
-    expect(payload.resourceLogs.length).toBe(2);
-    expect(payload.resourceLogs[0]?.resource).not.toMatchObject(payload.resourceLogs[1]?.resource ?? {});
+    expect(payload.resourceLogs).toHaveLength(2);
+    expect(payload.resourceLogs?.[0]?.resource).not.toMatchObject(payload.resourceLogs?.[1]?.resource ?? {});
   });
 });

@@ -1,3 +1,4 @@
-export type { LogRecord, LogTransportItem, ResourceLog, Resource, ScopeLog } from './types';
+export type { LogRecord, LogTransportItem, ResourceLog, Resource, ScopeLog, LogsTransform } from './types';
 
-export { toScopeLog, toResourceLog } from './transform';
+// export { toScopeLog, toResourceLog, toLogRecord } from './transform';
+export { initLogsTransform } from './transform';

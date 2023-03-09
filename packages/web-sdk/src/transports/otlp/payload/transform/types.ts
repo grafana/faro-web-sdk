@@ -27,3 +27,12 @@ export interface ResourceLog {
 }
 
 export type LogTransportItem = TransportItem<Exclude<APIEvent, 'TraceEvent'>>;
+
+export type LogsTransform = {
+  toResourceLog: (transportItem: LogTransportItem) => {
+    resource: Readonly<Resource>;
+    scopeLogs: ScopeLog[];
+  };
+  toScopeLog: (transportItem: LogTransportItem) => ScopeLog;
+  toLogRecord: (transportItem: LogTransportItem) => LogRecord;
+};
