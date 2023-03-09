@@ -1,8 +1,8 @@
 import type { Patterns } from '../config';
 import { BaseTransport } from '../transports';
 import type { Transport, TransportItem } from '../transports';
-import { VERSION } from '../version';
 import { isArray } from '../utils';
+import { VERSION } from '../version';
 
 export class MockTransport extends BaseTransport implements Transport {
   readonly name = '@grafana/transport-mock';
