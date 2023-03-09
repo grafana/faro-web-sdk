@@ -12,7 +12,6 @@ export class BatchTransport extends BaseTransport {
   private readonly batchSendCount: number;
   private readonly batchSendTimeout: number;
 
-  private timeoutId?: number = undefined;
   private signalBuffer: TransportItem[] = [];
 
   constructor(private transport: BaseTransport, options: BatchTransportOptions) {
@@ -31,8 +30,6 @@ export class BatchTransport extends BaseTransport {
   }
 
   send(item: TransportItem | TransportItem[]): void {
-    clearTimeout(this.timeoutId);
-
     const items = isArray(item) ? item : [item];
 
     items.forEach((item) => {

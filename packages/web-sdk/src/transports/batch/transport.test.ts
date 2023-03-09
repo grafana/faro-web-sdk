@@ -109,19 +109,4 @@ describe('BatchTransport', () => {
     transport.send(item);
     expect(mockSendFunction).toBeCalledTimes(1);
   });
-
-  it('Clears timeout on every send call', () => {
-    const { mockTransport } = useMockTransport();
-
-    const transport = new BatchTransport(mockTransport, {} as BatchTransportOptions);
-
-    transport.internalLogger = mockInternalLogger;
-
-    const mockClearTimeout = jest.fn();
-    jest.spyOn(global, 'clearTimeout').mockImplementation(mockClearTimeout);
-
-    transport.send(item);
-    transport.send(item);
-    expect(mockClearTimeout).toBeCalledTimes(2);
-  });
 });
