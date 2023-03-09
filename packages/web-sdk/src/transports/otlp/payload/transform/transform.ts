@@ -19,7 +19,7 @@ import type { InternalLogger } from '@grafana/faro-core';
 
 import { isAttribute, toAttribute, toAttributeValue } from '../attribute';
 
-import type { LogRecord, LogsTransform, LogTransportItem, Resource, ScopeLog } from './types';
+import type { LogRecord, LogsTransform, LogTransportItem, Resource, ResourceMetas, ScopeLog } from './types';
 
 /**
  * Seems currently to be missing in the semantic-conventions npm package.
@@ -46,7 +46,7 @@ export function initLogsTransform(internalLogger: InternalLogger): LogsTransform
   }
 
   function toResource(transportItem: LogTransportItem): Readonly<Resource> {
-    const { browser, sdk, app } = transportItem.meta;
+    const { browser, sdk, app }: ResourceMetas = transportItem.meta;
 
     return {
       attributes: [

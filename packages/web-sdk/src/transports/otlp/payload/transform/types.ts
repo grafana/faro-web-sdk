@@ -1,6 +1,6 @@
 import type { IKeyValue } from '@opentelemetry/otlp-transformer';
 
-import type { APIEvent, TransportItem } from '@grafana/faro-core';
+import type { APIEvent, Meta, TransportItem } from '@grafana/faro-core';
 
 export interface Resource {
   attributes: IKeyValue[];
@@ -36,3 +36,5 @@ export type LogsTransform = {
   toScopeLog: (transportItem: LogTransportItem) => ScopeLog;
   toLogRecord: (transportItem: LogTransportItem) => LogRecord;
 };
+
+export type ResourceMetas = Pick<Meta, 'app' | 'browser' | 'sdk'>;
