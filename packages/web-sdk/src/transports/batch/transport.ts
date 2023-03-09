@@ -2,7 +2,6 @@ import { BaseTransport, isArray, TransportItem, VERSION } from '@grafana/faro-co
 
 import type { BatchTransportOptions } from './types';
 
-const DEFAULT_FORCE_BATCH_SEND_TIMEOUT_MS = 500;
 const DEFAULT_BATCH_SEND_TIMEOUT_MS = 250;
 const DEFAULT_BATCH_SEND_COUNT = 50;
 
@@ -12,7 +11,6 @@ export class BatchTransport extends BaseTransport {
 
   private readonly batchSendCount: number;
   private readonly batchSendTimeout: number;
-  private readonly batchForceSendTimeout: number;
 
   private timeoutId?: number = undefined;
   private signalBuffer: TransportItem[] = [];
@@ -22,7 +20,6 @@ export class BatchTransport extends BaseTransport {
 
     this.batchSendCount = options.batchSendCount ?? DEFAULT_BATCH_SEND_COUNT;
     this.batchSendTimeout = options.batchSendTimeout ?? DEFAULT_BATCH_SEND_TIMEOUT_MS;
-    this.batchForceSendTimeout = options.batchForceSendTimeout ?? DEFAULT_FORCE_BATCH_SEND_TIMEOUT_MS;
 
     // Send batched/buffered data when user navigates to new page, switches or closes the tab, minimizes or closes the browser.
     // If on mobile, it also sends data if user switches from the browser to a different app.
@@ -46,10 +43,8 @@ export class BatchTransport extends BaseTransport {
       }
     });
 
-    this.timeoutId = window.setTimeout(() => this.flush(), this.batchSendTimeout);
-
-    if (this.batchForceSendTimeout > 0) {
-      window.setTimeout(() => this.flush(), this.batchForceSendTimeout);
+    if (this.batchSendTimeout > 0) {
+      window.setTimeout(() => this.flush(), this.batchSendTimeout);
     }
   }
 

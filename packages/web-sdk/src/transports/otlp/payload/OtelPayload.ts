@@ -1,6 +1,6 @@
 import { deepEqual, InternalLogger, Meta, TransportItem, TransportItemType } from '@grafana/faro-core';
 
-import { toLogRecord, toResourceLog } from './transform';
+import { LogsTransform, useLogsTransform } from './transform';
 import type { ResourceLog } from './transform';
 import type { OtelTransportPayload } from './types';
 
@@ -11,9 +11,12 @@ interface ResourceLogsMetaMap {
 
 export class OtelPayload {
   private resourceLogsWithMetas = [] as ResourceLogsMetaMap[];
+  private logsTransform: LogsTransform;
 
-  constructor(transportItem?: TransportItem, private internalLogger?: InternalLogger) {
+  constructor(private internalLogger: InternalLogger, transportItem?: TransportItem) {
     this.internalLogger = internalLogger;
+
+    this.logsTransform = useLogsTransform(this.internalLogger);
 
     if (transportItem) {
       this.addResourceItem(transportItem);
@@ -29,6 +32,7 @@ export class OtelPayload {
 
   addResourceItem(transportItem: TransportItem): void {
     const { type, meta } = transportItem;
+    const { toLogRecord, toResourceLog } = this.logsTransform;
 
     try {
       switch (type) {

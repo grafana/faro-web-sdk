@@ -45,7 +45,7 @@ describe('BatchTransport', () => {
     jest.useRealTimers();
   });
 
-  it('Sends payload after no new signal has arrived for "batchSendTimeout" milliseconds after the last one and resets the buffer.', () => {
+  it('Sends payload after "batchSendTimeout" milliseconds and resets the buffer.', () => {
     jest.useFakeTimers();
 
     const { mockSendFunction, mockTransport } = useMockTransport();
@@ -62,35 +62,6 @@ describe('BatchTransport', () => {
     expect(mockSendFunction).not.toBeCalled();
 
     jest.advanceTimersByTime(timeoutValue + 1);
-    expect(mockSendFunction).toBeCalledTimes(1);
-  });
-
-  it('Forces sending payload after "batchForceSendTimeout" milliseconds ignoring "batchSendCount" and "batchSendTimeout". It also resets the buffer.', () => {
-    jest.useFakeTimers();
-
-    const signalArrivedAfterMs = 50;
-    const timeoutValue = 100;
-    const batchForceSendTimeout = 110;
-
-    const { mockSendFunction, mockTransport } = useMockTransport();
-
-    const transport = new BatchTransport(mockTransport, {
-      sendBatchTimeout: timeoutValue,
-      batchForceSendTimeout,
-    } as BatchTransportOptions);
-
-    transport.internalLogger = mockInternalLogger;
-
-    transport.send(item);
-    expect(mockSendFunction).not.toBeCalled();
-
-    jest.advanceTimersByTime(signalArrivedAfterMs); // 50ms
-    expect(mockSendFunction).toBeCalledTimes(0);
-
-    jest.advanceTimersByTime(signalArrivedAfterMs); // 100ms
-    expect(mockSendFunction).toBeCalledTimes(0);
-
-    jest.advanceTimersByTime(signalArrivedAfterMs); // 150ms
     expect(mockSendFunction).toBeCalledTimes(1);
   });
 

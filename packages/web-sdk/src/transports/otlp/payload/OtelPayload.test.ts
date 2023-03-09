@@ -1,4 +1,5 @@
 import { EventEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import { OtelPayload } from './OtelPayload';
 
@@ -54,14 +55,14 @@ describe('OtelPayload', () => {
   };
 
   it('Creates an instance with empty OtelPayload', () => {
-    const otelPayload = new OtelPayload();
+    const otelPayload = new OtelPayload(mockInternalLogger);
     const payload = otelPayload.getPayload();
 
     expect(payload.resourceLogs).toHaveLength(0);
   });
 
   it('Creates an instance containing the correct resourceLog for the given TransportItem', () => {
-    const otelPayload = new OtelPayload(logItem);
+    const otelPayload = new OtelPayload(mockInternalLogger, logItem);
     const payload = otelPayload.getPayload();
 
     expect(payload.resourceLogs?.length).toBe(1);
@@ -77,7 +78,7 @@ describe('OtelPayload', () => {
       meta: { browser: { name: 'Firefox' } },
     };
 
-    const otelPayload = new OtelPayload(transportItem);
+    const otelPayload = new OtelPayload(mockInternalLogger, transportItem);
 
     otelPayload.addResourceItem({
       ...transportItem,
@@ -93,7 +94,7 @@ describe('OtelPayload', () => {
   });
 
   it('Add creates a new ResourceLog because they have different metas', () => {
-    const otelPayload = new OtelPayload({
+    const otelPayload = new OtelPayload(mockInternalLogger, {
       ...logItem,
       meta: { browser: { name: 'Firefox' } },
     });

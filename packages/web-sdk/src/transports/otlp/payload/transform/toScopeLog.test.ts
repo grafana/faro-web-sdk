@@ -1,6 +1,7 @@
 import { ExceptionEvent, TransportItem, TransportItemType, VERSION } from '@grafana/faro-core';
+import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
-import { toScopeLog } from './transform';
+import { useLogsTransform } from './transform';
 
 const item: TransportItem<ExceptionEvent> = {
   type: TransportItemType.EXCEPTION,
@@ -30,7 +31,7 @@ const item: TransportItem<ExceptionEvent> = {
 
 describe('toScopeLog', () => {
   it('Builds a valid ScopeLog.', () => {
-    const { scope, logRecords } = toScopeLog(item);
+    const { scope, logRecords } = useLogsTransform(mockInternalLogger).toScopeLog(item);
     expect(scope).toMatchObject({
       name: '@grafana/faro-web-sdk',
       version: VERSION,

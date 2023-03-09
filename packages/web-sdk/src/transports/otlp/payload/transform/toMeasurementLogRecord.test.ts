@@ -1,6 +1,7 @@
 import { MeasurementEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
-import { toScopeLog } from './transform';
+import { useLogsTransform } from './transform';
 
 const item: TransportItem<MeasurementEvent> = {
   type: TransportItemType.MEASUREMENT,
@@ -162,7 +163,7 @@ const matchMeasurementLogRecord = {
 
 describe('toMeasurementLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
-    const measurementLogRecord = toScopeLog(item).logRecords[0];
+    const measurementLogRecord = useLogsTransform(mockInternalLogger).toScopeLog(item).logRecords[0];
     expect(measurementLogRecord).toMatchObject(matchMeasurementLogRecord);
   });
 });

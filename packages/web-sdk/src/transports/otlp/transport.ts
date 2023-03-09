@@ -33,7 +33,7 @@ export class OtlpHttpTransport extends BaseTransport {
   }
 
   send(item: TransportItem | TransportItem[]): void {
-    const otelPayload = new OtelPayload(undefined, this.internalLogger);
+    const otelPayload = new OtelPayload(this.internalLogger);
     const items = isArray(item) ? item : [item];
 
     items.forEach((item) => otelPayload.addResourceItem(item));
