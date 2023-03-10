@@ -19,7 +19,7 @@ import type { InternalLogger } from '@grafana/faro-core';
 
 import { isAttribute, toAttribute, toAttributeValue } from '../attribute';
 
-import type { LogRecord, LogsTransform, LogTransportItem, Resource, ScopeLog } from './types';
+import type { LogRecord, LogsTransform, LogTransportItem, Resource, ResourceMeta, ScopeLog } from './types';
 
 /**
  * Seems currently to be missing in the semantic-conventions npm package.
@@ -46,7 +46,7 @@ export function initLogsTransform(internalLogger: InternalLogger): LogsTransform
   }
 
   function toResource(transportItem: LogTransportItem): Readonly<Resource> {
-    const { browser, sdk, app } = transportItem.meta;
+    const { browser, sdk, app }: ResourceMeta = transportItem.meta;
 
     return {
       attributes: [
@@ -125,8 +125,8 @@ export function initLogsTransform(internalLogger: InternalLogger): LogsTransform
       body,
       attributes: [
         ...getCommonLogAttributes(meta),
-        toAttribute('event.name', payload.name), // No prefix because this is a semantic attribute. But event.name constant is currently missing in sematic-conventions npm package
-        toAttribute('event.domain', payload.domain), // No prefix because this is a semantic attribute. But event.domain constant is currently missing in sematic-conventions npm package
+        toAttribute('event.name', payload.name), // This is a semantic attribute. But event.name constant is currently missing in sematic-conventions npm package
+        toAttribute('event.domain', payload.domain), // This is a semantic attribute. But event.domain constant is currently missing in sematic-conventions npm package
         toAttribute('event.attributes', payload.attributes),
       ].filter(isAttribute),
       traceId: payload.trace?.trace_id,

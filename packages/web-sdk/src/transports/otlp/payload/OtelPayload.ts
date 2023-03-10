@@ -1,12 +1,13 @@
-import { deepEqual, InternalLogger, Meta, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { deepEqual, InternalLogger, TransportItem, TransportItemType } from '@grafana/faro-core';
 
 import { initLogsTransform, LogsTransform } from './transform';
 import type { ResourceLog } from './transform';
+import type { ResourceMeta } from './transform/types';
 import type { OtelTransportPayload } from './types';
 
 interface ResourceLogsMetaMap {
   resourceLog: ResourceLog;
-  meta: Meta;
+  resourceMeta: ResourceMeta;
 }
 
 export class OtelPayload {
@@ -31,8 +32,14 @@ export class OtelPayload {
   }
 
   addResourceItem(transportItem: TransportItem): void {
-    const { type, meta } = transportItem;
     const { toLogRecord, toResourceLog } = this.initLogsTransform;
+    const { type, meta } = transportItem;
+
+    const currentItemResourceMeta: ResourceMeta = {
+      browser: meta.browser,
+      sdk: meta.sdk,
+      app: meta.app,
+    } as const;
 
     try {
       switch (type) {
@@ -40,8 +47,8 @@ export class OtelPayload {
         case TransportItemType.EXCEPTION:
         case TransportItemType.EVENT:
         case TransportItemType.MEASUREMENT:
-          const resourceLogWithMeta = this.resourceLogsWithMetas.find(({ meta }) =>
-            deepEqual(transportItem.meta, meta)
+          const resourceLogWithMeta = this.resourceLogsWithMetas.find(({ resourceMeta }) =>
+            deepEqual(currentItemResourceMeta, resourceMeta)
           );
 
           if (resourceLogWithMeta) {
@@ -52,7 +59,7 @@ export class OtelPayload {
           } else {
             this.resourceLogsWithMetas.push({
               resourceLog: toResourceLog(transportItem),
-              meta,
+              resourceMeta: currentItemResourceMeta,
             });
           }
 
