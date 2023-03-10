@@ -1,10 +1,10 @@
-import { LogEvent, LogLevel, TransportItem, TransportItemType, VERSION } from '@grafana/faro-core';
+import { LogEvent, LogLevel, TraceEvent, TransportItem, TransportItemType, VERSION } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import type { LogRecord, OtelTransportPayload } from './payload';
 import { OtlpHttpTransport } from './transport';
 
-const item: TransportItem<LogEvent> = {
+const logTransportItem: TransportItem<LogEvent> = {
   type: TransportItemType.LOG,
   payload: {
     context: {},
@@ -42,6 +42,12 @@ const otelTransportPayload: OtelTransportPayload['resourceLogs'] = [
   },
 ];
 
+const traceTransportItem: TransportItem<TraceEvent> = {
+  type: TransportItemType.TRACE,
+  payload: {},
+  meta: {},
+} as const;
+
 const fetch = jest.fn(() => Promise.resolve({ status: 200 }));
 (global as any).fetch = fetch;
 
@@ -52,18 +58,32 @@ describe('OtlpHttpTransport', () => {
     jest.useRealTimers();
   });
 
-  it('Sends OTEL resources over fetch to their configured endpoints.', () => {
+  it.each([
+    {
+      v: logTransportItem,
+      type: 'resourceLogs',
+      url: 'https://www.example.com/v1/logs',
+      payload: otelTransportPayload,
+    },
+    {
+      v: traceTransportItem,
+      type: 'resourceSpans',
+      url: 'https://www.example.com/v1/traces',
+      payload: [{ resource: { attributes: [] }, scopeSpans: [] }],
+    },
+  ])('Sends $type over fetch to its configured endpoint.', ({ v, url, payload }) => {
     const transport = new OtlpHttpTransport({
       logsURL: 'https://www.example.com/v1/logs',
+      tracesURL: 'https://www.example.com/v1/traces',
     });
     transport.internalLogger = mockInternalLogger;
 
-    transport.send(item);
+    transport.send(v);
 
     expect(fetch).toHaveBeenCalledTimes(1);
 
-    expect(fetch).toHaveBeenCalledWith('https://www.example.com/v1/logs', {
-      body: JSON.stringify(otelTransportPayload),
+    expect(fetch).toHaveBeenCalledWith(url, {
+      body: JSON.stringify(payload),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -80,14 +100,16 @@ describe('OtlpHttpTransport', () => {
     transport.internalLogger = mockInternalLogger;
 
     for (let idx = 0; idx < 6; idx++) {
-      transport.send(item);
+      transport.send(logTransportItem);
     }
 
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 
-  // TODO: add case for resourceSpans once the respective transform is implemented
-  it.each([{ v: item, type: 'resourceLogs' }])(
+  it.each([
+    { v: logTransportItem, type: 'resourceLogs' },
+    { v: traceTransportItem, type: 'resourceSpans' },
+  ])(
     `will back off on 429 for default interval if no retry-after header present while sending $type`,
     async ({ v }) => {
       jest.useFakeTimers();
@@ -122,7 +144,10 @@ describe('OtlpHttpTransport', () => {
   );
 
   // TODO: add case for resourceSpans once the respective transform is implemented
-  it.each([{ v: item, type: 'resourceLogs' }])(
+  it.each([
+    { v: logTransportItem, type: 'resourceLogs' },
+    { v: traceTransportItem, type: 'resourceSpans' },
+  ])(
     'will back off on 429 for default interval if retry-after header present, with delay while sending $type',
     async ({ v }) => {
       jest.useFakeTimers();
@@ -157,8 +182,10 @@ describe('OtlpHttpTransport', () => {
     }
   );
 
-  // TODO: add case for resourceSpans once the respective transform is implemented
-  it.each([{ v: item, type: 'resourceLogs' }])(
+  it.each([
+    { v: logTransportItem, type: 'resourceLogs' },
+    { v: traceTransportItem, type: 'resourceSpans' },
+  ])(
     'will back off on 429 for default interval if retry-after header present, with date while sending $type',
     async ({ v }) => {
       jest.useFakeTimers();
@@ -199,9 +226,9 @@ describe('OtlpHttpTransport', () => {
 
     transport.internalLogger = mockInternalLogger;
 
-    const secondItem = { ...item, payload: { ...item.payload, message: 'foo' } };
+    const secondItem = { ...logTransportItem, payload: { ...logTransportItem.payload, message: 'foo' } };
 
-    transport.send([item, secondItem]);
+    transport.send([logTransportItem, secondItem]);
 
     expect(fetch).toHaveBeenCalledTimes(1);
 

@@ -4,6 +4,7 @@ import {
   SemanticResourceAttributes,
   TelemetrySdkLanguageValues,
 } from '@opentelemetry/semantic-conventions';
+import type { TraceEvent } from 'packages/core/src/api';
 
 import {
   EventEvent,
@@ -19,7 +20,17 @@ import type { InternalLogger } from '@grafana/faro-core';
 
 import { isAttribute, toAttribute, toAttributeValue } from '../attribute';
 
-import type { LogRecord, LogsTransform, LogTransportItem, Resource, ResourceMeta, ScopeLog } from './types';
+import type {
+  LogRecord,
+  LogsTransform,
+  LogTransportItem,
+  Resource,
+  ResourceLogs,
+  ResourceMeta,
+  ResourceSpans,
+  ScopeLog,
+  TraceTransform,
+} from './types';
 
 /**
  * Seems currently to be missing in the semantic-conventions npm package.
@@ -35,39 +46,13 @@ const SemanticBrowserAttributes = {
   BROWSER_LANGUAGE: 'browser.language',
 } as const;
 
-export function initLogsTransform(internalLogger: InternalLogger): LogsTransform {
-  function toResourceLog(transportItem: LogTransportItem) {
+export function getLogTransforms(internalLogger: InternalLogger): LogsTransform {
+  function toResourceLog(transportItem: LogTransportItem): ResourceLogs {
     const resource = toResource(transportItem);
 
     return {
       resource,
       scopeLogs: [toScopeLog(transportItem)],
-    };
-  }
-
-  function toResource(transportItem: LogTransportItem): Readonly<Resource> {
-    const { browser, sdk, app }: ResourceMeta = transportItem.meta;
-
-    return {
-      attributes: [
-        toAttribute(SemanticBrowserAttributes.BROWSER_MOBILE, browser?.mobile),
-        toAttribute(SemanticBrowserAttributes.BROWSER_USER_AGENT, browser?.userAgent),
-        toAttribute(SemanticBrowserAttributes.BROWSER_LANGUAGE, browser?.language),
-        toAttribute('browser.os', browser?.os),
-        // toAttribute(SemanticBrowserAttributes.BROWSER_BRANDS, browser?.brands),
-        toAttribute('browser.name', browser?.name),
-        toAttribute('browser.version', browser?.version),
-
-        toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_NAME, sdk?.name),
-        toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_VERSION, sdk?.version),
-        Boolean(sdk)
-          ? toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_LANGUAGE, TelemetrySdkLanguageValues.WEBJS)
-          : undefined,
-
-        toAttribute(SemanticResourceAttributes.SERVICE_NAME, app?.name),
-        toAttribute(SemanticResourceAttributes.SERVICE_VERSION, app?.version),
-        toAttribute(SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT, app?.environment),
-      ].filter(isAttribute),
     };
   }
 
@@ -195,5 +180,47 @@ export function initLogsTransform(internalLogger: InternalLogger): LogsTransform
     toResourceLog,
     toScopeLog,
     toLogRecord,
+  };
+}
+
+export function getTraceTransforms(_internalLogger?: InternalLogger): TraceTransform {
+  function toResourceSpan(transportItem: TransportItem<TraceEvent>): ResourceSpans {
+    const resource = toResource(transportItem);
+    const scopeSpans = transportItem.payload.resourceSpans?.[0]?.scopeSpans;
+
+    return {
+      resource,
+      scopeSpans: scopeSpans ?? [],
+    };
+  }
+
+  return {
+    toResourceSpan,
+  };
+}
+
+function toResource(transportItem: TransportItem): Readonly<Resource> {
+  const { browser, sdk, app }: ResourceMeta = transportItem.meta;
+
+  return {
+    attributes: [
+      toAttribute(SemanticBrowserAttributes.BROWSER_MOBILE, browser?.mobile),
+      toAttribute(SemanticBrowserAttributes.BROWSER_USER_AGENT, browser?.userAgent),
+      toAttribute(SemanticBrowserAttributes.BROWSER_LANGUAGE, browser?.language),
+      toAttribute('browser.os', browser?.os),
+      // toAttribute(SemanticBrowserAttributes.BROWSER_BRANDS, browser?.brands),
+      toAttribute('browser.name', browser?.name),
+      toAttribute('browser.version', browser?.version),
+
+      toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_NAME, sdk?.name),
+      toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_VERSION, sdk?.version),
+      Boolean(sdk)
+        ? toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_LANGUAGE, TelemetrySdkLanguageValues.WEBJS)
+        : undefined,
+
+      toAttribute(SemanticResourceAttributes.SERVICE_NAME, app?.name),
+      toAttribute(SemanticResourceAttributes.SERVICE_VERSION, app?.version),
+      toAttribute(SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT, app?.environment),
+    ].filter(isAttribute),
   };
 }
