@@ -37,4 +37,4 @@ export type LogsTransform = {
   toLogRecord: (transportItem: LogTransportItem) => LogRecord;
 };
 
-export type ResourceMetas = Pick<Meta, 'app' | 'browser' | 'sdk'>;
+export type ResourceMeta = Pick<Meta, 'app' | 'browser' | 'sdk'>;

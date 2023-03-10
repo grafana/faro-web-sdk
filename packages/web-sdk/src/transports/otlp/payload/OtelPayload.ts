@@ -2,12 +2,12 @@ import { deepEqual, InternalLogger, TransportItem, TransportItemType } from '@gr
 
 import { initLogsTransform, LogsTransform } from './transform';
 import type { ResourceLog } from './transform';
-import type { ResourceMetas } from './transform/types';
+import type { ResourceMeta } from './transform/types';
 import type { OtelTransportPayload } from './types';
 
 interface ResourceLogsMetaMap {
   resourceLog: ResourceLog;
-  resourceMetas: ResourceMetas;
+  resourceMeta: ResourceMeta;
 }
 
 export class OtelPayload {
@@ -35,7 +35,7 @@ export class OtelPayload {
     const { toLogRecord, toResourceLog } = this.initLogsTransform;
     const { type, meta } = transportItem;
 
-    const currentItemResourceMetas: ResourceMetas = {
+    const currentItemResourceMeta: ResourceMeta = {
       browser: meta.browser,
       sdk: meta.sdk,
       app: meta.app,
@@ -47,8 +47,8 @@ export class OtelPayload {
         case TransportItemType.EXCEPTION:
         case TransportItemType.EVENT:
         case TransportItemType.MEASUREMENT:
-          const resourceLogWithMeta = this.resourceLogsWithMetas.find(({ resourceMetas }) =>
-            deepEqual(currentItemResourceMetas, resourceMetas)
+          const resourceLogWithMeta = this.resourceLogsWithMetas.find(({ resourceMeta }) =>
+            deepEqual(currentItemResourceMeta, resourceMeta)
           );
 
           if (resourceLogWithMeta) {
@@ -59,7 +59,7 @@ export class OtelPayload {
           } else {
             this.resourceLogsWithMetas.push({
               resourceLog: toResourceLog(transportItem),
-              resourceMetas: currentItemResourceMetas,
+              resourceMeta: currentItemResourceMeta,
             });
           }
 

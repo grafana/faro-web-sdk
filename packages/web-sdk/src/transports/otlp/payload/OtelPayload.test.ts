@@ -85,7 +85,7 @@ describe('OtelPayload', () => {
       meta: {
         ...transportItem.meta,
         // Page meta is NOT used to create the Resource object.
-        // This is to ensure hat we do only diff Resource related metas when defining if item belongs to a Resource we've already created.
+        // This is to ensure that we do only diff Resource related metas when defining if item belongs to a Resource we've already created.
         page: {
           id: '123',
         },
