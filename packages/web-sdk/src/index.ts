@@ -14,6 +14,7 @@ export {
   parseStacktrace,
   ViewInstrumentation,
   WebVitalsInstrumentation,
+  SessionInstrumentation,
 } from './instrumentations';
 export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
