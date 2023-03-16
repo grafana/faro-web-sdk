@@ -32,11 +32,11 @@ Example usage:
     <!-- Load the bundles from unpkg -->
     <!-- Be sure to use the appropiate version instead of the one below -->
     <script
-      src="https://unpkg.com/@grafana/faro-web-sdk@1.0.0-beta4/dist/bundle/faro-web-sdk.iife.js"
+      src="https://unpkg.com/@grafana/faro-web-sdk@^1.0.0/dist/bundle/faro-web-sdk.iife.js"
       onload="window.init()"
     ></script>
     <script
-      src="https://unpkg.com/@grafana/faro-web-tracing@1.0.0-beta4/dist/bundle/faro-web-tracing.iife.js"
+      src="https://unpkg.com/@grafana/faro-web-tracing@^1.0.0/dist/bundle/faro-web-tracing.iife.js"
       onload="window.addTracing()"
     ></script>
   </body>
