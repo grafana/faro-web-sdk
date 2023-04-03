@@ -1,6 +1,6 @@
-import type { ResourceLog } from './transform';
+import type { ResourceLogs } from './transform';
 
 export interface OtelTransportPayload {
-  readonly resourceLogs: Readonly<ResourceLog[]>;
+  readonly resourceLogs: Readonly<ResourceLogs[]>;
   readonly resourceSpans: Readonly<unknown[]>;
 }

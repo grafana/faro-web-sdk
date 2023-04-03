@@ -1,7 +1,7 @@
 import { LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
-import { initLogsTransform } from './transform';
+import { getLogTransforms } from './transform';
 
 const item: Readonly<TransportItem<LogEvent>> = {
   type: TransportItemType.LOG,
@@ -103,9 +103,9 @@ const matchResourcePayload = {
 } as const;
 
 describe('toResourceLog()', () => {
-  const { toResourceLog } = initLogsTransform(mockInternalLogger);
+  const { toResourceLog } = getLogTransforms(mockInternalLogger);
 
-  it('Builds a valid ResourceLog structure', () => {
+  it('Builds a valid ResourceLogs structure', () => {
     const resourceLog = toResourceLog(item);
 
     expect(resourceLog).toBeTruthy();

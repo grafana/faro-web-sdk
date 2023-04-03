@@ -1,7 +1,7 @@
 import { ExceptionEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
-import { initLogsTransform } from './transform';
+import { getLogTransforms } from './transform';
 
 const item: TransportItem<ExceptionEvent> = {
   type: TransportItemType.EXCEPTION,
@@ -241,7 +241,7 @@ const matchErrorLogRecord = {
 
 describe('toErrorLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
-    const errorLogRecord = initLogsTransform(mockInternalLogger).toScopeLog(item).logRecords[0];
+    const errorLogRecord = getLogTransforms(mockInternalLogger).toScopeLog(item).logRecords[0];
     expect(errorLogRecord).toMatchObject(matchErrorLogRecord);
   });
 });

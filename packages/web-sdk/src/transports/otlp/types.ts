@@ -1,4 +1,6 @@
-import type { FetchTransportOptions } from '../fetch/types';
+import type { FetchTransportOptions, FetchTransportRequestOptions } from '../fetch/types';
+
+export type OtlpTransportRequestOptions = FetchTransportRequestOptions;
 
 export interface OtlpHttpTransportOptions
   extends Pick<
@@ -8,5 +10,7 @@ export interface OtlpHttpTransportOptions
   // The Otel spec defines separate endpoints per signal
   readonly tracesURL?: string;
   readonly logsURL?: string;
-  // readonly metricsURL?: string;
+
+  // addition options for global.Fetch
+  requestOptions?: OtlpTransportRequestOptions;
 }

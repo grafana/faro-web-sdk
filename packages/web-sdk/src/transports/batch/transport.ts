@@ -14,11 +14,11 @@ export class BatchTransport extends BaseTransport {
 
   private signalBuffer: TransportItem[] = [];
 
-  constructor(private transport: BaseTransport, options: BatchTransportOptions) {
+  constructor(private transport: BaseTransport, options?: BatchTransportOptions) {
     super();
 
-    this.batchSendCount = options.batchSendCount ?? DEFAULT_BATCH_SEND_COUNT;
-    this.batchSendTimeout = options.batchSendTimeout ?? DEFAULT_BATCH_SEND_TIMEOUT_MS;
+    this.batchSendCount = options?.batchSendCount ?? DEFAULT_BATCH_SEND_COUNT;
+    this.batchSendTimeout = options?.batchSendTimeout ?? DEFAULT_BATCH_SEND_TIMEOUT_MS;
 
     // Send batched/buffered data when user navigates to new page, switches or closes the tab, minimizes or closes the browser.
     // If on mobile, it also sends data if user switches from the browser to a different app.
@@ -48,5 +48,9 @@ export class BatchTransport extends BaseTransport {
   private flush() {
     this.transport.send(this.signalBuffer);
     this.signalBuffer = [];
+  }
+
+  override getIgnoreUrls(): Array<string | RegExp> {
+    return this.transport.getIgnoreUrls();
   }
 }

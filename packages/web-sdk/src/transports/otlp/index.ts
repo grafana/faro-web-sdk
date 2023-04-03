@@ -1,2 +1,2 @@
-export type { OtlpHttpTransportOptions } from './types';
 export { OtlpHttpTransport } from './transport';
+export type { OtlpHttpTransportOptions, OtlpTransportRequestOptions } from './types';

@@ -4,7 +4,7 @@ import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 import { OtelPayload } from './OtelPayload';
 
 describe('OtelPayload', () => {
-  const logItem: TransportItem<EventEvent> = {
+  const logTransportItem: TransportItem<EventEvent> = {
     type: TransportItemType.EVENT,
     payload: {
       name: 'event-name',
@@ -54,6 +54,90 @@ describe('OtelPayload', () => {
     ],
   };
 
+  const traceTransportItem = {
+    type: TransportItemType.TRACE,
+    payload: {
+      resourceSpans: [
+        {
+          resource: {
+            attributes: [
+              // Otel resource attributes left empty in this test because they are replaced by Faro Meta Attributes (these contain the Otel ones and add a few more)
+            ],
+            droppedAttributesCount: 0,
+          },
+          scopeSpans: [
+            {
+              scope: {
+                name: '@opentelemetry/instrumentation-document-load',
+                version: '0.31.0',
+              },
+              spans: [
+                {
+                  traceId: 'd6bba34860089d3a4ee58df0811b2f5f',
+                  spanId: '22c85dd7b7c674e8',
+                  parentSpanId: '16cff06b28240ca6',
+                  name: 'resourceFetch',
+                  kind: 1,
+                  startTimeUnixNano: 1679329154423000000,
+                  endTimeUnixNano: 1679329154449000000,
+                  attributes: [
+                    {
+                      key: 'session_id',
+                      value: {
+                        stringValue: 'KBw5UzUuvF',
+                      },
+                    },
+                    {
+                      key: 'component',
+                      value: {
+                        stringValue: 'document-load',
+                      },
+                    },
+                    {
+                      key: 'http.url',
+                      value: {
+                        stringValue:
+                          'http://localhost:5173/@fs/Users/marcoschaefer/Code/faro-web-sdk/packages/web-sdk/dist/esm/transports/otlp/index.js?t=1679329135042',
+                      },
+                    },
+                    {
+                      key: 'http.response_content_length',
+                      value: {
+                        intValue: 671,
+                      },
+                    },
+                  ],
+                  droppedAttributesCount: 0,
+                  events: [
+                    {
+                      attributes: [],
+                      name: 'test-event',
+                      timeUnixNano: 1679329154423000000,
+                      droppedAttributesCount: 0,
+                    },
+                  ],
+                  droppedEventsCount: 0,
+                  status: {
+                    code: 0,
+                  },
+                  links: [],
+                  droppedLinksCount: 0,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    meta: {
+      browser: {
+        name: 'browser-name',
+        version: 'browser-v109.0',
+        //…
+      },
+    },
+  };
+
   it('Creates an instance with empty OtelPayload', () => {
     const otelPayload = new OtelPayload(mockInternalLogger);
     const payload = otelPayload.getPayload();
@@ -62,10 +146,10 @@ describe('OtelPayload', () => {
   });
 
   it('Creates an instance containing the correct resourceLog for the given TransportItem', () => {
-    const otelPayload = new OtelPayload(mockInternalLogger, logItem);
+    const otelPayload = new OtelPayload(mockInternalLogger, logTransportItem);
     const payload = otelPayload.getPayload();
 
-    expect(payload.resourceLogs?.length).toBe(1);
+    expect(payload.resourceLogs).toHaveLength(1);
     expect(payload.resourceLogs?.[0]).toMatchObject({
       resource: { attributes: [] },
       scopeLogs: [{ logRecords: [resourceLog] }],
@@ -74,7 +158,7 @@ describe('OtelPayload', () => {
 
   it('Add adds a new LogRecord to existing logRecords array because they have the same meta and same scope', () => {
     const transportItem = {
-      ...logItem,
+      ...logTransportItem,
       meta: { browser: { name: 'Firefox' } },
     };
 
@@ -101,19 +185,42 @@ describe('OtelPayload', () => {
     expect(payload.resourceLogs?.[0]?.scopeLogs[0]?.logRecords).toHaveLength(2);
   });
 
-  it('Add creates a new ResourceLog because they have different metas', () => {
+  it('Add creates a new ResourceLogs because they have different metas', () => {
     const otelPayload = new OtelPayload(mockInternalLogger, {
-      ...logItem,
+      ...logTransportItem,
       meta: { browser: { name: 'Firefox' } },
     });
 
     otelPayload.addResourceItem({
-      ...logItem,
+      ...logTransportItem,
       meta: { browser: { name: 'Chrome' } },
     });
 
     const payload = otelPayload.getPayload();
     expect(payload.resourceLogs).toHaveLength(2);
     expect(payload.resourceLogs?.[0]?.resource).not.toMatchObject(payload.resourceLogs?.[1]?.resource ?? {});
+  });
+
+  it('Adds a new ResourceSpan', () => {
+    const otelPayload = new OtelPayload(mockInternalLogger, traceTransportItem);
+    const payload = otelPayload.getPayload();
+
+    expect(payload.resourceLogs).toHaveLength(0);
+    expect(payload.resourceSpans).toHaveLength(1);
+    expect(payload.resourceSpans?.[0]).toMatchObject({
+      resource: {
+        attributes: [
+          {
+            key: 'browser.name',
+            value: { stringValue: 'browser-name' },
+          },
+          {
+            key: 'browser.version',
+            value: { stringValue: 'browser-v109.0' },
+          },
+        ],
+      }, // empty array because Trace TransportItem doesn't contain any Metas and we drop resources set by Otel and use the Faro Metas instead to derive the resource!
+      scopeSpans: traceTransportItem.payload.resourceSpans[0]?.scopeSpans,
+    });
   });
 });
