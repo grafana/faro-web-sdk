@@ -63,7 +63,12 @@ export class TracingInstrumentation extends BaseInstrumentation {
     });
 
     registerInstrumentations({
-      instrumentations: options.instrumentations ?? getDefaultOTELInstrumentations(this.getIgnoreUrls()),
+      instrumentations:
+        options.instrumentations ??
+        getDefaultOTELInstrumentations({
+          ignoreUrls: this.getIgnoreUrls(),
+          propagateTraceHeaderCorsUrls: this.options.instrumentationOptions?.propagateTraceHeaderCorsUrls,
+        }),
     });
 
     this.api.initOTEL(trace, context);

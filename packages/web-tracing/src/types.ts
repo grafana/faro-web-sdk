@@ -15,4 +15,9 @@ export interface TracingInstrumentationOptions {
   contextManager?: ContextManager;
   instrumentations?: InstrumentationOption[];
   spanProcessor?: SpanProcessor;
+  instrumentationOptions?: {
+    propagateTraceHeaderCorsUrls: MatchUrlDefinitions;
+  };
 }
+
+export type MatchUrlDefinitions = Array<string | RegExp>;

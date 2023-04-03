@@ -1,5 +1,9 @@
 # Changelog
 
+## Next
+
+- Add config option to include URLs for which requests shall have tracing headers added.
+
 ## 1.0.1 - 1.0.2
 
 - Have FetchTransport consume response body. Otherwise requests are not considered closed
