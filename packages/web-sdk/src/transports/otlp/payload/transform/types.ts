@@ -15,13 +15,19 @@ export interface LogRecord {
   traceId?: string;
   spanId?: string;
 }
+
+export type Scope = {
+  name: string;
+  version: string;
+};
+
 export interface ScopeLog {
-  scope: { name: string; version: string };
+  scope: Scope;
   logRecords: LogRecord[];
 }
 
 export interface ScopeSpan {
-  scope: { name: string; version: string };
+  scope: Scope;
   logRecords: LogRecord[];
 }
 

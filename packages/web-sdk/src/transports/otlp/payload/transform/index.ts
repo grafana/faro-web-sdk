@@ -6,6 +6,7 @@ export type {
   Resource,
   ResourceLogs,
   ResourceSpans,
+  Scope,
   ScopeLog,
   TraceTransform,
 } from './types';
