@@ -207,8 +207,8 @@ function toResource(transportItem: TransportItem): Readonly<Resource> {
       toAttribute(SemanticBrowserAttributes.BROWSER_MOBILE, browser?.mobile),
       toAttribute(SemanticBrowserAttributes.BROWSER_USER_AGENT, browser?.userAgent),
       toAttribute(SemanticBrowserAttributes.BROWSER_LANGUAGE, browser?.language),
+      toAttribute(SemanticBrowserAttributes.BROWSER_BRANDS, browser?.brands),
       toAttribute('browser.os', browser?.os),
-      // toAttribute(SemanticBrowserAttributes.BROWSER_BRANDS, browser?.brands),
       toAttribute('browser.name', browser?.name),
       toAttribute('browser.version', browser?.version),
 
