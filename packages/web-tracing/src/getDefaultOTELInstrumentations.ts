@@ -4,11 +4,25 @@ import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { UserInteractionInstrumentation } from '@opentelemetry/instrumentation-user-interaction';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
-export function getDefaultOTELInstrumentations(ignoreUrls: Array<string | RegExp> = []): InstrumentationOption[] {
+import type { MatchUrlDefinitions } from './types';
+
+type DefaultInstrumentationsOptions = {
+  ignoreUrls?: MatchUrlDefinitions;
+  propagateTraceHeaderCorsUrls?: MatchUrlDefinitions;
+};
+
+const initialIntrumentationsOptions = {
+  ignoreUrls: [],
+  propagateTraceHeaderCorsUrls: [],
+};
+
+export function getDefaultOTELInstrumentations(
+  options: DefaultInstrumentationsOptions = initialIntrumentationsOptions
+): InstrumentationOption[] {
   return [
     new DocumentLoadInstrumentation(),
-    new FetchInstrumentation({ ignoreUrls }),
-    new XMLHttpRequestInstrumentation({ ignoreUrls }),
+    new FetchInstrumentation(options),
+    new XMLHttpRequestInstrumentation(options),
     new UserInteractionInstrumentation(),
   ];
 }
