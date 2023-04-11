@@ -1,0 +1,17 @@
+[
+  {
+    "type": "comment",
+    "name": "duplicate",
+    "allowUsers": [],
+    "action": "close",
+    "addLabel": "type/duplicate"
+  },
+  {
+    "type": "label",
+    "name": "bot/duplicate",
+    "addLabel": "type/duplicate",
+    "removeLabel": "bot/duplicate",
+    "action": "close",
+    "comment": "Thanks for creating this issue! It looks like this has already been reported by another user. We’ve closed this in favor of the existing one. Please consider adding any details you think is missing to that issue.\n\nTo avoid having your issue closed in the future, please read our [CONTRIBUTING](https://github.com/grafana/grafana/blob/main/CONTRIBUTING.md) guidelines.\n\nHappy graphing!"
+  }
+]
