@@ -19,6 +19,11 @@ const item: Readonly<TransportItem<LogEvent>> = {
       mobile: false,
       userAgent: 'browser-ua-string',
       language: 'browser-language',
+      brands: [
+        { brand: 'Google Chrome', version: '111' },
+        { brand: 'Not(A:Brand', version: '8' },
+        { brand: 'Chromium', version: '111' },
+      ],
     },
     sdk: {
       name: 'integration-web-sdk-name',
@@ -57,6 +62,69 @@ const matchResourcePayload = {
     {
       key: 'browser.language',
       value: { stringValue: 'browser-language' },
+    },
+    {
+      key: 'browser.brands',
+      value: {
+        arrayValue: {
+          values: [
+            {
+              kvlistValue: {
+                values: [
+                  {
+                    key: 'brand',
+                    value: {
+                      stringValue: 'Google Chrome',
+                    },
+                  },
+                  {
+                    key: 'version',
+                    value: {
+                      stringValue: '111',
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              kvlistValue: {
+                values: [
+                  {
+                    key: 'brand',
+                    value: {
+                      stringValue: 'Not(A:Brand',
+                    },
+                  },
+                  {
+                    key: 'version',
+                    value: {
+                      stringValue: '8',
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              kvlistValue: {
+                values: [
+                  {
+                    key: 'brand',
+                    value: {
+                      stringValue: 'Chromium',
+                    },
+                  },
+                  {
+                    key: 'version',
+                    value: {
+                      stringValue: '111',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
     },
     {
       key: 'browser.os',

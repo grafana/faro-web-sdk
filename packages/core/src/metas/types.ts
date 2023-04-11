@@ -50,6 +50,11 @@ export interface MetaPage {
   attributes?: MetaAttributes;
 }
 
+interface NavigatorUABrandVersion {
+  brand?: string;
+  version?: string;
+}
+
 export interface MetaBrowser {
   name?: string;
   version?: string;
@@ -57,6 +62,7 @@ export interface MetaBrowser {
   mobile?: boolean;
   userAgent?: string;
   language?: string;
+  brands?: NavigatorUABrandVersion[] | string;
 }
 
 export interface MetaView {
