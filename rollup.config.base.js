@@ -34,6 +34,12 @@ const modules = {
     globalName: 'GrafanaFaroTransportBatch',
     externals: ['core'],
   },
+  transportOtlpHttp: {
+    name: '@grafana/faro-transport-otlp-http',
+    bundleName: 'faro-transport-otlp-http',
+    globalName: 'GrafanaFaroTransportOtlpHttp',
+    externals: ['core'],
+  },
 };
 
 exports.getRollupConfigBase = (moduleName) => {

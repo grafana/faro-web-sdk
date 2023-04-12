@@ -19,6 +19,5 @@
     { "path": "../packages/react/tsconfig.esm.json" },
     { "path": "../packages/web-sdk/tsconfig.esm.json" },
     { "path": "../packages/web-tracing/tsconfig.esm.json" },
-    { "path": "../packages/transport-batch/tsconfig.esm.json" }
   ]
 }
