@@ -20,9 +20,8 @@ export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectio
 
 export { browserMeta, createSession, defaultMetas, defaultViewMeta, pageMeta } from './metas';
 
-export { BatchTransport, ConsoleTransport, FetchTransport, OtlpHttpTransport } from './transports';
+export { ConsoleTransport, FetchTransport, OtlpHttpTransport } from './transports';
 export type {
-  BatchTransportOptions,
   ClockFn,
   ConsoleTransportOptions,
   FetchTransportOptions,
