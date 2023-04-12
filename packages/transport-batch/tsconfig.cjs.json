@@ -4,7 +4,7 @@
     "declarationDir": "./dist/types",
     "outDir": "./dist/cjs",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.cache/tsc/react.cjs.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/transportBatch.cjs.tsbuildinfo"
   },
   "include": ["./src"],
   "exclude": ["**/*.test.ts"],
