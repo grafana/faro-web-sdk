@@ -283,13 +283,13 @@ Investigating issues can be a very time consuming task, especially for the maint
 
 Even if you don't have the time or knowledge to investigate an issue we highly recommend that you [upvote](https://github.blog/2016-03-10-add-reactions-to-pull-requests-issues-and-comments) the issue if you happen to have the same problem. If you have further details that may help investigating the issue please provide as much information as possible.
 
-<!-- ## Automation
+## Automation
 
-We have some automation that triggers on comments or labels being added to issues. Many of these automated behaviors are defined in [commands.json](https://github.com/grafana/grafana/blob/main/.github/commands.json). Or in other [GitHub Actions](https://github.com/grafana/grafana/tree/main/.github/workflows)
+We have some automation that triggers on comments or labels being added to issues. Many of these automated behaviors are defined in [commands.json](https://github.com/grafana/faro-web-sdk/blob/main/.github/commands.json). Or in other [GitHub Actions](https://github.com/grafana/faro-web-sdk/tree/main/.github/workflows)
 
 [Read more on bot actions](https://github.com/grafana/grafana/blob/main/.github/bot.md)
 
-## External PRs
+<!-- ## External PRs
 
 Part of issue triage should also be triaging of external PRs. Main goal should be to make sure PRs from external contributors have an owner/reviewer and are not forgotten.
 
