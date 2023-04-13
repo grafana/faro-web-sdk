@@ -17,7 +17,7 @@ export interface OtlpHttpTransportOptions {
   // intermediate events will be dropped, not buffered
   defaultRateLimitBackoffMs?: number;
 
-  // get current date. for mocking purposes in tests
+  // addition options for global.Fetch
   requestOptions?: OtlpTransportRequestOptions;
 
   // The Otel spec defines separate endpoints per signal

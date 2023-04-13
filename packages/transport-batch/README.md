@@ -2,7 +2,7 @@
 
 Faro transport to batch and transfer signals to a selected transport for sending.
 
-❗️ _Warning_: this package is experimental and may be subject to frequent and breaking changes. Use at your own risk. ❗️
+❗️*Warning*: this package is experimental and may be subject to frequent and breaking changes. Use at your own risk.❗️
 
 The Faro Batch Transport batches the signals it receives and transfers them to configured Transport.
 Batching signals is either done by (signal) count or by a specific time window.
