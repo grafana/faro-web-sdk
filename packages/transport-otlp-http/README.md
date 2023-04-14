@@ -2,7 +2,8 @@
 
 Faro transport which converts the Faro model to the Open Telemetry model.
 
-❗️*Warning*: this package is experimental and may be subject to frequent and breaking changes. Use at your own risk.❗️
+❗️*Warning*: this package is experimental and may be subject to frequent and breaking changes.
+Use at your own risk.❗️
 
 ❗️*Warning*: The Grafana Receiver does not support this format yet.❗️
 
@@ -40,14 +41,16 @@ compatible Otel Receivers.
 - `bufferSize?: number`: How many requests to buffer in total.
 - `concurrency?: number`: How many requests to execute concurrently.
 - `defaultRateLimitBackoffMs?: number` How many milliseconds to back off before attempting a request
-  if rate limit response does not include a Retry-After header. ❗️Intermediate events will be dropped, not buffered❗️
-- `requestOptions?: OtlpTransportRequestOptions`: Additional options to add to requests when sending the data.
+  if rate limit response does not include a Retry-After header. ❗️Intermediate events will be dropped,
+  not buffered❗️
+- `requestOptions?: OtlpTransportRequestOptions`: Additional options to add to requests when
+  sending the data.
 - `tracesURL?: string`: Endpoint to send Traces to.
 - `logsURL?: string`: Endpoint to send Logs to.
 
-Note: Why is there no Metrics endpoint? <br />
+Note: Why is there no Metrics endpoint?\
 Faro does not collect Metrics as defined by the Open Telemetry specification.
-For example Faro does not have metric types, such as Gauge or Sum or Histogram and so on, as Open Telemetry does.
-Faro stores Metric values as log lines called `Measurements`.
-It is not feasible to translate Measurements to Metrics while staying compliant with the Open Telemetry spec.
-So we do not convert them and they are still be sent as a log type.
+For example Faro does not have metric types, such as Gauge or Sum or Histogram and so on,
+as Open Telemetry does.Faro stores Metric values as log lines called `Measurements`.
+It is not feasible to translate Measurements to Metrics while staying compliant with the
+Open Telemetry spec. So we do not convert them and they are still be sent as a log type.

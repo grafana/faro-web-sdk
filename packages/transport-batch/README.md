@@ -2,7 +2,8 @@
 
 Faro transport to batch and transfer signals to a selected transport for sending.
 
-❗️*Warning*: this package is experimental and may be subject to frequent and breaking changes. Use at your own risk.❗️
+❗️*Warning*: this package is experimental and may be subject to frequent and breaking changes.
+Use at your own risk.❗️
 
 The Faro Batch Transport batches the signals it receives and transfers them to configured Transport.
 Batching signals is either done by (signal) count or by a specific time window.
@@ -49,11 +50,13 @@ initializeFaro({
 The Batch Transports is only responsible to do the batching logic.
 To send the batch of signals you need to add a transport which supports to send a list of signals!
 
-Note:<br />
+Note:\
 Currently the only Transport which supports batching is the `OtlpHttpTransport`.
 Others will follow soon.
 
 With the second parameter you can customize:
 
 - The number of signals which should be included in a batch. Default is 50 signals.
-- The time window after which the batch should be send. If set to 0, this functionality is turned of. Not that the timer will win over the count! Means items will forcefully send after `batchSendTimeout` independent from the signal count.
+- The time window after which the batch should be send. If set to 0, this functionality is turned of.
+  Not that the timer will win over the count! Means items will forcefully send after
+  `batchSendTimeout` independent from the signal count.
