@@ -4,7 +4,6 @@ import {
   SemanticResourceAttributes,
   TelemetrySdkLanguageValues,
 } from '@opentelemetry/semantic-conventions';
-import type { TraceEvent } from 'packages/core/src/api';
 
 import {
   EventEvent,
@@ -16,7 +15,7 @@ import {
   TransportItemType,
   VERSION,
 } from '@grafana/faro-core';
-import type { InternalLogger } from '@grafana/faro-core';
+import type { InternalLogger, TraceEvent } from '@grafana/faro-core';
 
 import { isAttribute, toAttribute, toAttributeValue } from '../attribute';
 

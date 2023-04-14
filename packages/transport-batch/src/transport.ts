@@ -6,7 +6,7 @@ const DEFAULT_BATCH_SEND_TIMEOUT_MS = 250;
 const DEFAULT_BATCH_SEND_COUNT = 50;
 
 export class BatchTransport extends BaseTransport {
-  readonly name = '@grafana/faro-web-sdk:transport-batch-wrapper';
+  readonly name = '@grafana/faro-batch-transport';
   readonly version = VERSION;
 
   private readonly batchSendCount: number;
