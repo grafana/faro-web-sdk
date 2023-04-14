@@ -3,6 +3,7 @@
 ## Next
 
 - Add config option to include URLs for which requests shall have tracing headers added.
+- Fixes where TracingInstrumentation broke fetch requests with relative URLs are broken on sub-pages.
 
 ## 1.0.1 - 1.0.2
 
