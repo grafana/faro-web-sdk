@@ -22,7 +22,7 @@ Besides auto-instrumentation, Faro also provides an API called `pushTraces` to m
 At the API level, OpenTelemetry is used to create traces for internal and external services. A couple of the
 instrumented services are: the app server, the logger, the database etc.
 
-When initial document is loaded, OpenTelemetry instrumentation creates a series of spans for the server-side events
+When the initial document is loaded, OpenTelemetry instrumentation creates a series of spans for the server-side events
 (i.e. database calls). The primary span ID and the trace ID are sent back to the client via the `traceparent` meta. The
 Tracing Instrumentation provided by Faro automatically reads the `traceparent` meta and uses it when instrumenting the
 resource loading for the document.

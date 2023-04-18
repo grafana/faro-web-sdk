@@ -35,7 +35,7 @@ Faro Web SDK requires a configuration object parameter with the following proper
 | `preventGlobalExposure` | Flag for toggling the definition on the global object                                    | `boolean`             |                                                          |
 | `transports`            | Array of transports that should be used                                                  | `Transport[]`         |                                                          |
 
-Besides the mandatory properties, Faro configuration also supports the following optional properties:
+Besides the mandatory properties, Faro's configuration also supports the following optional properties:
 
 | Property       | Description                                                                            | Type             | Default Value |
 | -------------- | -------------------------------------------------------------------------------------- | ---------------- | ------------- |
@@ -48,7 +48,7 @@ Besides the mandatory properties, Faro configuration also supports the following
 
 ## Faro instance
 
-Faro instance is an object which can be accessed by either importing it from the package or by referencing it from the
+The Faro instance is an object which can be accessed by either importing it from the package or by referencing it from the
 global object (`window` in browsers and `global` in Node.js).
 
 ```ts
@@ -123,7 +123,7 @@ The `api` property on the Faro instance contains all the necessary methods to pu
 ## Logs
 
 - `pushLog` - is a method to register a log event. The method accepts a mandatory `args` parameter which is an array of
-  arguments that will be stringified and sent to the transports and an optional one where you can set:
+  arguments that will be stringified and sent to the transports. Additionally, there is an optional second parameter where you can set:
 
   - `skipDedupe` - a flag for enforcing log push even if the log is identical to the previous one.
   - `logLevel` - the type of message that we register.
@@ -188,8 +188,8 @@ The `api` property on the Faro instance contains all the necessary methods to pu
   const otel = faro.api.getOTEL();
   ```
 
-- `isOTELInitialized` - is a method for checking if OpenTelemetry package was correctly initialized and there is an
-  OpenTelemetry instance used by Faro.
+- `isOTELInitialized` - is a method for checking if the OpenTelemetry package was correctly initialized and there is an
+  OpenTelemetry instance being used by Faro.
 
   ```ts
   const isInitialized = faro.api.isOTELInitialized();

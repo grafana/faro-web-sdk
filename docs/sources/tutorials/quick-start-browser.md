@@ -78,20 +78,20 @@ integrations:
    project.
 
    ```bash
-   #npm
+   # npm
    npm i -S @grafana/faro-web-sdk
 
-   #yarn
+   # yarn
    yarn add @grafana/faro-web-sdk
    ```
 
 1. To enable [OpenTelemetry][opentelemetry-js] based tracing, run one of the following commands.
 
    ```bash
-   #npm
+   # npm
    npm i -S @grafana/faro-web-tracing
 
-   #yarn
+   # yarn
    yarn add @grafana/faro-web-tracing
    ```
 
