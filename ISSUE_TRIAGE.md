@@ -144,6 +144,11 @@ An issue must have at least have one or multiple of the following labels added:
 | `type/duplicate`         | An existing issue of the same subject/request have already been reported. |
 | `type/works-as-intended` | A reported bug works as intended/by design.                               |
 | `type/build-packaging`   | Build or packaging problem or enhancement.                                |
+| `type/OpenTelemetry`     | Problem which is related to the underlying OpenTelemetry-JS instruments.  |
+
+In very rare cases we receive issues which are related to OpenTelemetry and not Faro. For that we use the
+`type/OpenTelemetry` special label. Then we can either find out for the issuer what the problem
+is or kindly ask the person to report the issue on the respective OpenTelemetry project page.
 
 ### Duplicate issues
 
@@ -161,7 +166,7 @@ If it's not perfectly clear that it's an actual bug, quickly try to reproduce it
 
 1. Add a comment describing detailed steps for how to reproduce it, if applicable.
 2. Label the issue `type/bug`.
-3. If you know that maintainers wont be able to put any resources into it for some time then label the issue with `help wanted` and optionally `beginner friendly` together with pointers on which code to update to fix the bug. This should signal to the community that we would appreciate any help we can get to resolve this.
+3. If you know that maintainers wont be able to put any resources into it for some time then label the issue with `beginner friendly` together with pointers on which code to update to fix the bug. This should signal to the community that we would appreciate any help we can get to resolve this.
 4. Move on to [prioritizing the issue](#4-prioritization-of-issues).
 
 **It can't be reproduced:**
@@ -198,7 +203,7 @@ There's a minor typo/error/lack of information that adds a lot of confusion for 
 
 **Major error/lack of information:**
 
-1. Label the issue with `help wanted` and `beginner friendly`, if applicable, to signal that we find this important to fix and we would appreciate any help we can get from the community.
+1. Label the issue with `beginner friendly`, if applicable, to signal that we find this important to fix and we would appreciate any help we can get from the community.
 2. Move on to [prioritizing the issue](#4-prioritization-of-issues).
 
 ### Support requests
@@ -219,9 +224,6 @@ In case there is an uncertainty around the prioritization of an issue, please as
 | Label                             | Description                                                                                                              |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `priority/critical`               | Highest priority. Must be actively worked on as someone's top priority right now.                                        |
-| `priority/support-subscription`   | This is important for one or several customers having a paid Grafana support subscription.                               |
-| `priority/important-soon`         | Must be staffed and worked on either currently, or very soon, ideally in time for the next release.                      |
-| `priority/important-longterm`     | Important over the long term, but may not be staffed and/or may need multiple releases to complete.                      |
 | `priority/nice-to-have`           | It's a good idea, but not scheduled for any release.                                                                     |
 | `priority/awaiting-more-evidence` | Lowest priority. Possibly useful, but not yet enough interest in it.                                                     |
 | `priority/unscheduled`            | Something to look into before and to be discussed during the planning of the next (upcoming) major/minor stable release. |
@@ -236,23 +238,9 @@ In case there is an uncertainty around the prioritization of an issue, please as
    - Multiple users experience a severe problem affecting their business, users etc.
 
 2. Label the issue `priority/critical`.
-3. If applicable, label the issue `priority/support-subscription`.
-4. Add the issue to the next upcoming patch release milestone. Create a new milestone if there are none.
-5. Escalate the problem to the maintainers.
-6. Assign or ask a maintainer for help assigning someone to make this issue their top priority right now.
-
-**Important short-term**
-
-1. Label the issue `priority/important-soon`.
-2. If applicable, label the issue `priority/support-subscription`.
-3. Add the issue to the next upcoming patch or major/minor stable release milestone. Ask maintainers for help if unsure if it's a patch or not. Create a new milestone if there are none.
-4. Make sure to add the issue to a suitable backlog of a GitHub project and prioritize it or assign someone to work on it now or very soon.
-5. Consider requesting [help from the community](#5-requesting-help-from-the-community), even though it may be problematic given a short amount of time until it should be released.
-
-**Important long-term**
-
-1. Label the issue `priority/important-longterm`.
-2. Consider requesting [help from the community](#5-requesting-help-from-the-community).
+3. Add the issue to the next upcoming patch release milestone. Create a new milestone if there are none.
+4. Escalate the problem to the maintainers.
+5. Assign or ask a maintainer for help assigning someone to make this issue their top priority right now.
 
 **Nice to have**
 
@@ -271,9 +259,7 @@ Depending on the issue and/or priority, it's always a good idea to consider sign
 1. Kindly and politely add a comment to signal to users subscribed to updates of the issue.
    - Explain that the issue would be nice to get resolved, but it isn't prioritized to work on by maintainers for an unforeseen future.
    - If possible or applicable, try to help contributors getting starting by adding pointers and references to what code/files need to be changed and/or ideas of a good way to solve/implement the issue.
-2. Label the issue with `help wanted`.
-3. If applicable, label the issue with `beginner friendly` to denote that the issue is suitable for a beginner to work on.
-4. If possible, try to estimate the amount of work by adding `effort/small`, `effort/medium` or `effort/large`.
+2. If applicable, label the issue with `beginner friendly` to denote that the issue is suitable for a beginner to work on.
 
 ## Investigation of issues
 
@@ -288,15 +274,6 @@ Even if you don't have the time or knowledge to investigate an issue we highly r
 We have some automation that triggers on comments or labels being added to issues. Many of these automated behaviors are defined in [commands.json](https://github.com/grafana/faro-web-sdk/blob/main/.github/commands.json). Or in other [GitHub Actions](https://github.com/grafana/faro-web-sdk/tree/main/.github/workflows)
 
 [Read more on bot actions](https://github.com/grafana/grafana/blob/main/.github/bot.md)
-
-<!-- ## External PRs
-
-Part of issue triage should also be triaging of external PRs. Main goal should be to make sure PRs from external contributors have an owner/reviewer and are not forgotten.
-
-1. Check new external PRs which do not have a reviewer. You can easily search for pull requests made by external contributors by using the label: `pr/external` in your [query search](https://github.com/grafana/grafana/pulls?q=is%3Aopen+is%3Apr+label%3Apr%2Fexternal) Note: external PRs are automatically labeled with `pr/external` upon creation.
-2. Check if there is a link to an existing issue. The link to a existing issue should be in the description section, underneath “Which issue(s) does this PR fix?:”.
-3. If not and you know which issue it is solving, add the link yourself, otherwise ask the author to link the issue or create one.
-4. Assign a reviewer based on who was handling the linked issue or what code or feature does the PR touches (look at who was the last to make changes there if all else fails). -->
 
 ## Appendix
 
