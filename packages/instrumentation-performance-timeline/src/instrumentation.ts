@@ -1,6 +1,4 @@
-import { BaseInstrumentation, isObject, VERSION } from '@grafana/faro-core';
-
-import { isArray } from '../..';
+import { BaseInstrumentation, isArray, isObject, VERSION } from '@grafana/faro-core';
 
 import type {
   KeyValueSkipEntry,

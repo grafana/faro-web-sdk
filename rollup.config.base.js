@@ -32,13 +32,19 @@ const modules = {
     name: '@grafana/faro-transport-batch',
     bundleName: 'faro-transport-batch',
     globalName: 'GrafanaFaroTransportBatch',
-    externals: ['core'],
+    externals: [],
   },
   transportOtlpHttp: {
     name: '@grafana/faro-transport-otlp-http',
     bundleName: 'faro-transport-otlp-http',
     globalName: 'GrafanaFaroTransportOtlpHttp',
-    externals: ['core'],
+    externals: [],
+  },
+  instrumentationPerformanceTimeline: {
+    name: '@grafana/faro-instrumentation-performance-timeline',
+    bundleName: 'faro-instrumentation-performance-timeline',
+    globalName: 'GrafanaFaroInstrumentationPerformanceTimeline',
+    externals: [],
   },
 };
 
