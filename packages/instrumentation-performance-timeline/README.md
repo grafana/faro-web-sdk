@@ -93,7 +93,7 @@ By default Faro skips urls defined by the transports. Usually these are the rece
 ##### Example of how to specify skip URLs
 
 ```ts
-elineInstrumentation({
+new PerformanceTimelineInstrumentation({
   ignoredURLs: [...]
 }),
 ```
