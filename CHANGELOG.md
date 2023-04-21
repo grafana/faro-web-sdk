@@ -2,7 +2,9 @@
 
 ## Next
 
-- Add config option to include URLs for which requests shall have tracing headers added.
+- Adds: Config option to include URLs for which requests shall have tracing headers added.
+- Fixes: TracingInstrumentation broke fetch requests with relative URLs are broken on sub-pages.
+- Fixes: Missing destructuring assignment in Browser quick start tutorial.
 
 ## 1.0.1 - 1.0.2
 

@@ -28,6 +28,18 @@ const modules = {
     globalName: 'GrafanaFaroWebTracing',
     externals: ['webSdk'],
   },
+  transportBatch: {
+    name: '@grafana/faro-transport-batch',
+    bundleName: 'faro-transport-batch',
+    globalName: 'GrafanaFaroTransportBatch',
+    externals: ['core'],
+  },
+  transportOtlpHttp: {
+    name: '@grafana/faro-transport-otlp-http',
+    bundleName: 'faro-transport-otlp-http',
+    globalName: 'GrafanaFaroTransportOtlpHttp',
+    externals: ['core'],
+  },
 };
 
 exports.getRollupConfigBase = (moduleName) => {
