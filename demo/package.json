@@ -13,7 +13,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "yarn serve:dev",
+    "start": "yarn serve:prod",
+    "dev": "yarn serve:dev",
     "serve:dev": "nodemon src/server/index.ts",
     "serve:prod": "cross-env NODE_ENV=production node --experimental-specifier-resolution=node --experimental-loader ./dist/server/otel.js dist/server/index.js",
     "build": "run-p build:*",
