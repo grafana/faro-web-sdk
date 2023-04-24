@@ -15,6 +15,10 @@ the batch buffer will be flushed and it's items will be sent so no data is lost.
 
 If on mobile, it also sends data if user switches from the browser to a different app.
 
+❗️ Note:\
+Currently the only Transport which supports batched RUM data is the `OtlpHttpTransport`.
+Others will follow soon.
+
 ## Installation
 
 ```ts
@@ -47,12 +51,8 @@ initializeFaro({
 
 ## Usage
 
-The Batch Transports is only responsible to do the batching logic.
+The BatchTransport is only responsible to do the batching logic.
 To send the batch of signals you need to add a transport which supports to send a list of signals!
-
-Note:\
-Currently the only Transport which supports batching is the `OtlpHttpTransport`.
-Others will follow soon.
 
 With the second parameter you can customize:
 

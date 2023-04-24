@@ -1,7 +1,7 @@
 {
-  "name": "@grafana/faro-transport-batch",
+  "name": "@grafana/faro-instrumentation-performance-timeline",
   "version": "0.0.1-beta",
-  "description": "Faro transport to batch and transfer signals to a selected transport for sending.",
+  "description": "Faro instrumentation to capture Browser Performance Timeline data.",
   "keywords": [
     "observability",
     "apm",
@@ -9,7 +9,7 @@
     "logs",
     "traces",
     "metrics",
-    "batching"
+    "performanceTimeline"
   ],
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -17,7 +17,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/grafana/faro-web-sdk.git",
-    "directory": "packages/transport-batch"
+    "directory": "packages/instrumentation-performance-timeline"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -41,10 +41,10 @@
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "jest",
-    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/transportBatch --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/instrumentationPerformanceTimeline --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s quality:lint:*",
-    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/transportBatch --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
-    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/transportBatch --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/instrumentationPerformanceTimeline --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/instrumentationPerformanceTimeline --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
   },
