@@ -48,7 +48,7 @@
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
   },
-  "dependencies": {
+  "devDependencies": {
     "@grafana/faro-core": "^1.0.2"
   },
   "publishConfig": {

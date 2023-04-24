@@ -1,1 +1,1 @@
-Bogdan Matei (<bogdan.matei@grafana.com> / @bfmatei) and Domas Lapinskas (<domas.lapinskas@grafana.com> / @domasx2) are the main/default maintainers.
+Bogdan Matei (<bogdan.matei@grafana.com> / @bfmatei), Domas Lapinskas (<domas.lapinskas@grafana.com> / @domasx2) and Marco Schaefer (<marco.schaefer@grafana.com> / @codecapitano) are the main/default maintainers.
