@@ -15,7 +15,7 @@ the batch buffer will be flushed and it's items will be sent so no data is lost.
 
 If on mobile, it also sends data if user switches from the browser to a different app.
 
-❗️ Note:\
+❗️*Warning*:\
 Currently the only Transport which supports batched RUM data is the `OtlpHttpTransport`.
 Others will follow soon.
 
