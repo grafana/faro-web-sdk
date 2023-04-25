@@ -7,6 +7,13 @@ Use at your own risk.❗️
 
 ❗️*Warning*: The Grafana Receiver does not support this format yet.❗️
 
+❗️*Warning*: Faro does not support a separate metrics format as Open Telemetry does.
+This means Faro does not collect Metrics as defined by the Open Telemetry specification.
+For example Faro does not have metric types, such as Gauge or Sum or Histogram and so on
+as Open Telemetry does. Faro stores Metric values as log lines called `Measurements`.
+It is not feasible to translate Measurements to Metrics while staying compliant with the
+Open Telemetry spec. So we do not convert them and they are still be sent as a log type.❗️
+
 ## Installation
 
 ```ts
@@ -47,10 +54,3 @@ compatible Otel Receivers.
   sending the data.
 - `tracesURL?: string`: Endpoint to send Traces to.
 - `logsURL?: string`: Endpoint to send Logs to.
-
-Note: Why is there no Metrics endpoint?\
-Faro does not collect Metrics as defined by the Open Telemetry specification.
-For example Faro does not have metric types, such as Gauge or Sum or Histogram and so on,
-as Open Telemetry does.Faro stores Metric values as log lines called `Measurements`.
-It is not feasible to translate Measurements to Metrics while staying compliant with the
-Open Telemetry spec. So we do not convert them and they are still be sent as a log type.
