@@ -54,13 +54,13 @@ integrations:
     - autoscrape:
         enable: true
         metrics_instance: 'default'
-      api_key: 'secret' # optional, if set, client will be required to provide it via x-api-key header
       instance: 'frontend'
       logs_instance: 'default'
       traces_instance: 'default'
       server:
         host: 0.0.0.0
         port: 12345
+        api_key: 'secret' # optional, if set, client will be required to provide it via x-api-key header
         cors_allowed_origins:
           - 'https://my-app.example.com'
       logs_labels: # labels to add to loki log record
