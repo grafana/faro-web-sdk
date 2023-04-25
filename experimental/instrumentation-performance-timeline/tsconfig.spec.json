@@ -3,7 +3,7 @@
   "compilerOptions": {
     "declarationDir": "./dist/types",
     "outDir": "./dist/spec",
-    "rootDir": "..",
+    "rootDir": "../../",
     "tsBuildInfoFile": "../../.cache/tsc/instrumentationPerformanceTimeline.spec.tsbuildinfo"
   },
   "include": ["./src"],

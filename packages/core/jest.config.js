@@ -2,5 +2,5 @@ const { jestBaseConfig } = require('../../jest.config.base.js');
 
 module.exports = {
   ...jestBaseConfig,
-  roots: ['core/src'],
+  roots: ['packages/core/src'],
 };

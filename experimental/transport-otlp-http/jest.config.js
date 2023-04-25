@@ -2,9 +2,6 @@ const { jestBaseConfig } = require('../../jest.config.base.js');
 
 module.exports = {
   ...jestBaseConfig,
-  roots: ['transport-otlp-http/src'],
+  roots: ['experimental/transport-otlp-http/src'],
   testEnvironment: 'jsdom',
-  moduleNameMapper: {
-    '@grafana/faro-core/src/(.*)': '<rootDir>/../packages/core/src/$1',
-  },
 };
