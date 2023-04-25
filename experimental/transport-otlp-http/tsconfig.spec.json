@@ -3,9 +3,9 @@
   "compilerOptions": {
     "declarationDir": "./dist/types",
     "outDir": "./dist/spec",
-    "rootDir": "..",
+    "rootDir": "../../",
     "tsBuildInfoFile": "../../.cache/tsc/transportOtlpHttp.spec.tsbuildinfo"
   },
   "include": ["./src"],
-  "references": [{ "path": "../core/tsconfig.spec.json" }]
+  "references": [{ "path": "../../packages/core/tsconfig.spec.json" }]
 }

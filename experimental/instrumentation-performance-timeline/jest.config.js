@@ -2,6 +2,6 @@ const { jestBaseConfig } = require('../../jest.config.base.js');
 
 module.exports = {
   ...jestBaseConfig,
-  roots: ['instrumentation-performance-timeline'],
+  roots: ['experimental/instrumentation-performance-timeline/src'],
   testEnvironment: 'jsdom',
 };

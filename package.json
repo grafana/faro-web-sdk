@@ -12,6 +12,7 @@
   "private": true,
   "workspaces": [
     "packages/**",
+    "experimental/**",
     "demo"
   ],
   "main": "index.js",

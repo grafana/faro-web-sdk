@@ -2,6 +2,6 @@ const { jestBaseConfig } = require('../../jest.config.base.js');
 
 module.exports = {
   ...jestBaseConfig,
-  roots: ['transport-otlp-http/src'],
+  roots: ['experimental/transport-batch/src'],
   testEnvironment: 'jsdom',
 };
