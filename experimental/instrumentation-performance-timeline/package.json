@@ -17,7 +17,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/grafana/faro-web-sdk.git",
-    "directory": "packages/instrumentation-performance-timeline"
+    "directory": "experimental/instrumentation-performance-timeline"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",

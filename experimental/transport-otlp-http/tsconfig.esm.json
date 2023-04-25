@@ -8,5 +8,5 @@
   },
   "include": ["./src"],
   "exclude": ["**/*.test.ts"],
-  "references": [{ "path": "../core/tsconfig.spec.json" }]
+  "references": [{ "path": "../../packages/core/tsconfig.spec.json" }]
 }

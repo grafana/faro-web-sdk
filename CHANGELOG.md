@@ -1,11 +1,8 @@
 # Changelog
 
-## Next
+## 1.0.3
 
 - Add: Config option to include URLs for which requests shall have tracing headers added.
-- Add: Experimental package for Open Telemetry compliant HTTP transport.
-- Add: Experimental package for Batch transport.
-- Add: Experimental package browser Performance Timeline instrumentation.
 - Fix: TracingInstrumentation broke fetch requests with relative URLs are broken on sub-pages.
 - Fix: Missing destructuring assignment in Browser quick start tutorial.
 

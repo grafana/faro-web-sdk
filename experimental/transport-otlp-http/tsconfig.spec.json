@@ -4,8 +4,8 @@
     "declarationDir": "./dist/types",
     "outDir": "./dist/spec",
     "rootDir": "..",
-    "tsBuildInfoFile": "../../.cache/tsc/transportBatch.spec.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/transportOtlpHttp.spec.tsbuildinfo"
   },
   "include": ["./src"],
-  "references": [{ "path": "../core/tsconfig.spec.json" }]
+  "references": [{ "path": "../../packages/core/tsconfig.spec.json" }]
 }
