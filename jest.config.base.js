@@ -1,4 +1,5 @@
 exports.jestBaseConfig = {
+  verbose: true,
   moduleNameMapper: {
     '@grafana/faro-core/src/(.*)': '<rootDir>/core/src/$1',
   },
