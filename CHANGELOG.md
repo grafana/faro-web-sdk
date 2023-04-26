@@ -1,10 +1,11 @@
 # Changelog
 
-## 1.0.3
+## 1.0.3 – 1.0.4
 
 - Add: Config option to include URLs for which requests shall have tracing headers added.
 - Fix: TracingInstrumentation broke fetch requests with relative URLs are broken on sub-pages.
 - Fix: Missing destructuring assignment in Browser quick start tutorial.
+- Fix: Demo app crashes when user has an ad-blocker activated.
 
 ## 1.0.1 - 1.0.2
 
