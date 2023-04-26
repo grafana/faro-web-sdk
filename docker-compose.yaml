@@ -59,7 +59,7 @@ services:
       - '${AGENT_CONFIG_PATH_LOCAL}:${AGENT_CONFIG_PATH}'
       - 'demo_demo_logs:${AGENT_LOGS_PATH}'
     entrypoint:
-      - '/bin/agent'
+      - '/bin/grafana-agent'
       - '-config.file=${AGENT_CONFIG_PATH}/${AGENT_CONFIG_FILE}'
       - '-config.expand-env'
       - '-config.enable-read-api'
