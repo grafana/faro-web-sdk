@@ -4,11 +4,6 @@ To release a new version, run `npx lerna version` on the main branch.
 It will ask some questions, bump package versions, tag & push.
 CI will pick it up from there and publish to npm.
 
-Important:\
-
-1. The version of experimental or beta packages will be set independently.
-2. The version of all other (stable) will be increased to the same version for all of these packages.
-
 **Note:**
 Before calling `npx lerna version` always ensure that your local main branch is 1:1 with origin/main.
 
