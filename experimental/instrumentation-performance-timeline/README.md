@@ -71,11 +71,18 @@ Alongside the default entry types the example adds entries to track
 new PerformanceTimelineInstrumentation({
   observeEntryTypes: [
     ...DEFAULT_PERFORMANCE_TIMELINE_ENTRY_TYPES,
-    { type: 'event', durationThreshold: 16, buffered: true },
+    { type: 'event', buffered: true },
     { type: 'mark',  buffered: true },
     { type: 'measure', , buffered: true },
   ],
 }),
+```
+
+Additionally you can add all config properties a respective PerformanceEntry provides.
+For example if you want to change the duration threshold for `PerformanceEventTiming`.
+
+```ts
+{ type: 'event', durationThreshold: 96, buffered: true },
 ```
 
 Note:
