@@ -49,7 +49,7 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
 
     if (!isPerformanceObserverSupported) {
       this.internalLogger.info(
-        `Browser does not support PerformanceObserver, stopping initialization of PerformanceTimelineInstrumentation`
+        'Browser does not support PerformanceObserver, stopping initialization of PerformanceTimelineInstrumentation'
       );
       return undefined;
     }
