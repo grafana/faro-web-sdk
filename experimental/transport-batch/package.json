@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-transport-batch",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.5",
   "description": "Faro transport to batch and transfer signals to a selected transport for sending.",
   "keywords": [
     "observability",
@@ -49,7 +49,7 @@
     "quality:circular-deps": "madge --circular ."
   },
   "devDependencies": {
-    "@grafana/faro-core": "^1.0.4"
+    "@grafana/faro-core": "^1.0.5"
   },
   "publishConfig": {
     "access": "public"
