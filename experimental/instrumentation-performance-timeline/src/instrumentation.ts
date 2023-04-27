@@ -45,6 +45,15 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
   }
 
   initialize(): void {
+    const isPerformanceObserverSupported = 'PerformanceObserver' in window;
+
+    if (!isPerformanceObserverSupported) {
+      this.internalLogger.info(
+        `Browser does not support PerformanceObserver, stopping initialization of PerformanceTimelineInstrumentation`
+      );
+      return undefined;
+    }
+
     this.validateIfObservedEntryTypesSupportedByBrowser();
     // Need to set ignored URLs here to ensure that instrumentations are already available
     this.setIgnoredUrls();

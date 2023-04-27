@@ -390,4 +390,42 @@ describe('PerformanceTimelineInstrumentation', () => {
       matchNavigationAndResourceEntriesTestResults[2]
     );
   });
+
+  it('Stop initialization of the instrument and show a message if PerformanceObserver is not supported by the browser', () => {
+    delete (global as any).PerformanceObserver;
+    delete (global as any).Performance;
+
+    const instrumentation = new PerformanceTimelineInstrumentation();
+
+    const mockInfo = jest.fn();
+    instrumentation.internalLogger = { ...mockInternalLogger, info: mockInfo };
+
+    const validateIfObservedEntryTypesSupportedByBrowserMock = jest.fn();
+    jest
+      .spyOn(instrumentation, 'validateIfObservedEntryTypesSupportedByBrowser' as any)
+      .mockImplementation(validateIfObservedEntryTypesSupportedByBrowserMock);
+
+    const setIgnoredUrlsMock = jest.fn();
+    jest.spyOn(instrumentation, 'setIgnoredUrls' as any).mockImplementation(setIgnoredUrlsMock);
+
+    const configureResourceTimingBufferMock = jest.fn();
+    jest
+      .spyOn(instrumentation, 'configureResourceTimingBuffer' as any)
+      .mockImplementation(configureResourceTimingBufferMock);
+
+    const registerPerformanceObserverMock = jest.fn();
+    jest
+      .spyOn(instrumentation, 'registerPerformanceObserver' as any)
+      .mockImplementation(registerPerformanceObserverMock);
+
+    const observeMock = jest.fn();
+    jest.spyOn(instrumentation, 'observe' as any).mockImplementation(observeMock);
+    instrumentation.initialize();
+
+    expect(mockInfo).toHaveBeenCalledTimes(1);
+    expect(validateIfObservedEntryTypesSupportedByBrowserMock).toHaveBeenCalledTimes(0);
+    expect(setIgnoredUrlsMock).toHaveBeenCalledTimes(0);
+    expect(configureResourceTimingBufferMock).toHaveBeenCalledTimes(0);
+    expect(observeMock).toHaveBeenCalledTimes(0);
+  });
 });
