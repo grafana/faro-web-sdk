@@ -1,15 +1,5 @@
 export type ObserveEntries = { type: string; buffered: boolean; [key: string]: any };
 
-export interface KeyValueSkipEntry {
-  key: string;
-  value: any;
-}
-
-export type ScopedSkipEntry = {
-  applyToEntryTypes: string[];
-  skipEntries: KeyValueSkipEntry[];
-};
-
 export interface PerformanceTimelineInstrumentationOptions {
   // The Performance Entry types which shall be observed
   observeEntryTypes?: ObserveEntries[];
@@ -20,9 +10,9 @@ export interface PerformanceTimelineInstrumentationOptions {
   // If resource buffer size is full, set this as the new
   maxResourceTimingBufferSize?: number;
 
-  // Entries containing this key value combination will be skipped
-  skipEntries?: Array<KeyValueSkipEntry | ScopedSkipEntry>;
-
   // For these URLs no events will be tracked
   ignoredUrls?: Array<string | RegExp>;
+
+  // Mutate performance entry before emit. Return false if entry shall be skipped. Parameter is the JSON representation of the PerformanceEntry as returned by calling it's own toJson() function.
+  beforeEmit?: (performanceEntryJSON: any) => Record<string, any> | false;
 }
