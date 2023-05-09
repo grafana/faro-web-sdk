@@ -108,42 +108,31 @@ new PerformanceTimelineInstrumentation({
 Note:\
 This overwrites the default skip URLs.
 
-#### By key/value pair
+#### By using the beforeEmit hook
 
-To reduce noise, you can skip entries which contain a specific key/value combination.
-This is done by defining them in the `skipEntries` array.
-This will completely skip every performance entry which contains the specified key/value pair.
+You can use the beforeEmit hook to skip entries simply by returning `false` for the desired entry.
+For more information see `Mutating or filtering performance entries` below.
 
-##### Example of how to specify skip entries
+### Mutating or filtering performance entries
 
-```ts
-new PerformanceTimelineInstrumentation({
-  skipEntries: [
-      { key: 'initiatorType', value:  'link'},
-  ]
-}),
-```
+The Performance Timeline emits a lot of data which quickly adds up. Often users mutate Performance
+Entries to trim down the payload size of an entry or to further remove noise. Sometimes you may need
+a complex filter which can not be achieved with the above config options.
 
-#### By key/value pair and entry type
+Therefore we provide the `beforeEmit` hook.
 
-If you do want to skip all entries containing the specified key/value pair, you can scope them to
-specific entry types only. This will only skip the specified entry types containing a specific
-key/value pair.
+This hook triggers after all the other options mentioned above e. g. skipping entries by key/value
+combination.
 
-```ts
-new PerformanceTimelineInstrumentation({
-  skipEntries: [
-    {
-      // Skip back/forward navigations and page reloads to remove some non human visible navigations
-      applyToEntryTypes: ['navigation'],
-      skipEntries: [
-        { key: 'type', value: 'reload' },
-        { key: 'type', value: 'back_forward' },
-      ],
-    },
-  ],
-}),
-```
+The `beforeEmit` hook provides two parameters and either return the new performance entry which shall
+be send to the backend or `false` in case the entire entry should be dropped.
+
+`beforeEmit: (performanceEntry: performanceEntryJSON: any) => Record<string, any> | false;`
+
+The first parameter is the performance entry as emitted by the browser, the second one is its JSON
+representation as returned by calling the `toJSON()` function of the respective PerformanceEntry.
+We provide the JSON representation as an own parameter because it is already created by the
+Instrumentation. So you can avoid calling the `toJson()` function twice.
 
 ### Config Options
 
@@ -151,6 +140,7 @@ new PerformanceTimelineInstrumentation({
 - `resourceTimingBufferSize: number`: The size of the browser's resource timing buffer which stores
   the "resource" performance entries.
 - `maxResourceTimingBufferSize: number`: If resource buffer size is full, set this as the new.
-- `skipEntries: Array<KeyValueSkipEntry | ScopedSkipEntry>`: Entries containing key/value
-  combinations which should be skipped.
 - `ignoredUrls?: Array<string | RegExp>`: URLs which should be ignored.
+- `beforeEmit?: (performanceEntryJSON: Record<string, any>) => Record<string, any> | false;`
+  : Mutate a performance entry before emitting it. Parameter is the JSON representation of the
+  PerformanceEntry. Return false if you want to skip an entire entry.

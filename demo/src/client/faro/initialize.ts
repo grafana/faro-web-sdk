@@ -1,5 +1,6 @@
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
 
+import { PerformanceTimelineInstrumentation } from '@grafana/faro-instrumentation-performance-timeline';
 import {
   initializeFaro as coreInit,
   getWebInstrumentations,
@@ -32,6 +33,7 @@ export function initializeFaro(): Faro {
           },
         },
       }),
+      new PerformanceTimelineInstrumentation(),
     ],
     session: (window as any).__PRELOADED_STATE__?.faro?.session,
     app: {

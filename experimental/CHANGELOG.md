@@ -1,5 +1,10 @@
 # Changelog
 
+## Next
+
+PerformanceTimelineInstrumentation: add beforeEmit hook to make it possible to mutate performance
+entries.
+
 ## 1.0.5
 
 - Change: Align versioning scheme to have the same version for all Faro Web-SDK packages.

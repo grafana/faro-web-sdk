@@ -1,21 +1,14 @@
 import { BaseInstrumentation, isArray, isObject, VERSION } from '@grafana/faro-core';
 
-import type {
-  KeyValueSkipEntry,
-  ObserveEntries,
-  PerformanceTimelineInstrumentationOptions,
-  ScopedSkipEntry,
-} from './types';
+import type { ObserveEntries, PerformanceTimelineInstrumentationOptions } from './types';
 
 const DEFAULT_RESOURCE_TIMING_BUFFER_SIZE = 250; // Same as browsers default size
-const DEFAULT_MAX_RESOURCE_TIMING_BUFFER_SIZE = 1000;
+const DEFAULT_MAX_RESOURCE_TIMING_BUFFER_SIZE = 500;
 
 export const DEFAULT_PERFORMANCE_TIMELINE_ENTRY_TYPES = [
   { type: 'navigation', buffered: true },
   { type: 'resource', buffered: true },
 ];
-
-type SkipEntries = PerformanceTimelineInstrumentationOptions['skipEntries'];
 
 /**
  * Instrumentation for Performance Timeline API
@@ -33,7 +26,6 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
   private observer?: PerformanceObserver;
   private observeEntryTypes: ObserveEntries[];
   private ignoredUrls: PerformanceTimelineInstrumentationOptions['ignoredUrls'];
-  private skipEntries: SkipEntries;
 
   constructor(private options?: PerformanceTimelineInstrumentationOptions) {
     super();
@@ -41,7 +33,6 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
     this.resourceTimingBufferSize = options?.resourceTimingBufferSize ?? DEFAULT_RESOURCE_TIMING_BUFFER_SIZE;
     this.maxResourceTimingBufferSize = options?.maxResourceTimingBufferSize ?? DEFAULT_MAX_RESOURCE_TIMING_BUFFER_SIZE;
     this.observeEntryTypes = options?.observeEntryTypes ?? DEFAULT_PERFORMANCE_TIMELINE_ENTRY_TYPES;
-    this.skipEntries = options?.skipEntries ?? [];
   }
 
   initialize(): void {
@@ -101,19 +92,19 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
         continue;
       }
 
-      const pEntry = performanceEntry.toJSON();
+      let pEntry = performanceEntry.toJSON();
 
-      if (this.isEntryExcluded(pEntry)) {
-        this.internalLogger.info('Drop performance entry because it matches one of the skip entries');
-        continue;
+      if (typeof this.options?.beforeEmit === 'function') {
+        const modifiedEntry = this.options.beforeEmit(pEntry);
+        if (modifiedEntry === false) {
+          this.internalLogger.info('Performance entry dropped because beforeEmit returned false.');
+          return;
+        }
+
+        pEntry = modifiedEntry;
       }
 
-      const convertedEntry = this.objectValuesToString(pEntry);
-      if (!(convertedEntry as any).serverTiming) {
-        (convertedEntry as any).serverTiming = '[]';
-      }
-
-      this.api.pushEvent('performanceEntry', convertedEntry);
+      this.api.pushEvent('performanceEntry', this.objectValuesToString(pEntry));
     }
 
     // Dropped entries count is only available in chrome (03/03/2024)
@@ -121,28 +112,6 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
     if (droppedEntriesCount > 0) {
       this.internalLogger.warn(`${droppedEntriesCount} entries got dropped due to the browser buffer being full.`);
     }
-  }
-
-  private isEntryExcluded(pEntry: any): boolean {
-    if (this.skipEntries && this.skipEntries.length) {
-      for (const skipEntry of this.skipEntries) {
-        if (this.isScopedSkipEntry(skipEntry)) {
-          const excludeForEntryType = skipEntry.applyToEntryTypes.includes(pEntry.entryType);
-          const excludeEntry =
-            excludeForEntryType && skipEntry.skipEntries.some(({ key, value }) => pEntry[key] === value);
-
-          if (excludeEntry) {
-            return true;
-          }
-        } else {
-          if (pEntry[skipEntry.key] === skipEntry.value) {
-            return true;
-          }
-        }
-      }
-    }
-
-    return false;
   }
 
   private observe(): void {
@@ -160,7 +129,10 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
 
     for (const [key, value] of Object.entries(object)) {
       if (isArray(value)) {
-        o[key] = value.map((arrayValue: any) => this.objectValuesToString(arrayValue)).toString();
+        o[key] =
+          value.length === 0
+            ? JSON.stringify(value)
+            : value.map((arrayValue: any) => this.objectValuesToString(arrayValue)).toString();
         continue;
       }
 
@@ -173,9 +145,5 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
     }
 
     return o;
-  }
-
-  private isScopedSkipEntry(skipEntry: KeyValueSkipEntry | ScopedSkipEntry): skipEntry is ScopedSkipEntry {
-    return skipEntry.hasOwnProperty('applyToEntryTypes') && skipEntry.hasOwnProperty('skipEntries');
   }
 }

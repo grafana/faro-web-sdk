@@ -209,21 +209,13 @@ describe('PerformanceTimelineInstrumentation', () => {
     expect(resourceTimingBufferSize).toBe(250);
 
     const maxResourceTimingBufferSize = (instrumentation as any).maxResourceTimingBufferSize;
-    expect(maxResourceTimingBufferSize).toBe(1000);
+    expect(maxResourceTimingBufferSize).toBe(500);
 
     const observeEntryTypes = (instrumentation as any).observeEntryTypes;
     expect(observeEntryTypes).toMatchObject([
       { buffered: true, type: 'navigation' },
       { buffered: true, type: 'resource' },
     ]);
-
-    // Mocking the Performance object doesn't work. Skip testing its usage for now
-    jest.spyOn(instrumentation, 'configureResourceTimingBuffer' as any).mockImplementation(() => {});
-
-    instrumentation.initialize();
-
-    const skipEntries = (instrumentation as any).skipEntries;
-    expect(skipEntries).toMatchObject([]);
   });
 
   it('initialize PerformanceTimelineInstrumentation with custom options', () => {
@@ -231,7 +223,6 @@ describe('PerformanceTimelineInstrumentation', () => {
       resourceTimingBufferSize: 500,
       maxResourceTimingBufferSize: 2000,
       observeEntryTypes: [...DEFAULT_PERFORMANCE_TIMELINE_ENTRY_TYPES, { buffered: true, type: 'event' }],
-      skipEntries: [{ key: 'foo', value: 'bar' }],
     });
 
     const resourceTimingBufferSize = (instrumentation as any).resourceTimingBufferSize;
@@ -250,9 +241,6 @@ describe('PerformanceTimelineInstrumentation', () => {
     // Mocking the Performance object doesn't work. Skip testing its usage for now
     jest.spyOn(instrumentation, 'configureResourceTimingBuffer' as any).mockImplementation(() => {});
     instrumentation.initialize();
-
-    const skipEntries = (instrumentation as any).skipEntries;
-    expect(skipEntries).toMatchObject([{ key: 'foo', value: 'bar' }]);
   });
 
   it('Show message if entry type is not supported by browser', () => {
@@ -323,74 +311,6 @@ describe('PerformanceTimelineInstrumentation', () => {
     );
   });
 
-  it("Skips all entries containing the key/value pair defined in 'skipEntries'", () => {
-    const skipEntriesUnscoped = [{ key: 'entryType', value: 'resource' }];
-
-    const instrumentation = new PerformanceTimelineInstrumentation({
-      skipEntries: skipEntriesUnscoped,
-    });
-
-    const config = mockConfig({ dedupe: true, instrumentations: [instrumentation] });
-
-    // Mocking the Performance object doesn't work. Skip testing its usage for now
-    jest.spyOn(instrumentation, 'configureResourceTimingBuffer' as any).mockImplementation(() => {});
-    instrumentation.initialize();
-    const { api } = initializeFaro(config);
-
-    const mockPushEvent = jest.fn();
-    api.pushEvent = mockPushEvent;
-
-    instrumentation.handlePerformanceEntry({ getEntries: () => navigationAndResourceEntries } as any, null as any, 0);
-
-    expect(mockPushEvent).toHaveBeenCalledTimes(1);
-
-    expect(mockPushEvent).toHaveBeenNthCalledWith(
-      1,
-      'performanceEntry',
-      matchNavigationAndResourceEntriesTestResults[0]
-    );
-  });
-
-  it("Skips only entries containing the key/value pair for the specific entryTypes defined in 'skipEntries'", () => {
-    // Applies to entries scoped by entry type
-    const skipEntriesScoped = [
-      {
-        applyToEntryTypes: ['navigation'],
-        skipEntries: [{ key: 'nextHopProtocol', value: 'http/1.1' }],
-      },
-    ];
-
-    const instrumentation = new PerformanceTimelineInstrumentation({
-      skipEntries: skipEntriesScoped,
-    });
-
-    const config = mockConfig({ dedupe: true, instrumentations: [instrumentation] });
-
-    // Mocking the Performance object doesn't work. Skip testing its usage for now
-    jest.spyOn(instrumentation, 'configureResourceTimingBuffer' as any).mockImplementation(() => {});
-    instrumentation.initialize();
-    const { api } = initializeFaro(config);
-
-    const mockPushEvent = jest.fn();
-    api.pushEvent = mockPushEvent;
-
-    instrumentation.handlePerformanceEntry({ getEntries: () => navigationAndResourceEntries } as any, null as any, 0);
-
-    expect(mockPushEvent).toHaveBeenCalledTimes(2);
-
-    expect(mockPushEvent).toHaveBeenNthCalledWith(
-      1,
-      'performanceEntry',
-      matchNavigationAndResourceEntriesTestResults[1]
-    );
-
-    expect(mockPushEvent).toHaveBeenNthCalledWith(
-      2,
-      'performanceEntry',
-      matchNavigationAndResourceEntriesTestResults[2]
-    );
-  });
-
   it('Stop initialization of the instrument and show a message if PerformanceObserver is not supported by the browser', () => {
     delete (global as any).PerformanceObserver;
     delete (global as any).Performance;
@@ -427,5 +347,56 @@ describe('PerformanceTimelineInstrumentation', () => {
     expect(setIgnoredUrlsMock).toHaveBeenCalledTimes(0);
     expect(configureResourceTimingBufferMock).toHaveBeenCalledTimes(0);
     expect(observeMock).toHaveBeenCalledTimes(0);
+  });
+
+  it('Drop entry if beforeEmit returns false', () => {
+    const instrumentation = new PerformanceTimelineInstrumentation({
+      beforeEmit: (_) => false,
+    });
+
+    const config = mockConfig({ dedupe: true, instrumentations: [instrumentation] });
+
+    // Mocking the Performance object doesn't work. Skip testing its usage for now
+    jest.spyOn(instrumentation, 'configureResourceTimingBuffer' as any).mockImplementation(() => {});
+    instrumentation.initialize();
+    const { api } = initializeFaro(config);
+
+    const mockPushEvent = jest.fn();
+    api.pushEvent = mockPushEvent;
+
+    instrumentation.handlePerformanceEntry(
+      { getEntries: () => [{ ...navigationAndResourceEntries[0] }] } as any,
+      null as any,
+      0
+    );
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(0);
+  });
+
+  it('Mutate entry via beforeEmit() function and emit the new object', () => {
+    const instrumentation = new PerformanceTimelineInstrumentation({
+      beforeEmit: (performanceEntryJSON: any) => {
+        return { serverTiming: performanceEntryJSON.serverTiming };
+      },
+    });
+
+    const config = mockConfig({ dedupe: true, instrumentations: [instrumentation] });
+
+    // Mocking the Performance object doesn't work. Skip testing its usage for now
+    jest.spyOn(instrumentation, 'configureResourceTimingBuffer' as any).mockImplementation(() => {});
+    instrumentation.initialize();
+    const { api } = initializeFaro(config);
+
+    const mockPushEvent = jest.fn();
+    api.pushEvent = mockPushEvent;
+
+    instrumentation.handlePerformanceEntry(
+      { getEntries: () => [{ ...navigationAndResourceEntries[0], ...navigationAndResourceEntries[1] }] } as any,
+      null as any,
+      0
+    );
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
+    expect(mockPushEvent).toHaveBeenCalledWith('performanceEntry', { serverTiming: '[]' });
   });
 });
