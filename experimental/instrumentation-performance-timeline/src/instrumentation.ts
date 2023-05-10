@@ -98,7 +98,7 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
         const modifiedEntry = this.options.beforeEmit(pEntry);
         if (modifiedEntry === false) {
           this.internalLogger.info('Performance entry dropped because beforeEmit returned false.');
-          return;
+          continue;
         }
 
         pEntry = modifiedEntry;

@@ -351,7 +351,15 @@ describe('PerformanceTimelineInstrumentation', () => {
 
   it('Drop entry if beforeEmit returns false', () => {
     const instrumentation = new PerformanceTimelineInstrumentation({
-      beforeEmit: (_) => false,
+      beforeEmit: (performanceEntryJSON) => {
+        const { entryType, type } = performanceEntryJSON;
+
+        if (entryType === 'navigation' && type === 'reload') {
+          return false;
+        }
+
+        return performanceEntryJSON;
+      },
     });
 
     const config = mockConfig({ dedupe: true, instrumentations: [instrumentation] });
@@ -365,12 +373,12 @@ describe('PerformanceTimelineInstrumentation', () => {
     api.pushEvent = mockPushEvent;
 
     instrumentation.handlePerformanceEntry(
-      { getEntries: () => [{ ...navigationAndResourceEntries[0] }] } as any,
+      { getEntries: () => navigationAndResourceEntries.map((entry) => ({ ...entry })) } as any,
       null as any,
       0
     );
 
-    expect(mockPushEvent).toHaveBeenCalledTimes(0);
+    expect(mockPushEvent).toHaveBeenCalledTimes(2);
   });
 
   it('Mutate entry via beforeEmit() function and emit the new object', () => {
