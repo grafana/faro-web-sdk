@@ -113,6 +113,27 @@ This overwrites the default skip URLs.
 You can use the beforeEmit hook to skip entries simply by returning `false` for the desired entry.
 For more information see `Mutating or filtering performance entries` below.
 
+##### Example: Skip back/forward navigation and page reloads to remove non human visible navigation
+
+```ts
+new PerformanceTimelineInstrumentation({
+  beforeEmit: (performanceEntryJSON) => {
+    const entryType = performanceEntryJSON.type;
+    const type = performanceEntryJSON.type;
+
+    if (entryType !== 'navigation') {
+      return performanceEntryJSON;
+    }
+
+    if (['reload', 'back_forward'].includes(type)) {
+      return false;
+    }
+
+    return performanceEntryJSON;
+  },
+});
+```
+
 ### Mutating or filtering performance entries
 
 The Performance Timeline emits a lot of data which quickly adds up. Often users mutate Performance

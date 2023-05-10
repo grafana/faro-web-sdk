@@ -33,7 +33,9 @@ export function initializeFaro(): Faro {
           },
         },
       }),
-      new PerformanceTimelineInstrumentation(),
+      new PerformanceTimelineInstrumentation({
+        observeEntryTypes: [],
+      }),
     ],
     session: (window as any).__PRELOADED_STATE__?.faro?.session,
     app: {
