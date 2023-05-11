@@ -1,5 +1,9 @@
 # Changelog
 
+## Next
+
+- Add: add option to provide additional error context in `pushError` api.
+
 ## 1.0.3 – 1.0.5
 
 - Add: Config option to include URLs for which requests shall have tracing headers added.

@@ -42,9 +42,15 @@ describe('api.exceptions', () => {
         },
       ];
 
+      const additionalContext = {
+        message: 'React error boundary',
+        componentStackTrace: { foo: 'bar' },
+      };
+
       api.pushError(new Error('test exception'), {
         stackFrames: frames,
         type: 'TestError',
+        context: additionalContext,
       });
 
       expect(transport.items).toHaveLength(1);
@@ -57,6 +63,7 @@ describe('api.exceptions', () => {
       expect(evt.type).toEqual('TestError');
       expect(evt.value).toEqual('test exception');
       expect(evt.stacktrace).toEqual({ frames });
+      expect(evt.context).toEqual(additionalContext);
     });
 
     it('error without overrides', () => {
@@ -159,6 +166,16 @@ describe('api.exceptions', () => {
         api.pushError(error, {
           skipDedupe: true,
         });
+        expect(transport.items).toHaveLength(2);
+      });
+
+      it("doesn't filter events with same message, same stacktrace, same type but different context", () => {
+        const error = new Error('test');
+
+        api.pushError(error, { context: { foo: 'bar' } });
+        expect(transport.items).toHaveLength(1);
+
+        api.pushError(error, { context: { bar: 'baz' } });
         expect(transport.items).toHaveLength(2);
       });
     });
