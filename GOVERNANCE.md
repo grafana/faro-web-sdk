@@ -51,6 +51,9 @@ The current team members are:
 
 - Bogdan Matei — [@bfmatei](https://github.com/bfmatei) ([Grafana Labs](https://grafana.com/))
 - Domas Lapinskas - [@domasx2](https://github.com/domasx2) ([Grafana Labs](https://grafana.com/))
+- Kostas Pelelis - [@kpelelis](https://github.com/kpelelis) ([Grafana Labs](https://grafana.com/))
+- Elliot Kirk - [@eskirk](https://github.com/eskirk) ([Grafana Labs](https://grafana.com/))
+- Marco Schäfer - [@codecapitano](https://github.com/codecapitano) ([Grafana Labs](https://grafana.com/))
 
 ### Maintainers
 
