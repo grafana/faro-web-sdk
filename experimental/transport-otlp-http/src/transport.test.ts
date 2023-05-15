@@ -34,7 +34,14 @@ const otelTransportPayload: OtelTransportPayload['resourceLogs'] = [
             body: {
               stringValue: 'hi',
             },
-            attributes: [],
+            attributes: [
+              {
+                key: 'faro.log.context',
+                value: {
+                  kvlistValue: { values: [] },
+                },
+              },
+            ],
           } as LogRecord,
         ],
       },
@@ -81,6 +88,8 @@ describe('OtlpHttpTransport', () => {
     transport.send(v);
 
     expect(fetch).toHaveBeenCalledTimes(1);
+
+    // \"attributes\":[{\"key\":\"faro.log.context\",\"value\":{\"kvlistValue\":{\"values\":[]}}}]
 
     expect(fetch).toHaveBeenCalledWith(url, {
       body: JSON.stringify(payload),
@@ -252,7 +261,14 @@ describe('OtlpHttpTransport', () => {
                   body: {
                     stringValue: 'hi',
                   },
-                  attributes: [],
+                  attributes: [
+                    {
+                      key: 'faro.log.context',
+                      value: {
+                        kvlistValue: { values: [] },
+                      },
+                    },
+                  ],
                 } as LogRecord,
                 {
                   timeUnixNano: 1674813181035000000,
@@ -261,7 +277,14 @@ describe('OtlpHttpTransport', () => {
                   body: {
                     stringValue: 'foo',
                   },
-                  attributes: [],
+                  attributes: [
+                    {
+                      key: 'faro.log.context',
+                      value: {
+                        kvlistValue: { values: [] },
+                      },
+                    },
+                  ],
                 } as LogRecord,
               ],
             },

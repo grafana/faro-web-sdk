@@ -237,11 +237,14 @@ const matchErrorLogRecord = {
       },
     },
   ],
+
+  traceId: 'trace-id',
+  spanId: 'span-id',
 } as const;
 
 describe('toErrorLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const errorLogRecord = getLogTransforms(mockInternalLogger).toScopeLog(item).logRecords[0];
-    expect(errorLogRecord).toMatchObject(matchErrorLogRecord);
+    expect(errorLogRecord).toEqual(matchErrorLogRecord);
   });
 });

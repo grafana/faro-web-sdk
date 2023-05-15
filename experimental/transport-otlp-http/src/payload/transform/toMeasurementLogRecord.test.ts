@@ -159,6 +159,9 @@ const matchMeasurementLogRecord = {
       value: { doubleValue: 213.7000000011176 },
     },
   ],
+
+  traceId: 'trace-id',
+  spanId: 'span-id',
 } as const;
 
 describe('toMeasurementLogRecord', () => {

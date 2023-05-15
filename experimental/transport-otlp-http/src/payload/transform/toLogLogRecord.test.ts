@@ -6,7 +6,7 @@ import { getLogTransforms } from './transform';
 const item: TransportItem<LogEvent> = {
   type: TransportItemType.LOG,
   payload: {
-    context: {},
+    context: { foo: 'bar' },
     level: LogLevel.INFO,
     message: 'Faro was initialized',
     timestamp: '2023-01-27T09:53:01.035Z',
@@ -151,12 +151,29 @@ const matchLogLogRecord = {
         },
       },
     },
+    {
+      key: 'faro.log.context',
+      value: {
+        kvlistValue: {
+          values: [
+            {
+              key: 'foo',
+              value: {
+                stringValue: 'bar',
+              },
+            },
+          ],
+        },
+      },
+    },
   ],
+  traceId: 'trace-id',
+  spanId: 'span-id',
 } as const;
 
 describe('toLogLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const logLogRecord = getLogTransforms(mockInternalLogger).toScopeLog(item).logRecords[0];
-    expect(logLogRecord).toMatchObject(matchLogLogRecord);
+    expect(logLogRecord).toEqual(matchLogLogRecord);
   });
 });
