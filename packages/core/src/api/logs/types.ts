@@ -1,7 +1,9 @@
-import type { BaseObject, LogLevel } from '../../utils';
+import type { LogLevel } from '../../utils';
 import type { TraceContext } from '../traces';
 
-export type LogContext = BaseObject;
+export type LogContext = {
+  [key: string]: string;
+};
 
 export interface LogEvent {
   context: LogContext;

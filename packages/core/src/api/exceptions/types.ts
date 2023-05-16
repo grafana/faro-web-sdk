@@ -1,4 +1,3 @@
-import type { BaseObject } from '../../utils';
 import type { TraceContext } from '../traces';
 
 export type StacktraceParser = (err: ExtendedError) => Stacktrace;
@@ -20,7 +19,9 @@ export interface Stacktrace {
   frames: ExceptionStackFrame[];
 }
 
-export type ExceptionContext = BaseObject;
+export type ExceptionContext = {
+  [key: string]: string;
+};
 
 export interface ExceptionEvent {
   timestamp: string;
