@@ -132,6 +132,7 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
         toAttribute(SemanticAttributes.EXCEPTION_MESSAGE, payload.value),
         // toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined),
         toAttribute('faro.error.stacktrace', payload.stacktrace),
+        toAttribute('faro.error.context', payload.context),
       ].filter(isAttribute),
       traceId: payload.trace?.trace_id,
       spanId: payload.trace?.span_id,

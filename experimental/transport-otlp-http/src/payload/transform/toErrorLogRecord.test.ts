@@ -29,6 +29,9 @@ const item: TransportItem<ExceptionEvent> = {
       trace_id: 'trace-id',
       span_id: 'span-id',
     } as const,
+    context: {
+      additional: 'context',
+    },
   },
   meta: {
     view: {
@@ -230,6 +233,21 @@ const matchErrorLogRecord = {
                     },
                   ],
                 },
+              },
+            },
+          ],
+        },
+      },
+    },
+    {
+      key: 'faro.error.context',
+      value: {
+        kvlistValue: {
+          values: [
+            {
+              key: 'additional',
+              value: {
+                stringValue: 'context',
               },
             },
           ],

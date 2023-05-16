@@ -94,6 +94,13 @@ The `api` property on the Faro instance contains all the necessary methods to pu
       },
     ],
   });
+
+  faro.api.pushError(new Error('This is a log with context'), {
+    context: {
+      message: 'React error boundary',
+      componentStackTrace: {...}
+    },
+  });
   ```
 
 ## Events
