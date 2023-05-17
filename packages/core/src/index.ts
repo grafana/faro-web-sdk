@@ -73,6 +73,7 @@ export { Conventions } from './semantic';
 export { BaseTransport, getTransportBody, TransportItemType, transportItemTypeToBodyKey } from './transports';
 export type {
   BeforeSendHook,
+  SendFn,
   Transport,
   TransportBody,
   TransportItem,

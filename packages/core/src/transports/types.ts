@@ -7,6 +7,7 @@ import type { TransportItemType } from './const';
 
 export type TransportItemPayload<P = APIEvent> = P;
 
+export type SendFn<P = APIEvent> = (item: TransportItem<P> | TransportItem<P>[]) => void;
 export type BeforeSendHook<P = APIEvent> = (item: TransportItem<P>) => TransportItem<P> | null;
 
 export interface TransportItem<P = APIEvent> {
@@ -44,4 +45,13 @@ export interface Transports {
   transports: Transport[];
   pause: () => void;
   unpause: () => void;
+}
+
+export interface BatchExecutorOptions {
+  // If no new signal arrives after "batchSendTimeout" ms, send the payload. If set to 0, timeout is disabled
+  readonly batchSendTimeout?: number;
+  // Buffer "batchSendCount" signals before sending the payload
+  readonly batchSendCount?: number;
+  readonly paused?: boolean;
+  readonly autoStart?: boolean;
 }

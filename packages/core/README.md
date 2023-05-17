@@ -21,19 +21,22 @@ initializeFaro({
 
 Faro Web SDK requires a configuration object parameter with the following properties:
 
-| Property                | Description                                                                              | Type                  | Default Value Variable                                   |
-| ----------------------- | ---------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------- |
-| `app`                   | Application metadata                                                                     | `App`                 |                                                          |
-| `dedupe`                | A flag for toggling deduplication filter                                                 | `boolean`             |                                                          |
-| `globalObjectKey`       | String that should be used when defining the Faro instance property on the global object | `string`              | `defaultGlobalObjectKey = 'faro'`                        |
-| `instrumentations`      | Array of instrumentations that should be ran                                             | `Instrumentation[]`   |                                                          |
-| `internalLoggerLevel`   | The level of information printed to console for internal messages                        | `InternalLoggerLevel` | `defaultInternalLoggerLevel = InternalLoggerLevel.ERROR` |
-| `isolate`               | A flag that will create an isolated Faro instance                                        | `boolean`             |                                                          |
-| `metas`                 | Array of metas that should be logged                                                     | `MetaItem[]`          |                                                          |
-| `parseStacktrace`       | A function used to parse stack traces                                                    | `StacktraceParser`    |                                                          |
-| `paused`                | Flag for initializing the Faro instance as paused                                        | `boolean`             |                                                          |
-| `preventGlobalExposure` | Flag for toggling the definition on the global object                                    | `boolean`             |                                                          |
-| `transports`            | Array of transports that should be used                                                  | `Transport[]`         |                                                          |
+| Property                 | Description                                                                              | Type                  | Default Value Variable                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------- |
+| `app`                    | Application metadata                                                                     | `App`                 |                                                          |
+| `dedupe`                 | A flag for toggling deduplication filter                                                 | `boolean`             |                                                          |
+| `globalObjectKey`        | String that should be used when defining the Faro instance property on the global object | `string`              | `defaultGlobalObjectKey = 'faro'`                        |
+| `instrumentations`       | Array of instrumentations that should be ran                                             | `Instrumentation[]`   |                                                          |
+| `internalLoggerLevel`    | The level of information printed to console for internal messages                        | `InternalLoggerLevel` | `defaultInternalLoggerLevel = InternalLoggerLevel.ERROR` |
+| `isolate`                | A flag that will create an isolated Faro instance                                        | `boolean`             |                                                          |
+| `metas`                  | Array of metas that should be logged                                                     | `MetaItem[]`          |                                                          |
+| `parseStacktrace`        | A function used to parse stack traces                                                    | `StacktraceParser`    |                                                          |
+| `paused`                 | Flag for initializing the Faro instance as paused                                        | `boolean`             |                                                          |
+| `preventGlobalExposure ` | Flag for toggling the definition on the global object                                    | `boolean`             |                                                          |
+| `transports`             | Array of transports that should be used                                                  | `Transport[]`         |                                                          |
+| `batchEnabled`           | Enable batch sending of events                                                           | `boolean`             | `true`                                                   |
+| `batchSendTimeout`       | The interval in which to send event batches                                              | `number`              | 250                                                      |
+| `batchSendCount`         | The size of the event buffer before the batch is sent (overrides interval)               | `number`              | 50                                                       |
 
 Besides the mandatory properties, Faro configuration also supports the following optional properties:
 
@@ -288,6 +291,9 @@ initializeFaro({
   transports: [new MyTransport()],
 });
 ```
+
+The transports also support batch processing wiht the `batchEnabled` flag set to true
+and a positive, non zero `batchSendTimeout`. The batch executor will group items that share the same `metas` together and call the `send` function for each group of signals.
 
 ## Unpatched console
 

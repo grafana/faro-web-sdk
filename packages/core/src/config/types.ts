@@ -18,6 +18,10 @@ export interface Config<P = APIEvent> {
   preventGlobalExposure: boolean;
   transports: Transport[];
   unpatchedConsole: UnpatchedConsole;
+  batchEnabled?: boolean;
+  batchExecutorAutoStart?: boolean;
+  batchSendTimeout?: number;
+  batchSendCount?: number;
 
   beforeSend?: BeforeSendHook<P>;
   ignoreErrors?: Patterns;

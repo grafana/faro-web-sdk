@@ -1,10 +1,12 @@
+import type { TransportItem } from '..';
 import type { ExceptionEvent } from '../api';
 import type { Config, Patterns } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { UnpatchedConsole } from '../unpatchedConsole';
-import { isString } from '../utils';
+import { isArray, isString } from '../utils';
 
+import { BatchExecutor } from './batchExecutor';
 import { TransportItemType } from './const';
 import type { BeforeSendHook, Transport, Transports } from './types';
 
@@ -86,24 +88,43 @@ export function initializeTransports(
     });
   };
 
-  const execute: Transports['execute'] = (item) => {
-    if (!paused) {
-      let actualItem = item;
+  const send = (item: TransportItem | TransportItem[]) => {
+    let items = isArray(item) ? item : [item];
+    for (const hook of beforeSendHooks) {
+      // TODO: Make BeforeSendHook work with item array
+      const modified = items.map((bshItem) => hook(bshItem)).filter((i) => i !== null) as TransportItem[];
 
-      for (const hook of beforeSendHooks) {
-        const modified = hook(actualItem);
-
-        if (modified === null) {
-          return;
-        }
-
-        actualItem = modified;
+      if (modified.length === 0) {
+        return;
       }
 
-      for (const transport of transports) {
-        internalLogger.debug(`Transporting item using ${transport.name}\n`, actualItem);
+      items = modified;
+    }
 
-        transport.send(actualItem);
+    for (const transport of transports) {
+      internalLogger.debug(`Transporting item using ${transport.name}\n`, items);
+
+      transport.send(items);
+    }
+  };
+
+  let batchExecutor: BatchExecutor | undefined;
+
+  if (config.batchEnabled) {
+    batchExecutor = new BatchExecutor(send, {
+      batchSendTimeout: config.batchSendTimeout,
+      batchSendCount: config.batchSendCount,
+      autoStart: config.batchExecutorAutoStart,
+      paused,
+    });
+  }
+
+  const execute: Transports['execute'] = (item) => {
+    if (!paused) {
+      if (config.batchEnabled && batchExecutor !== undefined) {
+        batchExecutor.addItem(item);
+      } else {
+        send(item);
       }
     }
   };
@@ -114,6 +135,7 @@ export function initializeTransports(
 
   const pause: Transports['pause'] = () => {
     internalLogger.debug('Pausing transports');
+    batchExecutor?.pause();
 
     paused = true;
   };
@@ -142,6 +164,7 @@ export function initializeTransports(
 
   const unpause: Transports['unpause'] = () => {
     internalLogger.debug('Unpausing transports');
+    batchExecutor?.start();
 
     paused = false;
   };

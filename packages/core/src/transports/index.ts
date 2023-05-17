@@ -8,6 +8,7 @@ export { registerInitialTransports } from './registerInitial';
 
 export type {
   BeforeSendHook,
+  SendFn,
   Transport,
   TransportBody,
   TransportItem,
