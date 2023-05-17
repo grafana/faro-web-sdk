@@ -1,7 +1,7 @@
 import type { ExceptionEvent } from '../api';
 import { initializeFaro } from '../initialize';
 import { mockConfig } from '../testUtils';
-import { getCurrentTimestamp, isArray } from '../utils';
+import { getCurrentTimestamp } from '../utils';
 import { VERSION } from '../version';
 
 import { BaseTransport } from './base';
@@ -14,8 +14,7 @@ class MockTransport extends BaseTransport implements Transport {
 
   sentItems: TransportItem[] = [];
 
-  send(item: TransportItem | TransportItem[]): void | Promise<void> {
-    const items = isArray(item) ? item : [item];
+  send(items: TransportItem[]): void | Promise<void> {
     this.sentItems.push(...items);
   }
 }

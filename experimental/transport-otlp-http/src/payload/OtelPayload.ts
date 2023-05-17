@@ -44,7 +44,7 @@ export class OtelPayload {
 
           // Currently the scope is fixed to '@grafana/faro-web-sdk'.
           // Once we are able to drive the scope by instrumentation this will change and we need to align this function
-          if (!this.resourceLogs) {
+          if (this.resourceLogs.length === 0) {
             this.resourceLogs = [toResourceLog(transportItem)];
           } else {
             // Faro takes care of the grouping with different metadata (or OTel attributes), so we can safely

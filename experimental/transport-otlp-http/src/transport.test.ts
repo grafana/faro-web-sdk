@@ -85,7 +85,7 @@ describe('OtlpHttpTransport', () => {
     });
     transport.internalLogger = mockInternalLogger;
 
-    transport.send(v);
+    transport.send([v]);
 
     expect(fetch).toHaveBeenCalledTimes(1);
 
@@ -109,7 +109,7 @@ describe('OtlpHttpTransport', () => {
     transport.internalLogger = mockInternalLogger;
 
     for (let idx = 0; idx < 6; idx++) {
-      transport.send(logTransportItem);
+      transport.send([logTransportItem]);
     }
 
     expect(fetch).toHaveBeenCalledTimes(3);
@@ -140,14 +140,14 @@ describe('OtlpHttpTransport', () => {
         })
       );
 
-      await transport.send(v);
+      await transport.send([v]);
       expect(fetch).toHaveBeenCalledTimes(1);
 
-      await transport.send(v);
+      await transport.send([v]);
       expect(fetch).toHaveBeenCalledTimes(1);
 
       jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
-      await transport.send(v);
+      await transport.send([v]);
       expect(fetch).toHaveBeenCalledTimes(2);
     }
   );
@@ -177,16 +177,16 @@ describe('OtlpHttpTransport', () => {
         })
       );
 
-      await transport.send(v);
+      await transport.send([v]);
       expect(fetch).toHaveBeenCalledTimes(1);
 
       jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
 
-      await transport.send(v);
+      await transport.send([v]);
       expect(fetch).toHaveBeenCalledTimes(1);
 
       jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
-      await transport.send(v);
+      await transport.send([v]);
       expect(fetch).toHaveBeenCalledTimes(2);
     }
   );
@@ -215,15 +215,15 @@ describe('OtlpHttpTransport', () => {
         })
       );
 
-      await transport.send(v);
+      await transport.send([v]);
       expect(fetch).toHaveBeenCalledTimes(1);
 
       jest.setSystemTime(new Date(Date.now() + 1001).valueOf());
-      await transport.send(v);
+      await transport.send([v]);
       expect(fetch).toHaveBeenCalledTimes(1);
 
       jest.setSystemTime(new Date(Date.now() + 2001).valueOf());
-      await transport.send(v);
+      await transport.send([v]);
       expect(fetch).toHaveBeenCalledTimes(2);
     }
   );

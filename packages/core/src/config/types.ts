@@ -2,26 +2,23 @@ import type { APIEvent, StacktraceParser } from '../api';
 import type { Instrumentation } from '../instrumentations';
 import type { InternalLoggerLevel } from '../internalLogger';
 import type { MetaApp, MetaItem, MetaSession, MetaUser, MetaView } from '../metas';
-import type { BeforeSendHook, Transport } from '../transports';
+import type { BatchExecutorOptions, BeforeSendHook, Transport } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 
 export interface Config<P = APIEvent> {
   app: MetaApp;
+  batching?: BatchExecutorOptions;
   dedupe: boolean;
   globalObjectKey: string;
-  isolate: boolean;
   instrumentations: Instrumentation[];
   internalLoggerLevel: InternalLoggerLevel;
+  isolate: boolean;
   metas: MetaItem[];
   parseStacktrace: StacktraceParser;
   paused: boolean;
   preventGlobalExposure: boolean;
   transports: Transport[];
   unpatchedConsole: UnpatchedConsole;
-  batchEnabled?: boolean;
-  batchExecutorAutoStart?: boolean;
-  batchSendTimeout?: number;
-  batchSendCount?: number;
 
   beforeSend?: BeforeSendHook<P>;
   ignoreErrors?: Patterns;

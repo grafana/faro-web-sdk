@@ -4,12 +4,12 @@ import type { TransportItem } from '../';
 
 import type { BatchExecutorOptions, SendFn } from './types';
 
-const DEFAULT_BATCH_SEND_TIMEOUT_MS = 250;
-const DEFAULT_BATCH_SEND_COUNT = 50;
+const DEFAULT_SEND_TIMEOUT_MS = 250;
+const DEFAULT_BATCH_ITEM_LIMIT = 50;
 
 export class BatchExecutor {
-  private readonly batchSendCount: number;
-  private readonly batchSendTimeout: number;
+  private readonly itemLimit: number;
+  private readonly sendTimeout: number;
 
   private signalBuffer: TransportItem[] = [];
   private sendFn: SendFn;
@@ -17,13 +17,13 @@ export class BatchExecutor {
   private flushInterval: number;
 
   constructor(sendFn: SendFn, options?: BatchExecutorOptions) {
-    this.batchSendCount = options?.batchSendCount ?? DEFAULT_BATCH_SEND_COUNT;
-    this.batchSendTimeout = options?.batchSendTimeout ?? DEFAULT_BATCH_SEND_TIMEOUT_MS;
+    this.itemLimit = options?.itemLimit ?? DEFAULT_BATCH_ITEM_LIMIT;
+    this.sendTimeout = options?.sendTimeout ?? DEFAULT_SEND_TIMEOUT_MS;
     this.paused = options?.paused || false;
     this.sendFn = sendFn;
     this.flushInterval = -1;
 
-    if (options?.autoStart) {
+    if (!this.paused) {
       this.start();
     }
 
@@ -43,15 +43,15 @@ export class BatchExecutor {
 
     this.signalBuffer.push(item);
 
-    if (this.signalBuffer.length >= this.batchSendCount) {
+    if (this.signalBuffer.length >= this.itemLimit) {
       this.flush();
     }
   }
 
   start(): void {
     this.paused = false;
-    if (this.batchSendTimeout > 0) {
-      this.flushInterval = window.setInterval(() => this.flush(), this.batchSendTimeout);
+    if (this.sendTimeout > 0) {
+      this.flushInterval = window.setInterval(() => this.flush(), this.sendTimeout);
     }
   }
 

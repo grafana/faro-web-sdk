@@ -36,41 +36,12 @@ describe('BatchExecutor', () => {
       jest.useFakeTimers();
     });
 
-    it('tests send with autoStart', () => {
+    it('tests send when exceeding batch size', () => {
       const mockSendFunction = jest.fn();
       const item = generateTransportItem();
       const be = new BatchExecutor(mockSendFunction, {
-        batchSendTimeout: 1,
-        autoStart: true,
-      });
-
-      be.addItem(item);
-      expect(mockSendFunction).not.toBeCalled();
-
-      jest.advanceTimersByTime(2);
-      expect(mockSendFunction).toBeCalledTimes(1);
-    });
-
-    it('tests send without autoStart', () => {
-      const mockSendFunction = jest.fn();
-      const item = generateTransportItem();
-      const be = new BatchExecutor(mockSendFunction, {
-        batchSendTimeout: 1,
-      });
-
-      be.addItem(item);
-      expect(mockSendFunction).not.toBeCalled();
-
-      jest.advanceTimersByTime(2);
-      expect(mockSendFunction).toBeCalledTimes(0);
-    });
-
-    it('tests send when exceding batch size', () => {
-      const mockSendFunction = jest.fn();
-      const item = generateTransportItem();
-      const be = new BatchExecutor(mockSendFunction, {
-        batchSendTimeout: 1,
-        batchSendCount: 2,
+        sendTimeout: 1,
+        itemLimit: 2,
       });
 
       be.addItem(item);
@@ -83,8 +54,7 @@ describe('BatchExecutor', () => {
     it('tests send with empty buffer', () => {
       const mockSendFunction = jest.fn();
       new BatchExecutor(mockSendFunction, {
-        batchSendTimeout: 1,
-        autoStart: true,
+        sendTimeout: 1,
       });
 
       jest.advanceTimersByTime(2);
@@ -95,8 +65,7 @@ describe('BatchExecutor', () => {
       const mockSendFunction = jest.fn();
       const item = generateTransportItem();
       const be = new BatchExecutor(mockSendFunction, {
-        batchSendTimeout: 1,
-        autoStart: true,
+        sendTimeout: 1,
       });
 
       be.addItem(item);
@@ -114,8 +83,7 @@ describe('BatchExecutor', () => {
       const mockSendFunction = jest.fn();
       const item = generateTransportItem();
       const be = new BatchExecutor(mockSendFunction, {
-        batchSendTimeout: 1,
-        autoStart: true,
+        sendTimeout: 1,
       });
 
       be.addItem(item);
@@ -133,7 +101,7 @@ describe('BatchExecutor', () => {
       const mockSendFunction = jest.fn();
       const item = generateTransportItem();
       const be = new BatchExecutor(mockSendFunction, {
-        batchSendTimeout: 1,
+        sendTimeout: 1,
         paused: true,
       });
 
@@ -147,7 +115,7 @@ describe('BatchExecutor', () => {
       const mockSendFunction = jest.fn();
       const item = generateTransportItem();
       const be = new BatchExecutor(mockSendFunction, {
-        batchSendTimeout: 1,
+        sendTimeout: 1,
       });
 
       be.addItem(item);
@@ -161,7 +129,7 @@ describe('BatchExecutor', () => {
       const mockSendFunction = jest.fn();
       const item = generateTransportItem();
       const be = new BatchExecutor(mockSendFunction, {
-        batchSendTimeout: 1,
+        sendTimeout: 1,
       });
 
       be.addItem(item);
@@ -176,7 +144,7 @@ describe('BatchExecutor', () => {
 
     it('tests groupItems', () => {
       const be = new BatchExecutor(() => {}, {
-        batchSendTimeout: 1,
+        sendTimeout: 1,
       });
       const itemsWithSameMeta = [...Array(3)].map(() => generateTransportItem(false));
       const itemsWithRandomMeta = [...Array(5)].map(() => generateTransportItem(true));
@@ -187,7 +155,7 @@ describe('BatchExecutor', () => {
     it('tests grouping', () => {
       const mockSendFunction = jest.fn();
       const be = new BatchExecutor(mockSendFunction, {
-        batchSendTimeout: 1,
+        sendTimeout: 1,
       });
       be.start();
       const item = generateTransportItem();

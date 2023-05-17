@@ -4,7 +4,7 @@ import type { Config, Patterns } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { UnpatchedConsole } from '../unpatchedConsole';
-import { isArray, isString } from '../utils';
+import { isString } from '../utils';
 
 import { BatchExecutor } from './batchExecutor';
 import { TransportItemType } from './const';
@@ -17,7 +17,7 @@ export function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
 }
 
 export function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
-  return (item) => {
+  return (item: TransportItem) => {
     if (item.type === TransportItemType.EXCEPTION && item.payload) {
       const evt = item.payload as ExceptionEvent;
       const msg = `${evt.type}: ${evt.value}`;
@@ -88,43 +88,45 @@ export function initializeTransports(
     });
   };
 
-  const send = (item: TransportItem | TransportItem[]) => {
-    let items = isArray(item) ? item : [item];
+  const applyBeforeSendHooks = (items: TransportItem[]): TransportItem[] => {
+    let filteredItems = items;
     for (const hook of beforeSendHooks) {
-      // TODO: Make BeforeSendHook work with item array
-      const modified = items.map((bshItem) => hook(bshItem)).filter((i) => i !== null) as TransportItem[];
+      const modified = filteredItems.map(hook).filter(Boolean) as TransportItem[];
 
       if (modified.length === 0) {
-        return;
+        return [];
       }
 
-      items = modified;
+      filteredItems = modified;
     }
+    return filteredItems;
+  };
+
+  const send = (items: TransportItem[]) => {
+    const filteredItems = applyBeforeSendHooks(items);
 
     for (const transport of transports) {
       internalLogger.debug(`Transporting item using ${transport.name}\n`, items);
-
-      transport.send(items);
+      transport.send(filteredItems);
     }
   };
 
   let batchExecutor: BatchExecutor | undefined;
 
-  if (config.batchEnabled) {
+  if (config.batching?.enabled) {
     batchExecutor = new BatchExecutor(send, {
-      batchSendTimeout: config.batchSendTimeout,
-      batchSendCount: config.batchSendCount,
-      autoStart: config.batchExecutorAutoStart,
+      sendTimeout: config.batching.sendTimeout,
+      itemLimit: config.batching.itemLimit,
       paused,
     });
   }
 
   const execute: Transports['execute'] = (item) => {
     if (!paused) {
-      if (config.batchEnabled && batchExecutor !== undefined) {
+      if (config.batching?.enabled && batchExecutor !== undefined) {
         batchExecutor.addItem(item);
       } else {
-        send(item);
+        send([item]);
       }
     }
   };
