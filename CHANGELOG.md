@@ -3,6 +3,7 @@
 ## Next
 
 - Add: add option to provide additional error context in `pushError` api.
+- Fix: Use `globalThis` instead of `global` or `window` in case the SDK is used in webworkers.
 
 ## 1.0.3 – 1.0.5
 
