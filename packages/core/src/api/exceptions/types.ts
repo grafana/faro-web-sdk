@@ -19,9 +19,7 @@ export interface Stacktrace {
   frames: ExceptionStackFrame[];
 }
 
-export type ExceptionContext = {
-  [key: string]: string;
-};
+export type ExceptionContext = Record<string, string>;
 
 export interface ExceptionEvent {
   timestamp: string;
