@@ -44,7 +44,7 @@ describe('api.exceptions', () => {
 
       const additionalContext = {
         message: 'React error boundary',
-        componentStackTrace: { foo: 'bar' },
+        componentStackTrace: 'componentStackTrace',
       };
 
       api.pushError(new Error('test exception'), {

@@ -57,7 +57,7 @@ describe('api.logs', () => {
 
         api.pushLog(['test'], {
           context: {
-            a: 1,
+            a: '1',
           },
         });
         expect(transport.items).toHaveLength(2);
