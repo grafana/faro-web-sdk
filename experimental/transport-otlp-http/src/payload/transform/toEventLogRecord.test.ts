@@ -180,11 +180,16 @@ const matchEventLogRecord = {
       },
     },
   ],
+  body: {
+    stringValue: 'event-name',
+  },
+  traceId: 'trace-id',
+  spanId: 'span-id',
 } as const;
 
 describe('toEventLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const eventLogRecord = getLogTransforms(mockInternalLogger).toScopeLog(item).logRecords[0];
-    expect(eventLogRecord).toMatchObject(matchEventLogRecord);
+    expect(eventLogRecord).toEqual(matchEventLogRecord);
   });
 });

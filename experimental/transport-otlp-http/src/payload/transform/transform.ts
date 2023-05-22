@@ -93,9 +93,11 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
       severityNumber: 10,
       severityText: 'INFO2',
       body,
-      attributes: getCommonLogAttributes(meta),
+      attributes: [...getCommonLogAttributes(meta), toAttribute('faro.log.context', payload.context)].filter(
+        isAttribute
+      ),
       traceId: payload.trace?.trace_id,
-      spanId: payload.trace?.trace_id,
+      spanId: payload.trace?.span_id,
     } as const;
   }
 
@@ -114,7 +116,7 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
         toAttribute('event.attributes', payload.attributes),
       ].filter(isAttribute),
       traceId: payload.trace?.trace_id,
-      spanId: payload.trace?.trace_id,
+      spanId: payload.trace?.span_id,
     } as const;
   }
 
@@ -133,7 +135,7 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
         toAttribute('faro.error.context', payload.context),
       ].filter(isAttribute),
       traceId: payload.trace?.trace_id,
-      spanId: payload.trace?.trace_id,
+      spanId: payload.trace?.span_id,
     } as const;
   }
 
@@ -151,7 +153,7 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
         toAttribute('measurement.value', measurementValue),
       ].filter(isAttribute),
       traceId: payload.trace?.trace_id,
-      spanId: payload.trace?.trace_id,
+      spanId: payload.trace?.span_id,
     } as const;
   }
 
