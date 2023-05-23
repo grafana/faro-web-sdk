@@ -9,21 +9,15 @@ Use at your own risk.❗️
 ## Installation
 
 ```ts
+import { PerformanceTimelineInstrumentation } from '@grafana/faro-instrumentation-performance-timeline';
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-react';
-import { OtlpHttpTransport } from '@grafana/faro-transport-otlp-http';
 
 initializeFaro({
   // ...
   instrumentations: [
     // Load the default Web instrumentations
     ...getWebInstrumentations(),
-  ],
-  transports: [
-    new OtlpHttpTransport({
-      apiKey: env.faro.apiKey,
-      logsURL: 'https://example.com/v1/logs',
-      tracesURL: 'https://example.com/v1/traces',
-    }),
+    new PerformanceTimelineInstrumentation(),
   ],
 });
 ```
