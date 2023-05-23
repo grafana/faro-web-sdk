@@ -1,0 +1,35 @@
+{
+  "name": "@grafana/faro-instrumentation-fetch",
+  "version": "1.0.0",
+  "description": "Faro fetch auto-instrumentation package",
+  "keywords": [
+    "observability",
+    "apm",
+    "rum",
+    "logs",
+    "traces",
+    "metrics",
+    "fetch"
+  ],
+  "main": "./dist/cjs/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grafana/faro-web-sdk.git",
+    "directory": "experimental/instrumentation-fetch"
+  },
+  "author": "Grafana Labs",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/grafana/faro-web-sdk/issues"
+  },
+  "homepage": "https://github.com/grafana/faro-web-sdk",
+  "devDependencies": {
+    "@grafana/faro-core": "^1.0.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
