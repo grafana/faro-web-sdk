@@ -29,7 +29,7 @@ export class FetchTransport extends BaseTransport {
     });
   }
 
-  async send(item: TransportItem): Promise<void> {
+  async send(items: TransportItem[]): Promise<void> {
     try {
       if (this.disabledUntil > new Date(this.getNow())) {
         this.logWarn(`Dropping transport item due to too many requests. Backoff until ${this.disabledUntil}`);
@@ -38,7 +38,7 @@ export class FetchTransport extends BaseTransport {
       }
 
       await this.promiseBuffer.add(() => {
-        const body = JSON.stringify(getTransportBody(item));
+        const body = JSON.stringify(getTransportBody(items));
 
         const { url, requestOptions, apiKey } = this.options;
 

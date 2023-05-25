@@ -185,22 +185,6 @@ describe('OtelPayload', () => {
     expect(payload.resourceLogs?.[0]?.scopeLogs[0]?.logRecords).toHaveLength(2);
   });
 
-  it('Add creates a new ResourceLogs because they have different metas', () => {
-    const otelPayload = new OtelPayload(mockInternalLogger, {
-      ...logTransportItem,
-      meta: { browser: { name: 'Firefox' } },
-    });
-
-    otelPayload.addResourceItem({
-      ...logTransportItem,
-      meta: { browser: { name: 'Chrome' } },
-    });
-
-    const payload = otelPayload.getPayload();
-    expect(payload.resourceLogs).toHaveLength(2);
-    expect(payload.resourceLogs?.[0]?.resource).not.toMatchObject(payload.resourceLogs?.[1]?.resource ?? {});
-  });
-
   it('Adds a new ResourceSpan', () => {
     const otelPayload = new OtelPayload(mockInternalLogger, traceTransportItem);
     const payload = otelPayload.getPayload();

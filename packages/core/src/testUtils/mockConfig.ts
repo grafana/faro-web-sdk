@@ -9,6 +9,9 @@ export function mockConfig(overrides: Partial<Config> = {}): Config {
       name: 'test',
       version: '1.0.0',
     },
+    batching: {
+      enabled: false,
+    },
     dedupe: true,
     globalObjectKey: 'faro',
     internalLoggerLevel: defaultInternalLoggerLevel,

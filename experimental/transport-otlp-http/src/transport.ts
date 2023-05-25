@@ -32,9 +32,8 @@ export class OtlpHttpTransport extends BaseTransport {
     return [tracesURL, logsURL].filter(Boolean);
   }
 
-  send(item: TransportItem | TransportItem[]): void {
+  send(items: TransportItem[]): void {
     const otelPayload = new OtelPayload(this.internalLogger);
-    const items = isArray(item) ? item : [item];
 
     items.forEach((item) => otelPayload.addResourceItem(item));
     this.sendPayload(otelPayload.getPayload());

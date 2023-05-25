@@ -30,11 +30,11 @@ describe('FetchTransport', () => {
 
     transport.internalLogger = mockInternalLogger;
 
-    transport.send(item);
+    transport.send([item]);
 
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith('http://example.com/collect', {
-      body: JSON.stringify(getTransportBody(item)),
+      body: JSON.stringify(getTransportBody([item])),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -52,7 +52,7 @@ describe('FetchTransport', () => {
     transport.internalLogger = mockInternalLogger;
 
     for (let idx = 0; idx < 6; idx++) {
-      transport.send(item);
+      transport.send([item]);
     }
 
     expect(fetch).toHaveBeenCalledTimes(3);
@@ -78,14 +78,14 @@ describe('FetchTransport', () => {
       })
     );
 
-    await transport.send(item);
+    await transport.send([item]);
     expect(fetch).toHaveBeenCalledTimes(1);
 
-    await transport.send(item);
+    await transport.send([item]);
     expect(fetch).toHaveBeenCalledTimes(1);
 
     now += 1001;
-    await transport.send(item);
+    await transport.send([item]);
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
@@ -109,15 +109,15 @@ describe('FetchTransport', () => {
       })
     );
 
-    await transport.send(item);
+    await transport.send([item]);
     expect(fetch).toHaveBeenCalledTimes(1);
 
     now += 1001;
-    await transport.send(item);
+    await transport.send([item]);
     expect(fetch).toHaveBeenCalledTimes(1);
 
     now += 1001;
-    await transport.send(item);
+    await transport.send([item]);
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
@@ -141,15 +141,15 @@ describe('FetchTransport', () => {
       })
     );
 
-    await transport.send(item);
+    await transport.send([item]);
     expect(fetch).toHaveBeenCalledTimes(1);
 
     now += 1001;
-    await transport.send(item);
+    await transport.send([item]);
     expect(fetch).toHaveBeenCalledTimes(1);
 
     now += 2001;
-    await transport.send(item);
+    await transport.send([item]);
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 });

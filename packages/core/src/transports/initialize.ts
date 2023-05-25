@@ -1,3 +1,4 @@
+import type { TransportItem } from '..';
 import type { ExceptionEvent } from '../api';
 import type { Config, Patterns } from '../config';
 import type { InternalLogger } from '../internalLogger';
@@ -5,6 +6,7 @@ import type { Metas } from '../metas';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 import { isString } from '../utils';
 
+import { BatchExecutor } from './batchExecutor';
 import { TransportItemType } from './const';
 import type { BeforeSendHook, Transport, Transports } from './types';
 
@@ -15,7 +17,7 @@ export function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
 }
 
 export function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
-  return (item) => {
+  return (item: TransportItem) => {
     if (item.type === TransportItemType.EXCEPTION && item.payload) {
       const evt = item.payload as ExceptionEvent;
       const msg = `${evt.type}: ${evt.value}`;
@@ -86,24 +88,45 @@ export function initializeTransports(
     });
   };
 
-  const execute: Transports['execute'] = (item) => {
-    if (!paused) {
-      let actualItem = item;
+  const applyBeforeSendHooks = (items: TransportItem[]): TransportItem[] => {
+    let filteredItems = items;
+    for (const hook of beforeSendHooks) {
+      const modified = filteredItems.map(hook).filter(Boolean) as TransportItem[];
 
-      for (const hook of beforeSendHooks) {
-        const modified = hook(actualItem);
-
-        if (modified === null) {
-          return;
-        }
-
-        actualItem = modified;
+      if (modified.length === 0) {
+        return [];
       }
 
-      for (const transport of transports) {
-        internalLogger.debug(`Transporting item using ${transport.name}\n`, actualItem);
+      filteredItems = modified;
+    }
+    return filteredItems;
+  };
 
-        transport.send(actualItem);
+  const send = (items: TransportItem[]) => {
+    const filteredItems = applyBeforeSendHooks(items);
+
+    for (const transport of transports) {
+      internalLogger.debug(`Transporting item using ${transport.name}\n`, items);
+      transport.send(filteredItems);
+    }
+  };
+
+  let batchExecutor: BatchExecutor | undefined;
+
+  if (config.batching?.enabled) {
+    batchExecutor = new BatchExecutor(send, {
+      sendTimeout: config.batching.sendTimeout,
+      itemLimit: config.batching.itemLimit,
+      paused,
+    });
+  }
+
+  const execute: Transports['execute'] = (item) => {
+    if (!paused) {
+      if (config.batching?.enabled && batchExecutor !== undefined) {
+        batchExecutor.addItem(item);
+      } else {
+        send([item]);
       }
     }
   };
@@ -114,6 +137,7 @@ export function initializeTransports(
 
   const pause: Transports['pause'] = () => {
     internalLogger.debug('Pausing transports');
+    batchExecutor?.pause();
 
     paused = true;
   };
@@ -142,6 +166,7 @@ export function initializeTransports(
 
   const unpause: Transports['unpause'] = () => {
     internalLogger.debug('Unpausing transports');
+    batchExecutor?.start();
 
     paused = false;
   };

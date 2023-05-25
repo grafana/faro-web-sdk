@@ -34,6 +34,9 @@ Faro Web SDK requires a configuration object parameter with the following proper
 | `paused`                | Flag for initializing the Faro instance as paused                                        | `boolean`             |                                                          |
 | `preventGlobalExposure` | Flag for toggling the definition on the global object                                    | `boolean`             |                                                          |
 | `transports`            | Array of transports that should be used                                                  | `Transport[]`         |                                                          |
+| `batching.enabled`      | Enable batch sending of events                                                           | `boolean`             | `true`                                                   |
+| `batching.sendTimeout`  | The interval in which to send event batches                                              | `number`              | 250                                                      |
+| `batching.itemLimit`    | The size of the signal buffer before the batch is sent (overrides interval)              | `number`              | 50                                                       |
 
 Besides the mandatory properties, Faro configuration also supports the following optional properties:
 
@@ -288,6 +291,10 @@ initializeFaro({
   transports: [new MyTransport()],
 });
 ```
+
+The transports also support batch processing wiht the `batchEnabled` flag set to true
+and a positive, non zero `batchSendTimeout`. The batch executor will group items that share the same `metas` together
+and call the `send` function for each group of signals.
 
 ## Unpatched console
 

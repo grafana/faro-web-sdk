@@ -18,7 +18,6 @@ Open Telemetry spec. So we do not convert them and they are still be sent as a l
 
 ```ts
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-react';
-import { BatchTransport } from '@grafana/faro-transport-batch';
 import { OtlpHttpTransport } from '@grafana/faro-transport-otlp-http';
 
 initializeFaro({

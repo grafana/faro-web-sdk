@@ -14,8 +14,8 @@ class MockTransport extends BaseTransport implements Transport {
 
   sentItems: TransportItem[] = [];
 
-  send(item: TransportItem): void | Promise<void> {
-    this.sentItems.push(item);
+  send(items: TransportItem[]): void | Promise<void> {
+    this.sentItems.push(...items);
   }
 }
 
