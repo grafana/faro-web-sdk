@@ -1,9 +1,4 @@
 {
-  "compilerOptions": {
-    "types": [
-      "./node_modules/user-agent-data-types"
-    ]
-  },
   "references": [
     { "path": "./tsconfig.cjs.json" },
     { "path": "./tsconfig.esm.json" },
