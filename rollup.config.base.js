@@ -51,7 +51,7 @@ const modules = {
     bundleName: 'faro-instrumentation-fetch',
     globalName: 'GrafanaFaroInstrumentationFetch',
     externals: [],
-  }
+  },
 };
 
 exports.getRollupConfigBase = (moduleName) => {

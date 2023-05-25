@@ -27,7 +27,7 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "strict": true
+    "strict": true,
   },
   "ts-node": {
     "esm": true

@@ -1,14 +1,14 @@
-import { BaseInstrumentation, globalObject, VERSION } from '@grafana/faro-core';
+import { faro } from '@grafana/faro-react';
+import { BaseInstrumentation, globalObject } from '@grafana/faro-core';
 
 import { fetchGlobalObjectKey, originalFetch, originalFetchGlobalObjectKey } from './constants';
-import type { FetchError } from './types';
 
 export class FetchInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-fetch';
-  readonly version = VERSION;
+  readonly version = '1.0.0'; // TODO - pull from package.json
 
   initialize(): void {
-    this.internalLogger.info('Initializing FetchInstrumentation');
+    console.log('Initializing FetchInstrumentation');
     this.enable();
   }
 
@@ -16,42 +16,28 @@ export class FetchInstrumentation extends BaseInstrumentation {
    * Instrument fetch with Faro
    */
   private _instrumentFetch(): typeof fetch {
-    return function instrumentedFetch(this: typeof globalThis, ...args: Parameters<typeof fetch>): Promise<Response> {
-      const self = this;
-      const url = args[0] instanceof Request ? args[0].url : String(args[0]);
-      const options = args[0] instanceof Request ? args[0] : args[1] || {};
+    return function instrumentedFetch(input, init): Promise<Response> {
+      let copyInit = init ? Object.assign({}, init) : {};
 
-      function onSuccess(resolve: (value: Response | PromiseLike<Response>) => void, response: Response): void {
-        try {
-          const resClone = response.clone();
-          const body = resClone.body;
-
-          console.log(body);
-        } finally {
-          console.log('success!');
-          resolve(response);
-        }
+      let body;
+      if (copyInit && copyInit.body) {
+        body = copyInit.body;
+        copyInit.body = undefined;
       }
 
-      function onError(reject: (reason?: unknown) => void, error: FetchError) {
-        try {
-          console.log(error.message, ' - error!');
-        } finally {
-          reject(error);
-        }
+      const request = new Request(input, copyInit);
+      if (body) {
+        copyInit.body = body;
       }
 
-      return new Promise((resolve, reject) => {
-        return () => {
-          // add headers
-          return (
-            originalFetch
-              // TODO - add logic to pass params appropriately based on whether or not the first argument is a Request object
-              .apply(self, options instanceof Request ? [options] : [url, options])
-              .then(onSuccess.bind(self, resolve), onError.bind(self, reject))
-          );
-        };
-      });
+      return originalFetch(input instanceof Request ? request : input, copyInit)
+        .then(function(response: Response) {
+          const simplifiedHeaders = {} as Record<string, string>;
+          new Headers(response.headers).forEach((v, k) => simplifiedHeaders[k] = v);
+
+          faro.api.pushEvent('response headers', simplifiedHeaders);
+          return response;
+        });
     };
   }
 
