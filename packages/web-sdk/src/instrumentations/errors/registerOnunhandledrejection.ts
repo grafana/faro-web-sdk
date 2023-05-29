@@ -1,4 +1,4 @@
-import { isPrimitive } from '@grafana/faro-core';
+import { ExceptionStackFrame, isPrimitive } from '@grafana/faro-core';
 import type { API } from '@grafana/faro-core';
 
 import { primitiveUnhandledType, primitiveUnhandledValue } from './const';
@@ -17,16 +17,16 @@ export function registerOnunhandledrejection(api: API): void {
 
     let value: string | undefined;
     let type: string | undefined;
-
+    let stackFrames: ExceptionStackFrame[] = [];
     if (isPrimitive(error)) {
       value = `${primitiveUnhandledValue} ${String(error)}`;
       type = primitiveUnhandledType;
     } else {
-      [value, type] = getErrorDetails(error);
+      [value, type, stackFrames] = getErrorDetails(error);
     }
 
     if (value) {
-      api.pushError(new Error(value), { type });
+      api.pushError(new Error(value), { type , stackFrames});
     }
   });
 }
