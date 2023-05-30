@@ -5,6 +5,7 @@
 ### PerformanceTimelineInstrumentation
 
 - Add: beforeEmit hook to make it possible to mutate performance entries.
+- Add: only observe entry types which are supported by the visitors browser.
 - [❗️Breaking❗️] Remove: `skipEntries` entries are no removed in favor of the `beforeEmit` hook. You can find an
   [example how to skip entries in the README.](https://github.com/grafana/faro-web-sdk/blob/a83d2e56b7289ea81a1d0f87c03f73d04bd44e38/experimental/instrumentation-performance-timeline/README.md#example-skip-backforward-navigation-and-page-reloads-to-remove-non-human-visible-navigation)
 

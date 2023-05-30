@@ -54,7 +54,8 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
   }
 
   private validateIfObservedEntryTypesSupportedByBrowser() {
-    const unsupportedEntryTypes = [];
+    const unsupportedEntryTypes: string[] = [];
+
     for (const entryType of this.observeEntryTypes) {
       if (!PerformanceObserver.supportedEntryTypes.includes(entryType.type)) {
         unsupportedEntryTypes.push(entryType.type);
@@ -62,7 +63,15 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
     }
 
     if (unsupportedEntryTypes.length > 0) {
-      this.internalLogger.info('The following entryTypes are not supported by this browser');
+      this.observeEntryTypes = this.observeEntryTypes.filter(
+        (entryType) => !unsupportedEntryTypes.includes(entryType.type)
+      );
+
+      this.internalLogger.info(
+        `The following entryTypes are not supported by this browser: ${unsupportedEntryTypes}. Observing only supported entryTypes which are: ${this.observeEntryTypes.map(
+          ({ type }) => type
+        )}`
+      );
     }
   }
 
@@ -74,7 +83,7 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
     performance.setResourceTimingBufferSize(this.resourceTimingBufferSize);
     performance.addEventListener('resourcetimingbufferfull', () => {
       this.internalLogger.info(
-        `Resource Timing Buffer is FULL! Increasing buffer size to ${this.maxResourceTimingBufferSize}.`
+        `Resource Timing Buffer is full! Increasing buffer size to ${this.maxResourceTimingBufferSize}.`
       );
       performance.setResourceTimingBufferSize(this.maxResourceTimingBufferSize);
     });
