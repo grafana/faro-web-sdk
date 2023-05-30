@@ -26,7 +26,7 @@ export function registerOnunhandledrejection(api: API): void {
     }
 
     if (value) {
-      api.pushError(new Error(value), { type , stackFrames});
+      api.pushError(new Error(value), { type, stackFrames });
     }
   });
 }
