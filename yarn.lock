@@ -2242,6 +2242,11 @@
   resolved "https://registry.npmjs.org/@types/ms/-/ms-0.7.31.tgz#31b7ca6407128a3d2bbc27fe2d21b345397f6197"
   integrity sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==
 
+"@types/murmurhash-js@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.npmjs.org/@types/murmurhash-js/-/murmurhash-js-1.0.4.tgz#9a45244a6d1240eb3366fb841e07150cfd775f1e"
+  integrity sha512-lTFERysuLTbtxv/GTcBDV3j3UR1C9WTNiU7rY9QvEUn1G60q7HRXj6c+eFGo0ymMFOlb6kqZsO2WYyzc15oGHA==
+
 "@types/node@*", "@types/node@>=12.12.47", "@types/node@>=13.7.0":
   version "20.2.4"
   resolved "https://registry.npmjs.org/@types/node/-/node-20.2.4.tgz#e6c3345f7ed9c6df41fdc288a94e2633167bc15d"
@@ -8076,6 +8081,11 @@ multimatch@5.0.0:
     array-union "^2.1.0"
     arrify "^2.0.1"
     minimatch "^3.0.4"
+
+murmurhash-js@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/murmurhash-js/-/murmurhash-js-1.0.0.tgz#b06278e21fc6c37fa5313732b0412bcb6ae15f51"
+  integrity sha512-TvmkNhkv8yct0SVBSy+o8wYzXjE4Zz3PCesbfs8HiCXXdcTuocApFv11UWlNFWKYsP2okqrhb7JNlSm9InBhIw==
 
 mute-stream@0.0.8, mute-stream@~0.0.4:
   version "0.0.8"

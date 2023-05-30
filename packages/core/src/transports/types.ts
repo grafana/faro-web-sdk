@@ -7,6 +7,7 @@ import type { TransportItemType } from './const';
 
 export type TransportItemPayload<P = APIEvent> = P;
 
+export type SendFn<P = APIEvent> = (items: Array<TransportItem<P>>) => void;
 export type BeforeSendHook<P = APIEvent> = (item: TransportItem<P>) => TransportItem<P> | null;
 
 export interface TransportItem<P = APIEvent> {
@@ -16,11 +17,13 @@ export interface TransportItem<P = APIEvent> {
 }
 
 export interface Transport extends Extension {
-  send(items: TransportItem | TransportItem[]): void | Promise<void>;
+  send(items: TransportItem[]): void | Promise<void>;
 
   // returns URLs to be ignored by tracing, to not cause a feedback loop
   getIgnoreUrls(): Patterns;
 }
+
+export type BodyKey = 'exceptions' | 'logs' | 'measurements' | 'traces' | 'events';
 
 export interface TransportBody {
   meta: Meta;
@@ -44,4 +47,13 @@ export interface Transports {
   transports: Transport[];
   pause: () => void;
   unpause: () => void;
+}
+
+export interface BatchExecutorOptions {
+  readonly enabled?: boolean;
+  // If no new signal arrives after "batchSendTimeout" ms, send the payload. If set to 0, timeout is disabled
+  readonly sendTimeout?: number;
+  // Buffer "sendLimit" is the number of signals before sending the payload
+  readonly itemLimit?: number;
+  readonly paused?: boolean;
 }

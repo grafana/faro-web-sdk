@@ -1,17 +1,12 @@
-import { deepEqual, InternalLogger, TraceEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { InternalLogger, TraceEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
 
 import { getLogTransforms, getTraceTransforms, LogsTransform, TraceTransform } from './transform';
 import type { ResourceLogs } from './transform';
-import type { ResourceMeta, ResourceSpans } from './transform/types';
+import type { ResourceSpans } from './transform/types';
 import type { OtelTransportPayload } from './types';
 
-interface ResourceLogsMetaMap {
-  resourceLog: ResourceLogs;
-  resourceMeta: ResourceMeta;
-}
-
 export class OtelPayload {
-  private resourceLogsWithMetas = [] as ResourceLogsMetaMap[];
+  private resourceLogs: ResourceLogs[];
   private resourceSpans = [] as ResourceSpans[];
 
   private getLogTransforms: LogsTransform;
@@ -19,6 +14,7 @@ export class OtelPayload {
 
   constructor(private internalLogger: InternalLogger, transportItem?: TransportItem) {
     this.internalLogger = internalLogger;
+    this.resourceLogs = [];
 
     this.getLogTransforms = getLogTransforms(this.internalLogger);
     this.getTraceTransforms = getTraceTransforms(this.internalLogger);
@@ -30,19 +26,13 @@ export class OtelPayload {
 
   getPayload(): OtelTransportPayload {
     return {
-      resourceLogs: this.resourceLogsWithMetas.map(({ resourceLog }) => resourceLog),
+      resourceLogs: this.resourceLogs,
       resourceSpans: this.resourceSpans,
     } as const;
   }
 
   addResourceItem(transportItem: TransportItem): void {
-    const { type, meta } = transportItem;
-
-    const currentItemResourceMeta: ResourceMeta = {
-      browser: meta.browser,
-      sdk: meta.sdk,
-      app: meta.app,
-    } as const;
+    const { type } = transportItem;
 
     try {
       switch (type) {
@@ -52,22 +42,15 @@ export class OtelPayload {
         case TransportItemType.MEASUREMENT:
           const { toLogRecord, toResourceLog } = this.getLogTransforms;
 
-          const resourceLogWithMeta = this.resourceLogsWithMetas.find(({ resourceMeta }) =>
-            deepEqual(currentItemResourceMeta, resourceMeta)
-          );
-
-          if (resourceLogWithMeta) {
-            const { resourceLog } = resourceLogWithMeta;
-            // Currently the scope is fixed to '@grafana/faro-web-sdk'.
-            // Once we are able to drive the scope by instrumentation this will change and we need to align this function
-            resourceLog.scopeLogs[0]?.logRecords.push(toLogRecord(transportItem));
+          // Currently the scope is fixed to '@grafana/faro-web-sdk'.
+          // Once we are able to drive the scope by instrumentation this will change and we need to align this function
+          if (this.resourceLogs.length === 0) {
+            this.resourceLogs = [toResourceLog(transportItem)];
           } else {
-            this.resourceLogsWithMetas.push({
-              resourceLog: toResourceLog(transportItem),
-              resourceMeta: currentItemResourceMeta,
-            });
+            // Faro takes care of the grouping with different metadata (or OTel attributes), so we can safely
+            // use the just the first element of the resource.
+            this.resourceLogs[0]?.scopeLogs[0]?.logRecords.push(toLogRecord(transportItem));
           }
-
           break;
         case TransportItemType.TRACE:
           const { toResourceSpan } = this.getTraceTransforms;

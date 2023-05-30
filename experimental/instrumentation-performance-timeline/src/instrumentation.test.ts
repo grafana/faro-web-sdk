@@ -212,7 +212,7 @@ describe('PerformanceTimelineInstrumentation', () => {
     expect(maxResourceTimingBufferSize).toBe(500);
 
     const observeEntryTypes = (instrumentation as any).observeEntryTypes;
-    expect(observeEntryTypes).toMatchObject([
+    expect(observeEntryTypes).toEqual([
       { buffered: true, type: 'navigation' },
       { buffered: true, type: 'resource' },
     ]);
@@ -232,7 +232,7 @@ describe('PerformanceTimelineInstrumentation', () => {
     expect(maxResourceTimingBufferSize).toBe(2000);
 
     const observeEntryTypes = (instrumentation as any).observeEntryTypes;
-    expect(observeEntryTypes).toMatchObject([
+    expect(observeEntryTypes).toEqual([
       { buffered: true, type: 'navigation' },
       { buffered: true, type: 'resource' },
       { buffered: true, type: 'event' },
@@ -244,12 +244,12 @@ describe('PerformanceTimelineInstrumentation', () => {
   });
 
   it('Show message if entry type is not supported by browser', () => {
-    const instrumentation = new PerformanceTimelineInstrumentation({
-      observeEntryTypes: [{ buffered: true, type: 'foo' }],
-    });
+    const supportedType = { buffered: true, type: 'navigation' };
+    const unsupportedType = { buffered: true, type: 'unsupported-entry' };
 
-    const observeEntryTypes = (instrumentation as any).observeEntryTypes;
-    expect(observeEntryTypes).toMatchObject([{ buffered: true, type: 'foo' }]);
+    const instrumentation = new PerformanceTimelineInstrumentation({
+      observeEntryTypes: [unsupportedType, supportedType],
+    });
 
     const mockInfo = jest.fn();
     instrumentation.internalLogger = { ...mockInternalLogger, info: mockInfo };
@@ -259,6 +259,9 @@ describe('PerformanceTimelineInstrumentation', () => {
     instrumentation.initialize();
 
     expect(mockInfo).toHaveBeenCalledTimes(1);
+
+    const observeEntryTypes = (instrumentation as any).observeEntryTypes;
+    expect(observeEntryTypes).toEqual([supportedType]);
   });
 
   it('Observe entries based on "observeEntryTypes" option', () => {
@@ -292,7 +295,7 @@ describe('PerformanceTimelineInstrumentation', () => {
     const mockPushEvent = jest.fn();
     api.pushEvent = mockPushEvent;
 
-    expect((instrumentation as any).ignoredUrls).toMatchObject(ignoredUrls);
+    expect((instrumentation as any).ignoredUrls).toEqual(ignoredUrls);
 
     instrumentation.handlePerformanceEntry({ getEntries: () => navigationAndResourceEntries } as any, null as any, 0);
 

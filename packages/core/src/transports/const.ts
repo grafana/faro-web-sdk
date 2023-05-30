@@ -1,3 +1,5 @@
+import type { BodyKey } from './types';
+
 export enum TransportItemType {
   EXCEPTION = 'exception',
   LOG = 'log',
@@ -6,7 +8,7 @@ export enum TransportItemType {
   EVENT = 'event',
 }
 
-export const transportItemTypeToBodyKey: Record<TransportItemType, string> = {
+export const transportItemTypeToBodyKey: Record<TransportItemType, BodyKey> = {
   [TransportItemType.EXCEPTION]: 'exceptions',
   [TransportItemType.LOG]: 'logs',
   [TransportItemType.MEASUREMENT]: 'measurements',

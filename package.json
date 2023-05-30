@@ -18,8 +18,8 @@
   "main": "index.js",
   "scripts": {
     "start": "lerna run --parallel start",
-    "start:demo": "lerna run start --scope @grafana/faro-demo",
-    "start:demo:prod": "lerna run serve:prod --scope @grafana/faro-demo --stream",
+    "start:demo": "lerna run dev --scope @grafana/faro-demo",
+    "start:demo:prod": "lerna run start --scope @grafana/faro-demo --stream",
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "prepublish": "yarn build",

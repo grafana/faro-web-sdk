@@ -6,39 +6,18 @@ data.
 ❗️*Warning*: this package is experimental and may be subject to frequent and breaking changes.
 Use at your own risk.❗️
 
-Note:\
-The PerformanceTimelineInstrumentation emits a lot of events shortly after another. This will quickly
-exhaust the requests buffer of the Faro transports which eventually leads to dropped events.
-We strongly recommend using this instrumentation in conjunctions with the Faro BatchTransport.
-
-Note:\
-At the time of writing not all Faro transports support receiving batched RUM data.
-For information and compatibility refer to the
-[BatchTransport README](https://github.com/grafana/faro-web-sdk/blob/80e284b9ba17ed7256ff3b063bf4663cc9d94f60/packages/transport-batch/README.md#L1).
-
 ## Installation
 
 ```ts
+import { PerformanceTimelineInstrumentation } from '@grafana/faro-instrumentation-performance-timeline';
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-react';
-import { BatchTransport } from '@grafana/faro-transport-batch';
-import { OtlpHttpTransport } from '@grafana/faro-transport-otlp-http';
 
 initializeFaro({
   // ...
   instrumentations: [
     // Load the default Web instrumentations
     ...getWebInstrumentations(),
-  ],
-  transports: [
-    // Add batch transport.
-    new BatchTransport(
-      // Choose the Faro transport of your choice.
-      new OtlpHttpTransport({
-        apiKey: env.faro.apiKey,
-        logsURL: 'https://example.com/v1/logs',
-        tracesURL: 'https://example.com/v1/traces',
-      })()
-    ),
+    new PerformanceTimelineInstrumentation(),
   ],
 });
 ```

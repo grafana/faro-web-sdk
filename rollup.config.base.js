@@ -28,12 +28,6 @@ const modules = {
     globalName: 'GrafanaFaroWebTracing',
     externals: ['webSdk'],
   },
-  transportBatch: {
-    name: '@grafana/faro-transport-batch',
-    bundleName: 'faro-transport-batch',
-    globalName: 'GrafanaFaroTransportBatch',
-    externals: [],
-  },
   transportOtlpHttp: {
     name: '@grafana/faro-transport-otlp-http',
     bundleName: 'faro-transport-otlp-http',
