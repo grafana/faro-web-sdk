@@ -1,5 +1,4 @@
-import { BaseInstrumentation, globalObject } from '@grafana/faro-core';
-import { faro } from '@grafana/faro-react';
+import { BaseInstrumentation, faro, globalObject } from '@grafana/faro-core';
 
 import { fetchGlobalObjectKey, originalFetch, originalFetchGlobalObjectKey } from './constants';
 
@@ -34,15 +33,14 @@ export class FetchInstrumentation extends BaseInstrumentation {
         copyInit.body = body;
       }
 
-      return originalFetch(input instanceof Request ? request : input, copyInit)
-        .then(function(response: Response) {
-          const simplifiedHeaders = {} as Record<string, string>;
-          new Headers(response.headers).forEach((v, k) => simplifiedHeaders[`response_header_${k}`] = v);
+      return originalFetch(input instanceof Request ? request : input, copyInit).then(function (response: Response) {
+        const simplifiedHeaders = {} as Record<string, string>;
+        new Headers(response.headers).forEach((v, k) => (simplifiedHeaders[`response_header_${k}`] = v));
 
-          // TODO - add instrumented functions to capture onError and onSuccess
-          faro.api.pushEvent('Response headers', simplifiedHeaders);
-          return response;
-        });
+        // TODO - add instrumented functions to capture onError and onSuccess
+        faro.api.pushEvent('Response headers', simplifiedHeaders);
+        return response;
+      });
     };
   }
 
