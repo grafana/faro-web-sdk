@@ -10,10 +10,19 @@ import {
   resolvedFetchEventName,
   responseProperties,
 } from './constants';
+import type { FetchInstrumentationOptions } from './types';
 
 export class FetchInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-fetch';
   readonly version = '1.0.0'; // TODO - pull from package.json
+
+  private ignoredUrls: FetchInstrumentationOptions['ignoredUrls'];
+
+  constructor(options?: FetchInstrumentationOptions) {
+    super();
+
+    this.ignoredUrls = options?.ignoredUrls ?? [];
+  }
 
   /**
    * Initialize fetch instrumentation - globalObject.fetch becomes instrumented fetch, assign original fetch to globalObject.originalFetch
@@ -40,8 +49,16 @@ export class FetchInstrumentation extends BaseInstrumentation {
    * Instrument fetch with Faro
    */
   private _instrumentFetch(): typeof fetch {
+    const instrumentation = this;
     return function fetch(this: typeof globalObject, input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-      const self = this;
+      const requestUrl = input instanceof Request ? input.url : String(input);
+
+      // if the url is in the ignoredUrls list, skip instrumentation
+      if (instrumentation.ignoredUrls?.some((url) => requestUrl.match(url))) {
+        instrumentation.internalLogger.info(`Skipping fetch instrumentation for ignored url "${requestUrl}"`);
+        return originalFetch(input, init);
+      }
+
       let initClone = init ? Object.assign({}, init) : {};
 
       let body;
@@ -81,6 +98,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
 
       /**
        * Reject the fetch promise and push the event to Faro
+       * TODO - this currently doesn't seem to do anything. Figure out why.
        */
       function reject(rej: (reason?: unknown) => void, error: Error) {
         try {
@@ -105,6 +123,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
       return new Promise((originalResolve, originalReject) => {
         return originalFetch
           .apply(self, [request, initClone])
+          // TODO - testing to see how to handle reject/resolve and instrumenting both
           .then(resolve.bind(self, originalResolve), reject.bind(self, originalReject));
       });
     };
