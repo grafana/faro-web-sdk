@@ -1,53 +1,26 @@
 import { BaseInstrumentation, faro, globalObject } from '@grafana/faro-core';
 
-import { fetchGlobalObjectKey, originalFetch, originalFetchGlobalObjectKey } from './constants';
+import {
+  eventDomain,
+  fetchGlobalObjectKey,
+  originalFetch,
+  originalFetchGlobalObjectKey,
+  parseHeaders,
+  rejectedFetchEventName,
+  resolvedFetchEventName,
+  responseProperties,
+} from './constants';
 
 export class FetchInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-fetch';
   readonly version = '1.0.0'; // TODO - pull from package.json
 
+  /**
+   * Initialize fetch instrumentation - globalObject.fetch becomes instrumented fetch, assign original fetch to globalObject.originalFetch
+   */
   initialize(): void {
-    console.log('Initializing FetchInstrumentation');
-    this.enable();
-  }
+    this.internalLogger.info('Initializing fetch instrumentation');
 
-  constructor() {
-    super();
-  }
-
-  /**
-   * Instrument fetch with Faro
-   */
-  private _instrumentFetch(): typeof fetch {
-    return function instrumentedFetch(input, init): Promise<Response> {
-      let copyInit = init ? Object.assign({}, init) : {};
-
-      let body;
-      if (copyInit && copyInit.body) {
-        body = copyInit.body;
-        copyInit.body = undefined;
-      }
-
-      const request = new Request(input, copyInit);
-      if (body) {
-        copyInit.body = body;
-      }
-
-      return originalFetch(input instanceof Request ? request : input, copyInit).then(function (response: Response) {
-        const simplifiedHeaders = {} as Record<string, string>;
-        new Headers(response.headers).forEach((v, k) => (simplifiedHeaders[`response_header_${k}`] = v));
-
-        // TODO - add instrumented functions to capture onError and onSuccess
-        faro.api.pushEvent('Response headers', simplifiedHeaders);
-        return response;
-      });
-    };
-  }
-
-  /**
-   * implements enable function
-   */
-  enable(): void {
     Object.defineProperty(globalObject, fetchGlobalObjectKey, {
       configurable: true,
       enumerable: false,
@@ -64,21 +37,76 @@ export class FetchInstrumentation extends BaseInstrumentation {
   }
 
   /**
-   * implements disable function
+   * Instrument fetch with Faro
    */
-  disable(): void {
-    Object.defineProperty(globalObject, fetchGlobalObjectKey, {
-      configurable: true,
-      enumerable: false,
-      writable: false,
-      value: originalFetch,
-    });
+  private _instrumentFetch(): typeof fetch {
+    return function fetch(this: typeof globalObject, input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+      const self = this;
+      let initClone = init ? Object.assign({}, init) : {};
 
-    Object.defineProperty(globalObject, originalFetchGlobalObjectKey, {
-      configurable: true,
-      enumerable: false,
-      writable: false,
-      value: null,
-    });
+      let body;
+      if (initClone && initClone.body) {
+        body = initClone.body;
+        initClone.body = undefined;
+      }
+
+      const request = new Request(input, initClone);
+      if (body) {
+        initClone.body = body;
+      }
+
+      /**
+       * Resolve the fetch promise and push the event to Faro
+       */
+      function resolve(res: (value: Response | PromiseLike<Response>) => void, response: Response) {
+        try {
+          const parsedHeaders = parseHeaders(response.headers);
+          const trimmedResponse = responseProperties(response);
+
+          faro.api.pushEvent(
+            resolvedFetchEventName,
+            {
+              ...trimmedResponse,
+              ...parsedHeaders,
+            },
+            eventDomain,
+            {
+              skipDedupe: true,
+            }
+          );
+        } finally {
+          res(response);
+        }
+      }
+
+      /**
+       * Reject the fetch promise and push the event to Faro
+       */
+      function reject(rej: (reason?: unknown) => void, error: Error) {
+        try {
+          faro.api.pushEvent(
+            rejectedFetchEventName,
+            {
+              failed: 'true'
+            },
+            eventDomain,
+            {
+              skipDedupe: true,
+            }
+          );
+        } finally {
+          rej(error);
+        }
+      }
+
+      /**
+       * Return a promise that resolves/rejects the original fetch promise
+       */
+      return new Promise((originalResolve, originalReject) => {
+        return originalFetch
+          .apply(self, [request, initClone])
+          .then(resolve.bind(self, originalResolve), reject.bind(self, originalReject));
+      });
+    };
   }
 }
