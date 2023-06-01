@@ -1,8 +1,8 @@
-
 import { globalObject } from "@grafana/faro-core";
 
+export const VERSION = "1.0.0";
 interface StringResponse {
-  bodyUsed: string;
+  body_used: string;
   ok: string;
   redirected: string;
   status: string;
@@ -20,7 +20,7 @@ export const rejectedFetchEventName = 'Rejected fetch';
 
 export const responseProperties = (response: Partial<Response>): StringResponse => {
   return {
-    bodyUsed: response.bodyUsed?.toString() ?? '',
+    body_used: response.bodyUsed?.toString() ?? '',
     ok: response.ok?.toString() ?? '',
     redirected: response.redirected?.toString() ?? '',
     status: response.status?.toString() ?? '',
