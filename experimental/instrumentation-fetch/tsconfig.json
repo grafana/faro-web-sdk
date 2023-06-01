@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "noPropertyAccessFromIndexSignature": false,
+    "noPropertyAccessFromIndexSignature": false
   },
   "references": [
     { "path": "./tsconfig.cjs.json" },

@@ -102,7 +102,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
             {
               ...trimmedResponse,
               ...parsedHeaders,
-              ...instrumentation.requestId() as Record<string, string>
+              ...(instrumentation.requestId() as Record<string, string>),
             },
             eventDomain,
             {
@@ -124,7 +124,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
             {
               failed: 'true',
               error: error.message,
-              ...instrumentation.requestId() as Record<string, string>
+              ...(instrumentation.requestId() as Record<string, string>),
             },
             eventDomain,
             {

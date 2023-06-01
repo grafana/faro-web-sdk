@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     resolve: {
-      preserveSymlinks: true // TODO - remove once fetch instrumentation is published to NPM
+      preserveSymlinks: true, // TODO - remove once fetch instrumentation is published to NPM
     },
     server: {
       watch: {

@@ -1,6 +1,6 @@
-import { globalObject } from "@grafana/faro-core";
+import { globalObject } from '@grafana/faro-core';
 
-export const VERSION = "1.0.0";
+export const VERSION = '1.0.0';
 interface StringResponse {
   body_used: string;
   ok: string;
@@ -37,4 +37,4 @@ export const parseHeaders = (headers: Headers): Record<string, string> => {
     newHeaders[`header_${key}`] = value;
   }
   return newHeaders;
-}
+};

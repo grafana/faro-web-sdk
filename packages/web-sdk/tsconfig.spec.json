@@ -4,7 +4,7 @@
     "declarationDir": "./dist/types",
     "outDir": "./dist/spec",
     "rootDir": "..",
-    "tsBuildInfoFile": "../../.cache/tsc/webSdk.spec.tsbuildinfo",
+    "tsBuildInfoFile": "../../.cache/tsc/webSdk.spec.tsbuildinfo"
   },
   "include": ["./src"],
   "references": [{ "path": "../core/tsconfig.spec.json" }]
