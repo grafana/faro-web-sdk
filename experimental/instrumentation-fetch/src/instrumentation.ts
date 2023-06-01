@@ -16,8 +16,7 @@ import type { FetchInstrumentationOptions } from './types';
 export class FetchInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-fetch';
   readonly version = VERSION;
-
-  private ignoredUrls: FetchInstrumentationOptions['ignoredUrls'];
+  readonly ignoredUrls: FetchInstrumentationOptions['ignoredUrls'];
 
   constructor(options?: FetchInstrumentationOptions) {
     super();

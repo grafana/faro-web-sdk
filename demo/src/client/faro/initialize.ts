@@ -1,6 +1,6 @@
-import { FetchInstrumentation } from '@grafana/faro-instrumentation-fetch';
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
 
+import { FetchInstrumentation } from '@grafana/faro-instrumentation-fetch';
 import {
   initializeFaro as coreInit,
   getWebInstrumentations,
