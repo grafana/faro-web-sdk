@@ -5,9 +5,6 @@
     "outDir": "./dist/spec",
     "rootDir": "..",
     "tsBuildInfoFile": "../../.cache/tsc/webSdk.spec.tsbuildinfo",
-    "types": [
-      "./node_modules/user-agent-data-types"
-    ]
   },
   "include": ["./src"],
   "references": [{ "path": "../core/tsconfig.spec.json" }]
