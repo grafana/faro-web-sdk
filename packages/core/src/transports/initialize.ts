@@ -107,7 +107,11 @@ export function initializeTransports(
 
     for (const transport of transports) {
       internalLogger.debug(`Transporting item using ${transport.name}\n`, items);
-      transport.send(filteredItems);
+      if (transport.isBatched()) {
+        transport.send(filteredItems);
+      } else {
+        filteredItems.forEach((item) => transport.send(item));
+      }
     }
   };
 

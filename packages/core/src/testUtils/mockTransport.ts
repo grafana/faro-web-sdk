@@ -17,6 +17,10 @@ export class MockTransport extends BaseTransport implements Transport {
     this.items.push(...items);
   }
 
+  override isBatched(): boolean {
+    return true;
+  }
+
   override getIgnoreUrls(): Patterns {
     return this.ignoreURLs;
   }
