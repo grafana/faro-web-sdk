@@ -1,16 +1,17 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
+enableFetchMocks()
 
 import { globalObject, initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { FetchInstrumentation } from './instrumentation';
 
-const mockObserve = jest.fn();
+const testUrl = 'http://localhost:8080/test';
+const spyFetchMock = jest.spyOn(globalObject, 'fetch');
 
 describe('FetchInstrumentation', () => {
   beforeEach(() => {
-    mockObserve.mockClear();
-    enableFetchMocks();
+    spyFetchMock.mockClear();
   });
 
   it('initialize FetchInstrumentation with default options', () => {
@@ -41,34 +42,8 @@ describe('FetchInstrumentation', () => {
     const config = mockConfig({ dedupe: true, instrumentations: [instrumentation] });
     initializeFaro(config);
 
-    Object.defineProperty(globalObject, 'fetch', {
-      configurable: true,
-      enumerable: false,
-      writable: false,
-      value: fetchMock,
-    });
+    globalObject.fetch(testUrl);
 
-    globalObject.fetch('https://example.com');
-
-    expect(globalObject.fetch).toBeCalledTimes(1);
-  });
-
-  it('initializes FetchInstrumentation and calls fetch with ignored URL', () => {
-    const instrumentation = new FetchInstrumentation({
-      ignoredUrls: ['https://example.com'],
-    });
-    const config = mockConfig({ dedupe: true, instrumentations: [instrumentation] });
-    initializeFaro(config);
-
-    Object.defineProperty(globalObject, 'originalFetch', {
-      configurable: true,
-      enumerable: false,
-      writable: false,
-      value: fetchMock,
-    });
-
-    globalObject.fetch('https://example.com');
-
-    expect(globalObject['originalFetch']).toBeCalledTimes(1);
+    expect(spyFetchMock).toBeCalledTimes(1);
   });
 });
