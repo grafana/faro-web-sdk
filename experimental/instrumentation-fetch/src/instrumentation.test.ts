@@ -41,17 +41,16 @@ describe('FetchInstrumentation', () => {
     const config = mockConfig({ dedupe: true, instrumentations: [instrumentation] });
     initializeFaro(config);
 
-    const mockFetch = jest.fn();
     Object.defineProperty(globalObject, 'fetch', {
       configurable: true,
       enumerable: false,
       writable: false,
-      value: mockFetch,
+      value: fetchMock,
     });
 
     fetch('https://example.com');
 
-    expect(mockFetch).toBeCalledTimes(1);
+    expect(fetchMock).toBeCalledTimes(1);
   });
 
   it('initializes FetchInstrumentation and calls fetch with ignored URL', () => {
@@ -61,16 +60,15 @@ describe('FetchInstrumentation', () => {
     const config = mockConfig({ dedupe: true, instrumentations: [instrumentation] });
     initializeFaro(config);
 
-    const mockOriginalFetch = jest.fn();
     Object.defineProperty(globalObject, 'originalFetch', {
       configurable: true,
       enumerable: false,
       writable: false,
-      value: mockOriginalFetch,
+      value: fetchMock,
     });
 
     fetch('https://example.com');
 
-    expect(mockOriginalFetch).toBeCalledTimes(1);
+    expect(fetchMock).toBeCalledTimes(1);
   });
 });
