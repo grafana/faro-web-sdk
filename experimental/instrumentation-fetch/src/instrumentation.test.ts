@@ -20,6 +20,7 @@ describe('FetchInstrumentation', () => {
     const instrumentation = new FetchInstrumentation({
       ignoredUrls: ['https://example.com'],
     });
+    instrumentation.initialize()
 
     expect(instrumentation.getIgnoredUrls()).toEqual(['https://example.com']);
   });
