@@ -20,9 +20,7 @@ export function initializeFaro(): Faro {
       ...getWebInstrumentations({
         captureConsole: true,
       }),
-      new FetchInstrumentation({
-        ignoredUrls: [`http://localhost:${env.faro.portAppReceiver}/collect`],
-      }),
+      new FetchInstrumentation(),
       new TracingInstrumentation(),
       new ReactIntegration({
         router: {

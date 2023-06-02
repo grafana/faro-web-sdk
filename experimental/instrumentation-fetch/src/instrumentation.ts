@@ -16,12 +16,10 @@ import type { FetchInstrumentationOptions } from './types';
 export class FetchInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-fetch';
   readonly version = VERSION;
-  readonly ignoredUrls: FetchInstrumentationOptions['ignoredUrls'];
+  private ignoredUrls: FetchInstrumentationOptions['ignoredUrls'];
 
-  constructor(options?: FetchInstrumentationOptions) {
+  constructor(private options?: FetchInstrumentationOptions) {
     super();
-
-    this.ignoredUrls = options?.ignoredUrls ?? [];
   }
 
   /**
@@ -29,6 +27,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
    */
   initialize(): void {
     this.internalLogger.info('Initializing fetch instrumentation');
+    this.ignoredUrls = this.options?.ignoredUrls ?? this.getTransportIgnoreUrls();
 
     Object.defineProperty(globalObject, fetchGlobalObjectKey, {
       configurable: true,
@@ -51,6 +50,20 @@ export class FetchInstrumentation extends BaseInstrumentation {
   private requestId(idOnly?: boolean): Record<string, string> | string {
     const requestId = (faro.config.session?.id ?? faro.config.user?.id) + Date.now().toString();
     return idOnly ? requestId : { request_id: requestId };
+  }
+
+  /**
+   * Get the list of ignored urls from all transports
+   */
+  private getTransportIgnoreUrls(): Array<string | RegExp> {
+    return faro.transports.transports?.flatMap((transport) => transport.getIgnoreUrls());
+  }
+
+  /**
+   * Get the list of ignored urls from all transports
+   */
+  getIgnoredUrls(): Array<string | RegExp> {
+    return this.ignoredUrls ?? [];
   }
 
   /**
