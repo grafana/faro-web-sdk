@@ -50,7 +50,7 @@ describe('FetchInstrumentation', () => {
 
     globalObject.fetch('https://example.com');
 
-    expect(fetchMock).toBeCalledTimes(1);
+    expect(globalObject.fetch).toBeCalledTimes(1);
   });
 
   it('initializes FetchInstrumentation and calls fetch with ignored URL', () => {
@@ -69,6 +69,6 @@ describe('FetchInstrumentation', () => {
 
     globalObject.fetch('https://example.com');
 
-    expect(fetchMock).toBeCalledTimes(1);
+    expect(globalObject['originalFetch']).toBeCalledTimes(1);
   });
 });
