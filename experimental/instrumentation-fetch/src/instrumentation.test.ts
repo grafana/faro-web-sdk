@@ -1,13 +1,7 @@
-// initialize faro with fetch instrumentation
-// test that fetch instrumentation is enabled and correctly captures headers
-// initailize faro with fetch insturmentation and additional configs
-// test that fetch instrumentation is enabled and correctly captures headers + additional details
-// for each test, count the number of logs/events that get pushed, make sure they match the expected number
 import { globalObject, initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { FetchInstrumentation } from './instrumentation';
-import { originalFetch } from './constants';
 
 const mockObserve = jest.fn();
 
