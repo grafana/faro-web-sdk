@@ -48,7 +48,7 @@ describe('FetchInstrumentation', () => {
       value: fetchMock,
     });
 
-    fetch('https://example.com');
+    globalObject.fetch('https://example.com');
 
     expect(fetchMock).toBeCalledTimes(1);
   });
@@ -67,7 +67,7 @@ describe('FetchInstrumentation', () => {
       value: fetchMock,
     });
 
-    fetch('https://example.com');
+    globalObject.fetch('https://example.com');
 
     expect(fetchMock).toBeCalledTimes(1);
   });
