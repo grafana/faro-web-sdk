@@ -48,7 +48,8 @@
   },
   "homepage": "https://github.com/grafana/faro-web-sdk",
   "devDependencies": {
-    "@grafana/faro-core": "^1.0.5"
+    "@grafana/faro-core": "^1.0.5",
+    "jest-fetch-mock": "^3.0.3"
   },
   "publishConfig": {
     "access": "public"

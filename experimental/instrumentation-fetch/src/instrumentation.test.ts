@@ -1,3 +1,5 @@
+import { enableFetchMocks } from 'jest-fetch-mock';
+
 import { globalObject, initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
@@ -8,6 +10,7 @@ const mockObserve = jest.fn();
 describe('FetchInstrumentation', () => {
   beforeEach(() => {
     mockObserve.mockClear();
+    enableFetchMocks();
   });
 
   it('initialize FetchInstrumentation with default options', () => {
@@ -20,7 +23,7 @@ describe('FetchInstrumentation', () => {
     const instrumentation = new FetchInstrumentation({
       ignoredUrls: ['https://example.com'],
     });
-    instrumentation.initialize()
+    instrumentation.initialize();
 
     expect(instrumentation.getIgnoredUrls()).toEqual(['https://example.com']);
   });
