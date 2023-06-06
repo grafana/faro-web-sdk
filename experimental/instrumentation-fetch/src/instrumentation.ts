@@ -33,7 +33,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
       configurable: true,
       enumerable: false,
       writable: false,
-      value: this.instrumentFetch(),
+      value: () => this.instrumentFetch(),
     });
 
     Object.defineProperty(globalObject, originalFetchGlobalObjectKey, {
@@ -47,9 +47,9 @@ export class FetchInstrumentation extends BaseInstrumentation {
   /**
    * Generate a unique request id object for each fetch request
    */
-  private requestId(idOnly?: boolean): Record<string, string> | string {
+  private requestId(): Record<string, string> {
     const requestId = (faro.config.session?.id ?? faro.config.user?.id) + Date.now().toString();
-    return idOnly ? requestId : { request_id: requestId };
+    return { request_id: requestId };
   }
 
   /**
@@ -67,12 +67,46 @@ export class FetchInstrumentation extends BaseInstrumentation {
   }
 
   /**
+   * Parse the input object into a string URL
+   */
+  getRequestUrl(input: RequestInfo | URL): string {
+    return input instanceof Request ? input.url : String(input);
+  }
+
+  /**
+   * Build new init and request from the original parameters to fetch
+   */
+  buildRequestAndInit(input: RequestInfo | URL, init?: RequestInit): { init?: RequestInit; request: Request } {
+    const initCopy = init ? Object.assign({}, init) : {};
+
+    let body;
+    if (initCopy && initCopy.body) {
+      body = initCopy.body;
+      initCopy.body = undefined;
+    }
+
+    let headers;
+    if (initCopy && initCopy.headers) {
+      headers = new Headers(initCopy.headers);
+      headers.append('x-faro-request-id', this.requestId()['request_id'] as string);
+      initCopy.headers = headers;
+    }
+
+    const request = new Request(input, initCopy);
+    if (body) {
+      initCopy.body = body;
+    }
+
+    return { init, request };
+  }
+
+  /**
    * Instrument fetch with Faro
    */
   private instrumentFetch(): typeof fetch {
     const instrumentation = this;
-    return function fetch(this: typeof globalObject, input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-      const requestUrl = input instanceof Request ? input.url : String(input);
+    return function fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+      const requestUrl = instrumentation.getRequestUrl(input);
 
       // if the url is in the ignoredUrls list, skip instrumentation
       if (instrumentation.ignoredUrls?.some((url) => requestUrl.match(url))) {
@@ -82,25 +116,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
         return originalFetch(input, init);
       }
 
-      const initClone = init ? Object.assign({}, init) : {};
-
-      let body;
-      if (initClone && initClone.body) {
-        body = initClone.body;
-        initClone.body = undefined;
-      }
-
-      let headers;
-      if (initClone && initClone.headers) {
-        headers = new Headers(initClone.headers);
-        headers.append('x-faro-request-id', instrumentation.requestId(true) as string);
-        initClone.headers = headers;
-      }
-
-      const request = new Request(input, initClone);
-      if (body) {
-        initClone.body = body;
-      }
+      const { request, init: initCopy } = instrumentation.buildRequestAndInit(input, init);
 
       /**
        * Resolve the fetch promise and push the event to Faro
@@ -117,10 +133,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
               ...parsedHeaders,
               ...(instrumentation.requestId() as Record<string, string>),
             },
-            eventDomain,
-            {
-              skipDedupe: true,
-            }
+            eventDomain
           );
         } finally {
           res(response);
@@ -139,10 +152,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
               error: error.message,
               ...(instrumentation.requestId() as Record<string, string>),
             },
-            eventDomain,
-            {
-              skipDedupe: true,
-            }
+            eventDomain
           );
         } finally {
           rej(error);
@@ -154,7 +164,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
        */
       return new Promise((originalResolve, originalReject) => {
         return originalFetch
-          .apply(self, [request, initClone])
+          .apply(self, [request, initCopy])
           .then(resolve.bind(self, originalResolve), reject.bind(self, originalReject));
       });
     };
