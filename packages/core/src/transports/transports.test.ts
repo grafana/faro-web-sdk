@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import type { ExceptionEvent } from '../api';
 import { initializeFaro } from '../initialize';
 import { mockConfig } from '../testUtils';
@@ -8,8 +11,21 @@ import { BaseTransport } from './base';
 import { TransportItemType } from './const';
 import type { Transport, TransportItem } from './types';
 
-class MockTransport extends BaseTransport implements Transport {
+class MockSingleTransport extends BaseTransport implements Transport {
   readonly name = '@grafana/transport-mock';
+  readonly version = VERSION;
+
+  sentItems: TransportItem[] = [];
+
+  send(item: TransportItem): void | Promise<void> {
+    this.sentItems.push(item);
+  }
+}
+
+const sendSingleMock = jest.spyOn(MockSingleTransport.prototype, 'send');
+
+class MockTransport extends BaseTransport implements Transport {
+  readonly name = '@grafana/transport-single-mock';
   readonly version = VERSION;
 
   sentItems: TransportItem[] = [];
@@ -17,7 +33,13 @@ class MockTransport extends BaseTransport implements Transport {
   send(items: TransportItem[]): void | Promise<void> {
     this.sentItems.push(...items);
   }
+
+  override isBatched(): boolean {
+    return true;
+  }
 }
+
+const sendMock = jest.spyOn(MockTransport.prototype, 'send');
 
 describe('transports', () => {
   describe('config.ignoreErrors', () => {
@@ -125,6 +147,65 @@ describe('transports', () => {
       transports.execute(makeExceptionTransportItem('Error', 'Kaboom'));
       expect(transport1.sentItems).toHaveLength(1);
       expect(transport2.sentItems).toHaveLength(2);
+    });
+  });
+
+  describe('test batched transports and single item ones', () => {
+    beforeAll(() => {
+      jest.useFakeTimers();
+    });
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('single item transports with batching enabled', () => {
+      const transport = new MockSingleTransport();
+      const { transports } = initializeFaro(
+        mockConfig({
+          isolate: true,
+          instrumentations: [],
+          transports: [transport],
+          batching: {
+            enabled: true,
+            sendTimeout: 1,
+          },
+        })
+      );
+
+      const item1 = makeExceptionTransportItem('Error', 'Kaboom');
+      const item2 = makeExceptionTransportItem('Error', 'Kaboom');
+
+      transports.execute(item1);
+      transports.execute(item2);
+      jest.advanceTimersByTime(1);
+
+      expect(sendSingleMock).toHaveBeenCalledTimes(2);
+      expect(sendSingleMock.mock.calls).toEqual([[item1], [item2]]);
+    });
+
+    it('multiple item transports', () => {
+      const transport = new MockTransport();
+      const { transports } = initializeFaro(
+        mockConfig({
+          isolate: true,
+          instrumentations: [],
+          transports: [transport],
+          batching: {
+            enabled: true,
+            sendTimeout: 1,
+          },
+        })
+      );
+
+      const item1 = makeExceptionTransportItem('Error', 'Kaboom');
+      const item2 = makeExceptionTransportItem('Error', 'Kaboom');
+
+      transports.execute(item1);
+      transports.execute(item2);
+      jest.advanceTimersByTime(1);
+
+      expect(sendMock).toHaveBeenCalledWith([item1, item2]);
     });
   });
 });

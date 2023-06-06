@@ -296,6 +296,34 @@ The transports also support batch processing wiht the `batchEnabled` flag set to
 and a positive, non zero `batchSendTimeout`. The batch executor will group items that share the same `metas` together
 and call the `send` function for each group of signals.
 
+### Updating transports to support multiple items
+
+Currently the Transport interface supports implementations of the `send` function that accept either a `TransportItem`
+or an array of them. The former is deprecated and will be removed as of version 2. To update your transport:
+
+```ts
+export class MyTransport extends BaseTransport {
+  async send(item: TransportItem): Promise<void> {
+    // do something with the item
+  }
+}
+
+/* should be */
+
+export class MyTransport extends BaseTransport {
+  async send(items: TransportItem[]): Promise<void> {
+    // do something with the array of items
+    // all of them share the same metas
+  }
+
+  // This is required for the transports layer to differentiate
+  // between the two types of Transport implementations
+  override isBatched(): boolean {
+    return true;
+  }
+}
+```
+
 ## Unpatched console
 
 Some instrumentations might override the default console methods but Faro instance provides a way to access the

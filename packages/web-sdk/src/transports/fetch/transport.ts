@@ -78,6 +78,10 @@ export class FetchTransport extends BaseTransport {
     return [this.options.url];
   }
 
+  override isBatched(): boolean {
+    return true;
+  }
+
   private getRetryAfterDate(response: Response): Date {
     const now = this.getNow();
     const retryAfterHeader = response.headers.get('Retry-After');
