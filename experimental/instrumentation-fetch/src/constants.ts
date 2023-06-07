@@ -1,5 +1,3 @@
-import { globalObject } from '@grafana/faro-core';
-
 export const VERSION = '1.0.0';
 interface StringResponse {
   body_used: string;
@@ -11,7 +9,6 @@ interface StringResponse {
   url: string;
 }
 
-export const originalFetch = globalObject.fetch;
 export const fetchGlobalObjectKey = 'fetch';
 export const resolvedFetchEventName = 'Resolved fetch';
 export const rejectedFetchEventName = 'Rejected fetch';

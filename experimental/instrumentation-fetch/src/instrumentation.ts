@@ -2,7 +2,6 @@ import { BaseInstrumentation, faro, globalObject } from '@grafana/faro-core';
 
 import {
   fetchGlobalObjectKey,
-  originalFetch,
   parseHeaders,
   rejectedFetchEventName,
   resolvedFetchEventName,
@@ -14,6 +13,7 @@ import type { FetchInstrumentationOptions } from './types';
 export class FetchInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-fetch';
   readonly version = VERSION;
+  readonly originalFetch = fetch.bind(globalObject);
   private ignoredUrls: FetchInstrumentationOptions['ignoredUrls'];
 
   constructor(private options?: FetchInstrumentationOptions) {
@@ -29,8 +29,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
 
     Object.defineProperty(globalObject, fetchGlobalObjectKey, {
       configurable: true,
-      enumerable: false,
-      writable: false,
+      writable: this.options?.testing ? true : false, // necessary for testing, instrumented fetch should not be writeable by default
       value: this.instrumentFetch().bind(this),
     });
   }
@@ -39,7 +38,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
    * Get the list of ignored urls from all transports
    */
   private getTransportIgnoreUrls(): Array<string | RegExp> {
-    return faro.transports.transports?.flatMap((transport) => transport.getIgnoreUrls());
+    return faro?.transports?.transports?.flatMap((transport) => transport.getIgnoreUrls());
   }
 
   /**
@@ -95,7 +94,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
         instrumentation.internalLogger.info(
           `Skipping fetch instrumentation for ignored url "${requestUrl}" - using default fetch`
         );
-        return originalFetch(input, init);
+        return instrumentation.originalFetch(input, init);
       }
 
       const { request, init: initCopy } = instrumentation.buildRequestAndInit(input, init);
@@ -108,13 +107,10 @@ export class FetchInstrumentation extends BaseInstrumentation {
           const parsedHeaders = parseHeaders(response.headers);
           const trimmedResponse = responseProperties(response);
 
-          faro.api.pushEvent(
-            resolvedFetchEventName,
-            {
-              ...trimmedResponse,
-              ...parsedHeaders,
-            }
-          );
+          faro.api.pushEvent(resolvedFetchEventName, {
+            ...trimmedResponse,
+            ...parsedHeaders,
+          });
         } finally {
           res(response);
         }
@@ -125,13 +121,10 @@ export class FetchInstrumentation extends BaseInstrumentation {
        */
       function reject(rej: (reason?: unknown) => void, error: Error) {
         try {
-          faro.api.pushEvent(
-            rejectedFetchEventName,
-            {
-              failed: 'true',
-              error: error.message,
-            }
-          );
+          faro.api.pushEvent(rejectedFetchEventName, {
+            failed: 'true',
+            error: error.message,
+          });
         } finally {
           rej(error);
         }
@@ -141,7 +134,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
        * Return a promise that resolves/rejects the original fetch promise
        */
       return new Promise((originalResolve, originalReject) => {
-        return originalFetch
+        return instrumentation.originalFetch
           .apply(self, [request, initCopy])
           .then(resolve.bind(self, originalResolve), reject.bind(self, originalReject));
       });
