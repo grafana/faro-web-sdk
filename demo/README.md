@@ -54,6 +54,12 @@ docker compose --profile demo up -d
 
 This will automatically install dependencies, build the demo and start it in `development` mode.
 
+To stop everything, run:
+
+```shell
+docker compose --profile demo down
+```
+
 ## Instrumentation
 
 There is various data that is captured in this app. Some data is captured manually while other data is automatically

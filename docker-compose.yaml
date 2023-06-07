@@ -136,7 +136,7 @@ volumes:
     driver: 'local'
     driver_opts:
       type: 'none'
-      device: '${PWD}/${DEMO_DEMO_PATH}/${DEMO_SERVER_LOGS_PATH}'
+      device: '${DEMO_DEMO_PATH}/${DEMO_SERVER_LOGS_PATH}'
       o: 'bind'
   demo_demo_node_modules:
   demo_core_dist:
