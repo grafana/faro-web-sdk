@@ -296,10 +296,11 @@ The transports also support batch processing wiht the `batchEnabled` flag set to
 and a positive, non zero `batchSendTimeout`. The batch executor will group items that share the same `metas` together
 and call the `send` function for each group of signals.
 
-### Updating transports to support multiple items
+### Batched transports
 
 Currently the Transport interface supports implementations of the `send` function that accept either a `TransportItem`
-or an array of them. The former is deprecated and will be removed as of version 2. To update your transport:
+or an array of them. The latter is useful when you want to batch process signals with your custom transport. In order
+to achieve this, you should override the `isBatched` method of the BaseTransport.
 
 ```ts
 export class MyTransport extends BaseTransport {
@@ -310,7 +311,7 @@ export class MyTransport extends BaseTransport {
 
 /* should be */
 
-export class MyTransport extends BaseTransport {
+export class MyBatchedTransport extends BaseTransport {
   async send(items: TransportItem[]): Promise<void> {
     // do something with the array of items
     // all of them share the same metas
