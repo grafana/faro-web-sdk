@@ -1,10 +1,8 @@
 import { BaseInstrumentation, faro, globalObject } from '@grafana/faro-core';
 
 import {
-  eventDomain,
   fetchGlobalObjectKey,
   originalFetch,
-  originalFetchGlobalObjectKey,
   parseHeaders,
   rejectedFetchEventName,
   resolvedFetchEventName,
@@ -33,23 +31,8 @@ export class FetchInstrumentation extends BaseInstrumentation {
       configurable: true,
       enumerable: false,
       writable: false,
-      value: () => this.instrumentFetch(),
+      value: this.instrumentFetch().bind(this),
     });
-
-    Object.defineProperty(globalObject, originalFetchGlobalObjectKey, {
-      configurable: true,
-      enumerable: false,
-      writable: false,
-      value: originalFetch,
-    });
-  }
-
-  /**
-   * Generate a unique request id object for each fetch request
-   */
-  private requestId(): Record<string, string> {
-    const requestId = (faro.config.session?.id ?? faro.config.user?.id) + Date.now().toString();
-    return { request_id: requestId };
   }
 
   /**
@@ -88,7 +71,6 @@ export class FetchInstrumentation extends BaseInstrumentation {
     let headers;
     if (initCopy && initCopy.headers) {
       headers = new Headers(initCopy.headers);
-      headers.append('x-faro-request-id', this.requestId()['request_id'] as string);
       initCopy.headers = headers;
     }
 
@@ -131,9 +113,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
             {
               ...trimmedResponse,
               ...parsedHeaders,
-              ...(instrumentation.requestId() as Record<string, string>),
-            },
-            eventDomain
+            }
           );
         } finally {
           res(response);
@@ -150,9 +130,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
             {
               failed: 'true',
               error: error.message,
-              ...(instrumentation.requestId() as Record<string, string>),
-            },
-            eventDomain
+            }
           );
         } finally {
           rej(error);

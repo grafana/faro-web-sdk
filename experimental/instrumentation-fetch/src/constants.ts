@@ -13,8 +13,6 @@ interface StringResponse {
 
 export const originalFetch = globalObject.fetch;
 export const fetchGlobalObjectKey = 'fetch';
-export const originalFetchGlobalObjectKey = 'originalFetch';
-export const eventDomain = 'fetch';
 export const resolvedFetchEventName = 'Resolved fetch';
 export const rejectedFetchEventName = 'Rejected fetch';
 
