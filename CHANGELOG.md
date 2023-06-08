@@ -7,6 +7,7 @@
 - Add: Add batch execution support for transports in core.
 - Add: Transport.send now accepts a list of items to be sent instead of a single item.
 - Update: Update Vite version in Demo app
+- Add: Experimental instrumentation package for fetch
 
 ## 1.0.3 – 1.0.5
 
