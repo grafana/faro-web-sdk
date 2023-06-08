@@ -27,7 +27,8 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "strict": true
+    "strict": true,
+    "types": ["jest"]
   },
   "ts-node": {
     "esm": true

@@ -1,0 +1,1 @@
+export { FetchInstrumentation } from './instrumentation';

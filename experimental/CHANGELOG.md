@@ -2,6 +2,10 @@
 
 ## Next
 
+- Add: Experimental package for Fetch instrumentation.
+
+### FetchInstrumentation
+
 ### PerformanceTimelineInstrumentation
 
 - Add: beforeEmit hook to make it possible to mutate performance entries.
