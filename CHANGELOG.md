@@ -8,9 +8,6 @@
 - Add: Transport.send now accepts a list of items to be sent instead of a single item.
 - Update: Update Vite version in Demo app
 
-- Deprecation notice: `Transport.send` supporting a single item is deprecated and will be
-  removed in v2
-
 ## 1.0.3 – 1.0.5
 
 - Add: Config option to include URLs for which requests shall have tracing headers added.
