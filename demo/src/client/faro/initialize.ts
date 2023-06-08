@@ -37,7 +37,6 @@ export function initializeFaro(): Faro {
     dedupe: false,
     batching: {
       enabled: true,
-      sendTimeout: 10000,
     },
     app: {
       name: env.client.packageName,
