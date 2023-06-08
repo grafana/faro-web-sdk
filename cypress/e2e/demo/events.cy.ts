@@ -8,7 +8,6 @@ context('Events', () => {
       aliasGenerator: (body: TransportBody) => {
         const item = body.events?.[0]!;
 
-
         return item?.attributes?.['foo'] === 'bar' && item?.attributes?.['baz'] === 'bad' ? 'event' : undefined;
       },
     },
