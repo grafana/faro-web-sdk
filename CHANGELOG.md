@@ -5,7 +5,8 @@
 - Add: add option to provide additional error context in `pushError` api.
 - Fix: Use `globalThis` instead of `global` or `window` in case the SDK is used in webworkers.
 - Add: Add batch execution support for transports in core.
-- [BREAKING]: Transport.send now accepts a list of items to be sent instead of a single item.
+- Add: Transport.send now accepts a list of items to be sent instead of a single item.
+- Update: Update Vite version in Demo app
 
 ## 1.0.3 – 1.0.5
 

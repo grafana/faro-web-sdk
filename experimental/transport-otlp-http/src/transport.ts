@@ -32,6 +32,10 @@ export class OtlpHttpTransport extends BaseTransport {
     return [tracesURL, logsURL].filter(Boolean);
   }
 
+  override isBatched(): boolean {
+    return true;
+  }
+
   send(items: TransportItem[]): void {
     const otelPayload = new OtelPayload(this.internalLogger);
 

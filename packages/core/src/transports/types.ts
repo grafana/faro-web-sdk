@@ -17,10 +17,12 @@ export interface TransportItem<P = APIEvent> {
 }
 
 export interface Transport extends Extension {
-  send(items: TransportItem[]): void | Promise<void>;
+  send(items: TransportItem | TransportItem[]): void | Promise<void>;
 
   // returns URLs to be ignored by tracing, to not cause a feedback loop
   getIgnoreUrls(): Patterns;
+  // returns wether the transport supports processing of a batches of items
+  isBatched(): boolean;
 }
 
 export type BodyKey = 'exceptions' | 'logs' | 'measurements' | 'traces' | 'events';

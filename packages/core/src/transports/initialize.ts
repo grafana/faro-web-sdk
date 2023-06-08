@@ -102,33 +102,67 @@ export function initializeTransports(
     return filteredItems;
   };
 
-  const send = (items: TransportItem[]) => {
+  const batchedSend = (items: TransportItem[]) => {
     const filteredItems = applyBeforeSendHooks(items);
 
+    if (filteredItems.length === 0) {
+      return;
+    }
+
     for (const transport of transports) {
-      internalLogger.debug(`Transporting item using ${transport.name}\n`, items);
-      transport.send(filteredItems);
+      internalLogger.debug(`Transporting item using ${transport.name}\n`, filteredItems);
+      if (transport.isBatched()) {
+        transport.send(filteredItems);
+      }
+    }
+  };
+
+  const instantSend = (item: TransportItem) => {
+    const [filteredItem] = applyBeforeSendHooks([item]);
+
+    if (filteredItem === undefined) {
+      return;
+    }
+
+    for (const transport of transports) {
+      internalLogger.debug(`Transporting item using ${transport.name}\n`, filteredItem);
+      if (!transport.isBatched()) {
+        transport.send(filteredItem);
+      } else if (!config.batching?.enabled) {
+        transport.send([filteredItem]);
+      }
     }
   };
 
   let batchExecutor: BatchExecutor | undefined;
 
   if (config.batching?.enabled) {
-    batchExecutor = new BatchExecutor(send, {
+    batchExecutor = new BatchExecutor(batchedSend, {
       sendTimeout: config.batching.sendTimeout,
       itemLimit: config.batching.itemLimit,
       paused,
     });
   }
 
+  // Send a signal to the appropriate transports
+  //
+  // 1. If SDK is paused, early return
+  // 2. If batching is not enabled send the signal to all transports
+  //    instantly.
+  // 3i. If batching is enabled, enqueue the signal
+  // 3ii. Send the signal instantly to all un-batched transports
   const execute: Transports['execute'] = (item) => {
-    if (!paused) {
-      if (config.batching?.enabled && batchExecutor !== undefined) {
-        batchExecutor.addItem(item);
-      } else {
-        send([item]);
-      }
+    if (paused) {
+      return;
     }
+
+    if (!config.batching?.enabled) {
+      instantSend(item);
+      return;
+    }
+
+    batchExecutor?.addItem(item);
+    instantSend(item);
   };
 
   const getBeforeSendHooks: Transports['getBeforeSendHooks'] = () => [...beforeSendHooks];
