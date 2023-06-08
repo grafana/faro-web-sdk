@@ -34,7 +34,6 @@ export function initializeFaro(): Faro {
       }),
     ],
     session: (window as any).__PRELOADED_STATE__?.faro?.session,
-    dedupe: false,
     batching: {
       sendTimeout: 1,
     },
