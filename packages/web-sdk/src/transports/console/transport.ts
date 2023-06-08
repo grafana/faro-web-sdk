@@ -11,7 +11,7 @@ export class ConsoleTransport extends BaseTransport {
     super();
   }
 
-  send(items: TransportItem[]): void {
-    return this.unpatchedConsole[this.options.level ?? LogLevel.DEBUG]('New event', getTransportBody(items));
+  send(item: TransportItem): void {
+    return this.unpatchedConsole[this.options.level ?? LogLevel.DEBUG]('New event', getTransportBody([item]));
   }
 }
