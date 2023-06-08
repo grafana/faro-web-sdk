@@ -35,7 +35,7 @@ export function initializeFaro(): Faro {
     ],
     session: (window as any).__PRELOADED_STATE__?.faro?.session,
     batching: {
-      sendTimeout: 1,
+      enabled: false,
     },
     app: {
       name: env.client.packageName,
