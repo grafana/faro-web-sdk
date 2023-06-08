@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.1.0
+
 - Add: Experimental package for Fetch instrumentation.
 
 ### FetchInstrumentation

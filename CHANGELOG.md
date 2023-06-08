@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.1.0
+
 - Add: add option to provide additional error context in `pushError` api.
 - Fix: Use `globalThis` instead of `global` or `window` in case the SDK is used in webworkers.
 - Add: Add batch execution support for transports in core.
@@ -9,7 +11,7 @@
 - Update: Update Vite version in Demo app
 - Add: Experimental instrumentation package for fetch
 
-## 1.0.3 – 1.0.5
+## 1.0.3 - 1.0.5
 
 - Add: Config option to include URLs for which requests shall have tracing headers added.
 - Fix: TracingInstrumentation broke fetch requests with relative URLs are broken on sub-pages.
