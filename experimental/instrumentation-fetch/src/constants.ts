@@ -1,4 +1,3 @@
-export const VERSION = '1.0.0';
 interface StringResponse {
   body_used: string;
   ok: string;
