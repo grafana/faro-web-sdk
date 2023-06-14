@@ -28,5 +28,6 @@ fetch(...) // Use fetch as normal - telemetry data is sent to your Faro endpoint
 ```
 
 ## Planned Development
+
 - Additional functionality to correlate frontend requests with backend actions
 - Event attributes with end-to-end timing details
