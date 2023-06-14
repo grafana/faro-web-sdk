@@ -1,4 +1,4 @@
-import { BaseInstrumentation, faro, globalObject } from '@grafana/faro-core';
+import { BaseInstrumentation, faro, globalObject, VERSION } from '@grafana/faro-core';
 
 import {
   fetchGlobalObjectKey,
@@ -6,7 +6,6 @@ import {
   rejectedFetchEventName,
   resolvedFetchEventName,
   responseProperties,
-  VERSION,
 } from './constants';
 import type { FetchInstrumentationOptions } from './types';
 
