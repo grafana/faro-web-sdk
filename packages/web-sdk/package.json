@@ -24,6 +24,7 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "files": [
+    ".browserslistrc",
     "dist",
     "globals.ts",
     "README.md",
@@ -61,6 +62,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "browserslist": [ "supports es6-module" ]
+  }
 }
