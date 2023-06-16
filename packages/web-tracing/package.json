@@ -73,5 +73,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "418b7f9ae1d5e6397404d4d6a1938ee557b8575c"
+  "gitHead": "418b7f9ae1d5e6397404d4d6a1938ee557b8575c",
+  "browserslist": [ "supports es6-module" ]
 }
