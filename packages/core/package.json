@@ -60,5 +60,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "browserslist": [ "supports es6-module" ]
 }
