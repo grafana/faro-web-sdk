@@ -53,5 +53,11 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "files": [
+    ".browserslistrc",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }
