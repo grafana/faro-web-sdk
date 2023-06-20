@@ -192,3 +192,5 @@ export type {
   Transports,
   UnpatchedConsole,
 } from '@grafana/faro-web-sdk';
+
+export * from './context';
