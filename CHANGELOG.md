@@ -2,6 +2,8 @@
 
 ## Next
 
+- Remove: Remove OTel user-interaction instrumentation from the default set (#215)
+
 ## 1.1.0
 
 - Add: add option to provide additional error context in `pushError` api.
