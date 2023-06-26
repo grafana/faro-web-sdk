@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.1.1
+
 - Remove: Remove OTel user-interaction instrumentation from the default set (#215)
 
 ## 1.1.0
