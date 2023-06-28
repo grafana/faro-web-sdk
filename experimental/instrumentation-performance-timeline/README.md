@@ -66,7 +66,7 @@ For example if you want to change the duration threshold for `PerformanceEventTi
 
 Note:
 Browser support for entry types differs. In the case that one of your specified entries
-is not support Faro will log a message.
+is not support Faro will log a message and does not register to track these entries.
 
 ### How can I skip entries?
 
@@ -100,11 +100,7 @@ new PerformanceTimelineInstrumentation({
     const entryType = performanceEntryJSON.type;
     const type = performanceEntryJSON.type;
 
-    if (entryType !== 'navigation') {
-      return performanceEntryJSON;
-    }
-
-    if (['reload', 'back_forward'].includes(type)) {
+    if (entryType === 'navigation' && ['reload', 'back_forward'].includes(type)) {
       return false;
     }
 
@@ -116,23 +112,22 @@ new PerformanceTimelineInstrumentation({
 ### Mutating or filtering performance entries
 
 The Performance Timeline emits a lot of data which quickly adds up. Often users mutate Performance
-Entries to trim down the payload size of an entry or to further remove noise. Sometimes you may need
-a complex filter which can not be achieved with the above config options.
+Entries to trim down the payload size of an entry, to further remove noise or if they need
+a filter which can not be achieved with the above config options.
 
 Therefore we provide the `beforeEmit` hook.
 
-This hook triggers after all the other options mentioned above e. g. skipping entries by key/value
-combination.
+This hook triggers after all the other options mentioned above i. e. skipping entries by url.
 
-The `beforeEmit` hook provides two parameters and either return the new performance entry which shall
-be send to the backend or `false` in case the entire entry should be dropped.
+The `beforeEmit` hook receives the json representation of a performance entry as a parameter and
+either returns the performance entry which shall be send to the backend or `false` in case the
+entire entry should be dropped.
 
 `beforeEmit: (performanceEntry: performanceEntryJSON: any) => Record<string, any> | false;`
 
-The first parameter is the performance entry as emitted by the browser, the second one is its JSON
-representation as returned by calling the `toJSON()` function of the respective PerformanceEntry.
-We provide the JSON representation as an own parameter because it is already created by the
-Instrumentation. So you can avoid calling the `toJson()` function twice.
+Note:\
+The JSON representation of the performance entry is the object returned by calling the `toJSON()`
+function of the respective PerformanceEntry.
 
 ### Config Options
 
