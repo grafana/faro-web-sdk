@@ -203,7 +203,6 @@ import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
-import { UserInteractionInstrumentation } from '@opentelemetry/instrumentation-user-interaction';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 import { Resource } from '@opentelemetry/resources';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
@@ -250,7 +249,6 @@ registerInstrumentations({
     new DocumentLoadInstrumentation(),
     new FetchInstrumentation({ ignoreUrls }),
     new XMLHttpRequestInstrumentation({ ignoreUrls }),
-    new UserInteractionInstrumentation(),
   ],
 });
 
