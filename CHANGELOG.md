@@ -2,6 +2,8 @@
 
 ## Next
 
+- Fix: fix CVE-2023-32731 by forcing all dependencies to use grpc-js ^1.8.17.
+
 ## 1.1.1
 
 - Remove: Remove OTel user-interaction instrumentation from the default set (#215)
