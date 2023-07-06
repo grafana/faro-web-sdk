@@ -1,11 +1,11 @@
 # Releasing
 
-To release a new version, run `npx lerna version` on the main branch.
+To release a new version, run `npx lerna version --force-publish` on the main branch.
 It will ask some questions, bump package versions, tag & push.
 CI will pick it up from there and publish to npm.
 
 **Note:**
-Before calling `npx lerna version` always ensure that your local main branch is 1:1 with origin/main.
+Before calling `npx lerna version --force-publish` always ensure that your local main branch is 1:1 with origin/main.
 
 - Do `git pull` the main branch
 - Check `git status` to double check if you have any unpushed changes
