@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-demo",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Demo of Faro",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -35,10 +35,11 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-core": "^1.1.1",
-    "@grafana/faro-react": "^1.1.1",
-    "@grafana/faro-web-sdk": "^1.1.1",
-    "@grafana/faro-web-tracing": "^1.1.1",
+    "@grafana/faro-core": "^1.1.2",
+    "@grafana/faro-react": "^1.1.2",
+    "@grafana/faro-web-sdk": "^1.1.2",
+    "@grafana/faro-web-tracing": "^1.1.2",
+    "@grpc/grpc-js": "^1.8.17",
     "@opentelemetry/api": "^1.4.1",
     "@opentelemetry/core": "^1.11.0",
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.37.0",
@@ -75,7 +76,7 @@
     "react-router-dom": "^6.6.2",
     "redux": "^4.2.0",
     "sass": "^1.57.1",
-    "sequelize": "^6.28.0",
+    "sequelize": "^6.32.1",
     "serve-static": "^1.15.0",
     "winston": "^3.8.2"
   },
@@ -97,5 +98,8 @@
     "nodemon": "^2.0.20",
     "touch": "^3.1.0",
     "vite": "^4.3.9"
+  },
+  "resolutions": {
+    "@grpc/grpc-js": "^1.8.17"
   }
 }
