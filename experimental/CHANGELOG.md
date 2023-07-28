@@ -4,9 +4,11 @@
 
 ### FetchInstrumentation
 
-- [❗️Breaking❗️]: Events have been namespaced and renamed to prevent collisions with user defined events events.
+- [❗️Breaking❗️]: Events have been namespaced and renamed to prevent collisions with user defined events events. See [Readme](https://github.com/grafana/faro-web-sdk/blob/e998555bd7177b7edbebf98f804372b04b6c30e6/experimental/instrumentation-fetch/README.md#L8) for more information.
 
 ### PerformanceTimelineInstrumentation
+
+- [❗️Breaking❗️]: The performance has been namespaced and renamed to prevent collisions with user defined events events. See Readme for more information.
 
 ## 1.1.0
 
