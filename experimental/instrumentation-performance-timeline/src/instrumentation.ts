@@ -113,7 +113,7 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
         pEntry = modifiedEntry;
       }
 
-      this.api.pushEvent('performanceEntry', this.objectValuesToString(pEntry));
+      this.api.pushEvent('faro.performanceEntry', this.objectValuesToString(pEntry));
     }
 
     // Dropped entries count is only available in chrome (03/03/2024)

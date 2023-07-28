@@ -2,6 +2,12 @@
 
 ## Next
 
+### FetchInstrumentation
+
+- [❗️Breaking❗️]: Events have been namespaced and renamed to prevent collisions with user defined events events.
+
+### PerformanceTimelineInstrumentation
+
 ## 1.1.0
 
 - Add: Experimental package for Fetch instrumentation.
