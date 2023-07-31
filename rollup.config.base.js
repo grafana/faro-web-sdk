@@ -46,6 +46,12 @@ const modules = {
     globalName: 'GrafanaFaroInstrumentationFetch',
     externals: [],
   },
+  instrumentationXHR: {
+    name: '@grafana/faro-instrumentation-xhr',
+    bundleName: 'faro-instrumentation-xhr',
+    globalName: 'GrafanaFaroInstrumentationXHR',
+    externals: [],
+  },
 };
 
 exports.getRollupConfigBase = (moduleName) => {
