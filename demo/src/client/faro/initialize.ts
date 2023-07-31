@@ -1,5 +1,6 @@
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
 
+import { XHRInstrumentation } from '@grafana/faro-instrumentation-xhr';
 import {
   initializeFaro as coreInit,
   getWebInstrumentations,
@@ -20,6 +21,7 @@ export function initializeFaro(): Faro {
         captureConsole: true,
       }),
       new TracingInstrumentation(),
+      new XHRInstrumentation(),
       new ReactIntegration({
         router: {
           version: ReactRouterVersion.V6,
