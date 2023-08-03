@@ -8,7 +8,7 @@ import {
   ReactRouterVersion,
 } from '@grafana/faro-react';
 import type { Faro } from '@grafana/faro-react';
-import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+// import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
 import { env } from '../utils';
 
@@ -20,7 +20,7 @@ export function initializeFaro(): Faro {
       ...getWebInstrumentations({
         captureConsole: true,
       }),
-      new TracingInstrumentation(),
+      // new TracingInstrumentation(),
       new XHRInstrumentation(),
       new ReactIntegration({
         router: {
