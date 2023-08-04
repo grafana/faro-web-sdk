@@ -24,6 +24,6 @@ initializeFaro({
 
 // myApi.ts
 const req = new XMLHttpRequest();
-req.open("GET", "...");
+req.open('GET', '...');
 req.send(); // use XHR as normal - telemetry data is sent to your Faro endpoint
 ```
