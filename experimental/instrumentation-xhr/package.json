@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-instrumentation-xhr",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "description": "Faro XHR auto-instrumentation package",
   "keywords": [
     "observability",
@@ -36,6 +36,9 @@
     "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/instrumentationXHR --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
+  },
+  "devDependencies": {
+    "@grafana/faro-core": "^1.1.2"
   },
   "repository": {
     "type": "git",

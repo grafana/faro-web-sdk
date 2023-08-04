@@ -1,15 +1,30 @@
 import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
 
+import type { XHRInstrumentationOptions } from './types';
+
 export class XHRInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-xhr';
   readonly version = VERSION;
+  private ignoredUrls: XHRInstrumentationOptions['ignoredUrls'];
 
+  constructor(private options?: XHRInstrumentationOptions) {
+    super();
+  }
+
+  /**
+   * Initialize XMLHttpRequest instrumentation - XMLHttpRequest.prototype.open and XMLHttpRequest.prototype.send become instrumented
+   * and event listeners are added to the XMLHttpRequest instance
+   */
   initialize(): void {
     this.internalLogger.info('Initializing XHR instrumentation');
+    this.ignoredUrls = this.options?.ignoredUrls ?? this.getTransportIgnoreUrls();
 
     const originalOpen = XMLHttpRequest.prototype.open;
     const originalSend = XMLHttpRequest.prototype.send;
 
+    /**
+     * XMLHttpRequest.prototype.open becomes instrumented and the parameter defaults are properly passed to the original function
+     */
     XMLHttpRequest.prototype.open = function (
       method: string,
       url: string | URL,
@@ -18,7 +33,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
       password?: string | null
     ): void {
       const xhr = this;
-      // IGNORED URLS HERE?
+      // TODO - add logic regarding ignored URLs here
 
       return originalOpen.apply(xhr, [
         method,
@@ -29,9 +44,13 @@ export class XHRInstrumentation extends BaseInstrumentation {
       ]);
     };
 
+    /**
+     * XMLHttpRequest.prototype.send becomes instrumented and the parameter defaults are properly passed to the original function
+     */
     XMLHttpRequest.prototype.send = function (body?: Document | XMLHttpRequestBodyInit | null | undefined): void {
       const xhr = this;
 
+      // TODO - capture important XHR event details here
       xhr.addEventListener('load', loadEventListener.bind(xhr));
       xhr.addEventListener('abort', abortEventListener.bind(xhr));
       xhr.addEventListener('error', errorEventListener.bind(xhr));
@@ -40,29 +59,70 @@ export class XHRInstrumentation extends BaseInstrumentation {
       return originalSend.apply(xhr, [body === undefined ? null : body]);
     };
 
+    // TODO BELOW - create parsers for XHR events and push them to the Faro API
+
+    /**
+     * Event listener function that is called when an XHR request is successfully completed.
+     * Pushes a log entry to the Faro API with information about the completed request.
+     * Removes the event listener to prevent duplicate log entries.
+     */
     function loadEventListener(this: XMLHttpRequest) {
-      // CAPTURE LOAD DETAILS HERE
       faro.api.pushLog(['XHR load', this]);
 
       this.removeEventListener('load', loadEventListener);
     }
-
+    /**
+     * Event listener function that is called when an XHR request is aborted.
+     * Pushes a log entry to the Faro API with information about the aborted request.
+     * Removes the event listener to prevent duplicate log entries.
+     */
     function abortEventListener(this: XMLHttpRequest) {
       faro.api.pushLog(['XHR aborted', this]);
 
       this.removeEventListener('abort', abortEventListener);
     }
 
+    /**
+     * Event listener function that is called when an XHR request encounters an error.
+     * Pushes a log entry to the Faro API with information about the errored request.
+     * Removes the event listener to prevent duplicate log entries.
+     */
     function errorEventListener(this: XMLHttpRequest) {
       faro.api.pushLog(['XHR error', this]);
 
       this.removeEventListener('error', errorEventListener);
     }
 
+    /**
+     * Event listener function that is called when an XHR request times out.
+     * Pushes a log entry to the Faro API with information about the timed out request.
+     * Removes the event listener to prevent duplicate log entries.
+     */
     function timeoutEventListener(this: XMLHttpRequest) {
       faro.api.pushLog(['XHR timeout', this]);
 
       this.removeEventListener('timeout', timeoutEventListener);
     }
+  }
+
+  /**
+   * Get the list of ignored urls from all transports
+   */
+  private getTransportIgnoreUrls(): Array<string | RegExp> {
+    return faro?.transports?.transports?.flatMap((transport) => transport.getIgnoreUrls());
+  }
+
+  /**
+   * Get the list of ignored urls from all transports
+   */
+  getIgnoredUrls(): Array<string | RegExp> {
+    return this.ignoredUrls ?? [];
+  }
+
+  /**
+   * Parse the input object into a string URL
+   */
+  getRequestUrl(input: RequestInfo | URL): string {
+    return input instanceof Request ? input.url : String(input);
   }
 }
