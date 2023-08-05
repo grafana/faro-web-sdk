@@ -3,7 +3,7 @@ interface StringResponse {
   ok: string;
   redirected: string;
   status: string;
-  statusText: string;
+  status_text: string;
   type: string;
   url: string;
 }
@@ -18,7 +18,7 @@ export const responseProperties = (response: Partial<Response>): StringResponse 
     ok: response.ok?.toString() ?? '',
     redirected: response.redirected?.toString() ?? '',
     status: response.status?.toString() ?? '',
-    statusText: response.statusText?.toString() ?? '',
+    status_text: response.statusText?.toString() ?? '',
     type: response.type?.toString() ?? '',
     url: response.url?.toString() ?? '',
   };

@@ -1,6 +1,7 @@
 import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
 
-import type { XHRInstrumentationOptions } from './types';
+import { XHREventType, XHRInstrumentationOptions } from './types';
+import { parseXHREvent, parseXHRHeaders } from './utils';
 
 export class XHRInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-xhr';
@@ -18,6 +19,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
   initialize(): void {
     this.internalLogger.info('Initializing XHR instrumentation');
     this.ignoredUrls = this.options?.ignoredUrls ?? this.getTransportIgnoreUrls();
+    const instrumentation = this;
 
     const originalOpen = XMLHttpRequest.prototype.open;
     const originalSend = XMLHttpRequest.prototype.send;
@@ -33,7 +35,10 @@ export class XHRInstrumentation extends BaseInstrumentation {
       password?: string | null
     ): void {
       const xhr = this;
-      // TODO - add logic regarding ignored URLs here
+
+      // Attach the original request URL to the xhr object for later use
+      // @ts-ignore
+      xhr._url = url;
 
       return originalOpen.apply(xhr, [
         method,
@@ -49,8 +54,14 @@ export class XHRInstrumentation extends BaseInstrumentation {
      */
     XMLHttpRequest.prototype.send = function (body?: Document | XMLHttpRequestBodyInit | null | undefined): void {
       const xhr = this;
+      // @ts-ignore - _url is attached to the xhr object in the open function
+      const requestUrl = xhr._url;
 
-      // TODO - capture important XHR event details here
+      // If the request url matches an ignored url, do not instrument the request
+      if (instrumentation.ignoredUrls?.some((ignoredUrl) => instrumentation.getRequestUrl(requestUrl).match(ignoredUrl))) {
+        return originalSend.apply(xhr, [body === undefined ? null : body]);
+      }
+
       xhr.addEventListener('load', loadEventListener.bind(xhr));
       xhr.addEventListener('abort', abortEventListener.bind(xhr));
       xhr.addEventListener('error', errorEventListener.bind(xhr));
@@ -59,15 +70,16 @@ export class XHRInstrumentation extends BaseInstrumentation {
       return originalSend.apply(xhr, [body === undefined ? null : body]);
     };
 
-    // TODO BELOW - create parsers for XHR events and push them to the Faro API
-
     /**
      * Event listener function that is called when an XHR request is successfully completed.
      * Pushes a log entry to the Faro API with information about the completed request.
      * Removes the event listener to prevent duplicate log entries.
      */
-    function loadEventListener(this: XMLHttpRequest) {
-      faro.api.pushLog(['XHR load', this]);
+    function loadEventListener(this: XMLHttpRequest, event: ProgressEvent<EventTarget>) {
+      faro.api.pushEvent(XHREventType.LOAD, {
+        ...parseXHREvent(this, event),
+        ...parseXHRHeaders(this)
+      });
 
       this.removeEventListener('load', loadEventListener);
     }
@@ -76,8 +88,11 @@ export class XHRInstrumentation extends BaseInstrumentation {
      * Pushes a log entry to the Faro API with information about the aborted request.
      * Removes the event listener to prevent duplicate log entries.
      */
-    function abortEventListener(this: XMLHttpRequest) {
-      faro.api.pushLog(['XHR aborted', this]);
+    function abortEventListener(this: XMLHttpRequest, event: ProgressEvent<EventTarget>) {
+      faro.api.pushEvent(XHREventType.ABORT, {
+        ...parseXHREvent(this, event),
+        ...parseXHRHeaders(this)
+      });
 
       this.removeEventListener('abort', abortEventListener);
     }
@@ -87,8 +102,11 @@ export class XHRInstrumentation extends BaseInstrumentation {
      * Pushes a log entry to the Faro API with information about the errored request.
      * Removes the event listener to prevent duplicate log entries.
      */
-    function errorEventListener(this: XMLHttpRequest) {
-      faro.api.pushLog(['XHR error', this]);
+    function errorEventListener(this: XMLHttpRequest, event: ProgressEvent<EventTarget>) {
+      faro.api.pushEvent(XHREventType.ERROR, {
+        ...parseXHREvent(this, event),
+        ...parseXHRHeaders(this)
+      });
 
       this.removeEventListener('error', errorEventListener);
     }
@@ -98,8 +116,11 @@ export class XHRInstrumentation extends BaseInstrumentation {
      * Pushes a log entry to the Faro API with information about the timed out request.
      * Removes the event listener to prevent duplicate log entries.
      */
-    function timeoutEventListener(this: XMLHttpRequest) {
-      faro.api.pushLog(['XHR timeout', this]);
+    function timeoutEventListener(this: XMLHttpRequest, event: ProgressEvent<EventTarget>) {
+      faro.api.pushEvent(XHREventType.TIMEOUT, {
+        ...parseXHREvent(this, event),
+        ...parseXHRHeaders(this)
+      });
 
       this.removeEventListener('timeout', timeoutEventListener);
     }

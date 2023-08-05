@@ -4,3 +4,10 @@ export interface XHRInstrumentationOptions {
   // For testing purposes - if true, fetch will be writable - necessary for jest tests
   testing?: boolean;
 }
+
+export enum XHREventType {
+  LOAD = 'load',
+  ABORT = 'abort',
+  ERROR = 'error',
+  TIMEOUT = 'timeout',
+}

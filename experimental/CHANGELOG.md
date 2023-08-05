@@ -2,6 +2,10 @@
 
 ## Next
 
+### FetchInstrumentation
+
+- Change: fetch instrumentation log attribute "statusText" is now "status_text"
+
 ## 1.1.0
 
 - Add: Experimental package for Fetch instrumentation.
