@@ -303,13 +303,13 @@ describe('PerformanceTimelineInstrumentation', () => {
 
     expect(mockPushEvent).toHaveBeenNthCalledWith(
       1,
-      'performanceEntry',
+      'faro.performanceEntry',
       matchNavigationAndResourceEntriesTestResults[0]
     );
 
     expect(mockPushEvent).toHaveBeenNthCalledWith(
       2,
-      'performanceEntry',
+      'faro.performanceEntry',
       matchNavigationAndResourceEntriesTestResults[2]
     );
   });
@@ -408,6 +408,6 @@ describe('PerformanceTimelineInstrumentation', () => {
     );
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
-    expect(mockPushEvent).toHaveBeenCalledWith('performanceEntry', { serverTiming: '[]' });
+    expect(mockPushEvent).toHaveBeenCalledWith('faro.performanceEntry', { serverTiming: '[]' });
   });
 });

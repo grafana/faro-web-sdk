@@ -29,6 +29,8 @@ initializeFaro({
 The FaroPerformanceTimeline instrumentation is able to track all entry types as defined by
 [PerformanceEntry: entryType property](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceEntry/entryType).
 
+For each Performance Entry it sends an event named `faro.performanceEntry`
+
 By default we track entries of type
 [navigation](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming)
 and [resource](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming).
