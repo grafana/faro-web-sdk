@@ -5,9 +5,10 @@ export interface XHRInstrumentationOptions {
   testing?: boolean;
 }
 
+// TODO - add Marco's namespacing feature
 export enum XHREventType {
-  LOAD = 'load',
-  ABORT = 'abort',
-  ERROR = 'error',
-  TIMEOUT = 'timeout',
+  LOAD = 'XHR load',
+  ABORT = 'XHR abort',
+  ERROR = 'XHR error',
+  TIMEOUT = 'XHR timeout',
 }
