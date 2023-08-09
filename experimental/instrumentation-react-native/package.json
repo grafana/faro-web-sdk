@@ -35,6 +35,6 @@
     "directory": "experimental/instrumentation-react-native"
   },
   "dependencies": {
-    "@grafana/faro-react": "^1.1.2"
+    "@grafana/faro-core": "^1.1.2"
   }
 }

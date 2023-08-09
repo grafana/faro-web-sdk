@@ -45,10 +45,6 @@ export const isPrimitive = ((value) => !isObject(value) && !isFunction(value)) a
   string | number | bigint | boolean | symbol
 >;
 
-export const isEventDefined = !isUndefined(Event);
-
-export const isEvent = ((value) => isEventDefined && isInstanceOf(value, Event)) as IsFnHelper<Event>;
-
 export const isErrorDefined = typeof Error !== 'undefined';
 
 export const isError = ((value) => isErrorDefined && isInstanceOf(value, Error)) as IsFnHelper<Error>;
@@ -71,4 +67,4 @@ export const isSyntheticEvent = ((value) =>
   isObject(value) &&
   'nativeEvent' in value &&
   'preventDefault' in value &&
-  'stopPropagation' in value) as IsFnHelper<Event>;
+  'stopPropagation' in value) as IsFnHelper<any>;

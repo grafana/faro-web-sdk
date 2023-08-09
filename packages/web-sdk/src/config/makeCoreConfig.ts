@@ -22,11 +22,13 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
 
   if (browserConfig.transports) {
     if (browserConfig.url || browserConfig.apiKey) {
+      console.log('if "transports" is defined, "url" and "apiKey" should not be defined');
       internalLogger.error('if "transports" is defined, "url" and "apiKey" should not be defined');
     }
 
     transports.push(...browserConfig.transports);
   } else if (browserConfig.url) {
+    console.log('Adding fetch transport');
     transports.push(
       new FetchTransport({
         url: browserConfig.url,
@@ -34,6 +36,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
       })
     );
   } else {
+    console.log('Oh, no transports?');
     internalLogger.error('either "url" or "transports" must be defined');
   }
 

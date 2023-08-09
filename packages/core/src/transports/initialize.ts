@@ -37,7 +37,7 @@ export function initializeTransports(
   config: Config,
   metas: Metas
 ): Transports {
-  internalLogger.debug('Initializing transports');
+  console.log('Initializing transports');
 
   const transports: Transport[] = [];
 
@@ -47,8 +47,11 @@ export function initializeTransports(
 
   const add: Transports['add'] = (...newTransports) => {
     internalLogger.debug('Adding transports');
+    console.log('Adding transports');
+
 
     newTransports.forEach((newTransport) => {
+      console.log(`Adding "${newTransport.name}" transport`);
       internalLogger.debug(`Adding "${newTransport.name}" transport`);
 
       const exists = transports.some((existingTransport) => existingTransport === newTransport);

@@ -8,7 +8,7 @@ export const browserMeta: MetaItem<Pick<Meta, 'browser'>> = () => {
   const { name: osName, version: osVersion } = parser.getOS();
   const userAgent = parser.getUA();
   const language = navigator.language;
-  const mobile = navigator.userAgent.includes('Mobi');
+  const mobile = navigator?.userAgent?.includes('Mobi');
   const brands = getBrands();
   const unknown = 'unknown';
 

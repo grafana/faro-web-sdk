@@ -17,12 +17,14 @@ export function initializeLogsAPI(
   transports: Transports,
   tracesApi: TracesAPI
 ): LogsAPI {
-  internalLogger.debug('Initializing logs API');
+  console.log('Initializing logs API');
 
   let lastPayload: Pick<LogEvent, 'message' | 'level' | 'context'> | null = null;
 
   const pushLog: LogsAPI['pushLog'] = (args, { context, level, skipDedupe } = {}) => {
     try {
+      console.log('Trying to push log\n')
+
       const item: TransportItem<LogEvent> = {
         type: TransportItemType.LOG,
         payload: {
@@ -50,6 +52,7 @@ export function initializeLogsAPI(
       };
 
       if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
+        console.log('Dulpicate log\n')
         internalLogger.debug('Skipping log push because it is the same as the last one\n', item.payload);
 
         return;
@@ -61,6 +64,7 @@ export function initializeLogsAPI(
 
       transports.execute(item);
     } catch (err) {
+      console.log('Error pushing log\n', err)
       internalLogger.error('Error pushing log\n', err);
     }
   };
