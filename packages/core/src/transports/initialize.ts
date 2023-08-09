@@ -37,8 +37,6 @@ export function initializeTransports(
   config: Config,
   metas: Metas
 ): Transports {
-  console.log('Initializing transports');
-
   const transports: Transport[] = [];
 
   let paused = config.paused;
@@ -47,11 +45,8 @@ export function initializeTransports(
 
   const add: Transports['add'] = (...newTransports) => {
     internalLogger.debug('Adding transports');
-    console.log('Adding transports');
-
 
     newTransports.forEach((newTransport) => {
-      console.log(`Adding "${newTransport.name}" transport`);
       internalLogger.debug(`Adding "${newTransport.name}" transport`);
 
       const exists = transports.some((existingTransport) => existingTransport === newTransport);
@@ -128,7 +123,6 @@ export function initializeTransports(
     }
 
     for (const transport of transports) {
-      console.log(`Transporting item using ${transport.name}\n`, filteredItem);
       internalLogger.debug(`Transporting item using ${transport.name}\n`, filteredItem);
       if (!transport.isBatched()) {
         transport.send(filteredItem);
@@ -157,12 +151,10 @@ export function initializeTransports(
   // 3ii. Send the signal instantly to all un-batched transports
   const execute: Transports['execute'] = (item) => {
     if (paused) {
-      console.log('SDK is paused, early return')
       return;
     }
 
     if (!config.batching?.enabled) {
-      console.log('Instance send')
       instantSend(item);
       return;
     }

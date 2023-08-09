@@ -32,7 +32,6 @@ export class FetchTransport extends BaseTransport {
   async send(items: TransportItem[]): Promise<void> {
     try {
       if (this.disabledUntil > new Date(this.getNow())) {
-        console.log(`Dropping transport item due to too many requests. Backoff until ${this.disabledUntil}`);
         this.logWarn(`Dropping transport item due to too many requests. Backoff until ${this.disabledUntil}`);
 
         return Promise.resolve();
@@ -57,23 +56,18 @@ export class FetchTransport extends BaseTransport {
           ...(restOfRequestOptions ?? {}),
         };
 
-        console.log('Adding to promise buffer!');
-        console.log('Opts:\n', JSON.stringify(opts))
         return fetch(url, opts)
           .then((response) => {
             if (response.status === 429) {
               this.disabledUntil = this.getRetryAfterDate(response);
-              console.log('Too many requests\n');
               this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
             }
             // read the body so the connection can be closed
             response.text().catch(noop);
 
-            console.log('Returning response\n', response.status, response.body);
             return response;
           })
           .catch((err) => {
-            console.log('Failed sending payload to the receiver\n', JSON.parse(body), err);
             this.logError('Failed sending payload to the receiver\n', JSON.parse(body), err);
           });
       });

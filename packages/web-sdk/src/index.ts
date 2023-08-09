@@ -57,6 +57,8 @@ export {
   isError,
   isErrorDefined,
   isErrorEvent,
+  isEvent,
+  isEventDefined,
   isFunction,
   isInstanceOf,
   isInt,

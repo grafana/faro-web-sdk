@@ -4,18 +4,16 @@ import {
   defaultGlobalObjectKey,
   defaultInternalLoggerLevel,
   defaultUnpatchedConsole,
+  genShortID,
 } from '@grafana/faro-core';
-import type { Config, Transport } from '@grafana/faro-core';
+import type { Config, ExceptionStackFrame, StacktraceParser, Transport } from '@grafana/faro-core';
+import { FetchTransport } from '@grafana/faro-web-sdk';
 
-import { defaultEventDomain } from '../consts';
-import { parseStacktrace } from '../instrumentations';
-import { createSession, defaultMetas, defaultViewMeta } from '../metas';
-import { FetchTransport } from '../transports';
+import { defaultEventDomain } from './consts';
+import { getReactNativeInstrumentations } from './reactNativeInstrumentations';
+import type { ReactNativeConfig } from './types';
 
-import { getWebInstrumentations } from './getWebInstrumentations';
-import type { BrowserConfig } from './types';
-
-export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined {
+export function makeCoreConfig(browserConfig: ReactNativeConfig): Config | undefined {
   const transports: Transport[] = [];
 
   const internalLogger = createInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
@@ -45,21 +43,44 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     },
     dedupe: browserConfig.dedupe ?? true,
     globalObjectKey: browserConfig.globalObjectKey || defaultGlobalObjectKey,
-    instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
+    instrumentations: browserConfig.instrumentations ?? getReactNativeInstrumentations(),
     internalLoggerLevel: browserConfig.internalLoggerLevel ?? defaultInternalLoggerLevel,
     isolate: browserConfig.isolate ?? false,
-    metas: browserConfig.metas ?? defaultMetas,
-    parseStacktrace,
+    metas: browserConfig.metas ?? [],
     paused: browserConfig.paused ?? false,
     preventGlobalExposure: browserConfig.preventGlobalExposure ?? false,
+    parseStacktrace: browserConfig.parseStacktrace ?? mockStacktraceParser,
     transports,
     unpatchedConsole: browserConfig.unpatchedConsole ?? defaultUnpatchedConsole,
-
     beforeSend: browserConfig.beforeSend,
     eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
     ignoreErrors: browserConfig.ignoreErrors,
     session: browserConfig.session ?? createSession(),
     user: browserConfig.user,
-    view: browserConfig.view ?? defaultViewMeta,
+    view: browserConfig?.view,
   };
+}
+
+const mockStacktraceParser: StacktraceParser = (err) => {
+  const frames: ExceptionStackFrame[] = [];
+  const stack = err.stack ?? err.stacktrace;
+
+  if (stack) {
+    stack.split('\n').forEach((line) => {
+      frames.push({
+        filename: line,
+        function: '',
+      });
+    });
+  }
+
+  return {
+    frames,
+  };
+};
+
+const createSession = () => {
+  return {
+    id: genShortID()
+  }
 }
