@@ -26,6 +26,7 @@ yarn-error.log*
 
 # Misc
 .DS_Store
+**/*.tgz
 
 # App plugin
 infra/grafana/plugins/

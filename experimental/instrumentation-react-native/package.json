@@ -35,6 +35,8 @@
     "directory": "experimental/instrumentation-react-native"
   },
   "dependencies": {
-    "@grafana/faro-core": "^1.1.2"
+    "@expo/browser-polyfill": "^1.0.0",
+    "@grafana/faro-core": "/Users/elliotkirk/Documents/Grafana/faro-web-sdk/packages/core/grafana-faro-core-v1.1.2.tgz",
+    "@grafana/faro-web-sdk": "/Users/elliotkirk/Documents/Grafana/faro-web-sdk/packages/web-sdk/grafana-faro-web-sdk-v1.1.2.tgz"
   }
 }

@@ -30,7 +30,8 @@ export const browserMeta: MetaItem<Pick<Meta, 'browser'>> = () => {
     }
 
     if ('userAgentData' in navigator) {
-      return (navigator.userAgentData as any).brands;
+      // @ts-expect-error
+      return (navigator.userAgentData).brands;
     }
 
     return undefined;

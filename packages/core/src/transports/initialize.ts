@@ -128,6 +128,7 @@ export function initializeTransports(
     }
 
     for (const transport of transports) {
+      console.log(`Transporting item using ${transport.name}\n`, filteredItem);
       internalLogger.debug(`Transporting item using ${transport.name}\n`, filteredItem);
       if (!transport.isBatched()) {
         transport.send(filteredItem);
@@ -156,10 +157,12 @@ export function initializeTransports(
   // 3ii. Send the signal instantly to all un-batched transports
   const execute: Transports['execute'] = (item) => {
     if (paused) {
+      console.log('SDK is paused, early return')
       return;
     }
 
     if (!config.batching?.enabled) {
+      console.log('Instance send')
       instantSend(item);
       return;
     }

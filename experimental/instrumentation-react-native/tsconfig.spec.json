@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.spec.json",
   "compilerOptions": {
+    "typeRoots": ["./src/module"],
     "declarationDir": "./dist/types",
     "outDir": "./dist/spec",
     "rootDir": "../../",

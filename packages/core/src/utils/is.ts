@@ -1,3 +1,5 @@
+import { globalObject } from "../globalObject";
+
 export type IsFnHelper<T = unknown> = (value: unknown) => value is T;
 
 export function isTypeof<T = unknown>(value: unknown, type: string): value is T {
@@ -45,6 +47,10 @@ export const isPrimitive = ((value) => !isObject(value) && !isFunction(value)) a
   string | number | bigint | boolean | symbol
 >;
 
+export const isEventDefined = !isUndefined(globalObject?.Event);
+
+export const isEvent = ((value) => isEventDefined && isInstanceOf(value, globalObject?.Event)) as IsFnHelper<typeof globalObject.Event>;
+
 export const isErrorDefined = typeof Error !== 'undefined';
 
 export const isError = ((value) => isErrorDefined && isInstanceOf(value, Error)) as IsFnHelper<Error>;
@@ -67,4 +73,4 @@ export const isSyntheticEvent = ((value) =>
   isObject(value) &&
   'nativeEvent' in value &&
   'preventDefault' in value &&
-  'stopPropagation' in value) as IsFnHelper<any>;
+  'stopPropagation' in value) as IsFnHelper<typeof globalObject.Event>;

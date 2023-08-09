@@ -60,6 +60,7 @@ export function initializeLogsAPI(
 
       lastPayload = testingPayload;
 
+      console.log('Pushing log\n', item);
       internalLogger.debug('Pushing log\n', item);
 
       transports.execute(item);
