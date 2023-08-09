@@ -17,6 +17,8 @@ export function initializeLogsAPI(
   transports: Transports,
   tracesApi: TracesAPI
 ): LogsAPI {
+  internalLogger.debug('Initializing logs API');
+
   let lastPayload: Pick<LogEvent, 'message' | 'level' | 'context'> | null = null;
 
   const pushLog: LogsAPI['pushLog'] = (args, { context, level, skipDedupe } = {}) => {

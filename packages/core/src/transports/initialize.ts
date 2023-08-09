@@ -37,6 +37,8 @@ export function initializeTransports(
   config: Config,
   metas: Metas
 ): Transports {
+  internalLogger.debug('Initializing transports');
+
   const transports: Transport[] = [];
 
   let paused = config.paused;
