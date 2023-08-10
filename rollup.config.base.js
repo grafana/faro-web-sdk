@@ -46,6 +46,12 @@ const modules = {
     globalName: 'GrafanaFaroInstrumentationFetch',
     externals: [],
   },
+  instrumentationReactNative: {
+    name: '@grafana/faro-instrumentation-react-native',
+    bundleName: 'faro-instrumentation-react-native',
+    globalName: 'GrafanaFaroInstrumentationReactNative',
+    externals: [],
+  },
 };
 
 exports.getRollupConfigBase = (moduleName) => {

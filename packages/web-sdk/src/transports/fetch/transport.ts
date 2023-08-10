@@ -44,7 +44,7 @@ export class FetchTransport extends BaseTransport {
 
         const { headers, ...restOfRequestOptions } = requestOptions ?? {};
 
-        return fetch(url, {
+        const opts = {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -54,7 +54,9 @@ export class FetchTransport extends BaseTransport {
           body,
           keepalive: true,
           ...(restOfRequestOptions ?? {}),
-        })
+        };
+
+        return fetch(url, opts)
           .then((response) => {
             if (response.status === 429) {
               this.disabledUntil = this.getRetryAfterDate(response);
