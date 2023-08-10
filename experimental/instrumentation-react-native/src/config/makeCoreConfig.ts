@@ -7,10 +7,11 @@ import {
   genShortID,
 } from '@grafana/faro-core';
 import type { Config, ExceptionStackFrame, StacktraceParser, Transport } from '@grafana/faro-core';
-import { FetchTransport } from '@grafana/faro-web-sdk';
+import { faro, FetchTransport } from '@grafana/faro-web-sdk';
 
 import { defaultEventDomain } from './consts';
 import { getReactNativeInstrumentations } from './reactNativeInstrumentations';
+import { registerMetas } from './registerMetas';
 import type { ReactNativeConfig } from './types';
 
 export function makeCoreConfig(browserConfig: ReactNativeConfig): Config | undefined {
@@ -46,7 +47,7 @@ export function makeCoreConfig(browserConfig: ReactNativeConfig): Config | undef
     instrumentations: browserConfig.instrumentations ?? getReactNativeInstrumentations(),
     internalLoggerLevel: browserConfig.internalLoggerLevel ?? defaultInternalLoggerLevel,
     isolate: browserConfig.isolate ?? false,
-    metas: browserConfig.metas ?? [],
+    metas: registerMetas(faro) ?? browserConfig.metas, // TODO - for some reason SDK names not getting passed properly
     paused: browserConfig.paused ?? false,
     preventGlobalExposure: browserConfig.preventGlobalExposure ?? false,
     parseStacktrace: browserConfig.parseStacktrace ?? mockStacktraceParser,

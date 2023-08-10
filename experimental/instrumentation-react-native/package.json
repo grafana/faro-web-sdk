@@ -37,6 +37,8 @@
   "dependencies": {
     "@expo/browser-polyfill": "^1.0.0",
     "@grafana/faro-core": "/Users/elliotkirk/Documents/Grafana/faro-web-sdk/packages/core/grafana-faro-core-v1.1.2.tgz",
+    "@grafana/faro-instrumentation-fetch": "^1.1.2",
+    "@grafana/faro-web-tracing": "^1.1.2",
     "@grafana/faro-web-sdk": "/Users/elliotkirk/Documents/Grafana/faro-web-sdk/packages/web-sdk/grafana-faro-web-sdk-v1.1.2.tgz"
   }
 }
