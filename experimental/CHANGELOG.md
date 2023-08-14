@@ -2,13 +2,26 @@
 
 ## Next
 
+## 1.1.3
+
 ### FetchInstrumentation
 
-- [❗️Breaking❗️]: Events have been namespaced and renamed to prevent collisions with user defined events events. See [Readme](https://github.com/grafana/faro-web-sdk/blob/e998555bd7177b7edbebf98f804372b04b6c30e6/experimental/instrumentation-fetch/README.md#L8) for more information.
+- [❗️Breaking❗️]: Events are now namespaced and have been renamed to prevent collisions with user
+  defined events. Event names changed from:
+
+  - `Resolved fetch` to `faro.fetch.resolved`
+  - `Rejected fetch` to `faro.fetch.rejected`
+
+  See [Fetch Instrumentation README](https://github.com/grafana/faro-web-sdk/blob/e998555bd7177b7edbebf98f804372b04b6c30e6/experimental/instrumentation-fetch/README.md#L8)
+  for more information.
 
 ### PerformanceTimelineInstrumentation
 
-- [❗️Breaking❗️]: The performance has been namespaced and renamed to prevent collisions with user defined events events. See Readme for more information.
+- [❗️Breaking❗️]: The performance entry event is now namespaced and has been renamed to prevent
+  collisions with user defined events. Event name changed from `performanceEntry` to
+  `faro.performanceEntry`.
+  See [Performance-Timeline-Instrumentation README](https://github.com/grafana/faro-web-sdk/blob/8928dc3d4835373cb3566520cd783dce1ef3b7cf/experimental/instrumentation-performance-timeline/README.md#L32-L33)
+  for more information.
 
 ## 1.1.0
 

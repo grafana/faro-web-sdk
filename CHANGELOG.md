@@ -2,6 +2,12 @@
 
 ## Next
 
+## 1.1.3
+
+- Fix: Update opentelemetry packages used by the Web-Tracing-Instrumentation to address
+  [CVE-2023-38704](https://nvd.nist.gov/vuln/detail/CVE-2023-38704)
+  ([#242](https://github.com/grafana/faro-web-sdk/pull/242))
+
 ## 1.1.2
 
 - Fix: fix CVE-2023-32731 by forcing all dependencies to use grpc-js ^1.8.17.
