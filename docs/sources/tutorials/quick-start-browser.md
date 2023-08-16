@@ -191,10 +191,41 @@ context.with(trace.setSpan(context.active(), span), () => {
 });
 ```
 
+### With OpenTelemetry tracing on backend on different domain than frontend
+
+By default, OpenTelemetry's XMLHttpRequestInstrumentation and FetchInstrumentation
+inject the traceparent header only into requests send to the same origin as the current window.
+To enable this functionality for other origins, you can enable it by setting up propagateTraceHeaderCorsUrls as shown below.
+
+```ts
+import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+
+const instrumentationOptions = {
+  propagateTraceHeaderCorsUrls: [new RegExp('BACKEND_SERVER(S)_REGEX')], // This is a list of specific URIs or regular exprressions
+};
+
+const faro = initializeFaro({
+  url: 'http://localhost:12345/collect',
+  apiKey: 'secret',
+  instrumentations: [...getWebInstrumentations(), new TracingInstrumentation({ instrumentationOptions })],
+  app: {
+    name: 'frontend',
+    version: '1.0.0',
+  },
+});
+```
+
 ### With custom OpenTelemetry tracing configuration
 
-The following example configure OTel manually and uses `FaroTraceExporter` and call `faro.api.initOTEL` with OTel trace
-and context APIs.
+The following example, demonstrates how to configure OpenTelemetry
+manually using the `FaroTraceExporter`. To achieve this, we call the
+`faro.api.initOTEL` function with the `OTELTraceAPI` and `OTELContextAPI` as parameters.
+
+If you want to change or modify the instrumentations used,
+you can easily achieve this by utilizing the
+[instrumentations option](https://github.com/grafana/faro-web-sdk/blob/main/packages/web-tracing/src/types.ts)
+within the `TracingInstrumentation` class.
 
 ```ts
 import { trace, context } from '@opentelemetry/api';
@@ -244,6 +275,10 @@ provider.register({
 
 const ignoreUrls = [COLLECTOR_URL];
 
+// Please be aware that this instrumentation originates from OpenTelemetry
+// and cannot be used directly in the initializeFaro instrumentations options.
+// If you wish to configure these instrumentations using the initializeFaro function,
+// please utilize the instrumentations options within the TracingInstrumentation class.
 registerInstrumentations({
   instrumentations: [
     new DocumentLoadInstrumentation(),
@@ -320,6 +355,31 @@ faro.pause();
 
 // resume sending events
 faro.unpause();
+```
+
+## How to activate debugging
+
+To enable the Faro internal logger, follow these steps:
+
+```ts
+import { initializeFaro, InternalLoggerLevel } from '@grafana/faro-web-sdk';
+
+const faro = initializeFaro({
+  url: 'https://collector-host:12345/collect',
+  apiKey: 'secret',
+  app: {
+    name: 'frontend',
+    version: '1.0.0',
+  },
+  internalLoggerLevel: InternalLoggerLevel.VERBOSE, // Possible values are: OFF, ERROR, WARN, INFO, VERBOSE
+});
+```
+
+To enable the OpenTelemetry debug logger, follow these steps:
+
+```ts
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
+diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 ```
 
 ## Dashboards
