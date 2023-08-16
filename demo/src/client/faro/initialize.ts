@@ -1,5 +1,7 @@
+import { type } from 'os';
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
 
+import { PerformanceTimelineInstrumentation } from '@grafana/faro-instrumentation-performance-timeline';
 import {
   initializeFaro as coreInit,
   getWebInstrumentations,
@@ -30,6 +32,29 @@ export function initializeFaro(): Faro {
             useLocation,
             useNavigationType,
           },
+        },
+      }),
+      new PerformanceTimelineInstrumentation({
+        beforeEmit(performanceEntryJSON) {
+          if (performanceEntryJSON.entryType === 'resource') {
+            const entry = performanceEntryJSON as Partial<PerformanceResourceTiming>;
+            // const { entryType, duration, fetchStart, ...strippedEntry } = entry;
+
+            // Object.values(strippedEntry).map(p => {
+            //   p
+            // });
+
+            // console.log('entry before :>> ', { ...entry });
+            // //@ts-expect-error
+            // delete entry.entryType;
+            // //@ts-expect-error
+            // delete entry.entryType;
+            // console.log('entry after :>> ', { ...entry });
+
+            return {};
+          }
+
+          return performanceEntryJSON;
         },
       }),
     ],

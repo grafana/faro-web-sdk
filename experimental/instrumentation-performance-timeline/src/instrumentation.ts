@@ -113,6 +113,8 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
         pEntry = modifiedEntry;
       }
 
+      console.log('faro.performanceEntry :>> ', pEntry);
+
       this.api.pushEvent('faro.performanceEntry', this.objectValuesToString(pEntry));
     }
 
