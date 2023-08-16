@@ -2,6 +2,8 @@
 
 ## Next
 
+- [FIX]: CVE-2022-25878 - protobufjs Prototype Pollution vulnerability (#249)
+
 ## 1.1.3
 
 - Fix: Update opentelemetry packages used by the Web-Tracing-Instrumentation to address
