@@ -1,16 +1,14 @@
-## Description
+## Why
 
-<!-- Add a clear and concise description of what the PR does. -->
-<!-- Example -->
-<!-- This PR adds support for auto instrumenting ... using the ... API... -->
+<!-- Add a clear and concise description of why that changes are needed. -->
 
-## Fixes
+## What
 
-Fixes #
+<!-- Add a clear and concise description of what you changed. -->
 
-<!-- Every PR should have a reference to an issue as changes need to be discussed before they are implemented. -->
-<!-- Example -->
-<!-- Fixes #123456 -->
+## Links
+
+<!-- Add issues the PR solves or other useful links here. -->
 
 ## Checklist
 
