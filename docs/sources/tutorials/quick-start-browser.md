@@ -194,10 +194,8 @@ context.with(trace.setSpan(context.active(), span), () => {
 ### With OpenTelemetry tracing on backend on different domain than frontend
 
 By default, OpenTelemetry's XMLHttpRequestInstrumentation and FetchInstrumentation
-inject the traceparent header only into requests sent to the same origin as the current window.
-To this functionality to other origins, you can enable it by setting up propagateTraceHeaderCorsUrls as shown below.
-only inject traceparent header to request send to the same domain than the current windows.
-To enable it to others backend please set up propagateTraceHeaderCorsUrls as show below.
+inject the traceparent header only into requests send to the same origin as the current window.
+To enable this functionality for other origins, you can enable it by setting up propagateTraceHeaderCorsUrls as shown below.
 
 ```ts
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
