@@ -158,3 +158,18 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
     return o;
   }
 }
+
+// ==== Entry Types ====
+// element
+// event
+// first-input
+// largest-contentful-paint
+// layout-shift
+// longtask
+// mark
+// measure
+// navigation
+// paint
+// resource
+// taskattribution
+// visibility-state
