@@ -24,9 +24,9 @@ import type {
   LogsTransform,
   LogTransportItem,
   Resource,
-  ResourceLogs,
+  ResourceLog,
   ResourceMeta,
-  ResourceSpans,
+  ResourceSpan,
   ScopeLog,
   TraceTransform,
 } from './types';
@@ -46,7 +46,7 @@ const SemanticBrowserAttributes = {
 } as const;
 
 export function getLogTransforms(internalLogger: InternalLogger): LogsTransform {
-  function toResourceLog(transportItem: LogTransportItem): ResourceLogs {
+  function toResourceLog(transportItem: LogTransportItem): ResourceLog {
     const resource = toResource(transportItem);
 
     return {
@@ -186,7 +186,7 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
 }
 
 export function getTraceTransforms(_internalLogger?: InternalLogger): TraceTransform {
-  function toResourceSpan(transportItem: TransportItem<TraceEvent>): ResourceSpans {
+  function toResourceSpan(transportItem: TransportItem<TraceEvent>): ResourceSpan {
     const resource = toResource(transportItem);
     const scopeSpans = transportItem.payload.resourceSpans?.[0]?.scopeSpans;
 

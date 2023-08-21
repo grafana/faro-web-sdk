@@ -1,10 +1,12 @@
 export { getLogTransforms, getTraceTransforms } from './transform';
 export type {
   LogRecord,
-  LogsTransform,
   LogTransportItem,
-  Resource,
   ResourceLogs,
+  LogsTransform,
+  Resource,
+  ResourceLog,
+  ResourceSpan,
   ResourceSpans,
   Scope,
   ScopeLog,

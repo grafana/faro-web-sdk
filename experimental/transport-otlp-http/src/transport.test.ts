@@ -1,7 +1,7 @@
 import { LogEvent, LogLevel, TraceEvent, TransportItem, TransportItemType, VERSION } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
-import type { LogRecord, OtelTransportPayload } from './payload';
+import type { LogRecord, Logs } from './payload';
 import { OtlpHttpTransport } from './transport';
 
 const logTransportItem: TransportItem<LogEvent> = {
@@ -15,39 +15,41 @@ const logTransportItem: TransportItem<LogEvent> = {
   meta: {},
 } as const;
 
-const otelTransportPayload: OtelTransportPayload['resourceLogs'] = [
-  {
-    resource: {
-      attributes: [],
-    },
-    scopeLogs: [
-      {
-        scope: {
-          name: '@grafana/faro-web-sdk',
-          version: VERSION,
-        },
-        logRecords: [
-          {
-            timeUnixNano: 1674813181035000000,
-            severityNumber: 10,
-            severityText: 'INFO2',
-            body: {
-              stringValue: 'hi',
-            },
-            attributes: [
-              {
-                key: 'faro.log.context',
-                value: {
-                  kvlistValue: { values: [] },
-                },
-              },
-            ],
-          } as LogRecord,
-        ],
+const otelTransportPayload: Logs = {
+  resourceLogs: [
+    {
+      resource: {
+        attributes: [],
       },
-    ],
-  },
-];
+      scopeLogs: [
+        {
+          scope: {
+            name: '@grafana/faro-web-sdk',
+            version: VERSION,
+          },
+          logRecords: [
+            {
+              timeUnixNano: 1674813181035000000,
+              severityNumber: 10,
+              severityText: 'INFO2',
+              body: {
+                stringValue: 'hi',
+              },
+              attributes: [
+                {
+                  key: 'faro.log.context',
+                  value: {
+                    kvlistValue: { values: [] },
+                  },
+                },
+              ],
+            } as LogRecord,
+          ],
+        },
+      ],
+    },
+  ],
+};
 
 const traceTransportItem: TransportItem<TraceEvent> = {
   type: TransportItemType.TRACE,
@@ -76,7 +78,7 @@ describe('OtlpHttpTransport', () => {
       v: traceTransportItem,
       type: 'resourceSpans',
       url: 'https://www.example.com/v1/traces',
-      payload: [{ resource: { attributes: [] }, scopeSpans: [] }],
+      payload: { resourceSpans: [{ resource: { attributes: [] }, scopeSpans: [] }] },
     },
   ])('Sends $type over fetch to its configured endpoint.', ({ v, url, payload }) => {
     const transport = new OtlpHttpTransport({
@@ -242,55 +244,57 @@ describe('OtlpHttpTransport', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
 
     expect(fetch).toHaveBeenCalledWith('https://www.example.com/v1/logs', {
-      body: JSON.stringify([
-        {
-          resource: {
-            attributes: [],
-          },
-          scopeLogs: [
-            {
-              scope: {
-                name: '@grafana/faro-web-sdk',
-                version: VERSION,
-              },
-              logRecords: [
-                {
-                  timeUnixNano: 1674813181035000000,
-                  severityNumber: 10,
-                  severityText: 'INFO2',
-                  body: {
-                    stringValue: 'hi',
-                  },
-                  attributes: [
-                    {
-                      key: 'faro.log.context',
-                      value: {
-                        kvlistValue: { values: [] },
-                      },
-                    },
-                  ],
-                } as LogRecord,
-                {
-                  timeUnixNano: 1674813181035000000,
-                  severityNumber: 10,
-                  severityText: 'INFO2',
-                  body: {
-                    stringValue: 'foo',
-                  },
-                  attributes: [
-                    {
-                      key: 'faro.log.context',
-                      value: {
-                        kvlistValue: { values: [] },
-                      },
-                    },
-                  ],
-                } as LogRecord,
-              ],
+      body: JSON.stringify({
+        resourceLogs: [
+          {
+            resource: {
+              attributes: [],
             },
-          ],
-        },
-      ]),
+            scopeLogs: [
+              {
+                scope: {
+                  name: '@grafana/faro-web-sdk',
+                  version: VERSION,
+                },
+                logRecords: [
+                  {
+                    timeUnixNano: 1674813181035000000,
+                    severityNumber: 10,
+                    severityText: 'INFO2',
+                    body: {
+                      stringValue: 'hi',
+                    },
+                    attributes: [
+                      {
+                        key: 'faro.log.context',
+                        value: {
+                          kvlistValue: { values: [] },
+                        },
+                      },
+                    ],
+                  } as LogRecord,
+                  {
+                    timeUnixNano: 1674813181035000000,
+                    severityNumber: 10,
+                    severityText: 'INFO2',
+                    body: {
+                      stringValue: 'foo',
+                    },
+                    attributes: [
+                      {
+                        key: 'faro.log.context',
+                        value: {
+                          kvlistValue: { values: [] },
+                        },
+                      },
+                    ],
+                  } as LogRecord,
+                ],
+              },
+            ],
+          },
+        ],
+      }),
       headers: {
         'Content-Type': 'application/json',
       },
