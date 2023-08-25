@@ -22,7 +22,7 @@ export function initializeExceptionsAPI(
 ): ExceptionsAPI {
   internalLogger.debug('Initializing exceptions API');
 
-  let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace'> | null = null;
+  let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace' | 'context'> | null = null;
 
   stacktraceParser = config.parseStacktrace ?? stacktraceParser;
 
