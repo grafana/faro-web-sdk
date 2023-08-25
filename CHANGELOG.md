@@ -2,9 +2,11 @@
 
 ## Next
 
+- Feat: Provide option in measurement API to add contextual attributes ([#254](https://github.com/grafana/faro-web-sdk/issues/254))
+
 ## 1.1.4
 
-- [FIX]: CVE-2022-25878 - protobufjs Prototype Pollution vulnerability (#249)
+- Fix: CVE-2022-25878 - protobufjs Prototype Pollution vulnerability (#249)
 
 ## 1.1.3
 
