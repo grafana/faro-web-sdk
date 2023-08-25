@@ -1,13 +1,12 @@
 import { InternalLogger, TraceEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
 
 import { getLogTransforms, getTraceTransforms, LogsTransform, TraceTransform } from './transform';
-import type { ResourceLogs } from './transform';
-import type { ResourceSpans } from './transform/types';
+import type { ResourceLogs, ResourceSpans } from './transform/types';
 import type { OtelTransportPayload } from './types';
 
 export class OtelPayload {
-  private resourceLogs: ResourceLogs[];
-  private resourceSpans = [] as ResourceSpans[];
+  private resourceLogs: ResourceLogs;
+  private resourceSpans = [] as ResourceSpans;
 
   private getLogTransforms: LogsTransform;
   private getTraceTransforms: TraceTransform;
