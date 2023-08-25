@@ -6,7 +6,7 @@
 
 ### FaroOtlpHttpTransport
 
-1 [fix]: The outer shape of the payload was not correct which lead to 400 response status codes ([#252](https://github.com/grafana/faro-web-sdk/issues/252)).
+- Fix: The outer shape of the payload was not correct which lead to 400 response status codes ([#252](https://github.com/grafana/faro-web-sdk/issues/252)).
 
 ## 1.1.3
 
