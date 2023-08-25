@@ -177,6 +177,16 @@ The `api` property on the Faro instance contains all the necessary methods to pu
     },
     { skipDedupe: true }
   );
+
+  faro.api.pushMeasurement(
+    {
+      type: 'custom',
+      values: {
+        my_custom_metric: Math.random(),
+      },
+    },
+    { context: { hello: 'world' } }
+  );
   ```
 
 ## Traces
