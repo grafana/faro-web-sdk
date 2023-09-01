@@ -9,7 +9,7 @@ import type { Config, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
-import { createSession, defaultMetas, defaultViewMeta } from '../metas';
+import { createSession, defaultViewMeta, getDefaultMetas } from '../metas';
 import { FetchTransport } from '../transports';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
@@ -48,7 +48,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
     internalLoggerLevel: browserConfig.internalLoggerLevel ?? defaultInternalLoggerLevel,
     isolate: browserConfig.isolate ?? false,
-    metas: browserConfig.metas ?? defaultMetas,
+    metas: (browserConfig.metas ?? []).concat(getDefaultMetas()),
     parseStacktrace,
     paused: browserConfig.paused ?? false,
     preventGlobalExposure: browserConfig.preventGlobalExposure ?? false,
