@@ -9,11 +9,12 @@ export type {
   MetaBrowser,
   MetaGetter,
   MetaItem,
+  MetaK6,
   MetaPage,
-  Metas,
   MetaSDK,
   MetaSDKIntegration,
   MetaSession,
   MetaUser,
   MetaView,
+  Metas,
 } from './types';

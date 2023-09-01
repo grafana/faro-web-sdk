@@ -4,12 +4,14 @@ import {
   defaultGlobalObjectKey,
   defaultInternalLoggerLevel,
   defaultUnpatchedConsole,
+  isObject,
 } from '@grafana/faro-core';
 import type { Config, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
-import { createSession, defaultViewMeta, getDefaultMetas } from '../metas';
+import { createSession, defaultMetas, defaultViewMeta } from '../metas';
+import { k6Meta } from '../metas/k6';
 import { FetchTransport } from '../transports';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
@@ -37,6 +39,17 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     internalLogger.error('either "url" or "transports" must be defined');
   }
 
+  function createMetas() {
+    const isK6BrowserSession = isObject((window as any).k6);
+    const initialMetas = (browserConfig.metas ?? []).concat(defaultMetas);
+
+    if (isK6BrowserSession) {
+      return [...initialMetas, k6Meta];
+    }
+
+    return initialMetas;
+  }
+
   return {
     app: browserConfig.app,
     batching: {
@@ -48,7 +61,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
     internalLoggerLevel: browserConfig.internalLoggerLevel ?? defaultInternalLoggerLevel,
     isolate: browserConfig.isolate ?? false,
-    metas: (browserConfig.metas ?? []).concat(getDefaultMetas()),
+    metas: createMetas(),
     parseStacktrace,
     paused: browserConfig.paused ?? false,
     preventGlobalExposure: browserConfig.preventGlobalExposure ?? false,
