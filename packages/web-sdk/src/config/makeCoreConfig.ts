@@ -40,8 +40,13 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
   }
 
   function createMetas() {
+    const initialMetas = defaultMetas;
+
+    if (browserConfig.metas) {
+      initialMetas.push(...browserConfig.metas);
+    }
+
     const isK6BrowserSession = isObject((window as any).k6);
-    const initialMetas = (browserConfig.metas ?? []).concat(defaultMetas);
 
     if (isK6BrowserSession) {
       return [...initialMetas, k6Meta];

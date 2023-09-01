@@ -11,9 +11,9 @@ describe('defaultMetas', () => {
 
     const config = makeCoreConfig({} as BrowserConfig)!;
 
-    expect(config.metas).toHaveLength(2);
+    expect(config.metas).toHaveLength(3);
     expect(config.metas.map((item) => (isFunction(item) ? item() : item))).toContainEqual({
-      k6: { isK6Browser: false },
+      k6: { isK6Browser: true },
     });
 
     delete (global as any).k6;
