@@ -6,10 +6,12 @@ import {
   defaultUnpatchedConsole,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, Transport } from '@grafana/faro-core';
+import type { Config, MetaSession, Transport } from '@grafana/faro-core';
 
+import type { MetaItem } from '..';
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
+import { isUserSessionValid, receiveUserSession } from '../instrumentations/session';
 import { createSession, defaultMetas, defaultViewMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { FetchTransport } from '../transports';
@@ -39,7 +41,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     internalLogger.error('either "url" or "transports" must be defined');
   }
 
-  function createMetas() {
+  function createMetas(): MetaItem[] {
     const initialMetas = defaultMetas;
 
     if (browserConfig.metas) {
@@ -76,8 +78,29 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     beforeSend: browserConfig.beforeSend,
     eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
     ignoreErrors: browserConfig.ignoreErrors,
+
+    // TODO: will be true later
+    experimental_sessions_enabled: false,
+    experimental_sessions: {
+      persistent: false,
+      session: createSessionMeta(),
+      ...browserConfig.experimental_sessions,
+    },
+
+    // TODO: deprecate/remove old init code or maybe rename to legacy_session?
     session: browserConfig.session ?? createSession(),
+
     user: browserConfig.user,
     view: browserConfig.view ?? defaultViewMeta,
+  };
+}
+
+function createSessionMeta(): MetaSession {
+  const userSession = receiveUserSession();
+  const isSessionValid = isUserSessionValid(userSession);
+  const sessionId = isSessionValid ? userSession?.sessionId : createSession().id;
+
+  return {
+    id: sessionId,
   };
 }

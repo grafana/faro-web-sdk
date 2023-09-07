@@ -121,6 +121,7 @@ export {
   isUndefined,
   LogLevel,
   noop,
+  dateNow,
 } from './utils';
 export type {
   BaseObject,

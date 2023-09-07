@@ -50,6 +50,9 @@ export class FetchTransport extends BaseTransport {
             'Content-Type': 'application/json',
             ...(headers ?? {}),
             ...(apiKey ? { 'x-api-key': apiKey } : {}),
+            ...(this.config.experimental_sessions_enabled && this.metas.value.session?.id
+              ? { 'x-faro-session-id': this.metas.value.session?.id }
+              : {}),
           },
           body,
           keepalive: true,
