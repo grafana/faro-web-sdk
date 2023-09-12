@@ -2,7 +2,9 @@
 
 ## Next
 
-- Feat: Provide option in measurement API to add contextual attributes ([#254](https://github.com/grafana/faro-web-sdk/issues/254))
+## 1.2.0
+
+- Feat: Enable users to add contextual attributes to measurement API payload ([#254](https://github.com/grafana/faro-web-sdk/issues/254))
 
 ## 1.1.4
 
