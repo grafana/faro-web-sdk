@@ -39,6 +39,38 @@ describe('api.measurements', () => {
         expect(transport.items).toHaveLength(1);
       });
 
+      it('filters the same measurement with the same context', () => {
+        const measurement = {
+          type: 'custom',
+          values: {
+            a: 1,
+          },
+        };
+
+        const context = { foo: 'bar' };
+
+        api.pushMeasurement(measurement, { context });
+        expect(transport.items).toHaveLength(1);
+
+        api.pushMeasurement(measurement, { context });
+        expect(transport.items).toHaveLength(1);
+      });
+
+      it("doesn't filter events with different context", () => {
+        const measurement = {
+          type: 'custom',
+          values: {
+            a: 1,
+          },
+        };
+
+        api.pushMeasurement(measurement, { context: { foo: 'bar' } });
+        expect(transport.items).toHaveLength(1);
+
+        api.pushMeasurement(measurement, { context: { bar: 'baz' } });
+        expect(transport.items).toHaveLength(2);
+      });
+
       it("doesn't filter measurements with same type and partially same values", () => {
         const measurement1 = {
           type: 'custom',

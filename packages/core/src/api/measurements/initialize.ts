@@ -19,9 +19,9 @@ export function initializeMeasurementsAPI(
 ): MeasurementsAPI {
   internalLogger.debug('Initializing measurements API');
 
-  let lastPayload: Pick<MeasurementEvent, 'type' | 'values'> | null = null;
+  let lastPayload: Pick<MeasurementEvent, 'type' | 'values' | 'context'> | null = null;
 
-  const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload, { skipDedupe } = {}) => {
+  const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload, { skipDedupe, context } = {}) => {
     try {
       const item: TransportItem<MeasurementEvent> = {
         type: TransportItemType.MEASUREMENT,
@@ -29,6 +29,7 @@ export function initializeMeasurementsAPI(
           ...payload,
           trace: tracesApi.getTraceContext(),
           timestamp: payload.timestamp ?? getCurrentTimestamp(),
+          context: context ?? {},
         },
         meta: metas.value,
       };
@@ -36,6 +37,7 @@ export function initializeMeasurementsAPI(
       const testingPayload = {
         type: item.payload.type,
         values: item.payload.values,
+        context: item.payload.context,
       };
 
       if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {

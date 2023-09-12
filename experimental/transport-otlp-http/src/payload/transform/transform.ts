@@ -151,6 +151,7 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
         toAttribute('measurement.type', payload.type),
         toAttribute('measurement.name', measurementName),
         toAttribute('measurement.value', measurementValue),
+        toAttribute('faro.measurement.context', payload.context),
       ].filter(isAttribute),
       traceId: payload.trace?.trace_id,
       spanId: payload.trace?.span_id,
