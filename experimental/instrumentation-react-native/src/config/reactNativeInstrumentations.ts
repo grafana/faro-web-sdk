@@ -1,9 +1,5 @@
-import { FetchInstrumentation } from "@grafana/faro-instrumentation-fetch";
-import { TracingInstrumentation } from "@grafana/faro-web-tracing";
+import { FetchInstrumentation } from '@grafana/faro-instrumentation-fetch';
 
 export const getReactNativeInstrumentations = () => {
-  return [
-    new FetchInstrumentation(),
-    new TracingInstrumentation(),
-  ]
+  return [new FetchInstrumentation()];
 };
