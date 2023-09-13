@@ -1,11 +1,20 @@
 # @grafana/instrumentation-fetch
 
-Faro instrumentation of the JavaScript [Fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API
+Faro instrumentation of the JavaScript [Fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API.
 
 ❗️*Warning*: this package is experimental and may be subject to frequent and breaking changes.
 Use at your own risk.❗️
 
 ## Installation and Usage
+
+Add the instrumentation as outlined below.
+The instrumentation send the following events alongside respective request/response data like HTTP
+headers and other response properties like status codes the requests url and more.
+
+Event names are:
+
+- `faro.fetch.resolved` for resolved requests.
+- `faro.fetch.rejected` for rejected requests.
 
 ```ts
 // index.ts

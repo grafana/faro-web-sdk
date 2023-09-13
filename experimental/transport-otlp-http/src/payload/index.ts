@@ -1,3 +1,11 @@
-export type { OtelTransportPayload } from './types';
-export type { LogRecord, LogTransportItem, Resource, ResourceLogs, Scope, ScopeLog } from './transform/index';
 export { OtelPayload } from './OtelPayload';
+export type {
+  LogRecord,
+  LogTransportItem,
+  Resource,
+  ResourceLog,
+  ResourceLogs,
+  Scope,
+  ScopeLog,
+} from './transform/index';
+export type { Logs, OtelTransportPayload, Traces } from './types';

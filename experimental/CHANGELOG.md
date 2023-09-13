@@ -2,9 +2,38 @@
 
 ## Next
 
+<<<<<<< HEAD
 ### FetchInstrumentation
 
 - Change: fetch instrumentation log attribute "statusText" is now "status_text"
+=======
+## 1.1.4
+
+### FaroOtlpHttpTransport
+
+- Fix: The outer shape of the payload was not correct which lead to 400 response status codes ([#252](https://github.com/grafana/faro-web-sdk/issues/252)).
+
+## 1.1.3
+
+### FetchInstrumentation
+
+- [❗️Breaking❗️]: Events are now namespaced and have been renamed to prevent collisions with user
+  defined events. Event names changed from:
+
+  - `Resolved fetch` to `faro.fetch.resolved`
+  - `Rejected fetch` to `faro.fetch.rejected`
+
+  See [Fetch Instrumentation README](https://github.com/grafana/faro-web-sdk/blob/e998555bd7177b7edbebf98f804372b04b6c30e6/experimental/instrumentation-fetch/README.md#L8)
+  for more information.
+
+### PerformanceTimelineInstrumentation
+
+- [❗️Breaking❗️]: The performance entry event is now namespaced and has been renamed to prevent
+  collisions with user defined events. Event name changed from `performanceEntry` to
+  `faro.performanceEntry`.
+  See [Performance-Timeline-Instrumentation README](https://github.com/grafana/faro-web-sdk/blob/8928dc3d4835373cb3566520cd783dce1ef3b7cf/experimental/instrumentation-performance-timeline/README.md#L32-L33)
+  for more information.
+>>>>>>> 438d721ff86f5140d999994efbbfa9d6e51ee1be
 
 ## 1.1.0
 

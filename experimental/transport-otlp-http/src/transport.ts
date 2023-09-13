@@ -78,7 +78,7 @@ export class OtlpHttpTransport extends BaseTransport {
           return undefined;
         }
 
-        const body = JSON.stringify(value);
+        const body = JSON.stringify({ [key]: value });
 
         const { requestOptions, apiKey } = this.options;
         const { headers, ...restOfRequestOptions } = requestOptions ?? {};

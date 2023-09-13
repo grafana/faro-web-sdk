@@ -31,26 +31,30 @@ export interface ScopeSpan {
   logRecords: LogRecord[];
 }
 
-export interface ResourceLogs {
+export interface ResourceLog {
   resource: Resource;
   scopeLogs: ScopeLog[];
 }
 
-export interface ResourceSpans extends Omit<IResourceSpans, 'resource'> {
+export type ResourceLogs = ResourceLog[];
+
+export interface ResourceSpan extends Omit<IResourceSpans, 'resource'> {
   resource: Resource;
 }
+
+export type ResourceSpans = ResourceSpan[];
 
 export type LogTransportItem = TransportItem<Exclude<APIEvent, 'TraceEvent'>>;
 export type TraceTransportItem = TransportItem<TraceEvent>;
 
 export type LogsTransform = {
-  toResourceLog: (transportItem: LogTransportItem) => ResourceLogs;
+  toResourceLog: (transportItem: LogTransportItem) => ResourceLog;
   toScopeLog: (transportItem: LogTransportItem) => ScopeLog;
   toLogRecord: (transportItem: LogTransportItem) => LogRecord;
 };
 
 export type TraceTransform = {
-  toResourceSpan: (transportItem: TransportItem<TraceEvent>) => ResourceSpans;
+  toResourceSpan: (transportItem: TransportItem<TraceEvent>) => ResourceSpan;
 };
 
 export type ResourceMeta = Pick<Meta, 'app' | 'browser' | 'sdk'>;

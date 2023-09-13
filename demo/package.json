@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-demo",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Demo of Faro",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -35,25 +35,33 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
+<<<<<<< HEAD
     "@grafana/faro-core": "^1.1.2",
     "@grafana/faro-react": "^1.1.2",
     "@grafana/faro-web-sdk": "^1.1.2",
     "@grafana/faro-web-tracing": "^1.1.2",
     "@grafana/faro-instrumentation-xhr": "link:../experimental/instrumentation-xhr",
     "@grpc/grpc-js": "^1.8.17",
+=======
+    "@grafana/faro-core": "^1.2.0",
+    "@grafana/faro-react": "^1.2.0",
+    "@grafana/faro-web-sdk": "^1.2.0",
+    "@grafana/faro-web-tracing": "^1.2.0",
+    "@grpc/grpc-js": "^1.9.0",
+>>>>>>> 438d721ff86f5140d999994efbbfa9d6e51ee1be
     "@opentelemetry/api": "^1.4.1",
-    "@opentelemetry/core": "^1.11.0",
-    "@opentelemetry/exporter-trace-otlp-grpc": "^0.37.0",
-    "@opentelemetry/instrumentation": "^0.37.0",
-    "@opentelemetry/instrumentation-express": "^0.32.1",
-    "@opentelemetry/instrumentation-http": "^0.37.0",
-    "@opentelemetry/instrumentation-pg": "^0.35.0",
-    "@opentelemetry/instrumentation-winston": "^0.31.1",
-    "@opentelemetry/resources": "^1.11.0",
-    "@opentelemetry/sdk-node": "^0.37.0",
-    "@opentelemetry/sdk-trace-base": "^1.11.0",
-    "@opentelemetry/sdk-trace-node": "^1.11.0",
-    "@opentelemetry/semantic-conventions": "^1.11.0",
+    "@opentelemetry/core": "^1.15.2",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.41.2",
+    "@opentelemetry/instrumentation": "^0.41.2",
+    "@opentelemetry/instrumentation-express": "^0.33.1",
+    "@opentelemetry/instrumentation-http": "^0.41.2",
+    "@opentelemetry/instrumentation-pg": "^0.36.1",
+    "@opentelemetry/instrumentation-winston": "^0.32.1",
+    "@opentelemetry/resources": "^1.15.2",
+    "@opentelemetry/sdk-node": "^0.41.2",
+    "@opentelemetry/sdk-trace-base": "^1.15.2",
+    "@opentelemetry/sdk-trace-node": "^1.15.2",
+    "@opentelemetry/semantic-conventions": "^1.15.2",
     "@reduxjs/toolkit": "^1.9.1",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
@@ -67,6 +75,7 @@
     "pg": "^8.8.0",
     "pg-hstore": "^2.3.4",
     "prom-client": "^14.1.1",
+    "protobufjs": "^7.2.4",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.0",
     "react-dom": "^18.2.0",
@@ -101,6 +110,7 @@
     "vite": "^4.3.9"
   },
   "resolutions": {
-    "@grpc/grpc-js": "^1.8.17"
+    "@grpc/grpc-js": "^1.9.0",
+    "protobufjs": "^7.2.4"
   }
 }

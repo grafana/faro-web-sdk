@@ -9,8 +9,8 @@ interface StringResponse {
 }
 
 export const fetchGlobalObjectKey = 'fetch';
-export const resolvedFetchEventName = 'Resolved fetch';
-export const rejectedFetchEventName = 'Rejected fetch';
+export const resolvedFetchEventName = 'faro.fetch.resolved';
+export const rejectedFetchEventName = 'faro.fetch.rejected';
 
 export const responseProperties = (response: Partial<Response>): StringResponse => {
   return {
