@@ -36,8 +36,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
     ): void {
       const xhr = this;
 
-      // Attach the original request URL to the xhr object for later use
-      // @ts-ignore
+      // @ts-expect-error - _url is attached to the xhr object
       xhr._url = url;
 
       return originalOpen.apply(xhr, [
@@ -54,7 +53,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
      */
     XMLHttpRequest.prototype.send = function (body?: Document | XMLHttpRequestBodyInit | null | undefined): void {
       const xhr = this;
-      // @ts-ignore - _url is attached to the xhr object in the open function
+      // @ts-expect-error - _url is attached to the xhr object
       const requestUrl = xhr._url;
 
       // If the request url matches an ignored url, do not instrument the request

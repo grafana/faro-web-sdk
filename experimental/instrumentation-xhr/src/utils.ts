@@ -30,11 +30,10 @@ export const parseXHREvent = (context: XMLHttpRequest, event: ProgressEvent<Even
 
 export const parseLoadEvent = (context: XMLHttpRequest, event: ProgressEvent<EventTarget>): Record<string, any> => {
   return {
-    // @ts-ignore - _url is attached to the xhr object in the open function of instrumentation.ts
+    // @ts-expect-error - _url is attached to the xhr object in the open function of instrumentation.ts
     request_url: context._url?.toString() ?? '',
     response_url: context.responseURL?.toString() ?? '',
     bytes_loaded: event.loaded?.toString() ?? '',
-    ok: (context.status >= 200 && context.status < 300).toString() ?? '',
     status_text: context.statusText ?? '',
     status: context.status?.toString() ?? '',
   };
@@ -42,11 +41,10 @@ export const parseLoadEvent = (context: XMLHttpRequest, event: ProgressEvent<Eve
 
 export const parseAbortEvent = (context: XMLHttpRequest, event: ProgressEvent<EventTarget>): Record<string, any> => {
   return {
-    // @ts-ignore - _url is attached to the xhr object in the open function of instrumentation.ts
+    // @ts-expect-error - _url is attached to the xhr object in the open function of instrumentation.ts
     request_url: context._url?.toString() ?? '',
     response_url: context.responseURL?.toString() ?? '',
     bytes_loaded: event.loaded?.toString() ?? '',
-    ok: (context.status >= 200 && context.status < 300).toString() ?? '',
     status_text: context.statusText ?? '',
     status: context.status?.toString() ?? '',
   };
@@ -54,11 +52,10 @@ export const parseAbortEvent = (context: XMLHttpRequest, event: ProgressEvent<Ev
 
 export const parseErrorEvent = (context: XMLHttpRequest, event: ProgressEvent<EventTarget>): Record<string, any> => {
   return {
-    // @ts-ignore - _url is attached to the xhr object in the open function of instrumentation.ts
+    // @ts-expect-error - _url is attached to the xhr object in the open function of instrumentation.ts
     request_url: context._url?.toString() ?? '',
     response_url: context.responseURL?.toString() ?? '',
     bytes_loaded: event.loaded?.toString() ?? '',
-    ok: (context.status >= 200 && context.status < 300).toString() ?? '',
     status_text: context.statusText ?? '',
     status: context.status?.toString() ?? '',
   };
@@ -66,11 +63,10 @@ export const parseErrorEvent = (context: XMLHttpRequest, event: ProgressEvent<Ev
 
 export const parseTimeoutEvent = (context: XMLHttpRequest, event: ProgressEvent<EventTarget>): Record<string, any> => {
   return {
-    // @ts-ignore - _url is attached to the xhr object in the open function of instrumentation.ts
+    // @ts-expect-error - _url is attached to the xhr object in the open function of instrumentation.ts
     request_url: context._url?.toString() ?? '',
     response_url: context.responseURL?.toString() ?? '',
     bytes_loaded: event.loaded?.toString() ?? '',
-    ok: (context.status >= 200 && context.status < 300).toString() ?? '',
     status_text: context.statusText ?? '',
     status: context.status?.toString() ?? '',
   };
