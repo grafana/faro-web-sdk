@@ -1,3 +1,4 @@
+// This code parses the headers from an XMLHttpRequest and returns them as an object.
 export const parseXHRHeaders = (context: XMLHttpRequest): Record<string, any> => {
   const headers = context.getAllResponseHeaders().split('\r\n');
   const headerMap: Record<string, any> = {};
@@ -12,62 +13,17 @@ export const parseXHRHeaders = (context: XMLHttpRequest): Record<string, any> =>
   return headerMap;
 };
 
+
+// This code parses the xhr event and returns a record of the request url, response url, bytes loaded, status text, and status code.
 export const parseXHREvent = (context: XMLHttpRequest, event: ProgressEvent<EventTarget>): Record<string, any> => {
-  if (event.type === 'load') {
-    return parseLoadEvent(context, event);
-  } else if (event.type === 'abort') {
-    return parseAbortEvent(context, event);
-  } else if (event.type === 'error') {
-    return parseErrorEvent(context, event);
-  } else if (event.type === 'timeout') {
-    return parseTimeoutEvent(context, event);
-  }
+  // @ts-expect-error - _url is attached to the xhr object in XMLHttpRequest.prototype.open
+  const { _url, responseURL, statusText, status } = context;
 
-  return {};
-};
-
-// TODO - simplify down to one parser? thought there would be more differences between the events
-
-export const parseLoadEvent = (context: XMLHttpRequest, event: ProgressEvent<EventTarget>): Record<string, any> => {
   return {
-    // @ts-expect-error - _url is attached to the xhr object in the open function of instrumentation.ts
-    request_url: context._url?.toString() ?? '',
-    response_url: context.responseURL?.toString() ?? '',
+    request_url: _url?.toString() ?? '',
+    response_url: responseURL?.toString() ?? '',
     bytes_loaded: event.loaded?.toString() ?? '',
-    status_text: context.statusText ?? '',
-    status: context.status?.toString() ?? '',
-  };
-};
-
-export const parseAbortEvent = (context: XMLHttpRequest, event: ProgressEvent<EventTarget>): Record<string, any> => {
-  return {
-    // @ts-expect-error - _url is attached to the xhr object in the open function of instrumentation.ts
-    request_url: context._url?.toString() ?? '',
-    response_url: context.responseURL?.toString() ?? '',
-    bytes_loaded: event.loaded?.toString() ?? '',
-    status_text: context.statusText ?? '',
-    status: context.status?.toString() ?? '',
-  };
-};
-
-export const parseErrorEvent = (context: XMLHttpRequest, event: ProgressEvent<EventTarget>): Record<string, any> => {
-  return {
-    // @ts-expect-error - _url is attached to the xhr object in the open function of instrumentation.ts
-    request_url: context._url?.toString() ?? '',
-    response_url: context.responseURL?.toString() ?? '',
-    bytes_loaded: event.loaded?.toString() ?? '',
-    status_text: context.statusText ?? '',
-    status: context.status?.toString() ?? '',
-  };
-};
-
-export const parseTimeoutEvent = (context: XMLHttpRequest, event: ProgressEvent<EventTarget>): Record<string, any> => {
-  return {
-    // @ts-expect-error - _url is attached to the xhr object in the open function of instrumentation.ts
-    request_url: context._url?.toString() ?? '',
-    response_url: context.responseURL?.toString() ?? '',
-    bytes_loaded: event.loaded?.toString() ?? '',
-    status_text: context.statusText ?? '',
-    status: context.status?.toString() ?? '',
+    status_text: statusText ?? '',
+    status: status?.toString() ?? '',
   };
 };
