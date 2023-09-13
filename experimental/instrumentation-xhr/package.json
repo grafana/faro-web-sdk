@@ -37,14 +37,26 @@
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
   },
+  "dependencies": {
+    "@grafana/faro-core": "^1.2.0"
+  },
   "devDependencies": {
-    "@grafana/faro-core": "^1.1.2"
+    "@remix-run/web-fetch": "^4.3.4"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/grafana/faro-web-sdk.git",
     "directory": "experimental/instrumentation-xhr"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Grafana Labs",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "files": [
+    ".browserslistrc",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }

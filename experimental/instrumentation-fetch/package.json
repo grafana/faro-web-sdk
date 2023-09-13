@@ -47,8 +47,10 @@
     "url": "https://github.com/grafana/faro-web-sdk/issues"
   },
   "homepage": "https://github.com/grafana/faro-web-sdk",
+  "dependencies": {
+    "@grafana/faro-core": "^1.2.0"
+  },
   "devDependencies": {
-    "@grafana/faro-core": "^1.2.0",
     "@remix-run/web-fetch": "^4.3.4"
   },
   "publishConfig": {

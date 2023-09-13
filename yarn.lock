@@ -525,9 +525,6 @@
     eslint-plugin-react-hooks "4.6.0"
     typescript "4.8.4"
 
-"@grafana/faro-instrumentation-xhr@link:experimental/instrumentation-xhr":
-  version "1.0.0"
-
 "@grpc/grpc-js@^1.7.1", "@grpc/grpc-js@^1.9.0":
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.9.0.tgz#bdb599e339adabb16aa7243e70c311f75a572867"
