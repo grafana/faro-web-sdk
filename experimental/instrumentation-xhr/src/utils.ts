@@ -13,7 +13,6 @@ export const parseXHRHeaders = (context: XMLHttpRequest): Record<string, any> =>
   return headerMap;
 };
 
-
 // This code parses the xhr event and returns a record of the request url, response url, bytes loaded, status text, and status code.
 export const parseXHREvent = (context: XMLHttpRequest, event: ProgressEvent<EventTarget>): Record<string, any> => {
   // @ts-expect-error - _url is attached to the xhr object in XMLHttpRequest.prototype.open

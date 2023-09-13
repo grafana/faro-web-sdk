@@ -56,7 +56,9 @@ export class XHRInstrumentation extends BaseInstrumentation {
       const requestUrl = xhr._url;
 
       // If the request url matches an ignored url, do not instrument the request
-      if (instrumentation.ignoredUrls?.some((ignoredUrl) => instrumentation.getRequestUrl(requestUrl).match(ignoredUrl))) {
+      if (
+        instrumentation.ignoredUrls?.some((ignoredUrl) => instrumentation.getRequestUrl(requestUrl).match(ignoredUrl))
+      ) {
         return instrumentation.originalSend?.apply(xhr, [body === undefined ? null : body]);
       }
 
@@ -76,7 +78,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
     function loadEventListener(this: XMLHttpRequest, event: ProgressEvent<EventTarget>) {
       faro.api.pushEvent(XHREventType.LOAD, {
         ...parseXHREvent(this, event),
-        ...parseXHRHeaders(this)
+        ...parseXHRHeaders(this),
       });
 
       this.removeEventListener('load', loadEventListener);
@@ -89,7 +91,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
     function abortEventListener(this: XMLHttpRequest, event: ProgressEvent<EventTarget>) {
       faro.api.pushEvent(XHREventType.ABORT, {
         ...parseXHREvent(this, event),
-        ...parseXHRHeaders(this)
+        ...parseXHRHeaders(this),
       });
 
       this.removeEventListener('abort', abortEventListener);
@@ -103,7 +105,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
     function errorEventListener(this: XMLHttpRequest, event: ProgressEvent<EventTarget>) {
       faro.api.pushEvent(XHREventType.ERROR, {
         ...parseXHREvent(this, event),
-        ...parseXHRHeaders(this)
+        ...parseXHRHeaders(this),
       });
 
       this.removeEventListener('error', errorEventListener);
@@ -117,7 +119,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
     function timeoutEventListener(this: XMLHttpRequest, event: ProgressEvent<EventTarget>) {
       faro.api.pushEvent(XHREventType.TIMEOUT, {
         ...parseXHREvent(this, event),
-        ...parseXHRHeaders(this)
+        ...parseXHRHeaders(this),
       });
 
       this.removeEventListener('timeout', timeoutEventListener);

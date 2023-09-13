@@ -1,7 +1,6 @@
 # @grafana/instrumentation-xhr
 
-Faro instrumentation of the JavaScript [XMLHttpRequest (XHR)](
-  https://developer.mozilla.org/en-US/docs/Glossary/XMLHttpRequest) API
+Faro instrumentation of the JavaScript [XMLHttpRequest (XHR)](https://developer.mozilla.org/en-US/docs/Glossary/XMLHttpRequest) API
 
 ❗️*Warning*: this package is experimental and may be subject to frequent and breaking changes.
 Use at your own risk.❗️
