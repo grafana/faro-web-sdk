@@ -63,9 +63,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
     });
 
     registerInstrumentations({
-      instrumentations:
-        options.instrumentations ??
-        getDefaultOTELInstrumentations(),
+      instrumentations: options.instrumentations ?? getDefaultOTELInstrumentations(),
     });
 
     this.api.initOTEL(trace, context);
