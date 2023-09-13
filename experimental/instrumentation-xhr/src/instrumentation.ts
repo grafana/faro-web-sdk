@@ -6,6 +6,8 @@ import { parseXHREvent, parseXHRHeaders } from './utils';
 export class XHRInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-xhr';
   readonly version = VERSION;
+  readonly originalOpen: XMLHttpRequest['open'] = XMLHttpRequest.prototype.open;
+  readonly originalSend: XMLHttpRequest['send'] = XMLHttpRequest.prototype.send;
   private ignoredUrls: XHRInstrumentationOptions['ignoredUrls'];
 
   constructor(private options?: XHRInstrumentationOptions) {
@@ -20,9 +22,6 @@ export class XHRInstrumentation extends BaseInstrumentation {
     this.internalLogger.info('Initializing XHR instrumentation');
     this.ignoredUrls = this.options?.ignoredUrls ?? this.getTransportIgnoreUrls();
     const instrumentation = this;
-
-    const originalOpen = XMLHttpRequest.prototype.open;
-    const originalSend = XMLHttpRequest.prototype.send;
 
     /**
      * XMLHttpRequest.prototype.open becomes instrumented and the parameter defaults are properly passed to the original function
@@ -39,7 +38,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
       // @ts-expect-error - _url is attached to the xhr object
       xhr._url = url;
 
-      return originalOpen.apply(xhr, [
+      return instrumentation.originalOpen?.apply(xhr, [
         method,
         url,
         async === undefined ? true : !!async,
@@ -58,7 +57,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
 
       // If the request url matches an ignored url, do not instrument the request
       if (instrumentation.ignoredUrls?.some((ignoredUrl) => instrumentation.getRequestUrl(requestUrl).match(ignoredUrl))) {
-        return originalSend.apply(xhr, [body === undefined ? null : body]);
+        return instrumentation.originalSend?.apply(xhr, [body === undefined ? null : body]);
       }
 
       xhr.addEventListener('load', loadEventListener.bind(xhr));
@@ -66,7 +65,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
       xhr.addEventListener('error', errorEventListener.bind(xhr));
       xhr.addEventListener('timeout', timeoutEventListener.bind(xhr));
 
-      return originalSend.apply(xhr, [body === undefined ? null : body]);
+      return instrumentation.originalSend?.apply(xhr, [body === undefined ? null : body]);
     };
 
     /**
@@ -142,7 +141,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
   /**
    * Parse the input object into a string URL
    */
-  getRequestUrl(input: RequestInfo | URL): string {
-    return input instanceof Request ? input.url : String(input);
+  getRequestUrl(input: string | URL): string {
+    return input instanceof URL ? input.href : String(input);
   }
 }

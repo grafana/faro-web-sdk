@@ -4,7 +4,6 @@ module.exports = {
   ...jestBaseConfig,
   roots: ['experimental/instrumentation-xhr/src'],
   testEnvironment: 'jsdom',
-  setupFiles: ['<rootDir>/experimental/instrumentation-xhr/src/setupTests.ts'],
   moduleNameMapper: {
     '^@remix-run/router$': '<rootDir>/index.ts',
     '^@remix-run/web-blob$': require.resolve('@remix-run/web-blob'),
