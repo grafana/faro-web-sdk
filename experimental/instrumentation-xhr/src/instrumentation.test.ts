@@ -5,27 +5,20 @@ import { XHRInstrumentation } from './instrumentation';
 
 describe('XHRInstrumentation', () => {
   it('initialize XHRInstrumentation with default options', () => {
-    const instrumentation = new XHRInstrumentation({
-      testing: true,
-    });
+    const instrumentation = new XHRInstrumentation({});
 
     expect(instrumentation.name).toBe('@grafana/faro-web-sdk:instrumentation-xhr');
   });
 
   it('initialize XHRInstrumentation with provided options', () => {
-    const instrumentation = new XHRInstrumentation({
-      testing: true,
-      ignoredUrls: ['https://example.com'],
-    });
+    const instrumentation = new XHRInstrumentation({ ignoredUrls: ['https://example.com'] });
     instrumentation.initialize();
 
     expect(instrumentation.getIgnoredUrls()).toEqual(['https://example.com']);
   });
 
   it('initialize XHRInstrumentation and parses request URL', () => {
-    const instrumentation = new XHRInstrumentation({
-      testing: true,
-    });
+    const instrumentation = new XHRInstrumentation({});
     instrumentation.initialize();
 
     expect(instrumentation.getRequestUrl(new URL('https://example.com'))).toEqual('https://example.com/');
@@ -33,9 +26,7 @@ describe('XHRInstrumentation', () => {
   });
 
   it('initialize XHRInstrumentation and send XHR request', () => {
-    const instrumentation = new XHRInstrumentation({
-      testing: true,
-    });
+    const instrumentation = new XHRInstrumentation({});
 
     initializeFaro(mockConfig({ instrumentations: [instrumentation] }));
 
@@ -52,10 +43,7 @@ describe('XHRInstrumentation', () => {
 
   it('initialize XHRInstrumentation and send XHR request to ignoredUrl', () => {
     const transport = new MockTransport();
-    const instrumentation = new XHRInstrumentation({
-      testing: true,
-      ignoredUrls: ['https://example.com'],
-    });
+    const instrumentation = new XHRInstrumentation({ ignoredUrls: ['https://example.com'] });
 
     const fetchSpySend = jest.spyOn(instrumentation, 'originalSend');
     const faro = initializeFaro(mockConfig({ instrumentations: [instrumentation], transports: [transport] }));
