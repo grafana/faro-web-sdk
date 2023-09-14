@@ -7,7 +7,7 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 
-import { BaseInstrumentation, VERSION } from '@grafana/faro-web-sdk';
+import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-web-sdk';
 
 import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
@@ -63,9 +63,18 @@ export class TracingInstrumentation extends BaseInstrumentation {
     });
 
     registerInstrumentations({
-      instrumentations: options.instrumentations ?? getDefaultOTELInstrumentations(),
+      instrumentations:
+        options.instrumentations ??
+        getDefaultOTELInstrumentations({
+          ignoreUrls: this.getIgnoreUrls(),
+          propagateTraceHeaderCorsUrls: this.options.instrumentationOptions?.propagateTraceHeaderCorsUrls,
+        }),
     });
 
     this.api.initOTEL(trace, context);
+  }
+
+  private getIgnoreUrls(): Array<string | RegExp> {
+    return this.transports.transports.flatMap((transport: Transport) => transport.getIgnoreUrls());
   }
 }

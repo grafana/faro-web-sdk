@@ -22,53 +22,54 @@ export class XHRInstrumentation extends BaseInstrumentation {
     this.internalLogger.info('Initializing XHR instrumentation');
     this.ignoredUrls = this.options?.ignoredUrls ?? this.getTransportIgnoreUrls();
     const instrumentation = this;
+    instrumentXMLHttpRequestOpen();
+    instrumentXMLHttpRequestSend();
 
     /**
      * XMLHttpRequest.prototype.open becomes instrumented and the parameter defaults are properly passed to the original function
      */
-    XMLHttpRequest.prototype.open = function (
-      method: string,
-      url: string | URL,
-      async?: boolean,
-      username?: string | null,
-      password?: string | null
-    ): void {
-      const xhr = this;
+    function instrumentXMLHttpRequestOpen() {
+      XMLHttpRequest.prototype.open = function (
+        method: string,
+        url: string | URL,
+        async?: boolean,
+        username?: string | null,
+        password?: string | null
+      ): void {
+        // @ts-expect-error - _url should be attached to "this"
+        this._url = url;
 
-      // @ts-expect-error - _url is attached to the xhr object
-      xhr._url = url;
-
-      return instrumentation.originalOpen?.apply(xhr, [
-        method,
-        url,
-        async === undefined ? true : !!async,
-        username === undefined ? null : username,
-        password === undefined ? null : password,
-      ]);
-    };
+        return instrumentation.originalOpen.apply(this, [
+          method,
+          url,
+          async === undefined ? true : !!async,
+          username === undefined ? null : username,
+          password === undefined ? null : password,
+        ]);
+      };
+    }
 
     /**
      * XMLHttpRequest.prototype.send becomes instrumented and the parameter defaults are properly passed to the original function
      */
-    XMLHttpRequest.prototype.send = function (body?: Document | XMLHttpRequestBodyInit | null | undefined): void {
-      const xhr = this;
-      // @ts-expect-error - _url is attached to the xhr object
-      const requestUrl = xhr._url;
+    function instrumentXMLHttpRequestSend() {
+      XMLHttpRequest.prototype.send = function (body?: Document | XMLHttpRequestBodyInit | null | undefined): void {
+        // If the request url matches an ignored url, do not instrument the request
+        if (
+          // @ts-expect-error - _url is attached to "this" in the open function above
+          instrumentation.ignoredUrls?.some((ignoredUrl) => instrumentation.getRequestUrl(this._url).match(ignoredUrl))
+        ) {
+          return instrumentation.originalSend.apply(this, [body === undefined ? null : body]);
+        }
 
-      // If the request url matches an ignored url, do not instrument the request
-      if (
-        instrumentation.ignoredUrls?.some((ignoredUrl) => instrumentation.getRequestUrl(requestUrl).match(ignoredUrl))
-      ) {
-        return instrumentation.originalSend?.apply(xhr, [body === undefined ? null : body]);
-      }
+        this.addEventListener('load', loadEventListener.bind(this));
+        this.addEventListener('abort', abortEventListener.bind(this));
+        this.addEventListener('error', errorEventListener.bind(this));
+        this.addEventListener('timeout', timeoutEventListener.bind(this));
 
-      xhr.addEventListener('load', loadEventListener.bind(xhr));
-      xhr.addEventListener('abort', abortEventListener.bind(xhr));
-      xhr.addEventListener('error', errorEventListener.bind(xhr));
-      xhr.addEventListener('timeout', timeoutEventListener.bind(xhr));
-
-      return instrumentation.originalSend?.apply(xhr, [body === undefined ? null : body]);
-    };
+        return instrumentation.originalSend?.apply(this, [body === undefined ? null : body]);
+      };
+    }
 
     /**
      * Event listener function that is called when an XHR request is successfully completed.
