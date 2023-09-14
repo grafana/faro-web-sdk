@@ -145,6 +145,6 @@ export class XHRInstrumentation extends BaseInstrumentation {
    * Parse the input object into a string URL
    */
   getRequestUrl(input: string | URL): string {
-    return input instanceof URL ? input.href : String(input);
+    return input instanceof URL ? input.href : input;
   }
 }
