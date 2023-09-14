@@ -7,6 +7,9 @@ Use at your own risk.❗️
 
 ## Installation and Usage
 
+❗️*Warning*: This package is not interoperable with `@opentelemetry/instrumentation-fetch`.
+Use one or the other❗️
+
 Add the instrumentation as outlined below.
 The instrumentation send the following events alongside respective request/response data like HTTP
 headers and other response properties like status codes the requests url and more.
