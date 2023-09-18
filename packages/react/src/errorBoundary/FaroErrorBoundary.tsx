@@ -43,7 +43,7 @@ export class FaroErrorBoundary extends Component<FaroErrorBoundaryProps, FaroErr
 
     this.props.beforeCapture?.(errorWithComponentStack);
 
-    api.pushError(errorWithComponentStack);
+    api.pushError(errorWithComponentStack, this.props.errorOptions);
 
     this.props.onError?.(errorWithComponentStack);
 

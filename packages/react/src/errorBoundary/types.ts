@@ -1,4 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
+import type { PushErrorOptions } from '@grafana/faro-web-sdk';
 
 export type ReactNodeRender = () => ReactNode;
 
@@ -14,6 +15,7 @@ export interface FaroErrorBoundaryProps {
   onMount?: VoidFunction;
   onReset?: (error: Error | null) => void;
   onUnmount?: (error: Error | null) => void;
+  errorOptions?: PushErrorOptions;
 }
 
 export interface FaroErrorBoundaryState {
