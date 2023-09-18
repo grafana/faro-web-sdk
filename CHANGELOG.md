@@ -1,6 +1,7 @@
 # Changelog
 
 ## Next
+
 - Feat: Enable users to configure per-error boundary `pushError` behavior.
 
 ## 1.2.0
