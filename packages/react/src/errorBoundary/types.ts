@@ -15,7 +15,7 @@ export interface FaroErrorBoundaryProps {
   onMount?: VoidFunction;
   onReset?: (error: Error | null) => void;
   onUnmount?: (error: Error | null) => void;
-  errorOptions?: PushErrorOptions;
+  pushErrorOptions?: PushErrorOptions;
 }
 
 export interface FaroErrorBoundaryState {
