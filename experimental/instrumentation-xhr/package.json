@@ -1,7 +1,7 @@
 {
-  "name": "@grafana/faro-instrumentation-fetch",
+  "name": "@grafana/faro-instrumentation-xhr",
   "version": "1.2.0",
-  "description": "Faro fetch auto-instrumentation package",
+  "description": "Faro XHR auto-instrumentation package",
   "keywords": [
     "observability",
     "apm",
@@ -9,7 +9,8 @@
     "logs",
     "traces",
     "metrics",
-    "fetch"
+    "XMLHttpRequest",
+    "xhr"
   ],
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -29,33 +30,29 @@
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s quality:*",
     "quality:test": "jest",
-    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/instrumentationFetch --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/instrumentationXHR --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s quality:lint:*",
-    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/instrumentationFetch --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
-    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/instrumentationFetch --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/instrumentationXHR --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/instrumentationXHR --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/grafana/faro-web-sdk.git",
-    "directory": "experimental/instrumentation-fetch"
-  },
-  "author": "Grafana Labs",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/grafana/faro-web-sdk/issues"
-  },
-  "homepage": "https://github.com/grafana/faro-web-sdk",
   "dependencies": {
     "@grafana/faro-core": "^1.2.0"
   },
   "devDependencies": {
     "@remix-run/web-fetch": "^4.3.4"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grafana/faro-web-sdk.git",
+    "directory": "experimental/instrumentation-xhr"
+  },
   "publishConfig": {
     "access": "public"
   },
+  "author": "Grafana Labs",
+  "license": "Apache-2.0",
   "files": [
     ".browserslistrc",
     "dist",

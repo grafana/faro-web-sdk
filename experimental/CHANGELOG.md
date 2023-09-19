@@ -2,6 +2,14 @@
 
 ## Next
 
+### FetchInstrumentation
+
+- Change: fetch instrumentation log attribute "statusText" is now "status_text"
+
+### XHRInstrumentation
+
+- Added support for `XMLHttpRequest` instrumentation.
+
 ## 1.1.4
 
 ### FaroOtlpHttpTransport
