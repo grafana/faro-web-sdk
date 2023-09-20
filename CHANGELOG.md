@@ -2,6 +2,8 @@
 
 ## Next
 
+- Feat: Enable users to configure per-error boundary `pushError` behavior.
+
 ## 1.2.0
 
 - Feat: Enable users to add contextual attributes to measurement API payload ([#254](https://github.com/grafana/faro-web-sdk/issues/254))

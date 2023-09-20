@@ -6,7 +6,7 @@ _Warning_: currently pre-release and subject to frequent breaking changes. Use a
 
 Out of the box, the package provides you the following features:
 
-- Error Boundary - Provides additional stacktrace for errors
+- Error Boundary - Provides additional stacktrace for errors and configuration options for pushError behavior
 - Component Profiler - Capture every re-render of a component, the un/mounting time etc.
 - Router (v4-v6) integration - Send events for all route changes
 - SSR support
@@ -73,6 +73,27 @@ or
 import { withErrorBoundary } from '@grafana/faro-react';
 
 export default withErrorBoundary(App);
+```
+
+#### pushErrorOptions prop
+
+```tsx
+
+import { FaroErrorBoundary, PushErrorOptions } from '@grafana/faro-react';
+
+const pushErrorOptions: PushErrorOptions = {
+  type: "Custom Error Type"
+  context: {
+    foo: "bar",
+    baz: "qux"
+  },
+  // ...
+}
+
+// during render
+<FaroErrorBoundary pushErrorOptions={pushErrorOptions}>
+  <App />
+</FaroErrorBoundary>;
 ```
 
 ### Router
