@@ -69,6 +69,10 @@ export interface MetaView {
   name: string;
 }
 
+export interface MetaK6 {
+  isK6Browser?: boolean;
+}
+
 export interface Meta {
   sdk?: MetaSDK;
   app?: MetaApp;
@@ -77,4 +81,5 @@ export interface Meta {
   page?: MetaPage;
   browser?: MetaBrowser;
   view?: MetaView;
+  k6?: MetaK6;
 }
