@@ -9,3 +9,4 @@ updates:
     directory: '/' # Location of package manifests
     schedule:
       interval: 'daily' # will be changed once we updated all the deps after initial activation
+    target-branch: 'main'
