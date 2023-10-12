@@ -18,14 +18,14 @@ export type Request<
   RouteParams extends Record<string, string> = any,
   ResBody extends Record<string, any> = any,
   ReqBody extends Record<string, any> = any,
-  ReqQuery = ParsedQs
+  ReqQuery = ParsedQs,
 > = ExpressRequest<RouteParams, ResBody, ReqBody, ReqQuery, MiddlewareLocals>;
 
 export type RequestHandler<
   RouteParams extends Record<string, string> = any,
   ResBody extends Record<string, any> = any,
   ReqBody extends Record<string, any> = any,
-  ReqQuery extends ParsedQs = any
+  ReqQuery extends ParsedQs = any,
 > = ExpressRequestHandler<RouteParams, ResBody, ReqBody, ReqQuery, MiddlewareLocals>;
 
 export type Response<ResBody extends Record<string, any> = any> = ExpressResponse<ResBody, MiddlewareLocals>;
