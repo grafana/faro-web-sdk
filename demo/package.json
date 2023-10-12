@@ -93,7 +93,7 @@
     "@types/react-redux": "^7.1.25",
     "@types/react-router-bootstrap": "^0.24.5",
     "@types/serve-static": "^1.15.0",
-    "@vitejs/plugin-react": "^3.0.1",
+    "@vitejs/plugin-react": "^4.1.0",
     "cross-env": "^7.0.3",
     "mkdirp": "^2.1.1",
     "nodemon": "^2.0.20",
