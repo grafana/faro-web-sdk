@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@types/ua-parser-js": "^0.7.36",
-    "user-agent-data-types": "^0.3.1"
+    "user-agent-data-types": "^0.4.2"
   },
   "publishConfig": {
     "access": "public"
