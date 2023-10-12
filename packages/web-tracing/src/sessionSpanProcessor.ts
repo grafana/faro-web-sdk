@@ -5,7 +5,10 @@ import type { Metas } from '@grafana/faro-web-sdk';
 
 // adds Faro session id to every span
 export class FaroSessionSpanProcessor implements SpanProcessor {
-  constructor(private processor: SpanProcessor, private metas: Metas) {}
+  constructor(
+    private processor: SpanProcessor,
+    private metas: Metas
+  ) {}
 
   forceFlush(): Promise<void> {
     return this.processor.forceFlush();

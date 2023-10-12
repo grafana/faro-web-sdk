@@ -1,12 +1,12 @@
 # Use CDN to install Grafana Web SDK
 
-Grafana Web SDK is also available as an IIFE bundle that can be loaded from a CDN like [unpkg][unpkg] to
-directly serve the desired version of the library.
+Grafana Web SDK is also available as an IIFE bundle that can be loaded from a CDN like
+[unpkg][unpkg] to directly serve the desired version of the library.
 
 Example usage:
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <title>My App</title>

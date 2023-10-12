@@ -11,7 +11,10 @@ export class OtelPayload {
   private getLogTransforms: LogsTransform;
   private getTraceTransforms: TraceTransform;
 
-  constructor(private internalLogger: InternalLogger, transportItem?: TransportItem) {
+  constructor(
+    private internalLogger: InternalLogger,
+    transportItem?: TransportItem
+  ) {
     this.internalLogger = internalLogger;
     this.resourceLogs = [];
 
