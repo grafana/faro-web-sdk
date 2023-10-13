@@ -1,4 +1,4 @@
-import type { IResourceSpans } from '@opentelemetry/otlp-transformer';
+import { type IResourceSpans, UnsignedLong } from '@opentelemetry/otlp-transformer';
 
 import {
   EventEvent,
@@ -144,6 +144,8 @@ function generateEvent(name: string, meta: Meta = {}): TransportItem<EventEvent>
 }
 
 function generateResourceSpan(name: string): IResourceSpans {
+  console.log('new UnsignedLong(0, 1679329154423000000) :>> ', new UnsignedLong(0, 1679329154423000000));
+
   return {
     resource: {
       attributes: [],
@@ -162,8 +164,8 @@ function generateResourceSpan(name: string): IResourceSpans {
             parentSpanId: '16cff06b28240ca6',
             name: 'resourceFetch',
             kind: 1,
-            startTimeUnixNano: 1679329154423000000,
-            endTimeUnixNano: 1679329154449000000,
+            startTimeUnixNano: new UnsignedLong(0, 1679329154423000000),
+            endTimeUnixNano: new UnsignedLong(0, 1679329154449000000),
             attributes: [
               {
                 key: 'session_id',
@@ -196,7 +198,7 @@ function generateResourceSpan(name: string): IResourceSpans {
               {
                 attributes: [],
                 name,
-                timeUnixNano: 1679329154423000000,
+                timeUnixNano: new UnsignedLong(0, 1679329154423000000),
                 droppedAttributesCount: 0,
               },
             ],
