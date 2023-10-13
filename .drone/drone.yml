@@ -13,33 +13,33 @@ trigger:
 
 steps:
   - name: install-dependencies
-    image: node:lts-stretch
+    image: node:lts-bookworm
     commands:
       - yarn install --frozen-lockfile
 
   - name: build
-    image: node:lts-stretch
+    image: node:lts-bookworm
     depends_on:
       - install-dependencies
     commands:
       - yarn build
 
   - name: lint
-    image: node:lts-stretch
+    image: node:lts-bookworm
     depends_on:
       - build
     commands:
       - yarn quality:lint
 
   - name: circular-dependencies-test
-    image: node:lts-stretch
+    image: node:lts-bookworm
     depends_on:
       - build
     commands:
       - yarn quality:circular-deps
 
   - name: unit-tests
-    image: node:lts-stretch
+    image: node:lts-bookworm
     depends_on:
       - build
     commands:
@@ -77,33 +77,33 @@ trigger:
 
 steps:
   - name: install-dependencies
-    image: node:lts-stretch
+    image: node:lts-bookworm
     commands:
       - yarn install --frozen-lockfile
 
   - name: build
-    image: node:lts-stretch
+    image: node:lts-bookworm
     depends_on:
       - install-dependencies
     commands:
       - yarn build
 
   - name: lint
-    image: node:lts-stretch
+    image: node:lts-bookworm
     depends_on:
       - build
     commands:
       - yarn quality:lint
 
   - name: circular-dependencies-test
-    image: node:lts-stretch
+    image: node:lts-bookworm
     depends_on:
       - build
     commands:
       - yarn quality:circular-deps
 
   - name: unit-tests
-    image: node:lts-stretch
+    image: node:lts-bookworm
     depends_on:
       - build
     commands:
@@ -119,7 +119,7 @@ steps:
       IS_TEST: 1
 
   - name: publish
-    image: node:lts-stretch
+    image: node:lts-bookworm
     depends_on:
       - lint
       - circular-dependencies-test
