@@ -446,10 +446,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@cypress/request@^2.88.10":
-  version "2.88.11"
-  resolved "https://registry.yarnpkg.com/@cypress/request/-/request-2.88.11.tgz#5a4c7399bc2d7e7ed56e92ce5acb620c8b187047"
-  integrity sha512-M83/wfQ1EkspjkE2lNWNV5ui2Cv7UCv1swW1DqljahbzLVWltcsexQh8jYtuS/vzFXP+HySntGM83ZXA9fn17w==
+"@cypress/request@^3.0.0":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@cypress/request/-/request-3.0.1.tgz#72d7d5425236a2413bd3d8bb66d02d9dc3168960"
+  integrity sha512-TWivJlJi8ZDx2wGOw1dbLuHJKUYX7bWySw377nlnGOW3hP9/MUKIsEdXT/YngWxVdgNCHRBmFlBipE+5/2ZZlQ==
   dependencies:
     aws-sign2 "~0.7.0"
     aws4 "^1.8.0"
@@ -464,9 +464,9 @@
     json-stringify-safe "~5.0.1"
     mime-types "~2.1.19"
     performance-now "^2.1.0"
-    qs "~6.10.3"
+    qs "6.10.4"
     safe-buffer "^5.1.2"
-    tough-cookie "~2.5.0"
+    tough-cookie "^4.1.3"
     tunnel-agent "^0.6.0"
     uuid "^8.3.2"
 
@@ -2464,15 +2464,10 @@
   dependencies:
     undici-types "~5.25.1"
 
-"@types/node@^14.14.31":
-  version "14.18.36"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.18.36.tgz#c414052cb9d43fab67d679d5f3c641be911f5835"
-  integrity sha512-FXKWbsJ6a1hIrRxv+FoukuHnGTgEzKYGi7kilfMae96AL9UNkPFNWJEEYWzdRI9ooIkbr4AKldyuSTLql06vLQ==
-
-"@types/node@^18.11.18":
-  version "18.11.18"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.18.tgz#8dfb97f0da23c2293e554c5a50d61ef134d7697f"
-  integrity sha512-DHQpWGjyQKSHj3ebjFI/wRKcqQcdR+MoFBygntYOZytCqNfkd2ZC4ARDJ2DQqhjH5p85Nnd3jhUJIXrszFX/JA==
+"@types/node@^18.11.18", "@types/node@^18.17.5":
+  version "18.18.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.18.5.tgz#afc0fd975df946d6e1add5bbf98264225b212244"
+  integrity sha512-4slmbtwV59ZxitY4ixUZdy1uRLf9eSIvBWPQxNjhHYWEtn0FryfKpyS2cvADYXTayWdKEIsJengncrVvkI4I6A==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.1"
@@ -3927,10 +3922,10 @@ commander@^2.16.0, commander@^2.20.0, commander@^2.20.3, commander@^2.8.1:
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
   integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
 
-commander@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-5.1.0.tgz#46abbd1652f8e059bddaef99bbdcb2ad9cf179ae"
-  integrity sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg==
+commander@^6.2.1:
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-6.2.1.tgz#0792eb682dfbc325999bb2b84fddddba110ac73c"
+  integrity sha512-U7VdrJFnJgo4xjrHpTzu0yrHPGImdsmD95ZlgYSEajAn2JKzDhDTPG9kBTefmObL2w/ngeZnilk+OV9CG3d7UA==
 
 commander@^7.2.0:
   version "7.2.0"
@@ -4207,14 +4202,14 @@ csstype@^3.0.2:
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.1.1.tgz#841b532c45c758ee546a11d5bd7b7b473c8c30b9"
   integrity sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==
 
-cypress@^12.3.0:
-  version "12.3.0"
-  resolved "https://registry.yarnpkg.com/cypress/-/cypress-12.3.0.tgz#ae3fb0540aef4b5eab1ef2bcd0760caf2992b8bf"
-  integrity sha512-ZQNebibi6NBt51TRxRMYKeFvIiQZ01t50HSy7z/JMgRVqBUey3cdjog5MYEbzG6Ktti5ckDt1tfcC47lmFwXkw==
+cypress@^13.3.1:
+  version "13.3.1"
+  resolved "https://registry.yarnpkg.com/cypress/-/cypress-13.3.1.tgz#d72f922e167891574c7773d07ac64d7114e11d49"
+  integrity sha512-g4mJLZxYN+UAF2LMy3Znd4LBnUmS59Vynd81VES59RdW48Yt+QtR2cush3melOoVNz0PPbADpWr8DcUx6mif8Q==
   dependencies:
-    "@cypress/request" "^2.88.10"
+    "@cypress/request" "^3.0.0"
     "@cypress/xvfb" "^1.2.4"
-    "@types/node" "^14.14.31"
+    "@types/node" "^18.17.5"
     "@types/sinonjs__fake-timers" "8.1.1"
     "@types/sizzle" "^2.3.2"
     arch "^2.2.0"
@@ -4226,10 +4221,10 @@ cypress@^12.3.0:
     check-more-types "^2.24.0"
     cli-cursor "^3.1.0"
     cli-table3 "~0.6.1"
-    commander "^5.1.0"
+    commander "^6.2.1"
     common-tags "^1.8.0"
     dayjs "^1.10.4"
-    debug "^4.3.2"
+    debug "^4.3.4"
     enquirer "^2.3.6"
     eventemitter2 "6.4.7"
     execa "4.1.0"
@@ -4244,12 +4239,13 @@ cypress@^12.3.0:
     listr2 "^3.8.3"
     lodash "^4.17.21"
     log-symbols "^4.0.0"
-    minimist "^1.2.6"
+    minimist "^1.2.8"
     ospath "^1.2.2"
     pretty-bytes "^5.6.0"
+    process "^0.11.10"
     proxy-from-env "1.0.0"
     request-progress "^3.0.0"
-    semver "^7.3.2"
+    semver "^7.5.3"
     supports-color "^8.1.1"
     tmp "~0.2.1"
     untildify "^4.0.0"
@@ -8296,12 +8292,7 @@ minimist-options@4.1.0:
     is-plain-obj "^1.1.0"
     kind-of "^6.0.3"
 
-minimist@^1.1.0, minimist@^1.2.0, minimist@^1.2.5, minimist@^1.2.6:
-  version "1.2.7"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.7.tgz#daa1c4d91f507390437c6a8bc01078e7000c4d18"
-  integrity sha512-bzfL1YUZsP41gmu/qjrEk0Q6i2ix/cVeAhbCbqH9u3zYutS1cLg00qhrD0M2MVdCcx4Sc0UpP2eBWo9rotpq6g==
-
-minimist@^1.2.7, minimist@^1.2.8:
+minimist@^1.1.0, minimist@^1.2.0, minimist@^1.2.5, minimist@^1.2.6, minimist@^1.2.7, minimist@^1.2.8:
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
   integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
@@ -9667,7 +9658,7 @@ ps-tree@1.2.0:
   dependencies:
     event-stream "=3.3.4"
 
-psl@^1.1.28, psl@^1.1.33:
+psl@^1.1.33:
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/psl/-/psl-1.9.0.tgz#d0df2a137f00794565fcaf3b2c00cd09f8d5a5a7"
   integrity sha512-E/ZsdU4HLs/68gYzgGTkMicWTLPdAftJLfJFlLUAAKZGkStNU72sZjT66SnMDVOfOWY/YAoiD7Jxa9iHvngcag==
@@ -9690,17 +9681,17 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.2.0.tgz#2092cc57cd2582c38e4e7e8bb869dc8d3148bc74"
   integrity sha512-LN6QV1IJ9ZhxWTNdktaPClrNfp8xdSAYS0Zk2ddX7XsXZAxckMHPCBcHRo0cTcEIgYPRiGEkmji3Idkh2yFtYw==
 
+qs@6.10.4:
+  version "6.10.4"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.10.4.tgz#6a3003755add91c0ec9eacdc5f878b034e73f9e7"
+  integrity sha512-OQiU+C+Ds5qiH91qh/mg0w+8nwQuLjM4F4M/PbmhDOoYehPh+Fb0bDjtR1sOvy7YKxvj28Y/M0PhP5uVX0kB+g==
+  dependencies:
+    side-channel "^1.0.4"
+
 qs@6.11.0:
   version "6.11.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.11.0.tgz#fd0d963446f7a65e1367e01abd85429453f0c37a"
   integrity sha512-MvjoMCJwEarSbUYk5O+nmoSzSutSsTwF85zcHPQ9OrlFoZOYIjaqBAJIqIXjptyD5vThxGq52Xu/MaJzRkIk4Q==
-  dependencies:
-    side-channel "^1.0.4"
-
-qs@~6.10.3:
-  version "6.10.5"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.10.5.tgz#974715920a80ff6a262264acd2c7e6c2a53282b4"
-  integrity sha512-O5RlPh0VFtR78y79rgcgKK4wbAI0C5zGVLztOIdpWX6ep368q5Hv6XRxDvXuZ9q3C6v+e3n8UfZZJw7IIG27eQ==
   dependencies:
     side-channel "^1.0.4"
 
@@ -10321,7 +10312,7 @@ semver@7.5.3:
   dependencies:
     lru-cache "^6.0.0"
 
-semver@7.x, semver@^7.0.0, semver@^7.1.1, semver@^7.3.2, semver@^7.3.4, semver@^7.3.5, semver@^7.3.7, semver@^7.3.8, semver@^7.5.1, semver@^7.5.2, semver@^7.5.3, semver@^7.5.4:
+semver@7.x, semver@^7.0.0, semver@^7.1.1, semver@^7.3.4, semver@^7.3.5, semver@^7.3.7, semver@^7.3.8, semver@^7.5.1, semver@^7.5.2, semver@^7.5.3, semver@^7.5.4:
   version "7.5.4"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.5.4.tgz#483986ec4ed38e1c6c48c34894a9182dbff68a6e"
   integrity sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==
@@ -11140,13 +11131,15 @@ tough-cookie@^4.1.2:
     universalify "^0.2.0"
     url-parse "^1.5.3"
 
-tough-cookie@~2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/tough-cookie/-/tough-cookie-2.5.0.tgz#cd9fb2a0aa1d5a12b473bd9fb96fa3dcff65ade2"
-  integrity sha512-nlLsUzgm1kfLXSXfRZMc1KLAugd4hqJHDTvc2hDIwS3mZAfMEuMbc03SujMF+GEcpaX/qboeycw6iO8JwVv2+g==
+tough-cookie@^4.1.3:
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/tough-cookie/-/tough-cookie-4.1.3.tgz#97b9adb0728b42280aa3d814b6b999b2ff0318bf"
+  integrity sha512-aX/y5pVRkfRnfmuX+OdbSdXvPe6ieKX/G2s7e98f4poJHnqH3281gDPm/metm6E/WRamfx7WC4HUqkWHfQHprw==
   dependencies:
-    psl "^1.1.28"
+    psl "^1.1.33"
     punycode "^2.1.1"
+    universalify "^0.2.0"
+    url-parse "^1.5.3"
 
 tr46@^3.0.0:
   version "3.0.0"
