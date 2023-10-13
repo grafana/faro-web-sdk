@@ -9,10 +9,12 @@ import {
 } from './constants';
 import type { FetchInstrumentationOptions } from './types';
 
+type WindowFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+
 export class FetchInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-fetch';
   readonly version = VERSION;
-  readonly originalFetch = fetch.bind(globalObject);
+  readonly originalFetch: WindowFetch = window.fetch.bind(globalObject);
   private ignoredUrls: FetchInstrumentationOptions['ignoredUrls'];
 
   constructor(private options?: FetchInstrumentationOptions) {
@@ -83,7 +85,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
   /**
    * Instrument fetch with Faro
    */
-  private instrumentFetch(): typeof fetch {
+  private instrumentFetch(): WindowFetch {
     const instrumentation = this;
     return function fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
       const requestUrl = instrumentation.getRequestUrl(input);
