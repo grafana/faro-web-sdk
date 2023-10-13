@@ -60,7 +60,7 @@
     "@opentelemetry/instrumentation": "^0.41.2",
     "@opentelemetry/instrumentation-document-load": "^0.33.0",
     "@opentelemetry/instrumentation-fetch": "^0.41.2",
-    "@opentelemetry/instrumentation-xml-http-request": "^0.41.2",
+    "@opentelemetry/instrumentation-xml-http-request": "^0.44.0",
     "@opentelemetry/otlp-transformer": "^0.41.2",
     "@opentelemetry/resources": "^1.15.2",
     "@opentelemetry/sdk-trace-base": "^1.15.2",
