@@ -96,7 +96,7 @@ describe('FetchInstrumentation', () => {
 
     const fetchSpy = jest.spyOn(global, 'fetch');
 
-    fetch('https://grafana.com');
+    window.fetch('https://grafana.com');
 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
@@ -111,7 +111,7 @@ describe('FetchInstrumentation', () => {
 
     const originalFetchSpy = jest.spyOn(instrumentation, 'originalFetch');
 
-    fetch('https://example.com');
+    window.fetch('https://example.com');
 
     expect(originalFetchSpy).toHaveBeenCalledTimes(1);
   });
