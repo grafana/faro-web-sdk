@@ -49,7 +49,7 @@
     "@opentelemetry/instrumentation-pg": "^0.36.1",
     "@opentelemetry/instrumentation-winston": "^0.32.1",
     "@opentelemetry/resources": "^1.15.2",
-    "@opentelemetry/sdk-node": "^0.41.2",
+    "@opentelemetry/sdk-node": "^0.44.0",
     "@opentelemetry/sdk-trace-base": "^1.15.2",
     "@opentelemetry/sdk-trace-node": "^1.15.2",
     "@opentelemetry/semantic-conventions": "^1.15.2",
