@@ -144,8 +144,6 @@ function generateEvent(name: string, meta: Meta = {}): TransportItem<EventEvent>
 }
 
 function generateResourceSpan(name: string): IResourceSpans {
-  console.log('new UnsignedLong(0, 1679329154423000000) :>> ', new UnsignedLong(0, 1679329154423000000));
-
   return {
     resource: {
       attributes: [],

@@ -1,3 +1,5 @@
+import { UnsignedLong } from '@opentelemetry/otlp-transformer';
+
 import { EventEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
@@ -78,8 +80,8 @@ describe('OtelPayload', () => {
                   parentSpanId: '16cff06b28240ca6',
                   name: 'resourceFetch',
                   kind: 1,
-                  startTimeUnixNano: 1679329154423000000,
-                  endTimeUnixNano: 1679329154449000000,
+                  startTimeUnixNano: new UnsignedLong(0, 1679329154423000000),
+                  endTimeUnixNano: new UnsignedLong(0, 1679329154449000000),
                   attributes: [
                     {
                       key: 'session_id',

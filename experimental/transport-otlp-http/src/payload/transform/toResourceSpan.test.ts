@@ -1,3 +1,5 @@
+import { UnsignedLong } from '@opentelemetry/otlp-transformer';
+
 import { TraceEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
@@ -27,8 +29,8 @@ const item: Readonly<TransportItem<TraceEvent>> = {
                 parentSpanId: '4d751d61c3d9a833',
                 name: 'resourceFetch',
                 kind: 1,
-                startTimeUnixNano: 1679388692311000000,
-                endTimeUnixNano: 1679388692347000000,
+                startTimeUnixNano: new UnsignedLong(0, 1679388692311000000),
+                endTimeUnixNano: new UnsignedLong(0, 1679388692347000000),
                 attributes: [
                   {
                     key: 'session_id',
@@ -60,55 +62,55 @@ const item: Readonly<TransportItem<TraceEvent>> = {
                   {
                     attributes: [],
                     name: 'fetchStart',
-                    timeUnixNano: 1679388692311000000,
+                    timeUnixNano: new UnsignedLong(0, 1679388692311000000),
                     droppedAttributesCount: 0,
                   },
                   {
                     attributes: [],
                     name: 'domainLookupStart',
-                    timeUnixNano: 1679388692311000000,
+                    timeUnixNano: new UnsignedLong(0, 1679388692311000000),
                     droppedAttributesCount: 0,
                   },
                   {
                     attributes: [],
                     name: 'domainLookupEnd',
-                    timeUnixNano: 1679388692311000000,
+                    timeUnixNano: new UnsignedLong(0, 1679388692311000000),
                     droppedAttributesCount: 0,
                   },
                   {
                     attributes: [],
                     name: 'connectStart',
-                    timeUnixNano: 1679388692311000000,
+                    timeUnixNano: new UnsignedLong(0, 1679388692311000000),
                     droppedAttributesCount: 0,
                   },
                   {
                     attributes: [],
                     name: 'secureConnectionStart',
-                    timeUnixNano: 1679388691942000000,
+                    timeUnixNano: new UnsignedLong(0, 1679388691942000000),
                     droppedAttributesCount: 0,
                   },
                   {
                     attributes: [],
                     name: 'connectEnd',
-                    timeUnixNano: 1679388692311000000,
+                    timeUnixNano: new UnsignedLong(0, 1679388692311000000),
                     droppedAttributesCount: 0,
                   },
                   {
                     attributes: [],
                     name: 'requestStart',
-                    timeUnixNano: 1679388692345000000,
+                    timeUnixNano: new UnsignedLong(0, 1679388692345000000),
                     droppedAttributesCount: 0,
                   },
                   {
                     attributes: [],
                     name: 'responseStart',
-                    timeUnixNano: 1679388692347000000,
+                    timeUnixNano: new UnsignedLong(0, 1679388692347000000),
                     droppedAttributesCount: 0,
                   },
                   {
                     attributes: [],
                     name: 'responseEnd',
-                    timeUnixNano: 1679388692347000000,
+                    timeUnixNano: new UnsignedLong(0, 1679388692347000000),
                     droppedAttributesCount: 0,
                   },
                 ],
@@ -226,8 +228,8 @@ const matchResourceSpanPayload = {
           parentSpanId: '4d751d61c3d9a833',
           name: 'resourceFetch',
           kind: 1,
-          startTimeUnixNano: 1679388692311000000,
-          endTimeUnixNano: 1679388692347000000,
+          startTimeUnixNano: new UnsignedLong(0, 1679388692311000000),
+          endTimeUnixNano: new UnsignedLong(0, 1679388692347000000),
           attributes: [
             { key: 'session_id', value: { stringValue: 'RcuKRynkwa' } },
             { key: 'component', value: { stringValue: 'document-load' } },
