@@ -2195,15 +2195,15 @@
   dependencies:
     "@opentelemetry/instrumentation" "^0.44.0"
 
-"@opentelemetry/instrumentation-xml-http-request@^0.41.2":
-  version "0.41.2"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-xml-http-request/-/instrumentation-xml-http-request-0.41.2.tgz#c8172bb753194dc9bf3fd0732cbd3fa641a80bc2"
-  integrity sha512-lRj9JPSVoE/lReUQ8afekoCyEAGdIWNrzF42Kv63cf5CCMqB/aoHH+NdnSXZ5ANsOvNQ9H65qTsqCbwkzn1x6g==
+"@opentelemetry/instrumentation-xml-http-request@^0.44.0":
+  version "0.44.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-xml-http-request/-/instrumentation-xml-http-request-0.44.0.tgz#bd8a625f23f7b7a58c9b82d1a9212fe8e2ff42cc"
+  integrity sha512-wK3YoC40PzZUYRsdPo9VssOYLVeu1by05VQDBaL/Aiyoko7I0wakQ2Fg425IM06TJ2jbWQh4E+B3x4v0bsmoLw==
   dependencies:
-    "@opentelemetry/core" "1.15.2"
-    "@opentelemetry/instrumentation" "0.41.2"
-    "@opentelemetry/sdk-trace-web" "1.15.2"
-    "@opentelemetry/semantic-conventions" "1.15.2"
+    "@opentelemetry/core" "1.17.1"
+    "@opentelemetry/instrumentation" "0.44.0"
+    "@opentelemetry/sdk-trace-web" "1.17.1"
+    "@opentelemetry/semantic-conventions" "1.17.1"
 
 "@opentelemetry/instrumentation@0.41.2", "@opentelemetry/instrumentation@^0.41.2":
   version "0.41.2"
@@ -2216,7 +2216,7 @@
     semver "^7.5.1"
     shimmer "^1.2.1"
 
-"@opentelemetry/instrumentation@^0.44.0":
+"@opentelemetry/instrumentation@0.44.0", "@opentelemetry/instrumentation@^0.44.0":
   version "0.44.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation/-/instrumentation-0.44.0.tgz#194f16fc96671575b6bd73d3fadffb5aa4497e67"
   integrity sha512-B6OxJTRRCceAhhnPDBshyQO7K07/ltX3quOLu0icEvPK9QZ7r9P1y0RQX8O5DxB4vTv4URRkxkg+aFU/plNtQw==
@@ -2443,7 +2443,7 @@
     "@opentelemetry/sdk-trace-base" "1.15.2"
     "@opentelemetry/semantic-conventions" "1.15.2"
 
-"@opentelemetry/sdk-trace-web@^1.15.0", "@opentelemetry/sdk-trace-web@^1.15.2":
+"@opentelemetry/sdk-trace-web@1.17.1", "@opentelemetry/sdk-trace-web@^1.15.0", "@opentelemetry/sdk-trace-web@^1.15.2":
   version "1.17.1"
   resolved "https://registry.yarnpkg.com/@opentelemetry/sdk-trace-web/-/sdk-trace-web-1.17.1.tgz#1c13e6d8427a33b5e97ac85cb745a084b976c470"
   integrity sha512-Nle48xE1eaR6lRqyOvUlIwW/C2Bz6pptHzlHqrd+a6tGSLWEP1ZhPfuJbNeq/tWX5PX2RgeOsLlvPLEEBKeKxg==
