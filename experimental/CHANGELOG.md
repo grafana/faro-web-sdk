@@ -4,7 +4,7 @@
 
 ### FetchInstrumentation
 
-- Change: fetch instrumentation log attribute "statusText" is now "status_text"
+- Change: fetch instrumentation log attribute "statusText" is now "status_text".
 
 ### XHRInstrumentation
 
