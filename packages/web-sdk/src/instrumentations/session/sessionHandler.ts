@@ -35,7 +35,7 @@ export function storeUserSession(session: FaroUserSession): void {
   setItem(STORAGE_KEY, JSON.stringify(session));
 }
 
-export function receiveUserSession(): FaroUserSession | null {
+export function fetchUserSession(): FaroUserSession | null {
   const storedSession = getItem(STORAGE_KEY);
 
   if (storedSession) {
@@ -52,18 +52,23 @@ export function isUserSessionValid(session: FaroUserSession | null): boolean {
 
   const now = dateNow();
   const lifetimeValid = now - session.started < SESSION_EXPIRATION_TIME;
+
+  if (!lifetimeValid) {
+    return false;
+  }
+
   const inactivityPeriodValid = now - session.lastActivity < SESSION_INACTIVITY_TIME;
-
-  return lifetimeValid && inactivityPeriodValid;
+  return inactivityPeriodValid;
 }
 
-interface PersistentUserSessionManager {
-  onActivity: () => void;
+interface PersistentUserSessionUpdater {
+  handleUpdate: () => void;
+  init: () => void;
 }
 
-export function persistentUserSessionsManager(initialSessionId?: string): PersistentUserSessionManager {
+export function persistentUserSessionsUpdater(initialSessionId?: string): PersistentUserSessionUpdater {
   const throttledSessionUpdate = throttle(() => {
-    const sessionFromLocalStorage = receiveUserSession();
+    const sessionFromLocalStorage = fetchUserSession();
 
     if (isUserSessionValid(sessionFromLocalStorage)) {
       storeUserSession({ ...sessionFromLocalStorage!, lastActivity: dateNow() });
@@ -83,14 +88,14 @@ export function persistentUserSessionsManager(initialSessionId?: string): Persis
       storeUserSession(newSession);
 
       faro.api?.setSession(newSession.sessionMeta);
-      faro.config.experimental_sessions?.onSessionSwitch?.(
+      faro.config.experimentalSessions?.onSessionChange?.(
         sessionFromLocalStorage?.sessionMeta ?? null,
         newSession.sessionMeta!
       );
     }
   }, STORAGE_UPDATE_DELAY);
 
-  (function init() {
+  function init() {
     storeUserSession(createUserSessionObject(initialSessionId));
 
     document.addEventListener('visibilitychange', () => {
@@ -115,7 +120,7 @@ export function persistentUserSessionsManager(initialSessionId?: string): Persis
     // Users can call the setSession() method, so we need to sync this with the local storage session
     faro.metas.addListener(function syncSessionIfChangedExternally(meta: Meta) {
       const session = meta.session;
-      const sessionFromLocalStorage = receiveUserSession();
+      const sessionFromLocalStorage = fetchUserSession();
 
       if (session && session.id !== sessionFromLocalStorage?.sessionId) {
         const userSession = {
@@ -134,21 +139,23 @@ export function persistentUserSessionsManager(initialSessionId?: string): Persis
         faro.api.setSession(userSession.sessionMeta);
       }
     });
-  })();
+  };
 
   return {
-    onActivity: throttledSessionUpdate,
+    handleUpdate: throttledSessionUpdate,
+    init
   };
 }
 
-interface InMemoryUserSessionsManager {
-  onActivity: () => void;
+interface InMemoryUserSessionsUpdater {
+  handleUpdate: () => void;
+  init: () => void;
 }
 
-export function inMemoryUserSessionsManager(initialSessionId?: string): InMemoryUserSessionsManager {
+export function inMemoryUserSessionsUpdater(initialSessionId?: string): InMemoryUserSessionsUpdater {
   let inMemoryUserSession: FaroUserSession = createUserSessionObject(initialSessionId);
 
-  function onActivity() {
+  function handleUpdate() {
     if (isUserSessionValid(inMemoryUserSession)) {
       inMemoryUserSession.lastActivity = dateNow();
     } else {
@@ -163,16 +170,16 @@ export function inMemoryUserSessionsManager(initialSessionId?: string): InMemory
         },
       };
 
-      faro.config.experimental_sessions?.onSessionSwitch?.(previousSessionMeta ?? null, newSessionMeta);
+      faro.config.experimentalSessions?.onSessionChange?.(previousSessionMeta ?? null, newSessionMeta);
 
       faro.api?.setSession(newSessionMeta);
     }
   }
 
-  (function init() {
+  function init() {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
-        onActivity();
+        handleUpdate();
       }
     });
 
@@ -193,18 +200,19 @@ export function inMemoryUserSessionsManager(initialSessionId?: string): InMemory
         });
       }
     });
-  })();
+  };
 
   return {
-    onActivity,
+    handleUpdate,
+    init,
   };
 }
 
-export type SessionManager = PersistentUserSessionManager | InMemoryUserSessionsManager;
-export function getSessionManager(initialSessionId?: string): SessionManager {
-  if (faro.config.experimental_sessions?.persistent && isLocalStorageAvailable) {
-    return persistentUserSessionsManager(initialSessionId);
+export type SessionUpdater = PersistentUserSessionUpdater | InMemoryUserSessionsUpdater;
+export function getSessionUpdater(initialSessionId?: string): SessionUpdater {
+  if (faro.config.experimentalSessions?.persistent && isLocalStorageAvailable) {
+    return persistentUserSessionsUpdater(initialSessionId);
   }
 
-  return inMemoryUserSessionsManager(initialSessionId);
+  return inMemoryUserSessionsUpdater(initialSessionId);
 }

@@ -1,6 +1,6 @@
 import { BaseInstrumentation, Conventions, Meta, MetaSession, VERSION } from '@grafana/faro-core';
 
-import { getSessionManager, SessionManager } from './sessionManager';
+import { getSessionUpdater, SessionUpdater } from './sessionHandler';
 
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
@@ -10,7 +10,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
   // event twice for the same session
   private notifiedSession: MetaSession | undefined;
 
-  private sessionManager: SessionManager | undefined;
+  private sessionUpdater: SessionUpdater | undefined;
 
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
@@ -30,10 +30,12 @@ export class SessionInstrumentation extends BaseInstrumentation {
     this.sendSessionStartEvent(this.metas.value);
     this.metas.addListener(this.sendSessionStartEvent.bind(this));
 
-    if (this.config.experimental_sessions_enabled) {
-      this.sessionManager = getSessionManager(this.metas.value.session?.id);
+    if (this.config.experimentalSessions?.enabled) {
+      this.sessionUpdater = getSessionUpdater(this.metas.value.session?.id);
+      this.sessionUpdater.init();
+
       this.transports?.addBeforeSendHooks(...this.transports.getBeforeSendHooks(), (item: any) => {
-        this.sessionManager?.onActivity();
+        this.sessionUpdater?.handleUpdate();
         return item;
       });
     }

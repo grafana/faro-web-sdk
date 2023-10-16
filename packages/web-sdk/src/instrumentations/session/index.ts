@@ -1,3 +1,3 @@
 export { SessionInstrumentation } from './instrumentation';
 
-export * from './sessionManager';
+export * from './sessionHandler';

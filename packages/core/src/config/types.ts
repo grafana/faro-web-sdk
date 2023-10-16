@@ -24,13 +24,12 @@ export interface Config<P = APIEvent> {
   ignoreErrors?: Patterns;
   // TODO: Deprecate?
   session?: MetaSession;
-  // TODO: rename once feature is ready. Do not use in any prod envs!
-  experimental_sessions_enabled?: boolean;
   // TODO: rename to "sessions" once feature is ready. Do not use in any prod envs!
-  experimental_sessions?: {
+  experimentalSessions?: {
+    enabled?: boolean;
     persistent?: boolean;
     session?: MetaSession;
-    onSessionSwitch?: (oldSession: MetaSession | null, newSession: MetaSession) => void;
+    onSessionChange?: (oldSession: MetaSession | null, newSession: MetaSession) => void;
   };
 
   user?: MetaUser;

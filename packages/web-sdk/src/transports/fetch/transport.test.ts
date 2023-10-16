@@ -171,8 +171,8 @@ describe('FetchTransport', () => {
             url: 'http://example.com/collect',
           }),
         ],
-        experimental_sessions_enabled: true,
-        experimental_sessions: {
+        experimentalSessions: {
+          enabled: true,
           session: { id: '123' },
         },
       })

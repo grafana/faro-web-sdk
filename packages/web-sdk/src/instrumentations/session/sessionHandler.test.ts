@@ -3,13 +3,13 @@ import { faro, initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import {
-  getSessionManager,
-  inMemoryUserSessionsManager,
-  persistentUserSessionsManager,
+  getSessionUpdater,
+  inMemoryUserSessionsUpdater,
+  persistentUserSessionsUpdater,
   SESSION_EXPIRATION_TIME,
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,
-} from './sessionManager';
+} from './sessionHandler';
 
 const fakeSystemTime = new Date('2023-01-01').getTime();
 
@@ -33,10 +33,10 @@ describe('Session Manager: persistent sessions handling.', () => {
     getItemSpy = jest.spyOn(global.Storage.prototype, 'getItem').mockImplementation((key) => mockStorage[key] ?? null);
 
     const config = mockConfig({
-      experimental_sessions: {
+      experimentalSessions: {
         persistent: true,
         session: { id: mockInitialSessionId },
-        onSessionSwitch: mockOnNewSessionCreated,
+        onSessionChange: mockOnNewSessionCreated,
       },
     });
 
@@ -57,8 +57,10 @@ describe('Session Manager: persistent sessions handling.', () => {
   });
 
   it('Receives the persistent-session-manager and initializes it with a new session.', () => {
-    const { onActivity } = getSessionManager(mockInitialSessionId);
-    expect(typeof onActivity).toBe('function');
+    const { handleUpdate, init } = getSessionUpdater(mockInitialSessionId);
+    init()
+
+    expect(typeof handleUpdate).toBe('function');
 
     expect(setItemSpy).toHaveBeenCalledTimes(1);
     expect(mockStorage[STORAGE_KEY]).toBe(
@@ -79,12 +81,13 @@ describe('Session Manager: persistent sessions handling.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
 
-    const { onActivity } = persistentUserSessionsManager(mockInitialSessionId);
+    const { handleUpdate, init } = persistentUserSessionsUpdater(mockInitialSessionId);
+    init()
 
     const nextActivityTimeAfterFiveSeconds = fakeSystemTime;
     jest.setSystemTime(nextActivityTimeAfterFiveSeconds);
 
-    onActivity();
+    handleUpdate();
 
     expect(setItemSpy).toBeCalledTimes(2); // called on time in the init function and the in the onActivity func
     expect(mockStorage[STORAGE_KEY]).toBe(
@@ -104,7 +107,8 @@ describe('Session Manager: persistent sessions handling.', () => {
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
-    const { onActivity } = persistentUserSessionsManager(storedSession.sessionId);
+    const { handleUpdate, init } = persistentUserSessionsUpdater(storedSession.sessionId);
+    init()
 
     const mockNewSessionId = 'abcde';
     jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockNewSessionId);
@@ -112,7 +116,7 @@ describe('Session Manager: persistent sessions handling.', () => {
     const maxActivityTimeReached = fakeSystemTime + SESSION_INACTIVITY_TIME;
     jest.setSystemTime(maxActivityTimeReached);
 
-    onActivity();
+    handleUpdate();
 
     // creates and stores new session
     const session = JSON.parse(mockStorage[STORAGE_KEY]);
@@ -152,7 +156,8 @@ describe('Session Manager: persistent sessions handling.', () => {
       sessionMeta: oldStoredMeta,
     };
 
-    const { onActivity } = persistentUserSessionsManager();
+    const { handleUpdate, init } = persistentUserSessionsUpdater();
+    init()
 
     // overwrite auto created session
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -163,7 +168,7 @@ describe('Session Manager: persistent sessions handling.', () => {
     const maxActivityTimeReached = fakeSystemTime + SESSION_EXPIRATION_TIME;
     jest.setSystemTime(maxActivityTimeReached);
 
-    onActivity();
+    handleUpdate();
 
     // creates and stores new session
     const session = JSON.parse(mockStorage[STORAGE_KEY]);
@@ -208,10 +213,10 @@ describe('Session Manager: in-memory sessions handling.', () => {
     getItemSpy = jest.spyOn(global.Storage.prototype, 'getItem').mockImplementation((key) => mockStorage[key] ?? null);
 
     const config = mockConfig({
-      experimental_sessions: {
+      experimentalSessions: {
         persistent: false,
         session: { id: mockInitialSessionId },
-        onSessionSwitch: mockOnNewSessionCreated,
+        onSessionChange: mockOnNewSessionCreated,
       },
     });
 
@@ -232,8 +237,10 @@ describe('Session Manager: in-memory sessions handling.', () => {
   });
 
   it('Receives the in-memory-session-manager.', () => {
-    const { onActivity } = getSessionManager(mockInitialSessionId);
-    expect(typeof onActivity).toBe('function');
+    const { handleUpdate, init } = getSessionUpdater(mockInitialSessionId);
+    init()
+
+    expect(typeof handleUpdate).toBe('function');
 
     expect(setItemSpy).toHaveBeenCalledTimes(0);
     expect(mockStorage[STORAGE_KEY]).toBe(undefined);
@@ -241,7 +248,8 @@ describe('Session Manager: in-memory sessions handling.', () => {
 
   it('Creates a new session if (old) session max inactivity duration is reached.', () => {
     faro.api?.setSession({ id: mockInitialSessionId });
-    const { onActivity } = inMemoryUserSessionsManager(faro.metas.value.session?.id);
+    const { handleUpdate, init } = inMemoryUserSessionsUpdater(faro.metas.value.session?.id);
+    init()
 
     const maxActivityTimeReached = fakeSystemTime + SESSION_INACTIVITY_TIME;
     jest.setSystemTime(maxActivityTimeReached);
@@ -249,7 +257,7 @@ describe('Session Manager: in-memory sessions handling.', () => {
     const mockNewSessionId = 'abcde';
     jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockNewSessionId);
 
-    onActivity();
+    handleUpdate();
 
     const sessionMeta = faro.api.getSession();
     expect(sessionMeta).toStrictEqual({
@@ -274,7 +282,8 @@ describe('Session Manager: in-memory sessions handling.', () => {
 
   it('Creates a new session if (old) session expiration time is reached.', () => {
     faro.api?.setSession({ id: mockInitialSessionId });
-    const { onActivity } = inMemoryUserSessionsManager(faro.metas.value.session?.id);
+    const { handleUpdate, init } = inMemoryUserSessionsUpdater(faro.metas.value.session?.id);
+    init()
 
     const maxActivityTimeReached = fakeSystemTime + SESSION_EXPIRATION_TIME;
     jest.setSystemTime(maxActivityTimeReached);
@@ -282,7 +291,7 @@ describe('Session Manager: in-memory sessions handling.', () => {
     const mockNewSessionId = 'abcde';
     jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockNewSessionId);
 
-    onActivity();
+    handleUpdate();
 
     const sessionMeta = faro.api.getSession();
     expect(sessionMeta).toStrictEqual({

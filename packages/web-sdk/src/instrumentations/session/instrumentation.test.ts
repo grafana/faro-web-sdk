@@ -4,7 +4,7 @@ import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 import { createSession } from '../../metas';
 
 import { SessionInstrumentation } from './instrumentation';
-import * as sessionManager from './sessionManager';
+import * as sessionHandler from './sessionHandler';
 
 describe('SessionInstrumentation', () => {
   it('will send session start event on initialize', () => {
@@ -37,7 +37,9 @@ describe('SessionInstrumentation', () => {
         instrumentations: [new SessionInstrumentation()],
         // Works with the new session config?
         session,
-        experimental_sessions_enabled: true,
+        experimentalSessions: {
+          enabled: true,
+        },
       })
     );
 
@@ -67,8 +69,8 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         // Works with the new session config?
-        experimental_sessions_enabled: true,
-        experimental_sessions: {
+        experimentalSessions: {
+          enabled: true,
           persistent: true,
           session,
         },
@@ -96,45 +98,50 @@ describe('SessionInstrumentation', () => {
     const transport = new MockTransport();
     const session = createSession({ foo: 'bar' });
 
-    const mockGetSessionManager = jest.fn();
-    jest.spyOn(sessionManager, 'getSessionManager').mockImplementationOnce(mockGetSessionManager);
+    const mockGetSessionUpdater = {
+      handleUpdate: jest.fn(),
+      init: jest.fn(),
+    };
+
+    jest.spyOn(sessionHandler, 'getSessionUpdater').mockImplementationOnce(() => mockGetSessionUpdater);
 
     initializeFaro(
       mockConfig({
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         // Works with the new session config?
-        experimental_sessions_enabled: true,
-        experimental_sessions: {
+        experimentalSessions: {
+          enabled: true,
           persistent: true,
           session,
         },
       })
     );
 
-    expect(mockGetSessionManager).toBeCalledTimes(1);
+    expect(mockGetSessionUpdater.init).toBeCalledTimes(1);
+    expect(mockGetSessionUpdater.handleUpdate).toBeCalledTimes(0);
   });
 
   it('will not initialize a new session manager if new session handling is disabled.', () => {
     const transport = new MockTransport();
     const session = createSession({ foo: 'bar' });
 
-    const mockGetSessionManager = jest.fn();
-    jest.spyOn(sessionManager, 'getSessionManager').mockImplementationOnce(mockGetSessionManager);
+    const mockGetSessionUpdater = jest.fn();
+    jest.spyOn(sessionHandler, 'getSessionUpdater').mockImplementationOnce(mockGetSessionUpdater);
 
     initializeFaro(
       mockConfig({
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         // Works with the new session config?
-        experimental_sessions_enabled: false,
-        experimental_sessions: {
+        experimentalSessions: {
+          enabled: false,
           persistent: true,
           session,
         },
       })
     );
 
-    expect(mockGetSessionManager).toBeCalledTimes(0);
+    expect(mockGetSessionUpdater).toBeCalledTimes(0);
   });
 });

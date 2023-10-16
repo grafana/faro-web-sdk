@@ -11,7 +11,7 @@ import type { Config, MetaSession, Transport } from '@grafana/faro-core';
 import type { MetaItem } from '..';
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
-import { isUserSessionValid, receiveUserSession } from '../instrumentations/session';
+import { fetchUserSession, isUserSessionValid } from '../instrumentations/session';
 import { createSession, defaultMetas, defaultViewMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { FetchTransport } from '../transports';
@@ -79,12 +79,12 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
     ignoreErrors: browserConfig.ignoreErrors,
 
-    // TODO: will be true later
-    experimental_sessions_enabled: false,
-    experimental_sessions: {
+    experimentalSessions: {
+      // TODO: will be true on release
+      enabled: false,
       persistent: false,
       session: createSessionMeta(),
-      ...browserConfig.experimental_sessions,
+      ...browserConfig.experimentalSessions,
     },
 
     // TODO: deprecate/remove old init code or maybe rename to legacy_session?
@@ -96,9 +96,8 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
 }
 
 function createSessionMeta(): MetaSession {
-  const userSession = receiveUserSession();
-  const isSessionValid = isUserSessionValid(userSession);
-  const sessionId = isSessionValid ? userSession?.sessionId : createSession().id;
+  const userSession = fetchUserSession();
+  const sessionId = isUserSessionValid(userSession) ? userSession?.sessionId : createSession().id;
 
   return {
     id: sessionId,
