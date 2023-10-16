@@ -58,7 +58,7 @@ describe('Session Manager: persistent sessions handling.', () => {
 
   it('Receives the persistent-session-manager and initializes it with a new session.', () => {
     const { handleUpdate, init } = getSessionUpdater(mockInitialSessionId);
-    init()
+    init();
 
     expect(typeof handleUpdate).toBe('function');
 
@@ -82,7 +82,7 @@ describe('Session Manager: persistent sessions handling.', () => {
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
 
     const { handleUpdate, init } = persistentUserSessionsUpdater(mockInitialSessionId);
-    init()
+    init();
 
     const nextActivityTimeAfterFiveSeconds = fakeSystemTime;
     jest.setSystemTime(nextActivityTimeAfterFiveSeconds);
@@ -108,7 +108,7 @@ describe('Session Manager: persistent sessions handling.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
     const { handleUpdate, init } = persistentUserSessionsUpdater(storedSession.sessionId);
-    init()
+    init();
 
     const mockNewSessionId = 'abcde';
     jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockNewSessionId);
@@ -157,7 +157,7 @@ describe('Session Manager: persistent sessions handling.', () => {
     };
 
     const { handleUpdate, init } = persistentUserSessionsUpdater();
-    init()
+    init();
 
     // overwrite auto created session
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -238,7 +238,7 @@ describe('Session Manager: in-memory sessions handling.', () => {
 
   it('Receives the in-memory-session-manager.', () => {
     const { handleUpdate, init } = getSessionUpdater(mockInitialSessionId);
-    init()
+    init();
 
     expect(typeof handleUpdate).toBe('function');
 
@@ -249,7 +249,7 @@ describe('Session Manager: in-memory sessions handling.', () => {
   it('Creates a new session if (old) session max inactivity duration is reached.', () => {
     faro.api?.setSession({ id: mockInitialSessionId });
     const { handleUpdate, init } = inMemoryUserSessionsUpdater(faro.metas.value.session?.id);
-    init()
+    init();
 
     const maxActivityTimeReached = fakeSystemTime + SESSION_INACTIVITY_TIME;
     jest.setSystemTime(maxActivityTimeReached);
@@ -283,7 +283,7 @@ describe('Session Manager: in-memory sessions handling.', () => {
   it('Creates a new session if (old) session expiration time is reached.', () => {
     faro.api?.setSession({ id: mockInitialSessionId });
     const { handleUpdate, init } = inMemoryUserSessionsUpdater(faro.metas.value.session?.id);
-    init()
+    init();
 
     const maxActivityTimeReached = fakeSystemTime + SESSION_EXPIRATION_TIME;
     jest.setSystemTime(maxActivityTimeReached);

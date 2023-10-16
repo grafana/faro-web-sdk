@@ -139,11 +139,11 @@ export function persistentUserSessionsUpdater(initialSessionId?: string): Persis
         faro.api.setSession(userSession.sessionMeta);
       }
     });
-  };
+  }
 
   return {
     handleUpdate: throttledSessionUpdate,
-    init
+    init,
   };
 }
 
@@ -200,7 +200,7 @@ export function inMemoryUserSessionsUpdater(initialSessionId?: string): InMemory
         });
       }
     });
-  };
+  }
 
   return {
     handleUpdate,
