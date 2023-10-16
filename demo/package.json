@@ -65,7 +65,7 @@
     "jsonwebtoken": "^9.0.0",
     "pg": "^8.8.0",
     "pg-hstore": "^2.3.4",
-    "prom-client": "^14.1.1",
+    "prom-client": "^15.0.0",
     "protobufjs": "^7.2.4",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.0",
