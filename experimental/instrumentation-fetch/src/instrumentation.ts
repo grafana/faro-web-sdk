@@ -9,10 +9,17 @@ import {
 } from './constants';
 import type { FetchInstrumentationOptions } from './types';
 
+// >>> Workarounds because somehow the build uses node typings which causes it build to fail
+type WindowFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+function isRequest(input: any): input is Request {
+  return input instanceof Request && Boolean(input.url);
+}
+// <<< Workarounds
+
 export class FetchInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-fetch';
   readonly version = VERSION;
-  readonly originalFetch = fetch.bind(globalObject);
+  readonly originalFetch: WindowFetch = window.fetch.bind(globalObject);
   private ignoredUrls: FetchInstrumentationOptions['ignoredUrls'];
 
   constructor(private options?: FetchInstrumentationOptions) {
@@ -51,7 +58,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
    * Parse the input object into a string URL
    */
   getRequestUrl(input: RequestInfo | URL): string {
-    return input instanceof Request ? input.url : String(input);
+    return isRequest(input) ? input.url : String(input);
   }
 
   /**
@@ -83,7 +90,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
   /**
    * Instrument fetch with Faro
    */
-  private instrumentFetch(): typeof fetch {
+  private instrumentFetch(): WindowFetch {
     const instrumentation = this;
     return function fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
       const requestUrl = instrumentation.getRequestUrl(input);
