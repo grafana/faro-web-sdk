@@ -4,7 +4,7 @@ The internal logger is a helper utility that is used to log messages from the li
 relies on the unpatched console, the messages printed by the internal logger are not captured during
 auto-instrumentation of the `console` object.
 
-The internal logger is initialized imediately after the unpatched console is initialized. Similar to the unpatched
+The internal logger is initialized immediately after the unpatched console is initialized. Similar to the unpatched
 console, it is also made available to all components that are initialized after it.
 
 Methods available within the internal logger:

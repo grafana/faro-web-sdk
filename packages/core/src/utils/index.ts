@@ -44,3 +44,5 @@ export { createPromiseBuffer } from './promiseBuffer';
 export type { BufferItem, PromiseBuffer, PromiseBufferOptions, PromiseProducer } from './promiseBuffer';
 
 export { genShortID } from './shortId';
+
+export { dateNow } from './date';

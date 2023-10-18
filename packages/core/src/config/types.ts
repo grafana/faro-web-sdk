@@ -22,7 +22,16 @@ export interface Config<P = APIEvent> {
 
   beforeSend?: BeforeSendHook<P>;
   ignoreErrors?: Patterns;
+  // TODO: Deprecate?
   session?: MetaSession;
+  // TODO: rename to "sessions" once feature is ready. Do not use in any prod envs!
+  experimentalSessions?: {
+    enabled?: boolean;
+    persistent?: boolean;
+    session?: MetaSession;
+    onSessionChange?: (oldSession: MetaSession | null, newSession: MetaSession) => void;
+  };
+
   user?: MetaUser;
   view?: MetaView;
   eventDomain?: string;

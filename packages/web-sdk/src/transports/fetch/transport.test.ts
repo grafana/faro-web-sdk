@@ -1,5 +1,14 @@
-import { getTransportBody, LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
+import {
+  getTransportBody,
+  initializeFaro,
+  LogEvent,
+  LogLevel,
+  TransportItem,
+  TransportItemType,
+} from '@grafana/faro-core';
+import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
+
+import { SessionInstrumentation } from '../../instrumentations';
 
 import { FetchTransport } from './transport';
 
@@ -151,5 +160,36 @@ describe('FetchTransport', () => {
     now += 2001;
     await transport.send([item]);
     expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('adds x-faro-session-id header if conditions are met.', async () => {
+    const { transports } = initializeFaro(
+      mockConfig({
+        instrumentations: [new SessionInstrumentation()],
+        transports: [
+          new FetchTransport({
+            url: 'http://example.com/collect',
+          }),
+        ],
+        experimentalSessions: {
+          enabled: true,
+          session: { id: '123' },
+        },
+      })
+    );
+
+    const transport = transports.transports[0] as FetchTransport;
+
+    transport.send([item]);
+
+    expect(fetch).toHaveBeenCalledWith(
+      'http://example.com/collect',
+      expect.objectContaining({
+        headers: {
+          'Content-Type': 'application/json',
+          'x-faro-session-id': '123',
+        },
+      })
+    );
   });
 });
