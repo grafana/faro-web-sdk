@@ -9,6 +9,10 @@ export interface FaroUserSession {
   started: number;
   sessionMeta?: MetaSession;
 }
+export interface UserSessionUpdater {
+  handleUpdate: () => void;
+  init: () => void;
+}
 
 // TODO: make this configurable from the outside
 export const SESSION_EXPIRATION_TIME = 4 * 60 * 60 * 1000; // n hrs
@@ -61,12 +65,7 @@ export function isUserSessionValid(session: FaroUserSession | null): boolean {
   return inactivityPeriodValid;
 }
 
-interface PersistentUserSessionUpdater {
-  handleUpdate: () => void;
-  init: () => void;
-}
-
-export function persistentUserSessionsUpdater(initialSessionId?: string): PersistentUserSessionUpdater {
+export function persistentUserSessionsUpdater(initialSessionId?: string): UserSessionUpdater {
   const throttledSessionUpdate = throttle(() => {
     const sessionFromLocalStorage = fetchUserSession();
 
@@ -147,12 +146,7 @@ export function persistentUserSessionsUpdater(initialSessionId?: string): Persis
   };
 }
 
-interface InMemoryUserSessionsUpdater {
-  handleUpdate: () => void;
-  init: () => void;
-}
-
-export function inMemoryUserSessionsUpdater(initialSessionId?: string): InMemoryUserSessionsUpdater {
+export function inMemoryUserSessionsUpdater(initialSessionId?: string): UserSessionUpdater {
   let inMemoryUserSession: FaroUserSession = createUserSessionObject(initialSessionId);
 
   function handleUpdate() {
@@ -208,8 +202,7 @@ export function inMemoryUserSessionsUpdater(initialSessionId?: string): InMemory
   };
 }
 
-export type SessionUpdater = PersistentUserSessionUpdater | InMemoryUserSessionsUpdater;
-export function getSessionUpdater(initialSessionId?: string): SessionUpdater {
+export function getSessionUpdater(initialSessionId?: string): UserSessionUpdater {
   if (faro.config.experimentalSessions?.persistent && isLocalStorageAvailable) {
     return persistentUserSessionsUpdater(initialSessionId);
   }

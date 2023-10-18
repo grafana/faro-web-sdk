@@ -1,6 +1,6 @@
 import { BaseInstrumentation, Conventions, Meta, MetaSession, VERSION } from '@grafana/faro-core';
 
-import { getSessionUpdater, SessionUpdater } from './sessionHandler';
+import { getSessionUpdater, UserSessionUpdater } from './sessionHandler';
 
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
@@ -10,7 +10,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
   // event twice for the same session
   private notifiedSession: MetaSession | undefined;
 
-  private sessionUpdater: SessionUpdater | undefined;
+  private sessionUpdater: UserSessionUpdater | undefined;
 
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
