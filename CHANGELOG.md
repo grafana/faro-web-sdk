@@ -6,6 +6,8 @@
 - Feat: Enable users to configure per-error boundary `pushError` behavior.
 - Deps: Upgrade project to use the current Node LTS version (lts/hydrogen, v18)
 - Deps: Dependency updates
+- Deps: CVE-2023-45133 - Babel vulnerable to arbitrary code execution when compiling specifically
+  crafted malicious code
 
 ## 1.2.0
 
