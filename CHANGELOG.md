@@ -2,9 +2,10 @@
 
 ## Next
 
-- [FEAT]: Detect if Faro is running inside K6 browser to distinguish between lab and field data (#263).
-
+- Feat: Detect if Faro is running inside K6 browser to distinguish between lab and field data (#263).
 - Feat: Enable users to configure per-error boundary `pushError` behavior.
+- Deps: Upgrade project to use the current Node LTS version (lts/hydrogen, v18)
+- Deps: Dependency updates
 
 ## 1.2.0
 
