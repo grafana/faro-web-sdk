@@ -55,7 +55,7 @@ export class FetchTransport extends BaseTransport {
               : {}),
           },
           body,
-          keepalive: true,
+          keepalive: body.length <= 60_000,
           ...(restOfRequestOptions ?? {}),
         })
           .then((response) => {
