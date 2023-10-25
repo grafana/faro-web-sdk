@@ -11,7 +11,7 @@ import type { Config, MetaSession, Transport } from '@grafana/faro-core';
 import type { MetaItem } from '..';
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
-import { fetchUserSession } from '../instrumentations/session';
+import { PersistentSessionsManager } from '../instrumentations/session/PersistentSessionsManager';
 import { isUserSessionValid } from '../instrumentations/session/utils';
 import { createSession, defaultMetas, defaultViewMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
@@ -98,7 +98,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
 }
 
 function createSessionMeta(): MetaSession {
-  const userSession = fetchUserSession();
+  const userSession = PersistentSessionsManager.fetchUserSession();
   const sessionId = isUserSessionValid(userSession) ? userSession?.sessionId : createSession().id;
 
   return {

@@ -49,7 +49,7 @@ describe('Persistent Sessions Manager.', () => {
     setItemSpy.mockRestore();
   });
 
-  it('Receives the persistent-session-manager and initializes it with a new session.', () => {
+  it('Crates a persistent-session-manager instance and initializes it with a new session.', () => {
     const manager = new PersistentSessionsManager(mockInitialSessionId);
 
     expect(typeof manager.updateSession).toBe('function');

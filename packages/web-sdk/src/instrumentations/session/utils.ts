@@ -1,7 +1,13 @@
 import { dateNow, genShortID } from '@grafana/faro-core';
 import type { Faro } from '@grafana/faro-core';
 
+import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../utils/webStorage';
+
+import { PersistentSessionsManager } from './PersistentSessionsManager';
 import type { FaroUserSession } from './types';
+import { VolatileSessionsManager } from './VolatileSessionsManager';
+
+// TODO: add tests
 
 export const STORAGE_KEY = '__FARO_SESSION__';
 export const SESSION_EXPIRATION_TIME = 4 * 60 * 60 * 1000; // hrs
@@ -34,16 +40,18 @@ export function isUserSessionValid(session: FaroUserSession | null): boolean {
   return inactivityPeriodValid;
 }
 
+type GetUserSessionUpdaterParams = {
+  storeUserSession: (session: FaroUserSession) => void;
+  fetchUserSession: () => FaroUserSession | null;
+  faro: Faro;
+};
+
 export function getUserSessionUpdater({
   fetchUserSession,
   storeUserSession,
   faro,
-}: {
-  storeUserSession: (session: FaroUserSession) => void;
-  fetchUserSession: () => FaroUserSession | null;
-  faro: Faro;
-}): () => void {
-  return () => {
+}: GetUserSessionUpdaterParams): () => void {
+  return (): void => {
     if (!fetchUserSession || !storeUserSession) {
       return;
     }
@@ -74,4 +82,24 @@ export function getUserSessionUpdater({
       );
     }
   };
+}
+
+type GetSessionManagerByConfiguredStrategy = {
+  initialSessionId?: string;
+  faro: Faro;
+};
+
+export function getSessionManagerByConfiguredStrategy({
+  initialSessionId,
+  faro,
+}: GetSessionManagerByConfiguredStrategy): PersistentSessionsManager | VolatileSessionsManager | null {
+  if (faro.config.experimentalSessions?.persistent && isLocalStorageAvailable) {
+    return new PersistentSessionsManager(initialSessionId);
+  }
+
+  if (isSessionStorageAvailable) {
+    return new VolatileSessionsManager(initialSessionId);
+  }
+
+  return null;
 }

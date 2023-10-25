@@ -11,7 +11,7 @@ export class VolatileSessionsManager {
   private static storageTypeSession = webStorageType.session;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
 
-  constructor(private initialSessionId: string) {
+  constructor(private initialSessionId?: string) {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
       storeUserSession: VolatileSessionsManager.storeUserSession,

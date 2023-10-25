@@ -6,6 +6,8 @@ import { createSession } from '../../metas';
 import { SessionInstrumentation } from './instrumentation';
 import * as sessionHandler from './sessionHandler';
 
+// TODO: align tests
+
 describe('SessionInstrumentation', () => {
   it('will send session start event on initialize', () => {
     const transport = new MockTransport();
