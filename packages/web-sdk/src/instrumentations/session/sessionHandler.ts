@@ -1,27 +1,30 @@
-import { dateNow, faro, genShortID, Meta, MetaSession } from '@grafana/faro-core';
+import { dateNow, faro, genShortID, Meta } from '@grafana/faro-core';
 
 import { throttle } from '../../utils';
 import { getItem, isLocalStorageAvailable, removeItem, setItem } from '../../utils/webStorage';
 
-export interface FaroUserSession {
-  sessionId: string;
-  lastActivity: number;
-  started: number;
-  sessionMeta?: MetaSession;
-}
+import type { FaroUserSession } from './types';
+import { getUserSessionUpdater, isUserSessionValid, STORAGE_UPDATE_DELAY } from './utils';
+
+// interface FaroUserSession {
+//   sessionId: string;
+//   lastActivity: number;
+//   started: number;
+//   sessionMeta?: MetaSession;
+// }
 export interface UserSessionUpdater {
   handleUpdate: () => void;
   init: () => void;
 }
 
 // TODO: make this configurable from the outside
-export const SESSION_EXPIRATION_TIME = 4 * 60 * 60 * 1000; // n hrs
-export const SESSION_INACTIVITY_TIME = 15 * 60 * 1000; // n minutes
-const STORAGE_UPDATE_DELAY = 1 * 1000; // n seconds
+// export const SESSION_EXPIRATION_TIME = 4 * 60 * 60 * 1000; // n hrs
+// export const SESSION_INACTIVITY_TIME = 15 * 60 * 1000; // n minutes
+// const STORAGE_UPDATE_DELAY = 1 * 1000; // n seconds
 
-export const STORAGE_KEY = '__FARO_SESSION__';
+const STORAGE_KEY = '__FARO_SESSION__';
 
-export function createUserSessionObject(sessionId?: string): FaroUserSession {
+function createUserSessionObject(sessionId?: string): FaroUserSession {
   const now = dateNow();
 
   return {
@@ -49,50 +52,58 @@ export function fetchUserSession(): FaroUserSession | null {
   return null;
 }
 
-export function isUserSessionValid(session: FaroUserSession | null): boolean {
-  if (session == null) {
-    return false;
-  }
+// export function isUserSessionValid(session: FaroUserSession | null): boolean {
+//   if (session == null) {
+//     return false;
+//   }
 
-  const now = dateNow();
-  const lifetimeValid = now - session.started < SESSION_EXPIRATION_TIME;
+//   const now = dateNow();
+//   const lifetimeValid = now - session.started < SESSION_EXPIRATION_TIME;
 
-  if (!lifetimeValid) {
-    return false;
-  }
+//   if (!lifetimeValid) {
+//     return false;
+//   }
 
-  const inactivityPeriodValid = now - session.lastActivity < SESSION_INACTIVITY_TIME;
-  return inactivityPeriodValid;
-}
+//   const inactivityPeriodValid = now - session.lastActivity < SESSION_INACTIVITY_TIME;
+//   return inactivityPeriodValid;
+// }
 
 export function persistentUserSessionsUpdater(initialSessionId?: string): UserSessionUpdater {
-  const throttledSessionUpdate = throttle(() => {
-    const sessionFromLocalStorage = fetchUserSession();
+  const _updateUserSession = getUserSessionUpdater({
+    fetchUserSession,
+    storeUserSession,
+    faro,
+  });
 
-    if (isUserSessionValid(sessionFromLocalStorage)) {
-      storeUserSession({ ...sessionFromLocalStorage!, lastActivity: dateNow() });
-    } else {
-      let newSession = createUserSessionObject(); // create local srorage session
-      newSession = {
-        ...newSession,
-        sessionMeta: {
-          id: newSession.sessionId,
-          attributes: {
-            ...(faro.metas.value.session?.attributes ?? {}),
-            ...(sessionFromLocalStorage != null ? { previousSession: sessionFromLocalStorage.sessionId } : {}),
-          },
-        },
-      };
+  const throttledSessionUpdate = throttle(() => _updateUserSession(), STORAGE_UPDATE_DELAY);
 
-      storeUserSession(newSession);
+  // const throttledSessionUpdate = throttle(() => {
+  //   const sessionFromLocalStorage = fetchUserSession();
 
-      faro.api?.setSession(newSession.sessionMeta);
-      faro.config.experimentalSessions?.onSessionChange?.(
-        sessionFromLocalStorage?.sessionMeta ?? null,
-        newSession.sessionMeta!
-      );
-    }
-  }, STORAGE_UPDATE_DELAY);
+  //   if (isUserSessionValid(sessionFromLocalStorage)) {
+  //     storeUserSession({ ...sessionFromLocalStorage!, lastActivity: dateNow() });
+  //   } else {
+  //     let newSession = createUserSessionObject(); // create local srorage session
+  //     newSession = {
+  //       ...newSession,
+  //       sessionMeta: {
+  //         id: newSession.sessionId,
+  //         attributes: {
+  //           ...(faro.metas.value.session?.attributes ?? {}),
+  //           ...(sessionFromLocalStorage != null ? { previousSession: sessionFromLocalStorage.sessionId } : {}),
+  //         },
+  //       },
+  //     };
+
+  //     storeUserSession(newSession);
+
+  //     faro.api?.setSession(newSession.sessionMeta);
+  //     faro.config.experimentalSessions?.onSessionChange?.(
+  //       sessionFromLocalStorage?.sessionMeta ?? null,
+  //       newSession.sessionMeta!
+  //     );
+  //   }
+  // }, STORAGE_UPDATE_DELAY);
 
   function init() {
     storeUserSession(createUserSessionObject(initialSessionId));
