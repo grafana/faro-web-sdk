@@ -2,13 +2,13 @@ import * as faroCore from '@grafana/faro-core';
 import { faro, initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
-import { PersistentSessionsManager } from './PersistentSessionsManager';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME, STORAGE_KEY } from './utils';
+import { VolatileSessionsManager } from './VolatileSessionsManager';
 
 const fakeSystemTime = new Date('2023-01-01').getTime();
 const mockInitialSessionId = '123';
 
-describe('Persistent Sessions Manager.', () => {
+describe('Volatile Sessions Manager.', () => {
   let mockStorage: Record<string, string> = {};
   let setItemSpy: jest.SpyInstance<void, [key: string, value: string]>;
   let getItemSpy: jest.SpyInstance<string | null, [key: string]>;
@@ -50,7 +50,7 @@ describe('Persistent Sessions Manager.', () => {
   });
 
   it('Receives the persistent-session-manager and initializes it with a new session.', () => {
-    const manager = new PersistentSessionsManager(mockInitialSessionId);
+    const manager = new VolatileSessionsManager(mockInitialSessionId);
 
     expect(typeof manager.updateSession).toBe('function');
 
@@ -73,7 +73,7 @@ describe('Persistent Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
 
-    const { updateSession } = new PersistentSessionsManager(mockInitialSessionId);
+    const { updateSession } = new VolatileSessionsManager(mockInitialSessionId);
 
     const nextActivityTimeAfterFiveSeconds = fakeSystemTime;
     jest.setSystemTime(nextActivityTimeAfterFiveSeconds);
@@ -99,7 +99,7 @@ describe('Persistent Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
 
-    const { updateSession } = new PersistentSessionsManager(mockInitialSessionId);
+    const { updateSession } = new VolatileSessionsManager(mockInitialSessionId);
 
     const mockNewSessionId = 'abcde';
     jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockNewSessionId);
@@ -147,7 +147,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionMeta: oldStoredMeta,
     };
 
-    const { updateSession } = new PersistentSessionsManager(mockInitialSessionId);
+    const { updateSession } = new VolatileSessionsManager(mockInitialSessionId);
 
     // overwrite auto created session
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
