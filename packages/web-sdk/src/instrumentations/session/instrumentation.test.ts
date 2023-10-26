@@ -4,11 +4,17 @@ import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 import { createSession } from '../../metas';
 
 import { SessionInstrumentation } from './instrumentation';
-import * as sessionUtils from './sessionManagerUtils';
-
-// TODO: align tests
+import { PersistentSessionsManager } from './PersistentSessionsManager';
 
 describe('SessionInstrumentation', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
   it('will send session start event on initialize', () => {
     const transport = new MockTransport();
     const session = createSession({ foo: 'bar' });
@@ -101,10 +107,7 @@ describe('SessionInstrumentation', () => {
     const transport = new MockTransport();
     const session = createSession({ foo: 'bar' });
 
-    const getSessionManagerInstanceByConfiguredStrategySpy = jest.spyOn(
-      sessionUtils,
-      'getSessionManagerInstanceByConfiguredStrategy'
-    );
+    const updatePersistentSessionSpy = jest.spyOn(PersistentSessionsManager, 'storeUserSession');
 
     initializeFaro(
       mockConfig({
@@ -119,17 +122,15 @@ describe('SessionInstrumentation', () => {
       })
     );
 
-    expect(getSessionManagerInstanceByConfiguredStrategySpy).toHaveBeenCalledTimes(1);
+    // new session manager is initialized hand has stored the initial session
+    expect(updatePersistentSessionSpy).toHaveBeenCalledTimes(1);
   });
 
   it('will not initialize a new session manager if new session handling is disabled.', () => {
     const transport = new MockTransport();
     const session = createSession({ foo: 'bar' });
 
-    const getSessionManagerInstanceByConfiguredStrategySpy = jest.spyOn(
-      sessionUtils,
-      'getSessionManagerInstanceByConfiguredStrategy'
-    );
+    const updatePersistentSessionSpy = jest.spyOn(PersistentSessionsManager, 'storeUserSession');
 
     initializeFaro(
       mockConfig({
@@ -144,6 +145,7 @@ describe('SessionInstrumentation', () => {
       })
     );
 
-    expect(getSessionManagerInstanceByConfiguredStrategySpy).toHaveBeenCalledTimes(1);
+    // new session manager is NOT initialized hand such has not stored the initial session
+    expect(updatePersistentSessionSpy).toHaveBeenCalledTimes(0);
   });
 });

@@ -48,10 +48,12 @@ export class SessionInstrumentation extends BaseInstrumentation {
     if (this.config.experimentalSessions?.enabled) {
       const sessionManager = this.getSessionManagerInstanceByConfiguredStrategy(this.metas.value.session?.id);
 
-      this.transports?.addBeforeSendHooks(...this.transports.getBeforeSendHooks(), (item: any) => {
-        sessionManager?.updateSession();
-        return item;
-      });
+      if (sessionManager != null) {
+        this.transports?.addBeforeSendHooks(...this.transports.getBeforeSendHooks(), (item: any) => {
+          sessionManager?.updateSession();
+          return item;
+        });
+      }
     }
   }
 }
