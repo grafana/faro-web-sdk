@@ -1,11 +1,6 @@
 import { dateNow, faro, genShortID } from '@grafana/faro-core';
-import type { Faro } from '@grafana/faro-core';
 
-import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../utils/webStorage';
-
-import { PersistentSessionsManager } from './PersistentSessionsManager';
 import type { FaroUserSession } from './types';
-import { VolatileSessionsManager } from './VolatileSessionManager';
 
 // TODO: add tests
 
@@ -80,24 +75,4 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
       },
     },
   };
-}
-
-type GetSessionManagerInstanceByConfiguredStrategy = {
-  initialSessionId?: string;
-  faro: Faro;
-};
-
-export function getSessionManagerInstanceByConfiguredStrategy({
-  initialSessionId,
-  faro,
-}: GetSessionManagerInstanceByConfiguredStrategy): PersistentSessionsManager | VolatileSessionsManager | null {
-  if (faro.config.experimentalSessions?.persistent && isLocalStorageAvailable) {
-    return new PersistentSessionsManager(initialSessionId);
-  }
-
-  if (isSessionStorageAvailable) {
-    return new VolatileSessionsManager(initialSessionId);
-  }
-
-  return null;
 }

@@ -1,6 +1,9 @@
-import { BaseInstrumentation, Conventions, faro, Meta, MetaSession, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, Conventions, Meta, MetaSession, VERSION } from '@grafana/faro-core';
 
-import { getSessionManagerInstanceByConfiguredStrategy } from './sessionManagerUtils';
+import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../utils/webStorage';
+
+import { PersistentSessionsManager } from './PersistentSessionsManager';
+import { VolatileSessionsManager } from './VolatileSessionManager';
 
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
@@ -22,6 +25,20 @@ export class SessionInstrumentation extends BaseInstrumentation {
     }
   }
 
+  private getSessionManagerInstanceByConfiguredStrategy(
+    initialSessionId?: string
+  ): PersistentSessionsManager | VolatileSessionsManager | null {
+    if (this.config.experimentalSessions?.persistent && isLocalStorageAvailable) {
+      return new PersistentSessionsManager(initialSessionId);
+    }
+
+    if (isSessionStorageAvailable) {
+      return new VolatileSessionsManager(initialSessionId);
+    }
+
+    return null;
+  }
+
   initialize() {
     this.logDebug('init session instrumentation');
 
@@ -29,10 +46,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     this.metas.addListener(this.sendSessionStartEvent.bind(this));
 
     if (this.config.experimentalSessions?.enabled) {
-      const sessionManager = getSessionManagerInstanceByConfiguredStrategy({
-        initialSessionId: this.metas.value.session?.id,
-        faro,
-      });
+      const sessionManager = this.getSessionManagerInstanceByConfiguredStrategy(this.metas.value.session?.id);
 
       this.transports?.addBeforeSendHooks(...this.transports.getBeforeSendHooks(), (item: any) => {
         sessionManager?.updateSession();
