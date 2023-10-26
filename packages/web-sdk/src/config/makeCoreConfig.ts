@@ -79,6 +79,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
     ignoreErrors: browserConfig.ignoreErrors,
 
+    // The new session management feature is a PoC and still under development and IS NOT READY for any production use!
     experimentalSessions: {
       // TODO: will be true on release
       enabled: false,
