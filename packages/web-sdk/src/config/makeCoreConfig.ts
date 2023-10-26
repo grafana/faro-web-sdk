@@ -12,7 +12,7 @@ import type { MetaItem } from '..';
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { PersistentSessionsManager } from '../instrumentations/session/PersistentSessionsManager';
-import { isUserSessionValid } from '../instrumentations/session/utils';
+import { isUserSessionValid } from '../instrumentations/session/sessionManagerUtils';
 import { createSession, defaultMetas, defaultViewMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { FetchTransport } from '../transports';

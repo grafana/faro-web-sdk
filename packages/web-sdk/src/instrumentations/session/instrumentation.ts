@@ -1,6 +1,6 @@
 import { BaseInstrumentation, Conventions, faro, Meta, MetaSession, VERSION } from '@grafana/faro-core';
 
-import { getSessionManagerInstanceByConfiguredStrategy } from './utils';
+import { getSessionManagerInstanceByConfiguredStrategy } from './sessionManagerUtils';
 
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';

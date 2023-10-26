@@ -4,8 +4,14 @@ import type { Meta } from '@grafana/faro-core';
 import { throttle } from '../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../utils/webStorage';
 
+import {
+  addSessionMetadataToNextSession,
+  createUserSessionObject,
+  getUserSessionUpdater,
+  STORAGE_KEY,
+  STORAGE_UPDATE_DELAY,
+} from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
-import { createUserSessionObject, getUserSessionUpdater, STORAGE_KEY, STORAGE_UPDATE_DELAY } from './utils';
 
 export class VolatileSessionsManager {
   private static storageTypeSession = webStorageType.session;
@@ -15,7 +21,6 @@ export class VolatileSessionsManager {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
       storeUserSession: VolatileSessionsManager.storeUserSession,
-      faro,
     });
 
     this.init();
@@ -56,17 +61,10 @@ export class VolatileSessionsManager {
       const sessionFromSessionStorage = VolatileSessionsManager.fetchUserSession();
 
       if (session && session.id !== sessionFromSessionStorage?.sessionId) {
-        const userSession = {
-          ...createUserSessionObject(session.id),
-          sessionMeta: {
-            id: session.id,
-            attributes: {
-              ...(sessionFromSessionStorage?.sessionMeta?.attributes ?? {}),
-              ...session.attributes,
-              ...(sessionFromSessionStorage ? { previousSession: sessionFromSessionStorage.sessionId } : {}),
-            },
-          },
-        };
+        const userSession = addSessionMetadataToNextSession(
+          createUserSessionObject(session.id),
+          sessionFromSessionStorage
+        );
 
         VolatileSessionsManager.storeUserSession(userSession);
         faro.api.setSession(userSession.sessionMeta);

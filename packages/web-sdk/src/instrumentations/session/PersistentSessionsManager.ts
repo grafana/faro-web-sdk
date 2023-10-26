@@ -4,8 +4,14 @@ import type { Meta } from '@grafana/faro-core';
 import { throttle } from '../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../utils/webStorage';
 
+import {
+  addSessionMetadataToNextSession,
+  createUserSessionObject,
+  getUserSessionUpdater,
+  STORAGE_KEY,
+  STORAGE_UPDATE_DELAY,
+} from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
-import { createUserSessionObject, getUserSessionUpdater, STORAGE_KEY, STORAGE_UPDATE_DELAY } from './utils';
 
 export class PersistentSessionsManager {
   private static storageTypeLocal = webStorageType.local;
@@ -15,7 +21,6 @@ export class PersistentSessionsManager {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: PersistentSessionsManager.fetchUserSession,
       storeUserSession: PersistentSessionsManager.storeUserSession,
-      faro,
     });
 
     this.init();
@@ -69,17 +74,10 @@ export class PersistentSessionsManager {
       const sessionFromLocalStorage = PersistentSessionsManager.fetchUserSession();
 
       if (session && session.id !== sessionFromLocalStorage?.sessionId) {
-        const userSession = {
-          ...createUserSessionObject(session.id),
-          sessionMeta: {
-            id: session.id,
-            attributes: {
-              ...(sessionFromLocalStorage?.sessionMeta?.attributes ?? {}),
-              ...session.attributes,
-              ...(sessionFromLocalStorage ? { previousSession: sessionFromLocalStorage.sessionId } : {}),
-            },
-          },
-        };
+        const userSession = addSessionMetadataToNextSession(
+          createUserSessionObject(session.id),
+          sessionFromLocalStorage
+        );
 
         PersistentSessionsManager.storeUserSession(userSession);
         faro.api.setSession(userSession.sessionMeta);

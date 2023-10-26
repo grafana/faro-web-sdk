@@ -4,7 +4,7 @@ import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 import { createSession } from '../../metas';
 
 import { SessionInstrumentation } from './instrumentation';
-import * as sessionUtils from './utils';
+import * as sessionUtils from './sessionManagerUtils';
 
 // TODO: align tests
 

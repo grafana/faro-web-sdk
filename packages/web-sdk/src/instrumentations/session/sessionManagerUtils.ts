@@ -1,4 +1,4 @@
-import { dateNow, genShortID } from '@grafana/faro-core';
+import { dateNow, faro, genShortID } from '@grafana/faro-core';
 import type { Faro } from '@grafana/faro-core';
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../utils/webStorage';
@@ -43,44 +43,42 @@ export function isUserSessionValid(session: FaroUserSession | null): boolean {
 type GetUserSessionUpdaterParams = {
   storeUserSession: (session: FaroUserSession) => void;
   fetchUserSession: () => FaroUserSession | null;
-  faro: Faro;
 };
 
-export function getUserSessionUpdater({
-  fetchUserSession,
-  storeUserSession,
-  faro,
-}: GetUserSessionUpdaterParams): () => void {
+export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: GetUserSessionUpdaterParams): () => void {
   return (): void => {
     if (!fetchUserSession || !storeUserSession) {
       return;
     }
 
-    const sessionFromLocalStorage = fetchUserSession();
+    const sessionFromStorage = fetchUserSession();
 
-    if (isUserSessionValid(sessionFromLocalStorage)) {
-      storeUserSession({ ...sessionFromLocalStorage!, lastActivity: dateNow() });
+    if (isUserSessionValid(sessionFromStorage)) {
+      storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
     } else {
-      let newSession = createUserSessionObject(); // create local srorage session
-      newSession = {
-        ...newSession,
-        sessionMeta: {
-          id: newSession.sessionId,
-          attributes: {
-            ...(faro.metas.value.session?.attributes ?? {}),
-            ...(sessionFromLocalStorage != null ? { previousSession: sessionFromLocalStorage.sessionId } : {}),
-          },
-        },
-      };
+      let newSession = addSessionMetadataToNextSession(createUserSessionObject(), sessionFromStorage); // create local srorage session
 
       storeUserSession(newSession);
 
       faro.api?.setSession(newSession.sessionMeta);
       faro.config.experimentalSessions?.onSessionChange?.(
-        sessionFromLocalStorage?.sessionMeta ?? null,
+        sessionFromStorage?.sessionMeta ?? null,
         newSession.sessionMeta!
       );
     }
+  };
+}
+
+export function addSessionMetadataToNextSession(newSession: FaroUserSession, previousSession: FaroUserSession | null) {
+  return {
+    ...newSession,
+    sessionMeta: {
+      id: newSession.sessionId,
+      attributes: {
+        ...(faro.metas.value.session?.attributes ?? {}),
+        ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
+      },
+    },
   };
 }
 
