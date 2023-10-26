@@ -2,7 +2,7 @@
 
 ## Next
 
-## 1.2.1
+## 1.2.0 – 1.2.2
 
 - Feat: Detect if Faro is running inside K6 browser to distinguish between lab and field data (#263).
 - Feat: Enable users to configure per-error boundary `pushError` behavior.
