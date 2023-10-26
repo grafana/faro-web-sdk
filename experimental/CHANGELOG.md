@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.2.0 – 1.2.1
+
 ### FetchInstrumentation
 
 - Change: fetch instrumentation log attribute "statusText" is now "status_text"
