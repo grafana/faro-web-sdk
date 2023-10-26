@@ -2,6 +2,8 @@
 
 ## Next
 
+- Fix: disable keepalive in web-sdk fetch transport when the payload length is over 60_000
+
 ## 1.2.0 – 1.2.2
 
 - Feat: Detect if Faro is running inside K6 browser to distinguish between lab and field data (#263).
@@ -10,7 +12,6 @@
 - Deps: Dependency updates
 - Deps: CVE-2023-45133 - Babel vulnerable to arbitrary code execution when compiling specifically
   crafted malicious code
-- Fix: disable keepalive in web-sdk fetch transport when the payload length is over 60_000
 
 ## 1.2.0
 
