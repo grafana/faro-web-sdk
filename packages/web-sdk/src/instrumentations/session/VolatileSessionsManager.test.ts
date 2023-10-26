@@ -3,7 +3,7 @@ import { faro, initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME, STORAGE_KEY } from './utils';
-import { VolatileSessionsManager } from './VolatileSessionsManager';
+import { VolatileSessionsManager } from './VolatileSessionManager';
 
 const fakeSystemTime = new Date('2023-01-01').getTime();
 const mockInitialSessionId = '123';

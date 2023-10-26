@@ -5,7 +5,7 @@ import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../utils/
 
 import { PersistentSessionsManager } from './PersistentSessionsManager';
 import type { FaroUserSession } from './types';
-import { VolatileSessionsManager } from './VolatileSessionsManager';
+import { VolatileSessionsManager } from './VolatileSessionManager';
 
 // TODO: add tests
 
@@ -84,15 +84,15 @@ export function getUserSessionUpdater({
   };
 }
 
-type GetSessionManagerByConfiguredStrategy = {
+type GetSessionManagerInstanceByConfiguredStrategy = {
   initialSessionId?: string;
   faro: Faro;
 };
 
-export function getSessionManagerByConfiguredStrategy({
+export function getSessionManagerInstanceByConfiguredStrategy({
   initialSessionId,
   faro,
-}: GetSessionManagerByConfiguredStrategy): PersistentSessionsManager | VolatileSessionsManager | null {
+}: GetSessionManagerInstanceByConfiguredStrategy): PersistentSessionsManager | VolatileSessionsManager | null {
   if (faro.config.experimentalSessions?.persistent && isLocalStorageAvailable) {
     return new PersistentSessionsManager(initialSessionId);
   }

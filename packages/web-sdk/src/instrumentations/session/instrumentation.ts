@@ -1,6 +1,6 @@
 import { BaseInstrumentation, Conventions, faro, Meta, MetaSession, VERSION } from '@grafana/faro-core';
 
-import { getSessionManagerByConfiguredStrategy } from './utils';
+import { getSessionManagerInstanceByConfiguredStrategy } from './utils';
 
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
@@ -29,7 +29,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     this.metas.addListener(this.sendSessionStartEvent.bind(this));
 
     if (this.config.experimentalSessions?.enabled) {
-      const sessionManager = getSessionManagerByConfiguredStrategy({
+      const sessionManager = getSessionManagerInstanceByConfiguredStrategy({
         initialSessionId: this.metas.value.session?.id,
         faro,
       });
