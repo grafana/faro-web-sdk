@@ -2,7 +2,7 @@
 
 ## Next
 
-- Fix: disable keepalive in web-sdk fetch transport when the payload length is over 60_000
+- Fix: disable keepalive in web-sdk fetch transport when the payload length is over 60_000 (#353)
 
 ## 1.2.0 – 1.2.2
 
