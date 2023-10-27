@@ -17,7 +17,7 @@ describe('defaultMetas', () => {
     expect(config).toBeTruthy();
     expect(config?.metas).toHaveLength(3);
     expect(config?.metas.map((item) => (isFunction(item) ? item() : item))).toContainEqual({
-      k6: {},
+      k6: { isK6Browser: true },
     });
 
     delete (global as any).k6;
@@ -26,7 +26,7 @@ describe('defaultMetas', () => {
   it('does not include K6Meta in defaultMetas for non-k6 (field) sessions', () => {
     expect(defaultMetas).toHaveLength(2);
     expect(defaultMetas.map((item) => (isFunction(item) ? item() : item))).not.toContainEqual({
-      k6: {},
+      k6: { isK6Browser: true },
     });
   });
 });
