@@ -27,6 +27,7 @@ export class PersistentSessionsManager {
   }
 
   static removeUserSession() {
+    console.log('remove');
     removeItem(STORAGE_KEY, PersistentSessionsManager.storageTypeLocal);
   }
 
@@ -35,6 +36,8 @@ export class PersistentSessionsManager {
   }
 
   static fetchUserSession(): FaroUserSession | null {
+    console.log('fetch');
+
     const storedSession = getItem(STORAGE_KEY, PersistentSessionsManager.storageTypeLocal);
 
     if (storedSession) {

@@ -69,7 +69,10 @@ export function setItem(
  * @param webStorageMechanism: wether the item shall be received form local storage or session storage. Defaults to local storage.
  */
 export function removeItem(key: string, webStorageMechanism: StorageMechanism = webStorageType.local): void {
+  console.log('removeItem :>> ', key);
+  console.log('webStorageMechanism :>> ', webStorageMechanism);
   if (isWebStorageTypeAvailable(webStorageMechanism)) {
+    console.log('removeItem2 :>> ', key);
     localStorage.removeItem(key);
   }
 }

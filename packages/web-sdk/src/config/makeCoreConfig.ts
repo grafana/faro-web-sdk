@@ -1,5 +1,6 @@
 import {
   createInternalLogger,
+  dateNow,
   defaultBatchingConfig,
   defaultGlobalObjectKey,
   defaultInternalLoggerLevel,
@@ -12,13 +13,21 @@ import type { MetaItem } from '..';
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { PersistentSessionsManager } from '../instrumentations/session/sessionManager';
-import { isUserSessionValid } from '../instrumentations/session/sessionManager/sessionManagerUtils';
+import {
+  isUserSessionValid,
+  MAX_SESSION_PERSISTENCE_TIME,
+} from '../instrumentations/session/sessionManager/sessionManagerUtils';
 import { createSession, defaultMetas, defaultViewMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { FetchTransport } from '../transports';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
+
+const defaultSessionPersistenceConfig = {
+  persistent: false,
+  maxSessionPersistenceTime: MAX_SESSION_PERSISTENCE_TIME,
+} as const;
 
 export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined {
   const transports: Transport[] = [];
@@ -84,8 +93,8 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     experimentalSessions: {
       // TODO: will be true on release
       enabled: false,
-      persistent: false,
-      session: createSessionMeta(),
+      ...defaultSessionPersistenceConfig,
+      session: createSessionMeta(browserConfig.experimentalSessions),
       ...browserConfig.experimentalSessions,
     },
 
@@ -97,11 +106,28 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
   };
 }
 
-function createSessionMeta(): MetaSession {
-  const userSession = PersistentSessionsManager.fetchUserSession();
-  const sessionId = isUserSessionValid(userSession) ? userSession?.sessionId : createSession().id;
+function createSessionMeta(sessionsConfig: Config['experimentalSessions']): MetaSession {
+  const _sessionsConfig = { ...defaultSessionPersistenceConfig, ...sessionsConfig };
+
+  let sessionId;
+
+  if (_sessionsConfig.persistent) {
+    const userSession = PersistentSessionsManager.fetchUserSession();
+    const now = dateNow();
+
+    const shouldClearPersistentSession =
+      userSession && userSession.lastActivity < now - _sessionsConfig.maxSessionPersistenceTime!;
+
+    if (shouldClearPersistentSession) {
+      console.log('userSession :>> ', userSession);
+
+      PersistentSessionsManager.removeUserSession();
+    }
+
+    sessionId = isUserSessionValid(userSession) ? userSession?.sessionId : createSession().id;
+  }
 
   return {
-    id: sessionId,
+    id: sessionId ?? createSession().id,
   };
 }

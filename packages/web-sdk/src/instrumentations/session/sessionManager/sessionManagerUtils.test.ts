@@ -29,6 +29,7 @@ describe('sessionManagerUtils', () => {
 
   afterAll(() => {
     jest.restoreAllMocks();
+    jest.useRealTimers();
   });
 
   it('creates new user session object.', () => {
