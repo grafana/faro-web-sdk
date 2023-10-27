@@ -1,8 +1,8 @@
 import { faro } from '@grafana/faro-core';
 import type { Meta } from '@grafana/faro-core';
 
-import { throttle } from '../../utils';
-import { getItem, removeItem, setItem, webStorageType } from '../../utils/webStorage';
+import { throttle } from '../../../utils';
+import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
 import {
   addSessionMetadataToNextSession,

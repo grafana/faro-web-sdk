@@ -2,8 +2,8 @@ import { BaseInstrumentation, Conventions, Meta, MetaSession, VERSION } from '@g
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../utils/webStorage';
 
-import { PersistentSessionsManager } from './PersistentSessionsManager';
-import { VolatileSessionsManager } from './VolatileSessionManager';
+import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
+import { VolatileSessionsManager } from './sessionManager/VolatileSessionManager';
 
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';

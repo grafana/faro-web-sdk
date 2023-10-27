@@ -4,7 +4,7 @@ import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 import { createSession } from '../../metas';
 
 import { SessionInstrumentation } from './instrumentation';
-import { PersistentSessionsManager } from './PersistentSessionsManager';
+import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
 
 describe('SessionInstrumentation', () => {
   beforeEach(() => {
