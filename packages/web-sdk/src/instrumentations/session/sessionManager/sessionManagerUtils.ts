@@ -41,7 +41,7 @@ type GetUserSessionUpdaterParams = {
 };
 
 export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: GetUserSessionUpdaterParams): () => void {
-  return (): void => {
+  return function updateSession(): void {
     if (!fetchUserSession || !storeUserSession) {
       return;
     }
@@ -51,7 +51,7 @@ export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: Ge
     if (isUserSessionValid(sessionFromStorage)) {
       storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
     } else {
-      let newSession = addSessionMetadataToNextSession(createUserSessionObject(), sessionFromStorage); // create local srorage session
+      let newSession = addSessionMetadataToNextSession(createUserSessionObject(), sessionFromStorage);
 
       storeUserSession(newSession);
 
@@ -65,14 +65,20 @@ export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: Ge
 }
 
 export function addSessionMetadataToNextSession(newSession: FaroUserSession, previousSession: FaroUserSession | null) {
-  return {
+  const sessionWithMeta: Required<FaroUserSession> = {
     ...newSession,
     sessionMeta: {
       id: newSession.sessionId,
-      attributes: {
-        ...(faro.metas.value.session?.attributes ?? {}),
-        ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
-      },
     },
   };
+
+  const metaAttributes = faro.metas.value.session?.attributes;
+  if (metaAttributes || previousSession != null) {
+    sessionWithMeta.sessionMeta.attributes = {
+      ...(metaAttributes ?? {}),
+      ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
+    };
+  }
+
+  return sessionWithMeta;
 }
