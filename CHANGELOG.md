@@ -2,6 +2,8 @@
 
 ## Next
 
+- Fix: disable keepalive in web-sdk fetch transport when the payload length is over 60_000 (#353)
+
 ## 1.2.0 – 1.2.2
 
 - Feat: Detect if Faro is running inside K6 browser to distinguish between lab and field data (#263).

@@ -27,6 +27,17 @@ const item: TransportItem<LogEvent> = {
   meta: {},
 };
 
+const largeItem: TransportItem<LogEvent> = {
+  type: TransportItemType.LOG,
+  payload: {
+    context: {},
+    level: LogLevel.INFO,
+    message: Buffer.alloc(60_000, 'I').toString('utf-8'),
+    timestamp: new Date().toISOString(),
+  },
+  meta: {},
+};
+
 describe('FetchTransport', () => {
   beforeEach(() => {
     fetch.mockClear();
@@ -191,5 +202,25 @@ describe('FetchTransport', () => {
         },
       })
     );
+  });
+
+  it('will turn off keepalive if the payload length is over 60_000', async () => {
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    transport.send([largeItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith('http://example.com/collect', {
+      body: JSON.stringify(getTransportBody([largeItem])),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      keepalive: false,
+      method: 'POST',
+    });
   });
 });
