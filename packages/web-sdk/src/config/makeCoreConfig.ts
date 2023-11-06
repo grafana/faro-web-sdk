@@ -120,8 +120,6 @@ function createSessionMeta(sessionsConfig: Config['experimentalSessions']): Meta
       userSession && userSession.lastActivity < now - _sessionsConfig.maxSessionPersistenceTime!;
 
     if (shouldClearPersistentSession) {
-      console.log('userSession :>> ', userSession);
-
       PersistentSessionsManager.removeUserSession();
     }
 
