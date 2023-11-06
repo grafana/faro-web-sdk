@@ -12,7 +12,7 @@ Metas can be either:
 ### App
 
 The `app` meta ties signals with a specific app and it should not be changed across a session. It is required during
-initialization and it is the responsability of the end-user to define it.
+initialization and it is the responsibility of the end-user to define it.
 
 Properties:
 
@@ -24,7 +24,7 @@ Properties:
 ### Browser
 
 The `browser` meta helps with identifying the environment where the app is running and it should not change across a
-session. Altough it is not handled automatically by the core package, nor is it the responsability of the end-user to
+session. Altough it is not handled automatically by the core package, nor is it the responsibility of the end-user to
 define it. Wrapper packages like `web-sdk` should handle it.
 
 Properties:
@@ -49,13 +49,33 @@ Properties:
 
 ### SDK
 
-The `sdk` meta defines the following properties about the Faro library itself:
+By default the sdk meta contain only the version install Faro script, no information about configured
+integrations. This works fine because in Faro we always update all package together so they are always
+on teh same version number.
+
+For debugging purposes you can get get information about Faro and installed integrations by adding
+the `metaSdk` object.
+
+The `metaSdk` meta defines the following properties about the Faro library itself:
 
 - `name` - the name of the core library
 - `version` - the version of the library
 - `integrations` - the list of instrumentations that are used, identified by by the name and the version
 
-The `sdk` meta is handled internally by the core package and the end-user should not change it.
+Example:
+
+```ts
+import { sdkMeta } from '@grafana/faro-web-sdk';
+
+initializeFaro({
+    ...
+    metas: [sdkMeta],
+});
+
+```
+
+Note:
+The `sdk` meta creation is handled internally by the core package and the end-user should not change it.
 
 ### Session
 

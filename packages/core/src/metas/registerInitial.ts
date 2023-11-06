@@ -6,9 +6,7 @@ import type { Meta } from './types';
 export function registerInitialMetas(faro: Faro): void {
   const initial: Meta = {
     sdk: {
-      name: '@grafana/faro-core',
       version: VERSION,
-      integrations: faro.config.instrumentations.map(({ name, version }) => ({ name, version })),
     },
   };
 
