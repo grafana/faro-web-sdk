@@ -29,6 +29,7 @@ export interface Config<P = APIEvent> {
     enabled?: boolean;
     persistent?: boolean;
     session?: MetaSession;
+    maxSessionPersistenceTime?: number;
     onSessionChange?: (oldSession: MetaSession | null, newSession: MetaSession) => void;
   };
 

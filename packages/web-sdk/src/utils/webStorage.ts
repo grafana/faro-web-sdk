@@ -1,7 +1,19 @@
 import { faro } from '@grafana/faro-core';
 
-type StorageMechanism = 'sessionStorage' | 'localStorage';
+export const webStorageType = {
+  session: 'sessionStorage',
+  local: 'localStorage',
+} as const;
 
+type StorageMechanism = (typeof webStorageType)[keyof typeof webStorageType];
+
+// TODO: remove default storage type from all function
+
+/**
+ * Check if selected web storage mechanism is available.
+ * @param type storage mechanism to test availability for.
+ * @returns
+ */
 export function isWebStorageAvailable(type: StorageMechanism): boolean {
   try {
     let storage;
@@ -18,28 +30,57 @@ export function isWebStorageAvailable(type: StorageMechanism): boolean {
   }
 }
 
-export const isLocalStorageAvailable = isWebStorageAvailable('localStorage');
-
-export function getItem(key: string): string | null {
-  if (isLocalStorageAvailable) {
-    return localStorage.getItem(key);
+/**
+ * Get item from SessionStorage or LocalStorage.
+ * @param key: the item key.
+ * @param webStorageMechanism: wether the item shall be received form local storage or session storage. Defaults to local storage.
+ */
+export function getItem(key: string, webStorageMechanism: StorageMechanism): string | null {
+  if (isWebStorageTypeAvailable(webStorageMechanism)) {
+    return window[webStorageMechanism].getItem(key);
   }
 
   return null;
 }
 
-export function setItem(key: string, value: string): void {
-  if (isLocalStorageAvailable) {
+/**
+ * Store item in SessionStorage or LocalStorage.
+ * @param key: the item key.
+ * @param value: the item data.
+ * @param webStorageMechanism: wether the item shall be received form local storage or session storage. Defaults to local storage.
+ */
+export function setItem(key: string, value: string, webStorageMechanism: StorageMechanism): void {
+  if (isWebStorageTypeAvailable(webStorageMechanism)) {
     try {
-      localStorage.setItem(key, value);
+      window[webStorageMechanism].setItem(key, value);
     } catch (error) {
       // do nothing
     }
   }
 }
 
-export function removeItem(key: string): void {
-  if (isLocalStorageAvailable) {
-    localStorage.removeItem(key);
+/**
+ * Remove item from SessionStorage or LocalStorage.
+ * @param key: the item key.
+ * @param webStorageMechanism: wether the item shall be received form local storage or session storage. Defaults to local storage.
+ */
+export function removeItem(key: string, webStorageMechanism: StorageMechanism): void {
+  if (isWebStorageTypeAvailable(webStorageMechanism)) {
+    window[webStorageMechanism].removeItem(key);
   }
+}
+
+export const isLocalStorageAvailable = isWebStorageAvailable(webStorageType.local);
+export const isSessionStorageAvailable = isWebStorageAvailable(webStorageType.session);
+
+function isWebStorageTypeAvailable(webStorageMechanism: StorageMechanism) {
+  if (webStorageMechanism === webStorageType.local) {
+    return isLocalStorageAvailable;
+  }
+
+  if (webStorageMechanism === webStorageType.session) {
+    return isSessionStorageAvailable;
+  }
+
+  return false;
 }
