@@ -4,6 +4,9 @@
 
 - Fix: Disable keepalive in web-sdk fetch transport when the payload length is over 60_000 (#353)
 - Fix: Add 'isK6Browser' field to k6 meta object (#361)
+- Change: The sdk meta has been removed from default metas to reduce beacon payload size. [If users
+  need that meta, it can still be added as outlined in the docs.](https://github.com/grafana/faro-web-sdk/blob/adda57314381c7d945d8647eee2841d173571281/docs/sources/developer/architecture/components/metas.md#L52)
+  ()
 
 ## 1.2.0 - 1.2.2
 

@@ -49,13 +49,30 @@ Properties:
 
 ### SDK
 
-The `sdk` meta defines the following properties about the Faro library itself:
+The optional `sdk` meta defines the following properties about the Faro library itself:
 
 - `name` - the name of the core library
 - `version` - the version of the library
 - `integrations` - the list of instrumentations that are used, identified by by the name and the version
 
-The `sdk` meta is handled internally by the core package and the end-user should not change it.
+The sdk meta is not attached to by default. This is because it is not related to RUM data and mostly
+useful for debugging purposes and we want to avoid an unnecessary increase of the beacon request size.
+
+If the meta is needed it can be added via Faro initialization by importing the `metaSdk` and adding
+it to the `metas` list.
+
+```ts
+import { sdkMeta } from '@grafana/faro-web-sdk';
+
+initializeFaro({
+    ...
+    metas: [sdkMeta],
+});
+
+```
+
+Note:
+The `sdk` meta creation is handled internally by the core package and the end-user should not change it.
 
 ### Session
 
