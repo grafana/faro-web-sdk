@@ -1,9 +1,14 @@
 import type { Faro } from '../sdk';
+import { VERSION } from '../version';
 
 import type { Meta } from './types';
 
 export function registerInitialMetas(faro: Faro): void {
-  const initial: Meta = {};
+  const initial: Meta = {
+    sdk: {
+      version: VERSION,
+    },
+  };
 
   const session = faro.config.experimentalSessions?.session ?? faro.config.session;
   if (session) {
