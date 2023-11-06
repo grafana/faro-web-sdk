@@ -2,12 +2,13 @@
 
 ## Next
 
-- Fix: Disable keepalive in web-sdk fetch transport when the payload length is over 60_000 (#353)
-- Fix: Add 'isK6Browser' field to k6 meta object (#361)
+- Fix: Disable keepalive in web-sdk fetch transport when the payload length is over 60_000 (#353).
+- Fix: Add 'isK6Browser' field to k6 meta object (#361).
 - Breaking: The sdk meta now only contains the version number of Faro. This is to reduce beacon payload size.
   [If users need the full data including all integrations, it can be added as outlined in the docs.](https://github.com/grafana/faro-web-sdk/blob/adda57314381c7d945d8647eee2841d173571281/docs/sources/developer/architecture/components/metas.md#L52)(#370)
 - Feature: new experimental session manager which can be configured to use persistent or volatile
-  sessions. ( #359)
+  sessions (#359).
+- Fix: user provided session attributes were not sent (#372).
 
 ## 1.2.0 - 1.2.2
 

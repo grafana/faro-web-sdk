@@ -44,8 +44,8 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         // Works with the new session config?
-        session,
         experimentalSessions: {
+          session,
           enabled: true,
           persistent: false,
         },
