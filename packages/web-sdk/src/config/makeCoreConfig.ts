@@ -25,6 +25,7 @@ import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
 
 const defaultSessionPersistenceConfig = {
+  // enabled: true; // TODO:  uncomment once we switch
   persistent: false,
   maxSessionPersistenceTime: MAX_SESSION_PERSISTENCE_TIME,
 } as const;

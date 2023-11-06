@@ -35,9 +35,9 @@ export function isWebStorageAvailable(type: StorageMechanism): boolean {
  * @param key: the item key.
  * @param webStorageMechanism: wether the item shall be received form local storage or session storage. Defaults to local storage.
  */
-export function getItem(key: string, webStorageMechanism: StorageMechanism = webStorageType.local): string | null {
+export function getItem(key: string, webStorageMechanism: StorageMechanism): string | null {
   if (isWebStorageTypeAvailable(webStorageMechanism)) {
-    return localStorage.getItem(key);
+    return window[webStorageMechanism].getItem(key);
   }
 
   return null;
@@ -49,14 +49,10 @@ export function getItem(key: string, webStorageMechanism: StorageMechanism = web
  * @param value: the item data.
  * @param webStorageMechanism: wether the item shall be received form local storage or session storage. Defaults to local storage.
  */
-export function setItem(
-  key: string,
-  value: string,
-  webStorageMechanism: StorageMechanism = webStorageType.local
-): void {
+export function setItem(key: string, value: string, webStorageMechanism: StorageMechanism): void {
   if (isWebStorageTypeAvailable(webStorageMechanism)) {
     try {
-      localStorage.setItem(key, value);
+      window[webStorageMechanism].setItem(key, value);
     } catch (error) {
       // do nothing
     }
@@ -68,16 +64,12 @@ export function setItem(
  * @param key: the item key.
  * @param webStorageMechanism: wether the item shall be received form local storage or session storage. Defaults to local storage.
  */
-export function removeItem(key: string, webStorageMechanism: StorageMechanism = webStorageType.local): void {
-  console.log('removeItem :>> ', key);
-  console.log('webStorageMechanism :>> ', webStorageMechanism);
+export function removeItem(key: string, webStorageMechanism: StorageMechanism): void {
   if (isWebStorageTypeAvailable(webStorageMechanism)) {
-    console.log('removeItem2 :>> ', key);
-    localStorage.removeItem(key);
+    window[webStorageMechanism].removeItem(key);
   }
 }
 
-// TODO: do not export?
 export const isLocalStorageAvailable = isWebStorageAvailable(webStorageType.local);
 export const isSessionStorageAvailable = isWebStorageAvailable(webStorageType.session);
 
