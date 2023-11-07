@@ -2,6 +2,8 @@
 
 ## Next
 
+- Feat: preview of the new session tracking capabilities (#374).
+
 ## 1.2.4
 
 - Breaking: The sdk meta now only contains the version number of Faro. This is to reduce beacon payload size.
