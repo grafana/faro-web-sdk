@@ -1,5 +1,6 @@
 import { isFunction } from '@grafana/faro-core';
 
+import type { MetaSession } from '..';
 import type { FaroUserSession } from '../instrumentations/session';
 import {
   MAX_SESSION_PERSISTENCE_TIME,
@@ -77,25 +78,77 @@ describe('userSessions config', () => {
     removeItemSpy.mockRestore();
   });
 
-  it('creates new session meta for non tracked sessions.', () => {
+  it('creates new session meta for legacy sessions.', () => {
     const mockSessionMeta = { id: 'new-session' };
     jest.spyOn(createSession, 'createSession').mockReturnValueOnce(mockSessionMeta);
 
     const config = makeCoreConfig({ url: 'http://example.com/my-collector', app: {} });
 
-    expect(config?.sessionTracking).toBeTruthy();
+    expect(config?.session).toStrictEqual(mockSessionMeta);
+  });
+
+  it('creates session meta with id and attributes provided via the initial session property.', () => {
+    const mockSessionMeta: MetaSession = {
+      id: 'new-session',
+      attributes: {
+        foo: 'bar',
+      },
+    };
+
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      sessionTracking: {
+        enabled: true,
+        session: mockSessionMeta,
+      },
+    });
+
+    expect(config?.sessionTracking?.session).toStrictEqual(mockSessionMeta);
+  });
+
+  it('creates new session meta for browser with no faro session stored in web storage.', () => {
+    const mockSessionMeta = { id: 'new-session' };
+    jest.spyOn(createSession, 'createSession').mockReturnValueOnce(mockSessionMeta);
+
+    let config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      sessionTracking: {
+        enabled: true,
+      },
+    });
+
+    expect(config?.sessionTracking?.session).toStrictEqual(mockSessionMeta);
+
+    // for persistent sessions
+    jest.spyOn(createSession, 'createSession').mockReturnValueOnce(mockSessionMeta);
+    config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      sessionTracking: {
+        enabled: true,
+        persistent: true,
+      },
+    });
+
     expect(config?.sessionTracking?.session).toStrictEqual(mockSessionMeta);
   });
 
   it('creates session meta with id from persisted session for valid tracked session which is within maxSessionPersistenceTime.', () => {
-    // jest.spyOn(createSession, 'createSession').mockReturnValueOnce(mockSessionMeta);
-
     const mockSessionId = 'new-session';
+    const mockAttributes = {
+      foo: 'bar',
+    };
 
     mockStorage[STORAGE_KEY] = JSON.stringify({
       sessionId: mockSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
+      sessionMeta: {
+        id: '123',
+        attributes: mockAttributes,
+      },
     } as FaroUserSession);
 
     jest.advanceTimersByTime(SESSION_INACTIVITY_TIME - 1);
@@ -104,11 +157,13 @@ describe('userSessions config', () => {
       url: 'http://example.com/my-collector',
       app: {},
       sessionTracking: {
+        enabled: true,
         persistent: true,
       },
     });
 
     expect(config?.sessionTracking?.session?.id).toBe(mockSessionId);
+    expect(config?.sessionTracking?.session?.attributes).toStrictEqual(mockAttributes);
   });
 
   it('creates new session meta with new sessionId for invalid tracked session which is within maxSessionPersistenceTime.', () => {
@@ -127,6 +182,7 @@ describe('userSessions config', () => {
       url: 'http://example.com/my-collector',
       app: {},
       sessionTracking: {
+        enabled: true,
         persistent: true,
       },
     });
@@ -151,6 +207,7 @@ describe('userSessions config', () => {
       url: 'http://example.com/my-collector',
       app: {},
       sessionTracking: {
+        enabled: true,
         persistent: true,
       },
     });
