@@ -44,7 +44,7 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         // Works with the new session config?
-        experimentalSessions: {
+        sessionTracking: {
           session,
           enabled: true,
           persistent: false,
@@ -78,7 +78,7 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         // Works with the new session config?
-        experimentalSessions: {
+        sessionTracking: {
           enabled: true,
           persistent: true,
           session,
@@ -114,7 +114,7 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         // Works with the new session config?
-        experimentalSessions: {
+        sessionTracking: {
           enabled: true,
           persistent: true,
           session,
@@ -137,7 +137,7 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         // Works with the new session config?
-        experimentalSessions: {
+        sessionTracking: {
           enabled: false,
           persistent: true,
           session,

@@ -83,8 +83,8 @@ describe('userSessions config', () => {
 
     const config = makeCoreConfig({ url: 'http://example.com/my-collector', app: {} });
 
-    expect(config?.experimentalSessions).toBeTruthy();
-    expect(config?.experimentalSessions?.session).toStrictEqual(mockSessionMeta);
+    expect(config?.sessionTracking).toBeTruthy();
+    expect(config?.sessionTracking?.session).toStrictEqual(mockSessionMeta);
   });
 
   it('creates session meta with id from persisted session for valid tracked session which is within maxSessionPersistenceTime.', () => {
@@ -103,12 +103,12 @@ describe('userSessions config', () => {
     const config = makeCoreConfig({
       url: 'http://example.com/my-collector',
       app: {},
-      experimentalSessions: {
+      sessionTracking: {
         persistent: true,
       },
     });
 
-    expect(config?.experimentalSessions?.session?.id).toBe(mockSessionId);
+    expect(config?.sessionTracking?.session?.id).toBe(mockSessionId);
   });
 
   it('creates new session meta with new sessionId for invalid tracked session which is within maxSessionPersistenceTime.', () => {
@@ -126,12 +126,12 @@ describe('userSessions config', () => {
     const config = makeCoreConfig({
       url: 'http://example.com/my-collector',
       app: {},
-      experimentalSessions: {
+      sessionTracking: {
         persistent: true,
       },
     });
 
-    expect(config?.experimentalSessions?.session?.id).toBe(mockSessionMeta.id);
+    expect(config?.sessionTracking?.session?.id).toBe(mockSessionMeta.id);
   });
 
   it('Deletes persisted session if maxSessionPersistenceTime is reached and creates new session meta.', () => {
@@ -150,13 +150,13 @@ describe('userSessions config', () => {
     const config = makeCoreConfig({
       url: 'http://example.com/my-collector',
       app: {},
-      experimentalSessions: {
+      sessionTracking: {
         persistent: true,
       },
     });
 
     expect(mockStorage[STORAGE_KEY]).toBeUndefined();
 
-    expect(config?.experimentalSessions?.session?.id).toBe(mockSessionMeta.id);
+    expect(config?.sessionTracking?.session?.id).toBe(mockSessionMeta.id);
   });
 });

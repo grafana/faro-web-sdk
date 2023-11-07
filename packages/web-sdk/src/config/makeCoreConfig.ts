@@ -91,12 +91,12 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     ignoreErrors: browserConfig.ignoreErrors,
 
     // The new session management feature is a PoC and still under development and IS NOT READY for any production use!
-    experimentalSessions: {
+    sessionTracking: {
       // TODO: will be true on release
       enabled: false,
       ...defaultSessionPersistenceConfig,
-      session: createSessionMeta(browserConfig.experimentalSessions),
-      ...browserConfig.experimentalSessions,
+      session: createSessionMeta(browserConfig.sessionTracking),
+      ...browserConfig.sessionTracking,
     },
 
     // TODO: deprecate/remove old init code or maybe rename to legacy_session?
@@ -107,7 +107,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
   };
 }
 
-function createSessionMeta(sessionsConfig: Config['experimentalSessions']): MetaSession {
+function createSessionMeta(sessionsConfig: Config['sessionTracking']): MetaSession {
   const _sessionsConfig = { ...defaultSessionPersistenceConfig, ...sessionsConfig };
 
   let sessionId;
