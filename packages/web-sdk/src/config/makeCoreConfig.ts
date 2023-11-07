@@ -9,7 +9,7 @@ import {
 } from '@grafana/faro-core';
 import type { Config, MetaSession, Transport } from '@grafana/faro-core';
 
-import type { MetaItem } from '..';
+import { faro, type MetaItem } from '..';
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { PersistentSessionsManager } from '../instrumentations/session/sessionManager';
@@ -68,7 +68,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     return initialMetas;
   }
 
-  return {
+  const config: Config = {
     app: browserConfig.app,
     batching: {
       ...defaultBatchingConfig,
@@ -105,6 +105,13 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     user: browserConfig.user,
     view: browserConfig.view ?? defaultViewMeta,
   };
+
+  if (config.sessionTracking?.enabled) {
+    delete config.session;
+    faro.internalLogger.info('Session tracking is enabled. Removing legacy session object from config.');
+  }
+
+  return config;
 }
 
 function createSessionMeta(sessionsConfig: Config['sessionTracking']): MetaSession {
