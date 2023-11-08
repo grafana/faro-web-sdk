@@ -26,7 +26,7 @@ describe('Volatile Sessions Manager.', () => {
     getItemSpy = jest.spyOn(global.Storage.prototype, 'getItem').mockImplementation((key) => mockStorage[key] ?? null);
 
     const config = mockConfig({
-      experimentalSessions: {
+      sessionTracking: {
         persistent: true,
         session: { id: mockInitialSessionId },
         onSessionChange: mockOnNewSessionCreated,

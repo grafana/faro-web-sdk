@@ -11,8 +11,8 @@ export function registerInitialMetas(faro: Faro): void {
   };
 
   let session = faro.config.session;
-  if (faro.config.experimentalSessions?.enabled) {
-    session = faro.config.experimentalSessions.session!;
+  if (faro.config.sessionTracking?.enabled) {
+    session = faro.config.sessionTracking.session!;
   }
 
   if (session) {

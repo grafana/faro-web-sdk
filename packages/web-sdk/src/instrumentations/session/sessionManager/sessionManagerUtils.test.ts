@@ -95,7 +95,7 @@ describe('sessionManagerUtils', () => {
     const mockOnSessionChange = jest.fn();
 
     const config = mockConfig({
-      experimentalSessions: {
+      sessionTracking: {
         onSessionChange: mockOnSessionChange,
       },
     });
@@ -151,7 +151,7 @@ describe('sessionManagerUtils', () => {
     const mockOnSessionChange = jest.fn();
 
     const config = mockConfig({
-      experimentalSessions: {
+      sessionTracking: {
         onSessionChange: mockOnSessionChange,
       },
       session: currentSessionMeta,

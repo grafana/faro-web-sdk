@@ -28,7 +28,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
   private getSessionManagerInstanceByConfiguredStrategy(
     initialSessionId?: string
   ): PersistentSessionsManager | VolatileSessionsManager | null {
-    if (this.config.experimentalSessions?.persistent && isLocalStorageAvailable) {
+    if (this.config.sessionTracking?.persistent && isLocalStorageAvailable) {
       return new PersistentSessionsManager(initialSessionId);
     }
 
@@ -45,7 +45,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     this.sendSessionStartEvent(this.metas.value);
     this.metas.addListener(this.sendSessionStartEvent.bind(this));
 
-    if (this.config.experimentalSessions?.enabled) {
+    if (this.config.sessionTracking?.enabled) {
       const sessionManager = this.getSessionManagerInstanceByConfiguredStrategy(this.metas.value.session?.id);
 
       if (sessionManager != null) {

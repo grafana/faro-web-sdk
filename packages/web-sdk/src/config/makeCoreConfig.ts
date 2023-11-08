@@ -7,12 +7,15 @@ import {
   defaultUnpatchedConsole,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
-import type { MetaItem } from '..';
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
-import { PersistentSessionsManager } from '../instrumentations/session/sessionManager';
+import {
+  FaroUserSession,
+  PersistentSessionsManager,
+  VolatileSessionsManager,
+} from '../instrumentations/session/sessionManager';
 import {
   isUserSessionValid,
   MAX_SESSION_PERSISTENCE_TIME,
@@ -68,7 +71,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     return initialMetas;
   }
 
-  return {
+  const config: Config = {
     app: browserConfig.app,
     batching: {
       ...defaultBatchingConfig,
@@ -91,29 +94,35 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     ignoreErrors: browserConfig.ignoreErrors,
 
     // The new session management feature is a PoC and still under development and IS NOT READY for any production use!
-    experimentalSessions: {
-      // TODO: will be true on release
+    sessionTracking: {
       enabled: false,
       ...defaultSessionPersistenceConfig,
-      session: createSessionMeta(browserConfig.experimentalSessions),
-      ...browserConfig.experimentalSessions,
+      // TODO: Remove condition at ga
+      session: browserConfig.sessionTracking?.enabled ? createSessionMeta(browserConfig.sessionTracking) : undefined,
+      ...browserConfig.sessionTracking,
     },
 
-    // TODO: deprecate/remove old init code or maybe rename to legacy_session?
+    // TODO: deprecate/remove legacy session object at ga
     session: browserConfig.session ?? createSession(),
 
     user: browserConfig.user,
     view: browserConfig.view ?? defaultViewMeta,
   };
+
+  if (config.sessionTracking?.enabled) {
+    delete config.session;
+  }
+
+  return config;
 }
 
-function createSessionMeta(sessionsConfig: Config['experimentalSessions']): MetaSession {
+function createSessionMeta(sessionsConfig: Config['sessionTracking']): MetaSession {
   const _sessionsConfig = { ...defaultSessionPersistenceConfig, ...sessionsConfig };
+  const sessionManager = _sessionsConfig.persistent ? PersistentSessionsManager : VolatileSessionsManager;
 
-  let sessionId;
+  let userSession: FaroUserSession | null = sessionManager.fetchUserSession();
 
   if (_sessionsConfig.persistent) {
-    const userSession = PersistentSessionsManager.fetchUserSession();
     const now = dateNow();
 
     const shouldClearPersistentSession =
@@ -121,12 +130,25 @@ function createSessionMeta(sessionsConfig: Config['experimentalSessions']): Meta
 
     if (shouldClearPersistentSession) {
       PersistentSessionsManager.removeUserSession();
+      userSession = null;
     }
-
-    sessionId = isUserSessionValid(userSession) ? userSession?.sessionId : createSession().id;
   }
 
-  return {
+  let sessionId = _sessionsConfig.session?.id ?? createSession().id;
+  let sessionAttributes = _sessionsConfig.session?.attributes;
+
+  if (isUserSessionValid(userSession)) {
+    sessionId = userSession?.sessionId;
+    sessionAttributes = userSession?.sessionMeta?.attributes;
+  }
+
+  const sessionMeta: MetaSession = {
     id: sessionId ?? createSession().id,
   };
+
+  if (sessionAttributes) {
+    sessionMeta.attributes = sessionAttributes;
+  }
+
+  return sessionMeta;
 }
