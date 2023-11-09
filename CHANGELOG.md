@@ -2,7 +2,10 @@
 
 ## Next
 
-- Feat: preview of the new session tracking capabilities (#374).
+## 1.2.5
+
+- Feat: New session tracking capabilities (optional, disabled by default) where users can choose to
+  use tracked or volatile sessions (#374).
 
 ## 1.2.4
 
