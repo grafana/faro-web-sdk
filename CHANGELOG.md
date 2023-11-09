@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.2.5
+
 - Feat: preview of the new session tracking capabilities (#374).
 
 ## 1.2.4
