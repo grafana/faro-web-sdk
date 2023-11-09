@@ -9,3 +9,10 @@ export enum XHREventType {
   ERROR = 'faro.xhr.error',
   TIMEOUT = 'faro.xhr.timeout',
 }
+
+export const serverTimingHeader = 'server-timing';
+export const faroRumHeader = 'x-faro-session';
+
+export const makeFaroRumHeaderValue = (sessionId: string): string => {
+  return `session_id=${sessionId}`;
+}

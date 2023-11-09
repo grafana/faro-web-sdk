@@ -36,7 +36,8 @@ describe('FetchInstrumentation', () => {
     const instrumentation = new FetchInstrumentation({
       testing: true,
     });
-    instrumentation.initialize();
+
+    initializeFaro(mockConfig({ instrumentations: [instrumentation] }));
 
     const parseActualResult = (res: { init?: RequestInit | undefined; request: Request }) => {
       return {

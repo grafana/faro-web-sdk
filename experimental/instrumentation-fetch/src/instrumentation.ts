@@ -1,7 +1,8 @@
 import { BaseInstrumentation, faro, globalObject, VERSION } from '@grafana/faro-core';
 
 import {
-  fetchGlobalObjectKey,
+  faroRumHeader,
+  fetchGlobalObjectKey, makeFaroRumHeaderValue,
   parseHeaders,
   rejectedFetchEventName,
   resolvedFetchEventName,
@@ -82,6 +83,11 @@ export class FetchInstrumentation extends BaseInstrumentation {
     const request = new Request(input, initCopy);
     if (body) {
       initCopy.body = body;
+    }
+
+    // add faroRumHeader to the request headers
+    if (faro.api.getSession() !== undefined && faro.api.getSession()!.id !== undefined) {
+      request.headers.append(faroRumHeader, makeFaroRumHeaderValue(faro.api.getSession()!.id as string));
     }
 
     return { init, request };

@@ -1,6 +1,6 @@
 import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
 
-import { XHREventType, XHRInstrumentationOptions } from './types';
+import {faroRumHeader, makeFaroRumHeaderValue, XHREventType, XHRInstrumentationOptions} from './types';
 import { parseXHREvent, parseXHRHeaders } from './utils';
 
 export class XHRInstrumentation extends BaseInstrumentation {
@@ -38,6 +38,11 @@ export class XHRInstrumentation extends BaseInstrumentation {
       ): void {
         // @ts-expect-error - _url should be attached to "this"
         this._url = url;
+
+        // Add faro rum header to communicate client side session id to the server side
+        if (faro.api.getSession() !== undefined && faro.api.getSession()!.id !== undefined) {
+          this.setRequestHeader(faroRumHeader, makeFaroRumHeaderValue(faro.api.getSession()!.id as string));
+        }
 
         return instrumentation.originalOpen.apply(this, [
           method,

@@ -12,6 +12,13 @@ export const fetchGlobalObjectKey = 'fetch';
 export const resolvedFetchEventName = 'faro.fetch.resolved';
 export const rejectedFetchEventName = 'faro.fetch.rejected';
 
+export const serverTimingHeader = 'server-timing';
+export const faroRumHeader = 'x-faro-session';
+
+export const makeFaroRumHeaderValue = (sessionId: string): string => {
+  return `session_id=${sessionId}`;
+}
+
 export const responseProperties = (response: Partial<Response>): StringResponse => {
   return {
     body_used: response.bodyUsed?.toString() ?? '',
