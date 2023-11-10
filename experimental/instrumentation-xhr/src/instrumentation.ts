@@ -8,6 +8,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
   readonly originalOpen: XMLHttpRequest['open'] = XMLHttpRequest.prototype.open;
   readonly originalSend: XMLHttpRequest['send'] = XMLHttpRequest.prototype.send;
+  readonly originalSetRequestHeader : XMLHttpRequest['setRequestHeader'] = XMLHttpRequest.prototype.setRequestHeader;
   private ignoredUrls: XHRInstrumentationOptions['ignoredUrls'];
 
   constructor(private options?: XHRInstrumentationOptions) {
@@ -39,12 +40,6 @@ export class XHRInstrumentation extends BaseInstrumentation {
         // @ts-expect-error - _url should be attached to "this"
         this._url = url;
 
-        // add Faro RUM header to the request headers
-        const sessionId = faro.api.getSession()?.id;
-        if (sessionId !== null) {
-          this.setRequestHeader(faroRumHeader, makeFaroRumHeaderValue(sessionId as string));
-        }
-
         return instrumentation.originalOpen.apply(this, [
           method,
           url,
@@ -66,6 +61,12 @@ export class XHRInstrumentation extends BaseInstrumentation {
           instrumentation.ignoredUrls?.some((ignoredUrl) => instrumentation.getRequestUrl(this._url).match(ignoredUrl))
         ) {
           return instrumentation.originalSend.apply(this, [body === undefined ? null : body]);
+        }
+
+        // add Faro RUM header to the request headers
+        const sessionId = faro.api.getSession()?.id;
+        if (sessionId !== null) {
+          instrumentation.originalSetRequestHeader.apply(this, [faroRumHeader, makeFaroRumHeaderValue(sessionId as string)]);
         }
 
         this.addEventListener('load', loadEventListener.bind(this));
