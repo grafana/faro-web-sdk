@@ -2,7 +2,7 @@ import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils/mockConfig';
 
 import { FetchInstrumentation } from './instrumentation';
-import {makeFaroRumHeaderValue} from "./constants";
+import { makeFaroRumHeaderValue } from './constants';
 
 describe('FetchInstrumentation', () => {
   it('initialize FetchInstrumentation with default options', () => {
@@ -100,7 +100,7 @@ describe('FetchInstrumentation', () => {
 
     const sessionId = 'test-session-id';
 
-    initializeFaro(mockConfig({ instrumentations: [instrumentation], session: {id: sessionId} }));
+    initializeFaro(mockConfig({ instrumentations: [instrumentation], session: { id: sessionId } }));
 
     const fetchSpy = jest.spyOn(global, 'fetch');
 

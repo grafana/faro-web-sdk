@@ -17,7 +17,7 @@ export const faroRumHeader = 'x-faro-session';
 
 export const makeFaroRumHeaderValue = (sessionId: string): string => {
   return `session_id=${sessionId}`;
-}
+};
 
 export const responseProperties = (response: Partial<Response>): StringResponse => {
   return {

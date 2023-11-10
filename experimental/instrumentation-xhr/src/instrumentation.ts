@@ -1,6 +1,6 @@
 import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
 
-import {faroRumHeader, makeFaroRumHeaderValue, XHREventType, XHRInstrumentationOptions} from './types';
+import { faroRumHeader, makeFaroRumHeaderValue, XHREventType, XHRInstrumentationOptions } from './types';
 import { parseXHREvent, parseXHRHeaders } from './utils';
 
 export class XHRInstrumentation extends BaseInstrumentation {
@@ -8,7 +8,7 @@ export class XHRInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
   readonly originalOpen: XMLHttpRequest['open'] = XMLHttpRequest.prototype.open;
   readonly originalSend: XMLHttpRequest['send'] = XMLHttpRequest.prototype.send;
-  readonly originalSetRequestHeader : XMLHttpRequest['setRequestHeader'] = XMLHttpRequest.prototype.setRequestHeader;
+  readonly originalSetRequestHeader: XMLHttpRequest['setRequestHeader'] = XMLHttpRequest.prototype.setRequestHeader;
   private ignoredUrls: XHRInstrumentationOptions['ignoredUrls'];
 
   constructor(private options?: XHRInstrumentationOptions) {
@@ -66,7 +66,10 @@ export class XHRInstrumentation extends BaseInstrumentation {
         // add Faro RUM header to the request headers
         const sessionId = faro.api.getSession()?.id;
         if (sessionId !== null) {
-          instrumentation.originalSetRequestHeader.apply(this, [faroRumHeader, makeFaroRumHeaderValue(sessionId as string)]);
+          instrumentation.originalSetRequestHeader.apply(this, [
+            faroRumHeader,
+            makeFaroRumHeaderValue(sessionId as string),
+          ]);
         }
 
         this.addEventListener('load', loadEventListener.bind(this));

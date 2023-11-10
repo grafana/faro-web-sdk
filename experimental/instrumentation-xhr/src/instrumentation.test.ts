@@ -2,7 +2,7 @@ import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { XHRInstrumentation } from './instrumentation';
-import {faroRumHeader, makeFaroRumHeaderValue} from "./types";
+import { faroRumHeader, makeFaroRumHeaderValue } from './types';
 
 describe('XHRInstrumentation', () => {
   it('initialize XHRInstrumentation with default options', () => {
@@ -55,7 +55,9 @@ describe('XHRInstrumentation', () => {
 
     const fetchSpySetRequestHeader = jest.spyOn(instrumentation, 'originalSetRequestHeader');
     const fetchSpySend = jest.spyOn(instrumentation, 'originalSend');
-    const faro = initializeFaro(mockConfig({ instrumentations: [instrumentation], session: { id: sessionId }, transports: [transport] }));
+    const faro = initializeFaro(
+      mockConfig({ instrumentations: [instrumentation], session: { id: sessionId }, transports: [transport] })
+    );
     faro.pause();
 
     const xhr = new XMLHttpRequest();

@@ -2,7 +2,8 @@ import { BaseInstrumentation, faro, globalObject, VERSION } from '@grafana/faro-
 
 import {
   faroRumHeader,
-  fetchGlobalObjectKey, makeFaroRumHeaderValue,
+  fetchGlobalObjectKey,
+  makeFaroRumHeaderValue,
   parseHeaders,
   rejectedFetchEventName,
   resolvedFetchEventName,
