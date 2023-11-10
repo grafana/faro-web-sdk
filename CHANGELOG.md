@@ -2,6 +2,9 @@
 
 ## Next
 
+- Feat: Add x-faro-session header to identify client session id to server
+  for fetch & xhr instrumentations (#377)
+
 ## 1.2.5
 
 - Feat: New session tracking capabilities (optional, disabled by default) where users can choose to
