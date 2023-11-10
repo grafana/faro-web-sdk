@@ -39,9 +39,10 @@ export class XHRInstrumentation extends BaseInstrumentation {
         // @ts-expect-error - _url should be attached to "this"
         this._url = url;
 
-        // Add faro rum header to communicate client side session id to the server side
-        if (faro.api.getSession() !== undefined && faro.api.getSession()!.id !== undefined) {
-          this.setRequestHeader(faroRumHeader, makeFaroRumHeaderValue(faro.api.getSession()!.id as string));
+        // add Faro RUM header to the request headers
+        const sessionId = faro.api.getSession()?.id;
+        if (sessionId !== null) {
+          this.setRequestHeader(faroRumHeader, makeFaroRumHeaderValue(sessionId as string));
         }
 
         return instrumentation.originalOpen.apply(this, [
