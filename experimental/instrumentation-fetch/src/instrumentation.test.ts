@@ -1,8 +1,8 @@
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils/mockConfig';
 
-import { FetchInstrumentation } from './instrumentation';
 import { makeFaroRumHeaderValue } from './constants';
+import { FetchInstrumentation } from './instrumentation';
 
 describe('FetchInstrumentation', () => {
   it('initialize FetchInstrumentation with default options', () => {
