@@ -1,5 +1,4 @@
-## Use with Angular application
-
+# Use with Angular application
 
 Create file `faro-initializer.ts` and add your SDK configuration:
 
@@ -42,9 +41,12 @@ export class AppModule {}
 At this stage all your logs will be auto-captured and sent to Grafana Faro!
 
 However, you will not see any errors in the Error Awareness page.
-By default Angular errors are printed to the console and cannot be automatically captured as a Faro error log.
+By default Angular errors are printed to the console and
+cannot be automatically captured as a Faro error log.
 
-The solution involves implementing and customizing Angular's default ErrorHandler class and manually capturing exceptions at a global level by using the Faro API to capture errors.
+The solution involves implementing and customizing Angular's
+default ErrorHandler class and manually capturing exceptions
+at a global level by using the Faro API to capture errors.
 
 Create a file `global-error-handler.ts` and add the following code:
 
