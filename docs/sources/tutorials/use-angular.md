@@ -1,7 +1,7 @@
 ## Use with Angular application
 
 
-Create file `faro-initializer.ts` and add your SDK configuration :
+Create file `faro-initializer.ts` and add your SDK configuration:
 
 ```typescript
 import { initializeFaro } from '@grafana/faro-web-sdk';
@@ -21,7 +21,7 @@ export function faroInitializer(): Function {
 }
 ```
 
-In the `app.module.ts` init faroInitializer function :
+In the `app.module.ts` initialize the `faroInitializer` function:
 
 ```typescript
 import { APP_INITIALIZER, NgModule } from '@angular/core';
@@ -39,14 +39,14 @@ import { APP_INITIALIZER, NgModule } from '@angular/core';
 export class AppModule {}
 ```
 
-Well done this stage all your logs will be captured and sent to Grafana Faro !
+At this stage all your logs will be auto-captured and sent to Grafana Faro!
 
 However, you will not see any errors in the Error Awareness page.
-By default Angular errors are printed in the console and cannot be captured with the `kind=exception` flag of the Grafana Faro SDK.
+By default Angular errors are printed to the console and cannot be automatically captured as a Faro error log.
 
-The solution involves implementing and customizing Angular's default ErrorHandler class and using the Faro API to capture errors.
+The solution involves implementing and customizing Angular's default ErrorHandler class and manually capturing exceptions at a global level by using the Faro API to capture errors.
 
-Create a file `global-error-handler.ts` and add the following code :
+Create a file `global-error-handler.ts` and add the following code:
 
 ```typescript
 import { ErrorHandler, Injectable } from '@angular/core';
