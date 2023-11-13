@@ -58,7 +58,6 @@ export class GlobalErrorHandler implements ErrorHandler {
   handleError(error: any) {
     if (error instanceof Error) {
       faro.api.pushError(error);
-      return;
     }
     console.error(error);
   }
