@@ -1,6 +1,5 @@
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils/mockConfig';
-
 import { SessionInstrumentation } from '@grafana/faro-web-sdk';
 
 import { makeFaroRumHeaderValue } from './constants';

@@ -1,6 +1,5 @@
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
-
 import { SessionInstrumentation } from '@grafana/faro-web-sdk';
 
 import { XHRInstrumentation } from './instrumentation';
