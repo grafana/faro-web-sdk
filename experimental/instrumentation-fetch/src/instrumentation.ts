@@ -89,7 +89,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
     // add Faro RUM header to the request headers
     const sessionId = faro.api.getSession()?.id;
     if (sessionId != null) {
-      request.headers.append(faroRumHeader, makeFaroRumHeaderValue(sessionId as string));
+      request.headers.append(faroRumHeader, makeFaroRumHeaderValue(sessionId));
     }
 
     return { init, request };

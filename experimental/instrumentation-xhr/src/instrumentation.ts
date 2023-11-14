@@ -65,10 +65,10 @@ export class XHRInstrumentation extends BaseInstrumentation {
 
         // add Faro RUM header to the request headers
         const sessionId = faro.api.getSession()?.id;
-        if (sessionId !== null) {
+        if (sessionId != null) {
           instrumentation.originalSetRequestHeader.apply(this, [
             faroRumHeader,
-            makeFaroRumHeaderValue(sessionId as string),
+            makeFaroRumHeaderValue(sessionId),
           ]);
         }
 
