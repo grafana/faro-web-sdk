@@ -53,14 +53,14 @@ describe('XHRInstrumentation', () => {
   });
 
   it('initialize XHRInstrumentation and send XHR request to ignoredUrl', () => {
-    const sessionId = 'test-session-id';
+    const sessionInstrumentation = new SessionInstrumentation();
     const transport = new MockTransport();
     const instrumentation = new XHRInstrumentation({ ignoredUrls: ['https://example.com'] });
 
     const fetchSpySetRequestHeader = jest.spyOn(instrumentation, 'originalSetRequestHeader');
     const fetchSpySend = jest.spyOn(instrumentation, 'originalSend');
     const faro = initializeFaro(
-      mockConfig({ instrumentations: [instrumentation], session: { id: sessionId }, transports: [transport] })
+      mockConfig({ instrumentations: [instrumentation, sessionInstrumentation], transports: [transport] })
     );
     faro.pause();
 
