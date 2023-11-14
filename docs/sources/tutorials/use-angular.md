@@ -7,15 +7,15 @@ import { initializeFaro } from '@grafana/faro-web-sdk';
 
 export function faroInitializer(): Function {
   return async () => {
-      initializeFaro({
-          url: 'https://collector-host:12345/collect',
-          apiKey: 'secret',
-          app: {
-              name: 'frontend',
-              version: '1.0.0',
-          },
-          instrumentations: [...getWebInstrumentations({ captureConsole: true, captureConsoleDisabledLevels: [] })]
-      });
+    initializeFaro({
+      url: 'https://collector-host:12345/collect',
+      apiKey: 'secret',
+      app: {
+        name: 'frontend',
+        version: '1.0.0',
+      },
+      instrumentations: [...getWebInstrumentations({ captureConsole: true, captureConsoleDisabledLevels: [] })],
+    });
   };
 }
 ```
@@ -26,14 +26,14 @@ In the `app.module.ts` initialize the `faroInitializer` function:
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 
 @NgModule({
-    providers: [
-        {
-            provide: APP_INITIALIZER,
-            useFactory: faroInitializer,
-            deps: [], // <-- Add your dependencies here 
-            multi: true,
-        }
-    ],
+  providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: faroInitializer,
+      deps: [], // <-- Add your dependencies here
+      multi: true,
+    },
+  ],
 })
 export class AppModule {}
 ```
@@ -56,7 +56,6 @@ import { faro } from '@grafana/faro-web-sdk';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {
-
   handleError(error: any) {
     if (error instanceof Error) {
       faro.api.pushError(error);
@@ -73,18 +72,18 @@ import { APP_INITIALIZER, NgModule, ErrorHandler } from '@angular/core';
 import { GlobalErrorHandler } from './global-error-handler';
 
 @NgModule({
-    providers: [
-        {
-            provide: APP_INITIALIZER,
-            useFactory: faroInitializer,
-            deps: [],
-            multi: true,
-        },
-        {
-            provide: ErrorHandler,
-            useClass: GlobalErrorHandler,
-        },
-    ],
+  providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: faroInitializer,
+      deps: [],
+      multi: true,
+    },
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandler,
+    },
+  ],
 })
 export class AppModule {}
 ```
