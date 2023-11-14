@@ -39,4 +39,5 @@ req.send(); // use XHR as normal - telemetry data is sent to your Faro endpoint
 
 In order to prepare backend correlation, this instrumentation adds the following headers to each
 request that server-side instrumentation can use as context:
-* `x-faro-session` - the client-side session id
+
+- `x-faro-session` - the client-side session id
