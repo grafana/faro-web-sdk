@@ -3,6 +3,7 @@ import { mockConfig } from '@grafana/faro-core/src/testUtils/mockConfig';
 
 import { makeFaroRumHeaderValue } from './constants';
 import { FetchInstrumentation } from './instrumentation';
+import { SessionInstrumentation } from '@grafana/faro-web-sdk';
 
 describe('FetchInstrumentation', () => {
   it('initialize FetchInstrumentation with default options', () => {
@@ -38,9 +39,11 @@ describe('FetchInstrumentation', () => {
       testing: true,
     });
 
-    const sessionId = 'test-session-id';
+    const sessionInstrumentation = new SessionInstrumentation();
 
-    initializeFaro(mockConfig({ instrumentations: [instrumentation], session: { id: sessionId } }));
+    const faroInstance = initializeFaro(mockConfig({ instrumentations: [instrumentation, sessionInstrumentation] }));
+    const sessionId = faroInstance.api.getSession()!.id as string;
+    expect(sessionId).not.toBe('');
 
     const parseActualResult = (res: { init?: RequestInit | undefined; request: Request }) => {
       return {
