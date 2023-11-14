@@ -1,9 +1,10 @@
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
+import { SessionInstrumentation } from '@grafana/faro-web-sdk';
+
 import { XHRInstrumentation } from './instrumentation';
 import { faroRumHeader, makeFaroRumHeaderValue } from './types';
-import {SessionInstrumentation} from "@grafana/faro-web-sdk";
 
 describe('XHRInstrumentation', () => {
   it('initialize XHRInstrumentation with default options', () => {
