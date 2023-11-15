@@ -4,13 +4,8 @@ import type { Meta } from '@grafana/faro-core';
 import { throttle } from '../../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
-import {
-  addSessionMetadataToNextSession,
-  createUserSessionObject,
-  getUserSessionUpdater,
-  STORAGE_KEY,
-  STORAGE_UPDATE_DELAY,
-} from './sessionManagerUtils';
+import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
+import { addSessionMetadataToNextSession, createUserSessionObject, getUserSessionUpdater } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
 export class VolatileSessionsManager {

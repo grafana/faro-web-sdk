@@ -1,4 +1,13 @@
-import { BaseInstrumentation, Conventions, dateNow, Meta, MetaSession, VERSION } from '@grafana/faro-core';
+import {
+  BaseInstrumentation,
+  dateNow,
+  EVENT_SESSION_EXTEND,
+  EVENT_SESSION_RESUME,
+  EVENT_SESSION_START,
+  Meta,
+  MetaSession,
+  VERSION,
+} from '@grafana/faro-core';
 import type { Config } from '@grafana/faro-core';
 
 import { createSession } from '../../metas';
@@ -22,7 +31,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
     if (session && session.id !== this.notifiedSession?.id) {
       if (this.notifiedSession && this.notifiedSession.id === session.attributes?.['previousSession']) {
-        this.api.pushEvent('session_extend', {}, undefined, { skipDedupe: true });
+        this.api.pushEvent(EVENT_SESSION_EXTEND, {}, undefined, { skipDedupe: true });
         this.notifiedSession = session;
         return;
       }
@@ -30,7 +39,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
       this.notifiedSession = session;
       // no need to add attributes and session id, they are included as part of meta
       // automatically
-      this.api.pushEvent(Conventions.EventNames.SESSION_START, {}, undefined, { skipDedupe: true });
+      this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
     }
   }
 
@@ -49,17 +58,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   private createInitialSessionMeta(sessionsConfig: Required<Config>['sessionTracking']): MetaSession {
-    console.log('sessionsConfig :>> ', sessionsConfig);
-
     const sessionManager = sessionsConfig.persistent ? PersistentSessionsManager : VolatileSessionsManager;
 
     let userSession: FaroUserSession | null = sessionManager.fetchUserSession();
 
-    if (sessionsConfig.persistent) {
+    if (sessionsConfig.persistent && sessionsConfig.maxSessionPersistenceTime && userSession) {
       const now = dateNow();
-
-      const shouldClearPersistentSession =
-        userSession && userSession.lastActivity < now - sessionsConfig.maxSessionPersistenceTime!;
+      const shouldClearPersistentSession = userSession.lastActivity < now - sessionsConfig.maxSessionPersistenceTime;
 
       if (shouldClearPersistentSession) {
         PersistentSessionsManager.removeUserSession();
@@ -73,10 +78,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
     if (isUserSessionValid(userSession)) {
       sessionId = userSession?.sessionId;
       sessionAttributes = userSession?.sessionMeta?.attributes;
-      this.api.pushEvent('session_resume', {}, undefined, { skipDedupe: true });
+      this.api.pushEvent(EVENT_SESSION_RESUME, {}, undefined, { skipDedupe: true });
     } else {
       sessionId = sessionId ?? createSession().id;
-      this.api.pushEvent('session_start', {}, undefined, { skipDedupe: true });
+      this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
     }
 
     const sessionMeta: MetaSession = {
