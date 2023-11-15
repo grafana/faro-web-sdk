@@ -105,8 +105,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     delete config.session;
   }
 
-  console.log('config :>> ', config.sessionTracking);
-
   return config;
 }
 

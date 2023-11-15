@@ -6,7 +6,13 @@ import { createSession } from '../../metas/session';
 import * as createSessionMock from '../../metas/session';
 
 import { SessionInstrumentation } from './instrumentation';
-import { createUserSessionObject, SESSION_EXPIRATION_TIME, STORAGE_KEY } from './sessionManager/sessionManagerUtils';
+import type { FaroUserSession } from './sessionManager';
+import {
+  createUserSessionObject,
+  SESSION_EXPIRATION_TIME,
+  SESSION_INACTIVITY_TIME,
+  STORAGE_KEY,
+} from './sessionManager/sessionManagerUtils';
 
 describe('SessionInstrumentation', () => {
   let mockStorage: Record<string, string> = {};
@@ -190,41 +196,50 @@ describe('SessionInstrumentation', () => {
 
     expect(metas.value.session).toStrictEqual(mockSessionMeta);
   });
+
+  it('creates session meta with id from persisted session for valid tracked session which is within maxSessionPersistenceTime.', () => {
+    const mockUserSession = {
+      sessionId: 'new-session',
+      lastActivity: fakeSystemTime,
+      started: fakeSystemTime,
+      sessionMeta: {
+        id: 'new-session',
+        attributes: {
+          foo: 'bar',
+        },
+      },
+    };
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+
+    jest.advanceTimersByTime(SESSION_INACTIVITY_TIME - 1);
+
+    // const config = makeCoreConfig({
+    //   url: 'http://example.com/my-collector',
+    //   app: {},
+    //   sessionTracking: {
+    //     enabled: true,
+    //     persistent: true,
+    //   },
+    // });
+
+    const { metas } = initializeFaro(
+      mockConfig({
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          persistent: true,
+        },
+      })
+    );
+
+    expect(metas.value.session?.id).toBe(mockUserSession.sessionId);
+    expect(metas.value.session?.attributes).toStrictEqual(mockUserSession.sessionMeta.attributes);
+  });
 });
 
 // describe.skip('SessionInstrumentation: userSessions config', () => {
 //   const fakeSystemTime = new Date('2023-01-01').getTime();
-
-//   it('creates session meta with id from persisted session for valid tracked session which is within maxSessionPersistenceTime.', () => {
-//     const mockSessionId = 'new-session';
-//     const mockAttributes = {
-//       foo: 'bar',
-//     };
-
-//     mockStorage[STORAGE_KEY] = JSON.stringify({
-//       sessionId: mockSessionId,
-//       lastActivity: fakeSystemTime,
-//       started: fakeSystemTime,
-//       sessionMeta: {
-//         id: '123',
-//         attributes: mockAttributes,
-//       },
-//     } as FaroUserSession);
-
-//     jest.advanceTimersByTime(SESSION_INACTIVITY_TIME - 1);
-
-//     const config = makeCoreConfig({
-//       url: 'http://example.com/my-collector',
-//       app: {},
-//       sessionTracking: {
-//         enabled: true,
-//         persistent: true,
-//       },
-//     });
-
-//     expect(config?.sessionTracking?.session?.id).toBe(mockSessionId);
-//     expect(config?.sessionTracking?.session?.attributes).toStrictEqual(mockAttributes);
-//   });
 
 //   it('creates new session meta with new sessionId for invalid tracked session which is within maxSessionPersistenceTime.', () => {
 //     const mockSessionMeta = { id: 'new-session' };
