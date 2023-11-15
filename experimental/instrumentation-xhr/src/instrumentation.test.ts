@@ -1,6 +1,6 @@
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
-import { SessionInstrumentation } from '@grafana/faro-web-sdk';
+import { makeCoreConfig, SessionInstrumentation } from '@grafana/faro-web-sdk';
 
 import { XHRInstrumentation } from './instrumentation';
 import { faroRumHeader, makeFaroRumHeaderValue } from './types';
@@ -31,7 +31,9 @@ describe('XHRInstrumentation', () => {
     const instrumentation = new XHRInstrumentation({});
 
     const sessionInstrumentation = new SessionInstrumentation();
-    const faroInstance = initializeFaro(mockConfig({ instrumentations: [instrumentation, sessionInstrumentation] }));
+    const faroInstance = initializeFaro(
+      makeCoreConfig(mockConfig({ instrumentations: [instrumentation, sessionInstrumentation] }))!
+    );
 
     const sessionId = faroInstance.api.getSession()!.id as string;
     expect(sessionId).not.toBe('');
@@ -60,7 +62,9 @@ describe('XHRInstrumentation', () => {
     const fetchSpySetRequestHeader = jest.spyOn(instrumentation, 'originalSetRequestHeader');
     const fetchSpySend = jest.spyOn(instrumentation, 'originalSend');
     const faro = initializeFaro(
-      mockConfig({ instrumentations: [instrumentation, sessionInstrumentation], transports: [transport] })
+      makeCoreConfig(
+        mockConfig({ instrumentations: [instrumentation, sessionInstrumentation], transports: [transport] })
+      )!
     );
     faro.pause();
 
