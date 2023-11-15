@@ -7,6 +7,9 @@ const DEFAULT_BUFFER_SIZE = 30;
 const DEFAULT_CONCURRENCY = 5; // chrome supports 10 total, firefox 17
 const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
 
+const BEACON_BODY_SIZE_LIMIT = 60000;
+const TOO_MANY_REQUESTS = 429;
+
 export class FetchTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-fetch';
   readonly version = VERSION;
@@ -50,16 +53,14 @@ export class FetchTransport extends BaseTransport {
             'Content-Type': 'application/json',
             ...(headers ?? {}),
             ...(apiKey ? { 'x-api-key': apiKey } : {}),
-            ...(this.config.sessionTracking?.enabled && this.metas.value.session?.id
-              ? { 'x-faro-session-id': this.metas.value.session?.id }
-              : {}),
+            ...(this.metas.value.session?.id ? { 'x-faro-session-id': this.metas.value.session?.id } : {}),
           },
           body,
-          keepalive: body.length <= 60_000,
+          keepalive: body.length <= BEACON_BODY_SIZE_LIMIT,
           ...(restOfRequestOptions ?? {}),
         })
           .then((response) => {
-            if (response.status === 429) {
+            if (response.status === TOO_MANY_REQUESTS) {
               this.disabledUntil = this.getRetryAfterDate(response);
               this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
             }
