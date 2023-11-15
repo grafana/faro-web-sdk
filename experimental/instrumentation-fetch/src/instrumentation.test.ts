@@ -1,6 +1,8 @@
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils/mockConfig';
+import { makeCoreConfig, SessionInstrumentation } from '@grafana/faro-web-sdk';
 
+import { makeFaroRumHeaderValue } from './constants';
 import { FetchInstrumentation } from './instrumentation';
 
 describe('FetchInstrumentation', () => {
@@ -36,7 +38,14 @@ describe('FetchInstrumentation', () => {
     const instrumentation = new FetchInstrumentation({
       testing: true,
     });
-    instrumentation.initialize();
+
+    const sessionInstrumentation = new SessionInstrumentation();
+
+    const faroInstance = initializeFaro(
+      makeCoreConfig(mockConfig({ instrumentations: [instrumentation, sessionInstrumentation] }))!
+    );
+    const sessionId = faroInstance.api.getSession()!.id as string;
+    expect(sessionId).not.toBe('');
 
     const parseActualResult = (res: { init?: RequestInit | undefined; request: Request }) => {
       return {
@@ -71,7 +80,9 @@ describe('FetchInstrumentation', () => {
       request: {
         method: 'GET',
         url: 'https://example.com/',
-        headers: new Headers({}),
+        headers: new Headers({
+          'x-faro-session': makeFaroRumHeaderValue(sessionId),
+        }),
         destination: '',
         referrerPolicy: '',
         mode: 'cors',
@@ -92,7 +103,9 @@ describe('FetchInstrumentation', () => {
       testing: true,
     });
 
-    initializeFaro(mockConfig({ instrumentations: [instrumentation] }));
+    const sessionId = 'test-session-id';
+
+    initializeFaro(mockConfig({ instrumentations: [instrumentation], session: { id: sessionId } }));
 
     const fetchSpy = jest.spyOn(global, 'fetch');
 

@@ -1,7 +1,9 @@
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
+import { makeCoreConfig, SessionInstrumentation } from '@grafana/faro-web-sdk';
 
 import { XHRInstrumentation } from './instrumentation';
+import { faroRumHeader, makeFaroRumHeaderValue } from './types';
 
 describe('XHRInstrumentation', () => {
   it('initialize XHRInstrumentation with default options', () => {
@@ -28,10 +30,17 @@ describe('XHRInstrumentation', () => {
   it('initialize XHRInstrumentation and send XHR request', () => {
     const instrumentation = new XHRInstrumentation({});
 
-    initializeFaro(mockConfig({ instrumentations: [instrumentation] }));
+    const sessionInstrumentation = new SessionInstrumentation();
+    const faroInstance = initializeFaro(
+      makeCoreConfig(mockConfig({ instrumentations: [instrumentation, sessionInstrumentation] }))!
+    );
+
+    const sessionId = faroInstance.api.getSession()!.id as string;
+    expect(sessionId).not.toBe('');
 
     const fetchSpyOpen = jest.spyOn(instrumentation, 'originalOpen');
     const fetchSpySend = jest.spyOn(instrumentation, 'originalSend');
+    const fetchSpySetRequestHeader = jest.spyOn(instrumentation, 'originalSetRequestHeader');
 
     const xhr = new XMLHttpRequest();
     xhr.open('GET', 'https://grafana.com');
@@ -39,21 +48,35 @@ describe('XHRInstrumentation', () => {
 
     xhr.send();
     expect(fetchSpySend).toHaveBeenCalledTimes(1);
+
+    // check if faro session was added to the request headers
+    expect(fetchSpySetRequestHeader).toHaveBeenCalledTimes(1);
+    expect(fetchSpySetRequestHeader).toHaveBeenCalledWith(faroRumHeader, makeFaroRumHeaderValue(sessionId));
   });
 
   it('initialize XHRInstrumentation and send XHR request to ignoredUrl', () => {
+    const sessionInstrumentation = new SessionInstrumentation();
     const transport = new MockTransport();
     const instrumentation = new XHRInstrumentation({ ignoredUrls: ['https://example.com'] });
 
+    const fetchSpySetRequestHeader = jest.spyOn(instrumentation, 'originalSetRequestHeader');
     const fetchSpySend = jest.spyOn(instrumentation, 'originalSend');
-    const faro = initializeFaro(mockConfig({ instrumentations: [instrumentation], transports: [transport] }));
+    const faro = initializeFaro(
+      makeCoreConfig(
+        mockConfig({ instrumentations: [instrumentation, sessionInstrumentation], transports: [transport] })
+      )!
+    );
     faro.pause();
 
     const xhr = new XMLHttpRequest();
     xhr.open('GET', 'https://example.com');
     xhr.send();
 
-    expect(transport.items).toHaveLength(0);
+    // We expect one item because the session instrumentation is enabled
+    expect(transport.items).toHaveLength(1);
     expect(fetchSpySend).toHaveBeenCalledTimes(1);
+
+    // if URL ignored, don't inject faro session header
+    expect(fetchSpySetRequestHeader).toHaveBeenCalledTimes(0);
   });
 });
