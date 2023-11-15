@@ -72,7 +72,8 @@ describe('XHRInstrumentation', () => {
     xhr.open('GET', 'https://example.com');
     xhr.send();
 
-    expect(transport.items).toHaveLength(0);
+    // We expect one item because the session instrumentation is enabled
+    expect(transport.items).toHaveLength(1);
     expect(fetchSpySend).toHaveBeenCalledTimes(1);
 
     // if URL ignored, don't inject faro session header
