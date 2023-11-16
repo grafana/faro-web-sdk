@@ -1,20 +1,18 @@
-import {
-  getTransportBody,
-  initializeFaro,
-  LogEvent,
-  LogLevel,
-  TransportItem,
-  TransportItemType,
-} from '@grafana/faro-core';
-import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
-
-import { SessionInstrumentation } from '../../instrumentations';
+import { getTransportBody, LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import { FetchTransport } from './transport';
 
-const fetch = jest.fn(() => Promise.resolve({ status: 202 }));
+const fetch = jest.fn(() =>
+  Promise.resolve({
+    status: 202,
+    text: () => Promise.resolve(),
+  })
+);
 
 (global as any).fetch = fetch;
+
+const mockSessionId = '123';
 
 const item: TransportItem<LogEvent> = {
   type: TransportItemType.LOG,
@@ -24,7 +22,9 @@ const item: TransportItem<LogEvent> = {
     message: 'hi',
     timestamp: new Date().toISOString(),
   },
-  meta: {},
+  meta: {
+    session: { id: mockSessionId },
+  },
 };
 
 const largeItem: TransportItem<LogEvent> = {
@@ -35,7 +35,9 @@ const largeItem: TransportItem<LogEvent> = {
     message: Buffer.alloc(60_000, 'I').toString('utf-8'),
     timestamp: new Date().toISOString(),
   },
-  meta: {},
+  meta: {
+    session: { id: mockSessionId },
+  },
 };
 
 describe('FetchTransport', () => {
@@ -48,6 +50,8 @@ describe('FetchTransport', () => {
       url: 'http://example.com/collect',
     });
 
+    transport.metas.value = { session: { id: mockSessionId } };
+
     transport.internalLogger = mockInternalLogger;
 
     transport.send([item]);
@@ -57,6 +61,7 @@ describe('FetchTransport', () => {
       body: JSON.stringify(getTransportBody([item])),
       headers: {
         'Content-Type': 'application/json',
+        'x-faro-session-id': mockSessionId,
       },
       keepalive: true,
       method: 'POST',
@@ -68,6 +73,8 @@ describe('FetchTransport', () => {
       url: 'http://example.com/collect',
       bufferSize: 3,
     });
+
+    transport.metas.value = { session: { id: mockSessionId } };
 
     transport.internalLogger = mockInternalLogger;
 
@@ -87,6 +94,8 @@ describe('FetchTransport', () => {
       getNow: () => now,
     });
 
+    transport.metas.value = { session: { id: mockSessionId } };
+
     transport.internalLogger = mockInternalLogger;
 
     fetch.mockImplementationOnce(() =>
@@ -95,6 +104,7 @@ describe('FetchTransport', () => {
         headers: {
           get: () => '',
         },
+        text: () => Promise.resolve(),
       })
     );
 
@@ -118,6 +128,8 @@ describe('FetchTransport', () => {
       getNow: () => now,
     });
 
+    transport.metas.value = { session: { id: mockSessionId } };
+
     transport.internalLogger = mockInternalLogger;
 
     fetch.mockImplementationOnce(() =>
@@ -126,6 +138,7 @@ describe('FetchTransport', () => {
         headers: {
           get: () => '2',
         },
+        text: () => Promise.resolve(),
       })
     );
 
@@ -150,6 +163,8 @@ describe('FetchTransport', () => {
       getNow: () => now,
     });
 
+    transport.metas.value = { session: { id: mockSessionId } };
+
     transport.internalLogger = mockInternalLogger;
 
     fetch.mockImplementationOnce(() =>
@@ -158,6 +173,7 @@ describe('FetchTransport', () => {
         headers: {
           get: () => new Date(now + 3000).toISOString(),
         },
+        text: () => Promise.resolve(),
       })
     );
 
@@ -173,41 +189,12 @@ describe('FetchTransport', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
-  it('adds x-faro-session-id header if conditions are met.', async () => {
-    const { transports } = initializeFaro(
-      mockConfig({
-        instrumentations: [new SessionInstrumentation()],
-        transports: [
-          new FetchTransport({
-            url: 'http://example.com/collect',
-          }),
-        ],
-        sessionTracking: {
-          enabled: true,
-          session: { id: '123' },
-        },
-      })
-    );
-
-    const transport = transports.transports[0] as FetchTransport;
-
-    transport.send([item]);
-
-    expect(fetch).toHaveBeenCalledWith(
-      'http://example.com/collect',
-      expect.objectContaining({
-        headers: {
-          'Content-Type': 'application/json',
-          'x-faro-session-id': '123',
-        },
-      })
-    );
-  });
-
   it('will turn off keepalive if the payload length is over 60_000', async () => {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
     });
+
+    transport.metas.value = { session: { id: mockSessionId } };
 
     transport.internalLogger = mockInternalLogger;
 
@@ -218,6 +205,7 @@ describe('FetchTransport', () => {
       body: JSON.stringify(getTransportBody([largeItem])),
       headers: {
         'Content-Type': 'application/json',
+        'x-faro-session-id': mockSessionId,
       },
       keepalive: false,
       method: 'POST',
