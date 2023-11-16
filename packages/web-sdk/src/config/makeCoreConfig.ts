@@ -1,37 +1,22 @@
 import {
   createInternalLogger,
-  dateNow,
   defaultBatchingConfig,
   defaultGlobalObjectKey,
   defaultInternalLoggerLevel,
   defaultUnpatchedConsole,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, MetaItem, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
-import {
-  FaroUserSession,
-  PersistentSessionsManager,
-  VolatileSessionsManager,
-} from '../instrumentations/session/sessionManager';
-import {
-  isUserSessionValid,
-  MAX_SESSION_PERSISTENCE_TIME,
-} from '../instrumentations/session/sessionManager/sessionManagerUtils';
+import { defaultSessionTrackingConfig } from '../instrumentations/session';
 import { createSession, defaultMetas, defaultViewMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { FetchTransport } from '../transports';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
-
-const defaultSessionPersistenceConfig = {
-  // enabled: true; // TODO:  uncomment once we switch
-  persistent: false,
-  maxSessionPersistenceTime: MAX_SESSION_PERSISTENCE_TIME,
-} as const;
 
 export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined {
   const transports: Transport[] = [];
@@ -94,10 +79,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     ignoreErrors: browserConfig.ignoreErrors,
 
     sessionTracking: {
-      enabled: false,
-      ...defaultSessionPersistenceConfig,
-      // TODO: Remove condition at ga
-      session: browserConfig.sessionTracking?.enabled ? createSessionMeta(browserConfig.sessionTracking) : undefined,
+      ...defaultSessionTrackingConfig,
       ...browserConfig.sessionTracking,
     },
 
@@ -113,41 +95,4 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
   }
 
   return config;
-}
-
-function createSessionMeta(sessionsConfig: Config['sessionTracking']): MetaSession {
-  const _sessionsConfig = { ...defaultSessionPersistenceConfig, ...sessionsConfig };
-  const sessionManager = _sessionsConfig.persistent ? PersistentSessionsManager : VolatileSessionsManager;
-
-  let userSession: FaroUserSession | null = sessionManager.fetchUserSession();
-
-  if (_sessionsConfig.persistent) {
-    const now = dateNow();
-
-    const shouldClearPersistentSession =
-      userSession && userSession.lastActivity < now - _sessionsConfig.maxSessionPersistenceTime!;
-
-    if (shouldClearPersistentSession) {
-      PersistentSessionsManager.removeUserSession();
-      userSession = null;
-    }
-  }
-
-  let sessionId = _sessionsConfig.session?.id ?? createSession().id;
-  let sessionAttributes = _sessionsConfig.session?.attributes;
-
-  if (isUserSessionValid(userSession)) {
-    sessionId = userSession?.sessionId;
-    sessionAttributes = userSession?.sessionMeta?.attributes;
-  }
-
-  const sessionMeta: MetaSession = {
-    id: sessionId ?? createSession().id,
-  };
-
-  if (sessionAttributes) {
-    sessionMeta.attributes = sessionAttributes;
-  }
-
-  return sessionMeta;
 }

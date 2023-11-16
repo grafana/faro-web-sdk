@@ -5,6 +5,8 @@
 - Feat: Add x-faro-session header to identify client session id to server
   for fetch and xhr instrumentations (#377)
 - Chore: Always send x-faro-session-id header, independent of the chosen session management (#381).
+- Change: If new session management is used, send dedicated session lifecycle events to reflect if a
+  new session is started, a session is resume or extended (#380)
 
 ## 1.2.5
 
