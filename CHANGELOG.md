@@ -2,6 +2,12 @@
 
 ## Next
 
+## 1.2.7
+
+- Hotfix: disable custom x-faro-session-id header for legacy sessions ()
+
+## 1.2.6
+
 - Feat: Add x-faro-session header to identify client session id to server
   for fetch and xhr instrumentations (#377)
 - Chore: Always send x-faro-session-id header, independent of the chosen session management (#381).
