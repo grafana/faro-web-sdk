@@ -47,13 +47,15 @@ export class FetchTransport extends BaseTransport {
 
         const { headers, ...restOfRequestOptions } = requestOptions ?? {};
 
+        const sessionId = this.metas.value.session?.id;
+
         return fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             ...(headers ?? {}),
             ...(apiKey ? { 'x-api-key': apiKey } : {}),
-            ...(this.metas.value.session?.id ? { 'x-faro-session-id': this.metas.value.session?.id } : {}),
+            ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
           },
           body,
           keepalive: body.length <= BEACON_BODY_SIZE_LIMIT,
