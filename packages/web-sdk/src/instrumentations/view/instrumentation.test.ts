@@ -1,4 +1,4 @@
-import { Conventions, EventEvent, initializeFaro, TransportItem } from '@grafana/faro-core';
+import { EVENT_VIEW_CHANGED, EventEvent, initializeFaro, TransportItem } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { ViewInstrumentation } from './instrumentation';
@@ -19,7 +19,7 @@ describe('ViewInstrumentation', () => {
     expect(transport.items).toHaveLength(1);
 
     const event = transport.items[0]! as TransportItem<EventEvent>;
-    expect(event.payload.name).toEqual(Conventions.EventNames.VIEW_CHANGED);
+    expect(event.payload.name).toEqual(EVENT_VIEW_CHANGED);
     expect(event.meta.view?.name).toEqual(view.name);
   });
 
@@ -38,7 +38,7 @@ describe('ViewInstrumentation', () => {
     expect(transport.items).toHaveLength(1);
 
     let event = transport.items[0]! as TransportItem<EventEvent>;
-    expect(event.payload.name).toEqual(Conventions.EventNames.VIEW_CHANGED);
+    expect(event.payload.name).toEqual(EVENT_VIEW_CHANGED);
     expect(event.meta.view?.name).toEqual(view.name);
 
     metas.add({ user: { id: 'foo' } });

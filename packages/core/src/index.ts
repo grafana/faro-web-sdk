@@ -68,7 +68,7 @@ export {
 } from './sdk';
 export type { Faro } from './sdk';
 
-export { Conventions } from './semantic';
+export * from './semantic';
 
 export { BaseTransport, getTransportBody, TransportItemType, transportItemTypeToBodyKey } from './transports';
 export type {
