@@ -2,9 +2,13 @@
 
 ## Next
 
+## 1.2.8
+
+- Change: Custom x-faro-session-id header will now be added to legacy sessions as well (#384).
+
 ## 1.2.7
 
-- Hotfix: disable custom x-faro-session-id header for legacy sessions ()
+- Hotfix: disable custom x-faro-session-id header for legacy sessions (#383)
 
 ## 1.2.6
 

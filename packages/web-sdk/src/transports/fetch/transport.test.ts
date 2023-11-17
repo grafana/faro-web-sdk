@@ -1,8 +1,5 @@
 import { getTransportBody, LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
-
-import { initializeFaro } from '../../initialize';
-import { SessionInstrumentation } from '../../instrumentations';
+import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import { FetchTransport } from './transport';
 
@@ -64,7 +61,7 @@ describe('FetchTransport', () => {
       body: JSON.stringify(getTransportBody([item])),
       headers: {
         'Content-Type': 'application/json',
-        // 'x-faro-session-id': mockSessionId,
+        'x-faro-session-id': mockSessionId,
       },
       keepalive: true,
       method: 'POST',
@@ -208,41 +205,10 @@ describe('FetchTransport', () => {
       body: JSON.stringify(getTransportBody([largeItem])),
       headers: {
         'Content-Type': 'application/json',
-        // 'x-faro-session-id': mockSessionId,
+        'x-faro-session-id': mockSessionId,
       },
       keepalive: false,
       method: 'POST',
     });
-  });
-
-  it('adds x-faro-session-id header when the new session manager is used.', async () => {
-    const { transports } = initializeFaro(
-      mockConfig({
-        instrumentations: [new SessionInstrumentation()],
-        transports: [
-          new FetchTransport({
-            url: 'http://example.com/collect',
-          }),
-        ],
-        sessionTracking: {
-          enabled: true,
-          session: { id: '123' },
-        },
-      })
-    );
-
-    const transport = transports.transports[0] as FetchTransport;
-
-    transport.send([item]);
-
-    expect(fetch).toHaveBeenCalledWith(
-      'http://example.com/collect',
-      expect.objectContaining({
-        headers: {
-          'Content-Type': 'application/json',
-          'x-faro-session-id': '123',
-        },
-      })
-    );
   });
 });
