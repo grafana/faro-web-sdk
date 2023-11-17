@@ -4,6 +4,7 @@ import type { Meta } from '@grafana/faro-core';
 import { throttle } from '../../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
+import { isSampled } from './sampling';
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
 import { addSessionMetadataToNextSession, createUserSessionObject, getUserSessionUpdater } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
@@ -42,7 +43,7 @@ export class PersistentSessionsManager {
   updateSession = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
 
   private init(): void {
-    PersistentSessionsManager.storeUserSession(createUserSessionObject(this.initialSessionId));
+    PersistentSessionsManager.storeUserSession(createUserSessionObject(this.initialSessionId, isSampled()));
 
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {

@@ -1,8 +1,10 @@
 import { dateNow, faro, genShortID } from '@grafana/faro-core';
 
+import { isSampled } from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import type { FaroUserSession } from './types';
 
+// TODO: use params object
 export function createUserSessionObject(sessionId: string = genShortID(), isSampled = false): FaroUserSession {
   const now = dateNow();
 
@@ -46,7 +48,10 @@ export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: Ge
     if (isUserSessionValid(sessionFromStorage)) {
       storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
     } else {
-      let newSession = addSessionMetadataToNextSession(createUserSessionObject(), sessionFromStorage);
+      let newSession = addSessionMetadataToNextSession(
+        createUserSessionObject(undefined, isSampled()),
+        sessionFromStorage
+      );
 
       storeUserSession(newSession);
 
