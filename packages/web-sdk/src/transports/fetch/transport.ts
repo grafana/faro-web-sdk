@@ -55,7 +55,7 @@ export class FetchTransport extends BaseTransport {
             'Content-Type': 'application/json',
             ...(headers ?? {}),
             ...(apiKey ? { 'x-api-key': apiKey } : {}),
-            ...(this.config.sessionTracking?.enabled && sessionId ? { 'x-faro-session-id': sessionId } : {}),
+            ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
           },
           body,
           keepalive: body.length <= BEACON_BODY_SIZE_LIMIT,
