@@ -3,13 +3,14 @@ import { dateNow, faro, genShortID } from '@grafana/faro-core';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import type { FaroUserSession } from './types';
 
-export function createUserSessionObject(sessionId?: string): FaroUserSession {
+export function createUserSessionObject(sessionId: string = genShortID(), isSampled = false): FaroUserSession {
   const now = dateNow();
 
   return {
-    sessionId: sessionId ?? genShortID(),
+    sessionId,
     lastActivity: now,
     started: now,
+    isSampled: isSampled,
   };
 }
 

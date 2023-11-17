@@ -60,6 +60,7 @@ describe('Persistent Sessions Manager.', () => {
         sessionId: mockInitialSessionId,
         lastActivity: fakeSystemTime,
         started: fakeSystemTime,
+        isSampled: false,
       })
     );
   });
@@ -69,6 +70,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
+      isSampled: false,
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
@@ -86,6 +88,7 @@ describe('Persistent Sessions Manager.', () => {
         sessionId: mockInitialSessionId,
         lastActivity: nextActivityTimeAfterFiveSeconds,
         started: fakeSystemTime,
+        isSampled: false,
       })
     );
   });
@@ -95,6 +98,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
+      isSampled: false,
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -122,6 +126,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
+      isSampled: false,
       sessionMeta: matchNewSessionMeta,
     });
 
@@ -144,6 +149,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
+      isSampled: false,
       sessionMeta: oldStoredMeta,
     };
 
@@ -173,6 +179,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
+      isSampled: false,
       sessionMeta: matchNewSessionMeta,
     });
 
