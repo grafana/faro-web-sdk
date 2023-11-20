@@ -65,7 +65,7 @@ describe('Volatile Sessions Manager.', () => {
         sessionId: mockInitialSessionId,
         lastActivity: fakeSystemTime,
         started: fakeSystemTime,
-        isSampled: false,
+        isSampled: true,
       })
     );
 
@@ -80,7 +80,7 @@ describe('Volatile Sessions Manager.', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: false,
+      isSampled: true,
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
@@ -99,7 +99,7 @@ describe('Volatile Sessions Manager.', () => {
         sessionId: mockInitialSessionId,
         lastActivity: nextActivityTimeAfterFiveSeconds,
         started: fakeSystemTime,
-        isSampled: false,
+        isSampled: true,
       })
     );
 
@@ -115,7 +115,7 @@ describe('Volatile Sessions Manager.', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: false,
+      isSampled: true,
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -144,7 +144,7 @@ describe('Volatile Sessions Manager.', () => {
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
-      isSampled: false,
+      isSampled: true,
       sessionMeta: matchNewSessionMeta,
     });
 
@@ -173,7 +173,7 @@ describe('Volatile Sessions Manager.', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: false,
+      isSampled: true,
       sessionMeta: oldStoredMeta,
     };
 
@@ -205,7 +205,7 @@ describe('Volatile Sessions Manager.', () => {
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
-      isSampled: false,
+      isSampled: true,
       sessionMeta: matchNewSessionMeta,
     });
 

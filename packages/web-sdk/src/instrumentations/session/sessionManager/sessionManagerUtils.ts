@@ -5,7 +5,7 @@ import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConst
 import type { FaroUserSession } from './types';
 
 // TODO: use params object
-export function createUserSessionObject(sessionId: string = genShortID(), isSampled = false): FaroUserSession {
+export function createUserSessionObject(sessionId: string = genShortID(), isSampled = true): FaroUserSession {
   const now = dateNow();
 
   return {

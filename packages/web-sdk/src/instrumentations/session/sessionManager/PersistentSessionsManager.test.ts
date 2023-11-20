@@ -65,7 +65,7 @@ describe('Persistent Sessions Manager.', () => {
         sessionId: mockInitialSessionId,
         lastActivity: fakeSystemTime,
         started: fakeSystemTime,
-        isSampled: false,
+        isSampled: true,
       })
     );
 
@@ -80,7 +80,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: false,
+      isSampled: true,
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
@@ -99,7 +99,7 @@ describe('Persistent Sessions Manager.', () => {
         sessionId: mockInitialSessionId,
         lastActivity: nextActivityTimeAfterFiveSeconds,
         started: fakeSystemTime,
-        isSampled: false,
+        isSampled: true,
       })
     );
 
@@ -114,7 +114,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: false,
+      isSampled: true,
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -143,7 +143,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
-      isSampled: false,
+      isSampled: true,
       sessionMeta: matchNewSessionMeta,
     });
 
@@ -172,7 +172,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: false,
+      isSampled: true,
       sessionMeta: oldStoredMeta,
     };
 
@@ -204,7 +204,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
-      isSampled: false,
+      isSampled: true,
       sessionMeta: matchNewSessionMeta,
     });
 

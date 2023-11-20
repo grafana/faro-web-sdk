@@ -41,7 +41,7 @@ describe('sessionManagerUtils', () => {
       sessionId: mockSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: false,
+      isSampled: true,
     });
 
     // create with given sessionId
@@ -52,7 +52,7 @@ describe('sessionManagerUtils', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: false,
+      isSampled: true,
     });
   });
 
@@ -207,7 +207,7 @@ describe('sessionManagerUtils', () => {
       lastActivity: 1,
       started: 2,
       sessionId: 'new-session-id',
-      isSampled: false,
+      isSampled: true,
     };
 
     const sessionWithMetadata1 = addSessionMetadataToNextSession(newSession, null);
@@ -223,7 +223,7 @@ describe('sessionManagerUtils', () => {
       lastActivity: 8,
       started: 9,
       sessionId: 'previous-session-id',
-      isSampled: false,
+      isSampled: true,
     };
 
     const sessionWithMetadata2 = addSessionMetadataToNextSession(newSession, previousSession);
