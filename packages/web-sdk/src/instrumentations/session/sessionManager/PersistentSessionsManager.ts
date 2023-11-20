@@ -45,13 +45,13 @@ export class PersistentSessionsManager {
   private init(): void {
     const initialUserSession = createUserSessionObject(this.initialSessionId, isSampled());
     PersistentSessionsManager.storeUserSession(initialUserSession);
-    faro.api.setSession({
-      ...faro.api.getSession(),
-      attributes: {
-        ...(faro.api.getSession()?.attributes ?? {}),
-        isSampled: initialUserSession.isSampled.toString(),
-      },
-    });
+    // faro.api.setSession({
+    //   ...faro.api.getSession(),
+    //   attributes: {
+    //     ...(faro.api.getSession()?.attributes ?? {}),
+    //     isSampled: initialUserSession.isSampled.toString(),
+    //   },
+    // });
 
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {

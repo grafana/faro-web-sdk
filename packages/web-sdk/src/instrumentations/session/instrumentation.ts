@@ -114,11 +114,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
         this.transports?.addBeforeSendHooks(...this.transports.getBeforeSendHooks(), (item) => {
           sessionManager?.updateSession();
 
-          if (item.meta.session?.attributes?.['isSampled']) {
-            return item;
-          }
+          // if (item.meta.session?.attributes?.['isSampled']) {
+          //   return item;
+          // }
 
-          return null;
+          // return null;
+
+          return item;
         });
       }
     } else {
