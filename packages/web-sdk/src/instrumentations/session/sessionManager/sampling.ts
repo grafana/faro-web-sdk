@@ -1,9 +1,8 @@
 import { faro } from '@grafana/faro-core';
 
 export function isSampled() {
-  const samplingOff = 0;
   const sessionTracking = faro.config.sessionTracking;
-  const samplingRate = sessionTracking?.sampler?.(faro.metas.value) ?? sessionTracking?.samplingRate ?? samplingOff;
+  const samplingRate = sessionTracking?.sampler?.(faro.metas.value) ?? sessionTracking?.samplingRate;
 
   if (typeof samplingRate !== 'number') {
     return false;

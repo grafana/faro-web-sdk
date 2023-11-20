@@ -58,7 +58,7 @@ export class VolatileSessionsManager {
 
       if (session && session.id !== sessionFromSessionStorage?.sessionId) {
         const userSession = addSessionMetadataToNextSession(
-          createUserSessionObject(session.id),
+          createUserSessionObject(session.id, isSampled()),
           sessionFromSessionStorage
         );
 

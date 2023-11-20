@@ -71,7 +71,7 @@ export class PersistentSessionsManager {
 
       if (session && session.id !== sessionFromLocalStorage?.sessionId) {
         const userSession = addSessionMetadataToNextSession(
-          createUserSessionObject(session.id),
+          createUserSessionObject(session.id, isSampled()),
           sessionFromLocalStorage
         );
 
