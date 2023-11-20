@@ -43,7 +43,15 @@ export class PersistentSessionsManager {
   updateSession = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
 
   private init(): void {
-    PersistentSessionsManager.storeUserSession(createUserSessionObject(this.initialSessionId, isSampled()));
+    const initialUserSession = createUserSessionObject(this.initialSessionId, isSampled());
+    PersistentSessionsManager.storeUserSession(initialUserSession);
+    faro.api.setSession({
+      ...faro.api.getSession(),
+      attributes: {
+        ...(faro.api.getSession()?.attributes ?? {}),
+        isSampled: initialUserSession.isSampled.toString(),
+      },
+    });
 
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {

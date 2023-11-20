@@ -104,14 +104,21 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
     if (sessionTracking?.enabled) {
       const initialSessionMeta = this.createInitialSessionMeta(sessionTracking);
+
+      console.log('initialSessionMeta :>> ', initialSessionMeta);
       this.api.setSession(initialSessionMeta);
 
       const sessionManager = this.getSessionManagerInstanceByConfiguredStrategy(this.metas.value.session?.id);
 
       if (sessionManager != null) {
-        this.transports?.addBeforeSendHooks(...this.transports.getBeforeSendHooks(), (item: any) => {
+        this.transports?.addBeforeSendHooks(...this.transports.getBeforeSendHooks(), (item) => {
           sessionManager?.updateSession();
-          return item;
+
+          if (item.meta.session?.attributes?.['isSampled']) {
+            return item;
+          }
+
+          return null;
         });
       }
     } else {
