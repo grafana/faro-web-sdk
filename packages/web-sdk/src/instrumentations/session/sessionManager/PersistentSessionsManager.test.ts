@@ -51,27 +51,6 @@ describe('Persistent Sessions Manager.', () => {
     setItemSpy.mockRestore();
   });
 
-  it('Crates a persistent-session-manager instance and initializes it with a new session.', () => {
-    const mockIsSampled = jest.fn();
-    jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
-
-    const manager = new PersistentSessionsManager(mockInitialSessionId);
-
-    expect(typeof manager.updateSession).toBe('function');
-
-    expect(setItemSpy).toHaveBeenCalledTimes(1);
-    expect(mockStorage[STORAGE_KEY]).toBe(
-      JSON.stringify({
-        sessionId: mockInitialSessionId,
-        lastActivity: fakeSystemTime,
-        started: fakeSystemTime,
-        isSampled: true,
-      })
-    );
-
-    expect(mockIsSampled).toHaveBeenCalledTimes(1);
-  });
-
   it('Updates last active timestamp for valid session.', () => {
     const mockIsSampled = jest.fn();
     jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
@@ -85,15 +64,14 @@ describe('Persistent Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
 
-    const { updateSession } = new PersistentSessionsManager(mockInitialSessionId);
-    expect(mockIsSampled).toHaveBeenCalledTimes(1);
+    const { updateSession } = new PersistentSessionsManager();
 
     const nextActivityTimeAfterFiveSeconds = fakeSystemTime;
     jest.setSystemTime(nextActivityTimeAfterFiveSeconds);
 
     updateSession();
 
-    expect(setItemSpy).toBeCalledTimes(2); // called on time in the init function and the in the onActivity func
+    expect(setItemSpy).toBeCalledTimes(1); // called on time in the init function and the in the onActivity func
     expect(mockStorage[STORAGE_KEY]).toBe(
       JSON.stringify({
         sessionId: mockInitialSessionId,
@@ -102,8 +80,6 @@ describe('Persistent Sessions Manager.', () => {
         isSampled: true,
       })
     );
-
-    expect(mockIsSampled).toHaveBeenCalledTimes(1);
   });
 
   it('Creates a new Faro user session if (old) session if max inactivity duration is reached.', () => {
@@ -119,11 +95,10 @@ describe('Persistent Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
 
-    const { updateSession } = new PersistentSessionsManager(mockInitialSessionId);
+    const { updateSession } = new PersistentSessionsManager();
 
     const mockNewSessionId = 'abcde';
     jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockNewSessionId);
-    expect(mockIsSampled).toHaveBeenCalledTimes(1);
 
     const maxActivityTimeReached = fakeSystemTime + SESSION_INACTIVITY_TIME;
     jest.setSystemTime(maxActivityTimeReached);
@@ -153,9 +128,6 @@ describe('Persistent Sessions Manager.', () => {
     // Call session created hook
     expect(mockOnNewSessionCreated).toHaveBeenCalledTimes(1);
     expect(mockOnNewSessionCreated).toHaveBeenCalledWith(null, matchNewSessionMeta);
-
-    // We calculate a new sampling decision in case we extend a session
-    expect(mockIsSampled).toHaveBeenCalledTimes(2);
   });
 
   it('Creates a new Faro user session if (old) session expiration time is reached.', () => {
@@ -176,7 +148,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionMeta: oldStoredMeta,
     };
 
-    const { updateSession } = new PersistentSessionsManager(mockInitialSessionId);
+    const { updateSession } = new PersistentSessionsManager();
 
     // overwrite auto created session
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -186,8 +158,6 @@ describe('Persistent Sessions Manager.', () => {
 
     const maxActivityTimeReached = fakeSystemTime + SESSION_EXPIRATION_TIME;
     jest.setSystemTime(maxActivityTimeReached);
-
-    expect(mockIsSampled).toHaveBeenCalledTimes(1);
 
     updateSession();
 
@@ -214,24 +184,27 @@ describe('Persistent Sessions Manager.', () => {
     // Call session created hook
     expect(mockOnNewSessionCreated).toHaveBeenCalledTimes(1);
     expect(mockOnNewSessionCreated).toHaveBeenCalledWith(oldStoredMeta, matchNewSessionMeta);
-
-    // We calculate a new sampling decision in case we extend a session
-    expect(mockIsSampled).toHaveBeenCalledTimes(2);
   });
 
-  it('Creates a new Faro user session if a new session is created with the setSession function.', () => {
+  it('Creates a new Faro user session if setSession(§) is called outside the Faro session manager.', () => {
     const mockIsSampled = jest.fn();
     jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
 
-    new PersistentSessionsManager(mockInitialSessionId);
-    expect(mockIsSampled).toHaveBeenCalledTimes(1);
+    const storedSession = {
+      sessionId: mockInitialSessionId,
+      isSampled: true,
+    };
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
+
+    new PersistentSessionsManager();
 
     const initialSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
     expect(initialSession.sessionId).toBe(mockInitialSessionId);
 
     const manualSetSessionId = 'xyz';
     faro.api.setSession({ id: manualSetSessionId });
-    expect(mockIsSampled).toHaveBeenCalledTimes(2);
+    expect(mockIsSampled).toHaveBeenCalledTimes(1);
 
     const newSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
     expect(newSession.sessionId).toBe(manualSetSessionId);

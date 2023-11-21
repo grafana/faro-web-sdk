@@ -51,22 +51,6 @@ describe('Volatile Sessions Manager.', () => {
     setItemSpy.mockRestore();
   });
 
-  it('Crates a volatile-session-manager instance and initializes it with a new session.', () => {
-    const manager = new VolatileSessionsManager(mockInitialSessionId);
-
-    expect(typeof manager.updateSession).toBe('function');
-
-    expect(setItemSpy).toHaveBeenCalledTimes(1);
-    expect(mockStorage[STORAGE_KEY]).toBe(
-      JSON.stringify({
-        sessionId: mockInitialSessionId,
-        lastActivity: fakeSystemTime,
-        started: fakeSystemTime,
-        isSampled: true,
-      })
-    );
-  });
-
   it('Updates last active timestamp for valid session.', () => {
     const validSession = {
       sessionId: mockInitialSessionId,
@@ -77,14 +61,14 @@ describe('Volatile Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
 
-    const { updateSession } = new VolatileSessionsManager(mockInitialSessionId);
+    const { updateSession } = new VolatileSessionsManager();
 
     const nextActivityTimeAfterFiveSeconds = fakeSystemTime;
     jest.setSystemTime(nextActivityTimeAfterFiveSeconds);
 
     updateSession();
 
-    expect(setItemSpy).toBeCalledTimes(2); // called on time in the init function and the in the onActivity func
+    expect(setItemSpy).toBeCalledTimes(1); // called on time in the init function and the in the onActivity func
     expect(mockStorage[STORAGE_KEY]).toBe(
       JSON.stringify({
         sessionId: mockInitialSessionId,
@@ -105,7 +89,7 @@ describe('Volatile Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
 
-    const { updateSession } = new VolatileSessionsManager(mockInitialSessionId);
+    const { updateSession } = new VolatileSessionsManager();
 
     const mockNewSessionId = 'abcde';
     jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockNewSessionId);
@@ -155,7 +139,7 @@ describe('Volatile Sessions Manager.', () => {
       isSampled: true,
     };
 
-    const { updateSession } = new VolatileSessionsManager(mockInitialSessionId);
+    const { updateSession } = new VolatileSessionsManager();
 
     // overwrite auto created session
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -193,19 +177,25 @@ describe('Volatile Sessions Manager.', () => {
     expect(mockOnNewSessionCreated).toHaveBeenCalledWith(oldStoredMeta, matchNewSessionMeta);
   });
 
-  it('Creates a new Faro user session if a new session is created with the setSession function.', () => {
+  it('Creates a new Faro user session if setSession(§) is called outside the Faro session manager.', () => {
     const mockIsSampled = jest.fn();
     jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
 
-    new VolatileSessionsManager(mockInitialSessionId);
-    expect(mockIsSampled).toHaveBeenCalledTimes(1);
+    const storedSession = {
+      sessionId: mockInitialSessionId,
+      isSampled: true,
+    };
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
+
+    new VolatileSessionsManager();
 
     const initialSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
     expect(initialSession.sessionId).toBe(mockInitialSessionId);
 
     const manualSetSessionId = 'xyz';
     faro.api.setSession({ id: manualSetSessionId });
-    expect(mockIsSampled).toHaveBeenCalledTimes(2);
+    expect(mockIsSampled).toHaveBeenCalledTimes(1);
 
     const newSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
     expect(newSession.sessionId).toBe(manualSetSessionId);
