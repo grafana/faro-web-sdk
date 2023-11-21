@@ -42,16 +42,6 @@ export class SessionInstrumentation extends BaseInstrumentation {
     }
   }
 
-  // private getSessionManagerInstanceByConfiguredStrategy():
-  //   | typeof PersistentSessionsManager
-  //   | typeof VolatileSessionsManager {
-  //   if (this.config.sessionTracking?.persistent) {
-  //     return PersistentSessionsManager;
-  //   }
-
-  //   return VolatileSessionsManager;
-  // }
-
   private createInitialSessionMeta(sessionsConfig: Required<Config>['sessionTracking']): MetaSession {
     const sessionManager = sessionsConfig.persistent ? PersistentSessionsManager : VolatileSessionsManager;
 
@@ -82,12 +72,12 @@ export class SessionInstrumentation extends BaseInstrumentation {
     const sessionMeta: MetaSession = {
       id: sessionId,
       attributes: {
-        ...(sessionAttributes ?? {}),
         isSampled: isSampled().toString(),
+        // We do not want to recalculate the sampling decision on each init phase.
+        // If session from web-storage has a isSampled attribute we will overwrite the isSampled attribute in the previous line
+        ...(sessionAttributes ?? {}),
       },
     };
-
-    this.notifiedSession = sessionMeta;
 
     return sessionMeta;
   }
@@ -103,11 +93,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
         : VolatileSessionsManager;
 
       const initialSessionMeta = this.createInitialSessionMeta(sessionTracking);
-      this.api.setSession(initialSessionMeta);
 
       SessionManager.storeUserSession(
         createUserSessionObject(initialSessionMeta.id, Boolean(initialSessionMeta.attributes!['isSampled']))
       );
+
+      this.notifiedSession = initialSessionMeta;
+      this.api.setSession(initialSessionMeta);
 
       const { updateSession } = new SessionManager();
 
@@ -115,8 +107,15 @@ export class SessionInstrumentation extends BaseInstrumentation {
         updateSession();
 
         const attributes = item.meta.session?.attributes;
+
         if (Boolean(attributes?.['isSampled'])) {
-          delete attributes!['isSampled'];
+          const { isSampled: _, ...restAttributes } = attributes as any;
+
+          item.meta.session = {
+            ...item.meta.session,
+            attributes: restAttributes,
+          };
+
           return item;
         }
 

@@ -112,6 +112,7 @@ describe('Persistent Sessions Manager.', () => {
       id: mockNewSessionId,
       attributes: {
         previousSession: mockInitialSessionId,
+        isSampled: 'true',
       },
     };
     expect(session).toStrictEqual({
@@ -138,6 +139,7 @@ describe('Persistent Sessions Manager.', () => {
       id: 'aaaa',
       attributes: {
         previousSession: 'bbbb',
+        isSampled: 'true',
       },
     };
     const storedSession = {
@@ -168,6 +170,7 @@ describe('Persistent Sessions Manager.', () => {
       id: mockNewSessionId,
       attributes: {
         previousSession: mockInitialSessionId,
+        isSampled: 'true',
       },
     };
     expect(session).toStrictEqual({

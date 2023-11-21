@@ -66,16 +66,13 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
     ...newSession,
     sessionMeta: {
       id: newSession.sessionId,
+      attributes: {
+        ...(faro.metas.value.session?.attributes ?? {}),
+        ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
+        isSampled: newSession.isSampled.toString(),
+      },
     },
   };
-
-  const metaAttributes = faro.metas.value.session?.attributes;
-  if (metaAttributes || previousSession != null) {
-    sessionWithMeta.sessionMeta.attributes = {
-      ...(metaAttributes ?? {}),
-      ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
-    };
-  }
 
   return sessionWithMeta;
 }

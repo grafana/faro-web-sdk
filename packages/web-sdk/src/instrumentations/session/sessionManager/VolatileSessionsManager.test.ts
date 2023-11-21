@@ -106,6 +106,7 @@ describe('Volatile Sessions Manager.', () => {
       id: mockNewSessionId,
       attributes: {
         previousSession: mockInitialSessionId,
+        isSampled: 'true',
       },
     };
     expect(session).toStrictEqual({
@@ -159,6 +160,7 @@ describe('Volatile Sessions Manager.', () => {
       id: mockNewSessionId,
       attributes: {
         previousSession: mockInitialSessionId,
+        isSampled: 'true',
       },
     };
     expect(session).toStrictEqual({

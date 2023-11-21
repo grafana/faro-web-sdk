@@ -17,5 +17,13 @@ export function isSampled() {
     samplingRate = 0;
   }
 
-  return Math.random() < samplingRate;
+  const random = Math.random();
+
+  if (samplingRate === 0.5) {
+    console.log('samplingRate :>> ', samplingRate);
+    console.log('random :>> ', random);
+    console.log('random < samplingRate :>> ', random < samplingRate);
+  }
+
+  return random < samplingRate;
 }

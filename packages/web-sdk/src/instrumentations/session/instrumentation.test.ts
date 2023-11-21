@@ -13,6 +13,7 @@ import {
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,
 } from './sessionManager';
+import * as samplingModule from './sessionManager/sampling';
 import { createUserSessionObject } from './sessionManager/sessionManagerUtils';
 
 describe('SessionInstrumentation', () => {
@@ -20,6 +21,8 @@ describe('SessionInstrumentation', () => {
   let setItemSpy: jest.SpyInstance<void, [key: string, value: string]>;
   let getItemSpy: jest.SpyInstance<string | null, [key: string]>;
   let removeItemSpy: jest.SpyInstance<void, [key: string]>;
+
+  const originalGlobalMatch = global.Math;
 
   beforeAll(() => {
     jest.useFakeTimers();
@@ -37,7 +40,7 @@ describe('SessionInstrumentation', () => {
   afterEach(() => {
     jest.clearAllMocks();
     jest.clearAllTimers();
-    // jest.resetAllMocks();
+    global.Math = originalGlobalMatch;
     mockStorage = {};
   });
 
@@ -45,7 +48,7 @@ describe('SessionInstrumentation', () => {
     jest.useRealTimers();
     getItemSpy.mockRestore();
     setItemSpy.mockRestore();
-    //   removeItemSpy.mockRestore();
+    removeItemSpy.mockRestore();
   });
 
   it('will send session start event on initialize', () => {
@@ -80,6 +83,7 @@ describe('SessionInstrumentation', () => {
           enabled: true,
           persistent: false,
           session,
+          samplingRate: 1, // default
         },
       })
     );
@@ -114,6 +118,7 @@ describe('SessionInstrumentation', () => {
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
           enabled: true,
+          samplingRate: 1, // default
         },
       })
     );
@@ -139,6 +144,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          samplingRate: 1, // default
         },
       })
     );
@@ -169,6 +175,7 @@ describe('SessionInstrumentation', () => {
       id: 'new-session',
       attributes: {
         foo: 'bar',
+        isSampled: 'true',
       },
     };
 
@@ -178,6 +185,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           session: mockSessionMeta,
+          samplingRate: 1, // default
         },
       })
     );
@@ -186,7 +194,7 @@ describe('SessionInstrumentation', () => {
   });
 
   it('creates new session meta for browser with no faro session stored in web storage.', () => {
-    const mockSessionMeta = { id: 'new-session' };
+    const mockSessionMeta = { id: 'new-session', attributes: { isSampled: 'true' } };
     jest.spyOn(createSessionMock, 'createSession').mockReturnValueOnce(mockSessionMeta);
 
     const { metas } = initializeFaro(
@@ -194,6 +202,7 @@ describe('SessionInstrumentation', () => {
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
           enabled: true,
+          samplingRate: 1, // default
         },
       })
     );
@@ -207,6 +216,7 @@ describe('SessionInstrumentation', () => {
       id: 'persisted-session',
       attributes: {
         foo: 'bar',
+        isSampled: 'true',
       },
     };
 
@@ -220,6 +230,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          samplingRate: 1, // default
         },
       })
     );
@@ -245,6 +256,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          samplingRate: 1, // default
         },
       })
     );
@@ -271,6 +283,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          samplingRate: 1, // default
         },
       })
     );
@@ -279,5 +292,39 @@ describe('SessionInstrumentation', () => {
 
     expect(removeItemSpy).toBeCalledTimes(1);
     expect(metas.value.session?.id).not.toBe(mockUserSession.sessionId);
+  });
+
+  it('Removes items which are not part of the sample.', () => {
+    const transport = new MockTransport();
+
+    jest.spyOn(samplingModule, 'isSampled').mockReturnValue(true);
+
+    const { api } = initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+        },
+      })
+    );
+
+    expect(transport.items).toHaveLength(1);
+    expect(transport.items[0]?.meta.session?.attributes?.['isSampled']).toBeUndefined();
+    api.pushLog(['abc']);
+
+    expect(transport.items).toHaveLength(2);
+    api.pushEvent('def');
+
+    expect(transport.items).toHaveLength(3);
+
+    jest.spyOn(samplingModule, 'isSampled').mockReturnValueOnce(false);
+    api.setSession({ id: 'second-session' });
+    expect(transport.items).toHaveLength(4);
+    expect(transport.items[3]?.meta.session?.attributes?.['isSampled']).toBeUndefined();
+
+    api.pushLog(['this log should not be sent']);
+    expect(transport.items).toHaveLength(5);
+    expect(transport.items[4]?.meta.session?.attributes?.['isSampled']).toBeUndefined();
   });
 });
