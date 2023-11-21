@@ -29,7 +29,7 @@ describe('Volatile Sessions Manager.', () => {
 
     const config = mockConfig({
       sessionTracking: {
-        persistent: true,
+        enabled: true,
         session: { id: mockInitialSessionId },
         onSessionChange: mockOnNewSessionCreated,
       },

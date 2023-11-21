@@ -5,6 +5,10 @@ import type { Meta, MetaApp, MetaItem, MetaSession, MetaUser, MetaView } from '.
 import type { BatchExecutorOptions, BeforeSendHook, Transport } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 
+type SamplingContext = {
+  metas: Meta;
+};
+
 export interface Config<P = APIEvent> {
   app: MetaApp;
   batching?: BatchExecutorOptions;
@@ -30,7 +34,7 @@ export interface Config<P = APIEvent> {
     maxSessionPersistenceTime?: number;
     onSessionChange?: (oldSession: MetaSession | null, newSession: MetaSession) => void;
     samplingRate?: number;
-    sampler?: (metas: Meta) => number;
+    sampler?: (context: SamplingContext) => number;
   };
 
   user?: MetaUser;
