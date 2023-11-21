@@ -74,7 +74,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
       attributes: {
         isSampled: isSampled().toString(),
         // We do not want to recalculate the sampling decision on each init phase.
-        // If session from web-storage has a isSampled attribute we will overwrite the isSampled attribute in the previous line
+        // If session from web-storage has a isSampled attribute we will use that instead.
         ...(sessionAttributes ?? {}),
       },
     };

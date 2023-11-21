@@ -22,8 +22,6 @@ describe('SessionInstrumentation', () => {
   let getItemSpy: jest.SpyInstance<string | null, [key: string]>;
   let removeItemSpy: jest.SpyInstance<void, [key: string]>;
 
-  const originalGlobalMatch = global.Math;
-
   beforeAll(() => {
     jest.useFakeTimers();
     setItemSpy = jest.spyOn(global.Storage.prototype, 'setItem').mockImplementation((key, value) => {
@@ -40,7 +38,6 @@ describe('SessionInstrumentation', () => {
   afterEach(() => {
     jest.clearAllMocks();
     jest.clearAllTimers();
-    global.Math = originalGlobalMatch;
     mockStorage = {};
   });
 
