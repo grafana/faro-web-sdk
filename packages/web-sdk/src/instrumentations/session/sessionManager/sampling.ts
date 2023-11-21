@@ -7,7 +7,8 @@ export function isSampled() {
     sessionTracking?.sampler?.({ metas: faro.metas.value }) ?? sessionTracking?.samplingRate ?? sendAllSignals;
 
   if (typeof samplingRate !== 'number') {
-    return false;
+    const sendNoSignals = 0;
+    samplingRate = sendNoSignals;
   }
 
   return Math.random() < samplingRate;
