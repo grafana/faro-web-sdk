@@ -13,7 +13,7 @@ export class PersistentSessionsManager {
   private static storageTypeLocal = webStorageType.local;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
 
-  constructor(private initialSessionId?: string) {
+  constructor() {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: PersistentSessionsManager.fetchUserSession,
       storeUserSession: PersistentSessionsManager.storeUserSession,
@@ -43,16 +43,6 @@ export class PersistentSessionsManager {
   updateSession = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
 
   private init(): void {
-    const initialUserSession = createUserSessionObject(this.initialSessionId, isSampled());
-    PersistentSessionsManager.storeUserSession(initialUserSession);
-    // faro.api.setSession({
-    //   ...faro.api.getSession(),
-    //   attributes: {
-    //     ...(faro.api.getSession()?.attributes ?? {}),
-    //     isSampled: initialUserSession.isSampled.toString(),
-    //   },
-    // });
-
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.updateSession();

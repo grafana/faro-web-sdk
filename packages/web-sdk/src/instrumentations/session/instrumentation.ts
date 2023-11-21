@@ -11,11 +11,10 @@ import {
 import type { Config } from '@grafana/faro-core';
 
 import { createSession } from '../../metas';
-import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../utils/webStorage';
 
-import type { FaroUserSession } from './sessionManager';
+import { type FaroUserSession, isSampled } from './sessionManager';
 import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
-import { isUserSessionValid } from './sessionManager/sessionManagerUtils';
+import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
 import { VolatileSessionsManager } from './sessionManager/VolatileSessionManager';
 
 export class SessionInstrumentation extends BaseInstrumentation {
@@ -43,19 +42,15 @@ export class SessionInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private getSessionManagerInstanceByConfiguredStrategy(
-    initialSessionId?: string
-  ): PersistentSessionsManager | VolatileSessionsManager | null {
-    if (this.config.sessionTracking?.persistent && isLocalStorageAvailable) {
-      return new PersistentSessionsManager(initialSessionId);
-    }
+  // private getSessionManagerInstanceByConfiguredStrategy():
+  //   | typeof PersistentSessionsManager
+  //   | typeof VolatileSessionsManager {
+  //   if (this.config.sessionTracking?.persistent) {
+  //     return PersistentSessionsManager;
+  //   }
 
-    if (isSessionStorageAvailable) {
-      return new VolatileSessionsManager(initialSessionId);
-    }
-
-    return null;
-  }
+  //   return VolatileSessionsManager;
+  // }
 
   private createInitialSessionMeta(sessionsConfig: Required<Config>['sessionTracking']): MetaSession {
     const sessionManager = sessionsConfig.persistent ? PersistentSessionsManager : VolatileSessionsManager;
@@ -86,11 +81,11 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
     const sessionMeta: MetaSession = {
       id: sessionId,
+      attributes: {
+        ...(sessionAttributes ?? {}),
+        isSampled: isSampled().toString(),
+      },
     };
-
-    if (sessionAttributes) {
-      sessionMeta.attributes = sessionAttributes;
-    }
 
     this.notifiedSession = sessionMeta;
 
@@ -103,24 +98,30 @@ export class SessionInstrumentation extends BaseInstrumentation {
     const sessionTracking = this.config.sessionTracking;
 
     if (sessionTracking?.enabled) {
-      const initialSessionMeta = this.createInitialSessionMeta(sessionTracking);
+      const SessionManager = this.config.sessionTracking?.persistent
+        ? PersistentSessionsManager
+        : VolatileSessionsManager;
 
-      console.log('initialSessionMeta :>> ', initialSessionMeta);
+      const initialSessionMeta = this.createInitialSessionMeta(sessionTracking);
       this.api.setSession(initialSessionMeta);
 
-      const sessionManager = this.getSessionManagerInstanceByConfiguredStrategy(this.metas.value.session?.id);
+      SessionManager.storeUserSession(
+        createUserSessionObject(initialSessionMeta.id, Boolean(initialSessionMeta.attributes!['isSampled']))
+      );
 
-      if (sessionManager != null) {
-        this.transports?.addBeforeSendHooks(...this.transports.getBeforeSendHooks(), (item) => {
-          sessionManager?.updateSession();
+      const { updateSession } = new SessionManager();
 
-          if (item.meta.session?.attributes?.['isSampled']) {
-            return item;
-          }
+      this.transports?.addBeforeSendHooks(...this.transports.getBeforeSendHooks(), (item) => {
+        updateSession();
 
-          return null;
-        });
-      }
+        const attributes = item.meta.session?.attributes;
+        if (Boolean(attributes?.['isSampled'])) {
+          delete attributes!['isSampled'];
+          return item;
+        }
+
+        return null;
+      });
     } else {
       this.sendSessionStartEvent(this.metas.value);
     }

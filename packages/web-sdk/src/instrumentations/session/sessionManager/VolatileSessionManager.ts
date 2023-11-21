@@ -13,7 +13,7 @@ export class VolatileSessionsManager {
   private static storageTypeSession = webStorageType.session;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
 
-  constructor(private initialSessionId?: string) {
+  constructor() {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
       storeUserSession: VolatileSessionsManager.storeUserSession,
@@ -43,9 +43,6 @@ export class VolatileSessionsManager {
   updateSession = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
 
   private init(): void {
-    const initialUserSession = createUserSessionObject(this.initialSessionId, isSampled());
-    VolatileSessionsManager.storeUserSession(initialUserSession);
-
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.updateSession();
