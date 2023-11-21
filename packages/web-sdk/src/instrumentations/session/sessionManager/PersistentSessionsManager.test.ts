@@ -44,6 +44,10 @@ describe('Persistent Sessions Manager.', () => {
     mockStorage = {};
   });
 
+  afterEach(() => {
+    jest.spyOn(samplingModule, 'isSampled').mockRestore();
+  });
+
   afterAll(() => {
     jest.useRealTimers();
     jest.restoreAllMocks();

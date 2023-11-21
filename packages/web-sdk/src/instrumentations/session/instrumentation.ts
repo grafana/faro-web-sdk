@@ -62,7 +62,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
     if (isUserSessionValid(userSession)) {
       sessionId = userSession?.sessionId;
-      sessionAttributes = userSession?.sessionMeta?.attributes;
+      sessionAttributes = {
+        ...(userSession?.sessionMeta?.attributes ?? {}),
+        isSampled: userSession!.isSampled.toString(),
+      };
       this.api.pushEvent(EVENT_SESSION_RESUME, {}, undefined, { skipDedupe: true });
     } else {
       sessionId = sessionId ?? createSession().id;

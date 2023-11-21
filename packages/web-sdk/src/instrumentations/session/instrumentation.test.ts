@@ -1,4 +1,10 @@
-import { EVENT_SESSION_EXTEND, EVENT_SESSION_RESUME, EVENT_SESSION_START, initializeFaro } from '@grafana/faro-core';
+import {
+  dateNow,
+  EVENT_SESSION_EXTEND,
+  EVENT_SESSION_RESUME,
+  EVENT_SESSION_START,
+  initializeFaro,
+} from '@grafana/faro-core';
 import type { EventEvent, MetaSession, TransportItem } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
@@ -8,6 +14,7 @@ import * as createSessionMock from '../../metas/session';
 
 import { SessionInstrumentation } from './instrumentation';
 import {
+  FaroUserSession,
   MAX_SESSION_PERSISTENCE_TIME,
   SESSION_EXPIRATION_TIME,
   SESSION_INACTIVITY_TIME,
@@ -38,6 +45,7 @@ describe('SessionInstrumentation', () => {
   afterEach(() => {
     jest.clearAllMocks();
     jest.clearAllTimers();
+    jest.spyOn(samplingModule, 'isSampled').mockRestore();
     mockStorage = {};
   });
 
@@ -323,5 +331,61 @@ describe('SessionInstrumentation', () => {
     api.pushLog(['this log should not be sent']);
     expect(transport.items).toHaveLength(5);
     expect(transport.items[4]?.meta.session?.attributes?.['isSampled']).toBeUndefined();
+  });
+
+  it('Will use sampling decision from valid session from web storage.', () => {
+    const initialIsSampled = true;
+    const mockUserSession = createUserSessionObject({
+      sessionId: 'persisted-session-ac',
+      isSampled: initialIsSampled,
+    });
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+
+    const config = makeCoreConfig(
+      mockConfig({
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          persistent: true,
+          samplingRate: 0,
+        },
+      })
+    );
+
+    const { api } = initializeFaro(config!);
+    const sessionMeta = api.getSession();
+
+    expect(sessionMeta?.attributes?.['isSampled']).toBe(initialIsSampled.toString());
+    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).isSampled).toBe(initialIsSampled);
+  });
+
+  it('Will calculate new sampling decision if session from web storage is invalid.', () => {
+    const initialIsSampled = true;
+    const mockUserSession = createUserSessionObject({
+      sessionId: 'persisted-session-ac',
+      isSampled: initialIsSampled,
+    });
+
+    mockUserSession.lastActivity = dateNow() - SESSION_EXPIRATION_TIME;
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+
+    const config = makeCoreConfig(
+      mockConfig({
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          persistent: true,
+          samplingRate: 0,
+        },
+      })
+    );
+
+    const { api } = initializeFaro(config!);
+    const sessionMeta = api.getSession();
+
+    expect(sessionMeta?.attributes?.['isSampled']).toBe('false');
+    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).isSampled).toBe(initialIsSampled);
   });
 });
