@@ -46,7 +46,7 @@ describe('sessionManagerUtils', () => {
 
     // create with given sessionId
     const mockInitialSessionId = 'abcde';
-    const newSessionWithInitialSessionId = createUserSessionObject(mockInitialSessionId);
+    const newSessionWithInitialSessionId = createUserSessionObject({ sessionId: mockInitialSessionId });
 
     expect(newSessionWithInitialSessionId).toStrictEqual({
       sessionId: mockInitialSessionId,

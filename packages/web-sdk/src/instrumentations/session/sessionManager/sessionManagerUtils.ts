@@ -4,8 +4,15 @@ import { isSampled } from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import type { FaroUserSession } from './types';
 
-// TODO: use params object
-export function createUserSessionObject(sessionId: string = genShortID(), isSampled = true): FaroUserSession {
+type CreateUserSessionObjectParams = {
+  sessionId?: string;
+  isSampled?: boolean;
+};
+
+export function createUserSessionObject({
+  sessionId = genShortID(),
+  isSampled = true,
+}: CreateUserSessionObjectParams = {}): FaroUserSession {
   const now = dateNow();
 
   return {
@@ -49,7 +56,7 @@ export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: Ge
       storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
     } else {
       let newSession = addSessionMetadataToNextSession(
-        createUserSessionObject(undefined, isSampled()),
+        createUserSessionObject({ isSampled: isSampled() }),
         sessionFromStorage
       );
 

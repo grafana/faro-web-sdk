@@ -107,7 +107,7 @@ describe('SessionInstrumentation', () => {
     const transport = new MockTransport();
 
     const mockNewSessionId = '123';
-    mockStorage[STORAGE_KEY] = JSON.stringify(createUserSessionObject(mockNewSessionId));
+    mockStorage[STORAGE_KEY] = JSON.stringify(createUserSessionObject({ sessionId: mockNewSessionId }));
 
     initializeFaro(
       mockConfig({
@@ -130,7 +130,7 @@ describe('SessionInstrumentation', () => {
     const transport = new MockTransport();
 
     const mockNewSessionId = '123';
-    const mockUserSession = createUserSessionObject(mockNewSessionId);
+    const mockUserSession = createUserSessionObject({ sessionId: mockNewSessionId });
 
     mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
 
@@ -208,7 +208,7 @@ describe('SessionInstrumentation', () => {
   });
 
   it('creates session meta with id from persisted session for valid tracked session which is within maxSessionPersistenceTime.', () => {
-    const mockUserSession = createUserSessionObject('persisted-session');
+    const mockUserSession = createUserSessionObject({ sessionId: 'persisted-session' });
     mockUserSession.sessionMeta = {
       id: 'persisted-session',
       attributes: {
@@ -238,7 +238,7 @@ describe('SessionInstrumentation', () => {
   });
 
   it('creates new session meta with new sessionId for invalid tracked session which is within maxSessionPersistenceTime.', () => {
-    const mockUserSession = createUserSessionObject('persisted-session');
+    const mockUserSession = createUserSessionObject({ sessionId: 'persisted-session' });
     mockUserSession.sessionMeta = {
       id: 'persisted-session',
     };
@@ -265,7 +265,7 @@ describe('SessionInstrumentation', () => {
   });
 
   it('Deletes persisted session if maxSessionPersistenceTime is reached and creates new session meta.', () => {
-    const mockUserSession = createUserSessionObject('persisted-session');
+    const mockUserSession = createUserSessionObject({ sessionId: 'persisted-session' });
     mockUserSession.sessionMeta = {
       id: 'persisted-session',
     };

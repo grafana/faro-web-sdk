@@ -95,7 +95,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
       const initialSessionMeta = this.createInitialSessionMeta(sessionTracking);
 
       SessionManager.storeUserSession(
-        createUserSessionObject(initialSessionMeta.id, Boolean(initialSessionMeta.attributes!['isSampled']))
+        createUserSessionObject({
+          sessionId: initialSessionMeta.id,
+          isSampled: Boolean(initialSessionMeta.attributes!['isSampled']),
+        })
       );
 
       this.notifiedSession = initialSessionMeta;
