@@ -4,6 +4,7 @@ import type { Meta } from '@grafana/faro-core';
 import { throttle } from '../../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
+import { isSampled } from './sampling';
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
 import { addSessionMetadataToNextSession, createUserSessionObject, getUserSessionUpdater } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
@@ -12,7 +13,7 @@ export class VolatileSessionsManager {
   private static storageTypeSession = webStorageType.session;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
 
-  constructor(private initialSessionId?: string) {
+  constructor() {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
       storeUserSession: VolatileSessionsManager.storeUserSession,
@@ -42,8 +43,6 @@ export class VolatileSessionsManager {
   updateSession = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
 
   private init(): void {
-    VolatileSessionsManager.storeUserSession(createUserSessionObject(this.initialSessionId));
-
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.updateSession();
@@ -57,7 +56,7 @@ export class VolatileSessionsManager {
 
       if (session && session.id !== sessionFromSessionStorage?.sessionId) {
         const userSession = addSessionMetadataToNextSession(
-          createUserSessionObject(session.id),
+          createUserSessionObject({ sessionId: session.id, isSampled: isSampled() }),
           sessionFromSessionStorage
         );
 

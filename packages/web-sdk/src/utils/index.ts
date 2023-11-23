@@ -1,2 +1,11 @@
-export * from './webStorage';
-export * from './throttle';
+export {
+  isLocalStorageAvailable,
+  isSessionStorageAvailable,
+  webStorageType,
+  getItem,
+  isWebStorageAvailable,
+  removeItem,
+  setItem,
+} from './webStorage';
+
+export { throttle } from './throttle';

@@ -1,9 +1,13 @@
 import type { APIEvent, StacktraceParser } from '../api';
 import type { Instrumentation } from '../instrumentations';
 import type { InternalLoggerLevel } from '../internalLogger';
-import type { MetaApp, MetaItem, MetaSession, MetaUser, MetaView } from '../metas';
+import type { Meta, MetaApp, MetaItem, MetaSession, MetaUser, MetaView } from '../metas';
 import type { BatchExecutorOptions, BeforeSendHook, Transport } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
+
+type SamplingContext = {
+  metas: Meta;
+};
 
 export interface Config<P = APIEvent> {
   app: MetaApp;
@@ -29,6 +33,8 @@ export interface Config<P = APIEvent> {
     session?: MetaSession;
     maxSessionPersistenceTime?: number;
     onSessionChange?: (oldSession: MetaSession | null, newSession: MetaSession) => void;
+    samplingRate?: number;
+    sampler?: (context: SamplingContext) => number;
   };
 
   user?: MetaUser;

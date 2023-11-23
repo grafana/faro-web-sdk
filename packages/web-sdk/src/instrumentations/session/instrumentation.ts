@@ -11,11 +11,10 @@ import {
 import type { Config } from '@grafana/faro-core';
 
 import { createSession } from '../../metas';
-import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../utils/webStorage';
 
-import type { FaroUserSession } from './sessionManager';
+import { type FaroUserSession, isSampled } from './sessionManager';
 import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
-import { isUserSessionValid } from './sessionManager/sessionManagerUtils';
+import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
 import { VolatileSessionsManager } from './sessionManager/VolatileSessionManager';
 
 export class SessionInstrumentation extends BaseInstrumentation {
@@ -43,20 +42,6 @@ export class SessionInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private getSessionManagerInstanceByConfiguredStrategy(
-    initialSessionId?: string
-  ): PersistentSessionsManager | VolatileSessionsManager | null {
-    if (this.config.sessionTracking?.persistent && isLocalStorageAvailable) {
-      return new PersistentSessionsManager(initialSessionId);
-    }
-
-    if (isSessionStorageAvailable) {
-      return new VolatileSessionsManager(initialSessionId);
-    }
-
-    return null;
-  }
-
   private createInitialSessionMeta(sessionsConfig: Required<Config>['sessionTracking']): MetaSession {
     const sessionManager = sessionsConfig.persistent ? PersistentSessionsManager : VolatileSessionsManager;
 
@@ -77,7 +62,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
     if (isUserSessionValid(userSession)) {
       sessionId = userSession?.sessionId;
-      sessionAttributes = userSession?.sessionMeta?.attributes;
+      sessionAttributes = {
+        ...userSession?.sessionMeta?.attributes,
+        isSampled: userSession!.isSampled.toString(),
+      };
       this.api.pushEvent(EVENT_SESSION_RESUME, {}, undefined, { skipDedupe: true });
     } else {
       sessionId = sessionId ?? createSession().id;
@@ -86,13 +74,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
     const sessionMeta: MetaSession = {
       id: sessionId,
+      attributes: {
+        isSampled: isSampled().toString(),
+        // We do not want to recalculate the sampling decision on each init phase.
+        // If session from web-storage has a isSampled attribute we will use that instead.
+        ...sessionAttributes,
+      },
     };
-
-    if (sessionAttributes) {
-      sessionMeta.attributes = sessionAttributes;
-    }
-
-    this.notifiedSession = sessionMeta;
 
     return sessionMeta;
   }
@@ -103,17 +91,42 @@ export class SessionInstrumentation extends BaseInstrumentation {
     const sessionTracking = this.config.sessionTracking;
 
     if (sessionTracking?.enabled) {
+      const SessionManager = this.config.sessionTracking?.persistent
+        ? PersistentSessionsManager
+        : VolatileSessionsManager;
+
       const initialSessionMeta = this.createInitialSessionMeta(sessionTracking);
+
+      SessionManager.storeUserSession(
+        createUserSessionObject({
+          sessionId: initialSessionMeta.id,
+          isSampled: Boolean(initialSessionMeta.attributes!['isSampled']),
+        })
+      );
+
+      this.notifiedSession = initialSessionMeta;
       this.api.setSession(initialSessionMeta);
 
-      const sessionManager = this.getSessionManagerInstanceByConfiguredStrategy(this.metas.value.session?.id);
+      const { updateSession } = new SessionManager();
 
-      if (sessionManager != null) {
-        this.transports?.addBeforeSendHooks(...this.transports.getBeforeSendHooks(), (item: any) => {
-          sessionManager?.updateSession();
+      this.transports?.addBeforeSendHooks((item) => {
+        updateSession();
+
+        const attributes = item.meta.session?.attributes;
+
+        if (attributes && Boolean(attributes?.['isSampled'])) {
+          const { isSampled: _, ...restAttributes } = attributes;
+
+          item.meta.session = {
+            ...item.meta.session,
+            attributes: restAttributes,
+          };
+
           return item;
-        });
-      }
+        }
+
+        return null;
+      });
     } else {
       this.sendSessionStartEvent(this.metas.value);
     }

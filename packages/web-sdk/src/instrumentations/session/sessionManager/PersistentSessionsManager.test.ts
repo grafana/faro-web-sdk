@@ -3,7 +3,9 @@ import { faro, initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { PersistentSessionsManager } from './PersistentSessionsManager';
+import * as samplingModule from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME, STORAGE_KEY } from './sessionConstants';
+import type { FaroUserSession } from './types';
 
 const fakeSystemTime = new Date('2023-01-01').getTime();
 const mockInitialSessionId = '123';
@@ -27,6 +29,7 @@ describe('Persistent Sessions Manager.', () => {
 
     const config = mockConfig({
       sessionTracking: {
+        enabled: true,
         persistent: true,
         session: { id: mockInitialSessionId },
         onSessionChange: mockOnNewSessionCreated,
@@ -41,6 +44,10 @@ describe('Persistent Sessions Manager.', () => {
     mockStorage = {};
   });
 
+  afterEach(() => {
+    jest.spyOn(samplingModule, 'isSampled').mockRestore();
+  });
+
   afterAll(() => {
     jest.useRealTimers();
     jest.restoreAllMocks();
@@ -49,57 +56,51 @@ describe('Persistent Sessions Manager.', () => {
     setItemSpy.mockRestore();
   });
 
-  it('Crates a persistent-session-manager instance and initializes it with a new session.', () => {
-    const manager = new PersistentSessionsManager(mockInitialSessionId);
-
-    expect(typeof manager.updateSession).toBe('function');
-
-    expect(setItemSpy).toHaveBeenCalledTimes(1);
-    expect(mockStorage[STORAGE_KEY]).toBe(
-      JSON.stringify({
-        sessionId: mockInitialSessionId,
-        lastActivity: fakeSystemTime,
-        started: fakeSystemTime,
-      })
-    );
-  });
-
   it('Updates last active timestamp for valid session.', () => {
+    const mockIsSampled = jest.fn();
+    jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
+
     const validSession = {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
+      isSampled: true,
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
 
-    const { updateSession } = new PersistentSessionsManager(mockInitialSessionId);
+    const { updateSession } = new PersistentSessionsManager();
 
     const nextActivityTimeAfterFiveSeconds = fakeSystemTime;
     jest.setSystemTime(nextActivityTimeAfterFiveSeconds);
 
     updateSession();
 
-    expect(setItemSpy).toBeCalledTimes(2); // called on time in the init function and the in the onActivity func
+    expect(setItemSpy).toBeCalledTimes(1); // called on time in the init function and the in the onActivity func
     expect(mockStorage[STORAGE_KEY]).toBe(
       JSON.stringify({
         sessionId: mockInitialSessionId,
         lastActivity: nextActivityTimeAfterFiveSeconds,
         started: fakeSystemTime,
+        isSampled: true,
       })
     );
   });
 
-  it('Creates a new faro user session if (old) session max inactivity duration is reached.', () => {
+  it('Creates a new Faro user session if (old) session if max inactivity duration is reached.', () => {
+    const mockIsSampled = jest.fn();
+    jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
+
     const storedSession = {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
+      isSampled: true,
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
 
-    const { updateSession } = new PersistentSessionsManager(mockInitialSessionId);
+    const { updateSession } = new PersistentSessionsManager();
 
     const mockNewSessionId = 'abcde';
     jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockNewSessionId);
@@ -116,12 +117,14 @@ describe('Persistent Sessions Manager.', () => {
       id: mockNewSessionId,
       attributes: {
         previousSession: mockInitialSessionId,
+        isSampled: 'true',
       },
     };
     expect(session).toStrictEqual({
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
+      isSampled: true,
       sessionMeta: matchNewSessionMeta,
     });
 
@@ -133,21 +136,26 @@ describe('Persistent Sessions Manager.', () => {
     expect(mockOnNewSessionCreated).toHaveBeenCalledWith(null, matchNewSessionMeta);
   });
 
-  it('Creates a new faro user session if (old) session expiration time is reached.', () => {
+  it('Creates a new Faro user session if (old) session expiration time is reached.', () => {
+    const mockIsSampled = jest.fn();
+    jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
+
     const oldStoredMeta = {
       id: 'aaaa',
       attributes: {
         previousSession: 'bbbb',
+        isSampled: 'true',
       },
     };
     const storedSession = {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
+      isSampled: true,
       sessionMeta: oldStoredMeta,
     };
 
-    const { updateSession } = new PersistentSessionsManager(mockInitialSessionId);
+    const { updateSession } = new PersistentSessionsManager();
 
     // overwrite auto created session
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -167,12 +175,14 @@ describe('Persistent Sessions Manager.', () => {
       id: mockNewSessionId,
       attributes: {
         previousSession: mockInitialSessionId,
+        isSampled: 'true',
       },
     };
     expect(session).toStrictEqual({
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
+      isSampled: true,
       sessionMeta: matchNewSessionMeta,
     });
 
@@ -182,5 +192,29 @@ describe('Persistent Sessions Manager.', () => {
     // Call session created hook
     expect(mockOnNewSessionCreated).toHaveBeenCalledTimes(1);
     expect(mockOnNewSessionCreated).toHaveBeenCalledWith(oldStoredMeta, matchNewSessionMeta);
+  });
+
+  it('Creates a new Faro user session if setSession(§) is called outside the Faro session manager.', () => {
+    const mockIsSampled = jest.fn();
+    jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
+
+    const storedSession = {
+      sessionId: mockInitialSessionId,
+      isSampled: true,
+    };
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
+
+    new PersistentSessionsManager();
+
+    const initialSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
+    expect(initialSession.sessionId).toBe(mockInitialSessionId);
+
+    const manualSetSessionId = 'xyz';
+    faro.api.setSession({ id: manualSetSessionId });
+    expect(mockIsSampled).toHaveBeenCalledTimes(1);
+
+    const newSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
+    expect(newSession.sessionId).toBe(manualSetSessionId);
   });
 });

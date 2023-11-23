@@ -1,15 +1,25 @@
 import { dateNow, faro, genShortID } from '@grafana/faro-core';
 
+import { isSampled } from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import type { FaroUserSession } from './types';
 
-export function createUserSessionObject(sessionId?: string): FaroUserSession {
+type CreateUserSessionObjectParams = {
+  sessionId?: string;
+  isSampled?: boolean;
+};
+
+export function createUserSessionObject({
+  sessionId = genShortID(),
+  isSampled = true,
+}: CreateUserSessionObjectParams = {}): FaroUserSession {
   const now = dateNow();
 
   return {
-    sessionId: sessionId ?? genShortID(),
+    sessionId,
     lastActivity: now,
     started: now,
+    isSampled: isSampled,
   };
 }
 
@@ -45,7 +55,10 @@ export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: Ge
     if (isUserSessionValid(sessionFromStorage)) {
       storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
     } else {
-      let newSession = addSessionMetadataToNextSession(createUserSessionObject(), sessionFromStorage);
+      let newSession = addSessionMetadataToNextSession(
+        createUserSessionObject({ isSampled: isSampled() }),
+        sessionFromStorage
+      );
 
       storeUserSession(newSession);
 
@@ -60,16 +73,13 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
     ...newSession,
     sessionMeta: {
       id: newSession.sessionId,
+      attributes: {
+        ...(faro.metas.value.session?.attributes ?? {}),
+        ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
+        isSampled: newSession.isSampled.toString(),
+      },
     },
   };
-
-  const metaAttributes = faro.metas.value.session?.attributes;
-  if (metaAttributes || previousSession != null) {
-    sessionWithMeta.sessionMeta.attributes = {
-      ...(metaAttributes ?? {}),
-      ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
-    };
-  }
 
   return sessionWithMeta;
 }

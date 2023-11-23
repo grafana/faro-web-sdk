@@ -41,16 +41,18 @@ describe('sessionManagerUtils', () => {
       sessionId: mockSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
+      isSampled: true,
     });
 
     // create with given sessionId
     const mockInitialSessionId = 'abcde';
-    const newSessionWithInitialSessionId = createUserSessionObject(mockInitialSessionId);
+    const newSessionWithInitialSessionId = createUserSessionObject({ sessionId: mockInitialSessionId });
 
     expect(newSessionWithInitialSessionId).toStrictEqual({
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
+      isSampled: true,
     });
   });
 
@@ -135,16 +137,23 @@ describe('sessionManagerUtils', () => {
       id: mockSessionId,
       attributes: {
         previousSession: 'abc',
+        isSampled: 'true',
       },
     });
 
-    expect(mockOnSessionChange).toHaveBeenCalledWith(null, { attributes: { previousSession: 'abc' }, id: '123' });
+    expect(mockOnSessionChange).toHaveBeenCalledWith(null, {
+      attributes: { previousSession: 'abc', isSampled: 'true' },
+      id: '123',
+    });
   });
 
   it('configures userSessionUpdater and expands the current user session as well as the current sessionMeta for a session which already got expanded.', () => {
     const currentSessionMeta = {
       id: 'currentSession',
-      attributes: { previousSession: 'previous' },
+      attributes: {
+        previousSession: 'previous',
+        isSampled: 'true',
+      },
     };
 
     const mockOnSessionChange = jest.fn();
@@ -189,6 +198,7 @@ describe('sessionManagerUtils', () => {
       id: nextSessionId,
       attributes: {
         previousSession: currentSessionMeta.id,
+        isSampled: 'true',
       },
     };
 
@@ -205,6 +215,7 @@ describe('sessionManagerUtils', () => {
       lastActivity: 1,
       started: 2,
       sessionId: 'new-session-id',
+      isSampled: true,
     };
 
     const sessionWithMetadata1 = addSessionMetadataToNextSession(newSession, null);
@@ -213,6 +224,9 @@ describe('sessionManagerUtils', () => {
       ...newSession,
       sessionMeta: {
         id: newSession.sessionId,
+        attributes: {
+          isSampled: 'true',
+        },
       },
     });
 
@@ -220,6 +234,7 @@ describe('sessionManagerUtils', () => {
       lastActivity: 8,
       started: 9,
       sessionId: 'previous-session-id',
+      isSampled: true,
     };
 
     const sessionWithMetadata2 = addSessionMetadataToNextSession(newSession, previousSession);
@@ -230,6 +245,7 @@ describe('sessionManagerUtils', () => {
         id: newSession.sessionId,
         attributes: {
           previousSession: previousSession.sessionId,
+          isSampled: 'true',
         },
       },
     });
@@ -256,6 +272,7 @@ describe('sessionManagerUtils', () => {
         id: newSession.sessionId,
         attributes: {
           ...sessionMeta.attributes,
+          isSampled: 'true',
           previousSession: previousSession.sessionId,
         },
       },
