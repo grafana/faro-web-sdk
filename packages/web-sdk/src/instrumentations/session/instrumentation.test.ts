@@ -20,7 +20,7 @@ import {
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,
 } from './sessionManager';
-import * as samplingModule from './sessionManager/sampling';
+import * as samplingModuleMock from './sessionManager/sampling';
 import { createUserSessionObject } from './sessionManager/sessionManagerUtils';
 
 describe('SessionInstrumentation', () => {
@@ -45,7 +45,7 @@ describe('SessionInstrumentation', () => {
   afterEach(() => {
     jest.clearAllMocks();
     jest.clearAllTimers();
-    jest.spyOn(samplingModule, 'isSampled').mockRestore();
+    jest.spyOn(samplingModuleMock, 'isSampled').mockRestore();
     mockStorage = {};
   });
 
@@ -302,7 +302,7 @@ describe('SessionInstrumentation', () => {
   it('Removes items which are not part of the sample.', () => {
     const transport = new MockTransport();
 
-    jest.spyOn(samplingModule, 'isSampled').mockReturnValue(true);
+    jest.spyOn(samplingModuleMock, 'isSampled').mockReturnValue(true);
 
     const { api } = initializeFaro(
       mockConfig({
@@ -323,7 +323,7 @@ describe('SessionInstrumentation', () => {
 
     expect(transport.items).toHaveLength(3);
 
-    jest.spyOn(samplingModule, 'isSampled').mockReturnValueOnce(false);
+    jest.spyOn(samplingModuleMock, 'isSampled').mockReturnValueOnce(false);
     api.setSession({ id: 'second-session' });
     expect(transport.items).toHaveLength(4);
     expect(transport.items[3]?.meta.session?.attributes?.['isSampled']).toBeUndefined();

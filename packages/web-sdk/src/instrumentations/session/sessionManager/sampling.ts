@@ -1,6 +1,6 @@
 import { faro } from '@grafana/faro-core';
 
-export function isSampled() {
+export function isSampled(): boolean {
   const sendAllSignals = 1;
   const sessionTracking = faro.config.sessionTracking;
   let samplingRate =

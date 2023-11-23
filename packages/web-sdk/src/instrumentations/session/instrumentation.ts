@@ -63,7 +63,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     if (isUserSessionValid(userSession)) {
       sessionId = userSession?.sessionId;
       sessionAttributes = {
-        ...(userSession?.sessionMeta?.attributes ?? {}),
+        ...userSession?.sessionMeta?.attributes,
         isSampled: userSession!.isSampled.toString(),
       };
       this.api.pushEvent(EVENT_SESSION_RESUME, {}, undefined, { skipDedupe: true });
@@ -78,7 +78,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
         isSampled: isSampled().toString(),
         // We do not want to recalculate the sampling decision on each init phase.
         // If session from web-storage has a isSampled attribute we will use that instead.
-        ...(sessionAttributes ?? {}),
+        ...sessionAttributes,
       },
     };
 
@@ -109,13 +109,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       const { updateSession } = new SessionManager();
 
-      this.transports?.addBeforeSendHooks(...this.transports.getBeforeSendHooks(), (item) => {
+      this.transports?.addBeforeSendHooks((item) => {
         updateSession();
 
         const attributes = item.meta.session?.attributes;
 
-        if (Boolean(attributes?.['isSampled'])) {
-          const { isSampled: _, ...restAttributes } = attributes as any;
+        if (attributes && Boolean(attributes?.['isSampled'])) {
+          const { isSampled: _, ...restAttributes } = attributes;
 
           item.meta.session = {
             ...item.meta.session,
