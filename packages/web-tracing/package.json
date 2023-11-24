@@ -69,6 +69,7 @@
   },
   "peerDependencies": {
     "@opentelemetry/api": "^1.4.1",
+    "@opentelemetry/api-metrics": "^0.33.0",
     "@opentelemetry/context-zone": "^1.15.2",
     "@opentelemetry/core": "^1.15.2",
     "@opentelemetry/exporter-trace-otlp-http": "^0.41.2",
