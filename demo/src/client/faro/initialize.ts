@@ -33,9 +33,9 @@ export function initializeFaro(): Faro {
         },
       }),
     ],
-    session: (window as any).__PRELOADED_STATE__?.faro?.session,
-    batching: {
-      enabled: false,
+    sessionTracking: {
+      enabled: true,
+      persistent: true,
     },
     app: {
       name: env.client.packageName,
