@@ -33,8 +33,12 @@ export function initializeFaro(): Faro {
         },
       }),
     ],
-    session: (window as any).__PRELOADED_STATE__?.faro?.session,
+    sessionTracking: {
+      enabled: true,
+    },
     batching: {
+      // Batching is enabled by default and there is normally no reason to disable it.
+      // We did iy i the demo so users can inspect each single requests sent due to certain interactions.
       enabled: false,
     },
     app: {
