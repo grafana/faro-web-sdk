@@ -148,3 +148,13 @@ export type {
   Transports,
   UnpatchedConsole,
 } from '@grafana/faro-core';
+
+export {
+  PersistentSessionsManager,
+  VolatileSessionsManager,
+  MAX_SESSION_PERSISTENCE_TIME,
+  MAX_SESSION_PERSISTENCE_TIME_BUFFER,
+  SESSION_EXPIRATION_TIME,
+  SESSION_INACTIVITY_TIME,
+  STORAGE_KEY,
+} from './instrumentations/session';

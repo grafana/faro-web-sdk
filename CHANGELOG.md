@@ -9,6 +9,8 @@
 ## 1.2.8
 
 - Change: Custom x-faro-session-id header will now be added to legacy sessions as well (#384).
+- Change: Lower maxSessionPersistenceTime for tracked sessions and export tooling to make it easier
+  to manually remove a persisted session (#387)
 
 ## 1.2.7
 
