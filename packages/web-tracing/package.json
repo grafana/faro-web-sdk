@@ -67,6 +67,11 @@
     "@opentelemetry/sdk-trace-web": "^1.18.1",
     "@opentelemetry/semantic-conventions": "^1.18.1"
   },
+  "resolutions": {
+    "@opentelemetry/core": "^1.18.1",
+    "@opentelemetry/sdk-trace-base": "^1.18.1",
+    "@opentelemetry/sdk-trace-web": "^1.18.1"
+  },
   "publishConfig": {
     "access": "public"
   }
