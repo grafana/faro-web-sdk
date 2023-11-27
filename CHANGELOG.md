@@ -2,9 +2,8 @@
 
 ## Next
 
-- Change: upgrade OTEL dependencies in the Web-Tracing package and declare them as peer dependencies
-  for more stability if different otel.js versions are used (#391).
-- Fix: Send otel timings, like timeUnixNano, as string instead in LongBits format (391).
+- Deps: upgrade OTEL dependencies. (#391).
+- Fix: send otel timings, like timeUnixNano, as string instead in LongBits format (391).
 - Feat: session based sampling (#385).
 
 ## 1.2.8
