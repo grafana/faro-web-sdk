@@ -52,7 +52,9 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "^1.2.8",
+    "@grafana/faro-web-sdk": "^1.2.8"
+  },
+  "devDependencies": {
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/context-zone": "^1.18.1",
     "@opentelemetry/core": "^1.18.1",
@@ -67,10 +69,20 @@
     "@opentelemetry/sdk-trace-web": "^1.18.1",
     "@opentelemetry/semantic-conventions": "^1.18.1"
   },
-  "resolutions": {
+  "peerDependencies": {
+    "@opentelemetry/api": "^1.7.0",
+    "@opentelemetry/context-zone": "^1.18.1",
     "@opentelemetry/core": "^1.18.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.45.1",
+    "@opentelemetry/instrumentation": "^0.45.1",
+    "@opentelemetry/instrumentation-document-load": "^0.34.0",
+    "@opentelemetry/instrumentation-fetch": "^0.45.1",
+    "@opentelemetry/instrumentation-xml-http-request": "^0.45.1",
+    "@opentelemetry/otlp-transformer": "^0.45.1",
+    "@opentelemetry/resources": "^1.18.1",
     "@opentelemetry/sdk-trace-base": "^1.18.1",
-    "@opentelemetry/sdk-trace-web": "^1.18.1"
+    "@opentelemetry/sdk-trace-web": "^1.18.1",
+    "@opentelemetry/semantic-conventions": "^1.18.1"
   },
   "publishConfig": {
     "access": "public"
