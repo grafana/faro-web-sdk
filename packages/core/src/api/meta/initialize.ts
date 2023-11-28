@@ -46,15 +46,21 @@ export function initializeMetaAPI(
   const getSession: MetaAPI['getSession'] = () => metas.value.session;
 
   const setView: MetaAPI['setView'] = (view) => {
-    if (metaView) {
-      metas.remove(metaView);
+    if (metaView?.view?.name === view?.name) {
+      return;
     }
+
+    const previousView = metaView;
 
     metaView = {
       view,
     };
 
     metas.add(metaView);
+
+    if (previousView) {
+      metas.remove(previousView);
+    }
   };
 
   const getView: MetaAPI['getView'] = () => metas.value.view;

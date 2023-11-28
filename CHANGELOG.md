@@ -7,6 +7,7 @@
 - Deps: upgrade OTEL dependencies, remove outdated resolutions (#391).
 - Fix (Web Tracing): send otel timings, like timeUnixNano, as string instead in LongBits format (#391).
 - Feat: session based sampling (#385).
+- Change: Send view and route transition attributes (#397).
 
 ## 1.2.8
 
