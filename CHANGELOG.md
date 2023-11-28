@@ -2,8 +2,8 @@
 
 ## Next
 
-## 1.2.9
-
+- Deps: upgrade OTEL dependencies. (#391).
+- Fix: send otel timings, like timeUnixNano, as string instead in LongBits format (391).
 - Feat: session based sampling (#385).
 
 ## 1.2.8
