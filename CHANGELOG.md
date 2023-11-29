@@ -2,7 +2,8 @@
 
 ## Next
 
-- Deps (Web Tracing): remove unused `@opentelemetry/api-metrics` dependency (#401).
+- Deps (Faro Core): remove unused `@opentelemetry/api-metrics` dependency (#401).
+- Deps (Web Tracing): remove unused `@opentelemetry/sdk-trace-base` dependency (#401).
 
 ## 1.2.9
 
