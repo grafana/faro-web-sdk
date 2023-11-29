@@ -2,6 +2,8 @@
 
 ## Next
 
+- Deps (`@grafana/faro-react`): add missing peer dependency on `react-dom` (#400).
+
 ## 1.2.9
 
 - Deps: upgrade OTEL dependencies, remove outdated resolutions (#391).
