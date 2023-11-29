@@ -2,6 +2,8 @@
 
 ## Next
 
+- Deps: remove unused `@opentelemetry/api-metrics` dependency (#401).
+
 ## 1.2.9
 
 - Deps: upgrade OTEL dependencies, remove outdated resolutions (#391).
