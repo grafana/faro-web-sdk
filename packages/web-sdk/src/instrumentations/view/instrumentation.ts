@@ -12,10 +12,18 @@ export class ViewInstrumentation extends BaseInstrumentation {
   private sendViewChangedEvent(meta: Meta): void {
     const view = meta.view;
 
-    if (view && view !== this.notifiedView) {
-      this.notifiedView = view;
+    if (view && view.name !== this.notifiedView?.name) {
+      this.api.pushEvent(
+        EVENT_VIEW_CHANGED,
+        {
+          fromView: this.notifiedView?.name ?? '',
+          toView: view.name,
+        },
+        undefined,
+        { skipDedupe: true }
+      );
 
-      this.api.pushEvent(EVENT_VIEW_CHANGED, {}, undefined, { skipDedupe: true });
+      this.notifiedView = view;
     }
   }
 

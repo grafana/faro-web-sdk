@@ -1,3 +1,5 @@
+import { EVENT_ROUTE_CHANGE } from '@grafana/faro-web-sdk';
+
 import { api } from '../../dependencies';
 
 import type { ReactRouterV4V5ActiveEvent } from './types';
@@ -20,7 +22,7 @@ export function setActiveEventRoute(route: string): void {
 }
 
 export function sendActiveEvent(): void {
-  api.pushEvent('routeChange', activeEvent, undefined, { skipDedupe: true });
+  api.pushEvent(EVENT_ROUTE_CHANGE, activeEvent, undefined, { skipDedupe: true });
 
   activeEvent = undefined;
 }

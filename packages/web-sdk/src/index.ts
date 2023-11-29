@@ -84,6 +84,13 @@ export {
   TransportItemType,
   transportItemTypeToBodyKey,
   VERSION,
+  EVENT_CLICK,
+  EVENT_NAVIGATION,
+  EVENT_ROUTE_CHANGE,
+  EVENT_SESSION_EXTEND,
+  EVENT_SESSION_RESUME,
+  EVENT_SESSION_START,
+  EVENT_VIEW_CHANGED,
 } from '@grafana/faro-core';
 
 export type {

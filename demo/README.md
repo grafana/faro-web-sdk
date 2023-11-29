@@ -87,7 +87,7 @@ All the actions will be performed assuming that the demo is freshly ran and the 
      [<img src="docs/assets/userJourney/homepageTraces.png" alt="Homepage traces" height="100" />][assets-journey-homepage-traces]
      [<img src="docs/assets/userJourney/homepageWebVitals.png" alt="Homepage Web Vitals" height="100" />][assets-journey-homepage-web-vitals]
 1. Navigate to the [Seed page][demo-seed-page]
-   - `routeChange` event is registered with the new URL and the React route associated to that specific URL
+   - `route_change` event is registered with the new URL and the React route associated to that specific URL
    - [<img src="docs/assets/userJourney/seed.png" alt="Seed page" height="100" />][assets-seed]
      [<img src="docs/assets/userJourney/seedEvents.png" alt="Seed page" height="100" />][assets-seed-events]
 1. Click on the `Seed` button to add some default data in the database
@@ -115,7 +115,7 @@ All the actions will be performed assuming that the demo is freshly ran and the 
      [<img src="docs/assets/userJourney/seedErrorEvents.png" alt="Events for Seed page with error run" height="100" />][assets-seed-error-events]
      [<img src="docs/assets/userJourney/seedErrorTraces.png" alt="Traces for Seed page with error run" height="100" />][assets-seed-error-traces]
 1. Navigate to the [Register page][demo-register-page]
-   - `routeChange` event is registered with the new URL and the React route associated to that specific URL
+   - `route_change` event is registered with the new URL and the React route associated to that specific URL
 1. Enter `john.doe@grafana.com` as email and the fill in the rest of the fields then click on the `Register` button
    - The following events are registered:
      - `registerAttempt`
@@ -125,9 +125,9 @@ All the actions will be performed assuming that the demo is freshly ran and the 
      [<img src="docs/assets/userJourney/registerErrorEvents.png" alt="Events for Register page with error" height="100" />][assets-register-error-events]
      [<img src="docs/assets/userJourney/registerErrorTraces.png" alt="Traces for Register page with error" height="100" />][assets-register-error-traces]
 1. Navigate to the [Login page][demo-login-page]
-   - `routeChange` event is registered with the new URL and the React route associated to that specific URL
+   - `route_change` event is registered with the new URL and the React route associated to that specific URL
 1. Login with the following credentials: `john.doe@grafana.com` as email and `test` as password
-   - `routeChange` event is registered with the new URL and the React route associated to that specific URL
+   - `route_change` event is registered with the new URL and the React route associated to that specific URL
    - The following events are registered:
      - `loginAttempt`
      - `loginSuccess` - The `registerAttempt` -> `registerFailed` -> `loginAttempt` -> `loginSuccess` sequence allows us
@@ -136,8 +136,8 @@ All the actions will be performed assuming that the demo is freshly ran and the 
    - All the data captured from this point until logout will be associated with the `John Doe` user. Associating the
      `John Doe` user and `session ID` will allow us to see what actions the user performed prior logging in.
 1. Click on the `First Article`
-   - `routeChange` event is registered with the new URL and the React route associated to that specific URL
-     - what's different from the other `routeChange` events is that the route for this event is not identical to the URL
+   - `route_change` event is registered with the new URL and the React route associated to that specific URL
+     - what's different from the other `route_change` events is that the route for this event is not identical to the URL
        but what React received as an input (`/articles/view/:id`)
 1. Input some text in the `Add Comment` section and click `Create Comment`
    - The following events are registered:

@@ -7,6 +7,11 @@
 - Deps: upgrade OTEL dependencies, remove outdated resolutions (#391).
 - Fix (Web Tracing): send otel timings, like timeUnixNano, as string instead in LongBits format (#391).
 - Feat: session based sampling (#385).
+- Change: Send better attributes with the view and route transition events to contain information about
+  the previous route or view (`from*`) and the destination route or view (`to*`) (#397).
+- Breaking❗️: React Instrumentation, the route transition event is renamed from `routeChange` to
+  `route_change`. The `url` and `route` attributes sent with the event are renamed to `toRoute` and
+  `toUrl`.(#397).
 
 ## 1.2.8
 
