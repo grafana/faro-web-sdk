@@ -156,12 +156,10 @@ export function initializeTransports(
       return;
     }
 
-    if (!config.batching?.enabled) {
-      instantSend(item);
-      return;
+    if (config.batching?.enabled) {
+      batchExecutor?.addItem(item);
     }
 
-    batchExecutor?.addItem(item);
     instantSend(item);
   };
 

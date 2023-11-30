@@ -315,7 +315,6 @@ describe('SessionInstrumentation', () => {
     );
 
     expect(transport.items).toHaveLength(1);
-    expect(transport.items[0]?.meta.session?.attributes?.['isSampled']).toBeUndefined();
     api.pushLog(['abc']);
 
     expect(transport.items).toHaveLength(2);
@@ -324,13 +323,11 @@ describe('SessionInstrumentation', () => {
     expect(transport.items).toHaveLength(3);
 
     jest.spyOn(samplingModuleMock, 'isSampled').mockReturnValueOnce(false);
-    api.setSession({ id: 'second-session' });
-    expect(transport.items).toHaveLength(4);
-    expect(transport.items[3]?.meta.session?.attributes?.['isSampled']).toBeUndefined();
+    api.setSession({ id: 'second-session-with-sampling-set-to-false' });
+    expect(transport.items).toHaveLength(3);
 
     api.pushLog(['this log should not be sent']);
-    expect(transport.items).toHaveLength(5);
-    expect(transport.items[4]?.meta.session?.attributes?.['isSampled']).toBeUndefined();
+    expect(transport.items).toHaveLength(3);
   });
 
   it('Will use sampling decision from valid session from web storage.', () => {
@@ -387,5 +384,95 @@ describe('SessionInstrumentation', () => {
 
     expect(sessionMeta?.attributes?.['isSampled']).toBe('false');
     expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).isSampled).toBe(initialIsSampled);
+  });
+
+  it('Will send 0% of the signals.', () => {
+    const transport = new MockTransport();
+
+    const config = makeCoreConfig(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          samplingRate: 0,
+        },
+        batching: {
+          itemLimit: 5,
+          sendTimeout: 1,
+        },
+      })
+    );
+
+    const { api } = initializeFaro(config!);
+
+    const sentItems = transport.items;
+
+    api.pushEvent('x_one');
+    api.pushEvent('x_two');
+    api.pushEvent('x_three');
+    api.pushEvent('x_four');
+
+    expect(sentItems).toHaveLength(0);
+  });
+
+  it('Will send 100% of the signals.', () => {
+    const transport = new MockTransport();
+
+    const config = makeCoreConfig(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          samplingRate: 1,
+        },
+        batching: {
+          itemLimit: 5,
+          sendTimeout: 1,
+        },
+      })
+    );
+
+    const { api } = initializeFaro(config!);
+
+    const sentItems = transport.items;
+
+    api.pushEvent('x_one');
+    api.pushEvent('x_two');
+    api.pushEvent('x_three');
+    api.pushEvent('x_four');
+
+    expect(sentItems).toHaveLength(4);
+  });
+
+  it('Will drop 50% of the signals.', () => {
+    const transport = new MockTransport();
+
+    const config = makeCoreConfig(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          samplingRate: 0.5,
+        },
+        batching: {
+          itemLimit: 5,
+          sendTimeout: 1,
+        },
+      })
+    );
+
+    const { api } = initializeFaro(config!);
+
+    const sentItems = transport.items;
+
+    api.pushEvent('x_one');
+    api.pushEvent('x_two');
+    api.pushEvent('x_three');
+    api.pushEvent('x_four');
+
+    expect(sentItems).toHaveLength(2);
   });
 });
