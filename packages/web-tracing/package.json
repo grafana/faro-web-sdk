@@ -63,7 +63,6 @@
     "@opentelemetry/instrumentation-xml-http-request": "^0.45.1",
     "@opentelemetry/otlp-transformer": "^0.45.1",
     "@opentelemetry/resources": "^1.18.1",
-    "@opentelemetry/sdk-trace-base": "^1.18.1",
     "@opentelemetry/sdk-trace-web": "^1.18.1",
     "@opentelemetry/semantic-conventions": "^1.18.1"
   },
