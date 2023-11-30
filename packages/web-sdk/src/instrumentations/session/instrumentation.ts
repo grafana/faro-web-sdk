@@ -115,13 +115,6 @@ export class SessionInstrumentation extends BaseInstrumentation {
         const attributes = item.meta.session?.attributes;
 
         if (attributes && attributes?.['isSampled'] === 'true') {
-          // const { isSampled: _, ...restAttributes } = attributes;
-
-          // item.meta.session = {
-          //   ...item.meta.session,
-          //   attributes: restAttributes,
-          // };
-
           return item;
         }
 

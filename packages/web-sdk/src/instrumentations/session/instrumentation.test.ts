@@ -398,6 +398,7 @@ describe('SessionInstrumentation', () => {
           samplingRate: 0,
         },
         batching: {
+          enabled: true,
           itemLimit: 5,
           sendTimeout: 1,
         },
@@ -408,10 +409,11 @@ describe('SessionInstrumentation', () => {
 
     const sentItems = transport.items;
 
-    api.pushEvent('one');
+    // starting at two because a session lifetime event is automatically sent by Faro
     api.pushEvent('two');
     api.pushEvent('three');
     api.pushEvent('four');
+    api.pushEvent('five');
 
     expect(sentItems).toHaveLength(0);
   });
@@ -428,6 +430,7 @@ describe('SessionInstrumentation', () => {
           samplingRate: 1,
         },
         batching: {
+          enabled: true,
           itemLimit: 5,
           sendTimeout: 1,
         },
@@ -438,15 +441,16 @@ describe('SessionInstrumentation', () => {
 
     const sentItems = transport.items;
 
-    api.pushEvent('one');
+    // starting at two because a session lifetime event is automatically sent by Faro
     api.pushEvent('two');
     api.pushEvent('three');
     api.pushEvent('four');
+    api.pushEvent('five');
 
     expect(sentItems).toHaveLength(4);
   });
 
-  it('Will drop 50% of the signals.', () => {
+  it('Will drop signals for new session which is not part of the sample.', () => {
     const transport = new MockTransport();
 
     const config = makeCoreConfig(
@@ -455,9 +459,9 @@ describe('SessionInstrumentation', () => {
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
           enabled: true,
-          samplingRate: 0.5,
         },
         batching: {
+          enabled: true,
           itemLimit: 5,
           sendTimeout: 1,
         },
@@ -467,13 +471,16 @@ describe('SessionInstrumentation', () => {
     const { api } = initializeFaro(config!);
     const sentItems = transport.items;
 
-    api.pushEvent('x_one');
-    api.pushEvent('x_two');
+    // starting at two because a session lifetime event is automatically sent by Faro
+    api.pushEvent('two');
+    api.pushEvent('three');
 
+    jest.spyOn(samplingModuleMock, 'isSampled').mockReturnValue(false);
     api.setSession();
 
-    api.pushEvent('x_three');
-    api.pushEvent('x_four');
+    api.pushEvent('four');
+    api.pushEvent('five');
+    api.pushEvent('six');
 
     expect(sentItems).toHaveLength(2);
   });
