@@ -408,10 +408,10 @@ describe('SessionInstrumentation', () => {
 
     const sentItems = transport.items;
 
-    api.pushEvent('x_one');
-    api.pushEvent('x_two');
-    api.pushEvent('x_three');
-    api.pushEvent('x_four');
+    api.pushEvent('one');
+    api.pushEvent('two');
+    api.pushEvent('three');
+    api.pushEvent('four');
 
     expect(sentItems).toHaveLength(0);
   });
@@ -438,10 +438,10 @@ describe('SessionInstrumentation', () => {
 
     const sentItems = transport.items;
 
-    api.pushEvent('x_one');
-    api.pushEvent('x_two');
-    api.pushEvent('x_three');
-    api.pushEvent('x_four');
+    api.pushEvent('one');
+    api.pushEvent('two');
+    api.pushEvent('three');
+    api.pushEvent('four');
 
     expect(sentItems).toHaveLength(4);
   });
@@ -465,11 +465,13 @@ describe('SessionInstrumentation', () => {
     );
 
     const { api } = initializeFaro(config!);
-
     const sentItems = transport.items;
 
     api.pushEvent('x_one');
     api.pushEvent('x_two');
+
+    api.setSession();
+
     api.pushEvent('x_three');
     api.pushEvent('x_four');
 
