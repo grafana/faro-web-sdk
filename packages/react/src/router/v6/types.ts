@@ -63,3 +63,8 @@ export interface ReactRouterV6Dependencies {
   useLocation: ReactRouterV6UseLocation;
   useNavigationType: ReactRouterV6UseNavigationType;
 }
+
+export type EventRouteTransitionAttributes = {
+  fromRoute?: string;
+  fromUrl?: string;
+};
