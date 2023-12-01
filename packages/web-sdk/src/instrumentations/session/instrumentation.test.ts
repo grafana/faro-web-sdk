@@ -449,7 +449,7 @@ describe('SessionInstrumentation', () => {
 
     expect(sentItems).toHaveLength(4);
 
-    // removes isSmapled attribute
+    // Are all isSampled attributes removed?
     expect(sentItems.every((item) => typeof item.meta.session?.attributes?.['isSampled'] === 'undefined')).toBe(true);
   });
 
@@ -462,6 +462,7 @@ describe('SessionInstrumentation', () => {
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
           enabled: true,
+          session: { id: 'abc', attributes: { foo: 'bar' } },
         },
         batching: {
           enabled: true,
@@ -486,5 +487,11 @@ describe('SessionInstrumentation', () => {
     api.pushEvent('six');
 
     expect(sentItems).toHaveLength(2);
+
+    // Are all isSampled attributes removed?
+    expect(sentItems.every((item) => typeof item.meta.session?.attributes?.['isSampled'] === 'undefined')).toBe(true);
+
+    // Are all other attributes retained?
+    expect(sentItems.every((item) => item.meta.session?.attributes?.['foo'] === 'bar')).toBe(true);
   });
 });

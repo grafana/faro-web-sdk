@@ -126,7 +126,12 @@ export class SessionInstrumentation extends BaseInstrumentation {
             newItem = JSON.parse(JSON.stringify(item));
           }
 
-          delete newItem.meta.session?.attributes?.['isSampled'];
+          const newAttributes = newItem.meta.session?.attributes;
+          delete newAttributes?.['isSampled'];
+
+          if (Object.keys(newAttributes ?? {}).length === 0) {
+            delete newItem.meta.session?.attributes;
+          }
 
           return newItem;
         }
