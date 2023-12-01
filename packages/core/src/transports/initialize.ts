@@ -118,6 +118,12 @@ export function initializeTransports(
   };
 
   const instantSend = (item: TransportItem) => {
+    // prevent executing all hooks twice in batched mode
+    if (config.batching?.enabled && transports.every((transport) => transport.isBatched())) {
+      console.log('return');
+      return;
+    }
+
     const [filteredItem] = applyBeforeSendHooks([item]);
 
     if (filteredItem === undefined) {

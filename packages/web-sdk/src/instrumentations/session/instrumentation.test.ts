@@ -448,6 +448,9 @@ describe('SessionInstrumentation', () => {
     api.pushEvent('five');
 
     expect(sentItems).toHaveLength(4);
+
+    // removes isSmapled attribute
+    expect(sentItems.every((item) => typeof item.meta.session?.attributes?.['isSampled'] === 'undefined')).toBe(true);
   });
 
   it('Will drop signals for new session which is not part of the sample.', () => {
