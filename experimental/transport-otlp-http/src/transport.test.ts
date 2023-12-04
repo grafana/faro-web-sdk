@@ -30,8 +30,8 @@ const otelTransportPayload: Logs = {
           logRecords: [
             {
               timeUnixNano: 1674813181035000000,
-              severityNumber: 10,
-              severityText: 'INFO2',
+              severityNumber: 9,
+              severityText: 'INFO',
               body: {
                 stringValue: 'hi',
               },
@@ -237,7 +237,10 @@ describe('OtlpHttpTransport', () => {
 
     transport.internalLogger = mockInternalLogger;
 
-    const secondItem = { ...logTransportItem, payload: { ...logTransportItem.payload, message: 'foo' } };
+    const secondItem = {
+      ...logTransportItem,
+      payload: { ...logTransportItem.payload, message: 'foo', level: LogLevel.LOG },
+    };
 
     transport.send([logTransportItem, secondItem]);
 
@@ -259,8 +262,8 @@ describe('OtlpHttpTransport', () => {
                 logRecords: [
                   {
                     timeUnixNano: 1674813181035000000,
-                    severityNumber: 10,
-                    severityText: 'INFO2',
+                    severityNumber: 9,
+                    severityText: 'INFO',
                     body: {
                       stringValue: 'hi',
                     },

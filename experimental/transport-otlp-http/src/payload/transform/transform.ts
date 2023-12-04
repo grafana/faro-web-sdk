@@ -9,6 +9,7 @@ import {
   EventEvent,
   ExceptionEvent,
   LogEvent,
+  LogLevel,
   MeasurementEvent,
   Meta,
   TransportItem,
@@ -88,10 +89,26 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
     const body = toAttributeValue(payload.message) as { stringValue: string; key: string };
 
+    function getSeverityProperties(logLevel: LogLevel): { severityNumber: number; severityText: string } {
+      switch (logLevel) {
+        case LogLevel.TRACE:
+          return { severityNumber: 1, severityText: 'TRACE' };
+        case LogLevel.DEBUG:
+          return { severityNumber: 5, severityText: 'DEBUG' };
+        case LogLevel.INFO:
+          return { severityNumber: 9, severityText: 'INFO' };
+        case LogLevel.LOG:
+          return { severityNumber: 10, severityText: 'INFO2' };
+        case LogLevel.WARN:
+          return { severityNumber: 13, severityText: 'WARN' };
+        case LogLevel.ERROR:
+          return { severityNumber: 17, severityText: 'ERROR' };
+      }
+    }
+
     return {
       timeUnixNano,
-      severityNumber: 10,
-      severityText: 'INFO2',
+      ...getSeverityProperties(payload.level),
       body,
       attributes: [...getCommonLogAttributes(meta), toAttribute('faro.log.context', payload.context)].filter(
         isAttribute

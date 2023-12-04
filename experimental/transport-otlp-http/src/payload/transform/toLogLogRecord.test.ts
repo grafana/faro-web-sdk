@@ -48,8 +48,8 @@ const item: TransportItem<LogEvent> = {
 
 const matchLogLogRecord = {
   timeUnixNano: 1674813181035000000,
-  severityNumber: 10, // static value
-  severityText: 'INFO2', // static value
+  severityNumber: 9, // static value
+  severityText: 'INFO', // static value
   body: {
     stringValue: 'Faro was initialized',
   },
@@ -175,5 +175,22 @@ describe('toLogLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const logLogRecord = getLogTransforms(mockInternalLogger).toScopeLog(item).logRecords[0];
     expect(logLogRecord).toEqual(matchLogLogRecord);
+  });
+
+  it.each([
+    { level: LogLevel.TRACE, match: { severityNumber: 1, severityText: 'TRACE' } },
+    { level: LogLevel.DEBUG, match: { severityNumber: 5, severityText: 'DEBUG' } },
+    { level: LogLevel.INFO, match: { severityNumber: 9, severityText: 'INFO' } },
+    { level: LogLevel.LOG, match: { severityNumber: 10, severityText: 'INFO2' } },
+    { level: LogLevel.WARN, match: { severityNumber: 13, severityText: 'WARN' } },
+    { level: LogLevel.ERROR, match: { severityNumber: 17, severityText: 'ERROR' } },
+  ])('Maps to the correct otel log levels.', ({ level, match: { severityNumber, severityText } }) => {
+    const logLogRecord = getLogTransforms(mockInternalLogger).toScopeLog({
+      ...item,
+      payload: { ...item.payload, level },
+    }).logRecords[0];
+
+    expect(logLogRecord?.severityNumber).toEqual(severityNumber);
+    expect(logLogRecord?.severityText).toEqual(severityText);
   });
 });
