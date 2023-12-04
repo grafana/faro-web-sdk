@@ -10,6 +10,7 @@ import {
 } from '@grafana/faro-core';
 import type { Config } from '@grafana/faro-core';
 
+import type { TransportItem } from '../..';
 import { createSession } from '../../metas';
 
 import { type FaroUserSession, isSampled } from './sessionManager';
@@ -115,7 +116,24 @@ export class SessionInstrumentation extends BaseInstrumentation {
         const attributes = item.meta.session?.attributes;
 
         if (attributes && attributes?.['isSampled'] === 'true') {
-          return item;
+          let newItem: TransportItem;
+
+          // Structured clone is supported in all major browsers
+          // but for old browsers we need a fallback
+          if ('structuredClone' in window) {
+            newItem = structuredClone(item);
+          } else {
+            newItem = JSON.parse(JSON.stringify(item));
+          }
+
+          const newAttributes = newItem.meta.session?.attributes;
+          delete newAttributes?.['isSampled'];
+
+          if (Object.keys(newAttributes ?? {}).length === 0) {
+            delete newItem.meta.session?.attributes;
+          }
+
+          return newItem;
         }
 
         return null;
