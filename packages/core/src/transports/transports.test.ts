@@ -122,6 +122,52 @@ describe('transports', () => {
       expect(transport.sentItems).toHaveLength(1);
       expect((transport.sentItems[0]?.payload as ErrorEvent).type).toEqual('NewType');
     });
+
+    it('Only call beforeSentHooks once in batched mode.', () => {
+      const transport = new MockTransport();
+
+      const mockBeforeSend = jest.fn((item) => item);
+
+      const { transports } = initializeFaro(
+        mockConfig({
+          transports: [transport],
+          beforeSend: mockBeforeSend,
+          batching: {
+            enabled: true,
+            sendTimeout: 1,
+            itemLimit: 1,
+          },
+        })
+      );
+
+      transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));
+      expect(mockBeforeSend).toHaveBeenCalledTimes(1);
+    });
+
+    it('Call beforeSentHooks two times if in batched mode but with an existing transport which is not batched', () => {
+      const transport = new MockTransport();
+
+      const nonBachedTransport = new MockTransport();
+      nonBachedTransport.isBatched = () => false;
+      (nonBachedTransport.name as any) = 'non-batched-transport';
+
+      const mockBeforeSend = jest.fn((item) => item);
+
+      const { transports } = initializeFaro(
+        mockConfig({
+          transports: [transport, nonBachedTransport],
+          beforeSend: mockBeforeSend,
+          batching: {
+            enabled: true,
+            sendTimeout: 1,
+            itemLimit: 1,
+          },
+        })
+      );
+
+      transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));
+      expect(mockBeforeSend).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('multiple transports of the same type', () => {
