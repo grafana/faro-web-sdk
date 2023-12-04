@@ -2,9 +2,12 @@
 
 ## Next
 
-- Change (`@grafana/faro-transport-otlp-http`): Map log levels to severities as specified by otlp (#411)
+## 1.3.0
 
-## 1.2.0 – 1.2.2
+- Change (`@grafana/faro-transport-otlp-http`): Map log levels to the correct severities as
+  specified by otlp (#411)
+
+## 1.2.0 – 1.2.9
 
 ### FetchInstrumentation
 

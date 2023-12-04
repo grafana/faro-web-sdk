@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.3.0
+
 - Deps (`@grafana/faro-react`): add missing peer dependency on `react-dom` (#400).
 - Deps (`@grafana/faro-core`): remove unused `@opentelemetry/api-metrics` dependency (#401).
 - Deps (`@grafana/faro-web-tracing`): remove unused `@opentelemetry/sdk-trace-base` dependency (#401).
