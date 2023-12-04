@@ -3,8 +3,12 @@
 ## Next
 
 - Deps (`@grafana/faro-react`): add missing peer dependency on `react-dom` (#400).
-- Deps (Faro Core): remove unused `@opentelemetry/api-metrics` dependency (#401).
-- Deps (Web Tracing): remove unused `@opentelemetry/sdk-trace-base` dependency (#401).
+- Deps (`@grafana/faro-core`): remove unused `@opentelemetry/api-metrics` dependency (#401).
+- Deps (`@grafana/faro-web-tracing`): remove unused `@opentelemetry/sdk-trace-base` dependency (#401).
+- Fix (`@grafana/faro-web-sdk`): fixed a issue where session based sampling lead to dropping items
+  even if they were part of the sample (#402).
+- Fix (`@grafana/faro-web-sdk`): Cleanup up session meta before send to not include Faro specific
+  attributes (#408).
 
 ## 1.2.9
 
