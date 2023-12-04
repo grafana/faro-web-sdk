@@ -5,11 +5,13 @@
 - Deps (`@grafana/faro-react`): add missing peer dependency on `react-dom` (#400).
 - Deps (`@grafana/faro-core`): remove unused `@opentelemetry/api-metrics` dependency (#401).
 - Deps (`@grafana/faro-web-tracing`): remove unused `@opentelemetry/sdk-trace-base` dependency (#401).
-- Change (`@grafana/faro-transport-otlp-http`): Map log levels to severities as specified by otlp (#411)
 - Fix (`@grafana/faro-web-sdk`): fixed a issue where session based sampling combined with batched mode
   lead to dropped items, even if they were part of the sample (#402).
 - Fix (`@grafana/faro-web-sdk`): Cleanup up session meta before sending it to not include Faro specific
   attributes (#408).
+- Breaking❗️ (`@grafana/faro-web-sdk`): The new volatile session manager is enabled by default. The
+  old legacy session object is removed. This change is only breaking if you customized the old default
+  session management (#412).
 
 ## 1.2.9
 

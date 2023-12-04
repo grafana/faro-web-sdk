@@ -64,7 +64,10 @@ describe('SessionInstrumentation', () => {
       mockConfig({
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
-        session,
+        sessionTracking: {
+          enabled: true,
+          session,
+        },
       })
     );
 
@@ -80,18 +83,18 @@ describe('SessionInstrumentation', () => {
     const transport = new MockTransport();
     const session = createSession({ foo: 'bar' });
 
-    const { api, metas } = initializeFaro(
-      mockConfig({
-        transports: [transport],
-        instrumentations: [new SessionInstrumentation()],
-        sessionTracking: {
-          enabled: true,
-          persistent: false,
-          session,
-          samplingRate: 1, // default
-        },
-      })
-    );
+    const config = mockConfig({
+      transports: [transport],
+      instrumentations: [new SessionInstrumentation()],
+      sessionTracking: {
+        enabled: true,
+        persistent: false,
+        session,
+        samplingRate: 1,
+      },
+    });
+
+    const { api, metas } = initializeFaro(config);
 
     expect(transport.items).toHaveLength(1);
 
@@ -308,9 +311,6 @@ describe('SessionInstrumentation', () => {
       mockConfig({
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
-        sessionTracking: {
-          enabled: true,
-        },
       })
     );
 
@@ -398,7 +398,6 @@ describe('SessionInstrumentation', () => {
           samplingRate: 0,
         },
         batching: {
-          enabled: true,
           itemLimit: 5,
           sendTimeout: 1,
         },
@@ -430,7 +429,6 @@ describe('SessionInstrumentation', () => {
           samplingRate: 1,
         },
         batching: {
-          enabled: true,
           itemLimit: 5,
           sendTimeout: 1,
         },
@@ -465,7 +463,6 @@ describe('SessionInstrumentation', () => {
           session: { id: 'abc', attributes: { foo: 'bar' } },
         },
         batching: {
-          enabled: true,
           itemLimit: 5,
           sendTimeout: 1,
         },

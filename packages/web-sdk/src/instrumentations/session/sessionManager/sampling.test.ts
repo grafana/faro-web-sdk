@@ -13,7 +13,6 @@ describe('Sampling.', () => {
   it('Returns false if sampleRate is not of type number.', () => {
     const config = mockConfig({
       sessionTracking: {
-        enabled: true,
         samplingRate: 'hello' as any,
       },
     });

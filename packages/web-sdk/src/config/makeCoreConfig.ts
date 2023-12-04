@@ -11,7 +11,7 @@ import type { Config, MetaItem, Transport } from '@grafana/faro-core';
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
-import { createSession, defaultMetas, defaultViewMeta } from '../metas';
+import { defaultMetas, defaultViewMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { FetchTransport } from '../transports';
 
@@ -83,16 +83,9 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
       ...browserConfig.sessionTracking,
     },
 
-    // TODO: deprecate/remove legacy session object at ga
-    session: browserConfig.session ?? createSession(),
-
     user: browserConfig.user,
     view: browserConfig.view ?? defaultViewMeta,
   };
-
-  if (config.sessionTracking?.enabled) {
-    delete config.session;
-  }
 
   return config;
 }
