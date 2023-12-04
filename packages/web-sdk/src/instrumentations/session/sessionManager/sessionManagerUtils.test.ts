@@ -161,8 +161,8 @@ describe('sessionManagerUtils', () => {
     const config = mockConfig({
       sessionTracking: {
         onSessionChange: mockOnSessionChange,
+        session: currentSessionMeta,
       },
-      session: currentSessionMeta,
     });
 
     const faro = initializeFaro(config);
@@ -209,7 +209,7 @@ describe('sessionManagerUtils', () => {
 
   it('Takes session object and adds meta data.', () => {
     const config = mockConfig({});
-    initializeFaro(config);
+    const { api } = initializeFaro(config);
 
     const newSession: FaroUserSession = {
       lastActivity: 1,
@@ -259,10 +259,7 @@ describe('sessionManagerUtils', () => {
       },
     };
 
-    const config2 = mockConfig({
-      session: sessionMeta,
-    });
-    initializeFaro(config2);
+    api.setSession(sessionMeta);
 
     const sessionWithMetadata3 = addSessionMetadataToNextSession(newSession, previousSession);
 

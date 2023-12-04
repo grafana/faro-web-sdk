@@ -9,7 +9,7 @@ export const MAX_SESSION_PERSISTENCE_TIME_BUFFER = 1 * 60 * 1000;
 export const MAX_SESSION_PERSISTENCE_TIME = SESSION_INACTIVITY_TIME + MAX_SESSION_PERSISTENCE_TIME_BUFFER;
 
 export const defaultSessionTrackingConfig: Config['sessionTracking'] = {
-  enabled: false,
+  enabled: true,
   persistent: false,
   maxSessionPersistenceTime: MAX_SESSION_PERSISTENCE_TIME,
 } as const;

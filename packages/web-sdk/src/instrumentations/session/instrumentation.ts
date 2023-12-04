@@ -105,6 +105,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
         })
       );
 
+      if (this.notifiedSession != null) {
+        this.sendSessionStartEvent(initialSessionMeta as Meta);
+      }
+
       this.notifiedSession = initialSessionMeta;
       this.api.setSession(initialSessionMeta);
 

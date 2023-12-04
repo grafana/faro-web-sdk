@@ -64,7 +64,9 @@ describe('SessionInstrumentation', () => {
       mockConfig({
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
-        session,
+        sessionTracking: {
+          session,
+        },
       })
     );
 
@@ -85,7 +87,6 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           persistent: false,
           session,
           samplingRate: 1, // default
@@ -122,7 +123,6 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           samplingRate: 1, // default
         },
       })
@@ -147,7 +147,6 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           persistent: true,
           samplingRate: 1, // default
         },
@@ -188,7 +187,6 @@ describe('SessionInstrumentation', () => {
       mockConfig({
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           session: mockSessionMeta,
           samplingRate: 1, // default
         },
@@ -206,7 +204,6 @@ describe('SessionInstrumentation', () => {
       mockConfig({
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           samplingRate: 1, // default
         },
       })
@@ -233,7 +230,6 @@ describe('SessionInstrumentation', () => {
       mockConfig({
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           persistent: true,
           samplingRate: 1, // default
         },
@@ -259,7 +255,6 @@ describe('SessionInstrumentation', () => {
       mockConfig({
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           persistent: true,
           samplingRate: 1, // default
         },
@@ -286,7 +281,6 @@ describe('SessionInstrumentation', () => {
       mockConfig({
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           persistent: true,
           samplingRate: 1, // default
         },
@@ -308,9 +302,7 @@ describe('SessionInstrumentation', () => {
       mockConfig({
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
-        sessionTracking: {
-          enabled: true,
-        },
+        sessionTracking: {},
       })
     );
 
@@ -343,7 +335,6 @@ describe('SessionInstrumentation', () => {
       mockConfig({
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           persistent: true,
           samplingRate: 0,
         },
@@ -372,7 +363,6 @@ describe('SessionInstrumentation', () => {
       mockConfig({
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           persistent: true,
           samplingRate: 0,
         },
@@ -394,11 +384,9 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           samplingRate: 0,
         },
         batching: {
-          enabled: true,
           itemLimit: 5,
           sendTimeout: 1,
         },
@@ -426,11 +414,9 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           samplingRate: 1,
         },
         batching: {
-          enabled: true,
           itemLimit: 5,
           sendTimeout: 1,
         },
@@ -461,11 +447,9 @@ describe('SessionInstrumentation', () => {
         transports: [transport],
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
-          enabled: true,
           session: { id: 'abc', attributes: { foo: 'bar' } },
         },
         batching: {
-          enabled: true,
           itemLimit: 5,
           sendTimeout: 1,
         },
