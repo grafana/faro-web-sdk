@@ -97,6 +97,7 @@ describe('sessionManagerUtils', () => {
 
     const config = mockConfig({
       sessionTracking: {
+        enabled: true,
         onSessionChange: mockOnSessionChange,
       },
     });
@@ -160,6 +161,7 @@ describe('sessionManagerUtils', () => {
 
     const config = mockConfig({
       sessionTracking: {
+        enabled: true,
         onSessionChange: mockOnSessionChange,
         session: currentSessionMeta,
       },

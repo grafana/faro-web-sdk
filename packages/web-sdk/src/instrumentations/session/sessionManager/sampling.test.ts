@@ -25,6 +25,7 @@ describe('Sampling.', () => {
   it('Returns proper sampling decision for configured samplingRate.', () => {
     let config = mockConfig({
       sessionTracking: {
+        enabled: true,
         samplingRate: 1,
       },
     });
@@ -40,6 +41,7 @@ describe('Sampling.', () => {
   it('Returns proper sampling decision for rate returned by sampler function.', () => {
     let config = mockConfig({
       sessionTracking: {
+        enabled: true,
         sampler: () => {
           return 1;
         },

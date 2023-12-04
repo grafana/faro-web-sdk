@@ -29,6 +29,7 @@ describe('Persistent Sessions Manager.', () => {
 
     const config = mockConfig({
       sessionTracking: {
+        enabled: true,
         persistent: true,
         session: { id: mockInitialSessionId },
         onSessionChange: mockOnNewSessionCreated,
