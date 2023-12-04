@@ -105,7 +105,9 @@ describe('FetchInstrumentation', () => {
 
     const sessionId = 'test-session-id';
 
-    initializeFaro(mockConfig({ instrumentations: [instrumentation], session: { id: sessionId } }));
+    initializeFaro(
+      mockConfig({ instrumentations: [instrumentation], sessionTracking: { session: { id: sessionId } } })
+    );
 
     const fetchSpy = jest.spyOn(global, 'fetch');
 
