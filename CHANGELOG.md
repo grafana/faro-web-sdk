@@ -2,6 +2,10 @@
 
 ## Next
 
+## 1.3.1
+
+- fix (`@grafana/faro-web-sdk`): Fixed an issue where the first calculated session was always part of the sample (#415).
+
 ## 1.3.0
 
 - Deps (`@grafana/faro-react`): add missing peer dependency on `react-dom` (#400).
