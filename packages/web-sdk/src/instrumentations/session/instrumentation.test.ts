@@ -374,7 +374,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
-          samplingRate: 0,
+          samplingRate: 0, // setting to zero so calculating sampling decision for new session will evaluate to false
         },
       })
     );
@@ -383,7 +383,7 @@ describe('SessionInstrumentation', () => {
     const sessionMeta = api.getSession();
 
     expect(sessionMeta?.attributes?.['isSampled']).toBe('false');
-    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).isSampled).toBe(initialIsSampled);
+    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).isSampled).toBe(false);
   });
 
   it('Will send 0% of the signals.', () => {

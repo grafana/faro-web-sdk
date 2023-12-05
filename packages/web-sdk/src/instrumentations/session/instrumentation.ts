@@ -101,7 +101,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
       SessionManager.storeUserSession(
         createUserSessionObject({
           sessionId: initialSessionMeta.id,
-          isSampled: Boolean(initialSessionMeta.attributes!['isSampled']),
+          isSampled: initialSessionMeta.attributes?.['isSampled'] === 'true',
         })
       );
 
