@@ -18,6 +18,8 @@ import { PersistentSessionsManager } from './sessionManager/PersistentSessionsMa
 import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
 import { VolatileSessionsManager } from './sessionManager/VolatileSessionManager';
 
+type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;
+
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
   readonly version = VERSION;
@@ -43,7 +45,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private createInitialSessionMeta(sessionsConfig: Required<Config>['sessionTracking']): MetaSession {
+  private createInitialSessionMeta(sessionsConfig: Required<Config>['sessionTracking']): {
+    sessionMeta: MetaSession;
+    lifecycleType: LifecycleType;
+  } {
     const sessionManager = sessionsConfig.persistent ? PersistentSessionsManager : VolatileSessionsManager;
 
     let userSession: FaroUserSession | null = sessionManager.fetchUserSession();
@@ -61,16 +66,18 @@ export class SessionInstrumentation extends BaseInstrumentation {
     let sessionId = sessionsConfig.session?.id;
     let sessionAttributes = sessionsConfig.session?.attributes;
 
+    let lifecycleType: LifecycleType;
+
     if (isUserSessionValid(userSession)) {
       sessionId = userSession?.sessionId;
       sessionAttributes = {
         ...userSession?.sessionMeta?.attributes,
         isSampled: userSession!.isSampled.toString(),
       };
-      this.api.pushEvent(EVENT_SESSION_RESUME, {}, undefined, { skipDedupe: true });
+      lifecycleType = EVENT_SESSION_RESUME;
     } else {
       sessionId = sessionId ?? createSession().id;
-      this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
+      lifecycleType = EVENT_SESSION_START;
     }
 
     const sessionMeta: MetaSession = {
@@ -83,7 +90,40 @@ export class SessionInstrumentation extends BaseInstrumentation {
       },
     };
 
-    return sessionMeta;
+    return { sessionMeta, lifecycleType };
+  }
+
+  private registerBeforeSendHook(SessionManager: typeof VolatileSessionsManager | typeof PersistentSessionsManager) {
+    const { updateSession } = new SessionManager();
+
+    this.transports?.addBeforeSendHooks((item) => {
+      updateSession();
+
+      const attributes = item.meta.session?.attributes;
+
+      if (attributes && attributes?.['isSampled'] === 'true') {
+        let newItem: TransportItem;
+
+        // Structured clone is supported in all major browsers
+        // but for old browsers we need a fallback
+        if ('structuredClone' in window) {
+          newItem = structuredClone(item);
+        } else {
+          newItem = JSON.parse(JSON.stringify(item));
+        }
+
+        const newAttributes = newItem.meta.session?.attributes;
+        delete newAttributes?.['isSampled'];
+
+        if (Object.keys(newAttributes ?? {}).length === 0) {
+          delete newItem.meta.session?.attributes;
+        }
+
+        return newItem;
+      }
+
+      return null;
+    });
   }
 
   initialize() {
@@ -96,7 +136,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
         ? PersistentSessionsManager
         : VolatileSessionsManager;
 
-      const initialSessionMeta = this.createInitialSessionMeta(sessionTracking);
+      this.registerBeforeSendHook(SessionManager);
+
+      const { sessionMeta: initialSessionMeta, lifecycleType } = this.createInitialSessionMeta(sessionTracking);
 
       SessionManager.storeUserSession(
         createUserSessionObject({
@@ -105,45 +147,16 @@ export class SessionInstrumentation extends BaseInstrumentation {
         })
       );
 
-      if (this.notifiedSession != null) {
-        this.sendSessionStartEvent(initialSessionMeta as Meta);
-      }
-
       this.notifiedSession = initialSessionMeta;
       this.api.setSession(initialSessionMeta);
 
-      const { updateSession } = new SessionManager();
+      if (lifecycleType === EVENT_SESSION_START) {
+        this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
+      }
 
-      this.transports?.addBeforeSendHooks((item) => {
-        updateSession();
-
-        const attributes = item.meta.session?.attributes;
-
-        if (attributes && attributes?.['isSampled'] === 'true') {
-          let newItem: TransportItem;
-
-          // Structured clone is supported in all major browsers
-          // but for old browsers we need a fallback
-          if ('structuredClone' in window) {
-            newItem = structuredClone(item);
-          } else {
-            newItem = JSON.parse(JSON.stringify(item));
-          }
-
-          const newAttributes = newItem.meta.session?.attributes;
-          delete newAttributes?.['isSampled'];
-
-          if (Object.keys(newAttributes ?? {}).length === 0) {
-            delete newItem.meta.session?.attributes;
-          }
-
-          return newItem;
-        }
-
-        return null;
-      });
-    } else {
-      this.sendSessionStartEvent(this.metas.value);
+      if (lifecycleType === EVENT_SESSION_RESUME) {
+        this.api.pushEvent(EVENT_SESSION_RESUME, {}, undefined, { skipDedupe: true });
+      }
     }
 
     this.metas.addListener(this.sendSessionStartEvent.bind(this));
