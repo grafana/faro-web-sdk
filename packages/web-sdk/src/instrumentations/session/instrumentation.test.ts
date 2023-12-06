@@ -445,7 +445,7 @@ describe('SessionInstrumentation', () => {
     api.pushEvent('four');
     api.pushEvent('five');
 
-    expect(sentItems).toHaveLength(4);
+    expect(sentItems).toHaveLength(5);
 
     // Are all isSampled attributes removed?
     expect(sentItems.every((item) => typeof item.meta.session?.attributes?.['isSampled'] === 'undefined')).toBe(true);
@@ -483,7 +483,7 @@ describe('SessionInstrumentation', () => {
     api.pushEvent('five');
     api.pushEvent('six');
 
-    expect(sentItems).toHaveLength(2);
+    expect(sentItems).toHaveLength(3);
 
     // Are all isSampled attributes removed?
     expect(sentItems.every((item) => typeof item.meta.session?.attributes?.['isSampled'] === 'undefined')).toBe(true);

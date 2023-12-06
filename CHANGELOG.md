@@ -2,6 +2,11 @@
 
 ## Next
 
+## 1.3.2
+
+- fix (`@grafana/faro-web-sdk`): Fixed an issue where the session meta was missing in session
+  lifecyle events sent during the init phase (#417).
+
 ## 1.3.1
 
 - fix (`@grafana/faro-web-sdk`): Fixed an issue where the first calculated session was always part of the sample (#415).
