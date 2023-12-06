@@ -115,20 +115,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
         const newAttributes = newItem.meta.session?.attributes;
 
-        if (newAttributes?.['location']) {
-          console.log('item :>> ', item);
-
-          console.log('newAttributes :>> ', { ...newAttributes });
-        }
-
         delete newAttributes?.['isSampled'];
 
         if (Object.keys(newAttributes ?? {}).length === 0) {
           delete newItem.meta.session?.attributes;
-        }
-
-        if (newAttributes?.['location']) {
-          console.log('newItem :>> ', { ...newItem });
         }
 
         return newItem;
