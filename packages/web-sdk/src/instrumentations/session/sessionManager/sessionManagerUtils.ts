@@ -76,6 +76,7 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
       attributes: {
         ...(faro.metas.value.session?.attributes ?? {}),
         ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
+        ...faro.config.sessionTracking?.session?.attributes,
         isSampled: newSession.isSampled.toString(),
       },
     },
