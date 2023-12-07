@@ -104,7 +104,7 @@ describe('Volatile Sessions Manager.', () => {
     updateSession();
 
     // creates and stores new session
-    const session = JSON.parse(mockStorage[STORAGE_KEY]);
+    const sessionFromStorage = JSON.parse(mockStorage[STORAGE_KEY]);
 
     const matchNewSessionMeta = {
       id: mockNewSessionId,
@@ -113,12 +113,15 @@ describe('Volatile Sessions Manager.', () => {
         isSampled: 'true',
       },
     };
-    expect(session).toStrictEqual({
+    expect(sessionFromStorage).toStrictEqual({
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
       isSampled: true,
-      sessionMeta: matchNewSessionMeta,
+      sessionMeta: {
+        id: matchNewSessionMeta.id,
+        attributes: { previousSession: mockInitialSessionId },
+      },
     });
 
     // Updates session meta
@@ -158,7 +161,7 @@ describe('Volatile Sessions Manager.', () => {
     updateSession();
 
     // creates and stores new session
-    const session = JSON.parse(mockStorage[STORAGE_KEY]);
+    const sessionFromStorage = JSON.parse(mockStorage[STORAGE_KEY]);
 
     const matchNewSessionMeta = {
       id: mockNewSessionId,
@@ -167,12 +170,15 @@ describe('Volatile Sessions Manager.', () => {
         isSampled: 'true',
       },
     };
-    expect(session).toStrictEqual({
+    expect(sessionFromStorage).toStrictEqual({
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
       isSampled: true,
-      sessionMeta: matchNewSessionMeta,
+      sessionMeta: {
+        id: matchNewSessionMeta.id,
+        attributes: { previousSession: mockInitialSessionId },
+      },
     });
 
     // Updates session meta
