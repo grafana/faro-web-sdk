@@ -15,6 +15,10 @@ export function createUserSessionObject({
 }: CreateUserSessionObjectParams = {}): FaroUserSession {
   const now = dateNow();
 
+  if (typeof faro.config.sessionTracking?.sessionIdGenerator === 'function') {
+    sessionId = faro.config.sessionTracking.sessionIdGenerator();
+  }
+
   return {
     sessionId,
     lastActivity: now,

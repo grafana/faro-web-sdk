@@ -43,6 +43,17 @@ export function initializeFaro(): Faro {
       version: env.package.version,
       environment: env.mode.name,
     },
+    sessionTracking: {
+      session: {
+        // id: 'initial-id',
+        attributes: {
+          location: 'moon',
+        },
+      },
+      sessionIdGenerator() {
+        return 'custom-id';
+      },
+    },
   });
 
   faro.api.pushLog(['Faro was initialized']);
