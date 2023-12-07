@@ -6,7 +6,12 @@ import { getItem, removeItem, setItem, webStorageType } from '../../../utils/web
 
 import { isSampled } from './sampling';
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
-import { addSessionMetadataToNextSession, createUserSessionObject, getUserSessionUpdater } from './sessionManagerUtils';
+import {
+  addSessionMetadataToNextSession,
+  cleanUpSessionMetaAttributes,
+  createUserSessionObject,
+  getUserSessionUpdater,
+} from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
 export class VolatileSessionsManager {
@@ -27,7 +32,11 @@ export class VolatileSessionsManager {
   }
 
   static storeUserSession(session: FaroUserSession): void {
-    setItem(STORAGE_KEY, JSON.stringify(session), VolatileSessionsManager.storageTypeSession);
+    setItem(
+      STORAGE_KEY,
+      JSON.stringify(cleanUpSessionMetaAttributes(session)),
+      VolatileSessionsManager.storageTypeSession
+    );
   }
 
   static fetchUserSession(): FaroUserSession | null {

@@ -6,6 +6,7 @@ import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConst
 import * as mockSessionManagerUtils from './sessionManagerUtils';
 import {
   addSessionMetadataToNextSession,
+  cleanUpSessionMetaAttributes,
   createUserSessionObject,
   getUserSessionUpdater,
   isUserSessionValid,
@@ -274,6 +275,40 @@ describe('sessionManagerUtils', () => {
           isSampled: 'true',
           previousSession: previousSession.sessionId,
         },
+      },
+    });
+  });
+
+  it('Removes all user defined attributes from sessionMeta.', () => {
+    // It is important for privacy reasons to removes sensitive data before we store teh userSession in web-storage.
+    // This prevents customers accidentally leaking sensitive data to the web-storage they've added manually.
+    // Manually adding attributes is possible on initialize or when calling setSession().
+
+    const firstSession = createUserSessionObject();
+    firstSession.sessionMeta = {
+      id: firstSession.sessionId,
+      attributes: {
+        location: 'berlin',
+        creditCardNumber: '123',
+      },
+    };
+
+    expect(cleanUpSessionMetaAttributes(firstSession).sessionMeta).toBeUndefined();
+
+    const resumedSession = createUserSessionObject();
+    resumedSession.sessionMeta = {
+      id: firstSession.sessionId,
+      attributes: {
+        location: 'berlin',
+        creditCardNumber: '123',
+        previousSession: 'abcdefg',
+      },
+    };
+
+    expect(cleanUpSessionMetaAttributes(resumedSession).sessionMeta).toStrictEqual({
+      id: firstSession.sessionId,
+      attributes: {
+        previousSession: 'abcdefg',
       },
     });
   });

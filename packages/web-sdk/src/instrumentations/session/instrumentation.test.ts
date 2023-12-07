@@ -5,6 +5,7 @@ import {
   EVENT_SESSION_START,
   initializeFaro,
 } from '@grafana/faro-core';
+import * as faroCoreMock from '@grafana/faro-core';
 import type { EventEvent, MetaSession, TransportItem } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
@@ -183,7 +184,7 @@ describe('SessionInstrumentation', () => {
       id: 'new-session',
       attributes: {
         foo: 'bar',
-        isSampled: 'true',
+        location: 'earth',
       },
     };
 
@@ -198,7 +199,13 @@ describe('SessionInstrumentation', () => {
       })
     );
 
-    expect(metas.value.session).toStrictEqual(mockSessionMeta);
+    expect(metas.value.session).toStrictEqual({
+      ...mockSessionMeta,
+      attributes: {
+        ...mockSessionMeta.attributes,
+        isSampled: 'true', // auto added by the session manager
+      },
+    });
   });
 
   it('creates new session meta for browser with no faro session stored in web storage.', () => {
@@ -490,5 +497,165 @@ describe('SessionInstrumentation', () => {
 
     // Are all other attributes retained?
     expect(sentItems.every((item) => item.meta.session?.attributes?.['foo'] === 'bar')).toBe(true);
+  });
+
+  it('Will drop signals for resumed session which is not part of the sample.', () => {
+    const transport = new MockTransport();
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(
+      createUserSessionObject({ sessionId: 'session-from-storage', isSampled: false })
+    );
+
+    const config = makeCoreConfig(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+        },
+        batching: {
+          itemLimit: 5,
+          sendTimeout: 1,
+        },
+      })
+    );
+
+    const { api } = initializeFaro(config!);
+    const sentItems = transport.items;
+
+    // starting at two because a session lifetime event is automatically sent by Faro
+    api.pushEvent('two');
+    api.pushEvent('three');
+    api.pushEvent('four');
+
+    expect(sentItems).toHaveLength(0);
+  });
+
+  it('Sends manually provided session attributes for all session lifecyle events, does not overwrite session manager lifecycle attributes, does not store user provided attributes in web storage. ', () => {
+    const idSessionStart = 'id-session-start';
+    jest.spyOn(faroCoreMock, 'genShortID').mockReturnValueOnce(idSessionStart);
+
+    const transport = new MockTransport();
+
+    const config = makeCoreConfig(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          session: {
+            attributes: {
+              location: 'moon',
+              isSampled: 'manually setting isSampled is not allowed',
+              previousSession: 'manually setting previousSession is not allowed',
+            },
+          },
+          samplingRate: 1,
+        },
+        batching: {
+          enabled: false,
+        },
+      })
+    );
+
+    const sentItems = transport.items;
+
+    // -------- start new session (first page load) --------
+    const faroFirstPageLoad = initializeFaro(config!);
+
+    expect(sentItems).toHaveLength(1);
+    expect((sentItems[0]?.payload as any)?.['name']).toBe(EVENT_SESSION_START);
+    expect(sentItems[0]?.meta.session).toStrictEqual({
+      id: idSessionStart,
+      attributes: {
+        // isSampled: 'true' // isSampled attribute gets removed on beforeSend(),
+        location: 'moon',
+      },
+    } as MetaSession);
+
+    const newUserSessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
+    expect(newUserSessionFromStorage.isSampled).toBe(true);
+    expect(newUserSessionFromStorage.sessionMeta).toBeUndefined();
+
+    // -------- extend session --------
+    const idSessionExtend = 'id-session-extend';
+
+    faroFirstPageLoad.api.setSession({
+      id: idSessionExtend,
+      attributes: {
+        location: 'mars',
+        isSampled: 'manually setting isSampled is not allowed',
+        previousSession: 'manually setting previousSession is not allowed',
+        age: '200',
+      },
+    });
+
+    expect(sentItems).toHaveLength(2);
+    expect((sentItems[1]?.payload as any)?.['name']).toBe(EVENT_SESSION_EXTEND);
+    expect(sentItems[1]?.meta.session).toStrictEqual({
+      id: idSessionExtend,
+      attributes: {
+        // isSampled: 'true' // isSampled attribute gets removed on beforeSend(),
+        age: '200',
+        location: 'moon',
+        previousSession: idSessionStart,
+      },
+    } as MetaSession);
+
+    const extendedUserSessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
+    expect(extendedUserSessionFromStorage.isSampled).toBe(true);
+
+    expect(extendedUserSessionFromStorage.sessionMeta).toBeDefined();
+    expect(extendedUserSessionFromStorage.sessionMeta?.attributes?.['previousSession']).toBe(idSessionStart);
+    expect(extendedUserSessionFromStorage.sessionMeta?.attributes?.['location']).toBeUndefined();
+    expect(extendedUserSessionFromStorage.sessionMeta?.attributes?.['age']).toBeUndefined();
+
+    // -------- resume session (subsequent page load) --------
+    // const faroSubsequentPageLoad = initializeFaro(config!);
+    initializeFaro(config!);
+
+    expect(sentItems).toHaveLength(3);
+    expect((sentItems[2]?.payload as any)?.['name']).toBe(EVENT_SESSION_RESUME);
+    expect(sentItems[2]?.meta.session).toStrictEqual({
+      id: idSessionExtend, // the id form valid session in web storage
+      attributes: {
+        // isSampled: 'true' // isSampled attribute gets removed on beforeSend(),
+        location: 'moon', // uses initial meta
+        previousSession: idSessionStart,
+      },
+    } as MetaSession);
+
+    const resumedUserSessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
+    expect(resumedUserSessionFromStorage.sessionId).toBe(idSessionExtend);
+    expect(resumedUserSessionFromStorage.isSampled).toBe(true);
+
+    expect(resumedUserSessionFromStorage.sessionMeta).toBeDefined();
+    expect(resumedUserSessionFromStorage.sessionMeta?.attributes?.['previousSession']).toBe(idSessionStart);
+
+    // for privacy reasons we do not store user provided attributes in web-storage
+    expect(resumedUserSessionFromStorage.sessionMeta?.attributes?.['location']).toBeUndefined();
+    expect(resumedUserSessionFromStorage.sessionMeta?.attributes?.['age']).toBeUndefined();
+
+    // -------- resume session again (subsequent page load) --------
+    initializeFaro(config!);
+
+    expect(sentItems).toHaveLength(4);
+    expect((sentItems[3]?.payload as any)?.['name']).toBe(EVENT_SESSION_RESUME);
+    expect(sentItems[3]?.meta.session).toStrictEqual({
+      id: idSessionExtend,
+      attributes: {
+        location: 'moon',
+        previousSession: idSessionStart,
+      },
+    } as MetaSession);
+
+    const secondResumedUserSessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
+    expect(secondResumedUserSessionFromStorage.sessionId).toBe(idSessionExtend);
+    expect(secondResumedUserSessionFromStorage.isSampled).toBe(true);
+
+    expect(secondResumedUserSessionFromStorage.sessionMeta).toBeDefined();
+    expect(secondResumedUserSessionFromStorage.sessionMeta?.attributes).toStrictEqual({
+      previousSession: idSessionStart,
+    });
   });
 });

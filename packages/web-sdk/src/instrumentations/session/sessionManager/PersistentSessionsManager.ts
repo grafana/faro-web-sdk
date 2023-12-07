@@ -6,7 +6,12 @@ import { getItem, removeItem, setItem, webStorageType } from '../../../utils/web
 
 import { isSampled } from './sampling';
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
-import { addSessionMetadataToNextSession, createUserSessionObject, getUserSessionUpdater } from './sessionManagerUtils';
+import {
+  addSessionMetadataToNextSession,
+  cleanUpSessionMetaAttributes,
+  createUserSessionObject,
+  getUserSessionUpdater,
+} from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
 export class PersistentSessionsManager {
@@ -27,7 +32,11 @@ export class PersistentSessionsManager {
   }
 
   static storeUserSession(session: FaroUserSession): void {
-    setItem(STORAGE_KEY, JSON.stringify(session), PersistentSessionsManager.storageTypeLocal);
+    setItem(
+      STORAGE_KEY,
+      JSON.stringify(cleanUpSessionMetaAttributes(session)),
+      PersistentSessionsManager.storageTypeLocal
+    );
   }
 
   static fetchUserSession(): FaroUserSession | null {

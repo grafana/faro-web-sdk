@@ -66,13 +66,17 @@ export class SessionInstrumentation extends BaseInstrumentation {
     let sessionId = sessionsConfig.session?.id;
     let sessionAttributes = sessionsConfig.session?.attributes;
 
+    // cleanup protected attributes. These shall only be set by the session manager
+    delete sessionAttributes?.['isSampled'];
+    delete sessionAttributes?.['previousSession'];
+
     let lifecycleType: LifecycleType;
 
     if (isUserSessionValid(userSession)) {
       sessionId = userSession?.sessionId;
       sessionAttributes = {
-        ...userSession?.sessionMeta?.attributes,
         ...sessionAttributes,
+        ...userSession?.sessionMeta?.attributes,
         isSampled: userSession!.isSampled.toString(),
       };
       lifecycleType = EVENT_SESSION_RESUME;
@@ -142,12 +146,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       const { sessionMeta: initialSessionMeta, lifecycleType } = this.createInitialSessionMeta(sessionTracking);
 
-      SessionManager.storeUserSession(
-        createUserSessionObject({
+      SessionManager.storeUserSession({
+        ...createUserSessionObject({
           sessionId: initialSessionMeta.id,
           isSampled: initialSessionMeta.attributes?.['isSampled'] === 'true',
-        })
-      );
+        }),
+        sessionMeta: initialSessionMeta,
+      });
 
       this.notifiedSession = initialSessionMeta;
       this.api.setSession(initialSessionMeta);
