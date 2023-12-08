@@ -178,7 +178,7 @@ describe('SessionInstrumentation', () => {
     expect(event.payload.name).toEqual(EVENT_SESSION_EXTEND);
   });
 
-  it('Initialize session meta with id and attributes provided via the initial session property.', () => {
+  it('Initialize session meta with user defined id and attributes provided via the initial session property.', () => {
     const mockSessionMeta: MetaSession = {
       id: 'new-session',
       attributes: {
@@ -199,6 +199,48 @@ describe('SessionInstrumentation', () => {
     );
 
     expect(metas.value.session).toStrictEqual(mockSessionMeta);
+  });
+
+  it('Adds user defined attributes to the extended session meta, ensure to not overwrite user provided static attributes.', () => {
+    const mockSessionMeta: MetaSession = {
+      id: 'new-session',
+      attributes: {
+        foo: 'bar',
+        isSampled: 'true',
+      },
+    };
+
+    const { api, metas } = initializeFaro(
+      mockConfig({
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          session: mockSessionMeta,
+          samplingRate: 1, // default
+        },
+      })
+    );
+
+    expect(metas.value.session).toStrictEqual(mockSessionMeta);
+
+    expect(metas.value.session).toStrictEqual({
+      ...mockSessionMeta,
+      attributes: {
+        ...mockSessionMeta.attributes,
+      },
+    });
+
+    // attribute foo: 'abc' will be removed because foo is already defined as a static attribute
+    api.setSession({ id: 'extended-session-id', attributes: { location: 'neptun', foo: 'abc' } });
+
+    expect(metas.value.session).toStrictEqual({
+      id: 'extended-session-id',
+      attributes: {
+        ...mockSessionMeta.attributes,
+        location: 'neptun',
+        previousSession: 'new-session',
+      },
+    });
   });
 
   it('creates new session meta for browser with no faro session stored in web storage.', () => {
