@@ -2,6 +2,9 @@
 
 ## Next
 
+- feat (`@grafana/faro-web-sdk`): provide `sessionIdGenerator()` which Faro will use instead of the
+  internal sessionId generator if configured (#421).
+
 ## 1.3.2
 
 - fix (`@grafana/faro-web-sdk`): Fixed an issue where the session meta was missing in session
