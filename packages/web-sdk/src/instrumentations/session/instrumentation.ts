@@ -71,9 +71,11 @@ export class SessionInstrumentation extends BaseInstrumentation {
     if (isUserSessionValid(userSession)) {
       sessionId = userSession?.sessionId;
       sessionAttributes = {
+        ...sessionAttributes,
         ...userSession?.sessionMeta?.attributes,
         isSampled: userSession!.isSampled.toString(),
       };
+
       lifecycleType = EVENT_SESSION_RESUME;
     } else {
       sessionId = sessionId ?? createSession().id;
