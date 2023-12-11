@@ -4,38 +4,64 @@ import type { EventsAPI } from '@grafana/faro-core';
 import { NAVIGATION_ENTRY } from './performanceConstants';
 import { entryUrlIsIgnored, objectValuesToString } from './util';
 
-export function observeNavigationTimings(
-  resolveNavigationTimingReceived: (value: unknown) => void,
-  pushEvent: EventsAPI['pushEvent'],
-  ignoredUrls: Array<string | RegExp>
-) {
-  const observer = new PerformanceObserver((observedEntries) => {
-    const entries = observedEntries.getEntries();
+// export function observeNavigationTimings(
+//   resolveNavigationTimingReceived: (value: unknown) => void,
+//   pushEvent: EventsAPI['pushEvent'],
+//   ignoredUrls: Array<string | RegExp>
+// ) {
+//   const observer = new PerformanceObserver((observedEntries) => {
+//     const entries = observedEntries.getEntries();
 
-    for (const navigationEntryRaw of entries) {
-      const name = navigationEntryRaw.name;
+//     console.log('entries :>> ', entries);
 
-      if (entryUrlIsIgnored(ignoredUrls, name)) {
-        return;
-      }
+//     for (const navigationEntryRaw of entries) {
+//       const name = navigationEntryRaw.name;
 
-      const faroNavigationEntry = {
-        name,
-        navigationId: genShortID(),
-        data: {
-          ...navigationEntryRaw.toJSON(),
-        },
-      };
+//       if (entryUrlIsIgnored(ignoredUrls, name)) {
+//         return;
+//       }
 
-      console.log('faroNavigationEntry :>> ', faroNavigationEntry);
+//       const faroNavigationEntry = {
+//         name,
+//         faroNavigationId: genShortID(),
+//         ...navigationEntryRaw.toJSON(),
+//       };
 
-      pushEvent('faro.performance.navigation', objectValuesToString(faroNavigationEntry));
-      resolveNavigationTimingReceived(faroNavigationEntry);
-    }
-  });
+//       console.log('faroNavigationEntry :>> ', faroNavigationEntry);
 
-  observer.observe({
-    type: NAVIGATION_ENTRY,
-    buffered: true,
-  });
+//       pushEvent('faro.performance.navigation', objectValuesToString(faroNavigationEntry));
+//       resolveNavigationTimingReceived(faroNavigationEntry);
+//     }
+//   });
+
+//   observer.observe({
+//     type: NAVIGATION_ENTRY,
+//     buffered: true,
+//   });
+// }
+
+export function getNavigationTimings(pushEvent: EventsAPI['pushEvent'], ignoredUrls: Array<string | RegExp>) {
+  const [navigationEntryRaw] = performance.getEntriesByType(NAVIGATION_ENTRY);
+
+  if (!navigationEntryRaw) {
+    return;
+  }
+
+  const name = navigationEntryRaw.name;
+
+  if (entryUrlIsIgnored(ignoredUrls, name)) {
+    return;
+  }
+
+  const faroNavigationEntry = {
+    name,
+    faroNavigationId: genShortID(),
+    ...navigationEntryRaw.toJSON(),
+  };
+
+  console.log('faroNavigationEntry :>> ', faroNavigationEntry);
+
+  pushEvent('faro.performance.navigation', objectValuesToString(faroNavigationEntry));
+
+  return faroNavigationEntry;
 }
