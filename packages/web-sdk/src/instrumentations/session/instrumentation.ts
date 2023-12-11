@@ -142,12 +142,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       const { sessionMeta: initialSessionMeta, lifecycleType } = this.createInitialSessionMeta(sessionTracking);
 
-      SessionManager.storeUserSession(
-        createUserSessionObject({
+      SessionManager.storeUserSession({
+        ...createUserSessionObject({
           sessionId: initialSessionMeta.id,
           isSampled: initialSessionMeta.attributes?.['isSampled'] === 'true',
-        })
-      );
+        }),
+        sessionMeta: initialSessionMeta,
+      });
 
       this.notifiedSession = initialSessionMeta;
       this.api.setSession(initialSessionMeta);

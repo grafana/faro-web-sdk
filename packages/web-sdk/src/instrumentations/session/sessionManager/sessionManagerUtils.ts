@@ -74,10 +74,8 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
     sessionMeta: {
       id: newSession.sessionId,
       attributes: {
-        ...(faro.metas.value.session?.attributes ?? {}),
-        // order matters, new session meta created with setSession() shall not overwrite attributes with the same name which were manually configured on initialize.
         ...faro.config.sessionTracking?.session?.attributes,
-        // order matters, previousSession and isSampled overwrites attributes from config with the same.
+        ...(faro.metas.value.session?.attributes ?? {}),
         ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
         isSampled: newSession.isSampled.toString(),
       },
