@@ -7,6 +7,7 @@ import {
   ViewInstrumentation,
   WebVitalsInstrumentation,
 } from '../instrumentations';
+import { PerformanceInstrumentation } from '../instrumentations/performance';
 
 import type { GetWebInstrumentationsOptions } from './types';
 
@@ -16,6 +17,7 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
     new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
     new ViewInstrumentation(),
+    new PerformanceInstrumentation(),
   ];
 
   if (options.captureConsole !== false) {
