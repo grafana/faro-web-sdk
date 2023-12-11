@@ -8,16 +8,16 @@ export function objectValuesToString(object: Record<string, any> = {}): Record<s
       o[key] =
         value.length === 0
           ? JSON.stringify(value)
-          : value.map((arrayValue: any) => objectValuesToString(arrayValue)).toString();
+          : String(value.map((arrayValue: any) => objectValuesToString(arrayValue)));
       continue;
     }
 
     if (isObject(value)) {
-      o[key] = objectValuesToString();
+      o[key] = objectValuesToString(value);
       continue;
     }
 
-    o[key] = value.toString();
+    o[key] = String(value);
   }
 
   return o;
