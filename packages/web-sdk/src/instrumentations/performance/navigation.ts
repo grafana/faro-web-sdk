@@ -2,7 +2,7 @@ import { genShortID } from '@grafana/faro-core';
 import type { EventsAPI } from '@grafana/faro-core';
 
 import { NAVIGATION_ENTRY } from './performanceConstants';
-import { calculateNavigationTimings, calculateResourceTimings, entryUrlIsIgnored } from './util';
+import { calculateNavigationTimings, calculateResourceTimings, entryUrlIsIgnored } from './performanceUtils';
 
 export async function getNavigationTimings(pushEvent: EventsAPI['pushEvent'], ignoredUrls: Array<string | RegExp>) {
   let faroNavigationEntrySend: (value: unknown) => void;
