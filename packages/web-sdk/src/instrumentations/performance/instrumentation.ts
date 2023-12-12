@@ -1,8 +1,8 @@
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
 import { getNavigationTimings } from './navigation';
+import { onDocumentReady, performanceObserverSupported } from './performanceUtils';
 import { observeResourceTimings } from './resource';
-import { onDocumentReady, performanceObserverSupported } from './util';
 
 export class PerformanceInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-performance';
