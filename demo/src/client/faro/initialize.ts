@@ -35,11 +35,10 @@ export function initializeFaro(): Faro {
       }),
       new XHRInstrumentation(),
     ],
-    batching: {
-      // Batching is enabled by default and there is normally no reason to disable it.
-      // We did it in the demo so users can inspect each single requests sent due to certain interactions.
-      enabled: false,
-    },
+    // batching: {
+    // disable batching if you want to inspect a single request per signal
+    //   enabled: false,
+    // },
     app: {
       name: env.client.packageName,
       version: env.package.version,
