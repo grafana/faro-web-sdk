@@ -56,6 +56,30 @@ describe('sessionManagerUtils', () => {
     });
   });
 
+  it('creates new user session object and uses user defined sessionIdGenerator.', () => {
+    const customGeneratedSessionId = 'my-custom-id';
+
+    const config = mockConfig({
+      sessionTracking: {
+        enabled: true,
+        sessionIdGenerator() {
+          return customGeneratedSessionId;
+        },
+      },
+    });
+
+    initializeFaro(config);
+
+    const newSessionWithInitialSessionId = createUserSessionObject();
+
+    expect(newSessionWithInitialSessionId).toStrictEqual({
+      sessionId: customGeneratedSessionId,
+      lastActivity: fakeSystemTime,
+      started: fakeSystemTime,
+      isSampled: true,
+    });
+  });
+
   it('checks if user session is valid.', () => {
     jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockSessionId);
 
