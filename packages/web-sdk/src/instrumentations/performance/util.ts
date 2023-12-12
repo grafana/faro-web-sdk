@@ -39,8 +39,8 @@ export function calculateResourceTimings(resourceEntryRaw: any): FaroResourceTim
     protocol: resourceEntryRaw.nextHopProtocol,
     is304: String(
       resourceEntryRaw.encodedBodySize > 0 &&
-        resourceEntryRaw.tranferSize > 0 &&
-        resourceEntryRaw.tranferSize < resourceEntryRaw.encodedBodySize
+        resourceEntryRaw.transferSize > 0 &&
+        resourceEntryRaw.transferSize < resourceEntryRaw.encodedBodySize
     ),
   };
 }
