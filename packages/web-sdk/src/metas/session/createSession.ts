@@ -1,9 +1,11 @@
 import { genShortID } from '@grafana/faro-core';
 import type { MetaSession } from '@grafana/faro-core';
 
+import { faro } from '../..';
+
 export function createSession(attributes?: MetaSession['attributes']): MetaSession {
   return {
-    id: genShortID(),
+    id: faro.config.sessionTracking?.generateSessionId?.() ?? genShortID(),
     attributes,
   };
 }

@@ -10,10 +10,17 @@ type CreateUserSessionObjectParams = {
 };
 
 export function createUserSessionObject({
-  sessionId = faro.config?.sessionTracking?.generateSessionId?.() ?? genShortID(),
+  sessionId,
   isSampled = true,
 }: CreateUserSessionObjectParams = {}): FaroUserSession {
   const now = dateNow();
+
+  const generateSessionId = faro.config?.sessionTracking?.generateSessionId;
+
+  console.log('sessionId :>> ', sessionId);
+  if (sessionId == null) {
+    sessionId = typeof generateSessionId === 'function' ? generateSessionId() : genShortID();
+  }
 
   return {
     sessionId,
