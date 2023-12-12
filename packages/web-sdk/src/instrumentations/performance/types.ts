@@ -1,6 +1,6 @@
 export type FaroNavigationTiming = Readonly<{
   // the complete time it took from the start of the navigation till loadEventEnd
-  pageNavigationTime: string;
+  totalNavigationTime: string;
   // was the page hidden or visible during load
   visibilityState: DocumentVisibilityState;
   // HTML processing time: The parsing of the initial HTML document. This has mostly only relevance for big initial HTML documents

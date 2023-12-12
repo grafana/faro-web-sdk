@@ -72,9 +72,8 @@ export function calculateResourceTimings(resourceEntryRaw: any): FaroResourceTim
 }
 
 export function calculateNavigationTimings(navigationEntryRaw: any): FaroNavigationTiming {
-  console.log('navigationEntryRaw :>> ', navigationEntryRaw);
   return {
-    pageNavigationTime: String(navigationEntryRaw.duration),
+    totalNavigationTime: String(navigationEntryRaw.duration),
     visibilityState: document.visibilityState,
     documentProcessingDuration: String(navigationEntryRaw.loadEventEnd - navigationEntryRaw.responseEnd),
     pagLoadTime: String(navigationEntryRaw.domContentLoadedEventStart - navigationEntryRaw.fetchStart),

@@ -25,8 +25,6 @@ export function observeResourceTimings(
         faroResourceId: genShortID(),
       };
 
-      console.log('faroResourceEntry :>> ', faroResourceEntry);
-
       pushEvent('faro.performance.resource', faroResourceEntry);
     }
   });
