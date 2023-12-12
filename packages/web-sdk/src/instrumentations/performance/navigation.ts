@@ -7,11 +7,14 @@ import { NAVIGATION_ENTRY } from './performanceConstants';
 import { calculateNavigationTimings, calculateResourceTimings, entryUrlIsIgnored } from './performanceUtils';
 import type { FaroNavigationEntry } from './types';
 
-export async function getNavigationTimings(pushEvent: EventsAPI['pushEvent'], ignoredUrls: Array<string | RegExp>) {
+export async function getNavigationTimings(
+  pushEvent: EventsAPI['pushEvent'],
+  ignoredUrls: Array<string | RegExp>
+): Promise<FaroNavigationEntry> {
   const NAVIGATION_ID_STORAGE_KEY = '__FARO_LAST_NAVIGATION_ID__';
 
-  let faroNavigationEntryResolve: (value: unknown) => void;
-  const faroNavigationEntry = new Promise((resolve) => {
+  let faroNavigationEntryResolve: (value: FaroNavigationEntry) => void;
+  const faroNavigationEntry = new Promise<FaroNavigationEntry>((resolve) => {
     faroNavigationEntryResolve = resolve;
   });
 
