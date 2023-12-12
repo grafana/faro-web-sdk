@@ -2,8 +2,7 @@
 
 ## Next
 
-fix (`@grafana/faro-web-sdk`): user defined session attributes added during initialize were not
-picked up (#420)
+## 1.3.3
 
 - fix (`@grafana/faro-web-sdk`): user defined session attributes added during initialize were not
   picked up (#420)
