@@ -17,7 +17,6 @@ export function createUserSessionObject({
 
   const generateSessionId = faro.config?.sessionTracking?.generateSessionId;
 
-  console.log('sessionId :>> ', sessionId);
   if (sessionId == null) {
     sessionId = typeof generateSessionId === 'function' ? generateSessionId() : genShortID();
   }
