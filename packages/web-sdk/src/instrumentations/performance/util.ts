@@ -1,5 +1,7 @@
 import { isArray, isObject } from '@grafana/faro-core';
 
+import type { FaroNavigationTiming, FaroResourceTiming } from './types';
+
 export function objectValuesToString(object: Record<string, any> = {}): Record<string, string> {
   const o: Record<string, any> = {};
 
@@ -43,32 +45,23 @@ export function onDocumentReady(handleReady: () => void) {
   }
 }
 
-export function calculateResourceTimings(resourceEntryRaw: any) {
-  // console.log('resourceEntryRaw :>> ', resourceEntryRaw);
+export function calculateResourceTimings(resourceEntryRaw: any): FaroResourceTiming {
   return {
-    // Measuring TCP handshake time (connectEnd - connectStart)
     tcpHandshakeTime: String(resourceEntryRaw.connectEnd - resourceEntryRaw.connectStart),
-    // DNS lookup time (domainLookupEnd - domainLookupStart)
     dnsLookupTime: String(resourceEntryRaw.domainLookupEnd - resourceEntryRaw.domainLookupStart),
-    // Measuring redirection time (redirectEnd - redirectStart)
-    redirectLookupTime: String(resourceEntryRaw.redirectEnd - resourceEntryRaw.redirectStart),
-    // Measuring request time (responseStart - requestStart)
-    requestTime: String(resourceEntryRaw.responseStart - resourceEntryRaw.requestStart),
-    // Measuring TLS negotiation time (requestStart - secureConnectionStart)
     tlsNegotiationTime: String(resourceEntryRaw.requestStart - resourceEntryRaw.secureConnectionStart),
-    // Measuring time to fetch (without redirects) (responseEnd - fetchStart)
+    redirectLookupTime: String(resourceEntryRaw.redirectEnd - resourceEntryRaw.redirectStart),
+    requestTime: String(resourceEntryRaw.responseStart - resourceEntryRaw.requestStart),
     fetchTime: String(resourceEntryRaw.responseEnd - resourceEntryRaw.fetchStart),
-    // Measuring ServiceWorker processing time (fetchStart - workerStart)
     serviceWorkerProcessingTime: String(resourceEntryRaw.fetchStart - resourceEntryRaw.workerStart),
-    // Checking if content was compressed (decodedBodySize should not be encodedBodySize)
+
     isCompressed: String(resourceEntryRaw.decodedBodySize !== resourceEntryRaw.encodedBodySize),
-    // Checking if local caches were hit (transferSize should be 0)
+    // decodedBodySize: String(resourceEntryRaw.encodedBodySize),
+    // unCompressedBodySize: String(resourceEntryRaw.decodedBodySize),
+
     isCacheHit: String(resourceEntryRaw.transferSize === 0),
-    // Checking if the correct resources are render-blocking (renderBlockingStatus)
-    renderBlocking: resourceEntryRaw.renderBlockingStatus ?? 'not-supported-by-browser',
-    // Checking if modern and fast protocols are used (nextHopProtocol should be HTTP/2 or HTTP/3)
+    renderBlocking: resourceEntryRaw.renderBlockingStatus ?? 'unknown',
     protocol: resourceEntryRaw.nextHopProtocol,
-    // 304 Not Modified
     is304: String(
       resourceEntryRaw.encodedBodySize > 0 &&
         resourceEntryRaw.tranferSize > 0 &&
@@ -77,5 +70,22 @@ export function calculateResourceTimings(resourceEntryRaw: any) {
   };
 }
 
-// // Measuring interim request time (firstInterimResponseStart - requestStart)
-// interimRequestTime: String(resourceEntryRaw.firstInterimResponseStart - resourceEntryRaw.requestStart),
+export function calculateNavigationTimings(navigationEntryRaw: any): FaroNavigationTiming {
+  return {
+    pageNavigationTime: String(navigationEntryRaw.duration),
+    visibilityState: document.visibilityState,
+    documentProcessingDuration: String(navigationEntryRaw.loadEventEnd - navigationEntryRaw.responseEnd),
+    pagLoadTime: String(navigationEntryRaw.domContentLoadedEventStart - navigationEntryRaw.fetchStart),
+    scriptProcessingDuration: String(
+      navigationEntryRaw.domContentLoadedEventEnd - navigationEntryRaw.domContentLoadedEventStart
+    ),
+    pageChildrenProcessingDuration: String(
+      navigationEntryRaw.loadEventEnd - navigationEntryRaw.domContentLoadedEventEnd
+    ),
+    ttfb: String(navigationEntryRaw.responseStart - navigationEntryRaw.navigationStart),
+  };
+}
+
+// TODO: q: apply compression in a later iteration?
+// export function performanceTimingCompressor() {}
+// export function navigationTimingCompressor() {}

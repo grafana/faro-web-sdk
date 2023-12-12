@@ -2,7 +2,7 @@ import { genShortID } from '@grafana/faro-core';
 import type { EventsAPI } from '@grafana/faro-core';
 
 import { NAVIGATION_ENTRY } from './performanceConstants';
-import { calculateResourceTimings, entryUrlIsIgnored, objectValuesToString } from './util';
+import { calculateNavigationTimings, calculateResourceTimings, entryUrlIsIgnored } from './util';
 
 export function getNavigationTimings(pushEvent: EventsAPI['pushEvent'], ignoredUrls: Array<string | RegExp>) {
   const [navigationEntryRaw] = performance.getEntriesByType(NAVIGATION_ENTRY);
@@ -23,14 +23,7 @@ export function getNavigationTimings(pushEvent: EventsAPI['pushEvent'], ignoredU
 
   console.log('faroNavigationEntry :>> ', faroNavigationEntry);
 
-  pushEvent('faro.performance.navigation', objectValuesToString(faroNavigationEntry));
+  pushEvent('faro.performance.navigation', faroNavigationEntry);
 
   return faroNavigationEntry;
-}
-
-function calculateNavigationTimings(navigationEntryRaw: any) {
-  return {
-    loadTime: String(navigationEntryRaw.duration),
-    visibilityState: document.visibilityState,
-  };
 }
