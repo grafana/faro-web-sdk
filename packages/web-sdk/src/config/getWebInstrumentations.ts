@@ -13,11 +13,11 @@ import type { GetWebInstrumentationsOptions } from './types';
 
 export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {
   const instrumentations: Instrumentation[] = [
+    new PerformanceInstrumentation(),
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
     new ViewInstrumentation(),
-    new PerformanceInstrumentation(),
   ];
 
   if (options.captureConsole !== false) {
