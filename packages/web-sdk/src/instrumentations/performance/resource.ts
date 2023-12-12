@@ -27,7 +27,6 @@ export function observeResourceTimings(
 
       console.log('faroResourceEntry :>> ', faroResourceEntry);
 
-      // pushEvent('faro.performance.resource', objectValuesToString(faroResourceEntry));
       pushEvent('faro.performance.resource', faroResourceEntry);
     }
   });

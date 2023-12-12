@@ -2,6 +2,7 @@ import { isArray, isObject } from '@grafana/faro-core';
 
 import type { FaroNavigationTiming, FaroResourceTiming } from './types';
 
+// TODO: maybe remove in case we don't need it anymore
 export function objectValuesToString(object: Record<string, any> = {}): Record<string, string> {
   const o: Record<string, any> = {};
 
@@ -71,6 +72,7 @@ export function calculateResourceTimings(resourceEntryRaw: any): FaroResourceTim
 }
 
 export function calculateNavigationTimings(navigationEntryRaw: any): FaroNavigationTiming {
+  console.log('navigationEntryRaw :>> ', navigationEntryRaw);
   return {
     pageNavigationTime: String(navigationEntryRaw.duration),
     visibilityState: document.visibilityState,
@@ -82,7 +84,7 @@ export function calculateNavigationTimings(navigationEntryRaw: any): FaroNavigat
     pageChildrenProcessingDuration: String(
       navigationEntryRaw.loadEventEnd - navigationEntryRaw.domContentLoadedEventEnd
     ),
-    ttfb: String(navigationEntryRaw.responseStart - navigationEntryRaw.navigationStart),
+    ttfb: String(navigationEntryRaw.responseStart - navigationEntryRaw.fetchStart),
   };
 }
 
