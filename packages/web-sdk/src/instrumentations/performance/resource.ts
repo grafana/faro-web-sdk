@@ -3,10 +3,10 @@ import type { EventsAPI } from '@grafana/faro-core';
 
 import { RESOURCE_ENTRY } from './performanceConstants';
 import { calculateResourceTimings, entryUrlIsIgnored } from './performanceUtils';
-import type { FaroNavigationTiming } from './types';
+import type { FaroNavigationEntry } from './types';
 
 export function observeResourceTimings(
-  parentNavigationEntry: FaroNavigationTiming,
+  parentNavigationEntry: FaroNavigationEntry,
   pushEvent: EventsAPI['pushEvent'],
   ignoredUrls: Array<string | RegExp>
 ) {

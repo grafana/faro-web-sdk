@@ -14,8 +14,8 @@ export class PerformanceInstrumentation extends BaseInstrumentation {
     }
 
     onDocumentReady(() => {
-      const faroNavigationTiming = getNavigationTimings(this.api.pushEvent, this.getIgnoreUrls());
-      observeResourceTimings(faroNavigationTiming, this.api.pushEvent, this.getIgnoreUrls());
+      const faroNavigationEntry = getNavigationTimings(this.api.pushEvent, this.getIgnoreUrls());
+      observeResourceTimings(faroNavigationEntry, this.api.pushEvent, this.getIgnoreUrls());
     });
   }
 
