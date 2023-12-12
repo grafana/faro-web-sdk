@@ -36,9 +36,9 @@ export type FaroResourceTiming = Readonly<{
   // Checking if local caches were hit (transferSize should be 0)
   isCacheHit: string;
   // Checking if the correct resources are render-blocking (renderBlockingStatus)
-  renderBlocking: any;
+  renderBlocking: 'blocking' | 'non-blocking' | 'unknown';
   // Checking if modern and fast protocols are used (nextHopProtocol should be HTTP/2 or HTTP/3)
-  protocol: any;
+  protocol: string;
   // 304 Not Modified
   is304: string;
 }>;

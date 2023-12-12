@@ -1,37 +1,38 @@
-const navigationAndResourceEntries = [
+// the values of this timings are contrived for testing.They do not necessarily reflect reality.
+export const navigationAndResourceEntries = [
   {
     name: 'http://entry-one',
     toJSON: () => ({
       name: 'http://entry-one',
       entryType: 'navigation',
       startTime: 0,
-      duration: 544,
+      duration: 800,
       initiatorType: 'navigation',
       nextHopProtocol: 'http/1.1',
       workerStart: 0,
       redirectStart: 0,
-      redirectEnd: 0,
+      redirectEnd: 1,
       fetchStart: 1,
       domainLookupStart: 24,
-      domainLookupEnd: 24,
+      domainLookupEnd: 25,
       connectStart: 24,
-      connectEnd: 24,
+      connectEnd: 25,
       secureConnectionStart: 0,
       requestStart: 25,
       responseStart: 35,
       responseEnd: 35,
-      transferSize: 3039,
-      encodedBodySize: 2819,
-      decodedBodySize: 2819,
+      transferSize: 2800,
+      encodedBodySize: 2815,
+      decodedBodySize: 2825,
       serverTiming: [],
       unloadEventStart: 37,
       unloadEventEnd: 38,
       domInteractive: 60,
       domContentLoadedEventStart: 543,
-      domContentLoadedEventEnd: 543,
+      domContentLoadedEventEnd: 550,
       domComplete: 543,
       loadEventStart: 543,
-      loadEventEnd: 544,
+      loadEventEnd: 560,
       type: 'reload',
       redirectCount: 0,
     }),
@@ -92,7 +93,7 @@ const navigationAndResourceEntries = [
   },
 ] as const;
 
-const matchNavigationAndResourceEntriesTestResults = [
+export const matchNavigationAndResourceEntriesTestResults = [
   {
     name: 'http://entry-one',
     entryType: 'navigation',
