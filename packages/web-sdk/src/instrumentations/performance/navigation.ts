@@ -4,7 +4,12 @@ import type { EventsAPI } from '@grafana/faro-core';
 import { getItem, setItem, webStorageType } from '../../utils';
 
 import { NAVIGATION_ENTRY } from './performanceConstants';
-import { calculateNavigationTimings, calculateResourceTimings, entryUrlIsIgnored } from './performanceUtils';
+import {
+  calculateNavigationTimings,
+  calculateResourceTimings,
+  compressFaroNavigationEntry,
+  entryUrlIsIgnored,
+} from './performanceUtils';
 import type { FaroNavigationEntry } from './types';
 
 export function getNavigationTimings(
@@ -25,6 +30,8 @@ export function getNavigationTimings(
       return;
     }
 
+    console.log('navigationEntryRaw :>> ', navigationEntryRaw);
+
     const faroNavigationEntry: FaroNavigationEntry = {
       ...calculateResourceTimings(navigationEntryRaw.toJSON()),
       ...calculateNavigationTimings(navigationEntryRaw.toJSON()),
@@ -39,7 +46,8 @@ export function getNavigationTimings(
 
     setItem(NAVIGATION_ID_STORAGE_KEY, faroNavigationEntry.faroNavigationId, webStorageType.session);
 
-    pushEvent('faro.performance.navigation', faroNavigationEntry);
+    // pushEvent('faro.performance.navigation', faroNavigationEntry);
+    pushEvent('faro.performance.navigation', compressFaroNavigationEntry(faroNavigationEntry));
 
     faroNavigationEntryResolve(faroNavigationEntry);
   });

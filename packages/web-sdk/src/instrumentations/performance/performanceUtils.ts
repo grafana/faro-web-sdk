@@ -1,4 +1,4 @@
-import type { FaroNavigationTiming, FaroResourceTiming } from './types';
+import type { FaroNavigationEntry, FaroNavigationTiming, FaroResourceEntry, FaroResourceTiming } from './types';
 
 export function performanceObserverSupported(): boolean {
   return 'PerformanceObserver' in window;
@@ -22,43 +22,148 @@ export function onDocumentReady(handleReady: () => void) {
 
 export function calculateResourceTimings(resourceEntryRaw: any): FaroResourceTiming {
   return {
-    tcpHandshakeTime: String(resourceEntryRaw.connectEnd - resourceEntryRaw.connectStart),
-    dnsLookupTime: String(resourceEntryRaw.domainLookupEnd - resourceEntryRaw.domainLookupStart),
-    tlsNegotiationTime: String(resourceEntryRaw.requestStart - resourceEntryRaw.secureConnectionStart),
-    redirectLookupTime: String(resourceEntryRaw.redirectEnd - resourceEntryRaw.redirectStart),
-    requestTime: String(resourceEntryRaw.responseStart - resourceEntryRaw.requestStart),
-    fetchTime: String(resourceEntryRaw.responseEnd - resourceEntryRaw.fetchStart),
-    serviceWorkerProcessingTime: String(resourceEntryRaw.fetchStart - resourceEntryRaw.workerStart),
-    isCompressed: String(resourceEntryRaw.decodedBodySize !== resourceEntryRaw.encodedBodySize),
+    resourceUrl: resourceEntryRaw.name,
+    tcpHandshakeTime: resourceEntryRaw.connectEnd - resourceEntryRaw.connectStart,
+    dnsLookupTime: resourceEntryRaw.domainLookupEnd - resourceEntryRaw.domainLookupStart,
+    tlsNegotiationTime: resourceEntryRaw.requestStart - resourceEntryRaw.secureConnectionStart,
+    redirectLookupTime: resourceEntryRaw.redirectEnd - resourceEntryRaw.redirectStart,
+    requestTime: resourceEntryRaw.responseStart - resourceEntryRaw.requestStart,
+    fetchTime: resourceEntryRaw.responseEnd - resourceEntryRaw.fetchStart,
+    serviceWorkerProcessingTime: resourceEntryRaw.fetchStart - resourceEntryRaw.workerStart,
+    isCompressed: resourceEntryRaw.decodedBodySize !== resourceEntryRaw.encodedBodySize,
     // decodedBodySize: String(resourceEntryRaw.encodedBodySize),
     // unCompressedBodySize: String(resourceEntryRaw.decodedBodySize),
-    isCacheHit: String(resourceEntryRaw.transferSize === 0),
+    isCacheHit: resourceEntryRaw.transferSize === 0,
     renderBlocking: resourceEntryRaw.renderBlockingStatus ?? 'unknown',
     protocol: resourceEntryRaw.nextHopProtocol,
-    is304: String(
+    is304:
       resourceEntryRaw.encodedBodySize > 0 &&
-        resourceEntryRaw.transferSize > 0 &&
-        resourceEntryRaw.transferSize < resourceEntryRaw.encodedBodySize
-    ),
+      resourceEntryRaw.transferSize > 0 &&
+      resourceEntryRaw.transferSize < resourceEntryRaw.encodedBodySize,
   };
 }
 
 export function calculateNavigationTimings(navigationEntryRaw: any): FaroNavigationTiming {
   return {
-    totalNavigationTime: String(navigationEntryRaw.duration),
+    totalNavigationTime: navigationEntryRaw.duration,
     visibilityState: document.visibilityState,
-    documentProcessingDuration: String(navigationEntryRaw.loadEventEnd - navigationEntryRaw.responseEnd),
-    pagLoadTime: String(navigationEntryRaw.domContentLoadedEventStart - navigationEntryRaw.fetchStart),
-    scriptProcessingDuration: String(
-      navigationEntryRaw.domContentLoadedEventEnd - navigationEntryRaw.domContentLoadedEventStart
-    ),
-    pageChildrenProcessingDuration: String(
-      navigationEntryRaw.loadEventEnd - navigationEntryRaw.domContentLoadedEventEnd
-    ),
-    ttfb: String(navigationEntryRaw.responseStart - navigationEntryRaw.fetchStart),
+    documentProcessingDuration: navigationEntryRaw.loadEventEnd - navigationEntryRaw.responseEnd,
+    pagLoadTime: navigationEntryRaw.domContentLoadedEventStart - navigationEntryRaw.fetchStart,
+    scriptProcessingDuration:
+      navigationEntryRaw.domContentLoadedEventEnd - navigationEntryRaw.domContentLoadedEventStart,
+    pageChildrenProcessingDuration: navigationEntryRaw.loadEventEnd - navigationEntryRaw.domContentLoadedEventEnd,
+    ttfb: navigationEntryRaw.responseStart - navigationEntryRaw.fetchStart,
   };
 }
 
-// TODO: q: apply compression in a later iteration?
-// export function performanceTimingCompressor() {}
-// export function navigationTimingCompressor() {}
+// export function calculateResourceTimings(resourceEntryRaw: any): FaroResourceTiming {
+//   return {
+//     tcpHandshakeTime: String(resourceEntryRaw.connectEnd - resourceEntryRaw.connectStart),
+//     dnsLookupTime: String(resourceEntryRaw.domainLookupEnd - resourceEntryRaw.domainLookupStart),
+//     tlsNegotiationTime: String(resourceEntryRaw.requestStart - resourceEntryRaw.secureConnectionStart),
+//     redirectLookupTime: String(resourceEntryRaw.redirectEnd - resourceEntryRaw.redirectStart),
+//     requestTime: String(resourceEntryRaw.responseStart - resourceEntryRaw.requestStart),
+//     fetchTime: String(resourceEntryRaw.responseEnd - resourceEntryRaw.fetchStart),
+//     serviceWorkerProcessingTime: String(resourceEntryRaw.fetchStart - resourceEntryRaw.workerStart),
+//     isCompressed: String(resourceEntryRaw.decodedBodySize !== resourceEntryRaw.encodedBodySize),
+//     // decodedBodySize: String(resourceEntryRaw.encodedBodySize),
+//     // unCompressedBodySize: String(resourceEntryRaw.decodedBodySize),
+//     isCacheHit: String(resourceEntryRaw.transferSize === 0),
+//     renderBlocking: resourceEntryRaw.renderBlockingStatus ?? 'unknown',
+//     protocol: resourceEntryRaw.nextHopProtocol,
+//     is304: String(
+//       resourceEntryRaw.encodedBodySize > 0 &&
+//         resourceEntryRaw.transferSize > 0 &&
+//         resourceEntryRaw.transferSize < resourceEntryRaw.encodedBodySize
+//     ),
+//   };
+// }
+
+// export function calculateNavigationTimings(navigationEntryRaw: any): FaroNavigationTiming {
+//   return {
+//     totalNavigationTime: String(navigationEntryRaw.duration),
+//     visibilityState: document.visibilityState,
+//     documentProcessingDuration: String(navigationEntryRaw.loadEventEnd - navigationEntryRaw.responseEnd),
+//     pagLoadTime: String(navigationEntryRaw.domContentLoadedEventStart - navigationEntryRaw.fetchStart),
+//     scriptProcessingDuration: String(
+//       navigationEntryRaw.domContentLoadedEventEnd - navigationEntryRaw.domContentLoadedEventStart
+//     ),
+//     pageChildrenProcessingDuration: String(
+//       navigationEntryRaw.loadEventEnd - navigationEntryRaw.domContentLoadedEventEnd
+//     ),
+//     ttfb: String(navigationEntryRaw.responseStart - navigationEntryRaw.fetchStart),
+//   };
+// }
+
+export function compressFaroResourceEntry(entry: FaroResourceEntry): Record<string, string> {
+  const values = [
+    entry.faroNavigationId,
+    entry.resourceUrl,
+    entry.tcpHandshakeTime,
+    entry.dnsLookupTime,
+    entry.tlsNegotiationTime,
+    entry.redirectLookupTime,
+    entry.requestTime,
+    entry.fetchTime,
+    entry.serviceWorkerProcessingTime,
+    entry.isCompressed,
+    entry.isCacheHit,
+    entry.renderBlocking,
+    entry.protocol,
+    entry.is304,
+  ];
+
+  const dropSubMillisecondAccuracy = values.map((v) => {
+    if (typeof v !== 'number') {
+      return v;
+    }
+
+    return Math.ceil(v);
+  });
+
+  return { [entry.faroResourceId]: JSON.stringify(dropSubMillisecondAccuracy) };
+}
+
+export function compressFaroNavigationEntry(entry: FaroNavigationEntry) {
+  const values = [
+    entry.faroPreviousNavigationId,
+
+    entry.resourceUrl,
+    // navigation specific properties
+    entry.totalNavigationTime,
+    entry.visibilityState,
+    entry.documentProcessingDuration,
+    entry.pagLoadTime,
+    entry.scriptProcessingDuration,
+    entry.pageChildrenProcessingDuration,
+    entry.ttfb,
+
+    // resource specific properties. Same as for resource entries
+    // entry.resourceUrl,
+    // entry.faroNavigationId,
+    entry.tcpHandshakeTime,
+    entry.dnsLookupTime,
+    entry.tlsNegotiationTime,
+    entry.redirectLookupTime,
+    entry.requestTime,
+    entry.fetchTime,
+    entry.serviceWorkerProcessingTime,
+    entry.isCompressed,
+    entry.isCacheHit,
+    entry.renderBlocking,
+    entry.protocol,
+    entry.is304,
+  ];
+
+  const dropSubMillisecondAccuracy = values.map((v) => {
+    if (typeof v !== 'number') {
+      return v;
+    }
+
+    return Math.ceil(v);
+  });
+
+  return {
+    [entry.faroNavigationId]: JSON.stringify(dropSubMillisecondAccuracy),
+  };
+}
