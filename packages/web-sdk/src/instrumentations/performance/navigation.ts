@@ -1,35 +1,44 @@
 import { genShortID } from '@grafana/faro-core';
 import type { EventsAPI } from '@grafana/faro-core';
 
+import { getItem, setItem, webStorageType } from '../../utils';
+
 import { NAVIGATION_ENTRY } from './performanceConstants';
 import { calculateNavigationTimings, calculateResourceTimings, entryUrlIsIgnored } from './performanceUtils';
+import type { FaroNavigationEntry } from './types';
 
 export async function getNavigationTimings(pushEvent: EventsAPI['pushEvent'], ignoredUrls: Array<string | RegExp>) {
-  let faroNavigationEntrySend: (value: unknown) => void;
+  const NAVIGATION_ID_STORAGE_KEY = '__FARO_LAST_NAVIGATION_ID__';
+
+  let faroNavigationEntryResolve: (value: unknown) => void;
   const faroNavigationEntry = new Promise((resolve) => {
-    faroNavigationEntrySend = resolve;
+    faroNavigationEntryResolve = resolve;
   });
 
   const observer = new PerformanceObserver((observedEntries) => {
     const [navigationEntryRaw] = observedEntries.getEntries();
 
-    if (!navigationEntryRaw) {
+    if (!navigationEntryRaw || entryUrlIsIgnored(ignoredUrls, navigationEntryRaw.name)) {
       return;
     }
 
-    if (entryUrlIsIgnored(ignoredUrls, navigationEntryRaw.name)) {
-      return;
-    }
-
-    const faroNavigationEntry = {
+    const faroNavigationEntry: FaroNavigationEntry = {
       ...calculateResourceTimings(navigationEntryRaw.toJSON()),
       ...calculateNavigationTimings(navigationEntryRaw.toJSON()),
       faroNavigationId: genShortID(),
     };
 
+    const previousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session);
+
+    if (previousNavigationId) {
+      faroNavigationEntry.faroPreviousNavigationId = previousNavigationId;
+    }
+
+    setItem(NAVIGATION_ID_STORAGE_KEY, faroNavigationEntry.faroNavigationId, webStorageType.session);
+
     pushEvent('faro.performance.navigation', faroNavigationEntry);
 
-    faroNavigationEntrySend(faroNavigationEntry);
+    faroNavigationEntryResolve(faroNavigationEntry);
   });
 
   observer.observe({

@@ -15,7 +15,7 @@ export class PerformanceInstrumentation extends BaseInstrumentation {
 
     onDocumentReady(() => {
       const faroNavigationTiming = getNavigationTimings(this.api.pushEvent, this.getIgnoreUrls());
-      observeResourceTimings(faroNavigationTiming as any, this.api.pushEvent, this.getIgnoreUrls());
+      observeResourceTimings(faroNavigationTiming, this.api.pushEvent, this.getIgnoreUrls());
     });
   }
 
