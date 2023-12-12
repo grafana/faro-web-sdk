@@ -29,11 +29,9 @@ export function calculateResourceTimings(resourceEntryRaw: any): FaroResourceTim
     requestTime: String(resourceEntryRaw.responseStart - resourceEntryRaw.requestStart),
     fetchTime: String(resourceEntryRaw.responseEnd - resourceEntryRaw.fetchStart),
     serviceWorkerProcessingTime: String(resourceEntryRaw.fetchStart - resourceEntryRaw.workerStart),
-
     isCompressed: String(resourceEntryRaw.decodedBodySize !== resourceEntryRaw.encodedBodySize),
     // decodedBodySize: String(resourceEntryRaw.encodedBodySize),
     // unCompressedBodySize: String(resourceEntryRaw.decodedBodySize),
-
     isCacheHit: String(resourceEntryRaw.transferSize === 0),
     renderBlocking: resourceEntryRaw.renderBlockingStatus ?? 'unknown',
     protocol: resourceEntryRaw.nextHopProtocol,
