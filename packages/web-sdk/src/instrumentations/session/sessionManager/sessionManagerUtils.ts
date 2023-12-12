@@ -10,7 +10,7 @@ type CreateUserSessionObjectParams = {
 };
 
 export function createUserSessionObject({
-  sessionId = faro.config?.sessionTracking?.sessionIdGenerator?.() ?? genShortID(),
+  sessionId = faro.config?.sessionTracking?.generateSessionId?.() ?? genShortID(),
   isSampled = true,
 }: CreateUserSessionObjectParams = {}): FaroUserSession {
   const now = dateNow();
@@ -74,6 +74,7 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
     sessionMeta: {
       id: newSession.sessionId,
       attributes: {
+        ...faro.config.sessionTracking?.session?.attributes,
         ...(faro.metas.value.session?.attributes ?? {}),
         ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
         isSampled: newSession.isSampled.toString(),

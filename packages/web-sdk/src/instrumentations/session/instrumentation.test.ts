@@ -56,7 +56,7 @@ describe('SessionInstrumentation', () => {
     removeItemSpy.mockRestore();
   });
 
-  it('will send session start event on initialize', () => {
+  it('will send session start event on initialize.', () => {
     const transport = new MockTransport();
     const session = createSession({ foo: 'bar' });
 
@@ -79,7 +79,7 @@ describe('SessionInstrumentation', () => {
     expect(event.meta.session?.id).toEqual(session.id);
   });
 
-  it('will send session start event for new session and if setSession is called in VolatileSessionManager).', () => {
+  it('will send session start event for new session.', () => {
     const transport = new MockTransport();
     const session = createSession({ foo: 'bar' });
 
@@ -178,7 +178,7 @@ describe('SessionInstrumentation', () => {
     expect(event.payload.name).toEqual(EVENT_SESSION_EXTEND);
   });
 
-  it('Initialize session meta with id and attributes provided via the initial session property.', () => {
+  it('Initialize session meta with user defined id and attributes provided via the initial session property.', () => {
     const mockSessionMeta: MetaSession = {
       id: 'new-session',
       attributes: {
@@ -186,6 +186,138 @@ describe('SessionInstrumentation', () => {
         isSampled: 'true',
       },
     };
+
+    const { metas } = initializeFaro(
+      mockConfig({
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          session: mockSessionMeta,
+          samplingRate: 1, // default
+        },
+      })
+    );
+
+    expect(metas.value.session).toStrictEqual(mockSessionMeta);
+
+    const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
+
+    expect(sessionFromStorage).toStrictEqual({
+      sessionId: 'new-session',
+      isSampled: true,
+
+      // lastActivity and started values are not important for this test so it's ok to take them form the object we verify.
+      lastActivity: sessionFromStorage.lastActivity,
+      started: sessionFromStorage.started,
+
+      sessionMeta: {
+        id: 'new-session',
+        attributes: {
+          foo: 'bar',
+
+          // Faro doesn't care about the isSampled value in the meta form localStorage. But it's not worthy to remove it tbh.
+          isSampled: 'true',
+        },
+      },
+    });
+  });
+
+  it('Adds user defined attributes to the extended session meta.', () => {
+    const mockSessionMeta: MetaSession = {
+      id: 'new-session',
+      attributes: {
+        foo: 'bar',
+        isSampled: 'true',
+      },
+    };
+
+    const { api, metas } = initializeFaro(
+      mockConfig({
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          session: mockSessionMeta,
+          samplingRate: 1, // default
+        },
+      })
+    );
+
+    expect(metas.value.session).toStrictEqual(mockSessionMeta);
+
+    expect(metas.value.session).toStrictEqual({
+      ...mockSessionMeta,
+      attributes: {
+        ...mockSessionMeta.attributes,
+      },
+    });
+
+    let sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
+
+    expect(sessionFromStorage).toStrictEqual({
+      sessionId: 'new-session',
+      isSampled: true,
+
+      // lastActivity and started values are not important for this test so it's ok to take them form the object we verify.
+      lastActivity: sessionFromStorage.lastActivity,
+      started: sessionFromStorage.started,
+
+      sessionMeta: {
+        id: 'new-session',
+        attributes: {
+          foo: 'bar',
+          isSampled: 'true',
+        },
+      },
+    });
+
+    api.setSession({ id: 'extended-session-id', attributes: { location: 'neptun', foo: 'abc' } });
+
+    expect(metas.value.session).toStrictEqual({
+      id: 'extended-session-id',
+      attributes: {
+        ...mockSessionMeta.attributes,
+        location: 'neptun',
+        foo: 'abc',
+        previousSession: 'new-session',
+      },
+    });
+
+    sessionFromStorage = JSON.parse(mockStorage[STORAGE_KEY]!);
+
+    expect(sessionFromStorage).toStrictEqual({
+      sessionId: 'extended-session-id',
+      isSampled: true,
+
+      // lastActivity and started values are not important for this test so it's ok to take them form the object we verify.
+      lastActivity: sessionFromStorage.lastActivity,
+      started: sessionFromStorage.started,
+
+      sessionMeta: {
+        id: 'extended-session-id',
+        attributes: {
+          location: 'neptun',
+          foo: 'abc',
+          previousSession: 'new-session',
+          isSampled: 'true',
+        },
+      },
+    });
+  });
+
+  it('Initialize session meta with meta attributes from session picked up form web storage.', () => {
+    const mockSessionMeta: MetaSession = {
+      id: 'new-session',
+      attributes: {
+        foo: 'bar',
+        location: 'mars',
+        isSampled: 'true',
+      },
+    };
+
+    mockStorage[STORAGE_KEY] = JSON.stringify({
+      sessionId: mockSessionMeta.id,
+      sessionMeta: mockSessionMeta,
+    } as FaroUserSession);
 
     const { metas } = initializeFaro(
       mockConfig({

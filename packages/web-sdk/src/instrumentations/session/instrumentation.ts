@@ -71,9 +71,11 @@ export class SessionInstrumentation extends BaseInstrumentation {
     if (isUserSessionValid(userSession)) {
       sessionId = userSession?.sessionId;
       sessionAttributes = {
+        ...sessionAttributes,
         ...userSession?.sessionMeta?.attributes,
         isSampled: userSession!.isSampled.toString(),
       };
+
       lifecycleType = EVENT_SESSION_RESUME;
     } else {
       sessionId = sessionId ?? createSession().id;
@@ -140,12 +142,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       const { sessionMeta: initialSessionMeta, lifecycleType } = this.createInitialSessionMeta(sessionTracking);
 
-      SessionManager.storeUserSession(
-        createUserSessionObject({
+      SessionManager.storeUserSession({
+        ...createUserSessionObject({
           sessionId: initialSessionMeta.id,
           isSampled: initialSessionMeta.attributes?.['isSampled'] === 'true',
-        })
-      );
+        }),
+        sessionMeta: initialSessionMeta,
+      });
 
       this.notifiedSession = initialSessionMeta;
       this.api.setSession(initialSessionMeta);

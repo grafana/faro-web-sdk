@@ -56,13 +56,13 @@ describe('sessionManagerUtils', () => {
     });
   });
 
-  it('creates new user session object and uses user defined sessionIdGenerator.', () => {
+  it('creates new user session object and uses user defined generateSessionId.', () => {
     const customGeneratedSessionId = 'my-custom-id';
 
     const config = mockConfig({
       sessionTracking: {
         enabled: true,
-        sessionIdGenerator() {
+        generateSessionId() {
           return customGeneratedSessionId;
         },
       },

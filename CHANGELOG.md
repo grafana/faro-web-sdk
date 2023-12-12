@@ -2,8 +2,13 @@
 
 ## Next
 
-- feat (`@grafana/faro-web-sdk`): provide `sessionIdGenerator()` which Faro will use instead of the
-  internal sessionId generator if configured (#421).
+fix (`@grafana/faro-web-sdk`): user defined session attributes added during initialize were not
+picked up (#420)
+
+- fix (`@grafana/faro-web-sdk`): user defined session attributes added during initialize were not
+  picked up (#420)
+- feat (`@grafana/faro-web-sdk`): provide custom `generateSessionId()` function which Faro will use
+  instead of the internal sessionId generator if configured (#421).
 
 ## 1.3.2
 
