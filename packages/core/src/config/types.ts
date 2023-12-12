@@ -34,7 +34,7 @@ export interface Config<P = APIEvent> {
     onSessionChange?: (oldSession: MetaSession | null, newSession: MetaSession) => void;
     samplingRate?: number;
     sampler?: (context: SamplingContext) => number;
-    sessionIdGenerator?: () => string;
+    generateSessionId?: () => string;
   };
 
   user?: MetaUser;
