@@ -5,7 +5,7 @@ import { faro } from '../..';
 
 export function createSession(attributes?: MetaSession['attributes']): MetaSession {
   return {
-    id: faro.config.sessionTracking?.generateSessionId?.() ?? genShortID(),
+    id: faro.config?.sessionTracking?.generateSessionId?.() ?? genShortID(),
     attributes,
   };
 }
