@@ -4,26 +4,79 @@ import type { EventsAPI } from '@grafana/faro-core';
 import { NAVIGATION_ENTRY } from './performanceConstants';
 import { calculateNavigationTimings, calculateResourceTimings, entryUrlIsIgnored } from './util';
 
-export function getNavigationTimings(pushEvent: EventsAPI['pushEvent'], ignoredUrls: Array<string | RegExp>) {
-  const [navigationEntryRaw] = performance.getEntriesByType(NAVIGATION_ENTRY);
+export async function getNavigationTimings(pushEvent: EventsAPI['pushEvent'], ignoredUrls: Array<string | RegExp>) {
+  let faroNavigationEntrySend: (value: unknown) => void;
+  const faroNavigationEntry = new Promise((resolve) => {
+    faroNavigationEntrySend = resolve;
+  });
 
-  if (!navigationEntryRaw) {
-    return;
-  }
+  const observer = new PerformanceObserver((observedEntries) => {
+    const [navigationEntryRaw] = observedEntries.getEntries();
 
-  if (entryUrlIsIgnored(ignoredUrls, navigationEntryRaw.name)) {
-    return;
-  }
+    if (!navigationEntryRaw) {
+      return;
+    }
 
-  const faroNavigationEntry = {
-    ...calculateResourceTimings(navigationEntryRaw.toJSON()),
-    ...calculateNavigationTimings(navigationEntryRaw.toJSON()),
-    faroNavigationId: genShortID(),
-  };
+    if (entryUrlIsIgnored(ignoredUrls, navigationEntryRaw.name)) {
+      return;
+    }
 
-  console.log('faroNavigationEntry :>> ', faroNavigationEntry);
+    const faroNavigationEntry = {
+      ...calculateResourceTimings(navigationEntryRaw.toJSON()),
+      ...calculateNavigationTimings(navigationEntryRaw.toJSON()),
+      faroNavigationId: genShortID(),
+    };
 
-  pushEvent('faro.performance.navigation', faroNavigationEntry);
+    pushEvent('faro.performance.navigation', faroNavigationEntry);
 
-  return faroNavigationEntry;
+    faroNavigationEntrySend(faroNavigationEntry);
+  });
+
+  observer.observe({
+    type: NAVIGATION_ENTRY,
+    buffered: true,
+  });
+
+  return await faroNavigationEntry;
 }
+
+// export function getNavigationTimings(pushEvent: EventsAPI['pushEvent'], ignoredUrls: Array<string | RegExp>) {
+//   observeResourceTimings();
+
+//   const [navigationEntryRaw] = performance.getEntriesByType(NAVIGATION_ENTRY);
+
+//   if (!navigationEntryRaw) {
+//     return;
+//   }
+
+//   if (entryUrlIsIgnored(ignoredUrls, navigationEntryRaw.name)) {
+//     return;
+//   }
+
+//   const faroNavigationEntry = {
+//     ...calculateResourceTimings(navigationEntryRaw.toJSON()),
+//     ...calculateNavigationTimings(navigationEntryRaw.toJSON()),
+//     faroNavigationId: genShortID(),
+//   };
+
+//   console.log('faroNavigationEntry :>> ', faroNavigationEntry);
+
+//   pushEvent('faro.performance.navigation', faroNavigationEntry);
+
+//   return faroNavigationEntry;
+// }
+
+// export function observeResourceTimings() {
+//   const observer = new PerformanceObserver((observedEntries) => {
+//     const entries = observedEntries.getEntries();
+
+//     for (const entry of entries) {
+//       console.log('entry :>> ', entry);
+//     }
+//   });
+
+//   observer.observe({
+//     type: NAVIGATION_ENTRY,
+//     buffered: true,
+//   });
+// }
