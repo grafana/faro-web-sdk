@@ -36,9 +36,9 @@ describe('performanceUtils', () => {
     } as FaroResourceTiming);
   });
 
-  expect(calculateResourceTimings({ transferSize: 1 }).isCacheHit).toBe(true);
-  expect(calculateResourceTimings({ encodedBodySize: 0 }).isCacheHit).toBe(false);
-  expect(calculateResourceTimings({ encodedBodySize: 1, transferSize: 0 }).isCacheHit).toBe(false);
-  expect(calculateResourceTimings({ encodedBodySize: 1, transferSize: 1 }).isCacheHit).toBe(false);
-  expect(calculateResourceTimings({ encodedBodySize: 2, transferSize: 1 }).isCacheHit).toBe(true);
+  expect(calculateResourceTimings({ transferSize: 0 }).isCacheHit).toBe('true');
+  expect(calculateResourceTimings({ encodedBodySize: 0 }).isCacheHit).toBe('false');
+  expect(calculateResourceTimings({ encodedBodySize: 1, transferSize: 0 }).isCacheHit).toBe('false');
+  expect(calculateResourceTimings({ encodedBodySize: 1, transferSize: 1 }).isCacheHit).toBe('false');
+  expect(calculateResourceTimings({ encodedBodySize: 2, transferSize: 1 }).isCacheHit).toBe('true');
 });
