@@ -42,3 +42,9 @@ export type FaroResourceTiming = Readonly<{
   // 304 Not Modified
   is304: string;
 }>;
+
+export type FaroNavigationEntry = {
+  faroNavigationId: string;
+  faroPreviousNavigationId?: string;
+} & FaroNavigationTiming &
+  FaroResourceTiming;
