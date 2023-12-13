@@ -73,7 +73,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
       sessionAttributes = {
         ...sessionAttributes,
         ...userSession?.sessionMeta?.attributes,
-        isSampled: userSession!.isSampled.toString(),
+        isSampled: (userSession!.isSampled || false).toString(),
       };
 
       lifecycleType = EVENT_SESSION_RESUME;
