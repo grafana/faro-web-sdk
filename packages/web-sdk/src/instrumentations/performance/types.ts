@@ -15,7 +15,7 @@ export type FaroNavigationTiming = Readonly<{
 }>;
 
 export type FaroResourceTiming = Readonly<{
-  resourceUrl: string;
+  name: string;
   // Checking if modern and fast protocols are used (nextHopProtocol should be HTTP/2 or HTTP/3)
   protocol: string;
   // Measuring TCP handshake time (connectEnd - connectStart)
@@ -44,7 +44,7 @@ export type FaroResourceTiming = Readonly<{
   is304: boolean;
 }>;
 // export type FaroNavigationTiming = Readonly<{
-//   resourceUrl: string;
+//   name: string;
 //   // the complete time it took from the start of the navigation till loadEventEnd
 //   totalNavigationTime: string;
 //   // was the page hidden or visible during load
@@ -61,7 +61,7 @@ export type FaroResourceTiming = Readonly<{
 // }>;
 
 // export type FaroResourceTiming = Readonly<{
-//   resourceUrl: string;
+//   name: string;
 //   // Measuring TCP handshake time (connectEnd - connectStart)
 //   tcpHandshakeTime: string;
 //   // DNS lookup time (domainLookupEnd - domainLookupStart)
