@@ -49,19 +49,5 @@ export function initializeFaro(): Faro {
 
   faro.api.pushLog(['Faro was initialized']);
 
-  setTimeout(() => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'www.google.com', true);
-
-    xhr.onload = () => {
-      // Request finished. Do processing here.
-      if (xhr.status === 200) {
-        console.log(xhr.responseText);
-      }
-    };
-
-    xhr.send();
-  }, 5000);
-
   return faro;
 }

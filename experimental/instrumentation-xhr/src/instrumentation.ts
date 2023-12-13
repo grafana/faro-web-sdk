@@ -26,8 +26,6 @@ export class XHRInstrumentation extends BaseInstrumentation {
     instrumentXMLHttpRequestOpen();
     instrumentXMLHttpRequestSend();
 
-    console.log('XHRInstrumentation');
-
     /**
      * XMLHttpRequest.prototype.open becomes instrumented and the parameter defaults are properly passed to the original function
      */

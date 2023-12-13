@@ -166,15 +166,7 @@ export function shouldPropagateRumHeaders(
   url: string,
   propagateRumHeaderCorsUrls: FetchInstrumentationOptions['propagateRumHeaderCorsUrls'] = []
 ): boolean {
-  if (url.startsWith('https://example2.com')) {
-    console.log('url :>> ', url);
-  }
   return propagateRumHeaderCorsUrls.some((pattern) => {
-    if (url.startsWith('https://example2.com')) {
-      console.log('pattern :>> ', pattern);
-      console.log('return :>> ', isString(pattern) ? url.includes(pattern) : Boolean(url.match(pattern)));
-    }
-
     return isString(pattern) ? url.includes(pattern) : Boolean(url.match(pattern));
   });
 }
