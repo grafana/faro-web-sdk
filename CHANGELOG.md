@@ -2,6 +2,8 @@
 
 ## Next
 
+- fix (`@grafana/faro-web-sdk`): guard against missing `isSampled` (#425)
+
 ## 1.3.4
 
 - fix (`@grafana/faro-web-sdk`): `generateSessionId()` was executed twice (#423)
