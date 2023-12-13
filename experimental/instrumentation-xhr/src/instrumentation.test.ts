@@ -43,7 +43,8 @@ describe('XHRInstrumentation', () => {
     const fetchSpySetRequestHeader = jest.spyOn(instrumentation, 'originalSetRequestHeader');
 
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://grafana.com');
+    // auto adds rum headers to requests sent to the same origin
+    xhr.open('GET', window.location.origin + '/test');
     expect(fetchSpyOpen).toHaveBeenCalledTimes(1);
 
     xhr.send();
@@ -78,5 +79,59 @@ describe('XHRInstrumentation', () => {
 
     // if URL ignored, don't inject faro session header
     expect(fetchSpySetRequestHeader).toHaveBeenCalledTimes(0);
+  });
+
+  it('Does not add Faro RUM header to requests to a different origin as the current document.', () => {
+    const instrumentation = new XHRInstrumentation({});
+
+    const sessionInstrumentation = new SessionInstrumentation();
+    const faroInstance = initializeFaro(
+      makeCoreConfig(mockConfig({ instrumentations: [instrumentation, sessionInstrumentation] }))!
+    );
+
+    const sessionId = faroInstance.api.getSession()!.id as string;
+    expect(sessionId).not.toBe('');
+
+    const fetchSpyOpen = jest.spyOn(instrumentation, 'originalOpen');
+    const fetchSpySend = jest.spyOn(instrumentation, 'originalSend');
+    const fetchSpySetRequestHeader = jest.spyOn(instrumentation, 'originalSetRequestHeader');
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://grafana.com');
+    expect(fetchSpyOpen).toHaveBeenCalledTimes(1);
+
+    xhr.send();
+    expect(fetchSpySend).toHaveBeenCalledTimes(1);
+
+    // check if faro session has NOT been added to the request headers
+    expect(fetchSpySetRequestHeader).not.toHaveBeenCalledWith(faroRumHeader, makeFaroRumHeaderValue(sessionId));
+  });
+
+  it('Add Faro RUM header to requests to origins configured to have rum headers attached .', () => {
+    const instrumentation = new XHRInstrumentation({
+      propagateRumHeaderCorsUrls: [new RegExp(/grafana/)],
+    });
+
+    const sessionInstrumentation = new SessionInstrumentation();
+    const faroInstance = initializeFaro(
+      makeCoreConfig(mockConfig({ instrumentations: [instrumentation, sessionInstrumentation] }))!
+    );
+
+    const sessionId = faroInstance.api.getSession()!.id as string;
+    expect(sessionId).not.toBe('');
+
+    const fetchSpyOpen = jest.spyOn(instrumentation, 'originalOpen');
+    const fetchSpySend = jest.spyOn(instrumentation, 'originalSend');
+    const fetchSpySetRequestHeader = jest.spyOn(instrumentation, 'originalSetRequestHeader');
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://grafana.com');
+    expect(fetchSpyOpen).toHaveBeenCalledTimes(1);
+
+    xhr.send();
+    expect(fetchSpySend).toHaveBeenCalledTimes(1);
+
+    // check if faro session has NOT been added to the request headers
+    expect(fetchSpySetRequestHeader).toHaveBeenCalledWith(faroRumHeader, makeFaroRumHeaderValue(sessionId));
   });
 });

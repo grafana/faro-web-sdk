@@ -1,7 +1,7 @@
 import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
 
 import { faroRumHeader, makeFaroRumHeaderValue, XHREventType, XHRInstrumentationOptions } from './types';
-import { parseXHREvent, parseXHRHeaders } from './utils';
+import { parseXHREvent, parseXHRHeaders, shouldPropagateRumHeaders } from './utils';
 
 export class XHRInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-xhr';
@@ -25,6 +25,8 @@ export class XHRInstrumentation extends BaseInstrumentation {
     const instrumentation = this;
     instrumentXMLHttpRequestOpen();
     instrumentXMLHttpRequestSend();
+
+    console.log('XHRInstrumentation');
 
     /**
      * XMLHttpRequest.prototype.open becomes instrumented and the parameter defaults are properly passed to the original function
@@ -55,20 +57,27 @@ export class XHRInstrumentation extends BaseInstrumentation {
      */
     function instrumentXMLHttpRequestSend() {
       XMLHttpRequest.prototype.send = function (body?: Document | XMLHttpRequestBodyInit | null | undefined): void {
+        // @ts-expect-error - _url is attached to "this" in the open function above
+        const requestUrl = instrumentation.getRequestUrl(this._url);
+
         // If the request url matches an ignored url, do not instrument the request
         if (
-          // @ts-expect-error - _url is attached to "this" in the open function above
-          instrumentation.ignoredUrls?.some((ignoredUrl) => instrumentation.getRequestUrl(this._url).match(ignoredUrl))
+          instrumentation.ignoredUrls?.some((ignoredUrl) => instrumentation.getRequestUrl(requestUrl).match(ignoredUrl))
         ) {
           return instrumentation.originalSend.apply(this, [body === undefined ? null : body]);
         }
 
         // add Faro RUM header to the request headers
+        const windowOrigin = window.location.origin;
+        const shouldAddRumHeaderToUrl = shouldPropagateRumHeaders(requestUrl, [
+          ...(instrumentation?.options?.propagateRumHeaderCorsUrls ?? []),
+          windowOrigin,
+        ]);
         const sessionId = faro.api.getSession()?.id;
-        if (sessionId != null) {
+
+        if (shouldAddRumHeaderToUrl && sessionId != null) {
           instrumentation.originalSetRequestHeader.apply(this, [faroRumHeader, makeFaroRumHeaderValue(sessionId)]);
         }
-
         this.addEventListener('load', loadEventListener.bind(this));
         this.addEventListener('abort', abortEventListener.bind(this));
         this.addEventListener('error', errorEventListener.bind(this));

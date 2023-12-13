@@ -1,5 +1,6 @@
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
 
+import { XHRInstrumentation } from '@grafana/faro-instrumentation-xhr';
 import {
   initializeFaro as coreInit,
   getWebInstrumentations,
@@ -32,6 +33,7 @@ export function initializeFaro(): Faro {
           },
         },
       }),
+      new XHRInstrumentation(),
     ],
     batching: {
       // Batching is enabled by default and there is normally no reason to disable it.
@@ -46,6 +48,20 @@ export function initializeFaro(): Faro {
   });
 
   faro.api.pushLog(['Faro was initialized']);
+
+  setTimeout(() => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'www.google.com', true);
+
+    xhr.onload = () => {
+      // Request finished. Do processing here.
+      if (xhr.status === 200) {
+        console.log(xhr.responseText);
+      }
+    };
+
+    xhr.send();
+  }, 5000);
 
   return faro;
 }
