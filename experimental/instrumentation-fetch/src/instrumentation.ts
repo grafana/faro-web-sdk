@@ -1,4 +1,4 @@
-import { BaseInstrumentation, faro, globalObject, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, faro, globalObject, isString, VERSION } from '@grafana/faro-core';
 
 import {
   faroRumHeader,
@@ -87,8 +87,14 @@ export class FetchInstrumentation extends BaseInstrumentation {
     }
 
     // add Faro RUM header to the request headers
+    const windowOrigin = window.location.origin;
+    const shouldAddRumHeaderToUrl = shouldPropagateRumHeaders(this.getRequestUrl(input), [
+      ...(this.options?.propagateRumHeaderCorsUrls ?? []),
+      windowOrigin,
+    ]);
     const sessionId = faro.api.getSession()?.id;
-    if (sessionId != null) {
+
+    if (shouldAddRumHeaderToUrl && sessionId != null) {
       request.headers.append(faroRumHeader, makeFaroRumHeaderValue(sessionId));
     }
 
@@ -154,4 +160,21 @@ export class FetchInstrumentation extends BaseInstrumentation {
       });
     };
   }
+}
+
+export function shouldPropagateRumHeaders(
+  url: string,
+  propagateRumHeaderCorsUrls: FetchInstrumentationOptions['propagateRumHeaderCorsUrls'] = []
+): boolean {
+  if (url.startsWith('https://example2.com')) {
+    console.log('url :>> ', url);
+  }
+  return propagateRumHeaderCorsUrls.some((pattern) => {
+    if (url.startsWith('https://example2.com')) {
+      console.log('pattern :>> ', pattern);
+      console.log('return :>> ', isString(pattern) ? url.includes(pattern) : Boolean(url.match(pattern)));
+    }
+
+    return isString(pattern) ? url.includes(pattern) : Boolean(url.match(pattern));
+  });
 }
