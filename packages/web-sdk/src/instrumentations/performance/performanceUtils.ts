@@ -22,7 +22,7 @@ export function onDocumentReady(handleReady: () => void) {
 
 export function calculateResourceTimings(resourceEntryRaw: any): FaroResourceTiming {
   return {
-    resourceUrl: resourceEntryRaw.name,
+    name: resourceEntryRaw.name,
     tcpHandshakeTime: resourceEntryRaw.connectEnd - resourceEntryRaw.connectStart,
     dnsLookupTime: resourceEntryRaw.domainLookupEnd - resourceEntryRaw.domainLookupStart,
     tlsNegotiationTime: resourceEntryRaw.requestStart - resourceEntryRaw.secureConnectionStart,
@@ -98,7 +98,7 @@ export function calculateNavigationTimings(navigationEntryRaw: any): FaroNavigat
 export function compressFaroResourceEntry(entry: FaroResourceEntry): Record<string, string> {
   const values = [
     entry.faroNavigationId,
-    entry.resourceUrl,
+    // entry.name, // name is redundant in proposal 2
     entry.tcpHandshakeTime,
     entry.dnsLookupTime,
     entry.tlsNegotiationTime,
@@ -121,14 +121,21 @@ export function compressFaroResourceEntry(entry: FaroResourceEntry): Record<stri
     return Math.ceil(v);
   });
 
-  return { [entry.faroResourceId]: JSON.stringify(dropSubMillisecondAccuracy) };
+  // return { [entry.faroResourceId]: JSON.stringify(dropSubMillisecondAccuracy) };
+
+  return {
+    faroResourceId: entry.faroResourceId,
+    faroNavigationId: entry.faroNavigationId,
+    name: entry.name,
+    metrics: JSON.stringify(dropSubMillisecondAccuracy),
+  };
 }
 
 export function compressFaroNavigationEntry(entry: FaroNavigationEntry) {
   const values = [
     entry.faroPreviousNavigationId,
 
-    entry.resourceUrl,
+    // entry.name, // name is redundant in proposal 2
     // navigation specific properties
     entry.totalNavigationTime,
     entry.visibilityState,
@@ -139,7 +146,7 @@ export function compressFaroNavigationEntry(entry: FaroNavigationEntry) {
     entry.ttfb,
 
     // resource specific properties. Same as for resource entries
-    // entry.resourceUrl,
+    // entry.name,
     // entry.faroNavigationId,
     entry.tcpHandshakeTime,
     entry.dnsLookupTime,
@@ -163,7 +170,13 @@ export function compressFaroNavigationEntry(entry: FaroNavigationEntry) {
     return Math.ceil(v);
   });
 
+  // return {
+  //   [entry.faroNavigationId]: JSON.stringify(dropSubMillisecondAccuracy),
+  // };
+
   return {
-    [entry.faroNavigationId]: JSON.stringify(dropSubMillisecondAccuracy),
+    faroNavigationId: entry.faroNavigationId,
+    name: entry.name,
+    metrics: JSON.stringify(dropSubMillisecondAccuracy),
   };
 }
