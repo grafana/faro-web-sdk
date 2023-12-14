@@ -1,6 +1,9 @@
+import type { Patterns } from '@grafana/faro-core';
+
 export interface XHRInstrumentationOptions {
   // For these URLs no events will be tracked
   ignoredUrls?: Array<string | RegExp>;
+  propagateRumHeaderCorsUrls?: Patterns;
 }
 
 export enum XHREventType {
