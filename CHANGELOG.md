@@ -2,6 +2,7 @@
 
 ## Next
 
+- fix (`@grafana/faro-web-sdk`): only create a single session_extend event across browsing contexts(#428)
 - fix (`@grafana/faro-web-sdk`): guard against missing `isSampled` (#425)
 - fix (`@grafana/faro-instrumentation-fetch`): only add custom headers to requests sent to the same
   origin as the document (#427)
