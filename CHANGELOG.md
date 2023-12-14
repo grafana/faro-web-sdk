@@ -2,12 +2,11 @@
 
 ## Next
 
-- fix (`@grafana/faro-web-sdk`): only create a single session_extend event across browsing contexts(#428)
+## 1.3.5
+
+- fix (`@grafana/faro-web-sdk`): Multiple session_extend events were emitted if multiple
+  browsing contexts were open when a session was auto-extended (#428)
 - fix (`@grafana/faro-web-sdk`): guard against missing `isSampled` (#425)
-- fix (`@grafana/faro-instrumentation-fetch`): only add custom headers to requests sent to the same
-  origin as the document (#427)
-- fix (`@grafana/faro-instrumentation-xhr`): only add custom headers to requests sent to the same
-  origin as teh document (#427)
 
 ## 1.3.4
 

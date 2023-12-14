@@ -2,6 +2,13 @@
 
 ## Next
 
+## 1.3.0 – 1.3.5
+
+- fix (`@grafana/faro-instrumentation-fetch`): only add custom headers to requests sent to the same
+  origin as the document (#427)
+- fix (`@grafana/faro-instrumentation-xhr`): only add custom headers to requests sent to the same
+  origin as the document (#427)
+
 ## 1.3.0
 
 - Change (`@grafana/faro-transport-otlp-http`): Map log levels to the correct severities as
