@@ -49,19 +49,6 @@ export class PersistentSessionsManager {
       }
     });
 
-    window.addEventListener('storage', (event: StorageEvent) => {
-      if (event.key !== STORAGE_KEY) {
-        return;
-      }
-
-      const newSession: FaroUserSession = JSON.parse(event.newValue ?? '');
-      const previousSession: FaroUserSession = JSON.parse(event.oldValue ?? '');
-
-      if (newSession.sessionId !== previousSession.sessionId) {
-        faro.api?.setSession(newSession.sessionMeta);
-      }
-    });
-
     // Users can call the setSession() method, so we need to sync this with the local storage session
     faro.metas.addListener(function syncSessionIfChangedExternally(meta: Meta) {
       const session = meta.session;
