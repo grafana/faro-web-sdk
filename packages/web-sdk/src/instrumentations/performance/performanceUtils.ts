@@ -40,6 +40,8 @@ export function calculateResourceTimings(resourceEntryRaw: any): FaroResourceTim
       resourceEntryRaw.encodedBodySize > 0 &&
       resourceEntryRaw.transferSize > 0 &&
       resourceEntryRaw.transferSize < resourceEntryRaw.encodedBodySize,
+    initiatorType: resourceEntryRaw.initiatorType,
+    serverTiming: resourceEntryRaw.serverTiming,
   };
 }
 
@@ -53,6 +55,8 @@ export function calculateNavigationTimings(navigationEntryRaw: any): FaroNavigat
       navigationEntryRaw.domContentLoadedEventEnd - navigationEntryRaw.domContentLoadedEventStart,
     pageChildrenProcessingDuration: navigationEntryRaw.loadEventEnd - navigationEntryRaw.domContentLoadedEventEnd,
     ttfb: navigationEntryRaw.responseStart - navigationEntryRaw.fetchStart,
+    // "navigate", "reload", "back_forward" or "prerender".
+    type: navigationEntryRaw.type,
   };
 }
 

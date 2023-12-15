@@ -12,6 +12,7 @@ export type FaroNavigationTiming = Readonly<{
   // Page resources processing duration (children): How long it took to load/parse/render all dependent resources of the page
   pageChildrenProcessingDuration: number;
   ttfb: number;
+  type: 'navigate' | 'reload' | 'back_forward' | 'prerender';
 }>;
 
 export type FaroResourceTiming = Readonly<{
@@ -42,6 +43,8 @@ export type FaroResourceTiming = Readonly<{
   renderBlocking: 'blocking' | 'non-blocking' | 'unknown';
   // 304 Not Modified
   is304: boolean;
+  initiatorType: string;
+  serverTiming: any[];
 }>;
 // export type FaroNavigationTiming = Readonly<{
 //   name: string;
