@@ -4,22 +4,17 @@ import type { EventsAPI } from '@grafana/faro-core';
 import { getItem, setItem, webStorageType } from '../../utils';
 
 import { NAVIGATION_ENTRY } from './performanceConstants';
-import {
-  calculateNavigationTimings,
-  calculateResourceTimings,
-  compressFaroNavigationEntry,
-  entryUrlIsIgnored,
-} from './performanceUtils';
-import type { FaroNavigationEntry } from './types';
+import { calculateFaroNavigationTimings, calculateFaroResourceTimings, entryUrlIsIgnored } from './performanceUtils';
+import type { FaroNavigationItem } from './types';
 
 export function getNavigationTimings(
   pushEvent: EventsAPI['pushEvent'],
   ignoredUrls: Array<string | RegExp>
-): Promise<FaroNavigationEntry> {
+): Promise<FaroNavigationItem> {
   const NAVIGATION_ID_STORAGE_KEY = '__FARO_LAST_NAVIGATION_ID__';
 
-  let faroNavigationEntryResolve: (value: FaroNavigationEntry) => void;
-  const faroNavigationEntryPromise = new Promise<FaroNavigationEntry>((resolve) => {
+  let faroNavigationEntryResolve: (value: FaroNavigationItem) => void;
+  const faroNavigationEntryPromise = new Promise<FaroNavigationItem>((resolve) => {
     faroNavigationEntryResolve = resolve;
   });
 
@@ -32,9 +27,9 @@ export function getNavigationTimings(
 
     console.log('navigationEntryRaw :>> ', navigationEntryRaw);
 
-    const faroNavigationEntry: FaroNavigationEntry = {
-      ...calculateResourceTimings(navigationEntryRaw.toJSON()),
-      ...calculateNavigationTimings(navigationEntryRaw.toJSON()),
+    const faroNavigationEntry: FaroNavigationItem = {
+      ...calculateFaroResourceTimings(navigationEntryRaw.toJSON()),
+      ...calculateFaroNavigationTimings(navigationEntryRaw.toJSON()),
       faroNavigationId: genShortID(),
     };
 
@@ -46,8 +41,7 @@ export function getNavigationTimings(
 
     setItem(NAVIGATION_ID_STORAGE_KEY, faroNavigationEntry.faroNavigationId, webStorageType.session);
 
-    // pushEvent('faro.performance.navigation', faroNavigationEntry);
-    pushEvent('faro.performance.navigation', compressFaroNavigationEntry(faroNavigationEntry));
+    pushEvent('faro.performance.navigation', faroNavigationEntry);
 
     faroNavigationEntryResolve(faroNavigationEntry);
   });
