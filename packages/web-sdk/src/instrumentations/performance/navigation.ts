@@ -25,8 +25,6 @@ export function getNavigationTimings(
       return;
     }
 
-    console.log('navigationEntryRaw :>> ', navigationEntryRaw);
-
     const faroNavigationEntry: FaroNavigationItem = {
       ...calculateFaroResourceTimings(navigationEntryRaw.toJSON()),
       ...calculateFaroNavigationTimings(navigationEntryRaw.toJSON()),
