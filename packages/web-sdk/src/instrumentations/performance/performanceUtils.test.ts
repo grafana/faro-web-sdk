@@ -1,4 +1,4 @@
-import { calculateNavigationTimings, calculateResourceTimings } from './performanceUtils';
+import { calculateFaroNavigationTimings, calculateFaroResourceTimings } from './performanceUtils';
 import { navigationAndResourceEntries } from './performanceUtilsTestData';
 import type { FaroNavigationTiming, FaroResourceTiming } from './types';
 

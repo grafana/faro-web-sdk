@@ -2,11 +2,11 @@ import { genShortID } from '@grafana/faro-core';
 import type { EventsAPI } from '@grafana/faro-core';
 
 import { RESOURCE_ENTRY } from './performanceConstants';
-import { calculateResourceTimings, compressFaroResourceEntry, entryUrlIsIgnored } from './performanceUtils';
-import type { FaroNavigationEntry } from './types';
+import { calculateFaroResourceTimings, entryUrlIsIgnored } from './performanceUtils';
+import type { FaroNavigationItem } from './types';
 
 export function observeResourceTimings(
-  parentNavigationEntry: FaroNavigationEntry,
+  parentNavigationEntry: FaroNavigationItem,
   pushEvent: EventsAPI['pushEvent'],
   ignoredUrls: Array<string | RegExp>
 ) {
@@ -21,13 +21,12 @@ export function observeResourceTimings(
       }
 
       const faroResourceEntry = {
-        ...calculateResourceTimings(resourceEntryRaw.toJSON()),
+        ...calculateFaroResourceTimings(resourceEntryRaw.toJSON()),
         faroNavigationId: parentNavigationEntry.faroNavigationId,
         faroResourceId: genShortID(),
       };
 
-      // pushEvent('faro.performance.resource', faroResourceEntry);
-      pushEvent('faro.performance.resource', compressFaroResourceEntry(faroResourceEntry));
+      pushEvent('faro.performance.resource', faroResourceEntry);
     }
   });
 
