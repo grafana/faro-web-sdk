@@ -1,4 +1,12 @@
-import { LogEvent, LogLevel, TraceEvent, TransportItem, TransportItemType, VERSION } from '@grafana/faro-core';
+import {
+  getTransportBody,
+  LogEvent,
+  LogLevel,
+  TraceEvent,
+  TransportItem,
+  TransportItemType,
+  VERSION,
+} from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import type { LogRecord, Logs } from './payload';
@@ -14,6 +22,17 @@ const logTransportItem: TransportItem<LogEvent> = {
   },
   meta: {},
 } as const;
+
+const largeItem: TransportItem<LogEvent> = {
+  type: TransportItemType.LOG,
+  payload: {
+    context: {},
+    level: LogLevel.INFO,
+    message: Buffer.alloc(60_000, 'I').toString('utf-8'),
+    timestamp: new Date().toISOString(),
+  },
+  meta: {},
+};
 
 const otelTransportPayload: Logs = {
   resourceLogs: [
@@ -302,6 +321,26 @@ describe('OtlpHttpTransport', () => {
         'Content-Type': 'application/json',
       },
       keepalive: true,
+      method: 'POST',
+    });
+  });
+
+  it('will turn off keepalive if the payload length is over 60_000', async () => {
+    const transport = new OtlpHttpTransport({
+      logsURL: 'www.example.com/v1/logs',
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    transport.send([largeItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith('www.example.com/v1/logs', {
+      body: JSON.stringify(getTransportBody([largeItem])),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      keepalive: false,
       method: 'POST',
     });
   });
