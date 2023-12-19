@@ -7,12 +7,12 @@ import { NAVIGATION_ENTRY } from './performanceConstants';
 import { calculateFaroNavigationTimings, calculateFaroResourceTimings, entryUrlIsIgnored } from './performanceUtils';
 import type { FaroNavigationItem } from './types';
 
+const NAVIGATION_ID_STORAGE_KEY = 'com.grafana.faro.lastNavigationId';
+
 export function getNavigationTimings(
   pushEvent: EventsAPI['pushEvent'],
   ignoredUrls: Array<string | RegExp>
 ): Promise<FaroNavigationItem> {
-  const NAVIGATION_ID_STORAGE_KEY = '__FARO_LAST_NAVIGATION_ID__';
-
   let faroNavigationEntryResolve: (value: FaroNavigationItem) => void;
   const faroNavigationEntryPromise = new Promise<FaroNavigationItem>((resolve) => {
     faroNavigationEntryResolve = resolve;
@@ -24,18 +24,14 @@ export function getNavigationTimings(
     if (!navigationEntryRaw || entryUrlIsIgnored(ignoredUrls, navigationEntryRaw.name)) {
       return;
     }
+    const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
 
     const faroNavigationEntry: FaroNavigationItem = {
       ...calculateFaroResourceTimings(navigationEntryRaw.toJSON()),
       ...calculateFaroNavigationTimings(navigationEntryRaw.toJSON()),
       faroNavigationId: genShortID(),
+      faroPreviousNavigationId,
     };
-
-    const previousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session);
-
-    if (previousNavigationId) {
-      faroNavigationEntry.faroPreviousNavigationId = previousNavigationId;
-    }
 
     setItem(NAVIGATION_ID_STORAGE_KEY, faroNavigationEntry.faroNavigationId, webStorageType.session);
 
