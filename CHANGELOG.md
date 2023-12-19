@@ -2,6 +2,9 @@
 
 ## Next
 
+- chore (`@grafana/faro-web-sdk`): change storage key prefix for faro session to use reverse domain
+  notation (#432)
+
 ## 1.3.5
 
 - fix (`@grafana/faro-web-sdk`): Multiple session_extend events were emitted if multiple
