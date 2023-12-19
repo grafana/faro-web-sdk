@@ -7,7 +7,8 @@
 
 - Chore (`@grafana/faro-web-sdk`): change storage key prefix for faro session to use reverse domain
   notation (#432)
-
+- Fix (`@grafana/faro-web-sdk`): instrument navigation and resource timings and calculate common
+  metrics used by Faro (#434)
 - Fix (`@grafana/faro-core`): fix the check for the presence of Event (#436)
 - Fix (`Demo App`): Build error due to missing virtual env (#448)
 
