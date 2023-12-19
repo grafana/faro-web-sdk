@@ -7,6 +7,9 @@ const DEFAULT_BUFFER_SIZE = 30;
 const DEFAULT_CONCURRENCY = 5; // chrome supports 10 total, firefox 17
 const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
 
+const BEACON_BODY_SIZE_LIMIT = 60000;
+const TOO_MANY_REQUESTS = 429;
+
 export class OtlpHttpTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-otlp-http';
   readonly version = VERSION;
@@ -92,11 +95,11 @@ export class OtlpHttpTransport extends BaseTransport {
               ...(apiKey ? { 'x-api-key': apiKey } : {}),
             },
             body,
-            keepalive: true,
+            keepalive: body.length <= BEACON_BODY_SIZE_LIMIT,
             ...(restOfRequestOptions ?? {}),
           })
             .then((response) => {
-              if (response.status === 429) {
+              if (response.status === TOO_MANY_REQUESTS) {
                 updateDisabledUntil(this.getRetryAfterDate(response));
                 this.logWarn(`Too many requests, backing off until ${disabledUntil}`);
               }

@@ -15,6 +15,17 @@ const logTransportItem: TransportItem<LogEvent> = {
   meta: {},
 } as const;
 
+const largeItem: TransportItem<LogEvent> = {
+  type: TransportItemType.LOG,
+  payload: {
+    context: {},
+    level: LogLevel.INFO,
+    message: Buffer.alloc(60_000, 'I').toString('utf-8'),
+    timestamp: '2023-01-27T09:53:01.035Z',
+  },
+  meta: {},
+};
+
 const otelTransportPayload: Logs = {
   resourceLogs: [
     {
@@ -302,6 +313,116 @@ describe('OtlpHttpTransport', () => {
         'Content-Type': 'application/json',
       },
       keepalive: true,
+      method: 'POST',
+    });
+  });
+
+  // it('will turn off keepalive if the payload length is over 60_000', async () => {
+  //   const transport = new OtlpHttpTransport({
+  //     logsURL: 'www.example.com/v1/logs',
+  //   });
+
+  //   transport.internalLogger = mockInternalLogger;
+
+  //   transport.send([largeItem]);
+
+  //   expect(fetch).toHaveBeenCalledTimes(1);
+  //   expect(fetch).toHaveBeenCalledWith('www.example.com/v1/logs', {
+  //     body: JSON.stringify(getTransportBody([largeItem])),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     keepalive: false,
+  //     method: 'POST',
+  //   });
+  // });
+
+  it('will turn off keepalive if the payload length is over 60_000', async () => {
+    const transport = new OtlpHttpTransport({
+      logsURL: 'www.example.com/v1/logs',
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    transport.send([largeItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith('www.example.com/v1/logs', {
+      // body: JSON.stringify({
+      //   resourceLogs: [
+      //     {
+      //       resource: {
+      //         attributes: [],
+      //       },
+      //       scopeLogs: [
+      //         {
+      //           scope: {
+      //             name: '@grafana/faro-web-sdk',
+      //             version: VERSION,
+      //           },
+      //           logRecords: [
+      //             {
+      //               timeUnixNano: 1702986676380000000,
+      //               severityNumber: 9,
+      //               severityText: 'INFO',
+      //               body: {
+      //                 stringValue: largeItem.payload.message,
+      //               },
+      //               attributes: [
+      //                 {
+      //                   key: 'faro.log.context',
+      //                   value: {
+      //                     kvlistValue: { values: [] },
+      //                   },
+      //                 },
+      //               ],
+      //             } as LogRecord,
+      //           ],
+      //         },
+      //       ],
+      //     },
+      //   ],
+      // }),
+      // body: 'a',
+      body: JSON.stringify({
+        resourceLogs: [
+          {
+            resource: {
+              attributes: [],
+            },
+            scopeLogs: [
+              {
+                scope: {
+                  name: '@grafana/faro-web-sdk',
+                  version: VERSION,
+                },
+                logRecords: [
+                  {
+                    timeUnixNano: 1674813181035000000,
+                    severityNumber: 9,
+                    severityText: 'INFO',
+                    body: {
+                      stringValue: largeItem.payload.message,
+                    },
+                    attributes: [
+                      {
+                        key: 'faro.log.context',
+                        value: {
+                          kvlistValue: { values: [] },
+                        },
+                      },
+                    ],
+                  } as LogRecord,
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      keepalive: false,
       method: 'POST',
     });
   });
