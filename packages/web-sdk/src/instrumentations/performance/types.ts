@@ -42,7 +42,6 @@ export type FaroResourceTiming = Readonly<{
   renderBlockingStatus: 'blocking' | 'non-blocking' | 'unknown';
   initiatorType: string;
   // serverTiming: PerformanceServerTiming[];
-  documentReadyState: DocumentReadyState;
 }>;
 
 export type FaroNavigationItem = {
