@@ -2,11 +2,16 @@
 
 ## Next
 
+<<<<<<< HEAD
 ## 1.3.5
 
 - fix (`@grafana/faro-web-sdk`): Multiple session_extend events were emitted if multiple
   browsing contexts were open when a session was auto-extended (#428)
 - fix (`@grafana/faro-web-sdk`): guard against missing `isSampled` (#425)
+=======
+- fix (`@grafana/faro-web-sdk`): instrument navigation and resource timings and calculate common
+  metrics ()
+>>>>>>> fc990e51 (wip: changelog)
 
 ## 1.3.4
 

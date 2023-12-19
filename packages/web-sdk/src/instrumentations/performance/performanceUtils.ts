@@ -12,7 +12,7 @@ export function onDocumentReady(handleReady: () => void) {
   if (document.readyState === 'complete') {
     handleReady();
   } else {
-    document.addEventListener('readystatechange', (_event) => {
+    document.addEventListener('readystatechange', () => {
       if (document.readyState === 'complete') {
         handleReady();
       }
