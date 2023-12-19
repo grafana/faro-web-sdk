@@ -2,9 +2,7 @@
 
 ## Next
 
-#431
-
-- enhancement (`@grafana/faro-transport-otlp-http`): Turn of beaconing if request body exceeds a
+- enhancement (`@grafana/faro-transport-otlp-http`): Turn off beaconing if request body exceeds a
   certain size limit (#431).
 
 ## 1.3.0 – 1.3.5
