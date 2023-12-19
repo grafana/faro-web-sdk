@@ -3,11 +3,9 @@ import type { EventsAPI } from '@grafana/faro-core';
 
 import { getItem, setItem, webStorageType } from '../../utils';
 
-import { NAVIGATION_ENTRY } from './performanceConstants';
+import { NAVIGATION_ENTRY, NAVIGATION_ID_STORAGE_KEY } from './performanceConstants';
 import { calculateFaroNavigationTimings, calculateFaroResourceTimings, entryUrlIsIgnored } from './performanceUtils';
 import type { FaroNavigationItem } from './types';
-
-const NAVIGATION_ID_STORAGE_KEY = 'com.grafana.faro.lastNavigationId';
 
 export function getNavigationTimings(
   pushEvent: EventsAPI['pushEvent'],
