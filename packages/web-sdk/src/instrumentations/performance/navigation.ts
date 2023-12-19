@@ -22,6 +22,7 @@ export function getNavigationTimings(
     if (!navigationEntryRaw || entryUrlIsIgnored(ignoredUrls, navigationEntryRaw.name)) {
       return;
     }
+
     const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
 
     const faroNavigationEntry: FaroNavigationItem = {

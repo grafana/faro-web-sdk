@@ -46,7 +46,6 @@ export function calculateFaroResourceTimings(resourceEntryRaw: PerformanceResour
     protocol: resourceEntryRaw.nextHopProtocol,
     initiatorType: resourceEntryRaw.initiatorType,
     // serverTiming: resourceEntryRaw.serverTiming,
-    documentReadyState: document.readyState,
   };
 }
 
