@@ -4,6 +4,7 @@
 
 - chore (`@grafana/faro-web-sdk`): change storage key prefix for faro session to use reverse domain
   notation (#432)
+- fix(`@grafana/faro-core`): fix the check for the presence of Event
 
 ## 1.3.5
 
