@@ -167,6 +167,9 @@ const matchMeasurementLogRecord = {
 describe('toMeasurementLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const measurementLogRecord = getLogTransforms(mockInternalLogger).toScopeLog(item).logRecords[0];
+
+    console.log('measurementLogRecord :>> ', measurementLogRecord);
+
     expect(measurementLogRecord).toMatchObject(matchMeasurementLogRecord);
   });
 });

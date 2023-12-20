@@ -11,4 +11,5 @@ export type {
   Scope,
   ScopeLog,
   TraceTransform,
+  StringValueNonNullable,
 } from './types';

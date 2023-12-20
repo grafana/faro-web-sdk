@@ -29,6 +29,7 @@ import type {
   ResourceMeta,
   ResourceSpan,
   ScopeLog,
+  StringValueNonNullable,
   TraceTransform,
 } from './types';
 
@@ -87,9 +88,9 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
   function toLogLogRecord(transportItem: TransportItem<LogEvent>): LogRecord {
     const { meta, payload } = transportItem;
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
-    const body = toAttributeValue(payload.message) as { stringValue: string; key: string };
+    const body = toAttributeValue(payload.message) as StringValueNonNullable;
 
-    function getSeverityProperties(logLevel: LogLevel): { severityNumber: number; severityText: string } {
+    function getSeverityProperties(logLevel: LogLevel) {
       switch (logLevel) {
         case LogLevel.TRACE:
           return { severityNumber: 1, severityText: 'TRACE' };
@@ -121,7 +122,7 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
   function toEventLogRecord(transportItem: TransportItem<EventEvent>): LogRecord {
     const { meta, payload } = transportItem;
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
-    const body = toAttributeValue(payload.name) as { stringValue: string; key: string };
+    const body = toAttributeValue(payload.name) as StringValueNonNullable;
 
     return {
       timeUnixNano,
@@ -161,8 +162,13 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
     const [measurementName, measurementValue] = Object.entries(payload.values).flat();
 
+    const body = toAttributeValue(
+      `Measurement: ${payload.type}.${measurementName}=${measurementValue}`
+    ) as StringValueNonNullable;
+
     return {
       timeUnixNano,
+      body,
       attributes: [
         ...getCommonLogAttributes(meta),
         toAttribute('measurement.type', payload.type),
