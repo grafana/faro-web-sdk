@@ -45,7 +45,7 @@ export const isPrimitive = ((value) => !isObject(value) && !isFunction(value)) a
   string | number | bigint | boolean | symbol
 >;
 
-export const isEventDefined = !isUndefined(Event);
+export const isEventDefined = typeof Event !== 'undefined';
 
 export const isEvent = ((value) => isEventDefined && isInstanceOf(value, Event)) as IsFnHelper<Event>;
 
