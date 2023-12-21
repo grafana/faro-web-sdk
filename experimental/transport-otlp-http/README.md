@@ -75,7 +75,8 @@ initializeFaro({
       otlpTransform: {
         // create custom body string for measurement logs
         createMeasurementLogBody(item) {
-          // Note: It's not advisable to built big strings which contain redundant data because it ads unnecessary bytes to the requests and your storage solution
+          // Note: It's not advisable to built big strings which contain redundant data because
+          // it ads unnecessary bytes to the requests and your storage solution
           // This example is to show how we can use the transport-item to built a custom string
           const { payload } = item;
           const [measurementName, measurementValue] = Object.entries(payload.values).flat();
@@ -84,7 +85,8 @@ initializeFaro({
         },
         // create custom body string for error logs
         createErrorLogBody(item) {
-          // Note: It's not advisable to built big strings which contain redundant data because it ads unnecessary bytes to the requests and your storage solution
+          // Note: It's not advisable to built big strings which contain redundant data because
+          // it ads unnecessary bytes to the requests and your storage solution
           // This example is to show how we can use the transport-item to built a custom string
           const { payload } = item;
           const body = `faro.signal.error: type=${payload.type} message=${payload.value}`;
@@ -109,5 +111,7 @@ initializeFaro({
 - `tracesURL?: string`: Endpoint to send Traces to.
 - `logsURL?: string`: Endpoint to send Logs to.
 - `otlpTransform?:`: Customize parts of logs transformation.
-- `otlpTransform.createErrorLogBody?: (item: TransportItem<ExceptionEvent>) => string`: create custom body for error logs.
-  `otlpTransform.createMeasurementLogBody?: (item: TransportItem<MeasurementEvent>) => string;`: create custom body for measurement logs.
+- `otlpTransform.createErrorLogBody?: (item: TransportItem<ExceptionEvent>) => string`:
+  create custom body for error logs.
+  `otlpTransform.createMeasurementLogBody?: (item: TransportItem<MeasurementEvent>) => string;`:
+  create custom body for measurement logs.
