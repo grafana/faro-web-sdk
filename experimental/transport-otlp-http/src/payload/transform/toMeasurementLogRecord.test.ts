@@ -1,6 +1,8 @@
 import { MeasurementEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
+import type { OtlpHttpTransportOptions } from '../../types';
+
 import { getLogTransforms } from './transform';
 
 const item: TransportItem<MeasurementEvent> = {
@@ -167,9 +169,27 @@ const matchMeasurementLogRecord = {
 describe('toMeasurementLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const measurementLogRecord = getLogTransforms(mockInternalLogger).toScopeLog(item).logRecords[0];
+    expect(measurementLogRecord).toStrictEqual(matchMeasurementLogRecord);
+  });
 
-    console.log('measurementLogRecord :>> ', measurementLogRecord);
+  it('Builds resource payload object for given transport item with custom body attached.', () => {
+    const customOtlpTransform: OtlpHttpTransportOptions['otlpTransform'] = {
+      createMeasurementLogBody(item) {
+        const { payload } = item;
+        const [measurementName, measurementValue] = Object.entries(payload.values).flat();
+        const body = `faro.signal.measurement: type=${payload.type} name=${measurementName} value=${measurementValue}`;
+        return body;
+      },
+    };
 
-    expect(measurementLogRecord).toMatchObject(matchMeasurementLogRecord);
+    const measurementLogRecord = getLogTransforms(mockInternalLogger, customOtlpTransform).toScopeLog(item)
+      .logRecords[0];
+
+    expect(measurementLogRecord).toStrictEqual({
+      ...matchMeasurementLogRecord,
+      body: {
+        stringValue: 'faro.signal.measurement: type=web-vitals name=fcp value=213.7000000011176',
+      },
+    });
   });
 });

@@ -18,6 +18,7 @@ import {
 } from '@grafana/faro-core';
 import type { InternalLogger, TraceEvent } from '@grafana/faro-core';
 
+import type { OtlpHttpTransportOptions } from '../../types';
 import { isAttribute, toAttribute, toAttributeValue } from '../attribute';
 
 import type {
@@ -47,7 +48,10 @@ const SemanticBrowserAttributes = {
   BROWSER_LANGUAGE: 'browser.language',
 } as const;
 
-export function getLogTransforms(internalLogger: InternalLogger): LogsTransform {
+export function getLogTransforms(
+  internalLogger: InternalLogger,
+  customOtlpTransform?: OtlpHttpTransportOptions['otlpTransform']
+): LogsTransform {
   function toResourceLog(transportItem: LogTransportItem): ResourceLog {
     const resource = toResource(transportItem);
 
@@ -141,11 +145,11 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
   function toErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): LogRecord {
     const { meta, payload } = transportItem;
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
-    const body = toAttributeValue('signal.error') as StringValueNonNullable;
+    const body = getCustomLogBody(transportItem, customOtlpTransform?.createErrorLogBody);
 
     return {
       timeUnixNano,
-      body,
+      ...(body ? { body } : {}),
       attributes: [
         ...getCommonLogAttributes(meta),
         toAttribute(SemanticAttributes.EXCEPTION_TYPE, payload.type),
@@ -163,11 +167,12 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
     const { meta, payload } = transportItem;
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
     const [measurementName, measurementValue] = Object.entries(payload.values).flat();
-    const body = toAttributeValue('signal.measurement') as StringValueNonNullable;
+
+    const body = getCustomLogBody(transportItem, customOtlpTransform?.createMeasurementLogBody);
 
     return {
       timeUnixNano,
-      body,
+      ...(body ? { body } : {}),
       attributes: [
         ...getCommonLogAttributes(meta),
         toAttribute('measurement.type', payload.type),
@@ -248,4 +253,13 @@ function toResource(transportItem: TransportItem): Readonly<Resource> {
       toAttribute(SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT, app?.environment),
     ].filter(isAttribute),
   };
+}
+
+function getCustomLogBody<T>(
+  transportItem: T,
+  createCustomLogBody?: (item: T) => string
+): StringValueNonNullable | undefined {
+  return typeof createCustomLogBody === 'function'
+    ? (toAttributeValue(createCustomLogBody(transportItem)) as StringValueNonNullable)
+    : undefined;
 }

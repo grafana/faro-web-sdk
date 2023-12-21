@@ -1,6 +1,8 @@
 import { ExceptionEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
+import type { OtlpHttpTransportOptions } from '../../types';
+
 import { getLogTransforms } from './transform';
 
 const item: TransportItem<ExceptionEvent> = {
@@ -66,10 +68,6 @@ const item: TransportItem<ExceptionEvent> = {
 
 const matchErrorLogRecord = {
   timeUnixNano: 1674813181035000000,
-
-  body: {
-    stringValue: 'signal.error',
-  },
 
   attributes: [
     {
@@ -267,6 +265,25 @@ const matchErrorLogRecord = {
 describe('toErrorLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const errorLogRecord = getLogTransforms(mockInternalLogger).toScopeLog(item).logRecords[0];
-    expect(errorLogRecord).toEqual(matchErrorLogRecord);
+    expect(errorLogRecord).toStrictEqual(matchErrorLogRecord);
+  });
+
+  it('Builds resource payload object for given transport item with custom body attached.', () => {
+    const customOtlpTransform: OtlpHttpTransportOptions['otlpTransform'] = {
+      createErrorLogBody(item) {
+        const { payload } = item;
+        const body = `faro.signal.error: type=${payload.type} message=${payload.value}`;
+        return body;
+      },
+    };
+
+    const errorLogRecord = getLogTransforms(mockInternalLogger, customOtlpTransform).toScopeLog(item).logRecords[0];
+
+    expect(errorLogRecord).toStrictEqual({
+      ...matchErrorLogRecord,
+      body: {
+        stringValue: 'faro.signal.error: type=Error message=Error message',
+      },
+    });
   });
 });
