@@ -8,7 +8,6 @@ import {
   ReactRouterVersion,
 } from '@grafana/faro-react';
 import type { Faro } from '@grafana/faro-react';
-import { OtlpHttpTransport } from '@grafana/faro-transport-otlp-http';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
 import { env } from '../utils';
