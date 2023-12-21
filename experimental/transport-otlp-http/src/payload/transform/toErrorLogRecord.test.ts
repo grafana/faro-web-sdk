@@ -67,6 +67,10 @@ const item: TransportItem<ExceptionEvent> = {
 const matchErrorLogRecord = {
   timeUnixNano: 1674813181035000000,
 
+  body: {
+    stringValue: 'signal.error',
+  },
+
   attributes: [
     {
       key: 'view.name',

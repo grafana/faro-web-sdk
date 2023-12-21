@@ -141,7 +141,7 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
   function toErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): LogRecord {
     const { meta, payload } = transportItem;
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
-    const body = toAttributeValue(`signal.error`) as StringValueNonNullable;
+    const body = toAttributeValue('signal.error') as StringValueNonNullable;
 
     return {
       timeUnixNano,
@@ -163,8 +163,7 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
     const { meta, payload } = transportItem;
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
     const [measurementName, measurementValue] = Object.entries(payload.values).flat();
-
-    const body = toAttributeValue(`signal.measurement`) as StringValueNonNullable;
+    const body = toAttributeValue('signal.measurement') as StringValueNonNullable;
 
     return {
       timeUnixNano,
