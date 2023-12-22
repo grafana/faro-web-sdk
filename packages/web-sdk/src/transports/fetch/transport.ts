@@ -47,7 +47,11 @@ export class FetchTransport extends BaseTransport {
 
         const { headers, ...restOfRequestOptions } = requestOptions ?? {};
 
-        const sessionId = this.metas.value.session?.id;
+        let sessionId;
+        const sessionMeta = this.metas.value.session;
+        if (sessionMeta != null) {
+          sessionId = sessionMeta.id;
+        }
 
         return fetch(url, {
           method: 'POST',
