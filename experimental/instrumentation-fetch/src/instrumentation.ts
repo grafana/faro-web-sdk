@@ -123,14 +123,52 @@ export class FetchInstrumentation extends BaseInstrumentation {
        * Resolve the fetch promise and push the event to Faro
        */
       function resolve(res: (value: Response | PromiseLike<Response>) => void, response: Response) {
+        let observer: PerformanceObserver | null;
+
         try {
           const parsedHeaders = parseHeaders(response.headers);
           const trimmedResponse = responseProperties(response);
+          const { status, status_text } = trimmedResponse;
 
-          faro.api.pushEvent(resolvedFetchEventName, {
-            ...trimmedResponse,
-            ...parsedHeaders,
+          observer = new PerformanceObserver((observedEntries) => {
+            const entries = observedEntries.getEntries();
+
+            for (const resourceEntry of entries) {
+              const resource = resourceEntry.toJSON();
+
+              if (instrumentation.ignoredUrls?.some((url) => resource.name === url)) {
+                continue;
+              }
+
+              if (resource.initiatorType === 'fetch') {
+                console.log('resource.fetch :>> ', resource);
+
+                const faroResourceTimings = calculateFaroResourceTimings(resource);
+                console.log('faroResourceTimings :>> ', faroResourceTimings);
+
+                faro.api.pushEvent(resolvedFetchEventName, {
+                  status,
+                  status_text,
+                  ...parsedHeaders,
+                  ...faroResourceTimings,
+                });
+
+                if (observer != null) {
+                  observer.disconnect();
+                  observer = null;
+                }
+              }
+            }
           });
+
+          observer.observe({
+            type: 'resource',
+          });
+
+          // faro.api.pushEvent(resolvedFetchEventName, {
+          //   ...trimmedResponse,
+          //   ...parsedHeaders,
+          // });
         } finally {
           res(response);
         }
@@ -169,4 +207,69 @@ export function shouldPropagateRumHeaders(
   return propagateRumHeaderCorsUrls.some((pattern) => {
     return isString(pattern) ? url.includes(pattern) : Boolean(url.match(pattern));
   });
+}
+
+// TODO: ==== the code below part of the web-sdks performance utils
+
+export type FaroResourceTiming = Readonly<{
+  fetchTime: string;
+  serviceWorkerProcessingTime: string;
+  requestTime: string;
+  responseTime: string;
+  tcpHandshakeTime: string;
+  tlsNegotiationTime: string;
+  appCache: string;
+  redirectLookupTime: string;
+  dnsLookupTime: string;
+  transferSize: string;
+  decodedBodySize: string;
+  encodedBodySize: string;
+  isCached: string;
+}>;
+
+function calculateFaroResourceTimings(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {
+  return {
+    encodedBodySize: toFaroPerformanceTimingString(resourceEntryRaw.encodedBodySize),
+    decodedBodySize: toFaroPerformanceTimingString(resourceEntryRaw.decodedBodySize),
+    isCached: toFaroPerformanceTimingString(
+      resourceEntryRaw.transferSize === 0 && resourceEntryRaw.decodedBodySize > 0
+    ),
+    transferSize: toFaroPerformanceTimingString(resourceEntryRaw.transferSize),
+
+    redirectLookupTime: toFaroPerformanceTimingString(resourceEntryRaw.redirectEnd - resourceEntryRaw.redirectStart),
+    serviceWorkerProcessingTime: toFaroPerformanceTimingString(
+      resourceEntryRaw.fetchStart - resourceEntryRaw.workerStart
+    ),
+    appCache: toFaroPerformanceTimingString(resourceEntryRaw.domainLookupStart - resourceEntryRaw.fetchStart),
+    dnsLookupTime: toFaroPerformanceTimingString(resourceEntryRaw.domainLookupEnd - resourceEntryRaw.domainLookupStart),
+    tcpHandshakeTime: toFaroPerformanceTimingString(resourceEntryRaw.connectEnd - resourceEntryRaw.connectStart),
+    tlsNegotiationTime: toFaroPerformanceTimingString(
+      resourceEntryRaw.requestStart - resourceEntryRaw.secureConnectionStart
+    ),
+    requestTime: toFaroPerformanceTimingString(resourceEntryRaw.responseStart - resourceEntryRaw.requestStart),
+    responseTime: toFaroPerformanceTimingString(resourceEntryRaw.responseEnd - resourceEntryRaw.responseStart),
+    fetchTime: toFaroPerformanceTimingString(resourceEntryRaw.responseEnd - resourceEntryRaw.fetchStart),
+
+    // // @ts-expect-error the renderBlocking property is not available in all browsers
+    // renderBlockingStatus: toFaroPerformanceTimingString(resourceEntryRaw.renderBlockingStatus),
+    // protocol: resourceEntryRaw.nextHopProtocol,
+    // initiatorType: resourceEntryRaw.initiatorType,
+    // serverTiming: resourceEntryRaw.serverTiming,
+  };
+}
+
+function toFaroPerformanceTimingString(v: unknown): string {
+  if (v == null) {
+    return 'unknown';
+  }
+
+  if (typeof v === 'number') {
+    if (v < 0) {
+      return '';
+    }
+
+    return Math.round(v).toString();
+  }
+
+  return v.toString();
 }
