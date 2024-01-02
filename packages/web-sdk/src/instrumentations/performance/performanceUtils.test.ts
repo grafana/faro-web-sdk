@@ -4,15 +4,16 @@ import type { FaroNavigationTiming, FaroResourceTiming } from './types';
 
 describe('performanceUtils', () => {
   it(`calculates navigation timings`, () => {
-    const faroNavigationTiming = calculateNavigationTimings(navigationAndResourceEntries[0].toJSON());
+    const faroNavigationTiming = calculateFaroNavigationTiming;
     expect(faroNavigationTiming).toStrictEqual({
-      totalNavigationTime: '800',
       visibilityState: 'visible',
-      documentProcessingDuration: '525',
-      pagLoadTime: '542',
-      scriptProcessingDuration: '7',
-      pageChildrenProcessingDuration: '10',
-      ttfb: '34',
+      totalNavigationTime: '2700',
+      pagLoadTime: '',
+      documentProcessingDuration:
+      domLoadTime:
+      scriptProcessingDuration:
+      ttfb:
+      type:
     } as FaroNavigationTiming);
   });
 

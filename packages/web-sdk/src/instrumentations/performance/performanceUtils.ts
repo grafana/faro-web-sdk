@@ -53,8 +53,8 @@ export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourc
 
 export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
   return {
-    totalNavigationTime: toFaroPerformanceTimingString(navigationEntryRaw.duration),
     visibilityState: document.visibilityState,
+    totalNavigationTime: toFaroPerformanceTimingString(navigationEntryRaw.duration),
     pagLoadTime: toFaroPerformanceTimingString(
       navigationEntryRaw.domContentLoadedEventStart - navigationEntryRaw.fetchStart
     ),
