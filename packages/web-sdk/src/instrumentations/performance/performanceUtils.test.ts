@@ -1,19 +1,19 @@
-import { calculateFaroNavigationTimings, calculateFaroResourceTimings } from './performanceUtils';
+import { calculateFaroNavigationTiming, calculateFaroResourceTiming } from './performanceUtils';
 import { navigationAndResourceEntries } from './performanceUtilsTestData';
 import type { FaroNavigationTiming, FaroResourceTiming } from './types';
 
 describe('performanceUtils', () => {
   it(`calculates navigation timings`, () => {
-    // const faroNavigationTiming = calculateNavigationTimings(navigationAndResourceEntries[0].toJSON());
-    // expect(faroNavigationTiming).toStrictEqual({
-    //   totalNavigationTime: '800',
-    //   visibilityState: 'visible',
-    //   documentProcessingDuration: '525',
-    //   pagLoadTime: '542',
-    //   scriptProcessingDuration: '7',
-    //   pageChildrenProcessingDuration: '10',
-    //   ttfb: '34',
-    // } as FaroNavigationTiming);
+    const faroNavigationTiming = calculateNavigationTimings(navigationAndResourceEntries[0].toJSON());
+    expect(faroNavigationTiming).toStrictEqual({
+      totalNavigationTime: '800',
+      visibilityState: 'visible',
+      documentProcessingDuration: '525',
+      pagLoadTime: '542',
+      scriptProcessingDuration: '7',
+      pageChildrenProcessingDuration: '10',
+      ttfb: '34',
+    } as FaroNavigationTiming);
   });
 
   it(`calculates resource timings`, () => {

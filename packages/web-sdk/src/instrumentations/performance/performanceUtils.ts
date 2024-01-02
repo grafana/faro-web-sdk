@@ -20,7 +20,7 @@ export function onDocumentReady(handleReady: () => void) {
   }
 }
 
-export function calculateFaroResourceTimings(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {
+export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {
   return {
     name: resourceEntryRaw.name,
     tcpHandshakeTime: toFaroPerformanceTimingString(resourceEntryRaw.connectEnd - resourceEntryRaw.connectStart),
@@ -51,7 +51,7 @@ export function calculateFaroResourceTimings(resourceEntryRaw: PerformanceResour
   };
 }
 
-export function calculateFaroNavigationTimings(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
+export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
   return {
     totalNavigationTime: toFaroPerformanceTimingString(navigationEntryRaw.duration),
     visibilityState: document.visibilityState,
