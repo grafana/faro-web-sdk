@@ -1,8 +1,16 @@
 import { InternalLogger, TraceEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
 
+import type { OtlpHttpTransportOptions } from '../types';
+
 import { getLogTransforms, getTraceTransforms, LogsTransform, TraceTransform } from './transform';
 import type { ResourceLogs, ResourceSpans } from './transform/types';
 import type { OtelTransportPayload } from './types';
+
+type OtelPayloadParams = {
+  internalLogger: InternalLogger;
+  transportItem?: TransportItem;
+  customOtlpTransform?: OtlpHttpTransportOptions['otlpTransform'];
+};
 
 export class OtelPayload {
   private resourceLogs: ResourceLogs;
@@ -11,14 +19,13 @@ export class OtelPayload {
   private getLogTransforms: LogsTransform;
   private getTraceTransforms: TraceTransform;
 
-  constructor(
-    private internalLogger: InternalLogger,
-    transportItem?: TransportItem
-  ) {
+  private internalLogger: InternalLogger;
+
+  constructor({ internalLogger, customOtlpTransform, transportItem }: OtelPayloadParams) {
     this.internalLogger = internalLogger;
     this.resourceLogs = [];
 
-    this.getLogTransforms = getLogTransforms(this.internalLogger);
+    this.getLogTransforms = getLogTransforms(this.internalLogger, customOtlpTransform);
     this.getTraceTransforms = getTraceTransforms(this.internalLogger);
 
     if (transportItem) {

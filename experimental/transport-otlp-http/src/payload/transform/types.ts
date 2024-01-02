@@ -58,3 +58,5 @@ export type TraceTransform = {
 };
 
 export type ResourceMeta = Pick<Meta, 'app' | 'browser' | 'sdk'>;
+
+export type StringValueNonNullable = { stringValue: string };

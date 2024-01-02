@@ -1,3 +1,5 @@
+import type { ExceptionEvent, MeasurementEvent, TransportItem } from '@grafana/faro-core';
+
 export interface OtlpTransportRequestOptions extends Omit<RequestInit, 'body' | 'headers'> {
   headers?: Record<string, string>;
 }
@@ -23,4 +25,13 @@ export interface OtlpHttpTransportOptions {
   // The Otel spec defines separate endpoints per signal
   readonly tracesURL?: string;
   readonly logsURL?: string;
+
+  // customize aspects about logs transformation
+  otlpTransform?: {
+    // Body field is optional in Otel Log spec, but can cause issues with Otel Collector components.
+    // By default Faro does not send a body for logs of type error and measurement.
+    // Users can define a body string by using the following functions.
+    createErrorLogBody?: (item: TransportItem<ExceptionEvent>) => string;
+    createMeasurementLogBody?: (item: TransportItem<MeasurementEvent>) => string;
+  };
 }

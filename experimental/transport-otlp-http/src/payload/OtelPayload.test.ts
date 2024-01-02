@@ -139,14 +139,14 @@ describe('OtelPayload', () => {
   };
 
   it('Creates an instance with empty OtelPayload', () => {
-    const otelPayload = new OtelPayload(mockInternalLogger);
+    const otelPayload = new OtelPayload({ internalLogger: mockInternalLogger });
     const payload = otelPayload.getPayload();
 
     expect(payload.resourceLogs).toHaveLength(0);
   });
 
   it('Creates an instance containing the correct resourceLog for the given TransportItem', () => {
-    const otelPayload = new OtelPayload(mockInternalLogger, logTransportItem);
+    const otelPayload = new OtelPayload({ internalLogger: mockInternalLogger, transportItem: logTransportItem });
     const payload = otelPayload.getPayload();
 
     expect(payload.resourceLogs).toHaveLength(1);
@@ -162,7 +162,7 @@ describe('OtelPayload', () => {
       meta: { browser: { name: 'Firefox' } },
     };
 
-    const otelPayload = new OtelPayload(mockInternalLogger, transportItem);
+    const otelPayload = new OtelPayload({ internalLogger: mockInternalLogger, transportItem });
 
     otelPayload.addResourceItem({
       ...transportItem,
@@ -186,7 +186,7 @@ describe('OtelPayload', () => {
   });
 
   it('Adds a new ResourceSpan', () => {
-    const otelPayload = new OtelPayload(mockInternalLogger, traceTransportItem);
+    const otelPayload = new OtelPayload({ internalLogger: mockInternalLogger, transportItem: traceTransportItem });
     const payload = otelPayload.getPayload();
 
     expect(payload.resourceLogs).toHaveLength(0);

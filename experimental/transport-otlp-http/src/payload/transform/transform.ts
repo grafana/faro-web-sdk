@@ -18,6 +18,7 @@ import {
 } from '@grafana/faro-core';
 import type { InternalLogger, TraceEvent } from '@grafana/faro-core';
 
+import type { OtlpHttpTransportOptions } from '../../types';
 import { isAttribute, toAttribute, toAttributeValue } from '../attribute';
 
 import type {
@@ -29,6 +30,7 @@ import type {
   ResourceMeta,
   ResourceSpan,
   ScopeLog,
+  StringValueNonNullable,
   TraceTransform,
 } from './types';
 
@@ -46,7 +48,10 @@ const SemanticBrowserAttributes = {
   BROWSER_LANGUAGE: 'browser.language',
 } as const;
 
-export function getLogTransforms(internalLogger: InternalLogger): LogsTransform {
+export function getLogTransforms(
+  internalLogger: InternalLogger,
+  customOtlpTransform?: OtlpHttpTransportOptions['otlpTransform']
+): LogsTransform {
   function toResourceLog(transportItem: LogTransportItem): ResourceLog {
     const resource = toResource(transportItem);
 
@@ -87,9 +92,9 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
   function toLogLogRecord(transportItem: TransportItem<LogEvent>): LogRecord {
     const { meta, payload } = transportItem;
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
-    const body = toAttributeValue(payload.message) as { stringValue: string; key: string };
+    const body = toAttributeValue(payload.message) as StringValueNonNullable;
 
-    function getSeverityProperties(logLevel: LogLevel): { severityNumber: number; severityText: string } {
+    function getSeverityProperties(logLevel: LogLevel) {
       switch (logLevel) {
         case LogLevel.TRACE:
           return { severityNumber: 1, severityText: 'TRACE' };
@@ -121,7 +126,7 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
   function toEventLogRecord(transportItem: TransportItem<EventEvent>): LogRecord {
     const { meta, payload } = transportItem;
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
-    const body = toAttributeValue(payload.name) as { stringValue: string; key: string };
+    const body = toAttributeValue(payload.name) as StringValueNonNullable;
 
     return {
       timeUnixNano,
@@ -140,9 +145,11 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
   function toErrorLogRecord(transportItem: TransportItem<ExceptionEvent>): LogRecord {
     const { meta, payload } = transportItem;
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
+    const body = getCustomLogBody(transportItem, customOtlpTransform?.createErrorLogBody);
 
     return {
       timeUnixNano,
+      ...(body ? { body } : {}),
       attributes: [
         ...getCommonLogAttributes(meta),
         toAttribute(SemanticAttributes.EXCEPTION_TYPE, payload.type),
@@ -161,8 +168,11 @@ export function getLogTransforms(internalLogger: InternalLogger): LogsTransform 
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
     const [measurementName, measurementValue] = Object.entries(payload.values).flat();
 
+    const body = getCustomLogBody(transportItem, customOtlpTransform?.createMeasurementLogBody);
+
     return {
       timeUnixNano,
+      ...(body ? { body } : {}),
       attributes: [
         ...getCommonLogAttributes(meta),
         toAttribute('measurement.type', payload.type),
@@ -243,4 +253,13 @@ function toResource(transportItem: TransportItem): Readonly<Resource> {
       toAttribute(SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT, app?.environment),
     ].filter(isAttribute),
   };
+}
+
+function getCustomLogBody<T>(
+  transportItem: T,
+  createCustomLogBody?: (item: T) => string
+): StringValueNonNullable | undefined {
+  return typeof createCustomLogBody === 'function'
+    ? (toAttributeValue(createCustomLogBody(transportItem)) as StringValueNonNullable)
+    : undefined;
 }
