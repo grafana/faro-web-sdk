@@ -1,6 +1,5 @@
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
 
-import { XHRInstrumentation } from '@grafana/faro-instrumentation-xhr';
 import {
   initializeFaro as coreInit,
   getWebInstrumentations,
@@ -33,7 +32,6 @@ export function initializeFaro(): Faro {
           },
         },
       }),
-      new XHRInstrumentation(),
     ],
     batching: {
       // Batching is enabled by default and there is normally no reason to disable it.
