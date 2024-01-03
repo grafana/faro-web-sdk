@@ -13,7 +13,6 @@ import type { GetWebInstrumentationsOptions } from './types';
 
 export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {
   const instrumentations: Instrumentation[] = [
-    new PerformanceInstrumentation(),
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
@@ -26,6 +25,10 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
         disabledLevels: options.captureConsoleDisabledLevels,
       })
     );
+  }
+
+  if (options.trackPerformanceTimeline !== false) {
+    instrumentations.push(new PerformanceInstrumentation());
   }
 
   return instrumentations;
