@@ -26,7 +26,7 @@ export type FaroResourceTiming = Readonly<{
   // Measuring TLS negotiation time (requestStart - secureConnectionStart)
   tlsNegotiationTime: string;
   // Measuring redirection time (redirectEnd - redirectStart)
-  redirectLookupTime: string;
+  redirectTime: string;
   // Measuring request time (responseStart - requestStart)
   requestTime: string;
   // Measuring time to fetch (without redirects) (responseEnd - fetchStart)
@@ -35,9 +35,9 @@ export type FaroResourceTiming = Readonly<{
   serviceWorkerProcessingTime: string;
   //For example: Checking if content was compressed (decodedBodySize !== encodedBodySize)
   decodedBodySize: string;
-  unCompressedBodySize: string;
+  encodedBodySize: string;
   // Checking if local caches were hit (transferSize should be 0)
-  isCacheHit: string;
+  cacheHitStatus: 'cache' | 'conditionalFetch' | 'fullLoad';
   // Checking if the correct resources are render-blocking (renderBlockingStatus)
   renderBlockingStatus: 'blocking' | 'non-blocking' | 'unknown';
   initiatorType: string;

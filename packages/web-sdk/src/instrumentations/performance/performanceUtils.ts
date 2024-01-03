@@ -21,54 +21,92 @@ export function onDocumentReady(handleReady: () => void) {
 }
 
 export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {
+  const {
+    connectEnd,
+    connectStart,
+    decodedBodySize,
+    domainLookupEnd,
+    domainLookupStart,
+    encodedBodySize,
+    fetchStart,
+    initiatorType,
+    name,
+    nextHopProtocol,
+    redirectEnd,
+    redirectStart,
+    // @ts-expect-error the renderBlockingStatus property is not available in all browsers
+    renderBlockingStatus: rbs,
+    requestStart,
+    responseEnd,
+    responseStart,
+    // @ts-expect-error the renderBlockingStatus property is not available in all browsers
+    responseStatus,
+    secureConnectionStart,
+    transferSize,
+    workerStart,
+  } = resourceEntryRaw;
+
   return {
-    name: resourceEntryRaw.name,
-    tcpHandshakeTime: toFaroPerformanceTimingString(resourceEntryRaw.connectEnd - resourceEntryRaw.connectStart),
-    dnsLookupTime: toFaroPerformanceTimingString(resourceEntryRaw.domainLookupEnd - resourceEntryRaw.domainLookupStart),
-    tlsNegotiationTime: toFaroPerformanceTimingString(
-      resourceEntryRaw.requestStart - resourceEntryRaw.secureConnectionStart
-    ),
-    redirectLookupTime: toFaroPerformanceTimingString(resourceEntryRaw.redirectEnd - resourceEntryRaw.redirectStart),
-    requestTime: toFaroPerformanceTimingString(resourceEntryRaw.responseStart - resourceEntryRaw.requestStart),
-    fetchTime: toFaroPerformanceTimingString(resourceEntryRaw.responseEnd - resourceEntryRaw.fetchStart),
-    serviceWorkerProcessingTime: toFaroPerformanceTimingString(
-      resourceEntryRaw.fetchStart - resourceEntryRaw.workerStart
-    ),
-    decodedBodySize: toFaroPerformanceTimingString(resourceEntryRaw.encodedBodySize),
-    unCompressedBodySize: toFaroPerformanceTimingString(resourceEntryRaw.decodedBodySize),
-    isCacheHit: toFaroPerformanceTimingString(
-      resourceEntryRaw.transferSize === 0 && resourceEntryRaw.decodedBodySize > 0
-    ),
-
-    // @ts-expect-error the renderBlocking property is not available in all browsers
-    renderBlockingStatus: toFaroPerformanceTimingString(resourceEntryRaw.renderBlockingStatus),
-
-    protocol: resourceEntryRaw.nextHopProtocol,
-    initiatorType: resourceEntryRaw.initiatorType,
+    name: name,
+    tcpHandshakeTime: toFaroPerformanceTimingString(connectEnd - connectStart),
+    dnsLookupTime: toFaroPerformanceTimingString(domainLookupEnd - domainLookupStart),
+    tlsNegotiationTime: toFaroPerformanceTimingString(requestStart - secureConnectionStart),
+    redirectTime: toFaroPerformanceTimingString(redirectEnd - redirectStart),
+    requestTime: toFaroPerformanceTimingString(responseStart - requestStart),
+    fetchTime: toFaroPerformanceTimingString(responseEnd - fetchStart),
+    serviceWorkerProcessingTime: toFaroPerformanceTimingString(fetchStart - workerStart),
+    decodedBodySize: toFaroPerformanceTimingString(decodedBodySize),
+    encodedBodySize: toFaroPerformanceTimingString(encodedBodySize),
+    cacheHitStatus: getCacheType(),
+    renderBlockingStatus: toFaroPerformanceTimingString(rbs) as FaroResourceTiming['renderBlockingStatus'],
+    protocol: nextHopProtocol,
+    initiatorType: initiatorType,
 
     // TODO: add in future iteration, ideally after nested objects are supported by the collector.
     // serverTiming: resourceEntryRaw.serverTiming,
   };
+
+  function getCacheType(): 'cache' | 'conditionalFetch' | 'fullLoad' {
+    let cacheType: 'cache' | 'conditionalFetch' | 'fullLoad' = 'fullLoad';
+    if (transferSize === 0) {
+      if (decodedBodySize > 0) {
+        cacheType = 'cache';
+      }
+    } else {
+      if (responseStatus != null) {
+        if (responseStatus === 304) {
+          cacheType = 'conditionalFetch';
+        }
+      } else if (encodedBodySize > 0 && transferSize < encodedBodySize) {
+        cacheType = 'conditionalFetch';
+      }
+    }
+    return cacheType;
+  }
 }
 
 export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
+  const {
+    domComplete,
+    domContentLoadedEventEnd,
+    domContentLoadedEventStart,
+    duration,
+    fetchStart,
+    loadEventEnd,
+    responseEnd,
+    responseStart,
+    type,
+  } = navigationEntryRaw;
+
   return {
     visibilityState: document.visibilityState,
-    totalNavigationTime: toFaroPerformanceTimingString(navigationEntryRaw.duration),
-    pagLoadTime: toFaroPerformanceTimingString(
-      navigationEntryRaw.domContentLoadedEventStart - navigationEntryRaw.fetchStart
-    ),
-    documentProcessingDuration: toFaroPerformanceTimingString(
-      navigationEntryRaw.loadEventEnd - navigationEntryRaw.responseEnd
-    ),
-    domLoadTime: toFaroPerformanceTimingString(
-      navigationEntryRaw.loadEventEnd - navigationEntryRaw.domContentLoadedEventEnd
-    ),
-    scriptProcessingDuration: toFaroPerformanceTimingString(
-      navigationEntryRaw.domContentLoadedEventEnd - navigationEntryRaw.domContentLoadedEventStart
-    ),
-    ttfb: toFaroPerformanceTimingString(navigationEntryRaw.responseStart - navigationEntryRaw.fetchStart),
-    type: navigationEntryRaw.type,
+    totalNavigationTime: toFaroPerformanceTimingString(duration),
+    pagLoadTime: toFaroPerformanceTimingString(domComplete - fetchStart),
+    documentProcessingDuration: toFaroPerformanceTimingString(loadEventEnd - responseEnd),
+    domLoadTime: toFaroPerformanceTimingString(loadEventEnd - domContentLoadedEventEnd),
+    scriptProcessingDuration: toFaroPerformanceTimingString(domContentLoadedEventEnd - domContentLoadedEventStart),
+    ttfb: toFaroPerformanceTimingString(responseStart - fetchStart),
+    type: type,
   };
 }
 
