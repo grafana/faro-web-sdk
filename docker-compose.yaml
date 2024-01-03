@@ -4,7 +4,7 @@ services:
   cortex:
     env_file:
       - './.env'
-    image: 'cortexproject/cortex:v1.13.0'
+    image: 'cortexproject/cortex:v1.14.1'
     volumes:
       - '${CORTEX_CONFIG_PATH_LOCAL}:${CORTEX_CONFIG_PATH}'
     entrypoint:
