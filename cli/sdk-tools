@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+require('source-map-support').install();
+const yargs = require('yargs');
+
+async function configMiddleware(argv) {
+  const appKey = argv.appKey || process.env.FARO_APP_KEY;
+  const verbose = argv.verbose || process.env.DEBUG;
+
+  if (appKey === undefined) {
+    console.error('Frontend Observatory App Key is required - you can set it with the --app-key flag or the FARO_APP_KEY environment variable');
+    process.exit(1);
+  }
+}
+
+yargs
+  .middleware(configMiddleware)
+  .command(require('./commands/upload'))
+  .demandCommand(1)
+  .option('app-key', {
+    type: 'string',
+    description: 'Frontend Observability App Key',
+  })
+  .option('verbose', {
+    alias: 'v',
+    type: 'boolean',
+    description: 'Enable verbose output',
+  })
+  .strict(true)
+  .argv;

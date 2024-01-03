@@ -1,0 +1,18 @@
+exports.command = 'upload <sourcemap>';
+
+exports.describe = 'upload the sourcemap to the specific endpoint';
+
+exports.handler = async function (argv) {
+  try {
+    console.log('[upload] Starting upload');
+    await handler(argv);
+  } catch (error) {
+    console.error(`[upload][error] Error while uploading: ${error.toString()}`);
+    console.error(error.stack);
+  }
+  console.log('[upload] Done');
+}
+
+async function handler(argv) {
+  return;
+}
