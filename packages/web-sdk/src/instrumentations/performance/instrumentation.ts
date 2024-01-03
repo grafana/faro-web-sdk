@@ -10,6 +10,7 @@ export class PerformanceInstrumentation extends BaseInstrumentation {
 
   initialize() {
     if (!performanceObserverSupported()) {
+      this.logDebug('performance observer not supported. Disable performance instrumentation.');
       return;
     }
 
