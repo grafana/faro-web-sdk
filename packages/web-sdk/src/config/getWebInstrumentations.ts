@@ -3,11 +3,11 @@ import type { Instrumentation } from '@grafana/faro-core';
 import {
   ConsoleInstrumentation,
   ErrorsInstrumentation,
+  PerformanceInstrumentation,
   SessionInstrumentation,
   ViewInstrumentation,
   WebVitalsInstrumentation,
 } from '../instrumentations';
-import { PerformanceInstrumentation } from '../instrumentations/performance';
 
 import type { GetWebInstrumentationsOptions } from './types';
 
