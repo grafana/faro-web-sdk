@@ -14,9 +14,7 @@ export function observeResourceTimings(
     const entries = observedEntries.getEntries();
 
     for (const resourceEntryRaw of entries) {
-      const name = resourceEntryRaw.name;
-
-      if (entryUrlIsIgnored(ignoredUrls, name)) {
+      if (entryUrlIsIgnored(ignoredUrls, resourceEntryRaw.name)) {
         return;
       }
 

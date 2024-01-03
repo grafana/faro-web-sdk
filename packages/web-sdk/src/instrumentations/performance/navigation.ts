@@ -19,7 +19,7 @@ export function getNavigationTimings(
   const observer = new PerformanceObserver((observedEntries) => {
     const [navigationEntryRaw] = observedEntries.getEntries();
 
-    if (!navigationEntryRaw || entryUrlIsIgnored(ignoredUrls, navigationEntryRaw.name)) {
+    if (navigationEntryRaw == null || entryUrlIsIgnored(ignoredUrls, navigationEntryRaw.name)) {
       return;
     }
 
