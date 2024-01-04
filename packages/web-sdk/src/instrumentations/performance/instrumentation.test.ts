@@ -1,50 +1,54 @@
-import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
+import { initializeFaro } from '@grafana/faro-core';
+import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import { PerformanceInstrumentation } from './instrumentation';
+import * as navigationModule from './navigation';
 import * as performanceUtilsModule from './performanceUtils';
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
+import * as resourceModule from './resource';
+import type { FaroNavigationItem } from './types';
+
+class MockPerformanceObserver {
+  constructor(private cb: PerformanceObserverCallback) {}
+
+  disconnect = jest.fn();
+
+  observe() {
+    this.cb(
+      {
+        getEntries() {
+          return [
+            {
+              name: performanceNavigationEntry.name,
+              toJSON: () => ({
+                ...performanceNavigationEntry,
+              }),
+            },
+            {
+              name: performanceResourceEntry.name,
+              toJSON: () => ({
+                ...performanceResourceEntry,
+              }),
+            },
+          ];
+        },
+      } as any,
+      {} as PerformanceObserver
+    );
+  }
+}
+
+const originalPerformanceObserver = (global as any).PerformanceObserver;
+
+(global as any).PerformanceObserver = MockPerformanceObserver;
 
 describe('Performance Instrumentation', () => {
-  class MockPerformanceObserver {
-    constructor(private cb: PerformanceObserverCallback) {}
-
-    disconnect = jest.fn();
-
-    observe() {
-      this.cb(
-        {
-          getEntries() {
-            return [
-              {
-                name: performanceNavigationEntry.name,
-                toJSON: () => ({
-                  ...performanceNavigationEntry,
-                }),
-              },
-              {
-                name: performanceResourceEntry.name,
-                toJSON: () => ({
-                  ...performanceResourceEntry,
-                }),
-              },
-            ];
-          },
-        } as any,
-        {} as PerformanceObserver
-      );
-    }
-  }
-
-  const originalPerformanceObserver = (global as any).PerformanceObserver;
-
-  (global as any).PerformanceObserver = MockPerformanceObserver;
-
-  beforeEach(() => {
+  afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
     (global as any).PerformanceObserver = originalPerformanceObserver;
   });
 
@@ -65,27 +69,32 @@ describe('Performance Instrumentation', () => {
     expect(mockOnDocumentReady).not.toHaveBeenCalled();
   });
 
-  //   it('Starts the performance observers', async () => {
-  //     Object.defineProperty(document, 'readyState', {
-  //       get() {
-  //         return 'complete';
-  //       },
-  //     });
+  it('Starts the performance observers', async () => {
+    const mockOnDocumentReady = jest.fn();
+    jest.spyOn(performanceUtilsModule, 'onDocumentReady').mockImplementation((handleReady) => {
+      mockOnDocumentReady();
+      handleReady();
+    });
 
-  //     // jest.mock('./navigation', () => ({
-  //     //   getNavigationTimings: Promise.resolve({ faroNavigationId: '123' }),
-  //     // }));
+    const mockObserveResourceTimings = jest.fn();
+    jest.spyOn(resourceModule, 'observeResourceTimings').mockImplementationOnce(mockObserveResourceTimings);
 
-  //     // const mockObserveResourceTimings = jest.fn();
-  //     // jest.mock('./resource', () => ({
-  //     //   observeResourceTimings: () => mockObserveResourceTimings,
-  //     // }));
+    const mockObserveAndGetNavigationTimings = jest.fn();
+    jest.spyOn(navigationModule, 'observeAndGetNavigationTimings').mockImplementationOnce(() => {
+      mockObserveAndGetNavigationTimings();
+      return Promise.resolve({ faroNavigationId: '123' } as FaroNavigationItem);
+    });
 
-  //     const performance = new PerformanceInstrumentation();
-  //     performance.initialize();
+    const config = mockConfig({
+      instrumentations: [new PerformanceInstrumentation()],
+    });
 
-  //     document.dispatchEvent(new Event('readystatechange'));
+    initializeFaro(config);
 
-  //     // expect(mockObserveResourceTimings).toHaveBeenCalledTimes(1);
-  //   });
+    expect(mockOnDocumentReady).toHaveBeenCalledTimes(1);
+    expect(await mockObserveAndGetNavigationTimings).toHaveBeenCalledTimes(1);
+
+    expect(mockObserveResourceTimings).toHaveBeenCalledTimes(1);
+    expect(mockObserveResourceTimings).toHaveBeenCalledWith('123', expect.anything(), expect.anything());
+  });
 });

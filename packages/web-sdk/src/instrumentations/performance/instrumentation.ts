@@ -1,6 +1,6 @@
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
-import { getNavigationTimings } from './navigation';
+import { observeAndGetNavigationTimings } from './navigation';
 import { onDocumentReady, performanceObserverSupported } from './performanceUtils';
 import { observeResourceTimings } from './resource';
 
@@ -15,8 +15,14 @@ export class PerformanceInstrumentation extends BaseInstrumentation {
     }
 
     onDocumentReady(async () => {
-      const faroNavigationEntry = await getNavigationTimings(this.api.pushEvent, this.getIgnoreUrls());
-      observeResourceTimings(faroNavigationEntry.faroPreviousNavigationId, this.api.pushEvent, this.getIgnoreUrls());
+      const pushEvent = this.api.pushEvent;
+      const ignoredUrls = this.getIgnoreUrls();
+
+      const { faroNavigationId } = await observeAndGetNavigationTimings(pushEvent, ignoredUrls);
+
+      if (faroNavigationId != null) {
+        observeResourceTimings(faroNavigationId, pushEvent, ignoredUrls);
+      }
     });
   }
 

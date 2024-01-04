@@ -3,7 +3,7 @@ import * as faroCoreModule from '@grafana/faro-core';
 import * as webStorageModule from '../../utils/webStorage';
 import { webStorageType } from '../../utils/webStorage';
 
-import { getNavigationTimings } from './navigation';
+import { observeAndGetNavigationTimings } from './navigation';
 import { NAVIGATION_ID_STORAGE_KEY } from './performanceConstants';
 import * as performanceUtilsModule from './performanceUtils';
 import { calculateFaroNavigationTiming, calculateFaroResourceTiming } from './performanceUtils';
@@ -60,7 +60,7 @@ describe('Navigation observer', () => {
     jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockImplementationOnce(mockEntryUrlIsIgnored);
 
     const ignoredUrls = ['http://example.com'];
-    getNavigationTimings(mockPushEvent, ignoredUrls);
+    observeAndGetNavigationTimings(mockPushEvent, ignoredUrls);
 
     expect(mockEntryUrlIsIgnored).toBeCalledTimes(1);
     expect(mockEntryUrlIsIgnored).toBeCalledWith(ignoredUrls, performanceNavigationEntry.name);
@@ -75,7 +75,7 @@ describe('Navigation observer', () => {
     const mockNavigationId = '123';
     jest.spyOn(faroCoreModule, 'genShortID').mockReturnValueOnce(mockNavigationId);
 
-    getNavigationTimings(mockPushEvent, ['']);
+    observeAndGetNavigationTimings(mockPushEvent, ['']);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent).toHaveBeenCalledWith('faro.performance.navigation', {
@@ -96,7 +96,7 @@ describe('Navigation observer', () => {
     const mockPreviousNavigationId = '123';
     jest.spyOn(webStorageModule, 'getItem').mockReturnValueOnce(mockPreviousNavigationId);
 
-    getNavigationTimings(mockPushEvent, ['']);
+    observeAndGetNavigationTimings(mockPushEvent, ['']);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent).toHaveBeenCalledWith('faro.performance.navigation', {
@@ -119,7 +119,7 @@ describe('Navigation observer', () => {
     const mockSetItem = jest.fn();
     jest.spyOn(webStorageModule, 'setItem').mockImplementationOnce(mockSetItem);
 
-    getNavigationTimings(mockPushEvent, ['']);
+    observeAndGetNavigationTimings(mockPushEvent, ['']);
 
     expect(mockSetItem).toHaveBeenCalledTimes(1);
     expect(mockSetItem).toHaveBeenCalledWith(NAVIGATION_ID_STORAGE_KEY, mockNewNavigationId, webStorageType.session);
