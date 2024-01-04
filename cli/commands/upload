@@ -8,11 +8,66 @@ exports.handler = async function (argv) {
     await handler(argv);
   } catch (error) {
     console.error(`[upload][error] Error while uploading: ${error.toString()}`);
-    console.error(error.stack);
   }
   console.log('[upload] Done');
-}
+};
 
 async function handler(argv) {
+  let { endpoint, verbose, sourcemap } = argv;
+
+  if (sourcemap === undefined) {
+    console.error('Sourcemap is required - you can set it with the --sourcemap flag');
+    process.exit(1);
+  }
+
+  if (endpoint === undefined) {
+    console.error(
+      'Frontend Observatory App endpoint is required - you can set it with the --endpoint flag or the FARO_APP_ENDPOINT environment variable'
+    );
+    process.exit(1);
+  }
+
+  if (sourcemap && endpoint) {
+    await uploadSourcemap(endpoint, sourcemap, verbose);
+  }
+
   return;
 }
+
+const uploadSourcemap = async (endpoint, sourcemap, verbose) => {
+  const axios = require('axios');
+  const fs = require('node:fs');
+
+  const sourcemapPaths = sourcemap.split(',');
+  sourcemapPaths.forEach(async (sourcemapPath) => {
+    const sourcemap = fs.readFileSync(sourcemapPath);
+
+    try {
+      const response = await axios.post(endpoint, JSON.parse(sourcemap.toString()));
+      if (verbose) {
+        console.log(`[upload][verbose] Response from ${endpoint}: ${JSON.stringify(response.data)}`);
+      }
+    } catch (error) {
+      console.error(`[upload][error] Error while uploading sourcemap to ${endpoint}: ${error.toString()}`);
+    }
+  });
+};
+
+exports.builder = function (yargs) {
+  return yargs
+    .option('endpoint', {
+      alias: 'e',
+      type: 'string',
+      description: 'Frontend Observability app endpoint',
+    })
+    .option('verbose', {
+      alias: 'v',
+      type: 'boolean',
+      description: 'Enable verbose output',
+    })
+    .strict(true)
+    .demandOption(
+      ['endpoint', 'sourcemap'],
+      'Please provide both endpoint and sourcemap arguments to work with this tool'
+    );
+};

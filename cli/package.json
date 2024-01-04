@@ -5,6 +5,7 @@
   "main": "index.js",
   "license": "Apache-2.0",
   "dependencies": {
+    "axios": "^1.6.4",
     "yargs": "^17.5.1"
   }
 }

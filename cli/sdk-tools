@@ -3,23 +3,24 @@ require('source-map-support').install();
 const yargs = require('yargs');
 
 async function configMiddleware(argv) {
-  const appKey = argv.appKey || process.env.FARO_APP_KEY;
-  const verbose = argv.verbose || process.env.DEBUG;
+  const endpoint = argv.endpoint || process.env.FARO_APP_ENDPOINT;
+  const sourcemap = argv.sourcemap;
 
-  if (appKey === undefined) {
-    console.error('Frontend Observatory App Key is required - you can set it with the --app-key flag or the FARO_APP_KEY environment variable');
+  if (endpoint === undefined) {
+    console.error('Frontend Observatory App endpoint is required - you can set it with the --endpoint flag or the FARO_APP_ENDPOINT environment variable');
+    process.exit(1);
+  }
+
+  if (sourcemap === undefined) {
+    console.error('Sourcemap is required - you can set it with the --sourcemap flag');
     process.exit(1);
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 yargs
-  .middleware(configMiddleware)
   .command(require('./commands/upload'))
   .demandCommand(1)
-  .option('app-key', {
-    type: 'string',
-    description: 'Frontend Observability App Key',
-  })
   .option('verbose', {
     alias: 'v',
     type: 'boolean',
