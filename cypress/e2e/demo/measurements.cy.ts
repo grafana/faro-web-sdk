@@ -1,15 +1,15 @@
+import type { MeasurementEvent } from '@grafana/faro-core';
+
 context('Measurements', () => {
   describe('Web Vitals', () => {
     ['ttfb', 'fcp'].forEach((expectedVital) => {
       it(`will capture ${expectedVital}`, () => {
         cy.interceptCollector((body) => {
-          const item = body.measurements?.[0]!;
+          const item = body.measurements?.find(
+            (item: MeasurementEvent) => item?.type === 'web-vitals' && Object.keys(item?.values).includes(expectedVital)
+          );
 
-          if (item?.type === 'web-vitals' && Object.keys(item?.values).includes(expectedVital)) {
-            return 'measurement';
-          }
-
-          return undefined;
+          return item != null ? 'measurement' : undefined;
         });
 
         cy.visit('/features');
