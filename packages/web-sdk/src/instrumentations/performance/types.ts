@@ -6,7 +6,7 @@ export type FaroNavigationTiming = Readonly<{
   // HTML processing time: The parsing of the initial HTML document. This has mostly only relevance for big initial HTML documents
   documentProcessingDuration: string;
   // HTML document has been completely parsed, and all deferred scripts (<script defer src="…"> and <script type="module">) have downloaded and executed.
-  pagLoadTime: string;
+  pageLoadTime: string;
   // JS processing duration: Duration for fetching and executing all deferred scripts. The duration should be kept at <= 50ms
   scriptProcessingDuration: string;
   // DOM Load Time: How long it takes to load/parse/render all dependent resources of the page

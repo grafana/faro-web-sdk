@@ -8,7 +8,7 @@ describe('performanceUtils', () => {
     expect(faroNavigationTiming).toStrictEqual({
       visibilityState: 'visible',
       totalNavigationTime: '2700',
-      pagLoadTime: '2441',
+      pageLoadTime: '2441',
       documentProcessingDuration: '2158',
       domLoadTime: '1450',
       scriptProcessingDuration: '3',

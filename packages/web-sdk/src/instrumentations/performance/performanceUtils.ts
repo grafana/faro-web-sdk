@@ -101,7 +101,7 @@ export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNav
   return {
     visibilityState: document.visibilityState,
     totalNavigationTime: toFaroPerformanceTimingString(duration),
-    pagLoadTime: toFaroPerformanceTimingString(domComplete - fetchStart),
+    pageLoadTime: toFaroPerformanceTimingString(domComplete - fetchStart),
     documentProcessingDuration: toFaroPerformanceTimingString(loadEventEnd - responseEnd),
     domLoadTime: toFaroPerformanceTimingString(loadEventEnd - domContentLoadedEventEnd),
     scriptProcessingDuration: toFaroPerformanceTimingString(domContentLoadedEventEnd - domContentLoadedEventStart),
