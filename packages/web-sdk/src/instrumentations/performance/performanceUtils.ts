@@ -54,7 +54,7 @@ export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourc
     redirectTime: toFaroPerformanceTimingString(redirectEnd - redirectStart),
     requestTime: toFaroPerformanceTimingString(responseStart - requestStart),
     fetchTime: toFaroPerformanceTimingString(responseEnd - fetchStart),
-    serviceWorkerProcessingTime: toFaroPerformanceTimingString(fetchStart - workerStart),
+    serviceWorkerTime: toFaroPerformanceTimingString(fetchStart - workerStart),
     decodedBodySize: toFaroPerformanceTimingString(decodedBodySize),
     encodedBodySize: toFaroPerformanceTimingString(encodedBodySize),
     cacheHitStatus: getCacheType(),

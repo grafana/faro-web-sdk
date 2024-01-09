@@ -27,7 +27,7 @@ describe('performanceUtils', () => {
       redirectTime: '1',
       requestTime: '109',
       fetchTime: '305',
-      serviceWorkerProcessingTime: '237',
+      serviceWorkerTime: '237',
       decodedBodySize: '530675',
       encodedBodySize: '126111',
       cacheHitStatus: 'fullLoad',

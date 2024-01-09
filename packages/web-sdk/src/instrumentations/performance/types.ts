@@ -18,7 +18,7 @@ export type FaroResourceTiming = Readonly<{
   redirectTime: string;
   requestTime: string;
   fetchTime: string;
-  serviceWorkerProcessingTime: string;
+  serviceWorkerTime: string;
   decodedBodySize: string;
   encodedBodySize: string;
   cacheHitStatus: 'cache' | 'conditionalFetch' | 'fullLoad';
