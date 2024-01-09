@@ -37,3 +37,5 @@ export type FaroResourceItem = {
   faroNavigationId: string;
   faroResourceId: string;
 } & FaroResourceTiming;
+
+export type CacheType = 'cache' | 'conditionalFetch' | 'fullLoad';

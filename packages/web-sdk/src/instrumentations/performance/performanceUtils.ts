@@ -1,4 +1,4 @@
-import type { FaroNavigationTiming, FaroResourceTiming } from './types';
+import type { CacheType, FaroNavigationTiming, FaroResourceTiming } from './types';
 
 export function performanceObserverSupported(): boolean {
   return 'PerformanceObserver' in window;
@@ -66,8 +66,8 @@ export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourc
     // serverTiming: resourceEntryRaw.serverTiming,
   };
 
-  function getCacheType(): 'cache' | 'conditionalFetch' | 'fullLoad' {
-    let cacheType: 'cache' | 'conditionalFetch' | 'fullLoad' = 'fullLoad';
+  function getCacheType(): CacheType {
+    let cacheType: CacheType = 'fullLoad';
     if (transferSize === 0) {
       if (decodedBodySize > 0) {
         cacheType = 'cache';
