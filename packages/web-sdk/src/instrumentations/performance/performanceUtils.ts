@@ -87,13 +87,15 @@ export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourc
 
 export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
   const {
+    activationStart,
     domComplete,
     domContentLoadedEventEnd,
     domContentLoadedEventStart,
+    domInteractive,
     duration,
     fetchStart,
     loadEventEnd,
-    responseEnd,
+    loadEventStart,
     responseStart,
     type,
   } = navigationEntryRaw;
@@ -102,10 +104,14 @@ export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNav
     visibilityState: document.visibilityState,
     totalNavigationTime: toFaroPerformanceTimingString(duration),
     pageLoadTime: toFaroPerformanceTimingString(domComplete - fetchStart),
-    documentProcessingDuration: toFaroPerformanceTimingString(loadEventEnd - responseEnd),
-    domLoadTime: toFaroPerformanceTimingString(loadEventEnd - domContentLoadedEventEnd),
-    scriptProcessingDuration: toFaroPerformanceTimingString(domContentLoadedEventEnd - domContentLoadedEventStart),
-    ttfb: toFaroPerformanceTimingString(responseStart - fetchStart),
+    domProcessingTime: toFaroPerformanceTimingString(domComplete - domInteractive),
+    domContentLoadHandlerTime: toFaroPerformanceTimingString(domContentLoadedEventEnd - domContentLoadedEventStart),
+    onLoadTime: toFaroPerformanceTimingString(loadEventEnd - loadEventStart),
+
+    // For more accuracy on prerendered pages page we calculate relative top the activationStart instead of the start of the navigation.
+    // clamp to 0 if activationStart occurs after first byte is received.
+    ttfb: toFaroPerformanceTimingString(Math.max(responseStart - (activationStart ?? 0), 0)),
+
     type: type,
   };
 }

@@ -9,10 +9,10 @@ describe('performanceUtils', () => {
       visibilityState: 'visible',
       totalNavigationTime: '2700',
       pageLoadTime: '2441',
-      documentProcessingDuration: '2158',
-      domLoadTime: '1450',
-      scriptProcessingDuration: '3',
-      ttfb: '305',
+      domProcessingTime: '1431',
+      onLoadTime: '22',
+      domContentLoadHandlerTime: '3',
+      ttfb: '542',
       type: 'navigate',
     } as FaroNavigationTiming);
   });
