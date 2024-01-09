@@ -13,12 +13,16 @@ import type { GetWebInstrumentationsOptions } from './types';
 
 export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {
   const instrumentations: Instrumentation[] = [
-    new PerformanceInstrumentation(),
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
     new ViewInstrumentation(),
   ];
+
+  if (options.performanceInstrumentation === true) {
+    // ensure that it gets initialized as early as possible
+    instrumentations.unshift(new PerformanceInstrumentation());
+  }
 
   if (options.captureConsole !== false) {
     instrumentations.push(
