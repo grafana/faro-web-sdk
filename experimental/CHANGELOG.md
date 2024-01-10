@@ -2,14 +2,14 @@
 
 ## Next
 
-- enhancement (`@grafana/faro-transport-otlp-http`): Turn off beaconing if request body exceeds a
+- Enhancement (`@grafana/faro-transport-otlp-http`): Turn off beaconing if request body exceeds a
   certain size limit (#431).
 
 ## 1.3.0 – 1.3.5
 
-- fix (`@grafana/faro-instrumentation-fetch`): only add custom headers to requests sent to the same
+- Fix (`@grafana/faro-instrumentation-fetch`): only add custom headers to requests sent to the same
   origin as the document (#427)
-- fix (`@grafana/faro-instrumentation-xhr`): only add custom headers to requests sent to the same
+- Fix (`@grafana/faro-instrumentation-xhr`): only add custom headers to requests sent to the same
   origin as the document (#427)
 
 ## 1.3.0
