@@ -2,8 +2,8 @@
 
 ## Next
 
-- Enhancement (`@grafana/faro-web-tracing`): Add `deployment.environment` filled with the value of
-  the MetaApp environment variable (#453)
+- Enhancement (`@grafana/faro-web-tracing`): Automatically add the value of the MetaApp environment
+  property to the resource attributes `deployment.environment` property (#453)
 
 - Chore (`@grafana/faro-web-sdk`): change storage key prefix for faro session to use reverse domain
   notation (#432)
