@@ -2,38 +2,40 @@
 
 ## Next
 
-- Enhancement (`@grafana/faro-web-tracing`): Add `deployment.environment` filled with the value of
-  the MetaApp environment variable (#453)
-- chore (`@grafana/faro-web-sdk`): change storage key prefix for faro session to use reverse domain
+- Enhancement (`@grafana/faro-web-tracing`): Automatically add the value of the MetaApp environment
+  property to the resource attributes `deployment.environment` property (#453)
+
+- Chore (`@grafana/faro-web-sdk`): change storage key prefix for faro session to use reverse domain
   notation (#432)
-- fix (`@grafana/faro-core`): fix the check for the presence of Event (#436)
-- fix (`Demo App`): Build error due to missing virtual env (#448)
+
+- Fix (`@grafana/faro-core`): fix the check for the presence of Event (#436)
+- Fix (`Demo App`): Build error due to missing virtual env (#448)
 
 ## 1.3.5
 
-- fix (`@grafana/faro-web-sdk`): Multiple session_extend events were emitted if multiple
+- Fix (`@grafana/faro-web-sdk`): Multiple session_extend events were emitted if multiple
   browsing contexts were open when a session was auto-extended (#428)
-- fix (`@grafana/faro-web-sdk`): guard against missing `isSampled` (#425)
+- Fix (`@grafana/faro-web-sdk`): guard against missing `isSampled` (#425)
 
 ## 1.3.4
 
-- fix (`@grafana/faro-web-sdk`): `generateSessionId()` was executed twice (#423)
+- Fix (`@grafana/faro-web-sdk`): `generateSessionId()` was executed twice (#423)
 
 ## 1.3.3
 
-- fix (`@grafana/faro-web-sdk`): user defined session attributes added during initialize were not
+- Fix (`@grafana/faro-web-sdk`): user defined session attributes added during initialize were not
   picked up (#420)
-- feat (`@grafana/faro-web-sdk`): provide custom `generateSessionId()` function which Faro will use
+- Feat (`@grafana/faro-web-sdk`): provide custom `generateSessionId()` function which Faro will use
   instead of the internal sessionId generator if configured (#421).
 
 ## 1.3.2
 
-- fix (`@grafana/faro-web-sdk`): Fixed an issue where the session meta was missing in session
+- Fix (`@grafana/faro-web-sdk`): Fixed an issue where the session meta was missing in session
   lifecyle events sent during the init phase (#417).
 
 ## 1.3.1
 
-- fix (`@grafana/faro-web-sdk`): Fixed an issue where the first calculated session was always part of the sample (#415).
+- Fix (`@grafana/faro-web-sdk`): Fixed an issue where the first calculated session was always part of the sample (#415).
 
 ## 1.3.0
 
