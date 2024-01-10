@@ -2,6 +2,8 @@
 
 ## Next
 
+- Enhancement (`@grafana/faro-web-tracing`): Add `deployment.environment` filled with the value of
+  the MetaApp environment variable (#453)
 - chore (`@grafana/faro-web-sdk`): change storage key prefix for faro session to use reverse domain
   notation (#432)
 - fix (`@grafana/faro-core`): fix the check for the presence of Event (#436)

@@ -39,6 +39,10 @@ export class TracingInstrumentation extends BaseInstrumentation {
       attributes[SemanticResourceAttributes.SERVICE_VERSION] = this.config.app.version;
     }
 
+    if (this.config.app.environment) {
+      attributes[SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT] = this.config.app.environment;
+    }
+
     Object.assign(attributes, options.resourceAttributes);
 
     const resource = Resource.default().merge(new Resource(attributes));
