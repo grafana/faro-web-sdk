@@ -52,12 +52,9 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.7.0",
-    "@opentelemetry/otlp-transformer": "^0.45.1",
-    "murmurhash-js": "^1.0.0"
+    "@opentelemetry/otlp-transformer": "^0.45.1"
   },
-  "devDependencies": {
-    "@types/murmurhash-js": "^1.0.4"
-  },
+  "devDependencies": {},
   "publishConfig": {
     "access": "public"
   }
