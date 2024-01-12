@@ -19,7 +19,7 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
     new ViewInstrumentation(),
   ];
 
-  if (options.performanceInstrumentation === true) {
+  if (options.enablePerformanceInstrumentation === true) {
     // ensure that it gets initialized as early as possible
     instrumentations.unshift(new PerformanceInstrumentation());
   }

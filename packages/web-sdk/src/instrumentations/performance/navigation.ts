@@ -7,7 +7,7 @@ import { NAVIGATION_ENTRY, NAVIGATION_ID_STORAGE_KEY } from './performanceConsta
 import { calculateFaroNavigationTiming, calculateFaroResourceTiming, entryUrlIsIgnored } from './performanceUtils';
 import type { FaroNavigationItem } from './types';
 
-export function observeAndGetNavigationTimings(
+export function getNavigationTimings(
   pushEvent: EventsAPI['pushEvent'],
   ignoredUrls: Array<string | RegExp>
 ): Promise<FaroNavigationItem> {

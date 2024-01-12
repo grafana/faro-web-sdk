@@ -80,7 +80,7 @@ describe('Performance Instrumentation', () => {
     jest.spyOn(resourceModule, 'observeResourceTimings').mockImplementationOnce(mockObserveResourceTimings);
 
     const mockObserveAndGetNavigationTimings = jest.fn();
-    jest.spyOn(navigationModule, 'observeAndGetNavigationTimings').mockImplementationOnce(() => {
+    jest.spyOn(navigationModule, 'getNavigationTimings').mockImplementationOnce(() => {
       mockObserveAndGetNavigationTimings();
       return Promise.resolve({ faroNavigationId: '123' } as FaroNavigationItem);
     });

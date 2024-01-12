@@ -12,11 +12,14 @@ export function onDocumentReady(handleReady: () => void) {
   if (document.readyState === 'complete') {
     handleReady();
   } else {
-    document.addEventListener('readystatechange', () => {
+    const readyStateCompleteHandler = () => {
       if (document.readyState === 'complete') {
         handleReady();
+        document.removeEventListener('readystatechange', readyStateCompleteHandler);
       }
-    });
+    };
+
+    document.addEventListener('readystatechange', readyStateCompleteHandler);
   }
 }
 

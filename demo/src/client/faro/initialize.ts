@@ -33,10 +33,6 @@ export function initializeFaro(): Faro {
         },
       }),
     ],
-    // batching: {
-    // disable batching if you want to inspect a single request per signal
-    //   enabled: false,
-    // },
     app: {
       name: env.client.packageName,
       version: env.package.version,
