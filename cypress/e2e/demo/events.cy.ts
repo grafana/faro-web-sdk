@@ -1,4 +1,4 @@
-import type { TransportBody } from '@grafana/faro-core';
+import type { EventEvent, TransportBody } from '@grafana/faro-core';
 
 context('Events', () => {
   [
@@ -6,7 +6,7 @@ context('Events', () => {
       title: 'an event',
       btnName: 'event-with-attrs',
       aliasGenerator: (body: TransportBody) => {
-        const item = body.events?.[0]!;
+        const item = body.events.find((e: EventEvent) => e.name === 'click_button_with_attributes');
 
         return item?.attributes?.['foo'] === 'bar' && item?.attributes?.['baz'] === 'bad' ? 'event' : undefined;
       },

@@ -33,11 +33,6 @@ export function initializeFaro(): Faro {
         },
       }),
     ],
-    batching: {
-      // Batching is enabled by default and there is normally no reason to disable it.
-      // We did it in the demo so users can inspect each single requests sent due to certain interactions.
-      enabled: false,
-    },
     app: {
       name: env.client.packageName,
       version: env.package.version,

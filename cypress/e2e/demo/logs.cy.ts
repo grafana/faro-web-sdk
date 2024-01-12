@@ -1,16 +1,14 @@
-import { LogLevel } from '@grafana/faro-core';
+import { LogEvent, LogLevel } from '@grafana/faro-core';
 
 context('Logs', () => {
   [LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR].forEach((level) => {
     it(`will capture ${level} level`, () => {
       cy.interceptCollector((body) => {
-        const item = body.logs?.[0];
+        const item = body.logs?.find(
+          (item: LogEvent) => item?.level === level && item?.message === `This is a console ${level} message`
+        );
 
-        if (item?.level === level && item?.message === `This is a console ${level} message`) {
-          return 'log';
-        }
-
-        return undefined;
+        return item != null ? 'log' : undefined;
       });
 
       cy.visit('/features');

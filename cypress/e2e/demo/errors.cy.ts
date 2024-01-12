@@ -1,3 +1,5 @@
+import { ExceptionEvent } from '@grafana/faro-core';
+
 context('Errors', () => {
   [
     {
@@ -25,17 +27,14 @@ context('Errors', () => {
   ].forEach(({ title, btnName, type = 'Error', value, expectStacktrace = true }) => {
     it(`will capture ${title}`, () => {
       cy.interceptCollector((body) => {
-        const item = body.exceptions?.[0];
+        const item = body.exceptions?.find(
+          (item: ExceptionEvent) =>
+            item?.type === type &&
+            item?.value === value &&
+            ((!expectStacktrace || item?.stacktrace?.frames.length) ?? 0 > 1)
+        );
 
-        if (
-          item?.type === type &&
-          item?.value === value &&
-          ((!expectStacktrace || item?.stacktrace?.frames.length) ?? 0 > 1)
-        ) {
-          return 'exception';
-        }
-
-        return undefined;
+        return item != null ? 'exception' : undefined;
       });
 
       cy.on('uncaught:exception', () => false);

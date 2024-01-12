@@ -8,4 +8,9 @@ export interface BrowserConfig extends Partial<Omit<Config, 'app' | 'parseStackt
 export interface GetWebInstrumentationsOptions {
   captureConsole?: boolean;
   captureConsoleDisabledLevels?: LogLevel[];
+  /**
+   * The performance instrumentation is currently in preview phase so it has to be enabled manually.
+   * Once preview phase is over, it is enabled by default.
+   */
+  enablePerformanceInstrumentation?: boolean;
 }

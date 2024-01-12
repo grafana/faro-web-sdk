@@ -1,7 +1,5 @@
-import { genShortID } from '@grafana/faro-core';
+import { faro, genShortID } from '@grafana/faro-core';
 import type { MetaSession } from '@grafana/faro-core';
-
-import { faro } from '../..';
 
 export function createSession(attributes?: MetaSession['attributes']): MetaSession {
   return {

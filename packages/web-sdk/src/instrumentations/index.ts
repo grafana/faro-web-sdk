@@ -25,3 +25,5 @@ export {
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,
 } from './session';
+
+export { PerformanceInstrumentation } from './performance';

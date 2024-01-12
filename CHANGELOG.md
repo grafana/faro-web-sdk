@@ -2,10 +2,12 @@
 
 ## Next
 
+- Feature (`@grafana/faro-web-sdk`): instrument navigation and resource timings by default (#434)
+
 - Enhancement (`@grafana/faro-web-tracing`): Automatically add the value of the MetaApp environment
   property to the resource attributes `deployment.environment` property (#453)
 
-- Chore (`@grafana/faro-web-sdk`): change storage key prefix for faro session to use reverse domain
+- Chore (`@grafana/faro-web-sdk`): change storage key prefix for Faro session to use reverse domain
   notation (#432)
 
 - Fix (`@grafana/faro-core`): fix the check for the presence of Event (#436)
