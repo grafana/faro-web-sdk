@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-instrumentation-performance-timeline",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "description": "Faro instrumentation to capture Browser Performance Timeline data.",
   "keywords": [
     "observability",
@@ -50,7 +50,7 @@
     "quality:circular-deps": "madge --circular ."
   },
   "devDependencies": {
-    "@grafana/faro-core": "^1.3.5"
+    "@grafana/faro-core": "^1.3.6"
   },
   "publishConfig": {
     "access": "public"
