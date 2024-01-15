@@ -2,8 +2,12 @@
 
 ## Next
 
+## 1.3.6
+
 - Enhancement (`@grafana/faro-transport-otlp-http`): Turn off beaconing if request body exceeds a
   certain size limit (#431).
+- Enhancement (`@grafana/faro-transport-otlp-http`): Provide option to add body fields to Exceptions
+  and measurements. (#430).
 
 ## 1.3.0 – 1.3.5
 
