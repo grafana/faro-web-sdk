@@ -2,16 +2,15 @@
 
 ## Next
 
-- Feature (`@grafana/faro-web-sdk`): instrument navigation and resource timings by default (#434)
+## 1.3.6
 
+- Feature preview (`@grafana/faro-web-sdk`): instrument navigation and resource timings. As long as
+  this feature is in preview it is disabled by default (#434)
 - Enhancement (`@grafana/faro-web-tracing`): Automatically add the value of the MetaApp environment
   property to the resource attributes `deployment.environment` property (#453)
-
-- Chore (`@grafana/faro-web-sdk`): change storage key prefix for Faro session to use reverse domain
+- Change (`@grafana/faro-web-sdk`): change storage key prefix for Faro session to use reverse domain
   notation (#432)
-
-- Fix (`@grafana/faro-core`): fix the check for the presence of Event (#436)
-- Fix (`Demo App`): Build error due to missing virtual env (#448)
+- Fix (`@grafana/faro-core`): make check for presence of Event more robust (#436)
 
 ## 1.3.5
 
