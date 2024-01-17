@@ -1,5 +1,3 @@
-import { murmur3 } from 'murmurhash-js';
-
 import type { TransportItem } from '../';
 
 import type { BatchExecutorOptions, SendFn } from './types';
@@ -61,9 +59,9 @@ export class BatchExecutor {
   }
 
   groupItems(items: TransportItem[]): TransportItem[][] {
-    const itemMap = new Map<number, TransportItem[]>();
+    const itemMap = new Map<string, TransportItem[]>();
     items.forEach((item) => {
-      const metaKey = murmur3(JSON.stringify(item.meta));
+      const metaKey = JSON.stringify(item.meta);
 
       let currentItems = itemMap.get(metaKey);
       if (currentItems === undefined) {
