@@ -26,6 +26,7 @@ describe('performanceUtils', () => {
       tlsNegotiationTime: '33',
       redirectTime: '1',
       requestTime: '109',
+      responseTime: '0',
       fetchTime: '305',
       serviceWorkerTime: '237',
       decodedBodySize: '530675',

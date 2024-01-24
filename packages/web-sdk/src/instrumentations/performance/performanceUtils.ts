@@ -56,6 +56,7 @@ export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourc
     tlsNegotiationTime: toFaroPerformanceTimingString(requestStart - secureConnectionStart),
     redirectTime: toFaroPerformanceTimingString(redirectEnd - redirectStart),
     requestTime: toFaroPerformanceTimingString(responseStart - requestStart),
+    responseTime: toFaroPerformanceTimingString(responseEnd - responseStart),
     fetchTime: toFaroPerformanceTimingString(responseEnd - fetchStart),
     serviceWorkerTime: toFaroPerformanceTimingString(fetchStart - workerStart),
     decodedBodySize: toFaroPerformanceTimingString(decodedBodySize),

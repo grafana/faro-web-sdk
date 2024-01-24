@@ -18,6 +18,7 @@ export type FaroResourceTiming = Readonly<{
   redirectTime: string;
   requestTime: string;
   fetchTime: string;
+  responseTime: string;
   serviceWorkerTime: string;
   decodedBodySize: string;
   encodedBodySize: string;

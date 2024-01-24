@@ -2,6 +2,8 @@
 
 ## Next
 
+- Enhancement (`@grafana/faro-web-sdk`): add response time to performance timings (#465).
+
 ## 1.3.6
 
 - Feature preview (`@grafana/faro-web-sdk`): instrument navigation and resource timings. As long as
