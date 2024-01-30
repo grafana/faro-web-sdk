@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.3.7
+
 - Enhancement (`@grafana/faro-web-sdk`): add response time to performance timings (#465).
 - Deps (`@grafana/faro-web-tracing`): Update `instrumentation-document-load` which prevents build.
   from breaking (#467).
