@@ -2,6 +2,8 @@
 
 ## Next
 
+- Enhancement (`@grafana/faro-core`): sourcemap uploads - add `buildId` to the `MetaApp` `Meta` object (#476).
+
 ## 1.3.7
 
 - Enhancement (`@grafana/faro-web-sdk`): add response time to performance timings (#465).
