@@ -30,7 +30,11 @@ describe('metas', () => {
 
   it('can get the build ID from the global object', () => {
     (global as any).FARO_BUILD_ID_TEST = 'fizzbuzz';
-    const { metas: { value: { app } } } = initializeFaro(mockConfig());
+    const {
+      metas: {
+        value: { app },
+      },
+    } = initializeFaro(mockConfig());
 
     expect(app?.buildId).toEqual('fizzbuzz');
   });
