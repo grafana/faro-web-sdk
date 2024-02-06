@@ -8,6 +8,9 @@ export function registerInitialMetas(faro: Faro): void {
     sdk: {
       version: VERSION,
     },
+    app: {
+      buildId: faro.config.app.name ? faro.api.getBuildId(faro.config.app.name) : undefined,
+    }
   };
 
   const session = faro.config.sessionTracking?.session;
@@ -16,7 +19,7 @@ export function registerInitialMetas(faro: Faro): void {
   }
 
   if (faro.config.app) {
-    initial.app = faro.config.app;
+    initial.app = {...faro.config.app, ...initial.app};
   }
 
   if (faro.config.user) {

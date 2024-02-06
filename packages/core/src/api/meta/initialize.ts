@@ -1,4 +1,5 @@
 import type { Config } from '../../config';
+import { globalObject } from '../../globalObject';
 import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas } from '../../metas';
 import type { Transports } from '../../transports';
@@ -65,6 +66,8 @@ export function initializeMetaAPI(
 
   const getView: MetaAPI['getView'] = () => metas.value.view;
 
+  const getBuildId: MetaAPI['getBuildId'] = (appName) => (globalObject as any)?.[`FARO_BUILD_ID_${appName.toUpperCase()}`];
+
   return {
     setUser,
     resetUser: setUser as MetaAPI['resetUser'],
@@ -73,5 +76,6 @@ export function initializeMetaAPI(
     getSession,
     setView,
     getView,
+    getBuildId,
   };
 }

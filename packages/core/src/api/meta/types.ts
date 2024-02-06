@@ -8,4 +8,5 @@ export interface MetaAPI {
   getSession: () => MetaSession | undefined;
   setView: (view?: MetaView | undefined) => void;
   getView: () => MetaView | undefined;
+  getBuildId: (appName: string) => string | undefined;
 }
