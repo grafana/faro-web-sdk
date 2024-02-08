@@ -2,7 +2,8 @@
 
 ## Next
 
-- Enhancement (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object (#476).
+- Feature (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object (#476).
+- Deps (`@grafana/faro-web-tracing`, `@grafana/faro-core`): Update OpenTelemetry dependencies (#475).
 
 ## 1.3.7
 
