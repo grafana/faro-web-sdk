@@ -3,11 +3,11 @@ import { mockConfig } from '../testUtils';
 
 describe('metas', () => {
   beforeAll(() => {
-    delete (global as any).FARO_BUILD_ID_TEST;
+    delete (global as any).FARO_BUNDLE_ID_TEST;
   });
 
   afterAll(() => {
-    delete (global as any).FARO_BUILD_ID_TEST;
+    delete (global as any).FARO_BUNDLE_ID_TEST;
   });
 
   it('can set listeners and they will be notified on meta changes', () => {
@@ -29,13 +29,13 @@ describe('metas', () => {
   });
 
   it('can get the build ID from the global object', () => {
-    (global as any).FARO_BUILD_ID_TEST = 'fizzbuzz';
+    (global as any).FARO_BUNDLE_ID_TEST = 'fizzbuzz';
     const {
       metas: {
         value: { app },
       },
     } = initializeFaro(mockConfig());
 
-    expect(app?.buildId).toEqual('fizzbuzz');
+    expect(app?.bundleId).toEqual('fizzbuzz');
   });
 });

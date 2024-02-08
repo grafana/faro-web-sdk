@@ -66,8 +66,8 @@ export function initializeMetaAPI(
 
   const getView: MetaAPI['getView'] = () => metas.value.view;
 
-  const getBuildId: MetaAPI['getBuildId'] = (appName) =>
-    (globalObject as any)?.[`FARO_BUILD_ID_${appName.toUpperCase()}`];
+  const getBundleId: MetaAPI['getBundleId'] = (appName) =>
+    (globalObject as any)?.[`FARO_BUNDLE_ID_${appName.toUpperCase()}`];
 
   return {
     setUser,
@@ -77,6 +77,6 @@ export function initializeMetaAPI(
     getSession,
     setView,
     getView,
-    getBuildId,
+    getBundleId,
   };
 }
