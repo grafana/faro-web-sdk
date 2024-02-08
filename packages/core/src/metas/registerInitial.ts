@@ -9,7 +9,7 @@ export function registerInitialMetas(faro: Faro): void {
       version: VERSION,
     },
     app: {
-      bundleId: faro.config.app.name ? faro.api.getBuildId(faro.config.app.name) : undefined,
+      bundleId: faro.config.app.name ? faro.api.getBundleId(faro.config.app.name) : undefined,
     },
   };
 

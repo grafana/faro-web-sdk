@@ -13,9 +13,9 @@ describe('metaApi', () => {
   it('can get the build ID from the global object', () => {
     const { api } = initializeFaro(mockConfig());
 
-    expect(api.getBuildId('foo')).toBeUndefined();
+    expect(api.getBundleId('foo')).toBeUndefined();
 
     (global as any).FARO_BUNDLE_ID_FOO = 'bar';
-    expect(api.getBuildId('foo')).toEqual('bar');
+    expect(api.getBundleId('foo')).toEqual('bar');
   });
 });
