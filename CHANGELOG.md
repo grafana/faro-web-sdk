@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.3.8
+
 - Deps (`@grafana/faro-web-tracing`, `@grafana/faro-core`): Update OpenTelemetry dependencies (#475).
 
 ## 1.3.7
