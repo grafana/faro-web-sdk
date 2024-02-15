@@ -19,8 +19,8 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
     new ViewInstrumentation(),
   ];
 
-  if (options.enablePerformanceInstrumentation === true) {
-    // ensure that it gets initialized as early as possible
+  if (options.enablePerformanceInstrumentation !== false) {
+    // unshift to ensure that initialization starts before the other instrumentations
     instrumentations.unshift(new PerformanceInstrumentation());
   }
 
