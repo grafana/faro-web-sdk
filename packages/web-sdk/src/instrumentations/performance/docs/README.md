@@ -19,13 +19,16 @@ are loaded by a page, the loading performance of those resources and much more.
 The `PerformanceNavigationTiming` and `PerformanceResourceTiming` entries as emitted by the browser
 contain a lot of very technical information.
 
-To make it easier to use and interpret those metrics, Faro uses above events and calculates custom
-metrics from it, which it sends as events of type `faro.performance.navigation` and `faro.performance.navigation`.
+To make it easier to use and interpret those metrics, Faro uses above items and calculates custom
+metrics from them which it sends as events of type `faro.performance.navigation` and `faro.performance.resource`.
 Additionally it enriches these events with extra information which makes it possible to directly find out
 what resources belong to a specific navigation, mapping to the previous navigation and if a navigation
 was loaded in foreground or background.
 
 ## Metrics
+
+Faro calculates the following metrics from the `PerformanceNavigationTiming` and `PerformanceResourceTiming`
+emitted by the browser.
 
 todo: draw image
 
