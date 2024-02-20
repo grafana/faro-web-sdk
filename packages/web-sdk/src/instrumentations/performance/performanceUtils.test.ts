@@ -1,25 +1,20 @@
 import { calculateFaroNavigationTiming, calculateFaroResourceTiming } from './performanceUtils';
-import { performanceNavigationEntry } from './performanceUtilsTestData';
+import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
 import type { FaroNavigationTiming, FaroResourceTiming } from './types';
 
 describe('performanceUtils', () => {
-  it(`calculates navigation timings`, () => {
+  it(`calculates navigation timing`, () => {
     const faroNavigationTiming = calculateFaroNavigationTiming(performanceNavigationEntry);
     expect(faroNavigationTiming).toStrictEqual({
       visibilityState: 'visible',
-      totalNavigationTime: '2700',
+      duration: '2700',
       pageLoadTime: '2441',
       domProcessingTime: '1431',
       onLoadTime: '22',
       domContentLoadHandlerTime: '3',
       ttfb: '542',
       type: 'navigate',
-    } as FaroNavigationTiming);
-  });
 
-  it(`calculates resource timings`, () => {
-    const faroResourceTiming = calculateFaroResourceTiming(performanceNavigationEntry);
-    expect(faroResourceTiming).toStrictEqual({
       name: 'http://example.com',
       tcpHandshakeTime: '53',
       dnsLookupTime: '139',
@@ -35,6 +30,28 @@ describe('performanceUtils', () => {
       renderBlockingStatus: 'unknown',
       protocol: 'h2',
       initiatorType: 'navigation',
+    } as FaroNavigationTiming);
+  });
+
+  it(`calculates resource timings`, () => {
+    const faroResourceTiming = calculateFaroResourceTiming(performanceResourceEntry);
+    expect(faroResourceTiming).toStrictEqual({
+      name: 'http://example.com/awesome-image',
+      duration: '370',
+      tcpHandshakeTime: '0',
+      dnsLookupTime: '0',
+      tlsNegotiationTime: '11',
+      redirectTime: '0',
+      requestTime: '359',
+      responseTime: '0',
+      fetchTime: '370',
+      serviceWorkerTime: '778',
+      decodedBodySize: '10526',
+      encodedBodySize: '10526',
+      cacheHitStatus: 'fullLoad',
+      renderBlockingStatus: 'unknown',
+      protocol: 'h2',
+      initiatorType: 'img',
     } as FaroResourceTiming);
   });
 

@@ -52,7 +52,7 @@ export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourc
 
   return {
     name: name,
-    resourceLoadDuration: toFaroPerformanceTimingString(duration),
+    duration: toFaroPerformanceTimingString(duration),
     tcpHandshakeTime: toFaroPerformanceTimingString(connectEnd - connectStart),
     dnsLookupTime: toFaroPerformanceTimingString(domainLookupEnd - domainLookupStart),
     tlsNegotiationTime: toFaroPerformanceTimingString(requestStart - secureConnectionStart),
@@ -98,7 +98,6 @@ export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNav
     domContentLoadedEventEnd,
     domContentLoadedEventStart,
     domInteractive,
-    duration,
     fetchStart,
     loadEventEnd,
     loadEventStart,
@@ -108,7 +107,6 @@ export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNav
 
   return {
     visibilityState: document.visibilityState,
-    navigationDuration: toFaroPerformanceTimingString(duration),
     pageLoadTime: toFaroPerformanceTimingString(domComplete - fetchStart),
     domProcessingTime: toFaroPerformanceTimingString(domComplete - domInteractive),
     domContentLoadHandlerTime: toFaroPerformanceTimingString(domContentLoadedEventEnd - domContentLoadedEventStart),
@@ -119,6 +117,8 @@ export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNav
     ttfb: toFaroPerformanceTimingString(Math.max(responseStart - (activationStart ?? 0), 0)),
 
     type: type,
+
+    ...calculateFaroResourceTiming(navigationEntryRaw),
   };
 }
 
