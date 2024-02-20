@@ -2,6 +2,8 @@
 
 ## Next
 
+- Enhancement (`@grafana/faro-web-sdk`): add `duration` property to a `faro.performance.resource` timing (#490).
+
 ## 1.3.8
 
 - Deps (`@grafana/faro-web-tracing`, `@grafana/faro-core`): Update OpenTelemetry dependencies (#475).
