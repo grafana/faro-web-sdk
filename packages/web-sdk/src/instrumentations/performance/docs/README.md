@@ -27,10 +27,17 @@ was loaded in foreground or background.
 
 ## Metrics
 
-Faro calculates the following metrics from the `PerformanceNavigationTiming` and `PerformanceResourceTiming`
-emitted by the browser.
+Faro calculates the most important loading and rendering metrics alongside some other useful information
+and creates creates a `faro.performance.navigation` or `faro.performance.resource` respectively which contain that data.
 
-todo: draw image
+### faro.performance.resource
+
+The `faro.performance.resource` event contains data about the loading performance of the resources
+downloaded by during the a page load (navigation) such as images, CSS, JavaScript, fonts and so on.
+
+### faro.performance.navigation
+
+!["Timestamp diagram listing faro specific navigation timestamps in the order in which they are recorded for fetching and rendering of a document"](./faro-timestamp-diagram.png)
 
 ## How to use
 
