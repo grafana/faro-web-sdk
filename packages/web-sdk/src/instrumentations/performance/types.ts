@@ -1,5 +1,5 @@
 export type FaroNavigationTiming = Readonly<{
-  totalNavigationTime: string;
+  navigationDuration: string;
   visibilityState: DocumentVisibilityState;
   domProcessingTime: string;
   pageLoadTime: string;
@@ -11,6 +11,7 @@ export type FaroNavigationTiming = Readonly<{
 
 export type FaroResourceTiming = Readonly<{
   name: string;
+  resourceLoadDuration: string;
   protocol: string;
   tcpHandshakeTime: string;
   dnsLookupTime: string;
