@@ -4,8 +4,8 @@
 
 ## 1.3.9
 
-- Enhancement (`@grafana/faro-web-sdk`): add `duration` property to a `faro.performance.resource` timing and
-  rename property `totalNavigationTime` to `duration` in a `faro.performance.navigation event` (#490).
+- Enhancement (`@grafana/faro-web-sdk`): add `duration` property in `faro.performance.resource` timings and
+  rename property `totalNavigationTime` to `duration` in `faro.performance.navigation` timings (#490).
 - Fix (`@grafana/faro-web-sdk`): crash when navigator.userAgentData is undefined (#494).
 
 ## 1.3.8
