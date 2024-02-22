@@ -183,4 +183,18 @@ Possible values:
 ## Getting started
 
 The Performance Instrumentation is enabled by default.
-To disable it
+To disable it set `enablePerformanceInstrumentation` to false in te Faro config.
+
+```ts
+initializeFaro({
+  url: 'https://my-domain.my-tld/collect/{app-key}',
+  app: {
+    name: 'my-app',
+  },
+  instrumentations: [
+    ...getWebInstrumentations({
+      enablePerformanceInstrumentation: false,
+    }),
+  ],
+});
+```
