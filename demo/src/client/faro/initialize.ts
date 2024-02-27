@@ -38,6 +38,9 @@ export function initializeFaro(): Faro {
       version: env.package.version,
       environment: env.mode.name,
     },
+    sessionTracking: {
+      samplingRate: 1,
+    },
   });
 
   faro.api.pushLog(['Faro was initialized']);
