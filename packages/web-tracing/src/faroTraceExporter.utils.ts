@@ -34,7 +34,7 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
           }
         }
 
-        faro.api.pushEvent(`faro.trace.otel.${eventName}`, faroEventAttributes, undefined, { skipDedupe: true });
+        faro.api.pushEvent(`faro.tracing.${eventName}`, faroEventAttributes, undefined, { skipDedupe: true });
       }
     }
   }

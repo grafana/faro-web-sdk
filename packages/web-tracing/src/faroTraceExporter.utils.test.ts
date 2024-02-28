@@ -36,7 +36,8 @@ describe('faroTraceExporter.utils', () => {
     sendFaroEvents(testData);
 
     expect(mockPushEvent).toBeCalledTimes(1);
-    expect(mockPushEvent).toHaveBeenCalledWith('faro.trace.fetch', {
+    expect(mockPushEvent.mock.lastCall[0]).toBe('faro.tracing.fetch');
+    expect(mockPushEvent.mock.lastCall[1]).toStrictEqual({
       component: 'fetch',
       session_id: 'my-session-id',
       'http.host': 'my-host',
@@ -66,7 +67,7 @@ describe('faroTraceExporter.utils', () => {
     sendFaroEvents([data as any]);
 
     expect(mockPushEvent).toBeCalledTimes(1);
-    expect(mockPushEvent.mock.lastCall[0]).toBe('faro.trace.coolName');
+    expect(mockPushEvent.mock.lastCall[0]).toBe('faro.tracing.coolName');
   });
 });
 
