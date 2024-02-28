@@ -1,6 +1,6 @@
 import { SamplingDecision } from '@opentelemetry/sdk-trace-web';
 
-import { getSessionBasedSamplingDecision } from './sampler';
+import { getSamplingDecision } from './sampler';
 
 describe('Sampler', () => {
   afterEach(() => {
@@ -8,7 +8,7 @@ describe('Sampler', () => {
   });
 
   it('Set SamplingDecision to NOT_RECORD (0) if session is not part of the sample', () => {
-    const samplingDecision = getSessionBasedSamplingDecision({
+    const samplingDecision = getSamplingDecision({
       attributes: {
         isSampled: 'false',
       },
@@ -18,7 +18,7 @@ describe('Sampler', () => {
   });
 
   it('Set SamplingDecision to RECORD_AND_SAMPLED (2) if session is part of the sample', () => {
-    const samplingDecision = getSessionBasedSamplingDecision({
+    const samplingDecision = getSamplingDecision({
       attributes: {
         isSampled: 'true',
       },

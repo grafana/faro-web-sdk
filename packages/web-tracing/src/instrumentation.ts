@@ -10,7 +10,7 @@ import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-web-sdk';
 
 import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
-import { getSessionBasedSamplingDecision } from './sampler';
+import { getSamplingDecision } from './sampler';
 import { FaroSessionSpanProcessor } from './sessionSpanProcessor';
 import type { TracingInstrumentationOptions } from './types';
 
@@ -53,7 +53,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
       sampler: {
         shouldSample: () => {
           return {
-            decision: getSessionBasedSamplingDecision(this.api.getSession()),
+            decision: getSamplingDecision(this.api.getSession()),
           };
         },
       },
