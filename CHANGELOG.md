@@ -2,8 +2,10 @@
 
 ## Next
 
+## 1.4.0
+
 - Feat (`@grafana/faro-web-sdk`): Enable Faro Navigation and Resource timings instrumentation by default (#482).
-- Update (`@grafana/faro-web-tracing`): Send a dedicated Faro event for traces of kind=client (#499).
+- Enhancement (`@grafana/faro-web-tracing`): Send a dedicated Faro event for traces of kind=client (#499).
 
 ## 1.3.9
 
