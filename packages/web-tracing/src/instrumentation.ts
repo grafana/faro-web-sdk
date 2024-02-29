@@ -10,6 +10,7 @@ import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-web-sdk';
 
 import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
+import { getSamplingDecision } from './sampler';
 import { FaroSessionSpanProcessor } from './sessionSpanProcessor';
 import type { TracingInstrumentationOptions } from './types';
 
@@ -47,7 +48,16 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     const resource = Resource.default().merge(new Resource(attributes));
 
-    const provider = new WebTracerProvider({ resource });
+    const provider = new WebTracerProvider({
+      resource,
+      sampler: {
+        shouldSample: () => {
+          return {
+            decision: getSamplingDecision(this.api.getSession()),
+          };
+        },
+      },
+    });
 
     provider.addSpanProcessor(
       options.spanProcessor ??

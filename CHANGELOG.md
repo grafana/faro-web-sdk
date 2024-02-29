@@ -2,6 +2,9 @@
 
 ## Next
 
+- Feat (`@grafana/faro-web-sdk`): Enable Faro Navigation and Resource timings instrumentation by default (#482).
+- Update (`@grafana/faro-web-tracing`): Send a dedicated Faro event for traces of kind=client (#499).
+
 ## 1.3.9
 
 - Enhancement (`@grafana/faro-web-sdk`): add `duration` property in `faro.performance.resource` timings and
@@ -11,7 +14,6 @@
 ## 1.3.8
 
 - Deps (`@grafana/faro-web-tracing`, `@grafana/faro-core`): Update OpenTelemetry dependencies (#475).
-- Feat (`@grafana/faro-web-sdk`): Enable Faro Navigation and Resource timings instrumentation by default (#482).
 
 ## 1.3.7
 
