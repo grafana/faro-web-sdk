@@ -8,6 +8,7 @@ import {
 } from '@grafana/faro-react';
 import type { Faro } from '@grafana/faro-react';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+import { SessionReplayInstrumentation } from './../../../../experimental/session-replay/src/instrumentation.ts';
 
 import { env } from '../utils';
 
@@ -19,19 +20,8 @@ export function initializeFaro(): Faro {
       ...getWebInstrumentations({
         captureConsole: true,
       }),
+      new SessionReplayInstrumentation(),
       new TracingInstrumentation(),
-      new ReactIntegration({
-        router: {
-          version: ReactRouterVersion.V6,
-          dependencies: {
-            createRoutesFromChildren,
-            matchRoutes,
-            Routes,
-            useLocation,
-            useNavigationType,
-          },
-        },
-      }),
     ],
     session: (window as any).__PRELOADED_STATE__?.faro?.session,
     batching: {

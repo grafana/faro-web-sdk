@@ -1,4 +1,4 @@
-import { Route } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 
 import { FaroRoutes } from '@grafana/faro-react';
 
@@ -9,7 +9,7 @@ import { LoggedInGuard, LoggedOutGuard } from './guards';
 
 export function Router() {
   return (
-    <FaroRoutes>
+    <Routes>
       <Route
         path="/auth"
         element={
@@ -41,6 +41,6 @@ export function Router() {
         <Route path="features" element={<Features />} />
         <Route path="seed" element={<Seed />} />
       </Route>
-    </FaroRoutes>
+    </Routes>
   );
 }

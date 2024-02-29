@@ -12,7 +12,7 @@
     "useDefineForClassFields": true,
     "useUnknownInCatchVariables": false
   },
-  "include": ["./src", "./vite.config.ts"],
+  "include": ["./src", "./vite.config.ts", "./../experimental"],
   "exclude": ["**/*.test.ts"],
   "references": [
     { "path": "../packages/core/tsconfig.esm.json" },
