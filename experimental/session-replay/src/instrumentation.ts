@@ -1,6 +1,7 @@
-import { BaseInstrumentation, isArray, isObject, VERSION } from '@grafana/faro-core';
-
 import { record } from 'rrweb';
+
+import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
+
 
 /**
  * Instrumentation for Performance Timeline API
@@ -18,7 +19,7 @@ export class SessionReplayInstrumentation extends BaseInstrumentation {
   initialize(): void {
     this.stopFn = record({
       emit: (event) => {
-        this.faro.api.pushEvent('replay_event', {
+        faro.api.pushEvent('replay_event', {
           "timestamp": event.timestamp.toString(),
           "delay": event.delay?.toString() ?? "",
           "type": event.type.toString(),
