@@ -2,6 +2,10 @@
 
 ## Next
 
+## 1.4.1
+
+- Enhancement (`@grafana/faro-web-tracing`): Dedupe Faro trace events (#507).
+
 ## 1.4.0
 
 - Feat (`@grafana/faro-web-sdk`): Enable Faro Navigation and Resource timings instrumentation by default (#482).
