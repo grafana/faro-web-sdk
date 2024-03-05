@@ -16,8 +16,6 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
           continue;
         }
 
-        console.log('span :>> ', span);
-
         const spanContext: Pick<SpanContext, 'traceId' | 'spanId'> = {
           traceId: span.traceId,
           spanId: span.spanId,
