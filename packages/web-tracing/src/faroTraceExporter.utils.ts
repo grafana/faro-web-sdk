@@ -1,3 +1,4 @@
+import type { SpanContext } from '@opentelemetry/api';
 import { ESpanKind, IResourceSpans } from '@opentelemetry/otlp-transformer';
 
 import { faro } from '@grafana/faro-core';
@@ -14,6 +15,13 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
         if (span.kind !== ESpanKind.SPAN_KIND_CLIENT) {
           continue;
         }
+
+        console.log('span :>> ', span);
+
+        const spanContext: Pick<SpanContext, 'traceId' | 'spanId'> = {
+          traceId: span.traceId,
+          spanId: span.spanId,
+        };
 
         const faroEventAttributes: FaroEventAttributes = {};
 
@@ -34,7 +42,7 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
           }
         }
 
-        faro.api.pushEvent(`faro.tracing.${eventName}`, faroEventAttributes);
+        faro.api.pushEvent(`faro.tracing.${eventName}`, faroEventAttributes, undefined, { spanContext });
       }
     }
   }
