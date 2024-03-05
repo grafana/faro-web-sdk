@@ -23,7 +23,9 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
           spanId: span.spanId,
         };
 
-        const faroEventAttributes: FaroEventAttributes = {};
+        const faroEventAttributes: FaroEventAttributes = {
+          ...spanContext,
+        };
 
         for (const attribute of span.attributes) {
           faroEventAttributes[attribute.key] = String(Object.values(attribute.value)[0]);
