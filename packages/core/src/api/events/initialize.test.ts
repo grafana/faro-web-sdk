@@ -2,6 +2,8 @@ import { initializeFaro } from '../../initialize';
 import { mockConfig, MockTransport } from '../../testUtils';
 import type { API } from '../types';
 
+import type { EventEvent, PushEventOptions } from './types';
+
 describe('api.events', () => {
   function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [API, MockTransport] {
     const transport = new MockTransport();
@@ -94,6 +96,24 @@ describe('api.events', () => {
 
         api.pushEvent('test', {}, undefined, { skipDedupe: true });
         expect(transport.items).toHaveLength(2);
+      });
+
+      it('Uses traceId and spanId from custom context', () => {
+        const spanContext: PushEventOptions['spanContext'] = {
+          traceId: 'my-trace-id',
+          spanId: 'my-span-id',
+        };
+
+        const mockGetTraceContext = jest.fn();
+        jest.spyOn(api, 'getTraceContext').mockImplementationOnce(mockGetTraceContext);
+
+        api.pushEvent('test', undefined, undefined, { spanContext });
+
+        expect(mockGetTraceContext).not.toHaveBeenCalled();
+        expect((transport.items[0]?.payload as EventEvent).trace).toStrictEqual({
+          trace_id: 'my-trace-id',
+          span_id: 'my-span-id',
+        });
       });
     });
   });
