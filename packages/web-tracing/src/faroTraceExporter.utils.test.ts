@@ -69,6 +69,30 @@ describe('faroTraceExporter.utils', () => {
     expect(mockPushEvent).toBeCalledTimes(1);
     expect(mockPushEvent.mock.lastCall[0]).toBe('faro.tracing.coolName');
   });
+
+  it('Call Faro event API with traceID and spanID of contained in teh span', () => {
+    const faro = initializeFaro(mockConfig());
+
+    const mockPushEvent = jest.fn();
+    jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
+
+    // add scope name without "-"
+    const data = {
+      ...testData[0],
+      scopeSpans: testData[0]?.scopeSpans.map((s) => ({ ...s })),
+    };
+    data.scopeSpans!.at(-1)!.scope.name = '@foo/coolName';
+
+    sendFaroEvents([data as any]);
+
+    expect(mockPushEvent).toBeCalledTimes(1);
+    expect(mockPushEvent.mock.lastCall[3]).toStrictEqual({
+      spanContext: {
+        spanId: '4c47d5f85e4b2aec',
+        traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
+      },
+    });
+  });
 });
 
 // some unnecessary parts are removed to shorten the object a bit.
