@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.4.2
+
 - Fix (`@grafana/faro-web-sdk`): Session started timestamp was reset on page-loads (#513).
 - Fix (`@grafana/faro-web-tracing`): `faro.trace.*` attached spanContext from active span instead of
   the respective child span (#510).
