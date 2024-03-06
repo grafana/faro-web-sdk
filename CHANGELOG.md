@@ -2,7 +2,7 @@
 
 ## Next
 
-- Fix (`@grafana/faro-web-sdk`): Session started timestamp was reset on page-loads (#507).
+- Fix (`@grafana/faro-web-sdk`): Session started timestamp was reset on page-loads (#513).
 
 ## 1.4.1
 
