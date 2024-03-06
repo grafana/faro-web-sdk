@@ -3,7 +3,7 @@ import { mockConfig, MockTransport } from '../../testUtils';
 import { TransportItemType } from '../../transports';
 import type { API } from '../types';
 
-import type { ExceptionEvent, ExceptionStackFrame } from './types';
+import type { ExceptionEvent, ExceptionStackFrame, PushErrorOptions } from './types';
 
 describe('api.exceptions', () => {
   function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [API, MockTransport] {
@@ -177,6 +177,22 @@ describe('api.exceptions', () => {
 
         api.pushError(error, { context: { bar: 'baz' } });
         expect(transport.items).toHaveLength(2);
+      });
+
+      it('uses traceId and spanId from custom context', () => {
+        const spanContext: PushErrorOptions['spanContext'] = {
+          traceId: 'my-trace-id',
+          spanId: 'my-span-id',
+        };
+
+        const error = new Error('test');
+
+        api.pushError(error, { spanContext });
+        expect(transport.items).toHaveLength(1);
+        expect((transport.items[0]?.payload as ExceptionEvent).trace).toStrictEqual({
+          trace_id: 'my-trace-id',
+          span_id: 'my-span-id',
+        });
       });
     });
   });

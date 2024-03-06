@@ -1,3 +1,5 @@
+import type { SpanContext } from '@opentelemetry/api';
+
 import type { LogLevel } from '../../utils';
 import type { TraceContext } from '../traces';
 
@@ -16,6 +18,7 @@ export interface PushLogOptions {
   context?: LogContext;
   level?: LogLevel;
   skipDedupe?: boolean;
+  spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
 }
 
 export interface LogsAPI {

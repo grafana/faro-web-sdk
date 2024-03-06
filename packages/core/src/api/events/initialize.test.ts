@@ -98,7 +98,7 @@ describe('api.events', () => {
         expect(transport.items).toHaveLength(2);
       });
 
-      it('Uses traceId and spanId from custom context', () => {
+      it('uses traceId and spanId from custom context', () => {
         const spanContext: PushEventOptions['spanContext'] = {
           traceId: 'my-trace-id',
           spanId: 'my-span-id',

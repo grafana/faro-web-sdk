@@ -1,3 +1,5 @@
+import type { SpanContext } from '@opentelemetry/api';
+
 import type { TraceContext } from '../traces';
 
 export type StacktraceParser = (err: ExtendedError) => Stacktrace;
@@ -36,6 +38,7 @@ export interface PushErrorOptions {
   stackFrames?: ExceptionStackFrame[];
   type?: string;
   context?: ExceptionContext;
+  spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
 }
 
 export interface ExceptionsAPI {

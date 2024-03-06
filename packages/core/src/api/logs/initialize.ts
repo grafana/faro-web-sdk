@@ -21,7 +21,7 @@ export function initializeLogsAPI(
 
   let lastPayload: Pick<LogEvent, 'message' | 'level' | 'context'> | null = null;
 
-  const pushLog: LogsAPI['pushLog'] = (args, { context, level, skipDedupe } = {}) => {
+  const pushLog: LogsAPI['pushLog'] = (args, { context, level, skipDedupe, spanContext } = {}) => {
     try {
       const item: TransportItem<LogEvent> = {
         type: TransportItemType.LOG,
@@ -38,7 +38,12 @@ export function initializeLogsAPI(
           level: level ?? defaultLogLevel,
           context: context ?? {},
           timestamp: getCurrentTimestamp(),
-          trace: tracesApi.getTraceContext(),
+          trace: spanContext
+            ? {
+                trace_id: spanContext.traceId,
+                span_id: spanContext.spanId,
+              }
+            : tracesApi.getTraceContext(),
         },
         meta: metas.value,
       };
