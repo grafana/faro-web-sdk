@@ -304,7 +304,7 @@ describe('SessionInstrumentation', () => {
     });
   });
 
-  it('Initialize session meta with meta attributes from session picked up form web storage.', () => {
+  it('Initialize session meta with meta attributes from session picked up from web storage.', () => {
     const mockSessionMeta: MetaSession = {
       id: 'new-session',
       attributes: {
@@ -381,7 +381,8 @@ describe('SessionInstrumentation', () => {
   });
 
   it('creates new session meta with new sessionId for invalid tracked session which is within maxSessionPersistenceTime.', () => {
-    const mockUserSession = createUserSessionObject({ sessionId: 'persisted-session' });
+    const started = dateNow();
+    const mockUserSession = createUserSessionObject({ sessionId: 'persisted-session', started });
     mockUserSession.sessionMeta = {
       id: 'persisted-session',
     };
@@ -405,6 +406,10 @@ describe('SessionInstrumentation', () => {
 
     expect(removeItemSpy).toBeCalledTimes(0);
     expect(metas.value.session?.id).not.toBe(mockUserSession.sessionId);
+
+    const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]);
+    // creates new started timestamp
+    expect(sessionFromStorage.started).not.toBe(started);
   });
 
   it('Deletes persisted session if maxSessionPersistenceTime is reached and creates new session meta.', () => {
@@ -622,5 +627,34 @@ describe('SessionInstrumentation', () => {
 
     // Are all other attributes retained?
     expect(sentItems.every((item) => item.meta.session?.attributes?.['foo'] === 'bar')).toBe(true);
+  });
+
+  it('Keep value started timestamp for resumed sessions.', () => {
+    const transport = new MockTransport();
+
+    const sessionId = '123';
+    const started = dateNow() - 5 * 60 * 1000;
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(
+      createUserSessionObject({
+        sessionId,
+        started,
+      })
+    );
+
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+        },
+      })
+    );
+
+    const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]);
+
+    expect(sessionFromStorage.sessionId).toBe(sessionId);
+    expect(sessionFromStorage.started).toBe(started);
   });
 });
