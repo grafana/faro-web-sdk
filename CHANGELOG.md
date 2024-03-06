@@ -7,7 +7,7 @@
 - Fix (`@grafana/faro-web-sdk`): Session started timestamp was reset on page-loads (#513).
 - Fix (`@grafana/faro-web-tracing`): `faro.trace.*` attached spanContext from active span instead of
   the respective child span (#510).
-- Feat (`@grafana/faro-web-sdk`): Faro APIs now supports adding a custom traceId and spanId to
+- Feat (`@grafana/faro-web-sdk`): Faro APIs now support adding a custom traceId and spanId to
   signals (#510).
 
 ## 1.4.1
