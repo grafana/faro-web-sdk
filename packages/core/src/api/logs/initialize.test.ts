@@ -3,6 +3,8 @@ import { mockConfig, MockTransport } from '../../testUtils';
 import { LogLevel } from '../../utils';
 import type { API } from '../types';
 
+import type { LogEvent, PushLogOptions } from './types';
+
 describe('api.logs', () => {
   function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [API, MockTransport] {
     const transport = new MockTransport();
@@ -92,6 +94,21 @@ describe('api.logs', () => {
 
         api.pushLog(['test'], { skipDedupe: true });
         expect(transport.items).toHaveLength(2);
+      });
+
+      it('uses traceId and spanId from custom context', () => {
+        const spanContext: PushLogOptions['spanContext'] = {
+          traceId: 'my-trace-id',
+          spanId: 'my-span-id',
+        };
+
+        api.pushLog(['test'], { spanContext });
+        expect(transport.items).toHaveLength(1);
+
+        expect((transport.items[0]?.payload as LogEvent).trace).toStrictEqual({
+          trace_id: 'my-trace-id',
+          span_id: 'my-span-id',
+        });
       });
     });
   });

@@ -18,7 +18,7 @@ export function initializeEventsAPI(
 ): EventsAPI {
   let lastPayload: Pick<EventEvent, 'name' | 'domain' | 'attributes'> | null = null;
 
-  const pushEvent: EventsAPI['pushEvent'] = (name, attributes, domain, { skipDedupe } = {}) => {
+  const pushEvent: EventsAPI['pushEvent'] = (name, attributes, domain, { skipDedupe, spanContext } = {}) => {
     try {
       const item: TransportItem<EventEvent> = {
         meta: metas.value,
@@ -27,7 +27,12 @@ export function initializeEventsAPI(
           domain: domain ?? config.eventDomain,
           attributes,
           timestamp: getCurrentTimestamp(),
-          trace: tracesApi.getTraceContext(),
+          trace: spanContext
+            ? {
+                trace_id: spanContext.traceId,
+                span_id: spanContext.spanId,
+              }
+            : tracesApi.getTraceContext(),
         },
         type: TransportItemType.EVENT,
       };
