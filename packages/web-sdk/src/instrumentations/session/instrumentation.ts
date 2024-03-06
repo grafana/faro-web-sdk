@@ -19,6 +19,7 @@ import { createUserSessionObject, isUserSessionValid } from './sessionManager/se
 import { VolatileSessionsManager } from './sessionManager/VolatileSessionManager';
 
 type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;
+type SessionManager = typeof VolatileSessionsManager | typeof PersistentSessionsManager;
 
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
@@ -45,13 +46,14 @@ export class SessionInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private createInitialSessionMeta(sessionsConfig: Required<Config>['sessionTracking']): {
-    sessionMeta: MetaSession;
+  private createInitialSession(
+    SessionManager: SessionManager,
+    sessionsConfig: Required<Config>['sessionTracking']
+  ): {
+    initialSession: FaroUserSession;
     lifecycleType: LifecycleType;
   } {
-    const sessionManager = sessionsConfig.persistent ? PersistentSessionsManager : VolatileSessionsManager;
-
-    let userSession: FaroUserSession | null = sessionManager.fetchUserSession();
+    let userSession: FaroUserSession | null = SessionManager.fetchUserSession();
 
     if (sessionsConfig.persistent && sessionsConfig.maxSessionPersistenceTime && userSession) {
       const now = dateNow();
@@ -63,39 +65,52 @@ export class SessionInstrumentation extends BaseInstrumentation {
       }
     }
 
-    let sessionId = sessionsConfig.session?.id;
-    let sessionAttributes = sessionsConfig.session?.attributes;
-
     let lifecycleType: LifecycleType;
+    let initialSession: FaroUserSession;
 
     if (isUserSessionValid(userSession)) {
-      sessionId = userSession?.sessionId;
-      sessionAttributes = {
-        ...sessionAttributes,
-        ...userSession?.sessionMeta?.attributes,
-        isSampled: (userSession!.isSampled || false).toString(),
+      const sessionId = userSession?.sessionId;
+
+      initialSession = createUserSessionObject({
+        sessionId,
+        isSampled: userSession!.isSampled || false,
+        started: userSession?.started,
+      });
+
+      initialSession.sessionMeta = {
+        id: sessionId,
+        attributes: {
+          ...sessionsConfig.session?.attributes,
+          ...userSession?.sessionMeta?.attributes,
+          // For valid resumed sessions we do not want to recalculate the sampling decision on each init phase.
+          isSampled: initialSession.isSampled.toString(),
+        },
       };
 
       lifecycleType = EVENT_SESSION_RESUME;
     } else {
-      sessionId = sessionId ?? createSession().id;
+      const sessionId = sessionsConfig.session?.id ?? createSession().id;
+
+      initialSession = createUserSessionObject({
+        sessionId,
+        isSampled: isSampled(),
+      });
+
+      initialSession.sessionMeta = {
+        id: sessionId,
+        attributes: {
+          isSampled: initialSession.isSampled.toString(),
+          ...sessionsConfig.session?.attributes,
+        },
+      };
+
       lifecycleType = EVENT_SESSION_START;
     }
 
-    const sessionMeta: MetaSession = {
-      id: sessionId,
-      attributes: {
-        isSampled: isSampled().toString(),
-        // We do not want to recalculate the sampling decision on each init phase.
-        // If session from web-storage has a isSampled attribute we will use that instead.
-        ...sessionAttributes,
-      },
-    };
-
-    return { sessionMeta, lifecycleType };
+    return { initialSession, lifecycleType };
   }
 
-  private registerBeforeSendHook(SessionManager: typeof VolatileSessionsManager | typeof PersistentSessionsManager) {
+  private registerBeforeSendHook(SessionManager: SessionManager) {
     const { updateSession } = new SessionManager();
 
     this.transports?.addBeforeSendHooks((item) => {
@@ -138,15 +153,11 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       this.registerBeforeSendHook(SessionManager);
 
-      const { sessionMeta: initialSessionMeta, lifecycleType } = this.createInitialSessionMeta(sessionTrackingConfig);
+      const { initialSession, lifecycleType } = this.createInitialSession(SessionManager, sessionTrackingConfig);
 
-      SessionManager.storeUserSession({
-        ...createUserSessionObject({
-          sessionId: initialSessionMeta.id,
-          isSampled: initialSessionMeta.attributes?.['isSampled'] === 'true',
-        }),
-        sessionMeta: initialSessionMeta,
-      });
+      SessionManager.storeUserSession(initialSession);
+
+      const initialSessionMeta = initialSession.sessionMeta;
 
       this.notifiedSession = initialSessionMeta;
       this.api.setSession(initialSessionMeta);

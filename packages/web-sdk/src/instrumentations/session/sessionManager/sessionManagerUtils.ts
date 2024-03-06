@@ -6,11 +6,15 @@ import type { FaroUserSession } from './types';
 
 type CreateUserSessionObjectParams = {
   sessionId?: string;
+  started?: number;
+  lastActivity?: number;
   isSampled?: boolean;
 };
 
 export function createUserSessionObject({
   sessionId,
+  started,
+  lastActivity,
   isSampled = true,
 }: CreateUserSessionObjectParams = {}): FaroUserSession {
   const now = dateNow();
@@ -23,8 +27,8 @@ export function createUserSessionObject({
 
   return {
     sessionId,
-    lastActivity: now,
-    started: now,
+    lastActivity: lastActivity ?? now,
+    started: started ?? now,
     isSampled: isSampled,
   };
 }
