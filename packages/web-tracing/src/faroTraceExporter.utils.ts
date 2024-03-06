@@ -17,13 +17,11 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
         }
 
         const spanContext: Pick<SpanContext, 'traceId' | 'spanId'> = {
-          traceId: span.traceId,
-          spanId: span.spanId,
+          traceId: span.traceId.toString(),
+          spanId: span.spanId.toString(),
         };
 
-        const faroEventAttributes: FaroEventAttributes = {
-          ...spanContext,
-        };
+        const faroEventAttributes: FaroEventAttributes = {};
 
         for (const attribute of span.attributes) {
           faroEventAttributes[attribute.key] = String(Object.values(attribute.value)[0]);
