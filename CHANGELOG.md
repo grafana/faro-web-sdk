@@ -2,6 +2,8 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-sdk`): Session started timestamp was reset on page-loads (#507).
+
 ## 1.4.1
 
 - Enhancement (`@grafana/faro-web-tracing`): Dedupe Faro trace events (#507).
