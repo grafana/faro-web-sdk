@@ -131,16 +131,14 @@ export class SessionInstrumentation extends BaseInstrumentation {
   initialize() {
     this.logDebug('init session instrumentation');
 
-    const sessionTracking = this.config.sessionTracking;
+    const sessionTrackingConfig = this.config.sessionTracking;
 
-    if (sessionTracking?.enabled) {
-      const SessionManager = this.config.sessionTracking?.persistent
-        ? PersistentSessionsManager
-        : VolatileSessionsManager;
+    if (sessionTrackingConfig?.enabled) {
+      const SessionManager = sessionTrackingConfig?.persistent ? PersistentSessionsManager : VolatileSessionsManager;
 
       this.registerBeforeSendHook(SessionManager);
 
-      const { sessionMeta: initialSessionMeta, lifecycleType } = this.createInitialSessionMeta(sessionTracking);
+      const { sessionMeta: initialSessionMeta, lifecycleType } = this.createInitialSessionMeta(sessionTrackingConfig);
 
       SessionManager.storeUserSession({
         ...createUserSessionObject({
