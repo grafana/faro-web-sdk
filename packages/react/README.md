@@ -13,6 +13,11 @@ Out of the box, the package provides you the following features:
 
 ## Installation
 
+### Use with React Router 5 and 6 (without Data API)
+
+This describes how to setup Faro-React to use with React Router V5 and V6.
+If you use React Router V6 with the Data API please refer to the next section.
+
 ```ts
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
 
@@ -54,7 +59,39 @@ initializeFaro({
 });
 ```
 
+### Use with React Router v6 Data API
+
 ## Usage
+
+```ts
+import { matchRoutes } from 'react-router-dom';
+
+import { getWebInstrumentations, initializeFaro, ReactIntegration, ReactRouterVersion } from '@grafana/faro-react';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+
+initializeFaro({
+  // ...
+  instrumentations: [
+    // Load the default Web instrumentations
+    ...getWebInstrumentations(),
+
+    // Tracing Instrumentation is needed if you want to use the React Profiler
+    new TracingInstrumentation(),
+
+    new ReactIntegration({
+      // Only needed if you want to use the React Router instrumentation
+      router: {
+        version: ReactRouterVersion.V6_data_api,
+        dependencies: {
+          matchRoutes,
+        },
+      },
+    }),
+  ],
+});
+
+// To instrument the router you need to wrap it with
+```
 
 ### Error Boundary
 
