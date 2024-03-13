@@ -17,6 +17,9 @@ export class SessionReplayInstrumentation extends BaseInstrumentation {
   private stopFn: any;
 
   initialize(): void {
+  }
+
+  start(): void {
     this.stopFn = record({
       emit: (event) => {
         faro.api.pushEvent('replay_event', {
