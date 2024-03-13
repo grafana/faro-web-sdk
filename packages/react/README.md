@@ -90,7 +90,14 @@ initializeFaro({
   ],
 });
 
-// To instrument the router you need to wrap it with
+// To instrument the router you need to attach Faro instrumentations providing it to the withFaroRouterInstrumentation function
+// Do this in your App.js or other file where you create the router.
+
+const reactBrowserRouter = createBrowserRouter([
+  //...
+]);
+
+const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
 ```
 
 ### Error Boundary
