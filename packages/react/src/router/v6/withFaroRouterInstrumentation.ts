@@ -46,12 +46,6 @@ export function withFaroRouterInstrumentation<R extends Router = Router>(router:
         ...lastRoute,
       });
 
-      console.log('pushEvent', {
-        toRoute: route,
-        toUrl: globalObject.location?.href,
-        ...lastRoute,
-      });
-
       lastRoute = {
         fromRoute: route,
         fromUrl: url,
