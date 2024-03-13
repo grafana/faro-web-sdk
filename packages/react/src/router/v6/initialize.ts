@@ -9,6 +9,6 @@ export function initializeReactRouterV6Instrumentation(dependencies: ReactRouter
   setReactRouterV6Dependencies(dependencies);
 }
 
-export function initializeReactRouterNextV6Instrumentation(dependencies: ReactRouterV6NextDependencies): void {
+export function initializeReactRouterV6NextInstrumentation(dependencies: ReactRouterV6NextDependencies): void {
   setReactRouterV6NextDependencies(dependencies);
 }
