@@ -19,7 +19,7 @@ interface Router {
 }
 
 /**
- * To instrument React Router >= 6.4.
+ * To use with React Router 6.4 data APIs.
  * For React Router versions prior to 6.4 wrap routes with the <FaroRoutes /> component.
  * Please consult the documentation for more information
  */

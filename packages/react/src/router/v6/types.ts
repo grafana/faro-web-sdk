@@ -64,7 +64,7 @@ export interface ReactRouterV6Dependencies {
   useNavigationType: ReactRouterV6UseNavigationType;
 }
 
-export interface ReactRouterV6NextDependencies {
+export interface ReactRouterV6DataApiDependencies {
   matchRoutes: ReactRouterV6MatchRoutes;
 }
 

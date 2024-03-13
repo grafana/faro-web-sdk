@@ -3,7 +3,7 @@ import type { ReactIntegrationConfig } from '../types';
 
 import { ReactRouterVersion } from './types';
 import { initializeReactRouterV4V5Instrumentation } from './v4v5';
-import { initializeReactRouterV6Instrumentation, initializeReactRouterV6NextInstrumentation } from './v6';
+import { initializeReactRouterV6DataApiInstrumentation, initializeReactRouterV6Instrumentation } from './v6';
 
 export function initializeReactRouterInstrumentation(options: ReactIntegrationConfig): void {
   switch (options.router?.version) {
@@ -12,9 +12,9 @@ export function initializeReactRouterInstrumentation(options: ReactIntegrationCo
       initializeReactRouterV6Instrumentation(options.router.dependencies);
       break;
 
-    case ReactRouterVersion.V6_Next:
+    case ReactRouterVersion.V6_data_api:
       internalLogger.debug('Initializing React Router V6 instrumentation');
-      initializeReactRouterV6NextInstrumentation(options.router.dependencies);
+      initializeReactRouterV6DataApiInstrumentation(options.router.dependencies);
       break;
 
     case ReactRouterVersion.V5:
