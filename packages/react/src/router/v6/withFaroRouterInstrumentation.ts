@@ -20,8 +20,6 @@ interface Router {
 
 /**
  * To use with React Router 6.4 data APIs.
- * For React Router versions prior to 6.4 wrap routes with the <FaroRoutes /> component.
- * Please consult the documentation for more information
  */
 export function withFaroRouterInstrumentation<R extends Router = Router>(router: R) {
   let lastRoute: EventRouteTransitionAttributes = {};
