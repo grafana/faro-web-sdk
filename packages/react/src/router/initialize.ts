@@ -12,6 +12,11 @@ export function initializeReactRouterInstrumentation(options: ReactIntegrationCo
       initializeReactRouterV6Instrumentation(options.router.dependencies);
       break;
 
+    case ReactRouterVersion.V6_Next:
+      internalLogger.debug('Initializing React Router V6 instrumentation');
+      initializeReactRouterV6Instrumentation(options.router.dependencies);
+      break;
+
     case ReactRouterVersion.V5:
     case ReactRouterVersion.V4:
       internalLogger.debug(`Initializing React Router ${options.router.version} instrumentation`);

@@ -2,6 +2,7 @@ import type {
   ReactRouterV6CreateRoutesFromChildren,
   ReactRouterV6Dependencies,
   ReactRouterV6MatchRoutes,
+  ReactRouterV6NextDependencies,
   ReactRouterV6RoutesShape,
   ReactRouterV6UseLocation,
   ReactRouterV6UseNavigationType,
@@ -26,4 +27,9 @@ export function setReactRouterV6Dependencies(newDependencies: ReactRouterV6Depen
 
 export function setReactRouterV6SSRDependencies(newDependencies: Pick<ReactRouterV6Dependencies, 'Routes'>): void {
   Routes = newDependencies.Routes;
+}
+
+export function setReactRouterV6NextDependencies(newDependencies: ReactRouterV6NextDependencies): void {
+  isInitialized = true;
+  matchRoutes = newDependencies.matchRoutes;
 }
