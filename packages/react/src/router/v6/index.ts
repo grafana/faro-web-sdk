@@ -4,6 +4,8 @@ export { initializeReactRouterV6Instrumentation } from './initialize';
 
 export { setReactRouterV6SSRDependencies } from './routerDependencies';
 
+export { withFaroRouterInstrumentation } from './withFaroRouterInstrumentation';
+
 export type {
   ReactRouterV6CreateRoutesFromChildren,
   ReactRouterV6Dependencies,
