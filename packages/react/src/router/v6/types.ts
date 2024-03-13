@@ -64,6 +64,10 @@ export interface ReactRouterV6Dependencies {
   useNavigationType: ReactRouterV6UseNavigationType;
 }
 
+export interface ReactRouterV6NextDependencies {
+  matchRoutes: ReactRouterV6MatchRoutes;
+}
+
 export type EventRouteTransitionAttributes = {
   fromRoute?: string;
   fromUrl?: string;

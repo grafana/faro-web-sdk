@@ -25,11 +25,11 @@ export function initializeFaro(): Faro {
         router: {
           version: ReactRouterVersion.V6,
           dependencies: {
-            createRoutesFromChildren,
+            createRoutesFromChildren, //?
             matchRoutes,
-            Routes,
-            useLocation,
-            useNavigationType,
+            Routes, //?
+            useLocation, //?
+            useNavigationType, //?
           },
         },
       }),

@@ -18,4 +18,5 @@ export type {
   ReactRouterV6RoutesShape,
   ReactRouterV6UseLocation,
   ReactRouterV6UseNavigationType,
+  ReactRouterV6NextDependencies,
 } from './v6';
