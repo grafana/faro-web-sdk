@@ -2,8 +2,6 @@
 
 Faro package that enables easier integration in projects built with React.
 
-_Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.
-
 Out of the box, the package provides you the following features:
 
 - Error Boundary - Provides additional stacktrace for errors and configuration options for pushError behavior
@@ -60,8 +58,6 @@ initializeFaro({
 ```
 
 ### Use with React Router v6 Data API
-
-## Usage
 
 ```ts
 import { matchRoutes } from 'react-router-dom';
