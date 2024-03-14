@@ -32,11 +32,6 @@ export function withFaroRouterInstrumentation<R extends Router = Router>(router:
     if (isInitialized && (navigationType === NavigationType.Push || navigationType === NavigationType.Pop)) {
       const route = getRouteFromLocation(routes, location);
       const url = globalObject.location?.href;
-      const { fromRoute, fromUrl } = lastRoute;
-
-      if (route === fromRoute && url === fromUrl) {
-        return;
-      }
 
       api.pushEvent(EVENT_ROUTE_CHANGE, {
         toRoute: route,
