@@ -4,6 +4,7 @@
 
 - Fix (`@grafana/faro-web-sdk`): Faro updates sessions in an infinite loop if DOM Storage is not
   available (#519).
+- Feat (`@grafana/faro-react`): Support instrumenting React Router v6 data routers (#518).
 
 ## 1.4.2
 
