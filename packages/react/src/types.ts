@@ -1,6 +1,6 @@
 import type {
   ReactRouterV4V5Dependencies,
-  ReactRouterV6DataApiDependencies,
+  ReactRouterV6DataRouterDependencies,
   ReactRouterV6Dependencies,
   ReactRouterVersion,
 } from './router';
@@ -15,11 +15,11 @@ export interface ReactRouterV6Config {
   dependencies: ReactRouterV6Dependencies;
 }
 
-export interface ReactRouterV6DataApiConfig {
-  version: ReactRouterVersion.V6_data_api;
-  dependencies: ReactRouterV6DataApiDependencies;
+export interface ReactRouterV6DataRouterConfig {
+  version: ReactRouterVersion.V6_data_router;
+  dependencies: ReactRouterV6DataRouterDependencies;
 }
 
 export interface ReactIntegrationConfig {
-  router?: ReactRouterV4V5Config | ReactRouterV6Config | ReactRouterV6DataApiConfig;
+  router?: ReactRouterV4V5Config | ReactRouterV6Config | ReactRouterV6DataRouterConfig;
 }
