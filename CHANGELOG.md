@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-sdk`): Faro updates sessions in an infinite loop if DOM Storage is not
+  available (#519).
+
 ## 1.4.2
 
 - Fix (`@grafana/faro-web-sdk`): Session started timestamp was reset on page-loads (#513).
