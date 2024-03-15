@@ -14,7 +14,7 @@ describe('sourceMapUpload utils', () => {
   it('can get the bundle ID from the global object', () => {
     expect(getBundleId('foo')).toBeUndefined();
 
-    (global as any).__faroBuildId_foo = 'bar';
+    (global as any).__faroBundleId_foo = 'bar';
     expect(getBundleId('foo')).toEqual('bar');
   });
 
