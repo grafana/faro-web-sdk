@@ -1,4 +1,4 @@
-import { getBundleId, getBundleIdFromError, getBundleIdStackMap } from './utils';
+import { getBundleId, getBundleIdFromError, getBundleIdStackMap } from './sourceMaps';
 
 describe('sourceMapUpload utils', () => {
   beforeAll(() => {

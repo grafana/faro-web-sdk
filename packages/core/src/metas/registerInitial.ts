@@ -1,5 +1,5 @@
 import type { Faro } from '../sdk';
-import { getBundleId } from '../sourceMapUpload';
+import { getBundleId } from '../utils/sourceMaps';
 import { VERSION } from '../version';
 
 import type { Meta } from './types';
