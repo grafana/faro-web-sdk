@@ -1,3 +1,5 @@
+import type { SpanContext } from '@opentelemetry/api';
+
 import type { TraceContext } from '../traces';
 
 export type MeasurementContext = Record<string, string>;
@@ -14,6 +16,7 @@ export interface MeasurementEvent<V extends { [label: string]: number } = { [lab
 export interface PushMeasurementOptions {
   skipDedupe?: boolean;
   context?: MeasurementContext;
+  spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
 }
 
 export interface MeasurementsAPI {

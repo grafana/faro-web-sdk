@@ -1,3 +1,4 @@
+import type { MeasurementEvent, PushMeasurementOptions } from '../..';
 import { initializeFaro } from '../../initialize';
 import { mockConfig, MockTransport } from '../../testUtils';
 import type { API } from '../types';
@@ -167,6 +168,28 @@ describe('api.measurements', () => {
 
         api.pushMeasurement(measurement, { skipDedupe: true });
         expect(transport.items).toHaveLength(2);
+      });
+
+      it('uses traceId and spanId from custom context', () => {
+        const spanContext: PushMeasurementOptions['spanContext'] = {
+          traceId: 'my-trace-id',
+          spanId: 'my-span-id',
+        };
+
+        const measurement = {
+          type: 'custom',
+          values: {
+            a: 1,
+          },
+        };
+
+        api.pushMeasurement(measurement, { spanContext });
+        expect(transport.items).toHaveLength(1);
+
+        expect((transport.items[0]?.payload as MeasurementEvent).trace).toStrictEqual({
+          trace_id: 'my-trace-id',
+          span_id: 'my-span-id',
+        });
       });
     });
   });

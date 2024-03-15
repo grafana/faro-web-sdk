@@ -21,13 +21,18 @@ export function initializeMeasurementsAPI(
 
   let lastPayload: Pick<MeasurementEvent, 'type' | 'values' | 'context'> | null = null;
 
-  const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload, { skipDedupe, context } = {}) => {
+  const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload, { skipDedupe, context, spanContext } = {}) => {
     try {
       const item: TransportItem<MeasurementEvent> = {
         type: TransportItemType.MEASUREMENT,
         payload: {
           ...payload,
-          trace: tracesApi.getTraceContext(),
+          trace: spanContext
+            ? {
+                trace_id: spanContext.traceId,
+                span_id: spanContext.spanId,
+              }
+            : tracesApi.getTraceContext(),
           timestamp: payload.timestamp ?? getCurrentTimestamp(),
           context: context ?? {},
         },

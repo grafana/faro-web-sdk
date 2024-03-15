@@ -1,16 +1,19 @@
-export type FaroNavigationTiming = Readonly<{
-  totalNavigationTime: string;
-  visibilityState: DocumentVisibilityState;
-  domProcessingTime: string;
-  pageLoadTime: string;
-  domContentLoadHandlerTime: string;
-  onLoadTime: string;
-  ttfb: string;
-  type: NavigationTimingType;
-}>;
+export type FaroNavigationTiming = Readonly<
+  {
+    duration: string;
+    visibilityState: DocumentVisibilityState;
+    domProcessingTime: string;
+    pageLoadTime: string;
+    domContentLoadHandlerTime: string;
+    onLoadTime: string;
+    ttfb: string;
+    type: NavigationTimingType;
+  } & FaroResourceTiming
+>;
 
 export type FaroResourceTiming = Readonly<{
   name: string;
+  duration: string;
   protocol: string;
   tcpHandshakeTime: string;
   dnsLookupTime: string;

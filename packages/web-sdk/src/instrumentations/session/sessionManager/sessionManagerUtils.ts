@@ -1,16 +1,22 @@
 import { dateNow, faro, genShortID } from '@grafana/faro-core';
 
+import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
+
 import { isSampled } from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import type { FaroUserSession } from './types';
 
 type CreateUserSessionObjectParams = {
   sessionId?: string;
+  started?: number;
+  lastActivity?: number;
   isSampled?: boolean;
 };
 
 export function createUserSessionObject({
   sessionId,
+  started,
+  lastActivity,
   isSampled = true,
 }: CreateUserSessionObjectParams = {}): FaroUserSession {
   const now = dateNow();
@@ -23,8 +29,8 @@ export function createUserSessionObject({
 
   return {
     sessionId,
-    lastActivity: now,
-    started: now,
+    lastActivity: lastActivity ?? now,
+    started: started ?? now,
     isSampled: isSampled,
   };
 }
@@ -56,6 +62,13 @@ export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: Ge
       return;
     }
 
+    const sessionTrackingConfig = faro.config.sessionTracking;
+    const isPersistentSessions = sessionTrackingConfig?.persistent;
+
+    if ((isPersistentSessions && !isLocalStorageAvailable) || (!isPersistentSessions && !isSessionStorageAvailable)) {
+      return;
+    }
+
     const sessionFromStorage = fetchUserSession();
 
     if (isUserSessionValid(sessionFromStorage)) {
@@ -69,7 +82,7 @@ export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: Ge
       storeUserSession(newSession);
 
       faro.api?.setSession(newSession.sessionMeta);
-      faro.config.sessionTracking?.onSessionChange?.(sessionFromStorage?.sessionMeta ?? null, newSession.sessionMeta!);
+      sessionTrackingConfig?.onSessionChange?.(sessionFromStorage?.sessionMeta ?? null, newSession.sessionMeta!);
     }
   };
 }

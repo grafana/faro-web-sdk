@@ -34,7 +34,10 @@ export function initializeExceptionsAPI(
 
   const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => stacktraceParser;
 
-  const pushError: ExceptionsAPI['pushError'] = (error, { skipDedupe, stackFrames, type, context } = {}) => {
+  const pushError: ExceptionsAPI['pushError'] = (
+    error,
+    { skipDedupe, stackFrames, type, context, spanContext } = {}
+  ) => {
     type = type || error.name || defaultExceptionType;
 
     const item: TransportItem<ExceptionEvent> = {
@@ -43,7 +46,12 @@ export function initializeExceptionsAPI(
         type,
         value: error.message,
         timestamp: getCurrentTimestamp(),
-        trace: tracesApi.getTraceContext(),
+        trace: spanContext
+          ? {
+              trace_id: spanContext.traceId,
+              span_id: spanContext.spanId,
+            }
+          : tracesApi.getTraceContext(),
         context: context ?? {},
       },
       type: TransportItemType.EXCEPTION,

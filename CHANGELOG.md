@@ -2,7 +2,38 @@
 
 ## Next
 
+<<<<<<< HEAD
 - Feature (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object (#476).
+=======
+- Fix (`@grafana/faro-web-sdk`): Faro updates sessions in an infinite loop if DOM Storage is not
+  available (#519).
+
+## 1.4.2
+
+- Fix (`@grafana/faro-web-sdk`): Session started timestamp was reset on page-loads (#513).
+- Fix (`@grafana/faro-web-tracing`): `faro.trace.*` attached spanContext from active span instead of
+  the respective child span (#510).
+- Feat (`@grafana/faro-web-sdk`): Faro APIs now support adding a custom traceId and spanId to
+  signals (#510).
+
+## 1.4.1
+
+- Enhancement (`@grafana/faro-web-tracing`): Dedupe Faro trace events (#507).
+
+## 1.4.0
+
+- Feat (`@grafana/faro-web-sdk`): Enable Faro Navigation and Resource timings instrumentation by default (#482).
+- Enhancement (`@grafana/faro-web-tracing`): Send a dedicated Faro event for traces of kind=client (#499).
+
+## 1.3.9
+
+- Enhancement (`@grafana/faro-web-sdk`): add `duration` property in `faro.performance.resource` timings and
+  rename property `totalNavigationTime` to `duration` in `faro.performance.navigation` timings (#490).
+- Fix (`@grafana/faro-web-sdk`): crash when navigator.userAgentData is undefined (#494).
+
+## 1.3.8
+
+>>>>>>> c33caee495826c6c73443114c791ef2158af15ef
 - Deps (`@grafana/faro-web-tracing`, `@grafana/faro-core`): Update OpenTelemetry dependencies (#475).
 
 ## 1.3.7

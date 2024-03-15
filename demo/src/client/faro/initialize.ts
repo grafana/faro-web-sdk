@@ -3,6 +3,7 @@ import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigati
 import {
   initializeFaro as coreInit,
   getWebInstrumentations,
+  InternalLoggerLevel,
   ReactIntegration,
   ReactRouterVersion,
 } from '@grafana/faro-react';

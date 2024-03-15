@@ -1,3 +1,5 @@
+import type { SpanContext } from '@opentelemetry/api';
+
 import type { TraceContext } from '../traces';
 
 export type EventAttributes = Record<string, string>;
@@ -13,6 +15,7 @@ export interface EventEvent {
 
 export interface PushEventOptions {
   skipDedupe?: boolean;
+  spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
 }
 
 export interface EventsAPI {
