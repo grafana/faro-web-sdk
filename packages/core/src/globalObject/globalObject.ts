@@ -10,7 +10,7 @@ export type GlobalObject<T = typeof globalThis | typeof global | typeof self> = 
 export const globalObject = (typeof globalThis !== 'undefined'
   ? globalThis
   : typeof global !== 'undefined'
-  ? global
-  : typeof self !== 'undefined'
-  ? self
-  : undefined) as unknown as GlobalObject;
+    ? global
+    : typeof self !== 'undefined'
+      ? self
+      : undefined) as unknown as GlobalObject;
