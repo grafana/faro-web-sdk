@@ -46,7 +46,7 @@ describe('registerOnerror', () => {
     window.onerror('boo', 'some file', 10, 10, error);
     expect(transport.items).toHaveLength(1);
     expect(getBundleIdFromError(error)).toEqual('bar');
+    expect(cachedBundleIdStackFrameMap.get('bar')).toEqual(undefined);
     expect(transport.items[0]?.payload).toEqual({})
-    expect(cachedBundleIdStackFrameMap.get('bar')).toEqual([{}]);
   });
 });
