@@ -30,7 +30,7 @@ describe('sourceMapUpload utils', () => {
     const e = new Error();
     expect(getBundleIdStackMap()).toBeUndefined();
 
-    (global as any).__faroBundleIds = new Map([[e.stack, 'bar']]);
+    (global as any).__faroBundleIds = new Map([[e, 'bar']]);
     expect(getBundleIdFromError(e)).toEqual('bar');
   });
 });
