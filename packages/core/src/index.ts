@@ -86,11 +86,15 @@ export type { UnpatchedConsole } from './unpatchedConsole';
 
 export {
   allLogLevels,
+  cachedBundleIdStackFrameMap,
   createPromiseBuffer,
   deepEqual,
   defaultLogLevel,
   genShortID,
   getCurrentTimestamp,
+  getBundleId,
+  getBundleIdStackMap,
+  getBundleIdFromError,
   isArray,
   isBoolean,
   isDomError,

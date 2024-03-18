@@ -17,7 +17,10 @@ import {
 } from './const';
 import { getDataFromSafariExtensions } from './getDataFromSafariExtensions';
 
-export function getStackFramesFromError(error: ExtendedError): ExceptionStackFrame[] {
+export function getStackFramesFromError(
+  error: ExtendedError,
+  fileNameBundleIdMap?: Map<string, string>
+): ExceptionStackFrame[] {
   let lines: string[] = [];
 
   if (error.stacktrace) {
@@ -75,7 +78,15 @@ export function getStackFramesFromError(error: ExtendedError): ExceptionStackFra
     }
 
     if (filename || func) {
-      acc.push(buildStackFrame(filename, func, lineno ? Number(lineno) : undefined, colno ? Number(colno) : undefined));
+      acc.push(
+        buildStackFrame(
+          filename,
+          func,
+          lineno ? Number(lineno) : undefined,
+          colno ? Number(colno) : undefined,
+          filename && fileNameBundleIdMap ? fileNameBundleIdMap.get(filename) : undefined
+        )
+      );
     }
 
     return acc;
