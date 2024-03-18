@@ -19,7 +19,7 @@ export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | 
 
     value = evt.error.message;
     type = evt.error.name;
-    stackFrames = getStackFramesFromError(evt.error);
+    stackFrames = getStackFramesFromError(evt.error, fileNameBundleIdMap);
   } else if ((isDomErrorRes = isDomError(evt)) || isDomException(evt)) {
     const { name, message } = evt;
 
@@ -29,7 +29,7 @@ export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | 
     fileNameBundleIdMap = buildFilenameBundleIdMap(evt)
 
     value = evt.message;
-    stackFrames = getStackFramesFromError(evt);
+    stackFrames = getStackFramesFromError(evt, fileNameBundleIdMap);
   } else if (isObject(evt) || (isEventRes = isEvent(evt))) {
     type = isEventRes ? evt.constructor.name : undefined;
     value = `${objectEventValue} ${Object.keys(evt)}`;
