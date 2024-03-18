@@ -19,6 +19,7 @@ export {
   ReactRouterVersion,
   setReactRouterV4V5SSRDependencies,
   setReactRouterV6SSRDependencies,
+  withFaroRouterInstrumentation,
 } from './router';
 export type {
   ReactRouterHistory,
