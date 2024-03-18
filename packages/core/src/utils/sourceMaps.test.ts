@@ -22,8 +22,8 @@ describe('sourceMapUpload utils', () => {
     expect(getBundleIdStackMap()).toBeUndefined();
 
     const e = new Error();
-    (global as any).__faroBundleIds = new Map([[e.stack, 'bar']]);
-    expect(getBundleIdStackMap()).toEqual(new Map([[e.stack, 'bar']]));
+    (global as any).__faroBundleIds = new Map([[e, 'bar']]);
+    expect(getBundleIdStackMap()).toEqual(new Map([[e, 'bar']]));
   });
 
   it('can get the bundle ID from an error', () => {
