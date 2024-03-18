@@ -15,7 +15,7 @@ export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | 
   let fileNameBundleIdMap: Map<string, string> | undefined;
 
   if (isErrorEvent(evt) && evt.error) {
-    fileNameBundleIdMap = buildFilenameBundleIdMap(evt.error)
+    fileNameBundleIdMap = buildFilenameBundleIdMap(evt.error);
 
     value = evt.error.message;
     type = evt.error.name;
@@ -26,7 +26,7 @@ export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | 
     type = name ?? (isDomErrorRes ? domErrorType : domExceptionType);
     value = message ? `${type}: ${message}` : type;
   } else if (isError(evt)) {
-    fileNameBundleIdMap = buildFilenameBundleIdMap(evt)
+    fileNameBundleIdMap = buildFilenameBundleIdMap(evt);
 
     value = evt.message;
     stackFrames = getStackFramesFromError(evt, fileNameBundleIdMap);
