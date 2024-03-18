@@ -18,6 +18,7 @@ export type FaroResourceTiming = Readonly<{
   tcpHandshakeTime: string;
   dnsLookupTime: string;
   tlsNegotiationTime: string;
+  responseStatus: string;
   redirectTime: string;
   requestTime: string;
   fetchTime: string;

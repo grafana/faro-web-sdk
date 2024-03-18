@@ -1,5 +1,6 @@
 import type {
   ReactRouterV6CreateRoutesFromChildren,
+  ReactRouterV6DataRouterDependencies,
   ReactRouterV6Dependencies,
   ReactRouterV6MatchRoutes,
   ReactRouterV6RoutesShape,
@@ -26,4 +27,9 @@ export function setReactRouterV6Dependencies(newDependencies: ReactRouterV6Depen
 
 export function setReactRouterV6SSRDependencies(newDependencies: Pick<ReactRouterV6Dependencies, 'Routes'>): void {
   Routes = newDependencies.Routes;
+}
+
+export function setReactRouterV6DataRouterDependencies(newDependencies: ReactRouterV6DataRouterDependencies): void {
+  isInitialized = true;
+  matchRoutes = newDependencies.matchRoutes;
 }

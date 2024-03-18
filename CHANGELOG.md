@@ -2,11 +2,12 @@
 
 ## Next
 
-<<<<<<< HEAD
-
-- # Feature (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object (#476).
+- Feat (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object (#476).
+- Feat (`@grafana/faro-web-sdk`): sourcemap uploads - add `bundleid` to each stack frames if uploaded source maps are used (#476).
+- Feat (`@grafana/faro-web-sdk`): Add responseStatus to performance events (#526).
 - Fix (`@grafana/faro-web-sdk`): Faro updates sessions in an infinite loop if DOM Storage is not
   available (#519).
+- Feat (`@grafana/faro-react`): Support instrumenting React Router v6 data routers (#518).
 
 ## 1.4.2
 
@@ -32,8 +33,6 @@
 - Fix (`@grafana/faro-web-sdk`): crash when navigator.userAgentData is undefined (#494).
 
 ## 1.3.8
-
-> > > > > > > c33caee495826c6c73443114c791ef2158af15ef
 
 - Deps (`@grafana/faro-web-tracing`, `@grafana/faro-core`): Update OpenTelemetry dependencies (#475).
 

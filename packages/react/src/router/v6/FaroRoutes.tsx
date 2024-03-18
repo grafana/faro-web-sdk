@@ -21,11 +21,6 @@ export function FaroRoutes(props: ReactRouterV6RoutesProps) {
     if (isInitialized && (navigationType === NavigationType.Push || navigationType === NavigationType.Pop)) {
       const route = getRouteFromLocation(routes, location);
       const url = globalObject.location?.href;
-      const { fromRoute, fromUrl } = lastRouteRef.current;
-
-      if (route === fromRoute && url === fromUrl) {
-        return;
-      }
 
       api.pushEvent(EVENT_ROUTE_CHANGE, {
         toRoute: route,
