@@ -1,7 +1,7 @@
 import { getBundleId, getBundleIdFromError, getBundleIdStackMap } from './sourceMaps';
 
 describe('sourceMapUpload utils', () => {
-  beforeAll(() => {
+  beforeEach(() => {
     delete (global as any).__faroBundleId_foo;
     delete (global as any).__faroBundleIds;
   });
