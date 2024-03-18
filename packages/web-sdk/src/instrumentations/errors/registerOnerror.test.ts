@@ -3,6 +3,7 @@ import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 import { initializeFaro } from '../../initialize';
 
 import { registerOnerror } from './registerOnerror';
+import { cachedBundleIdStackFrameMap, getBundleIdFromError } from '@grafana/faro-core';
 
 describe('registerOnerror', () => {
   it('will preserve the old callback', () => {
@@ -44,6 +45,8 @@ describe('registerOnerror', () => {
 
     window.onerror('boo', 'some file', 10, 10, error);
     expect(transport.items).toHaveLength(1);
+    expect(getBundleIdFromError(error)).toEqual('bar');
     expect(transport.items[0]?.payload).toEqual({})
+    expect(cachedBundleIdStackFrameMap.get('bar')).toEqual([{}]);
   });
 });
