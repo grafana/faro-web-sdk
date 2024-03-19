@@ -13,7 +13,9 @@ Out of the box, the package provides you the following features:
 
 ### React Router without Data Routers
 
-To set up Faro-React with React Router V5 or V6 without Data routers, add the following code snippet to your project. If you use React Router V6 with Data Routers, refer to the React Router with Data Routers section.
+To set up Faro-React with React Router V5 or V6 without Data routers, add the following code snippet
+to your project. If you use React Router V6 with Data Routers, refer to the React Router with Data
+Routers section.
 
 ```ts
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
@@ -178,13 +180,15 @@ import { FaroRoute } from '@grafana/faro-react';
 
 #### Upgrading from instrumented V6 router to V6 data router
 
-1. Change router config
-   1.1 Change `version` property from `ReactRouterVersion.V6` to `ReactRouterVersion.V6_data_router`.
-   1.2 Remove the following dependencies from teh dependencies object
-   - `createRoutesFromChildren`
-   - `Routes`
-   - `useLocation`
-   - `useNavigationType`
+##### Change router config
+
+1. Change `version` property from `ReactRouterVersion.V6` to `ReactRouterVersion.V6_data_router`.
+2. Remove the following dependencies from the dependencies object
+
+- `createRoutesFromChildren`
+- `Routes`
+- `useLocation`
+- `useNavigationType`
 
 Example: updating dependencies
 
@@ -217,9 +221,10 @@ initializeFaro({
 });
 ```
 
-2. Change Router instrumentation
-   2.1 Remove `<FaroRoutes>` component. This will not work anymore with V6 data routers.
-   2.2 Create a data router and wrap it with `withFaroRouterInstrumentation(dataRouter)`
+##### Change Router instrumentation
+
+1. Remove `<FaroRoutes>` component. This will not work anymore with V6 data routers.
+2. Create a data router and wrap it with `withFaroRouterInstrumentation(dataRouter)`
 
 Example: Instrument Router
 
