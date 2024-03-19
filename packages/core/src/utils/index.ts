@@ -45,6 +45,12 @@ export type { BufferItem, PromiseBuffer, PromiseBufferOptions, PromiseProducer }
 
 export { genShortID } from './shortId';
 
-export { cachedBundleIdStackFrameMap, getBundleId, getBundleIdStackMap, getBundleIdFromError } from './sourceMaps';
+export {
+  cachedBundleIdStackFrameMap,
+  cachedFileNameBundleIdMap,
+  getBundleId,
+  getBundleIdStackMap,
+  getBundleIdFromError,
+} from './sourceMaps';
 
 export { dateNow } from './date';

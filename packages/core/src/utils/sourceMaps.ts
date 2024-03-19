@@ -2,6 +2,7 @@ import type { ExceptionStackFrame } from '..';
 import { globalObject } from '../globalObject';
 
 export const cachedBundleIdStackFrameMap = new Map<string, ExceptionStackFrame[]>();
+export const cachedFileNameBundleIdMap = new Map<string, string>();
 
 export function getBundleId(appName: string) {
   return (globalObject as any)?.[`__faroBundleId_${appName}`];
