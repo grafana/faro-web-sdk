@@ -1,7 +1,7 @@
 import type { Meta, MetaItem } from '@grafana/faro-core';
 
 type K6Properties = {
-  testRunId?: number | string;
+  testRunId?: string;
 };
 
 export const k6Meta: MetaItem<Pick<Meta, 'k6'>> = () => {
