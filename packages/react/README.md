@@ -77,7 +77,7 @@ initializeFaro({
     new ReactIntegration({
       // Only needed if you want to use the React Router instrumentation
       router: {
-        version: ReactRouterVersion.V6_data_api,
+        version: ReactRouterVersion.V6_data_router,
         dependencies: {
           matchRoutes,
         },
@@ -180,7 +180,7 @@ import { FaroRoute } from '@grafana/faro-react';
 #### Upgrading from instrumented V6 router to V6 data router
 
 1. Change router config
-   1.1 Change `version` property from `ReactRouterVersion.V6` to `ReactRouterVersion.V6_data_api`.
+   1.1 Change `version` property from `ReactRouterVersion.V6` to `ReactRouterVersion.V6_data_router`.
    1.2 Remove the following dependencies from teh dependencies object
    - `createRoutesFromChildren`
    - `Routes`
@@ -202,8 +202,8 @@ initializeFaro({
     new ReactIntegration({
       // Only needed if you want to use the React Router instrumentation
       router: {
-        // version: ReactRouterVersion.V6 // => change to .V6_data_api,
-        version: ReactRouterVersion.V6_data_api,
+        // version: ReactRouterVersion.V6 // => change to .V6_data_router,
+        version: ReactRouterVersion.V6_data_router,
         dependencies: {
           matchRoutes,
           // +++ remove the following dependencies +++
