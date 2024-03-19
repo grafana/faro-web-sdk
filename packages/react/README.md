@@ -11,10 +11,11 @@ Out of the box, the package provides you the following features:
 
 ## Installation
 
-### Use with React Router 5 and 6 (without Data API)
+### React Router without Data Routers
 
-This describes how to setup Faro-React to use with React Router V5 and V6.
-If you use React Router V6 with the Data API please refer to the next section.
+To set up Faro-React with React Router V5 or V6 without Data routers, add the following code snippet
+to your project. If you use React Router V6 with Data Routers, refer to the React Router with Data
+Routers section.
 
 ```ts
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
@@ -57,7 +58,7 @@ initializeFaro({
 });
 ```
 
-### Use with React Router v6 Data API
+### Use with React Router with Data Routers
 
 ```ts
 import { matchRoutes } from 'react-router-dom';
@@ -77,7 +78,7 @@ initializeFaro({
     new ReactIntegration({
       // Only needed if you want to use the React Router instrumentation
       router: {
-        version: ReactRouterVersion.V6_data_api,
+        version: ReactRouterVersion.V6_data_router,
         dependencies: {
           matchRoutes,
         },
@@ -138,7 +139,7 @@ const pushErrorOptions: PushErrorOptions = {
 
 ### Router
 
-### V6
+#### V6
 
 ```tsx
 import { FaroRoutes } from '@grafana/faro-react';
@@ -150,7 +151,20 @@ import { FaroRoutes } from '@grafana/faro-react';
 </FaroRoutes>;
 ```
 
-### V4/v5
+#### V6 Data Router
+
+1. Create a data router (createBrowserRouter, createHashRouter, createMemoryRouter)
+2. Instrument the data router to receive route changes by wrapping it with `withFaroRouterInstrumentation()`
+
+```ts
+const reactBrowserRouter = createBrowserRouter([
+  //...
+]);
+
+const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
+```
+
+#### V4/v5
 
 ```tsx
 import { FaroRoute } from '@grafana/faro-react';
@@ -162,6 +176,64 @@ import { FaroRoute } from '@grafana/faro-react';
   </FaroRoute>
   {/* ... */}
 </Switch>;
+```
+
+#### Upgrading from instrumented V6 router to V6 data router
+
+##### Change router config
+
+1. Change `version` property from `ReactRouterVersion.V6` to `ReactRouterVersion.V6_data_router`.
+2. Remove the following dependencies from the dependencies object
+
+- `createRoutesFromChildren`
+- `Routes`
+- `useLocation`
+- `useNavigationType`
+
+Example: updating dependencies
+
+```ts
+initializeFaro({
+  // ...
+  instrumentations: [
+    // Load the default Web instrumentations
+    ...getWebInstrumentations(),
+
+    // Tracing Instrumentation is needed if you want to use the React Profiler
+    new TracingInstrumentation(),
+
+    new ReactIntegration({
+      // Only needed if you want to use the React Router instrumentation
+      router: {
+        // version: ReactRouterVersion.V6 // => change to .V6_data_router,
+        version: ReactRouterVersion.V6_data_router,
+        dependencies: {
+          matchRoutes,
+          // +++ remove the following dependencies +++
+          // createRoutesFromChildren,
+          // Routes,
+          // useLocation,
+          // useNavigationType,
+        },
+      },
+    }),
+  ],
+});
+```
+
+##### Change Router instrumentation
+
+1. Remove `<FaroRoutes>` component. This will not work anymore with V6 data routers.
+2. Create a data router and wrap it with `withFaroRouterInstrumentation(dataRouter)`
+
+Example: Instrument Router
+
+```ts
+const reactBrowserRouter = createBrowserRouter([
+  // your routes
+]);
+
+const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
 ```
 
 ### Profiler
