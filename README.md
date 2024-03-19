@@ -53,3 +53,16 @@ the [README.md][faro-web-sdk-readme] for more information.
 [faro-web-sdk-readme]: ./packages/web-sdk/README.md
 [faro-web-tracing]: ./packages/web-tracing
 [faro-web-tracing-readme]: ./packages/web-tracing/README.md
+
+## Releases
+
+Faro releases follow the [Semantic Versioning](https://semver.org/) naming scheme: `MAJOR.MINOR.PATCH`.
+
+- `MAJOR`: Major releases include large new features which will significantly change how Faro operates
+  and possible backwards-compatibility breaking changes.
+- `MINOR`: these releases include _new features which generally do not break_ backwards-compatibility.
+- `PATCH`: patch releases include _bug and security fixes_ which do not break backwards-compatibility.
+
+  > NOTE: Our goal is to provide regular releases that are as stable as possible,
+  > and we take backwards-compatibility seriously. As with any software, always read the release notes
+  > and the upgrade guide whenever choosing a new version of Loki to install.
