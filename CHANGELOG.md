@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.5.0
+
 - Feat(`@grafana/faro-web-sdk`): Add responseStatus to performance events (#526).
 - Fix (`@grafana/faro-web-sdk`): Faro updates sessions in an infinite loop if DOM Storage is not
   available (#519).
