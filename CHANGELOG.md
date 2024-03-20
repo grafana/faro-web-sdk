@@ -2,7 +2,7 @@
 
 ## Next
 
-- Feat(`@grafana/faro-web-sdk`): Add K6 test ID to K6 meta if set (#531).
+- Feat(`@grafana/faro-web-sdk`): Add K6 test ID to K6 meta if available in window.k6 object (#531).
 
 ## 1.5.0
 
