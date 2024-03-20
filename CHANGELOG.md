@@ -2,6 +2,8 @@
 
 ## Next
 
+- Feat(`@grafana/faro-web-sdk`): Add K6 test ID to K6 meta if set (#531).
+
 ## 1.5.0
 
 - Feat(`@grafana/faro-web-sdk`): Add responseStatus to performance events (#526).
