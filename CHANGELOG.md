@@ -2,6 +2,9 @@
 
 ## Next
 
+- Chore(`@grafana/faro-web-sdk`): Get rid of structureClone. It caused breakage in some
+  sandboxed environments because of injected proxy objects (#536).
+
 ## 1.5.0
 
 - Feat(`@grafana/faro-web-sdk`): Add responseStatus to performance events (#526).
