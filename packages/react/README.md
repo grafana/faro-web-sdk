@@ -4,10 +4,10 @@ Faro package that enables easier integration in projects built with React.
 
 Out of the box, the package provides you the following features:
 
-- Error Boundary - Provides additional stacktrace for errors and configuration options for pushError behavior
-- Component Profiler - Capture every re-render of a component, the un/mounting time etc.
-- Router (v4-v6) integration - Send events for all route changes
-- SSR support
+- **Error Boundary**: provides additional stack trace for errors and configuration options for pushError behavior
+- **Component Profiler**: capture every re-render of a component, the un/mounting time etc.
+- **React Router (v4 - v6) integration**: send events for all route changes
+- **SSR support**
 
 ## Installation
 
@@ -58,7 +58,7 @@ initializeFaro({
 });
 ```
 
-### Use with React Router with Data Routers
+### React Router with Data Routers
 
 ```ts
 import { matchRoutes } from 'react-router-dom';
