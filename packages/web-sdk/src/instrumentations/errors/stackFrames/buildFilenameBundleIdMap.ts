@@ -1,7 +1,6 @@
 import {
   ExceptionStackFrame,
   cachedBundleIdStackFrameMap,
-  cachedFileNameBundleIdMap,
   getBundleIdFromError,
   isError,
 } from '@grafana/faro-core';
@@ -26,6 +25,7 @@ export function buildFilenameBundleIdMap(event: ErrorEvent): Map<string, string>
   const stackFrames = getStackFramesFromError(error);
   cachedBundleIdStackFrameMap.set(bundleId, stackFrames);
 
+  const fileNameBundleIdMap = new Map<string, string>();
   const bundles: Record<string, ExceptionStackFrame[]>[] = [];
   cachedBundleIdStackFrameMap.forEach((value, key) => bundles.push({[key]: value}));
 
@@ -33,19 +33,17 @@ export function buildFilenameBundleIdMap(event: ErrorEvent): Map<string, string>
     Object.keys(bundleId).forEach((bundleId) => {
       const stackFrames = cachedBundleIdStackFrameMap.get(bundleId);
 
-      console.log('FRAMES:', JSON.stringify(stackFrames));
-
       if (!stackFrames?.length || stackFrames.length === 0) {
         return;
       }
 
       for (let stackFrame of stackFrames) {
         if (stackFrame.filename) {
-          cachedFileNameBundleIdMap.set(stackFrame.filename, bundleId);
+          fileNameBundleIdMap.set(stackFrame.filename, bundleId);
         }
       }
     });
   }
 
-  return cachedFileNameBundleIdMap;
+  return fileNameBundleIdMap;
 }

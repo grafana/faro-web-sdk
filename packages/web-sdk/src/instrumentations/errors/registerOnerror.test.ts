@@ -3,7 +3,7 @@ import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 import { initializeFaro } from '../../initialize';
 
 import { registerOnerror } from './registerOnerror';
-import { cachedBundleIdStackFrameMap, cachedFileNameBundleIdMap, getBundleIdFromError } from '@grafana/faro-core';
+import { cachedBundleIdStackFrameMap, ExceptionEvent, getBundleIdFromError } from '@grafana/faro-core';
 
 describe('registerOnerror', () => {
   it('will preserve the old callback', () => {
@@ -47,15 +47,9 @@ describe('registerOnerror', () => {
     expect(transport.items).toHaveLength(1);
     expect(getBundleIdFromError(error)).toEqual('bar');
     expect(cachedBundleIdStackFrameMap.keys().next().value).toEqual('bar');
-
-    const fileNames: Record<string, string>[] = [];
-
-    cachedFileNameBundleIdMap.forEach((value, key) => {
-      fileNames.push({key, value});
-    });
-
-    expect(fileNames[0]?.['key']).toContain('faro-web-sdk/packages/web-sdk/src/instrumentations/errors/registerOnerror.test.ts');
-    expect(fileNames[0]?.['value']).toContain('bar');
-    expect(transport.items[0]?.payload).toEqual({})
+    const hasBundleId = (transport.items[0]?.payload as ExceptionEvent).stacktrace?.frames.every(
+      (frame) => frame.bundleid === 'bar'
+    );
+    expect(hasBundleId).toBe(true);
   });
 });

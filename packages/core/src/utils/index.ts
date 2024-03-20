@@ -47,7 +47,6 @@ export { genShortID } from './shortId';
 
 export {
   cachedBundleIdStackFrameMap,
-  cachedFileNameBundleIdMap,
   getBundleId,
   getBundleIdStackMap,
   getBundleIdFromError,

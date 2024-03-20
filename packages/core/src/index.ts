@@ -87,7 +87,6 @@ export type { UnpatchedConsole } from './unpatchedConsole';
 export {
   allLogLevels,
   cachedBundleIdStackFrameMap,
-  cachedFileNameBundleIdMap,
   createPromiseBuffer,
   deepEqual,
   defaultLogLevel,
