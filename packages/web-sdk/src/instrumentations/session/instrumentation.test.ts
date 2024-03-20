@@ -657,4 +657,33 @@ describe('SessionInstrumentation', () => {
     expect(sessionFromStorage.sessionId).toBe(sessionId);
     expect(sessionFromStorage.started).toBe(started);
   });
+
+  it('Removes is sampled attribute before transport item is sent.', () => {
+    const mockNewSessionId = '123';
+
+    const transport = new MockTransport();
+
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          samplingRate: 1,
+          session: { id: mockNewSessionId, attributes: { foo: 'bar' } },
+        },
+      })
+    );
+
+    expect(transport.items).toHaveLength(1);
+
+    const event = transport.items[0]! as TransportItem<EventEvent>;
+    expect(event.payload.name).toEqual(EVENT_SESSION_START);
+    expect(event.meta.session).toStrictEqual({
+      id: mockNewSessionId,
+      attributes: {
+        foo: 'bar',
+      },
+    });
+  });
 });
