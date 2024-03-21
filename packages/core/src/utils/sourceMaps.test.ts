@@ -1,4 +1,4 @@
-import { getBundleId, getBundleIdFromError, getBundleIdStackMap } from './sourceMaps';
+import { getBundleId, getErrorToBundleIdMap } from './sourceMaps';
 
 describe('sourceMapUpload utils', () => {
   beforeEach(() => {
@@ -19,18 +19,10 @@ describe('sourceMapUpload utils', () => {
   });
 
   it('can get the bundle ID stack map from the global object', () => {
-    expect(getBundleIdStackMap()).toBeUndefined();
+    expect(getErrorToBundleIdMap()).toBeUndefined();
 
     const e = new Error();
     (global as any).__faroBundleIds = new Map([[e, 'bar']]);
-    expect(getBundleIdStackMap()).toEqual(new Map([[e, 'bar']]));
-  });
-
-  it('can get the bundle ID from an error', () => {
-    const e = new Error();
-    expect(getBundleIdStackMap()).toBeUndefined();
-
-    (global as any).__faroBundleIds = new Map([[e, 'bar']]);
-    expect(getBundleIdFromError(e)).toEqual('bar');
+    expect(getErrorToBundleIdMap()).toEqual(new Map([[e, 'bar']]));
   });
 });

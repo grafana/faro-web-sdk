@@ -48,8 +48,7 @@ export { genShortID } from './shortId';
 export {
   cachedBundleIdStackFrameMap,
   getBundleId,
-  getBundleIdStackMap,
-  getBundleIdFromError,
+  getErrorToBundleIdMap,
 } from './sourceMaps';
 
 export { dateNow } from './date';

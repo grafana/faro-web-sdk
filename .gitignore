@@ -26,6 +26,9 @@ yarn-error.log*
 
 # Misc
 .DS_Store
+.yalc/*
+.yalc
+yalc.lock
 
 # App plugin
 infra/grafana/plugins/

@@ -565,6 +565,31 @@
     eslint-plugin-react-hooks "4.6.0"
     typescript "4.8.4"
 
+"@grafana/faro-core@file:experimental/instrumentation-fetch/.yalc/@grafana/faro-core":
+  version "1.4.2"
+  dependencies:
+    "@opentelemetry/api" "^1.7.0"
+    "@opentelemetry/otlp-transformer" "^0.48.0"
+
+"@grafana/faro-core@file:packages/react/.yalc/@grafana/faro-web-sdk/.yalc/@grafana/faro-core":
+  version "1.4.2"
+  dependencies:
+    "@opentelemetry/api" "^1.7.0"
+    "@opentelemetry/otlp-transformer" "^0.48.0"
+
+"@grafana/faro-core@file:packages/web-sdk/.yalc/@grafana/faro-core":
+  version "1.4.2"
+  dependencies:
+    "@opentelemetry/api" "^1.7.0"
+    "@opentelemetry/otlp-transformer" "^0.48.0"
+
+"@grafana/faro-web-sdk@file:packages/react/.yalc/@grafana/faro-web-sdk":
+  version "1.4.2"
+  dependencies:
+    "@grafana/faro-core" "file:../../../Library/Caches/Yarn/v6/npm-@grafana-faro-web-sdk-1.4.2-81c89426-9e0b-4c55-8152-912c9eea2696-1710979505409/node_modules/@grafana/faro-web-sdk/.yalc/@grafana/faro-core"
+    ua-parser-js "^1.0.32"
+    web-vitals "^3.1.1"
+
 "@grpc/grpc-js@^1.7.1", "@grpc/grpc-js@^1.9.0":
   version "1.9.9"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.9.9.tgz#ce3a05439b1c957ec64c2ecdc6f1e4f54e8af797"
