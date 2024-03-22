@@ -13,7 +13,7 @@ Out of the box, the package provides you the following features:
 
 ## React router with data router
 
-To set up Faro-React with React Router V6 without Data routers
+To set up Faro-React with React Router V6 with Data routers.
 
 1. Set up Faro
 2. Instrument the data router
@@ -65,7 +65,7 @@ const reactBrowserRouter = createBrowserRouter([
 const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
 ```
 
-_upgrading from v6 to v6 data router_
+_upgrading from v6 without a data router to v6 with a data router_
 
 1. Change `version` property from `ReactRouterVersion.V6` to `ReactRouterVersion.V6_data_router`.
 2. Remove the following dependencies from the dependencies object
@@ -123,7 +123,7 @@ const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
 
 ## React router without data router
 
-To set up Faro-React with React Router V5 or V6 without Data routers, add the following code snippet
+To set up Faro-React with React Router V4, V5 or V6 without Data routers, add the following code snippet
 to your project. If you use React Router V6 with Data Routers, refer to the React Router with Data
 Routers section.
 
