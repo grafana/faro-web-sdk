@@ -1,4 +1,4 @@
-# Set up Faro React distribution of the Faro Web SDK
+# Set up the Faro React distribution of the Faro Web SDK
 
 // Overview of recommended and advanced
 
@@ -6,10 +6,10 @@ Faro package that enables easier integration in projects built with React.
 
 Out of the box, the package provides you the following features:
 
+- **React Router (v4 - v6) integration**: send events for all route changes
 - **Error Boundary**: provides additional stack trace for errors and configuration options for pushError behavior
 - **Component Profiler**: capture every re-render of a component, the un/mounting time etc.
-- **React Router (v4 - v6) integration**: send events for all route changes
-- **SSR support**
+- **SSR support** server side rendering support
 
 ## React router with data router
 
@@ -49,7 +49,7 @@ initializeFaro({
 ```
 
 To instrument the router wrap it with the `withFaroRouterInstrumentation(dataRouter)` function,
-which attaches teh Faro instrumentations to the router.
+which attaches the Faro instrumentations to the router.
 This is usually done in the file where you create the router, often this App.\* file.
 
 Steps:
@@ -121,7 +121,7 @@ const reactBrowserRouter = createBrowserRouter([
 const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
 ```
 
-## React router without
+## React router without data router
 
 To set up Faro-React with React Router V5 or V6 without Data routers, add the following code snippet
 to your project. If you use React Router V6 with Data Routers, refer to the React Router with Data
