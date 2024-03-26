@@ -1,24 +1,48 @@
 # Set up the Faro React distribution of the Faro Web SDK
 
-// Overview of recommended and advanced
+Faro-Faro is a distribution of the Faro Web SDK for project using React, which offers easier integrations and the following features:
 
-Faro package that enables easier integration in projects built with React.
+- **Support for React Router (v4 - v6)**: send events for all route changes
+- **Error boundary**: enhancements to stack traces and configuration options for `pushError` behavior
+- **Component profiler**: to capture component renders, un/mounting time, and more
+- **SSR support** server side rendering support for React
 
-Out of the box, the package provides you the following features:
+todo: questions:
 
-- **React Router (v4 - v6) integration**: send events for all route changes
-- **Error Boundary**: provides additional stack trace for errors and configuration options for pushError behavior
-- **Component Profiler**: capture every re-render of a component, the un/mounting time etc.
-- **SSR support** server side rendering support
+- Why do we support v4-v6, are these all the current supported versions of React?
+- Is **Error boundary** as standard industry term or our own naming?
+
+The recommended way to use Faro-React is with the latest version of React Router V6 and the data router API. Why? for example: latest supported development, x, y, feature that makes routing easier?
+
+If you use an older version of React Router, V4-V5, or want to use React Router V6 without the data router API refer to the [React router without data router](#react-router-without-data-router) section of the documentation.
+
+To upgrade your project to React Router V6 and the data router API, refer to the [Upgrade to a data router](#upgrade-to-a-data-router) section of the documentation.
 
 ## React router with data router
 
-To set up Faro-React with React Router V6 with Data routers.
+The data router API is only available in React Router V6. Follow these steps to set up Faro-React and React Router V6 with the data router API:
 
-1. Set up Faro
-2. Instrument the data router
+1. Install Faro
+2. Import and initialize Faro
+3. Instrument the data router
 
-Set up Faro:
+## Install Faro
+
+First add the Faro-React and Faro web tracing dependencies to your project and install them:
+
+```
+todo: yarn, npm dependencies
+```
+
+## Import and initialize Faro
+
+Next import Faro-React and Faro web tracing dependencies in your project and initialize Faro with the following configuration:
+
+todo: questions:
+- Is there anything specific in the config we need to note here?
+- Is matchRoutes a standard way React exports routes?
+- Can there be any other dependencies?
+- Can we direct people to find the full list of configuration options?
 
 ```ts
 import { matchRoutes } from 'react-router-dom';
@@ -48,9 +72,16 @@ initializeFaro({
 });
 ```
 
-To instrument the router wrap it with the `withFaroRouterInstrumentation(dataRouter)` function,
-which attaches the Faro instrumentations to the router.
-This is usually done in the file where you create the router, often this App.\* file.
+### Instrument the data router
+
+To instrument the router, pass it to the `withFaroRouterInstrumentation(dataRouter)` function, which will wrap all routing with Faro instrumentation.
+
+This is usually done in the file where you create the router, often the `App.\*` file.
+
+todo: questions:
+
+- We go straight into this next section, can we explain what we are trying to achieve by following the steps?
+- We also introduce three router options (createBrowserRouter, createHashRouter, createMemoryRouter), what are the differences and why would someone use one over another?
 
 Steps:
 
@@ -65,7 +96,7 @@ const reactBrowserRouter = createBrowserRouter([
 const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
 ```
 
-_upgrading from v6 without a data router to v6 with a data router_
+## Upgrade to a data router
 
 1. Change `version` property from `ReactRouterVersion.V6` to `ReactRouterVersion.V6_data_router`.
 2. Remove the following dependencies from the dependencies object
