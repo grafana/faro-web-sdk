@@ -27,19 +27,36 @@ The data router API is only available in React Router v6. Follow these steps to 
 
 ## Install Faro
 
-First add the Faro-React to your project and install them: // link to package
+First add Faro-React to your project.
 
-// Marco: Describe different package types, scenarios when to use them
+Install the Faro-React npm package using your favorite package manager.
 
-// Marco: Code examples
+After Faro is installed all its APIs can be used in your code by importing them.
+
+npm
 
 ```
-todo: yarn, npm dependencies
+npm i @grafana/faro-react
 ```
+
+yarn
+
+```
+yarn add @grafana/faro-react
+```
+
+// Note to Sean:
 
 ## Import and initialize Faro
 
-Next import Faro-React and Faro web tracing dependencies in your project and initialize Faro with the following configuration:
+Next import Faro-React in your project and initialize Faro.
+
+The Faro-React package brings all functionality anf behavior from the Faro Web-SDK package plus additional
+React specific functionality and option which are described throughout this guide.
+
+In it's default setup it simply is the same as the the Faro Web-SDK. Throughout this guide we explain
+how to enable get React specific functionality like router instrumentation or a custom ErrorBoundary
+and more.
 
 // Marco (later): why web-tracing? Only needed if React profiler is used (is not recommended for production because it adds performance overhead)
 // https://react.dev/reference/react/Profiler
@@ -47,82 +64,31 @@ Next import Faro-React and Faro web tracing dependencies in your project and ini
 todo: questions:
 
 - Is there anything specific in the config we need to note here? // profiler, mention that react package can be used without using setting up the router, but doesn't give any insights into react specific metric.
-- Is matchRoutes a standard way React exports routes? // yes
 
+- Is matchRoutes a standard way React exports routes? // yes
 - Can we direct people to find the full list of configuration options? // "next" section, send custom events
+
+The following instructions are the bare minimum to setup Faro-React to get insights into
+the health and performance of your app or site.
+
+After Faro-React is initialized it captures data about your apps health and performance
+within your application’s runtime.
 
 NPM package
 
 ```ts
-import { matchRoutes } from 'react-router-dom';
-
-import { getWebInstrumentations, initializeFaro, ReactIntegration, ReactRouterVersion } from '@grafana/faro-react';
-import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+import { initializeFaro } from '@grafana/faro-react';
 
 initializeFaro({
-  // ...
-  instrumentations: [
-    // Load the default Web instrumentations
-    ...getWebInstrumentations(),
+  // Mandatory, the URL of the Grafana collector
+  url: 'my/collector/url',
 
-    new ReactIntegration({
-      // Only needed if you want to use the React Router instrumentation
-      router: {
-        version: ReactRouterVersion.V6_data_router,
-        dependencies: {
-          matchRoutes,
-        },
-      },
-    }),
-  ],
+  // Mandatory, the identification label of your application
+  app: {
+    name: 'my-react-app',
+  },
 });
 ```
-
-CDN bundle
-Faro-React is also available as a bundle that can be loaded from a CDN like
-[unpkg][unpkg] to directly serve the desired version of the library.
-
-```html
-<!doctype html>
-<html lang="en">
-  <head>
-    <title>My App</title>
-
-    <script>
-      (function () {
-        // Create a script tag for loading the library
-        var scriptFaroReact = document.createElement('script');
-
-        // Initialize Grafana Faro React at the onLoad event of the above script element to call it when the library is loaded.
-        scriptFaroReact.onload = () => {
-          window.GrafanaFaroReact.initializeFaro({
-            // Mandatory, the URL of the Grafana Cloud collector with embedded application key.
-            // Copy from the configuration page of your application in Grafana.
-            url: 'http://faro-collector-us-central-0.grafana.net/collect/{app-key}',
-
-            // Mandatory, the identification label(s) of your application
-            app: {
-              name: 'my-app',
-              version: '1.0.0', // Optional, but recommended
-            },
-          });
-        };
-
-        // Set the source of the script tag to the CDN
-        scriptFaroReact.src = 'https://unpkg.com/@grafana/faro-web-sdk@^1.0.0-beta/dist/bundle/faro-web-sdk.iife.js';
-
-        // Append the script tag to the head of the HTML document
-        document.head.appendChild(scriptFaroReact);
-      })();
-    </script>
-  </head>
-  <body>
-    <!-- ... -->
-  </body>
-</html>
-```
-
-[unpkg]: https://unpkg.com/
 
 ### Instrument the data router
 
@@ -160,14 +126,24 @@ const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
 Example: updating dependencies
 
 ```ts
+import { matchRoutes } from 'react-router-dom';
+
+import { getWebInstrumentations, initializeFaro, ReactIntegration, ReactRouterVersion } from '@grafana/faro-react';
+
 initializeFaro({
+  // Mandatory, the URL of the Grafana collector
+  url: 'my/collector/url',
+
+  // Mandatory, the identification label of your application
+  app: {
+    name: 'my-react-app',
+  },
+
   // ...
+
   instrumentations: [
     // Load the default Web instrumentations
     ...getWebInstrumentations(),
-
-    // Tracing Instrumentation is needed if you want to use the React Profiler
-    new TracingInstrumentation(),
 
     new ReactIntegration({
       // Only needed if you want to use the React Router instrumentation
@@ -218,7 +194,16 @@ import { getWebInstrumentations, initializeFaro, ReactIntegration, ReactRouterVe
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
 initializeFaro({
+  // Mandatory, the URL of the Grafana collector
+  url: 'my/collector/url',
+
+  // Mandatory, the identification label of your application
+  app: {
+    name: 'my-react-app',
+  },
+
   // ...
+
   instrumentations: [
     // Load the default Web instrumentations
     ...getWebInstrumentations(),
@@ -261,7 +246,16 @@ import { getWebInstrumentations, initializeFaro, ReactIntegration, ReactRouterVe
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
 initializeFaro({
+  // Mandatory, the URL of the Grafana collector
+  url: 'my/collector/url',
+
+  // Mandatory, the identification label of your application
+  app: {
+    name: 'my-react-app',
+  },
+
   // ...
+
   instrumentations: [
     // Load the default Web instrumentations
     ...getWebInstrumentations(),
@@ -336,10 +330,46 @@ const pushErrorOptions: PushErrorOptions = {
 
 ## Component profiler
 
+Use the Faro Profiler to get insights into the rendering performance on a React component level.
+To use the Faro profiler you need to install the Faro web-tracing package.
+
+Note:
+Using the profiler has an impact on performance.
+We recommend to use it carefully and to not overutilize it by instrumenting many components.
+
+Initialize Faro React
+
+```ts
+import { matchRoutes } from 'react-router-dom';
+
+import { getWebInstrumentations, initializeFaro } from '@grafana/faro-react';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+
+initializeFaro({
+  // Mandatory, the URL of the Grafana collector
+  url: 'my/collector/url',
+
+  // Mandatory, the identification label of your application
+  app: {
+    name: 'my-react-app',
+  },
+
+  instrumentations: [
+    // Load the default Web instrumentations
+    ...getWebInstrumentations(),
+
+    // Tracing Instrumentation is needed if you want to use the React Profiler
+    new TracingInstrumentation(),
+
+    // ...
+  ],
+});
+```
+
 ```tsx
 import { withFaroProfiler } from '@grafana/faro-react';
 
-export default withFaroProfiler(App);
+export default withFaroProfiler(MyReactComponent);
 ```
 
 ## SSR support
@@ -384,10 +414,3 @@ export function renderToString(...) {
   ),
 }
 ```
-
-// add profiler
-
-// example
-
-// Tracing Instrumentation is needed if you want to use the React Profiler
-new TracingInstrumentation(),
