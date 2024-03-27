@@ -2,6 +2,17 @@ import { createFaroNavigationTiming, createFaroResourceTiming } from './performa
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
 import type { FaroNavigationTiming, FaroResourceTiming } from './types';
 
+Object.defineProperty(window, 'performance', {
+  configurable: true,
+  value: {
+    timeOrigin: 0,
+    timing: {
+      domLoading: 542,
+    },
+  },
+  writable: true,
+});
+
 describe('performanceUtils', () => {
   it(`calculates navigation timing`, () => {
     const faroNavigationTiming = createFaroNavigationTiming(performanceNavigationEntry);
@@ -9,6 +20,7 @@ describe('performanceUtils', () => {
       visibilityState: 'visible',
       duration: '2700',
       pageLoadTime: '2441',
+      documentParsingTime: '705',
       domProcessingTime: '1431',
       onLoadTime: '22',
       domContentLoadHandlerTime: '3',
