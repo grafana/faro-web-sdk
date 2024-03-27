@@ -2,7 +2,7 @@
 
 Faro-React is a distribution of the Faro Web SDK for project using React, which offers easier integrations and the following features:
 
-// what is Faro web-sdk
+// Sean: what is Faro web-sdk
 
 - **Support for React Router (v4 - v6)**: send events for all route changes
 - **Error boundary**: enhancements to stack traces and configuration options for `pushError` behavior
@@ -13,7 +13,7 @@ todo: questions:
 
 - Why do we support v4-v6, are these all the current supported versions of React? // v4/v5.x
 
-If you use React Router V4-V5, or want to use React Router v6 without the data router API refer to the [React router without data router](#react-router-without-data-router) section of the documentation.
+If you use React Router v4-v5, or want to use React Router v6 without the data router API refer to the [React router without data router](#react-router-without-data-router) section of the documentation.
 
 To upgrade your project to React Router v6 and the data router API, refer to the [Upgrade to a data router](#upgrade-to-a-data-router) section of the documentation.
 
@@ -30,6 +30,7 @@ The data router API is only available in React Router v6. Follow these steps to 
 First add the Faro-React to your project and install them: // link to package
 
 // Marco: Describe different package types, scenarios when to use them
+
 // Marco: Code examples
 
 ```
@@ -49,6 +50,8 @@ todo: questions:
 - Is matchRoutes a standard way React exports routes? // yes
 
 - Can we direct people to find the full list of configuration options? // "next" section, send custom events
+
+NPM package
 
 ```ts
 import { matchRoutes } from 'react-router-dom';
@@ -74,6 +77,52 @@ initializeFaro({
   ],
 });
 ```
+
+CDN bundle
+Faro-React is also available as a bundle that can be loaded from a CDN like
+[unpkg][unpkg] to directly serve the desired version of the library.
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>My App</title>
+
+    <script>
+      (function () {
+        // Create a script tag for loading the library
+        var scriptFaroReact = document.createElement('script');
+
+        // Initialize Grafana Faro React at the onLoad event of the above script element to call it when the library is loaded.
+        scriptFaroReact.onload = () => {
+          window.GrafanaFaroReact.initializeFaro({
+            // Mandatory, the URL of the Grafana Cloud collector with embedded application key.
+            // Copy from the configuration page of your application in Grafana.
+            url: 'http://faro-collector-us-central-0.grafana.net/collect/{app-key}',
+
+            // Mandatory, the identification label(s) of your application
+            app: {
+              name: 'my-app',
+              version: '1.0.0', // Optional, but recommended
+            },
+          });
+        };
+
+        // Set the source of the script tag to the CDN
+        scriptFaroReact.src = 'https://unpkg.com/@grafana/faro-web-sdk@^1.0.0-beta/dist/bundle/faro-web-sdk.iife.js';
+
+        // Append the script tag to the head of the HTML document
+        document.head.appendChild(scriptFaroReact);
+      })();
+    </script>
+  </head>
+  <body>
+    <!-- ... -->
+  </body>
+</html>
+```
+
+[unpkg]: https://unpkg.com/
 
 ### Instrument the data router
 
