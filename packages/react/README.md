@@ -1,6 +1,8 @@
 # Set up the Faro React distribution of the Faro Web SDK
 
-Faro-Faro is a distribution of the Faro Web SDK for project using React, which offers easier integrations and the following features:
+Faro-React is a distribution of the Faro Web SDK for project using React, which offers easier integrations and the following features:
+
+// what is Faro web-sdk
 
 - **Support for React Router (v4 - v6)**: send events for all route changes
 - **Error boundary**: enhancements to stack traces and configuration options for `pushError` behavior
@@ -9,26 +11,26 @@ Faro-Faro is a distribution of the Faro Web SDK for project using React, which o
 
 todo: questions:
 
-- Why do we support v4-v6, are these all the current supported versions of React?
-- Is **Error boundary** as standard industry term or our own naming?
+- Why do we support v4-v6, are these all the current supported versions of React? // v4/v5.x
 
-The recommended way to use Faro-React is with the latest version of React Router V6 and the data router API. Why? for example: latest supported development, x, y, feature that makes routing easier?
+If you use React Router V4-V5, or want to use React Router v6 without the data router API refer to the [React router without data router](#react-router-without-data-router) section of the documentation.
 
-If you use an older version of React Router, V4-V5, or want to use React Router V6 without the data router API refer to the [React router without data router](#react-router-without-data-router) section of the documentation.
-
-To upgrade your project to React Router V6 and the data router API, refer to the [Upgrade to a data router](#upgrade-to-a-data-router) section of the documentation.
+To upgrade your project to React Router v6 and the data router API, refer to the [Upgrade to a data router](#upgrade-to-a-data-router) section of the documentation.
 
 ## React router with data router
 
-The data router API is only available in React Router V6. Follow these steps to set up Faro-React and React Router V6 with the data router API:
+The data router API is only available in React Router v6. Follow these steps to set up Faro-React and React Router v6 with the data router API: // add specific react router version which introduced data routers
 
-1. Install Faro
+1. Install Faro-React package
 2. Import and initialize Faro
 3. Instrument the data router
 
 ## Install Faro
 
-First add the Faro-React and Faro web tracing dependencies to your project and install them:
+First add the Faro-React to your project and install them: // link to package
+
+// Marco: Describe different package types, scenarios when to use them
+// Marco: Code examples
 
 ```
 todo: yarn, npm dependencies
@@ -38,11 +40,15 @@ todo: yarn, npm dependencies
 
 Next import Faro-React and Faro web tracing dependencies in your project and initialize Faro with the following configuration:
 
+// Marco (later): why web-tracing? Only needed if React profiler is used (is not recommended for production because it adds performance overhead)
+// https://react.dev/reference/react/Profiler
+
 todo: questions:
-- Is there anything specific in the config we need to note here?
-- Is matchRoutes a standard way React exports routes?
-- Can there be any other dependencies?
-- Can we direct people to find the full list of configuration options?
+
+- Is there anything specific in the config we need to note here? // profiler, mention that react package can be used without using setting up the router, but doesn't give any insights into react specific metric.
+- Is matchRoutes a standard way React exports routes? // yes
+
+- Can we direct people to find the full list of configuration options? // "next" section, send custom events
 
 ```ts
 import { matchRoutes } from 'react-router-dom';
@@ -55,9 +61,6 @@ initializeFaro({
   instrumentations: [
     // Load the default Web instrumentations
     ...getWebInstrumentations(),
-
-    // Tracing Instrumentation is needed if you want to use the React Profiler
-    new TracingInstrumentation(),
 
     new ReactIntegration({
       // Only needed if you want to use the React Router instrumentation
@@ -74,14 +77,13 @@ initializeFaro({
 
 ### Instrument the data router
 
-To instrument the router, pass it to the `withFaroRouterInstrumentation(dataRouter)` function, which will wrap all routing with Faro instrumentation.
+To instrument the router, pass it to the `withFaroRouterInstrumentation(dataRouter)` function, which wraps all routes with Faro instrumentation.
 
 This is usually done in the file where you create the router, often the `App.\*` file.
 
 todo: questions:
 
-- We go straight into this next section, can we explain what we are trying to achieve by following the steps?
-- We also introduce three router options (createBrowserRouter, createHashRouter, createMemoryRouter), what are the differences and why would someone use one over another?
+- Marco: We go straight into this next section, can we explain what we are trying to achieve by following the steps?
 
 Steps:
 
@@ -90,7 +92,7 @@ Steps:
 
 ```ts
 const reactBrowserRouter = createBrowserRouter([
-  //...
+  // your routes...
 ]);
 
 const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
@@ -172,9 +174,6 @@ initializeFaro({
     // Load the default Web instrumentations
     ...getWebInstrumentations(),
 
-    // Tracing Instrumentation is needed if you want to use the React Profiler
-    new TracingInstrumentation(),
-
     new ReactIntegration({
       // Only needed if you want to use the React Router instrumentation
       router: {
@@ -217,9 +216,6 @@ initializeFaro({
   instrumentations: [
     // Load the default Web instrumentations
     ...getWebInstrumentations(),
-
-    // Tracing Instrumentation is needed if you want to use the React Profiler
-    new TracingInstrumentation(),
 
     new ReactIntegration({
       // Only needed if you want to use the React Router instrumentation
@@ -339,3 +335,10 @@ export function renderToString(...) {
   ),
 }
 ```
+
+// add profiler
+
+// example
+
+// Tracing Instrumentation is needed if you want to use the React Profiler
+new TracingInstrumentation(),
