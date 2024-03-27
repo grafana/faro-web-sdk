@@ -4,7 +4,7 @@ import type { EventsAPI } from '@grafana/faro-core';
 import { getItem, setItem, webStorageType } from '../../utils';
 
 import { NAVIGATION_ENTRY, NAVIGATION_ID_STORAGE_KEY } from './performanceConstants';
-import { calculateFaroNavigationTiming, entryUrlIsIgnored } from './performanceUtils';
+import { createFaroNavigationTiming, entryUrlIsIgnored } from './performanceUtils';
 import type { FaroNavigationItem } from './types';
 
 export function getNavigationTimings(
@@ -26,7 +26,7 @@ export function getNavigationTimings(
     const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
 
     const faroNavigationEntry: FaroNavigationItem = {
-      ...calculateFaroNavigationTiming(navigationEntryRaw.toJSON()),
+      ...createFaroNavigationTiming(navigationEntryRaw.toJSON()),
       faroNavigationId: genShortID(),
       faroPreviousNavigationId,
     };

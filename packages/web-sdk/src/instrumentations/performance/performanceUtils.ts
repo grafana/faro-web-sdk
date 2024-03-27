@@ -23,7 +23,7 @@ export function onDocumentReady(handleReady: () => void) {
   }
 }
 
-export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {
+export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {
   const {
     connectEnd,
     connectStart,
@@ -92,7 +92,7 @@ export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourc
   }
 }
 
-export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
+export function createFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
   const {
     activationStart,
     domComplete,
@@ -119,7 +119,7 @@ export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNav
 
     type: type,
 
-    ...calculateFaroResourceTiming(navigationEntryRaw),
+    ...createFaroResourceTiming(navigationEntryRaw),
   };
 }
 
