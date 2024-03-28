@@ -126,11 +126,6 @@ export function createFaroNavigationTiming(navigationEntryRaw: PerformanceNaviga
 
 function getDocumentParsingTime(domInteractive: number): string {
   let parserStart;
-  console.log('performance.timeOrigin :>> ', performance.timeOrigin);
-  console.log('performance :>> ', performance);
-  console.log('performance.timing :>> ', performance.timing);
-  console.log('performance.timing.domLoading :>> ', performance.timing?.domLoading);
-
   if (performance.timing?.domLoading != null) {
     // the browser is about to start parsing the first received bytes of the HTML document.
     // This property is deprecated but there isn't a really good alternative atm.
