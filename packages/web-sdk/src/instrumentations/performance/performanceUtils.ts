@@ -23,7 +23,7 @@ export function onDocumentReady(handleReady: () => void) {
   }
 }
 
-export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {
+export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {
   const {
     connectEnd,
     connectStart,
@@ -92,7 +92,7 @@ export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourc
   }
 }
 
-export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
+export function createFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
   const {
     activationStart,
     domComplete,
@@ -109,6 +109,7 @@ export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNav
   return {
     visibilityState: document.visibilityState,
     pageLoadTime: toFaroPerformanceTimingString(domComplete - fetchStart),
+    documentParsingTime: getDocumentParsingTime(domInteractive),
     domProcessingTime: toFaroPerformanceTimingString(domComplete - domInteractive),
     domContentLoadHandlerTime: toFaroPerformanceTimingString(domContentLoadedEventEnd - domContentLoadedEventStart),
     onLoadTime: toFaroPerformanceTimingString(loadEventEnd - loadEventStart),
@@ -119,8 +120,20 @@ export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNav
 
     type: type,
 
-    ...calculateFaroResourceTiming(navigationEntryRaw),
+    ...createFaroResourceTiming(navigationEntryRaw),
   };
+}
+
+function getDocumentParsingTime(domInteractive: number): string {
+  let parserStart;
+  if (performance.timing?.domLoading != null) {
+    // the browser is about to start parsing the first received bytes of the HTML document.
+    // This property is deprecated but there isn't a really good alternative atm.
+    // For now we stick with domLoading and keep researching a better alternative.
+    parserStart = performance.timing.domLoading - performance.timeOrigin;
+  }
+
+  return toFaroPerformanceTimingString(parserStart ? domInteractive - parserStart : undefined);
 }
 
 function toFaroPerformanceTimingString(v: unknown): string {

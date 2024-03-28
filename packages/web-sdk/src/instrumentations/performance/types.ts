@@ -2,6 +2,7 @@ export type FaroNavigationTiming = Readonly<
   {
     duration: string;
     visibilityState: DocumentVisibilityState;
+    documentParsingTime: string;
     domProcessingTime: string;
     pageLoadTime: string;
     domContentLoadHandlerTime: string;

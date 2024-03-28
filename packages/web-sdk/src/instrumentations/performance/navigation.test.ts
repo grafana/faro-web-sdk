@@ -6,7 +6,7 @@ import { webStorageType } from '../../utils/webStorage';
 import { getNavigationTimings } from './navigation';
 import { NAVIGATION_ID_STORAGE_KEY } from './performanceConstants';
 import * as performanceUtilsModule from './performanceUtils';
-import { calculateFaroNavigationTiming, calculateFaroResourceTiming } from './performanceUtils';
+import { createFaroNavigationTiming, createFaroResourceTiming } from './performanceUtils';
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
 
 describe('Navigation observer', () => {
@@ -79,8 +79,8 @@ describe('Navigation observer', () => {
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent).toHaveBeenCalledWith('faro.performance.navigation', {
-      ...calculateFaroResourceTiming(performanceNavigationEntry),
-      ...calculateFaroNavigationTiming(performanceNavigationEntry),
+      ...createFaroResourceTiming(performanceNavigationEntry),
+      ...createFaroNavigationTiming(performanceNavigationEntry),
       faroNavigationId: mockNavigationId,
       faroPreviousNavigationId: 'unknown',
     });
@@ -100,8 +100,8 @@ describe('Navigation observer', () => {
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent).toHaveBeenCalledWith('faro.performance.navigation', {
-      ...calculateFaroResourceTiming(performanceNavigationEntry),
-      ...calculateFaroNavigationTiming(performanceNavigationEntry),
+      ...createFaroResourceTiming(performanceNavigationEntry),
+      ...createFaroNavigationTiming(performanceNavigationEntry),
       faroNavigationId: mockNewNavigationId,
       faroPreviousNavigationId: mockPreviousNavigationId,
     });

@@ -2,7 +2,7 @@ import { genShortID } from '@grafana/faro-core';
 import type { EventsAPI } from '@grafana/faro-core';
 
 import { RESOURCE_ENTRY } from './performanceConstants';
-import { calculateFaroResourceTiming, entryUrlIsIgnored } from './performanceUtils';
+import { createFaroResourceTiming, entryUrlIsIgnored } from './performanceUtils';
 
 export function observeResourceTimings(
   faroNavigationId: string,
@@ -18,7 +18,7 @@ export function observeResourceTimings(
       }
 
       const faroResourceEntry = {
-        ...calculateFaroResourceTiming(resourceEntryRaw.toJSON()),
+        ...createFaroResourceTiming(resourceEntryRaw.toJSON()),
         faroNavigationId,
         faroResourceId: genShortID(),
       };

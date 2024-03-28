@@ -1,7 +1,7 @@
 import * as faroCoreModule from '@grafana/faro-core';
 
 import * as performanceUtilsModule from './performanceUtils';
-import { calculateFaroResourceTiming } from './performanceUtils';
+import { createFaroResourceTiming } from './performanceUtils';
 import { performanceResourceEntry } from './performanceUtilsTestData';
 import { observeResourceTimings } from './resource';
 
@@ -70,7 +70,7 @@ describe('Navigation observer', () => {
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent).toHaveBeenCalledWith('faro.performance.resource', {
-      ...calculateFaroResourceTiming(performanceResourceEntry),
+      ...createFaroResourceTiming(performanceResourceEntry),
       faroNavigationId: mockNavigationId,
       faroResourceId: mockResourceId,
     });
