@@ -1,25 +1,26 @@
 # Set up the Faro React distribution of the Faro Web SDK
 
-Faro-React is a distribution of the Faro Web SDK for project using React, which offers easier integrations and the following features:
+The Faro Web-SDK is a highly configurable open source real user monitoring (RUM) library built on OpenTelemetry and integrating seamlessly with Grafana Cloud and Grafana Frontend Observability. Faro-React is a distribution of the Faro Web SDK for project using React, which offers easier integrations and the following features:
 
-// Sean: what is Faro web-sdk
-
-- **Support for React Router (v4 - v6)**: send events for all route changes
+- **Support for React Router v6 or v4/v5.x**: send events for all route changes, including the data router API
 - **Error boundary**: enhancements to stack traces and configuration options for `pushError` behavior
 - **Component profiler**: to capture component renders, un/mounting time, and more
 - **SSR support** server side rendering support for React
 
-todo: questions:
-
-- Why do we support v4-v6, are these all the current supported versions of React? // v4/v5.x
-
-If you use React Router v4-v5, or want to use React Router v6 without the data router API refer to the [React router without data router](#react-router-without-data-router) section of the documentation.
-
-To upgrade your project to React Router v6 and the data router API, refer to the [Upgrade to a data router](#upgrade-to-a-data-router) section of the documentation.
+This document covers setting up Faro-React with React Router v6 with or without the data router API, and v4/v5.x.
 
 ## React router with data router
 
-The data router API is only available in React Router v6. Follow these steps to set up Faro-React and React Router v6 with the data router API: // add specific react router version which introduced data routers
+The data router API is only available in React Router v6.
+
+// todo: add specific react router version which introduced data routers
+// Sean: I couldn't find it
+
+If you use React Router v4/v5x, or want to use React Router v6 without the data router API refer to the [React router without data router](#react-router-without-data-router) section of the documentation.
+
+To upgrade your project to React Router v6 and the data router API, refer to the [Upgrade to a data router](#upgrade-to-a-data-router) section of the documentation.
+
+Follow these steps to set up Faro-React and React Router v6 with the data router API:
 
 1. Install Faro-React package
 2. Import and initialize Faro
@@ -29,81 +30,64 @@ The data router API is only available in React Router v6. Follow these steps to 
 
 First add Faro-React to your project.
 
-Install the Faro-React npm package using your favorite package manager.
+Install the Faro-React npm package using your favorite package manager by running the following shell commands:
 
-After Faro is installed all its APIs can be used in your code by importing them.
+NPM:
 
-npm
-
-```
+```sh
+# install globally
 npm i @grafana/faro-react
 ```
 
-yarn
+// todo: is it recommended to install Faro globally, or rather added it to your package.json?
 
-```
+yarn:
+
+```sh
 yarn add @grafana/faro-react
 ```
 
-// Note to Sean:
+// todo: CDN install instructions
+
+// todo: why would you use CDN vs package manager?
 
 ## Import and initialize Faro
 
-Next import Faro-React in your project and initialize Faro.
+The Faro-React package offers all the functionality and behavior from the Faro Web-SDK package plus additional React specific functionality like router instrumentation, a custom ErrorBoundary, and more.
 
-The Faro-React package brings all functionality anf behavior from the Faro Web-SDK package plus additional
-React specific functionality and option which are described throughout this guide.
-
-In it's default setup it simply is the same as the the Faro Web-SDK. Throughout this guide we explain
-how to enable get React specific functionality like router instrumentation or a custom ErrorBoundary
-and more.
-
-// Marco (later): why web-tracing? Only needed if React profiler is used (is not recommended for production because it adds performance overhead)
+// Marco: web-tracing needed for React profiler, not for production
 // https://react.dev/reference/react/Profiler
 
-todo: questions:
-
-- Is there anything specific in the config we need to note here? // profiler, mention that react package can be used without using setting up the router, but doesn't give any insights into react specific metric.
-
-- Is matchRoutes a standard way React exports routes? // yes
-- Can we direct people to find the full list of configuration options? // "next" section, send custom events
-
-The following instructions are the bare minimum to setup Faro-React to get insights into
-the health and performance of your app or site.
-
-After Faro-React is initialized it captures data about your apps health and performance
-within your application’s runtime.
-
-NPM package
+The following code sample shows you how to import Faro-React and the minimum setup needed to get insights into the health and performance of your application or website:
 
 ```ts
 import { initializeFaro } from '@grafana/faro-react';
 
 initializeFaro({
-  // Mandatory, the URL of the Grafana collector
+  // required: the URL of the Grafana collector
   url: 'my/collector/url',
 
-  // Mandatory, the identification label of your application
+  // required: the identification label of your application
   app: {
     name: 'my-react-app',
   },
 });
 ```
 
+// what is the correct terminology, instruments or captures?
+// I dropped the part about capturing app performance in the runtime, it sounded redundant.
+
+After Faro-React is initialized it captures data about your application's health and performance and exports them to a data collector.
+
+// What data collector's does Faro support? Can we link to resources?
+
 ### Instrument the data router
 
-To instrument the router, pass it to the `withFaroRouterInstrumentation(dataRouter)` function, which wraps all routes with Faro instrumentation.
+ThisIf you are using a
 
-This is usually done in the file where you create the router, often the `App.\*` file.
+Building on the minimum setup, this section shows you how to instrument the routes from a React data router (BrowserRouter, HashRouter, or MemoryRouter).
 
-todo: questions:
-
-- Marco: We go straight into this next section, can we explain what we are trying to achieve by following the steps?
-
-Steps:
-
-1. Create a data router (createBrowserRouter, createHashRouter, createMemoryRouter)
-2. Instrument the data router to receive route changes by wrapping it with `withFaroRouterInstrumentation()`
+In the file you create your data router, often the `App.\*` file pass your data router to the Faro-React function `withFaroRouterInstrumentation` to wrap all your routes with Faro instrumentation:
 
 ```ts
 const reactBrowserRouter = createBrowserRouter([
