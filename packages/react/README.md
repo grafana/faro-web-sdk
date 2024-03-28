@@ -40,6 +40,9 @@ npm i @grafana/faro-react
 ```
 
 // todo: is it recommended to install Faro globally, or rather added it to your package.json?
+// ? What do you mean by globally or package.json
+// -> Faro-React will be automatically added to the package.json by using one of those commands
+// -> When faro is initialized it is available globally in the app.
 
 yarn:
 
@@ -48,8 +51,10 @@ yarn add @grafana/faro-react
 ```
 
 // todo: CDN install instructions
+// -> I double checked, Faro-React will not work with CDN version. Of course there are ways but they are hacky and error prone.
 
 // todo: why would you use CDN vs package manager?
+// -> we do not recommend to use the CDN when using faro react.
 
 ## Import and initialize Faro
 
@@ -75,11 +80,19 @@ initializeFaro({
 ```
 
 // what is the correct terminology, instruments or captures?
+// --> Instrumenting is the process of hooking into the APIs which emit / where we can pull data from.
+// --> Capturing in this regard is capturing the data, processing and sending it.
+
 // I dropped the part about capturing app performance in the runtime, it sounded redundant.
+// --> Thanks
 
 After Faro-React is initialized it captures data about your application's health and performance and exports them to a data collector.
+// ? What do yu think about something like this:
+// --> After Faro-React is initialized it sets up several instrumentation and starts capturing data about your application's health and performance and exports them to a data collector.
 
 // What data collector's does Faro support? Can we link to resources?
+// --> Faro supports the Faro receiver which is mandatory for Grafana Cloud. It's auto configured, no additional work required (and i think not possible, will ask the receivers team).
+// --> For OSS user it can send data to the Grafana Agent => https://grafana.com/docs/agent/latest/flow/reference/components/faro.receiver/.
 
 ### Instrument the data router
 
