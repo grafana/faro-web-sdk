@@ -112,15 +112,29 @@ const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
 
 ## Upgrade to a data router
 
-1. Change `version` property from `ReactRouterVersion.V6` to `ReactRouterVersion.V6_data_router`.
-2. Remove the following dependencies from the dependencies object
+This section describes how to upgrade the Faro React router instrumentation if you already have a
+React app instrumented which does not use data routers.
+
+First change the configuration of the ReactInstrumentation inside the `initializeFaro()` function.
+
+1. Change the `version` property from the router version you are using, `ReactRouterVersion.[V4|V5|V6]`,
+   to `ReactRouterVersion.V6_data_router`.
+
+2. Update the dependencies provided in the `dependencies` object
+
+If you use React Router v4 or v5:
+
+Remove the `history` and `Route` dependencies and add the `matchRoutes` function exported by
+`react-router-dom`
+
+If you use React Router v6, remove the following dependencies from the dependencies `object`:
 
 - `createRoutesFromChildren`
 - `Routes`
 - `useLocation`
 - `useNavigationType`
 
-Example: updating dependencies
+After you updated the dependencies the ReactIntegration config looks like this:
 
 ```ts
 import { matchRoutes } from 'react-router-dom';
@@ -128,14 +142,6 @@ import { matchRoutes } from 'react-router-dom';
 import { getWebInstrumentations, initializeFaro, ReactIntegration, ReactRouterVersion } from '@grafana/faro-react';
 
 initializeFaro({
-  // Mandatory, the URL of the Grafana collector
-  url: 'my/collector/url',
-
-  // Mandatory, the identification label of your application
-  app: {
-    name: 'my-react-app',
-  },
-
   // ...
 
   instrumentations: [
@@ -143,17 +149,10 @@ initializeFaro({
     ...getWebInstrumentations(),
 
     new ReactIntegration({
-      // Only needed if you want to use the React Router instrumentation
       router: {
-        // version: ReactRouterVersion.V6 // => change to .V6_data_router,
         version: ReactRouterVersion.V6_data_router,
         dependencies: {
           matchRoutes,
-          // +++ remove the following dependencies +++
-          // createRoutesFromChildren,
-          // Routes,
-          // useLocation,
-          // useNavigationType,
         },
       },
     }),
@@ -161,12 +160,17 @@ initializeFaro({
 });
 ```
 
-Updating the router instrumentation
+After you updating the config above, you need to change the router instrumentation in your app.
 
-1. Remove `<FaroRoutes>` component. This will not work anymore with V6 data routers.
-2. Create a data router and wrap it with `withFaroRouterInstrumentation(dataRouter)`
+Since data routers are created with respective functions, for example `createBrowserRouter`, and Routes
+are defined differently, the Faro customer route components need to be removed because they do not work
+with data routers.
 
-Example: Instrument Router
+- If you upgrade from React Router v4 or v5 remove the `<FaroRoute/>` components.
+- If you upgrade from React Router v6 then remove `<FaroRoutes />` components.
+
+To instrument the newly created data router, it must be wrapped by the
+`withFaroRouterInstrumentation(dataRouter)` function:
 
 ```ts
 const reactBrowserRouter = createBrowserRouter([
