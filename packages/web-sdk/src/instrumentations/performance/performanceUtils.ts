@@ -106,10 +106,12 @@ export function createFaroNavigationTiming(navigationEntryRaw: PerformanceNaviga
     type,
   } = navigationEntryRaw;
 
+  const parserStart = getDocumentParsingTime();
+
   return {
     visibilityState: document.visibilityState,
     pageLoadTime: toFaroPerformanceTimingString(domComplete - fetchStart),
-    documentParsingTime: getDocumentParsingTime(domInteractive),
+    documentParsingTime: toFaroPerformanceTimingString(parserStart ? domInteractive - parserStart : null),
     domProcessingTime: toFaroPerformanceTimingString(domComplete - domInteractive),
     domContentLoadHandlerTime: toFaroPerformanceTimingString(domContentLoadedEventEnd - domContentLoadedEventStart),
     onLoadTime: toFaroPerformanceTimingString(loadEventEnd - loadEventStart),
@@ -124,16 +126,15 @@ export function createFaroNavigationTiming(navigationEntryRaw: PerformanceNaviga
   };
 }
 
-function getDocumentParsingTime(domInteractive: number): string {
-  let parserStart;
+function getDocumentParsingTime(): number | null {
   if (performance.timing?.domLoading != null) {
     // the browser is about to start parsing the first received bytes of the HTML document.
     // This property is deprecated but there isn't a really good alternative atm.
     // For now we stick with domLoading and keep researching a better alternative.
-    parserStart = performance.timing.domLoading - performance.timeOrigin;
+    return performance.timing.domLoading - performance.timeOrigin;
   }
 
-  return toFaroPerformanceTimingString(parserStart ? domInteractive - parserStart : undefined);
+  return null;
 }
 
 function toFaroPerformanceTimingString(v: unknown): string {
