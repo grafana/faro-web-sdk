@@ -2,6 +2,7 @@
 
 ## Next
 
+- Feature(`@grafana/faro-web-sdk`): Add parsing time to FaroNavigationTiming (#541).
 - Chore(`@grafana/faro-web-sdk`): Get rid of structureClone. It caused breakage in some
   sandboxed environments because of injected proxy objects (#536).
 

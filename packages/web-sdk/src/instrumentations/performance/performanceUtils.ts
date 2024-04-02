@@ -23,7 +23,7 @@ export function onDocumentReady(handleReady: () => void) {
   }
 }
 
-export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {
+export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {
   const {
     connectEnd,
     connectStart,
@@ -92,7 +92,7 @@ export function calculateFaroResourceTiming(resourceEntryRaw: PerformanceResourc
   }
 }
 
-export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
+export function createFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
   const {
     activationStart,
     domComplete,
@@ -106,9 +106,12 @@ export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNav
     type,
   } = navigationEntryRaw;
 
+  const parserStart = getDocumentParsingTime();
+
   return {
     visibilityState: document.visibilityState,
     pageLoadTime: toFaroPerformanceTimingString(domComplete - fetchStart),
+    documentParsingTime: toFaroPerformanceTimingString(parserStart ? domInteractive - parserStart : null),
     domProcessingTime: toFaroPerformanceTimingString(domComplete - domInteractive),
     domContentLoadHandlerTime: toFaroPerformanceTimingString(domContentLoadedEventEnd - domContentLoadedEventStart),
     onLoadTime: toFaroPerformanceTimingString(loadEventEnd - loadEventStart),
@@ -119,8 +122,19 @@ export function calculateFaroNavigationTiming(navigationEntryRaw: PerformanceNav
 
     type: type,
 
-    ...calculateFaroResourceTiming(navigationEntryRaw),
+    ...createFaroResourceTiming(navigationEntryRaw),
   };
+}
+
+function getDocumentParsingTime(): number | null {
+  if (performance.timing?.domLoading != null) {
+    // the browser is about to start parsing the first received bytes of the HTML document.
+    // This property is deprecated but there isn't a really good alternative atm.
+    // For now we stick with domLoading and keep researching a better alternative.
+    return performance.timing.domLoading - performance.timeOrigin;
+  }
+
+  return null;
 }
 
 function toFaroPerformanceTimingString(v: unknown): string {
