@@ -5,7 +5,30 @@ import { defaultMetas } from '../metas/const';
 import { makeCoreConfig } from './makeCoreConfig';
 
 describe('defaultMetas', () => {
-  it('includes K6Meta in defaultMetas for k6 (lab) sessions', () => {
+  it('includes K6Meta in defaultMetas for k6 (lab) sessions configured K6 properties.', () => {
+    (global as any).k6 = {
+      testRunId: 'abcde',
+    };
+
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.metas).toHaveLength(3);
+    expect(config?.metas.map((item) => (isFunction(item) ? item() : item))).toContainEqual({
+      k6: {
+        isK6Browser: true,
+        testRunId: 'abcde',
+      },
+    });
+
+    delete (global as any).k6;
+  });
+
+  it('does not include K6 Object properties if not set', () => {
     (global as any).k6 = {};
 
     const browserConfig = {

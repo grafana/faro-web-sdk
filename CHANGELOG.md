@@ -2,9 +2,17 @@
 
 ## Next
 
-- # Feature (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object (#476).
+- Feature (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object (#476).
+- Feature(`@grafana/faro-web-sdk`): Add parsing time to FaroNavigationTiming (#541).
+- Chore(`@grafana/faro-web-sdk`): Get rid of structureClone. It caused breakage in some
+  sandboxed environments because of injected proxy objects (#536).
+
+## 1.5.0
+
+- Feat(`@grafana/faro-web-sdk`): Add responseStatus to performance events (#526).
 - Fix (`@grafana/faro-web-sdk`): Faro updates sessions in an infinite loop if DOM Storage is not
   available (#519).
+- Feat (`@grafana/faro-react`): Support instrumenting React Router v6 data routers (#518).
 
 ## 1.4.2
 

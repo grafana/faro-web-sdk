@@ -72,6 +72,7 @@ export interface MetaView {
 
 export interface MetaK6 {
   isK6Browser?: boolean;
+  testRunId?: string;
 }
 
 export interface Meta {

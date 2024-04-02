@@ -119,15 +119,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
       const attributes = item.meta.session?.attributes;
 
       if (attributes && attributes?.['isSampled'] === 'true') {
-        let newItem: TransportItem;
-
-        // Structured clone is supported in all major browsers
-        // but for old browsers we need a fallback
-        if ('structuredClone' in window) {
-          newItem = structuredClone(item);
-        } else {
-          newItem = JSON.parse(JSON.stringify(item));
-        }
+        let newItem: TransportItem = JSON.parse(JSON.stringify(item));
 
         const newAttributes = newItem.meta.session?.attributes;
         delete newAttributes?.['isSampled'];

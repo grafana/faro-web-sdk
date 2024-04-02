@@ -113,6 +113,16 @@ Properties:
 
 - `name` - the name of the current view
 
+### K6
+
+The K6 meta is only added if Faro is running in a K6 environment.
+It derives the information from the existence of the K6 object in the browser window (`window.k6`).
+
+Starting with K6 v0.50.0, the property `testRunId` is attached to the K6 object, which is the
+test run ID of the current K6 test and can be used to reference the respective K6 test.
+If available, Faro adds this property to the K6 meta as well.
+It is fully managed by Faro and is not meant to be altered outside of Faro.
+
 ## Metas SDK
 
 The metas SDK is the internal handler for the metas component. It is responsible for keeping track of the current metas

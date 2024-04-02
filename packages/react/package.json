@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-react",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "Faro package that enables easier integration in projects built with React.",
   "keywords": [
     "observability",
@@ -52,8 +52,8 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "^1.4.2",
-    "@grafana/faro-web-tracing": "^1.4.2",
+    "@grafana/faro-web-sdk": "^1.5.0",
+    "@grafana/faro-web-tracing": "^1.5.0",
     "hoist-non-react-statics": "^3.3.2"
   },
   "devDependencies": {
