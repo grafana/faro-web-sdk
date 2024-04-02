@@ -97,4 +97,17 @@ describe('performanceUtils', () => {
     // For browsers which do not support the responseStatus property
     expect(createFaroResourceTiming({} as any).renderBlockingStatus).toBe('unknown');
   });
+
+  it(`Sets documentParsingTime to "unknown" in case it is not supported by a certain browser`, () => {
+    Object.defineProperty(window, 'performance', {
+      configurable: true,
+      value: {
+        timeOrigin: 0,
+      },
+      writable: true,
+    });
+
+    const faroNavigationTiming = createFaroNavigationTiming(performanceNavigationEntry);
+    expect(faroNavigationTiming.documentParsingTime).toBe('unknown');
+  });
 });
