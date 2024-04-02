@@ -13,8 +13,6 @@ export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | 
   let isEventRes: boolean | undefined;
 
   if (isErrorEvent(evt) && evt.error) {
-    // TODO - build bundleID -> filename mapping
-
     value = evt.error.message;
     type = evt.error.name;
     stackFrames = getStackFramesFromError(evt.error);
