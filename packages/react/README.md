@@ -1,6 +1,9 @@
 # Set up the Faro React distribution of the Faro Web SDK
 
-The Faro Web-SDK is a highly configurable open source real user monitoring (RUM) library built on OpenTelemetry and integrating seamlessly with Grafana Cloud and Grafana Frontend Observability. Faro-React is a distribution of the Faro Web SDK for project using React, which offers easier integrations and the following features:
+The Faro Web-SDK is a highly configurable open source real user monitoring (RUM) library built on
+OpenTelemetry and integrating seamlessly with Grafana Cloud and Grafana Frontend Observability.
+Faro-React is a distribution of the Faro Web SDK for project using React, which offers easier
+integrations and the following features:
 
 - **Support for React Router v6 or v4/v5.x**: send events for all route changes, including the data router API
 - **Error boundary**: enhancements to stack traces and configuration options for `pushError` behavior
@@ -16,9 +19,11 @@ The data router API is only available in React Router v6.
 // todo: add specific react router version which introduced data routers
 // Sean: I couldn't find it
 
-If you use React Router v4/v5x, or want to use React Router v6 without the data router API refer to the [React router without data router](#react-router-without-data-router) section of the documentation.
+If you use React Router v4/v5x, or want to use React Router v6 without the data router API refer to the
+[React router without data router](#react-router-without-data-router) section of the documentation.
 
-To upgrade your project to React Router v6 and the data router API, refer to the [Upgrade to a data router](#upgrade-to-a-data-router) section of the documentation.
+To upgrade your project to React Router v6 and the data router API, refer to the
+[Upgrade to a data router](#upgrade-to-a-data-router) section of the documentation.
 
 Follow these steps to set up Faro-React and React Router v6 with the data router API:
 
@@ -30,7 +35,8 @@ Follow these steps to set up Faro-React and React Router v6 with the data router
 
 First add Faro-React to your project.
 
-Install the Faro-React npm package using your favorite package manager by running the following shell commands:
+Install the Faro-React npm package using your favorite package manager by running the following shell
+commands:
 
 NPM:
 
@@ -58,12 +64,14 @@ yarn add @grafana/faro-react
 
 ## Import and initialize Faro
 
-The Faro-React package offers all the functionality and behavior from the Faro Web-SDK package plus additional React specific functionality like router instrumentation, a custom ErrorBoundary, and more.
+The Faro-React package offers all the functionality and behavior from the Faro Web-SDK package plus
+additional React specific functionality like router instrumentation, a custom ErrorBoundary, and more.
 
 // Marco: web-tracing needed for React profiler, not for production
 // https://react.dev/reference/react/Profiler
 
-The following code sample shows you how to import Faro-React and the minimum setup needed to get insights into the health and performance of your application or website:
+The following code sample shows you how to import Faro-React and the minimum setup needed to get
+insights into the health and performance of your application or website:
 
 ```ts
 import { initializeFaro } from '@grafana/faro-react';
@@ -86,7 +94,8 @@ initializeFaro({
 // I dropped the part about capturing app performance in the runtime, it sounded redundant.
 // --> Thanks
 
-After Faro-React is initialized it captures data about your application's health and performance and exports them to a data collector.
+After Faro-React is initialized it captures data about your application's health and performance and
+exports them to a data collector.
 // ? What do yu think about something like this:
 // --> After Faro-React is initialized it sets up several instrumentation and starts capturing data about your application's health and performance and exports them to a data collector.
 
@@ -98,9 +107,11 @@ After Faro-React is initialized it captures data about your application's health
 
 ThisIf you are using a
 
-Building on the minimum setup, this section shows you how to instrument the routes from a React data router (BrowserRouter, HashRouter, or MemoryRouter).
+Building on the minimum setup, this section shows you how to instrument the routes from a React data
+router (BrowserRouter, HashRouter, or MemoryRouter).
 
-In the file you create your data router, often the `App.\*` file pass your data router to the Faro-React function `withFaroRouterInstrumentation` to wrap all your routes with Faro instrumentation:
+In the file you create your data router, often the `App.\*` file pass your data router to the Faro-React
+function `withFaroRouterInstrumentation` to wrap all your routes with Faro instrumentation:
 
 ```ts
 const reactBrowserRouter = createBrowserRouter([
@@ -182,11 +193,43 @@ const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
 
 ## React router without data router
 
-To set up Faro-React with React Router V4, V5 or V6 without Data routers, add the following code snippet
-to your project. If you use React Router V6 with Data Routers, refer to the React Router with Data
-Routers section.
+Learn how to set up Faro-React with React Router v4, v5 or v6 without Data routers.
 
-_v6_
+First add a new `ReactIntegration` to the instrumentation list in the `initializeFaro()` function and
+configure it by passing the dependencies needed to instrument the React Router you are using in your
+app.
+
+First tell Far React what version of the React Router you want to instrument via the `version` property.
+
+```ts
+ new ReactIntegration({
+      router: {
+        version: ReactRouterVersion.V6,
+      },
+    }),
+```
+
+Then import `createRoutesFromChildren`, `matchRoutes`, `Routes`, `useLocation`, `useNavigationType`
+from `react-router-dom` and pass them to the dependencies object.
+
+```ts
+import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
+
+new ReactIntegration({
+  router: {
+    version: ReactRouterVersion.V6,
+    dependencies: {
+      createRoutesFromChildren,
+      matchRoutes,
+      Routes,
+      useLocation,
+      useNavigationType,
+    },
+  },
+  }),
+```
+
+The final result should look similar like this example.
 
 ```ts
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
@@ -210,7 +253,6 @@ initializeFaro({
     ...getWebInstrumentations(),
 
     new ReactIntegration({
-      // Only needed if you want to use the React Router instrumentation
       router: {
         version: ReactRouterVersion.V6,
         dependencies: {
@@ -226,7 +268,9 @@ initializeFaro({
 });
 ```
 
-_instrument routes_
+To apply the router instrumentation to React Router v6 routes, import the `<FaroRoutes/>` component and use
+it instead of the original `<Routes />` component as defined by React Router v6 like in the example
+below.
 
 ```tsx
 import { FaroRoutes } from '@grafana/faro-react';
@@ -238,7 +282,48 @@ import { FaroRoutes } from '@grafana/faro-react';
 </FaroRoutes>;
 ```
 
-_v5_
+To instrument React Router v4 or v5 use the following instructions.
+
+First add a new `ReactIntegration` to the instrumentation list in the `initializeFaro()` function and
+configure it by passing the dependencies needed to instrument the React Router you are using in your
+app.
+
+First tell Far React what version of the React Router you want to instrument via the `version` property
+`ReactRouterVersion.V4` or `ReactRouterVersion.V5`.
+
+```ts
+ new ReactIntegration({
+      router: {
+        // If you use React Router v4
+        version: ReactRouterVersion.V4,
+
+        // or if you use React router v5
+        version: ReactRouterVersion.V5
+      },
+    }),
+```
+
+Then import the `Route` component from `react-router-dom` and the `history` object you are using from
+the `history` package and pass them to the dependencies object.
+
+```ts
+import { createBrowserHistory } from "history";
+import { Route } from "react-router-dom";
+
+const history = createBrowserHistory();
+
+new ReactIntegration({
+  router: {
+    version: ReactRouterVersion.V5, // or ReactRouterVersion.V4,
+    dependencies: {
+      history,
+      Route,
+    },
+  },
+}),
+```
+
+The final result should look similar like this example.
 
 ```ts
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
@@ -262,7 +347,6 @@ initializeFaro({
     ...getWebInstrumentations(),
 
     new ReactIntegration({
-      // Only needed if you want to use the React Router instrumentation
       router: {
         version: ReactRouterVersion.V5, // or ReactRouterVersion.V4,
         dependencies: {
@@ -275,7 +359,9 @@ initializeFaro({
 });
 ```
 
-_instrument routes_
+To apply the router instrumentation to React Router v4, v5 routes, import the `<FaroRoute />` component and use
+this instead of the original `<Route />` component to define your routes like in the example
+below.
 
 ```tsx
 import { FaroRoute } from '@grafana/faro-react';
