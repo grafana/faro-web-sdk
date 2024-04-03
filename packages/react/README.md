@@ -131,13 +131,41 @@ initializeFaro({
 
 Next you need to remove the Faro route components `<FaroRoute/>` or `<FaroRoutes/>` and [instrument the data router](#instrument-the-data-router).
 
-## React router without data router
+// new standalone tut
+
+# React router without data router
+
+// Sean: explanation of what this tutorial is doing
 
 Learn how to set up Faro-React with React Router v4, v5 or v6 without Data routers.
+
+
+## Install Faro
+
+First add Faro-React to your project. Install the Faro-React package by running the following command for NPM:
+
+```sh
+# install globally
+npm i @grafana/faro-react
+```
+
+Or the following command Yarn:
+
+```sh
+yarn add @grafana/faro-react
+```
+
+// todo: add complete sections like data router
+
+## Import and initialize Faro
+
+### Instrument router
+
 
 First add a new `ReactIntegration` to the instrumentation list in the `initializeFaro()` function and
 configure it by passing the dependencies needed to instrument the React Router you are using in your
 app.
+
 
 First tell Far React what version of the React Router you want to instrument via the `version` property.
 
@@ -148,6 +176,7 @@ First tell Far React what version of the React Router you want to instrument via
       },
     }),
 ```
+
 
 Then import `createRoutesFromChildren`, `matchRoutes`, `Routes`, `useLocation`, `useNavigationType`
 from `react-router-dom` and pass them to the dependencies object.
