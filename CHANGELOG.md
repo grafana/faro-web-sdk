@@ -2,9 +2,12 @@
 
 ## Next
 
+## 1.5.1
+
 - Feature(`@grafana/faro-web-sdk`): Add parsing time to FaroNavigationTiming (#541).
 - Chore(`@grafana/faro-web-sdk`): Get rid of structureClone. It caused breakage in some
   sandboxed environments because of injected proxy objects (#536).
+- Feat(`@grafana/faro-web-sdk`): Add K6 test ID to K6 meta if available in window.k6 object (#531).
 
 ## 1.5.0
 
