@@ -1,3 +1,59 @@
+// Note: the cloud setup part will be deleted from this readme because it's cloud specific. It'll be only available in the cloud docs
+
+# Frontend Observability quickstart
+
+Follow these steps to get started quickly with Grafana Frontend Observability:
+
+1. Create an application in Frontend Observability
+2. Instrument your web application with Faro an connect it to Frontend Observability
+3. Observe the state of your web in Frontend Observability in Frontend Observability
+
+This guide shows how to instrument a web application and connect to Grafana Cloud Frontend Observability.
+
+## Create an application in Frontend Observability
+
+To observe Real User Monitoring (RUM) data in Grafana Cloud Frontend Observability an app needs to
+created in the Frontend Observability plugin.
+
+1. Sign in to your Grafana Cloud account or register a free Grafana Cloud account otherwise.
+2. Locate and expand the `Frontend` section in the side menu and select `Frontend Apps`.
+
+- If it is the first time you visit `Frontend Apps` a landing page appears. Just press the `Start observing`
+  button which will bring you to the empty frontend apps overview page.
+  ![frontend observability landing page](./feo-landing-page.png)
+
+- Otherwise you are directly routed to the frontend apps overview page.
+  ![frontend observability app overview page](./feo-app-overview-page.png)
+
+3. Create an app, which acts as a container to visualize the RUM data of your web application
+
+   3.1 Press `Create new` on the app overview page, which opens the app configuration form.
+
+   3.2 Configure the application:
+
+   - Give your app a meaningful name
+   - Add the domain of your web-application
+   - Read and acknowledge the note about costs
+   - Press the `Create` button
+
+     ![frontend observability app setup form](./feo-app-setup-form.png)
+
+4. After the has been created you are routed to the `Web SDK Configuration` page.
+
+   - It contains a snippet to be integrated in your web-application
+   - The snippet is pre-configured according to the configuration from app configuration form
+     config.
+   - All data sources are auto configured for you
+   - The snippet also contains the URL to the Faro Cloud Collector
+
+     ![frontend observability web sdk configuration](./feo-web-sdk-config.png)
+
+5. Copy the snippet into the `<head />` of your document and Faro is auto instrumenting your web-application
+
+6. Open your Frontend Observability application to observe the RUM data from you web-application
+
+// ===========
+
 # Set up the Faro React distribution of the Faro Web SDK
 
 The Faro Web-SDK is a highly configurable open source real user monitoring (RUM) library built on OpenTelemetry and integrating seamlessly with Grafana Cloud and Grafana Frontend Observability.
@@ -85,8 +141,8 @@ const browserRouter = withFaroRouterInstrumentation(reactBrowserRouter);
 // Conclusion:
 // - This is all you need to setup instrumentation and automatically capture events
 // - Next:
-//   - see documentation on capturing custom events
-//   - see error boundary, component profiler, SSR support
+// - see documentation on capturing custom events
+// - see error boundary, component profiler, SSR support
 
 ## Upgrade to a data router
 
@@ -139,7 +195,6 @@ Next you need to remove the Faro route components `<FaroRoute/>` or `<FaroRoutes
 
 Learn how to set up Faro-React with React Router v4, v5 or v6 without Data routers.
 
-
 ## Install Faro
 
 First add Faro-React to your project. Install the Faro-React package by running the following command for NPM:
@@ -161,11 +216,9 @@ yarn add @grafana/faro-react
 
 ### Instrument router
 
-
 First add a new `ReactIntegration` to the instrumentation list in the `initializeFaro()` function and
 configure it by passing the dependencies needed to instrument the React Router you are using in your
 app.
-
 
 First tell Far React what version of the React Router you want to instrument via the `version` property.
 
@@ -176,7 +229,6 @@ First tell Far React what version of the React Router you want to instrument via
       },
     }),
 ```
-
 
 Then import `createRoutesFromChildren`, `matchRoutes`, `Routes`, `useLocation`, `useNavigationType`
 from `react-router-dom` and pass them to the dependencies object.
