@@ -2,6 +2,8 @@
 
 ## Next
 
+- Docs(`@grafana/faro-web-sdk`, `@grafana/faro-web-tracing`): Remove pre-release warning (#550).
+
 ## 1.5.1
 
 - Feature(`@grafana/faro-web-sdk`): Add parsing time to FaroNavigationTiming (#541).

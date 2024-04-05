@@ -5,8 +5,6 @@ Faro is a SDK that can instrument frontend JavaScript applications to collect te
 
 Grafana Agent can then send this data to either [Loki][grafana-logs] or [Tempo][grafana-traces].
 
-_Warning_: currently pre-release and subject to frequent breaking changes. Use at your own risk.
-
 ## Get started
 
 See [quick start for web applications][quick-start].
