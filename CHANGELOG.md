@@ -3,6 +3,8 @@
 ## Next
 
 - Docs(`@grafana/faro-web-sdk`, `@grafana/faro-web-tracing`): Remove pre-release warning (#550).
+- Change (`@grafana/faro-web-tracing`): Remove redundant DocumentLoadInstrumentation.
+  Faro tracks page load data by default. (#551)
 
 ## 1.5.1
 
