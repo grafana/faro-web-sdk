@@ -1,10 +1,16 @@
 import { initializeFaro } from '@grafana/faro-core';
-import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
+import type { EventEvent, TransportItem } from '@grafana/faro-core';
+import { mockConfig, mockInternalLogger, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { PerformanceInstrumentation } from './instrumentation';
 import * as navigationModule from './navigation';
 import * as performanceUtilsModule from './performanceUtils';
-import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
+import {
+  analyticsEntry1,
+  analyticsEntry2,
+  performanceNavigationEntry,
+  performanceResourceEntry,
+} from './performanceUtilsTestData';
 import * as resourceModule from './resource';
 import type { FaroNavigationItem } from './types';
 
@@ -28,6 +34,18 @@ class MockPerformanceObserver {
               name: performanceResourceEntry.name,
               toJSON: () => ({
                 ...performanceResourceEntry,
+              }),
+            },
+            {
+              name: analyticsEntry1.name,
+              toJSON: () => ({
+                ...analyticsEntry1,
+              }),
+            },
+            {
+              name: analyticsEntry2.name,
+              toJSON: () => ({
+                ...analyticsEntry2,
               }),
             },
           ];
@@ -96,5 +114,30 @@ describe('Performance Instrumentation', () => {
 
     expect(mockObserveResourceTimings).toHaveBeenCalledTimes(1);
     expect(mockObserveResourceTimings).toHaveBeenCalledWith('123', expect.anything(), expect.anything());
+  });
+
+  it('Excludes entries which match the global ignoreUrls ', async () => {
+    const mockObserveAndGetNavigationTimings = jest.fn();
+    jest.spyOn(navigationModule, 'getNavigationTimings').mockImplementationOnce(() => {
+      mockObserveAndGetNavigationTimings();
+      return Promise.resolve({ faroNavigationId: '123' } as FaroNavigationItem);
+    });
+
+    const transport = new MockTransport();
+
+    const config = mockConfig({
+      transports: [transport],
+      instrumentations: [new PerformanceInstrumentation()],
+      ignoreUrls: [/.*foo-analytics/, /.*.analytics.com/, 'http://example.com/awesome-image'],
+    });
+
+    initializeFaro(config);
+
+    expect(await mockObserveAndGetNavigationTimings).toHaveBeenCalledTimes(1);
+
+    expect(transport.items.length).toBe(1);
+
+    const item = transport.items[0] as TransportItem<EventEvent>;
+    expect(item.payload.attributes?.['name']).toBe('http://example.com');
   });
 });

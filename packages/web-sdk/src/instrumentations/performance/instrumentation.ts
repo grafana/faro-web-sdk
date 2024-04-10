@@ -27,6 +27,9 @@ export class PerformanceInstrumentation extends BaseInstrumentation {
   }
 
   private getIgnoreUrls(): Array<string | RegExp> {
-    return this.transports.transports?.flatMap((transport) => transport.getIgnoreUrls());
+    const transportIgnoreUrls = this.transports.transports?.flatMap((transport) => transport.getIgnoreUrls());
+    const globalIgnoreUrls = this.config.ignoreUrls ?? [];
+
+    return transportIgnoreUrls.concat(globalIgnoreUrls);
   }
 }
