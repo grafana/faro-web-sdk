@@ -33,7 +33,9 @@ export class FetchInstrumentation extends BaseInstrumentation {
    */
   initialize(): void {
     this.internalLogger.info('Initializing fetch instrumentation');
-    this.ignoredUrls = this.options?.ignoredUrls ?? this.getTransportIgnoreUrls();
+    this.ignoredUrls = (this.options?.ignoredUrls ?? this.getTransportIgnoreUrls() ?? []).concat(
+      this.config.ignoreUrls ?? []
+    );
 
     Object.defineProperty(globalObject, fetchGlobalObjectKey, {
       configurable: true,

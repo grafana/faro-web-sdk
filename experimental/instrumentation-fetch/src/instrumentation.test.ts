@@ -1,5 +1,5 @@
 import { initializeFaro } from '@grafana/faro-core';
-import { mockConfig } from '@grafana/faro-core/src/testUtils/mockConfig';
+import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 import { makeCoreConfig, SessionInstrumentation } from '@grafana/faro-web-sdk';
 
 import { makeFaroRumHeaderValue } from './constants';
@@ -263,12 +263,45 @@ describe('FetchInstrumentation', () => {
       ignoredUrls: ['https://example.com'],
     });
 
-    initializeFaro(mockConfig({ instrumentations: [instrumentation] }));
+    const transport = new MockTransport();
+
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [instrumentation],
+      })
+    );
 
     const originalFetchSpy = jest.spyOn(instrumentation, 'originalFetch');
 
     window.fetch('https://example.com');
 
     expect(originalFetchSpy).toHaveBeenCalledTimes(1);
+
+    expect(transport.items.length).toBe(0);
+  });
+
+  it('Ignores globally defined urls', () => {
+    const instrumentation = new FetchInstrumentation({
+      testing: true,
+    });
+
+    const transport = new MockTransport();
+
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [instrumentation],
+        ignoreUrls: [/.*example.com/],
+      })
+    );
+
+    const originalFetchSpy = jest.spyOn(instrumentation, 'originalFetch');
+
+    window.fetch('https://example.com');
+
+    expect(originalFetchSpy).toHaveBeenCalledTimes(1);
+
+    expect(transport.items.length).toBe(0);
   });
 });
