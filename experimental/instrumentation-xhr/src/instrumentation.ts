@@ -21,7 +21,11 @@ export class XHRInstrumentation extends BaseInstrumentation {
    */
   initialize(): void {
     this.internalLogger.info('Initializing XHR instrumentation');
-    this.ignoredUrls = this.options?.ignoredUrls ?? this.getTransportIgnoreUrls();
+
+    this.ignoredUrls = (this.options?.ignoredUrls ?? this.getTransportIgnoreUrls() ?? []).concat(
+      this.config.ignoreUrls ?? []
+    );
+
     const instrumentation = this;
     instrumentXMLHttpRequestOpen();
     instrumentXMLHttpRequestSend();

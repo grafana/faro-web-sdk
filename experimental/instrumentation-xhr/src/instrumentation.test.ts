@@ -134,4 +134,57 @@ describe('XHRInstrumentation', () => {
     // check if faro session has NOT been added to the request headers
     expect(fetchSpySetRequestHeader).toHaveBeenCalledWith(faroRumHeader, makeFaroRumHeaderValue(sessionId));
   });
+
+  it('initialize XHRInstrumentation and calls fetch on an ignoredUrl, calls originalSend', () => {
+    const instrumentation = new XHRInstrumentation({
+      ignoredUrls: ['https://example.com'],
+    });
+
+    const transport = new MockTransport();
+
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [instrumentation],
+      })
+    );
+
+    const fetchSpyOpen = jest.spyOn(instrumentation, 'originalOpen');
+    const fetchSpySend = jest.spyOn(instrumentation, 'originalSend');
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://grafana.com');
+    expect(fetchSpyOpen).toHaveBeenCalledTimes(1);
+
+    xhr.send();
+    expect(fetchSpySend).toHaveBeenCalledTimes(1);
+
+    expect(transport.items.length).toBe(1);
+  });
+
+  it('Ignores globally defined urls', () => {
+    const instrumentation = new XHRInstrumentation();
+
+    const transport = new MockTransport();
+
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [instrumentation],
+        ignoreUrls: [/.*example.com/],
+      })
+    );
+
+    const fetchSpyOpen = jest.spyOn(instrumentation, 'originalOpen');
+    const fetchSpySend = jest.spyOn(instrumentation, 'originalSend');
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://grafana.com');
+    expect(fetchSpyOpen).toHaveBeenCalledTimes(1);
+
+    xhr.send();
+    expect(fetchSpySend).toHaveBeenCalledTimes(1);
+
+    expect(transport.items.length).toBe(0);
+  });
 });
