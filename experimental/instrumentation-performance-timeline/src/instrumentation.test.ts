@@ -1,5 +1,6 @@
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
+import { FetchTransport } from '@grafana/faro-web-sdk';
 
 import { DEFAULT_PERFORMANCE_TIMELINE_ENTRY_TYPES, PerformanceTimelineInstrumentation } from './instrumentation';
 
@@ -280,37 +281,41 @@ describe('PerformanceTimelineInstrumentation', () => {
   });
 
   it('Ignore entries based on "ignoredUrls" option', () => {
-    const ignoredUrls = ['http://entry-two'];
+    const localIgnoreUrls = ['http://entry-two'];
     const instrumentation = new PerformanceTimelineInstrumentation({
-      ignoredUrls,
+      ignoredUrls: localIgnoreUrls,
     });
-
-    const config = mockConfig({ dedupe: true, instrumentations: [instrumentation] });
 
     // Mocking the Performance object doesn't work. Skip testing its usage for now
     jest.spyOn(instrumentation, 'configureResourceTimingBuffer' as any).mockImplementation(() => {});
-    instrumentation.initialize();
-    const { api } = initializeFaro(config);
+
+    // instrumentation.initialize();
+
+    const collectorUrl = 'collector-endpoint';
+    const fetchTransport = new FetchTransport({ url: collectorUrl });
+
+    const globalIgnoreUrls = [/.*three.*/];
+    const { api } = initializeFaro(
+      mockConfig({
+        transports: [fetchTransport],
+        instrumentations: [instrumentation],
+        ignoreUrls: globalIgnoreUrls,
+      })
+    );
 
     const mockPushEvent = jest.fn();
     api.pushEvent = mockPushEvent;
 
-    expect((instrumentation as any).ignoredUrls).toEqual(ignoredUrls);
+    expect((instrumentation as any).ignoredUrls).toStrictEqual([...localIgnoreUrls, collectorUrl, ...globalIgnoreUrls]);
 
     instrumentation.handlePerformanceEntry({ getEntries: () => navigationAndResourceEntries } as any, null as any, 0);
 
-    expect(mockPushEvent).toHaveBeenCalledTimes(2);
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
 
     expect(mockPushEvent).toHaveBeenNthCalledWith(
       1,
       'faro.performanceEntry',
       matchNavigationAndResourceEntriesTestResults[0]
-    );
-
-    expect(mockPushEvent).toHaveBeenNthCalledWith(
-      2,
-      'faro.performanceEntry',
-      matchNavigationAndResourceEntriesTestResults[2]
     );
   });
 

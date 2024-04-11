@@ -2,6 +2,8 @@ import { initializeFaro } from '@grafana/faro-core';
 import type { EventEvent, TransportItem } from '@grafana/faro-core';
 import { mockConfig, mockInternalLogger, MockTransport } from '@grafana/faro-core/src/testUtils';
 
+import { FetchTransport } from '../../transports';
+
 import { PerformanceInstrumentation } from './instrumentation';
 import * as navigationModule from './navigation';
 import * as performanceUtilsModule from './performanceUtils';
@@ -123,21 +125,27 @@ describe('Performance Instrumentation', () => {
       return Promise.resolve({ faroNavigationId: '123' } as FaroNavigationItem);
     });
 
-    const transport = new MockTransport();
-
+    const fetchTransport = new FetchTransport({ url: 'abc' });
     const config = mockConfig({
-      transports: [transport],
+      transports: [fetchTransport],
       instrumentations: [new PerformanceInstrumentation()],
       ignoreUrls: [/.*foo-analytics/, /.*.analytics.com/, 'http://example.com/awesome-image'],
     });
 
-    initializeFaro(config);
+    const faro = initializeFaro(config);
+
+    const mockTransport = new MockTransport(
+      faro.transports.transports.flatMap((transport) => transport.getIgnoreUrls())
+    );
+
+    faro.transports.add(mockTransport);
+    faro.transports.remove(fetchTransport);
 
     expect(await mockObserveAndGetNavigationTimings).toHaveBeenCalledTimes(1);
 
-    expect(transport.items.length).toBe(1);
+    expect(mockTransport.items.length).toBe(1);
 
-    const item = transport.items[0] as TransportItem<EventEvent>;
+    const item = mockTransport.items[0] as TransportItem<EventEvent>;
     expect(item.payload.attributes?.['name']).toBe('http://example.com');
   });
 });

@@ -1,11 +1,15 @@
 import { initializeFaro } from '@grafana/faro-core';
-import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
-import { makeCoreConfig, SessionInstrumentation } from '@grafana/faro-web-sdk';
+import { mockConfig } from '@grafana/faro-core/src/testUtils';
+import { FetchTransport, makeCoreConfig, SessionInstrumentation } from '@grafana/faro-web-sdk';
 
 import { makeFaroRumHeaderValue } from './constants';
 import { FetchInstrumentation } from './instrumentation';
 
 describe('FetchInstrumentation', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('initialize FetchInstrumentation with default options', () => {
     const instrumentation = new FetchInstrumentation({
       testing: true,
@@ -250,11 +254,12 @@ describe('FetchInstrumentation', () => {
       mockConfig({ instrumentations: [instrumentation], sessionTracking: { session: { id: sessionId } } })
     );
 
-    const fetchSpy = jest.spyOn(global, 'fetch');
+    const mockFetch = jest.fn();
+    jest.spyOn(global, 'fetch').mockImplementationOnce(mockFetch);
 
     window.fetch('https://grafana.com');
 
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it('initialize FetchInstrumentation and calls fetch on an ignoredUrl, calls originalFetch', () => {
@@ -263,45 +268,45 @@ describe('FetchInstrumentation', () => {
       ignoredUrls: ['https://example.com'],
     });
 
-    const transport = new MockTransport();
+    jest.spyOn(instrumentation, 'originalFetch').mockImplementationOnce(jest.fn());
 
-    initializeFaro(
+    const faro = initializeFaro(
       mockConfig({
-        transports: [transport],
         instrumentations: [instrumentation],
       })
     );
 
-    const originalFetchSpy = jest.spyOn(instrumentation, 'originalFetch');
+    const mockPushEventApi = jest.fn();
+    jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEventApi);
 
     window.fetch('https://example.com');
 
-    expect(originalFetchSpy).toHaveBeenCalledTimes(1);
-
-    expect(transport.items.length).toBe(0);
+    expect(mockPushEventApi).toHaveBeenCalledTimes(0);
   });
 
-  it('Ignores globally defined urls', () => {
+  it('Merges local ignoredUrls with publicUrls', () => {
+    const localIgnoreUrl = 'https://example.com';
     const instrumentation = new FetchInstrumentation({
       testing: true,
+      ignoredUrls: [localIgnoreUrl],
     });
 
-    const transport = new MockTransport();
+    const globalIgnoreUrl = 'https://foo.com';
 
-    initializeFaro(
-      mockConfig({
-        transports: [transport],
-        instrumentations: [instrumentation],
-        ignoreUrls: [/.*example.com/],
-      })
-    );
+    const collectorUrl = 'collector-endpoint';
+    const fetchTransport = new FetchTransport({ url: collectorUrl });
 
-    const originalFetchSpy = jest.spyOn(instrumentation, 'originalFetch');
+    const config = mockConfig({
+      transports: [fetchTransport],
+      instrumentations: [instrumentation],
+      ignoreUrls: [globalIgnoreUrl],
+    });
 
-    window.fetch('https://example.com');
+    initializeFaro(config);
 
-    expect(originalFetchSpy).toHaveBeenCalledTimes(1);
+    const mockOriginalFetch = jest.fn();
+    jest.spyOn(global, 'fetch').mockImplementationOnce(mockOriginalFetch);
 
-    expect(transport.items.length).toBe(0);
+    expect(instrumentation.getIgnoredUrls()).toStrictEqual([localIgnoreUrl, collectorUrl, globalIgnoreUrl]);
   });
 });
