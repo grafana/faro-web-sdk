@@ -36,9 +36,6 @@ export class FetchInstrumentation extends BaseInstrumentation {
     this.internalLogger.info('Initializing fetch instrumentation');
     this.ignoredUrls = [...(this.options?.ignoredUrls ?? []), ...(this.getTransportIgnoreUrls() ?? [])];
 
-    console.log('this.options?.ignoredUrls :>> ', this.options?.ignoredUrls);
-    console.log('this.ignoredUrls :>> ', this.ignoredUrls);
-
     Object.defineProperty(globalObject, fetchGlobalObjectKey, {
       configurable: true,
       writable: this.options?.testing ? true : false, // necessary for testing, instrumented fetch should not be writeable by default
@@ -115,8 +112,6 @@ export class FetchInstrumentation extends BaseInstrumentation {
 
       // if the url is in the ignoredUrls list, skip instrumentation
       if (instrumentation.ignoredUrls?.some((url) => requestUrl.match(url) != null)) {
-        console.log({ requestUrl });
-
         instrumentation.internalLogger.info(
           `Skipping fetch instrumentation for ignored url "${requestUrl}" - using default fetch`
         );
