@@ -187,7 +187,7 @@ describe('XHRInstrumentation', () => {
     expect(mockShouldPropagateRumHeaders).not.toHaveBeenCalled();
   });
 
-  it('Merges local ignoredUrls with publicUrls', () => {
+  it('Merges local ignoredUrls with globally excluded urls', () => {
     const localIgnoreUrl = 'https://example.com';
     const instrumentation = new XHRInstrumentation({
       ignoredUrls: [localIgnoreUrl],
