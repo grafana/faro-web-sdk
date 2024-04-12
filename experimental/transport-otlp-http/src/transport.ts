@@ -33,7 +33,7 @@ export class OtlpHttpTransport extends BaseTransport {
 
   override getIgnoreUrls(): Patterns {
     const { tracesURL = '', logsURL = '' } = this.options;
-    return ([tracesURL, logsURL].filter(Boolean) as Patterns).concat(this.config.ignoreUrls ?? []);
+    return ([tracesURL, logsURL].filter(Boolean) as Patterns).concat(this.config.ignoreEndpoints ?? []);
   }
 
   override isBatched(): boolean {

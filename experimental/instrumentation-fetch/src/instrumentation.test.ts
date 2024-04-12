@@ -299,7 +299,7 @@ describe('FetchInstrumentation', () => {
     const config = mockConfig({
       transports: [fetchTransport],
       instrumentations: [instrumentation],
-      ignoreUrls: [globalIgnoreUrl],
+      ignoreEndpoints: [globalIgnoreUrl],
     });
 
     initializeFaro(config);

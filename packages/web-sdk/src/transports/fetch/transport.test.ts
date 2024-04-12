@@ -230,7 +230,7 @@ describe('FetchTransport', () => {
 
     const config = mockConfig({
       transports: [transport],
-      ignoreUrls: globalIgnoreUrls,
+      ignoreEndpoints: globalIgnoreUrls,
     });
 
     const faro = initializeFaro(config);

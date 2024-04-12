@@ -26,7 +26,7 @@ export interface Config<P = APIEvent> {
 
   beforeSend?: BeforeSendHook<P>;
   ignoreErrors?: Patterns;
-  ignoreUrls?: Patterns;
+  ignoreEndpoints?: Patterns;
   sessionTracking?: {
     enabled?: boolean;
     persistent?: boolean;
