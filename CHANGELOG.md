@@ -2,10 +2,20 @@
 
 ## Next
 
+<<<<<<< HEAD
 - Feature (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object (#476).
+=======
+- Docs(`@grafana/faro-web-sdk`, `@grafana/faro-web-tracing`): Remove pre-release warning (#550).
+- Change (`@grafana/faro-web-tracing`): Remove redundant DocumentLoadInstrumentation.
+  Faro tracks page load data by default. (#551)
+
+## 1.5.1
+
+>>>>>>> 38a422e0882084d2f878d18639e6bc2c1c6f40a1
 - Feature(`@grafana/faro-web-sdk`): Add parsing time to FaroNavigationTiming (#541).
 - Chore(`@grafana/faro-web-sdk`): Get rid of structureClone. It caused breakage in some
   sandboxed environments because of injected proxy objects (#536).
+- Feat(`@grafana/faro-web-sdk`): Add K6 test ID to K6 meta if available in window.k6 object (#531).
 
 ## 1.5.0
 
