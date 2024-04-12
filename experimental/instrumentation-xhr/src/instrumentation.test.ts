@@ -180,8 +180,9 @@ describe('XHRInstrumentation', () => {
     expect(mockFetchSpyOpen).toHaveBeenCalledTimes(1);
 
     xhr.send();
-    expect(mockFetchSpySend).toHaveBeenCalledTimes(1); // This is the first function called if URL is NOT ignored.
+    expect(mockFetchSpySend).toHaveBeenCalledTimes(1);
 
+    // This is the first function called if URL is NOT ignored.
     // It's not ideal to test like this but okish for now
     expect(mockShouldPropagateRumHeaders).not.toHaveBeenCalled();
   });
