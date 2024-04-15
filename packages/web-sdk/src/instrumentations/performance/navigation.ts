@@ -4,12 +4,17 @@ import type { EventsAPI } from '@grafana/faro-core';
 import { getItem, setItem, webStorageType } from '../../utils';
 
 import { NAVIGATION_ENTRY, NAVIGATION_ID_STORAGE_KEY } from './performanceConstants';
-import { createFaroNavigationTiming, entryUrlIsIgnored } from './performanceUtils';
-import type { FaroNavigationItem } from './types';
+import { createFaroNavigationTiming, entryUrlIsIgnored, includePerformanceEntry } from './performanceUtils';
+import type { FaroNavigationItem, PerformanceEntryAllowProperties } from './types';
+
+type Options = {
+  performanceEntryAllowProperties?: PerformanceEntryAllowProperties;
+};
 
 export function getNavigationTimings(
   pushEvent: EventsAPI['pushEvent'],
-  ignoredUrls: Array<string | RegExp>
+  ignoredUrls: Array<string | RegExp>,
+  options: Options = {}
 ): Promise<FaroNavigationItem> {
   let faroNavigationEntryResolve: (value: FaroNavigationItem) => void;
   const faroNavigationEntryPromise = new Promise<FaroNavigationItem>((resolve) => {
@@ -23,19 +28,30 @@ export function getNavigationTimings(
       return;
     }
 
-    const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
+    const allowProps = options.performanceEntryAllowProperties;
 
-    const faroNavigationEntry: FaroNavigationItem = {
-      ...createFaroNavigationTiming(navigationEntryRaw.toJSON()),
-      faroNavigationId: genShortID(),
-      faroPreviousNavigationId,
-    };
+    const navigationEntryRawJSON = navigationEntryRaw.toJSON();
 
-    setItem(NAVIGATION_ID_STORAGE_KEY, faroNavigationEntry.faroNavigationId, webStorageType.session);
+    console.log(
+      'includePerformanceEntry(navigationEntryRawJSON, allowProps) :>> ',
+      includePerformanceEntry(navigationEntryRawJSON, allowProps)
+    );
 
-    pushEvent('faro.performance.navigation', faroNavigationEntry);
+    if (includePerformanceEntry(navigationEntryRawJSON, allowProps)) {
+      const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
 
-    faroNavigationEntryResolve(faroNavigationEntry);
+      const faroNavigationEntry: FaroNavigationItem = {
+        ...createFaroNavigationTiming(navigationEntryRawJSON),
+        faroNavigationId: genShortID(),
+        faroPreviousNavigationId,
+      };
+
+      setItem(NAVIGATION_ID_STORAGE_KEY, faroNavigationEntry.faroNavigationId, webStorageType.session);
+
+      pushEvent('faro.performance.navigation', faroNavigationEntry);
+
+      faroNavigationEntryResolve(faroNavigationEntry);
+    }
   });
 
   observer.observe({

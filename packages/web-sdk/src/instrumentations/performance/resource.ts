@@ -2,28 +2,40 @@ import { genShortID } from '@grafana/faro-core';
 import type { EventsAPI } from '@grafana/faro-core';
 
 import { RESOURCE_ENTRY } from './performanceConstants';
-import { createFaroResourceTiming, entryUrlIsIgnored } from './performanceUtils';
+import { createFaroResourceTiming, entryUrlIsIgnored, includePerformanceEntry } from './performanceUtils';
+import type { PerformanceEntryAllowProperties } from './types';
+
+type Options = {
+  performanceEntryAllowProperties?: PerformanceEntryAllowProperties;
+};
 
 export function observeResourceTimings(
   faroNavigationId: string,
   pushEvent: EventsAPI['pushEvent'],
-  ignoredUrls: Array<string | RegExp>
+  ignoredUrls: Array<string | RegExp>,
+  options: Options = {}
 ) {
   const observer = new PerformanceObserver((observedEntries) => {
     const entries = observedEntries.getEntries();
+
+    const allowProps = options.performanceEntryAllowProperties;
 
     for (const resourceEntryRaw of entries) {
       if (entryUrlIsIgnored(ignoredUrls, resourceEntryRaw.name)) {
         return;
       }
 
-      const faroResourceEntry = {
-        ...createFaroResourceTiming(resourceEntryRaw.toJSON()),
-        faroNavigationId,
-        faroResourceId: genShortID(),
-      };
+      const resourceEntryRawJSON = resourceEntryRaw.toJSON();
 
-      pushEvent('faro.performance.resource', faroResourceEntry);
+      if (includePerformanceEntry(resourceEntryRawJSON, allowProps)) {
+        const faroResourceEntry = {
+          ...createFaroResourceTiming(resourceEntryRawJSON),
+          faroNavigationId,
+          faroResourceId: genShortID(),
+        };
+
+        pushEvent('faro.performance.resource', faroResourceEntry);
+      }
     }
   });
 

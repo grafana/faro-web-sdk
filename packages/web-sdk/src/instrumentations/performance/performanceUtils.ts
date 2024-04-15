@@ -1,4 +1,7 @@
-import type { CacheType, FaroNavigationTiming, FaroResourceTiming } from './types';
+import { isArray } from '@grafana/faro-core';
+
+import { wildcard } from './performanceConstants';
+import type { CacheType, FaroNavigationTiming, FaroResourceTiming, PerformanceEntryAllowProperties } from './types';
 
 export function performanceObserverSupported(): boolean {
   return 'PerformanceObserver' in window;
@@ -21,6 +24,32 @@ export function onDocumentReady(handleReady: () => void) {
 
     document.addEventListener('readystatechange', readyStateCompleteHandler);
   }
+}
+
+export function includePerformanceEntry(
+  performanceEntryJSON: Record<string, any>,
+  allowProps: PerformanceEntryAllowProperties = {}
+): boolean {
+  for (const [allowPropKey, allowPropValue] of Object.entries(allowProps)) {
+    const perfEntryPropVal = performanceEntryJSON[allowPropKey];
+
+    if (perfEntryPropVal == null) {
+      return false;
+    }
+
+    if (allowPropValue === wildcard) {
+      return true;
+    }
+
+    if (isArray(allowPropValue)) {
+      return allowPropValue.includes(perfEntryPropVal);
+    }
+
+    return perfEntryPropVal === allowPropValue;
+  }
+
+  // empty object allows all
+  return true;
 }
 
 export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {
