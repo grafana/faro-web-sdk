@@ -7,7 +7,6 @@ import {
   ReactRouterVersion,
 } from '@grafana/faro-react';
 import type { Faro } from '@grafana/faro-react';
-import { PerformanceInstrumentation } from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
 import { env } from '../utils';
@@ -19,7 +18,6 @@ export function initializeFaro(): Faro {
     instrumentations: [
       ...getWebInstrumentations({
         captureConsole: true,
-        enablePerformanceInstrumentation: false,
       }),
 
       new TracingInstrumentation(),
