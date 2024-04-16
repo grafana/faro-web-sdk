@@ -26,6 +26,4 @@ export {
   STORAGE_KEY,
 } from './session';
 
-export { PerformanceInstrumentation, wildcard } from './performance';
-
-export type { PerformanceInstrumentationOptions, PerformanceEntryAllowProperties } from './performance';
+export { PerformanceInstrumentation } from './performance';

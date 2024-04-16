@@ -1,14 +1,13 @@
 import { isArray } from '@grafana/faro-core';
 
-import { wildcard } from './performanceConstants';
-import type { CacheType, FaroNavigationTiming, FaroResourceTiming, PerformanceEntryAllowProperties } from './types';
+import type { CacheType, FaroNavigationTiming, FaroResourceTiming } from './types';
 
 export function performanceObserverSupported(): boolean {
   return 'PerformanceObserver' in window;
 }
 
 export function entryUrlIsIgnored(ignoredUrls: Array<string | RegExp> = [], entryName: string): boolean {
-  return ignoredUrls.some((url) => entryName.match(url) != null);
+  return ignoredUrls.some((url) => url && entryName.match(url) != null);
 }
 
 export function onDocumentReady(handleReady: () => void) {
@@ -26,6 +25,8 @@ export function onDocumentReady(handleReady: () => void) {
   }
 }
 
+type PerformanceEntryAllowProperties = Record<string, Array<string | number> | string | number>;
+
 export function includePerformanceEntry(
   performanceEntryJSON: Record<string, any>,
   allowProps: PerformanceEntryAllowProperties = {}
@@ -35,10 +36,6 @@ export function includePerformanceEntry(
 
     if (perfEntryPropVal == null) {
       return false;
-    }
-
-    if (allowPropValue === wildcard) {
-      return true;
     }
 
     if (isArray(allowPropValue)) {

@@ -119,9 +119,6 @@ describe('performanceUtils', () => {
     const matchByValue = includePerformanceEntry(entries[0]!, { initiatorType: 'css' });
     expect(matchByValue).toBe(true);
 
-    const matchByWildcard = includePerformanceEntry(entries[1]!, { initiatorType: '*' });
-    expect(matchByWildcard).toBe(true);
-
     const matchByMultiValues1 = includePerformanceEntry(entries[1]!, {
       initiatorType: ['fetch', 'xmlhttprequest', 'link'],
     });
@@ -153,7 +150,7 @@ describe('performanceUtils', () => {
     const noMatchByValue = includePerformanceEntry(entries[0]!, { initiatorType: 'NO_MATCHING_VALUE' });
     expect(noMatchByValue).toBe(false);
 
-    const noMatchingProperty = includePerformanceEntry(entries[1]!, { initiatorTypeABC: '*' });
+    const noMatchingProperty = includePerformanceEntry(entries[1]!, { initiatorTypeABC: 'abc' });
     expect(noMatchingProperty).toBe(false);
 
     const matchByMultiValues1 = includePerformanceEntry(entries[1]!, {

@@ -46,9 +46,10 @@ export type FaroResourceItem = {
 
 export type CacheType = 'cache' | 'conditionalFetch' | 'fullLoad';
 
-export type PerformanceEntryAllowProperties = Record<string, Array<string | number> | string | number | '*'>;
+// export type PerformanceEntryAllowProperties = Record<string, Array<string | number> | string | number>;
 
-export type PerformanceInstrumentationOptions = {
-  performanceResourceEntryAllowProperties?: PerformanceEntryAllowProperties;
-  performanceNavigationEntryAllowProperties?: PerformanceEntryAllowProperties;
-};
+// default
+// {initiatorType: [xhr, fetch]}
+
+// opt in ALL
+// trackResources:  true

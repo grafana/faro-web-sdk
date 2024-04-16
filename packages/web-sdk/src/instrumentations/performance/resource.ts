@@ -1,24 +1,22 @@
 import { genShortID } from '@grafana/faro-core';
 import type { EventsAPI } from '@grafana/faro-core';
 
+import { faro } from '../..';
+
 import { RESOURCE_ENTRY } from './performanceConstants';
 import { createFaroResourceTiming, entryUrlIsIgnored, includePerformanceEntry } from './performanceUtils';
-import type { PerformanceEntryAllowProperties } from './types';
 
-type Options = {
-  performanceEntryAllowProperties?: PerformanceEntryAllowProperties;
-};
+const DEFAULT_TRACK_RESOURCES = { initiatorType: ['xmlhttprequest', 'fetch'] };
 
 export function observeResourceTimings(
   faroNavigationId: string,
   pushEvent: EventsAPI['pushEvent'],
-  ignoredUrls: Array<string | RegExp>,
-  options: Options = {}
+  ignoredUrls: Array<string | RegExp>
 ) {
+  const trackResources = faro.config.trackResources;
+
   const observer = new PerformanceObserver((observedEntries) => {
     const entries = observedEntries.getEntries();
-
-    const allowProps = options.performanceEntryAllowProperties;
 
     for (const resourceEntryRaw of entries) {
       if (entryUrlIsIgnored(ignoredUrls, resourceEntryRaw.name)) {
@@ -27,7 +25,10 @@ export function observeResourceTimings(
 
       const resourceEntryRawJSON = resourceEntryRaw.toJSON();
 
-      if (includePerformanceEntry(resourceEntryRawJSON, allowProps)) {
+      if (
+        (trackResources == null && includePerformanceEntry(resourceEntryRawJSON, DEFAULT_TRACK_RESOURCES)) ||
+        trackResources
+      ) {
         const faroResourceEntry = {
           ...createFaroResourceTiming(resourceEntryRawJSON),
           faroNavigationId,

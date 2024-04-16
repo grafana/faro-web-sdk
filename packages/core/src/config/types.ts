@@ -40,6 +40,8 @@ export interface Config<P = APIEvent> {
   user?: MetaUser;
   view?: MetaView;
   eventDomain?: string;
+
+  trackResources?: boolean;
 }
 
 export type Patterns = Array<string | RegExp>;
