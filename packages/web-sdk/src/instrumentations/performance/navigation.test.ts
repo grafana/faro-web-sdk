@@ -124,22 +124,4 @@ describe('Navigation observer', () => {
     expect(mockSetItem).toHaveBeenCalledTimes(1);
     expect(mockSetItem).toHaveBeenCalledWith(NAVIGATION_ID_STORAGE_KEY, mockNewNavigationId, webStorageType.session);
   });
-
-  it('Excludes entries defined in allow list', () => {
-    const mockPushEvent = jest.fn();
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
-
-    getNavigationTimings(mockPushEvent, [''], { performanceEntryAllowProperties: { initiatorType: 'foo' } });
-
-    expect(mockPushEvent).toHaveBeenCalledTimes(0);
-  });
-
-  it('Only includes entries defined in allow list', () => {
-    const mockPushEvent = jest.fn();
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
-
-    getNavigationTimings(mockPushEvent, [''], { performanceEntryAllowProperties: { initiatorType: 'navigation' } });
-
-    expect(mockPushEvent).toHaveBeenCalledTimes(1);
-  });
 });

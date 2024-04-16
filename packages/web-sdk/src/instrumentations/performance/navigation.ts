@@ -7,14 +7,9 @@ import { NAVIGATION_ENTRY, NAVIGATION_ID_STORAGE_KEY } from './performanceConsta
 import { createFaroNavigationTiming, entryUrlIsIgnored, includePerformanceEntry } from './performanceUtils';
 import type { FaroNavigationItem, PerformanceEntryAllowProperties } from './types';
 
-type Options = {
-  performanceEntryAllowProperties?: PerformanceEntryAllowProperties;
-};
-
 export function getNavigationTimings(
   pushEvent: EventsAPI['pushEvent'],
-  ignoredUrls: Array<string | RegExp>,
-  options: Options = {}
+  ignoredUrls: Array<string | RegExp>
 ): Promise<FaroNavigationItem> {
   let faroNavigationEntryResolve: (value: FaroNavigationItem) => void;
   const faroNavigationEntryPromise = new Promise<FaroNavigationItem>((resolve) => {
@@ -28,23 +23,19 @@ export function getNavigationTimings(
       return;
     }
 
-    const allowProps = options.performanceEntryAllowProperties;
+    const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
 
-    const navigationEntryRawJSON = navigationEntryRaw.toJSON();
+    const faroNavigationEntry: FaroNavigationItem = {
+      ...createFaroNavigationTiming(navigationEntryRaw.toJSON()),
+      faroNavigationId: genShortID(),
+      faroPreviousNavigationId,
+    };
 
-    if (includePerformanceEntry(navigationEntryRawJSON, allowProps)) {
-      const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
+    setItem(NAVIGATION_ID_STORAGE_KEY, faroNavigationEntry.faroNavigationId, webStorageType.session);
 
-      const faroNavigationEntry: FaroNavigationItem = {
-        ...createFaroNavigationTiming(navigationEntryRawJSON),
-        faroNavigationId: genShortID(),
-        faroPreviousNavigationId,
-      };
+    pushEvent('faro.performance.navigation', faroNavigationEntry);
 
-      setItem(NAVIGATION_ID_STORAGE_KEY, faroNavigationEntry.faroNavigationId, webStorageType.session);
-      pushEvent('faro.performance.navigation', faroNavigationEntry);
-      faroNavigationEntryResolve(faroNavigationEntry);
-    }
+    faroNavigationEntryResolve(faroNavigationEntry);
   });
 
   observer.observe({
