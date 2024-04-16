@@ -75,4 +75,28 @@ describe('Navigation observer', () => {
       faroResourceId: mockResourceId,
     });
   });
+
+  it('Excludes entries defined in allow list', () => {
+    const mockPushEvent = jest.fn();
+    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
+
+    const mockNavigationId = '123';
+    observeResourceTimings(mockNavigationId, mockPushEvent, [''], {
+      performanceEntryAllowProperties: { nextHopProtocol: 'foo' },
+    });
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(0);
+  });
+
+  it('Only includes entries defined in allow list', () => {
+    const mockPushEvent = jest.fn();
+    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
+
+    const mockNavigationId = '123';
+    observeResourceTimings(mockNavigationId, mockPushEvent, [''], {
+      performanceEntryAllowProperties: { nextHopProtocol: 'h2' },
+    });
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
+  });
 });
