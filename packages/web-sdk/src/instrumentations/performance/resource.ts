@@ -1,7 +1,5 @@
-import { genShortID } from '@grafana/faro-core';
+import { faro, genShortID } from '@grafana/faro-core';
 import type { EventsAPI } from '@grafana/faro-core';
-
-import { faro } from '../..';
 
 import { RESOURCE_ENTRY } from './performanceConstants';
 import { createFaroResourceTiming, entryUrlIsIgnored, includePerformanceEntry } from './performanceUtils';
