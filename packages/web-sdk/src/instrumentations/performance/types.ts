@@ -45,11 +45,3 @@ export type FaroResourceItem = {
 } & FaroResourceTiming;
 
 export type CacheType = 'cache' | 'conditionalFetch' | 'fullLoad';
-
-// export type PerformanceEntryAllowProperties = Record<string, Array<string | number> | string | number>;
-
-// default
-// {initiatorType: [xhr, fetch]}
-
-// opt in ALL
-// trackResources:  true
