@@ -32,11 +32,6 @@ export function getNavigationTimings(
 
     const navigationEntryRawJSON = navigationEntryRaw.toJSON();
 
-    console.log(
-      'includePerformanceEntry(navigationEntryRawJSON, allowProps) :>> ',
-      includePerformanceEntry(navigationEntryRawJSON, allowProps)
-    );
-
     if (includePerformanceEntry(navigationEntryRawJSON, allowProps)) {
       const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
 
@@ -47,9 +42,7 @@ export function getNavigationTimings(
       };
 
       setItem(NAVIGATION_ID_STORAGE_KEY, faroNavigationEntry.faroNavigationId, webStorageType.session);
-
       pushEvent('faro.performance.navigation', faroNavigationEntry);
-
       faroNavigationEntryResolve(faroNavigationEntry);
     }
   });
