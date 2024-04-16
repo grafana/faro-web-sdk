@@ -1,3 +1,5 @@
+import { isArray } from '@grafana/faro-core';
+
 import type { CacheType, FaroNavigationTiming, FaroResourceTiming } from './types';
 
 export function performanceObserverSupported(): boolean {
@@ -5,7 +7,7 @@ export function performanceObserverSupported(): boolean {
 }
 
 export function entryUrlIsIgnored(ignoredUrls: Array<string | RegExp> = [], entryName: string): boolean {
-  return ignoredUrls.some((url) => entryName.match(url) != null);
+  return ignoredUrls.some((url) => url && entryName.match(url) != null);
 }
 
 export function onDocumentReady(handleReady: () => void) {
@@ -21,6 +23,30 @@ export function onDocumentReady(handleReady: () => void) {
 
     document.addEventListener('readystatechange', readyStateCompleteHandler);
   }
+}
+
+type PerformanceEntryAllowProperties = Record<string, Array<string | number> | string | number>;
+
+export function includePerformanceEntry(
+  performanceEntryJSON: Record<string, any>,
+  allowProps: PerformanceEntryAllowProperties = {}
+): boolean {
+  for (const [allowPropKey, allowPropValue] of Object.entries(allowProps)) {
+    const perfEntryPropVal = performanceEntryJSON[allowPropKey];
+
+    if (perfEntryPropVal == null) {
+      return false;
+    }
+
+    if (isArray(allowPropValue)) {
+      return allowPropValue.includes(perfEntryPropVal);
+    }
+
+    return perfEntryPropVal === allowPropValue;
+  }
+
+  // empty object allows all
+  return true;
 }
 
 export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTiming): FaroResourceTiming {

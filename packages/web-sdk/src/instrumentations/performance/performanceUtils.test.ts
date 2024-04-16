@@ -1,4 +1,4 @@
-import { createFaroNavigationTiming, createFaroResourceTiming } from './performanceUtils';
+import { createFaroNavigationTiming, createFaroResourceTiming, includePerformanceEntry } from './performanceUtils';
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
 import type { FaroNavigationTiming, FaroResourceTiming } from './types';
 
@@ -109,5 +109,53 @@ describe('performanceUtils', () => {
 
     const faroNavigationTiming = createFaroNavigationTiming(performanceNavigationEntry);
     expect(faroNavigationTiming.documentParsingTime).toBe('unknown');
+  });
+
+  it('Returns true for configured entries ', () => {
+    const initiatorTypes = ['css', 'fetch', 'xmlhttprequest', 'link', 'script'];
+
+    const entries = initiatorTypes.map((initiatorType) => ({ ...performanceResourceEntry, initiatorType }));
+
+    const matchByValue = includePerformanceEntry(entries[0]!, { initiatorType: 'css' });
+    expect(matchByValue).toBe(true);
+
+    const matchByMultiValues1 = includePerformanceEntry(entries[1]!, {
+      initiatorType: ['fetch', 'xmlhttprequest', 'link'],
+    });
+    expect(matchByMultiValues1).toBe(true);
+
+    const matchByMultiValues2 = includePerformanceEntry(entries[2]!, {
+      initiatorType: ['fetch', 'xmlhttprequest', 1],
+    });
+    expect(matchByMultiValues2).toBe(true);
+  });
+
+  it('Returns true if entries are undefined or empty object', () => {
+    const initiatorTypes = ['css', 'fetch', 'xmlhttprequest', 'link', 'script'];
+
+    const entries = initiatorTypes.map((initiatorType) => ({ ...performanceResourceEntry, initiatorType }));
+
+    const matchedEntriesUndefined = entries.map((entry) => includePerformanceEntry(entry, undefined));
+    expect(matchedEntriesUndefined.every((e) => Boolean(e))).toBe(true);
+
+    const matchedEntriesEmptyObject = entries.map((entry) => includePerformanceEntry(entry, {}));
+    expect(matchedEntriesEmptyObject.every((e) => Boolean(e))).toBe(true);
+  });
+
+  it('Returns false if key or value does not match', () => {
+    const initiatorTypes = ['css', 'fetch', 'xmlhttprequest', 'link', 'script'];
+
+    const entries = initiatorTypes.map((initiatorType) => ({ ...performanceResourceEntry, initiatorType }));
+
+    const noMatchByValue = includePerformanceEntry(entries[0]!, { initiatorType: 'NO_MATCHING_VALUE' });
+    expect(noMatchByValue).toBe(false);
+
+    const noMatchingProperty = includePerformanceEntry(entries[1]!, { initiatorTypeABC: 'abc' });
+    expect(noMatchingProperty).toBe(false);
+
+    const matchByMultiValues1 = includePerformanceEntry(entries[1]!, {
+      initiatorType: ['NOfetch', 'NOxmlhttprequest', 'link'],
+    });
+    expect(matchByMultiValues1).toBe(false);
   });
 });

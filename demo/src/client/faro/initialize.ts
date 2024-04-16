@@ -19,6 +19,7 @@ export function initializeFaro(): Faro {
       ...getWebInstrumentations({
         captureConsole: true,
       }),
+
       new TracingInstrumentation(),
       new ReactIntegration({
         router: {

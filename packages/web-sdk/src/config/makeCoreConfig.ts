@@ -85,6 +85,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
 
     user: browserConfig.user,
     view: browserConfig.view ?? defaultViewMeta,
+    trackResources: browserConfig.trackResources,
   };
 
   return config;
