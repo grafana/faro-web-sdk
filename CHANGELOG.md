@@ -2,11 +2,14 @@
 
 ## Next
 
+## 1.5.2
+
 - Docs(`@grafana/faro-web-sdk`, `@grafana/faro-web-tracing`): Remove pre-release warning (#550).
 - Change (`@grafana/faro-web-tracing`): Remove redundant DocumentLoadInstrumentation.
-  Faro tracks page load data by default. (#551)
+  Faro tracks page load data by default (#551).
 - Change(`@grafana/faro-web-sdk`): Performance instrumentation only tracks resource entries initiated
-  by calls to the `fetch` method or `xhr-html requests`. To track all resource entries set `trackResources: true`.
+  by calls to the `fetch` method or `xhr-html requests`. To track all resource entries set
+  `trackResources: true` (#560).
 
 ## 1.5.1
 
