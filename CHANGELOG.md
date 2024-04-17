@@ -2,7 +2,7 @@
 
 ## Next
 
-## 1.5.2
+## 1.6.0
 
 - Docs(`@grafana/faro-web-sdk`, `@grafana/faro-web-tracing`): Remove pre-release warning (#550).
 - Change (`@grafana/faro-web-tracing`): Remove redundant DocumentLoadInstrumentation.
