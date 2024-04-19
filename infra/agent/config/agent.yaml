@@ -6,7 +6,7 @@ metrics:
   global:
     scrape_interval: '60s'
     remote_write:
-      - url: 'http://${CORTEX_HOST}:${CORTEX_PORT}/api/prom/push'
+      - url: 'http://${MIMIR_HOST}:${MIMIR_PORT}/api/v1/push'
   configs:
     - name: '${DEMO_PACKAGE_NAME}'
       scrape_configs:

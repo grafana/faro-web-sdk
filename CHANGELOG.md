@@ -2,6 +2,8 @@
 
 ## Next
 
+- Update: Update Demo to pin docker images and replace Cortex by Mimir
+
 ## 1.6.0
 
 - Docs(`@grafana/faro-web-sdk`, `@grafana/faro-web-tracing`): Remove pre-release warning (#550).

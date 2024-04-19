@@ -35,7 +35,7 @@ Besides the app itself, the demo can also spawn the entire architecture for test
 - [Grafana][grafana]
 - [Loki][loki]
 - [Tempo][tempo]
-- [Cortex][cortex]
+- [Mimir][mimir]
 
 ## Installation
 
@@ -145,7 +145,7 @@ All the actions will be performed assuming that the demo is freshly ran and the 
      - `createArticleCommentSuccessfully`
 1. Click on the `Logout` button in the header
 
-[cortex]: https://cortexmetrics.io/
+[mimir]: https://grafana.com/oss/mimir
 [demo-grafana-explore]: http://localhost:3000/explore
 [demo-grafana-frontend-dashboard]: http://localhost:3000/dashboards?query=Frontend
 [demo-grafana-homepage]: http://localhost:3000/

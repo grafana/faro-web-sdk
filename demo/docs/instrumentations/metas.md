@@ -33,7 +33,7 @@ Metas in the API are similar to the ones provided by Faro but they are required 
 ## Visualizing the Data
 
 - Navigate to the [Explore page in Grafana][demo-grafana-explore]
-- Select the `Cortex` or `Loki` as a datasource
+- Select the `Mimir` or `Loki` as a datasource
 - Input the session IDs copied previously into the label filters or line filters
 
 ## Screenshots
