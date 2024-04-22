@@ -1,21 +1,21 @@
 apiVersion: 1
 
 deleteDatasources:
-  - name: 'Cortex'
+  - name: 'Mimir'
   - name: 'Tempo'
   - name: 'Loki'
 
 datasources:
-  - name: 'Cortex'
+  - name: 'Mimir'
     type: 'prometheus'
     access: 'proxy'
     orgId: 1
-    url: 'http://${CORTEX_HOST}:${CORTEX_PORT}/api/prom'
+    url: 'http://${MIMIR_HOST}:${MIMIR_PORT}/prometheus'
     basicAuth: false
     isDefault: false
     version: 1
     editable: false
-    uid: 'cortex'
+    uid: 'mimir'
     jsonData:
       exemplarTraceIdDestinations:
         - datasourceUid: 'tempo'
@@ -40,7 +40,7 @@ datasources:
       nodeGraph:
         enabled: 'true'
       serviceMap:
-        datasourceUid: 'cortex'
+        datasourceUid: 'mimir'
 
   - name: 'Loki'
     type: 'loki'

@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => {
       'process.env.__APP_ENV__': JSON.stringify(
         getPublicEnvConfig(
           getEnvConfig(
-            loadEnv(mode, '../', ['AGENT_', 'CORTEX_', 'DATABASE_', 'DEMO_', 'GRAFANA_', 'LOKI_', 'TEMPO_']),
+            loadEnv(mode, '../', ['AGENT_', 'MIMIR_', 'DATABASE_', 'DEMO_', 'GRAFANA_', 'LOKI_', 'TEMPO_']),
             mode
           )
         )
