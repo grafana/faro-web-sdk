@@ -1,9 +1,9 @@
 apiVersion: 1
 
 providers:
-  - name: 'grafanaAgent'
+  - name: 'grafanaAlloy'
     orgId: 1
-    folder: 'Grafana Agent'
+    folder: 'Grafana Alloy'
     folderUid: ''
     type: 'file'
     disableDeletion: true

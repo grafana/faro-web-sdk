@@ -19,7 +19,7 @@ The Faro Errors Instrumentation automatically captures uncaught errors. It is li
 ### API
 
 The errors that are captured server side are reported manually by writing them to a file which is then read by the
-[Grafana Agent][grafana-agent].
+[Grafana Alloy][grafana-alloy].
 
 **The captured errors are stored in Loki.**
 
@@ -57,6 +57,6 @@ logs.**
 [demo-grafana-explore]: http://localhost:3000/explore
 [demo-grafana-frontend-dashboard]: http://localhost:3000/dashboards?query=Frontend
 [demo-seed-page]: http://localhost:5173/seed
-[grafana-agent]: https://github.com/grafana/agent
+[grafana-alloy]: https://github.com/grafana/alloy
 [assets-errors-view-dashboard]: ../assets/instrumentations/errorsViewDashboard.png
 [assets-errors-view-explore]: ../assets/instrumentations/errorsViewExplore.png

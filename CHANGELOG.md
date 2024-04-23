@@ -6,6 +6,7 @@
 - Enhancement (`@grafana/faro-web-sdk` `@grafana/faro-web-tracing`): provide option to globally
   exclude endpoint URLs from being tracked. This applies to the following instrumentations:
   performance, xhr, fetch and web-tracing (#554).
+- Enhancement: Migrate demo Grafana agent to Grafana alloy
 
 ## 1.6.0
 
