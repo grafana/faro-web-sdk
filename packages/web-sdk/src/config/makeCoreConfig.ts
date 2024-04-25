@@ -21,8 +21,6 @@ import type { BrowserConfig } from './types';
 export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined {
   const transports: Transport[] = [];
 
-  console.log('browserConfig :>> ', browserConfig);
-
   const internalLogger = createInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
 
   if (browserConfig.transports) {
