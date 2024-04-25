@@ -392,7 +392,7 @@ describe('OtlpHttpTransport', () => {
 
     const config = mockConfig({
       transports: [transport],
-      ignoreEndpoints: globalIgnoreUrls,
+      ignoreUrls: globalIgnoreUrls,
     });
 
     const faro = initializeFaro(config);

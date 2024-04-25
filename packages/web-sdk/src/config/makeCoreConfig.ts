@@ -21,6 +21,8 @@ import type { BrowserConfig } from './types';
 export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined {
   const transports: Transport[] = [];
 
+  console.log('browserConfig :>> ', browserConfig);
+
   const internalLogger = createInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
 
   if (browserConfig.transports) {
@@ -77,6 +79,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     beforeSend: browserConfig.beforeSend,
     eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
     ignoreErrors: browserConfig.ignoreErrors,
+    ignoreUrls: browserConfig.ignoreUrls,
 
     sessionTracking: {
       ...defaultSessionTrackingConfig,

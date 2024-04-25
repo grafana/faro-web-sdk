@@ -85,7 +85,7 @@ export class FetchTransport extends BaseTransport {
   }
 
   override getIgnoreUrls(): Patterns {
-    return ([this.options.url] as Patterns).concat(this.config.ignoreEndpoints ?? []);
+    return ([this.options.url] as Patterns).concat(this.config.ignoreUrls ?? []);
   }
 
   override isBatched(): boolean {

@@ -299,7 +299,7 @@ describe('PerformanceTimelineInstrumentation', () => {
       mockConfig({
         transports: [fetchTransport],
         instrumentations: [instrumentation],
-        ignoreEndpoints: globalIgnoreUrls,
+        ignoreUrls: globalIgnoreUrls,
       })
     );
 

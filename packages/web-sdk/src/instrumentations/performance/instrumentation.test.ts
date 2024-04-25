@@ -129,7 +129,7 @@ describe('Performance Instrumentation', () => {
     const config = mockConfig({
       transports: [fetchTransport],
       instrumentations: [new PerformanceInstrumentation()],
-      ignoreEndpoints: [/.*foo-analytics/, /.*.analytics.com/, 'http://example.com/awesome-image'],
+      ignoreUrls: [/.*foo-analytics/, /.*.analytics.com/, 'http://example.com/awesome-image'],
     });
 
     const faro = initializeFaro(config);

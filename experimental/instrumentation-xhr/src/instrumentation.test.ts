@@ -201,7 +201,7 @@ describe('XHRInstrumentation', () => {
     const config = mockConfig({
       transports: [fetchTransport],
       instrumentations: [instrumentation],
-      ignoreEndpoints: [globalIgnoreUrl],
+      ignoreUrls: [globalIgnoreUrl],
     });
 
     initializeFaro(config);
