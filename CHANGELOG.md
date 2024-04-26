@@ -2,7 +2,10 @@
 
 ## Next
 
-- Update: Update Demo to pin docker images and replace Cortex by Mimir
+- Update (`faro demo`): Update Demo to pin docker images and replace Cortex by Mimir (#563).
+- Enhancement (`@grafana/faro-web-sdk` `@grafana/faro-web-tracing`): provide option to globally
+  exclude endpoint URLs from being tracked. This applies to the following instrumentations:
+  performance, xhr, fetch and web-tracing (#554).
 
 ## 1.6.0
 
@@ -12,9 +15,6 @@
 - Change(`@grafana/faro-web-sdk`): Performance instrumentation only tracks resource entries initiated
   by calls to the `fetch` method or `xhr-html requests`. To track all resource entries set
   `trackResources: true` (#560).
-- Enhancement (`@grafana/faro-web-sdk` `@grafana/faro-web-tracing`): provide option to globally
-  exclude endpoint URLs from being tracked. This applies to the following instrumentations:
-  performance, xhr, fetch and web-tracing.
 
 ## 1.5.1
 
