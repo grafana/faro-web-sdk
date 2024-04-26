@@ -77,6 +77,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     beforeSend: browserConfig.beforeSend,
     eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
     ignoreErrors: browserConfig.ignoreErrors,
+    ignoreUrls: browserConfig.ignoreUrls,
 
     sessionTracking: {
       ...defaultSessionTrackingConfig,

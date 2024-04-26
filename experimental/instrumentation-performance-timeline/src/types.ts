@@ -1,3 +1,5 @@
+import type { Patterns } from '@grafana/faro-core';
+
 export type ObserveEntries = { type: string; buffered: boolean; [key: string]: any };
 
 export interface PerformanceTimelineInstrumentationOptions {
@@ -11,7 +13,7 @@ export interface PerformanceTimelineInstrumentationOptions {
   maxResourceTimingBufferSize?: number;
 
   // For these URLs no events will be tracked
-  ignoredUrls?: Array<string | RegExp>;
+  ignoredUrls?: Patterns;
 
   // Mutate performance entry before emit. Return false if entry shall be skipped. Parameter is the JSON representation of the PerformanceEntry as returned by calling it's own toJson() function.
   beforeEmit?: (performanceEntryJSON: any) => Record<string, any> | false;

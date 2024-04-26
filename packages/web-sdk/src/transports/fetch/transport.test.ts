@@ -1,5 +1,12 @@
-import { getTransportBody, LogEvent, LogLevel, TransportItem, TransportItemType } from '@grafana/faro-core';
-import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
+import {
+  getTransportBody,
+  initializeFaro,
+  LogEvent,
+  LogLevel,
+  TransportItem,
+  TransportItemType,
+} from '@grafana/faro-core';
+import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import { FetchTransport } from './transport';
 
@@ -210,5 +217,27 @@ describe('FetchTransport', () => {
       keepalive: false,
       method: 'POST',
     });
+  });
+
+  it('will add global ignoredURLs to the ignoredUrls list ', async () => {
+    const collectorUrl = 'http://example.com/collect';
+
+    const transport = new FetchTransport({
+      url: collectorUrl,
+    });
+
+    const globalIgnoreUrls = [/.*foo-analytics/, 'http://example-analytics.com'];
+
+    const config = mockConfig({
+      transports: [transport],
+      ignoreUrls: globalIgnoreUrls,
+    });
+
+    const faro = initializeFaro(config);
+
+    transport.internalLogger = mockInternalLogger;
+
+    const ignoreUrls = faro.transports.transports.flatMap((transport) => transport.getIgnoreUrls());
+    expect(ignoreUrls).toStrictEqual([collectorUrl, ...globalIgnoreUrls]);
   });
 });

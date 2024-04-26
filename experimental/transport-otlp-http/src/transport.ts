@@ -1,4 +1,5 @@
 import { BaseTransport, createPromiseBuffer, isArray, PromiseBuffer, TransportItem, VERSION } from '@grafana/faro-core';
+import type { Patterns } from '@grafana/faro-core';
 
 import { OtelPayload, OtelTransportPayload } from './payload';
 import type { OtlpHttpTransportOptions } from './types';
@@ -30,9 +31,9 @@ export class OtlpHttpTransport extends BaseTransport {
     });
   }
 
-  override getIgnoreUrls(): Array<string | RegExp> {
+  override getIgnoreUrls(): Patterns {
     const { tracesURL = '', logsURL = '' } = this.options;
-    return [tracesURL, logsURL].filter(Boolean);
+    return ([tracesURL, logsURL].filter(Boolean) as Patterns).concat(this.config.ignoreUrls ?? []);
   }
 
   override isBatched(): boolean {

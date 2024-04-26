@@ -45,6 +45,7 @@ Besides the mandatory properties, Faro configuration also supports the following
 | `beforeSend`   | Hook invoked before pushing event to transport. Can be used to modify or filter events | `BeforeSendHook` | `undefined`   |
 | `eventDomain`  | event.domain attribute of an event, to be set on every event item as default           | `string`         | `undefined`   |
 | `ignoreErrors` | Error message patterns for errors that should be ignored                               | `Patterns`       | `[]`          |
+| `ignoreUrls`   | Path patterns for Endpoints that should be ignored form being tracked.                 | `Patterns`       | `[]`          |
 | `session`      | Session metadata                                                                       | `Session`        | `undefined`   |
 | `user`         | User metadata                                                                          | `User`           | `undefined`   |
 | `view`         | View metadata                                                                          | `View`           | `undefined`   |

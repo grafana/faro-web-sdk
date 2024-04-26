@@ -66,3 +66,11 @@ export const performanceResourceEntry = {
     },
   ],
 } as unknown as PerformanceResourceTiming;
+
+export const analyticsEntry1 = {
+  name: 'http://example.com/foo-analytics',
+} as unknown as PerformanceResourceTiming;
+
+export const analyticsEntry2 = {
+  name: 'http://analytics.com/beacon',
+} as unknown as PerformanceResourceTiming;

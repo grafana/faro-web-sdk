@@ -10,7 +10,7 @@ export interface FetchError {
 
 export interface FetchInstrumentationOptions {
   // For these URLs no events will be tracked
-  ignoredUrls?: Array<string | RegExp>;
+  ignoredUrls?: Patterns;
   // For testing purposes - if true, fetch will be writable - necessary for jest tests
   testing?: boolean;
 

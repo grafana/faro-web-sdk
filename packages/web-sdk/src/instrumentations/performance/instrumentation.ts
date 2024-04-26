@@ -1,4 +1,5 @@
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
+import type { Patterns } from '@grafana/faro-core';
 
 import { getNavigationTimings } from './navigation';
 import { onDocumentReady, performanceObserverSupported } from './performanceUtils';
@@ -26,7 +27,7 @@ export class PerformanceInstrumentation extends BaseInstrumentation {
     });
   }
 
-  private getIgnoreUrls(): Array<string | RegExp> {
+  private getIgnoreUrls(): Patterns {
     return this.transports.transports?.flatMap((transport) => transport.getIgnoreUrls());
   }
 }

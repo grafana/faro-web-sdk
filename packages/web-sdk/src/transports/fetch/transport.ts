@@ -1,5 +1,5 @@
 import { BaseTransport, createPromiseBuffer, getTransportBody, noop, PromiseBuffer, VERSION } from '@grafana/faro-core';
-import type { TransportItem } from '@grafana/faro-core';
+import type { Patterns, TransportItem } from '@grafana/faro-core';
 
 import type { FetchTransportOptions } from './types';
 
@@ -84,8 +84,8 @@ export class FetchTransport extends BaseTransport {
     }
   }
 
-  override getIgnoreUrls(): Array<string | RegExp> {
-    return [this.options.url];
+  override getIgnoreUrls(): Patterns {
+    return ([this.options.url] as Patterns).concat(this.config.ignoreUrls ?? []);
   }
 
   override isBatched(): boolean {
