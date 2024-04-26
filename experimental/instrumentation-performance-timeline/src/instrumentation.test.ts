@@ -289,8 +289,6 @@ describe('PerformanceTimelineInstrumentation', () => {
     // Mocking the Performance object doesn't work. Skip testing its usage for now
     jest.spyOn(instrumentation, 'configureResourceTimingBuffer' as any).mockImplementation(() => {});
 
-    // instrumentation.initialize();
-
     const collectorUrl = 'collector-endpoint';
     const fetchTransport = new FetchTransport({ url: collectorUrl });
 
