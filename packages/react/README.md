@@ -136,7 +136,8 @@ import { FaroRoutes } from '@grafana/faro-react';
 
 ### Router v4/v5
 
-To instrument React Router v4 or v5, import the `Route` component from `react-router-dom` and the `history` object from the `history package` and pass them to the dependencies object:
+To instrument React Router v4 or v5, import the `Route` component from `react-router-dom` and the
+`history` object from the `history package` and pass them to the dependencies object:
 
 The final result should look similar like this example:
 
@@ -226,7 +227,8 @@ Configuration options:
 
 - `fallback`: The fallback UI to render instead, either:
   - a `ReactElement`
-  - `FaroErrorBoundaryFallbackRender` function that passes the Error object and a callback function to reset the error boundary to it’s initial state when called
+  - `FaroErrorBoundaryFallbackRender` function that passes the Error object and a callback function
+    to reset the error boundary to it’s initial state when called
 - `pushErrorOptions`: Options passed to the pushError API, for example additional context to an error
 
 Lifecycle callbacks:
