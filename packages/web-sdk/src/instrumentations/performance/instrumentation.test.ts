@@ -130,6 +130,7 @@ describe('Performance Instrumentation', () => {
       transports: [fetchTransport],
       instrumentations: [new PerformanceInstrumentation()],
       ignoreUrls: [/.*foo-analytics/, /.*.analytics.com/, 'http://example.com/awesome-image'],
+      trackResources: true,
     });
 
     const faro = initializeFaro(config);
