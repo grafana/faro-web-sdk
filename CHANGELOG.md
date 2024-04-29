@@ -2,11 +2,13 @@
 
 ## Next
 
-- Update (`faro demo`): Update Demo to pin docker images and replace Cortex by Mimir (#563).
-- Enhancement (`@grafana/faro-web-sdk` `@grafana/faro-web-tracing`): provide option to globally
+## 1.7.0
+
+- Enhancement (`@grafana/faro-web-sdk`): provide option to globally
   exclude endpoint URLs from being tracked. This applies to the following instrumentations:
   performance, xhr, fetch and web-tracing (#554).
-- Enhancement: Migrate demo Grafana agent to Grafana alloy
+- Update (`faro demo`): Update Demo to pin docker images and replace Cortex by Mimir (#563).
+- Enhancement (`faro demo`): Migrate demo Grafana agent to Grafana alloy
 
 ## 1.6.0
 
