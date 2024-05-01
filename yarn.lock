@@ -565,6 +565,25 @@
     eslint-plugin-react-hooks "4.6.0"
     typescript "4.8.4"
 
+"@grafana/faro-core@file:packages/react/.yalc/@grafana/faro-web-sdk/.yalc/@grafana/faro-core":
+  version "1.5.1"
+  dependencies:
+    "@opentelemetry/api" "^1.7.0"
+    "@opentelemetry/otlp-transformer" "^0.48.0"
+
+"@grafana/faro-core@file:packages/web-sdk/.yalc/@grafana/faro-core":
+  version "1.5.1"
+  dependencies:
+    "@opentelemetry/api" "^1.7.0"
+    "@opentelemetry/otlp-transformer" "^0.48.0"
+
+"@grafana/faro-web-sdk@file:packages/react/.yalc/@grafana/faro-web-sdk":
+  version "1.5.1"
+  dependencies:
+    "@grafana/faro-core" "file:../../../Library/Caches/Yarn/v6/npm-@grafana-faro-web-sdk-1.5.1-def08d59-1375-403e-835f-b36c593f2b3e-1712952337999/node_modules/@grafana/faro-web-sdk/.yalc/@grafana/faro-core"
+    ua-parser-js "^1.0.32"
+    web-vitals "^3.1.1"
+
 "@grpc/grpc-js@^1.7.1", "@grpc/grpc-js@^1.9.0":
   version "1.9.9"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.9.9.tgz#ce3a05439b1c957ec64c2ecdc6f1e4f54e8af797"
@@ -1361,17 +1380,6 @@
     "@opentelemetry/sdk-trace-base" "1.21.0"
     "@opentelemetry/semantic-conventions" "1.21.0"
 
-"@opentelemetry/instrumentation-document-load@^0.35.0":
-  version "0.35.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-document-load/-/instrumentation-document-load-0.35.0.tgz#e56f4c4d9e5a654c6a164b848946e9b189f137de"
-  integrity sha512-U3zQBjbAF0rm7GT7YJ8DPqgiCdBoshmld4c1pZe3tAGAMa5QPIjonIfSMSvJ2XMh6Nvi+8Rfe3XFCe0cuWIjsQ==
-  dependencies:
-    "@opentelemetry/core" "^1.8.0"
-    "@opentelemetry/instrumentation" "^0.48.0"
-    "@opentelemetry/sdk-trace-base" "^1.0.0"
-    "@opentelemetry/sdk-trace-web" "^1.15.0"
-    "@opentelemetry/semantic-conventions" "^1.0.0"
-
 "@opentelemetry/instrumentation-express@^0.35.0":
   version "0.35.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-express/-/instrumentation-express-0.35.0.tgz#4391c46f4ce00d840633fd79391028c38eca01bc"
@@ -1536,7 +1544,7 @@
     "@opentelemetry/sdk-trace-node" "1.21.0"
     "@opentelemetry/semantic-conventions" "1.21.0"
 
-"@opentelemetry/sdk-trace-base@1.21.0", "@opentelemetry/sdk-trace-base@^1.0.0":
+"@opentelemetry/sdk-trace-base@1.21.0":
   version "1.21.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/sdk-trace-base/-/sdk-trace-base-1.21.0.tgz#ffad912e453a92044fb220bd5d2f6743bf37bb8a"
   integrity sha512-yrElGX5Fv0umzp8Nxpta/XqU71+jCAyaLk34GmBzNcrW43nqbrqvdPs4gj4MVy/HcTjr6hifCDCYA3rMkajxxA==
@@ -1557,7 +1565,7 @@
     "@opentelemetry/sdk-trace-base" "1.21.0"
     semver "^7.5.2"
 
-"@opentelemetry/sdk-trace-web@1.21.0", "@opentelemetry/sdk-trace-web@^1.15.0", "@opentelemetry/sdk-trace-web@^1.18.1":
+"@opentelemetry/sdk-trace-web@1.21.0", "@opentelemetry/sdk-trace-web@^1.18.1":
   version "1.21.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/sdk-trace-web/-/sdk-trace-web-1.21.0.tgz#74c80b0887d5324ecb008328c8c8befb425d429d"
   integrity sha512-MxkmY/UNXkDiZj7JUu5T7wWt8Ai4NJEwSjGoQQ9YLvgLUIivvaIo9Mne+Q+KLOUG2v/uhivz3qzxbCODVa0c1A==

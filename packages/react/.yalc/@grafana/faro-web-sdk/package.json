@@ -56,11 +56,8 @@
     "ua-parser-js": "^1.0.32",
     "web-vitals": "^3.1.1"
   },
-  "devDependencies": {
-    "@types/ua-parser-js": "^0.7.36",
-    "user-agent-data-types": "^0.4.2"
-  },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "yalcSig": "d3b4d3dc2ab6b6ce1625da691f3fc923"
 }

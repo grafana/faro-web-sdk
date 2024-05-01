@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "packages": {
+    "@grafana/faro-core": {
+      "signature": "624d828eaa50c680bfaf3be36d0734f5",
+      "file": true
+    }
+  }
+}
