@@ -29,6 +29,7 @@ Faro Web SDK requires a configuration object parameter with the following proper
 | `instrumentations`      | Array of instrumentations that should be ran                                             | `Instrumentation[]`   |                                                          |
 | `internalLoggerLevel`   | The level of information printed to console for internal messages                        | `InternalLoggerLevel` | `defaultInternalLoggerLevel = InternalLoggerLevel.ERROR` |
 | `isolate`               | A flag that will create an isolated Faro instance                                        | `boolean`             |                                                          |
+| `logArgsSerializer`     | A function used to serialize log arguments                                               | `LogArgsSerializer`   |                                                          |
 | `metas`                 | Array of metas that should be logged                                                     | `MetaItem[]`          |                                                          |
 | `parseStacktrace`       | A function used to parse stack traces                                                    | `StacktraceParser`    |                                                          |
 | `paused`                | Flag for initializing the Faro instance as paused                                        | `boolean`             |                                                          |
