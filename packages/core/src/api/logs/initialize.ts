@@ -21,20 +21,25 @@ export function initializeLogsAPI(
 
   let lastPayload: Pick<LogEvent, 'message' | 'level' | 'context'> | null = null;
 
+  const logArgsSerializer =
+    config.logArgsSerializer ??
+    ((args) =>
+      args
+        .map((arg) => {
+          try {
+            return String(arg);
+          } catch (err) {
+            return '';
+          }
+        })
+        .join(' '));
+
   const pushLog: LogsAPI['pushLog'] = (args, { context, level, skipDedupe, spanContext } = {}) => {
     try {
       const item: TransportItem<LogEvent> = {
         type: TransportItemType.LOG,
         payload: {
-          message: args
-            .map((arg) => {
-              try {
-                return String(arg);
-              } catch (err) {
-                return '';
-              }
-            })
-            .join(' '),
+          message: logArgsSerializer(args),
           level: level ?? defaultLogLevel,
           context: context ?? {},
           timestamp: getCurrentTimestamp(),

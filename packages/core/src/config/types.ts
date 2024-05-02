@@ -1,4 +1,4 @@
-import type { APIEvent, StacktraceParser } from '../api';
+import type { APIEvent, LogArgsSerializer, StacktraceParser } from '../api';
 import type { Instrumentation } from '../instrumentations';
 import type { InternalLoggerLevel } from '../internalLogger';
 import type { Meta, MetaApp, MetaItem, MetaSession, MetaUser, MetaView } from '../metas';
@@ -17,6 +17,7 @@ export interface Config<P = APIEvent> {
   instrumentations: Instrumentation[];
   internalLoggerLevel: InternalLoggerLevel;
   isolate: boolean;
+  logArgsSerializer?: LogArgsSerializer;
   metas: MetaItem[];
   parseStacktrace: StacktraceParser;
   paused: boolean;

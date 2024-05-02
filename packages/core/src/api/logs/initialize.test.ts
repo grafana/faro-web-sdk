@@ -3,14 +3,17 @@ import { mockConfig, MockTransport } from '../../testUtils';
 import { LogLevel } from '../../utils';
 import type { API } from '../types';
 
-import type { LogEvent, PushLogOptions } from './types';
+import type { LogArgsSerializer, LogEvent, PushLogOptions } from './types';
 
 describe('api.logs', () => {
-  function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [API, MockTransport] {
+  function createAPI(
+    { dedupe, logArgsSerializer }: { dedupe: boolean; logArgsSerializer?: LogArgsSerializer } = { dedupe: true }
+  ): [API, MockTransport] {
     const transport = new MockTransport();
     const config = mockConfig({
       dedupe,
       transports: [transport],
+      logArgsSerializer,
     });
 
     const { api } = initializeFaro(config);
@@ -109,6 +112,21 @@ describe('api.logs', () => {
           trace_id: 'my-trace-id',
           span_id: 'my-span-id',
         });
+      });
+    });
+    describe('Serializing', () => {
+      it('serializes log arguments via String', () => {
+        api.pushLog([1, 'test', { a: 1 }]);
+        expect((transport.items[0]?.payload as LogEvent).message).toBe('1 test [object Object]');
+      });
+
+      it('uses custom logArgsSerializer', () => {
+        const logArgsSerializer: LogArgsSerializer = (args) => JSON.stringify(args);
+
+        [api, transport] = createAPI({ dedupe: true, logArgsSerializer });
+
+        api.pushLog([1, 'test', { a: 1 }]);
+        expect((transport.items[0]?.payload as LogEvent).message).toBe('[1,"test",{"a":1}]');
       });
     });
   });
