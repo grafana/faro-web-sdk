@@ -41,7 +41,7 @@ Logging arguments (`console.info('Hello', {foo: 'bar'})`) are by default each tr
 
 ```javascript
 initializeFaro({
-  logArgsSerializer: (args) => args.map((arg) => JSON.stringify(arg)).join(' ')
+  logArgsSerializer: (args) => args.map((arg) => JSON.stringify(arg)).join(' '),
 });
 ```
 
