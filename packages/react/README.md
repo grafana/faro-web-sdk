@@ -204,6 +204,28 @@ In case of an error it sends a Faro error event which contains the error message
 stack of the component which contains the exception, and the name of name of the error boundary
 if configured.
 
+```ts
+import { initializeFaro } from '@grafana/faro-react';
+
+initializeFaro({
+  // required: the URL of the Grafana collector
+  url: 'my/collector/url',
+
+  // required: the identification label of your application
+  app: {
+    name: 'my-react-app',
+  },
+
+  instrumentations: [
+    // Load the default Web instrumentations
+    ...getWebInstrumentations(),
+
+    // Must be initialized to get FaroErrorBoundary support
+    new ReactIntegration(),
+  ],
+});
+```
+
 ```tsx
 import { FaroErrorBoundary } from '@grafana/faro-react';
 
@@ -239,14 +261,6 @@ Lifecycle callbacks:
 - `onUnmount`: Executed when React calls the componentWillUnmount lifecycle hook, with the Error
   object as a parameter
 - `onReset`: Executed when React calls resetErrorBoundary, with the Error object as a parameter
-
-```tsx
-// ...
-
-<FaroErrorBoundary>
-  <MyComponent />
-</FaroErrorBoundary>
-```
 
 ```tsx
 import { FaroErrorBoundary, PushErrorOptions } from '@grafana/faro-react';
