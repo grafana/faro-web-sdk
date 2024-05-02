@@ -2,6 +2,9 @@
 
 ## Next
 
+- Enhancement (`@grafana/faro-core`): Config has now a parameter `logArgsSerializer` to set a custom serializer for
+  log arguments (#564). This is useful if log message args are complex and might produce `[object Object]` in the logs.
+
 ## 1.7.0
 
 - Enhancement (`@grafana/faro-web-sdk`): provide option to globally

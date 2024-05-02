@@ -40,15 +40,16 @@ Faro Web SDK requires a configuration object parameter with the following proper
 
 Besides the mandatory properties, Faro configuration also supports the following optional properties:
 
-| Property       | Description                                                                            | Type             | Default Value |
-| -------------- | -------------------------------------------------------------------------------------- | ---------------- | ------------- |
-| `beforeSend`   | Hook invoked before pushing event to transport. Can be used to modify or filter events | `BeforeSendHook` | `undefined`   |
-| `eventDomain`  | event.domain attribute of an event, to be set on every event item as default           | `string`         | `undefined`   |
-| `ignoreErrors` | Error message patterns for errors that should be ignored                               | `Patterns`       | `[]`          |
-| `ignoreUrls`   | Path patterns for Endpoints that should be ignored form being tracked.                 | `Patterns`       | `[]`          |
-| `session`      | Session metadata                                                                       | `Session`        | `undefined`   |
-| `user`         | User metadata                                                                          | `User`           | `undefined`   |
-| `view`         | View metadata                                                                          | `View`           | `undefined`   |
+| Property            | Description                                                                            | Type                | Default Value |
+| ------------------- | -------------------------------------------------------------------------------------- | ------------------- | ------------- |
+| `beforeSend`        | Hook invoked before pushing event to transport. Can be used to modify or filter events | `BeforeSendHook`    | `undefined`   |
+| `eventDomain`       | event.domain attribute of an event, to be set on every event item as default           | `string`            | `undefined`   |
+| `ignoreErrors`      | Error message patterns for errors that should be ignored                               | `Patterns`          | `[]`          |
+| `ignoreUrls`        | Path patterns for Endpoints that should be ignored form being tracked.                 | `Patterns`          | `[]`          |
+| `logArgsSerializer` | A function used to serialize log arguments                                             | `LogArgsSerializer` | `undefined`   |
+| `session`           | Session metadata                                                                       | `Session`           | `undefined`   |
+| `user`              | User metadata                                                                          | `User`              | `undefined`   |
+| `view`              | View metadata                                                                          | `View`              | `undefined`   |
 
 ## Faro instance
 
