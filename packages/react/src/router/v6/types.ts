@@ -6,7 +6,7 @@ interface IndexRouteObjectV6DataRouter {
   caseSensitive?: boolean;
   children?: undefined;
   element?: React.ReactNode | null;
-  index?: true;
+  index: true;
   path?: string;
 }
 
