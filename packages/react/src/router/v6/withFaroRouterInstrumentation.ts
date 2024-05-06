@@ -4,7 +4,7 @@ import { api } from '../../dependencies';
 import { NavigationType, ReactRouterLocation } from '../types';
 
 import { isInitialized } from './routerDependencies';
-import type { EventRouteTransitionAttributes, ReactRouterV6RouteObject } from './types';
+import type { EventRouteTransitionAttributes, RouteObjectV6DataRouter } from './types';
 import { getRouteFromLocation } from './utils';
 
 interface RouterState {
@@ -14,7 +14,7 @@ interface RouterState {
 
 interface Router {
   state: RouterState;
-  routes: ReactRouterV6RouteObject[];
+  routes: RouteObjectV6DataRouter[];
   subscribe(fn: (state: RouterState) => void): () => void;
 }
 

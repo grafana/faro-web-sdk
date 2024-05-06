@@ -2,6 +2,24 @@ import type { ReactElement, ReactNode } from 'react';
 
 import type { ReactRouterLocation } from '../types';
 
+interface IndexRouteObjectV6DataRouter {
+  caseSensitive?: boolean;
+  children?: undefined;
+  element?: React.ReactNode | null;
+  index?: true;
+  path?: string;
+}
+
+export interface NonIndexRouteObjectV6DataRouter {
+  caseSensitive?: boolean;
+  children?: RouteObjectV6DataRouter[];
+  element?: React.ReactNode | null;
+  index?: false;
+  path?: string;
+}
+
+export type RouteObjectV6DataRouter = IndexRouteObjectV6DataRouter | NonIndexRouteObjectV6DataRouter;
+
 export interface ReactRouterV6BaseRouteObject {
   action?: (...args: any[]) => any;
   caseSensitive?: boolean;
