@@ -5,6 +5,7 @@
 - Enhancement (`@grafana/faro-core`): Config has now a parameter `logArgsSerializer` to set a custom serializer for
   log arguments (#564). This is useful if log message args are complex and might produce `[object Object]` in the logs.
 - Fix (`@grafana/faro-web-tracing`): Fix an import issue causing builds to fail (#581).
+- Fix (`@grafana/faro-react`): Fix type issues in react data route wrapper `withFaroRouterInstrumentation` (#584).
 
 ## 1.7.0
 
