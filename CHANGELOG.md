@@ -4,7 +4,7 @@
 
 ## 1.7.2
 
-- Fix (`@grafana/faro-react`): Fixed a type issues in react v6 router dependencies (#585).
+- Fix (`@grafana/faro-react`): Fixed a type issue in react v6 router dependencies (#585).
 
 ## 1.7.1
 
