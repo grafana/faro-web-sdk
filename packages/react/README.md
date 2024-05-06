@@ -67,6 +67,26 @@ additional React specific functionality like router instrumentation, a custom Er
 
 ### Router v6 with Data Router
 
+```ts
+initializeFaro({
+  // ...
+
+  instrumentations: [
+    // Load the default Web instrumentations
+    ...getWebInstrumentations(),
+
+    new ReactIntegration({
+      router: {
+        version: ReactRouterVersion.V6_data_router,
+        dependencies: {
+          matchRoutes,
+        },
+      },
+    }),
+  ],
+});
+```
+
 Instrument the routes from a React data router (`BrowserRouter`, `HashRouter`, or `MemoryRouter`).
 
 In the file you create your data router, often the App.\* file pass your data router to the Faro-React

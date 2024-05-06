@@ -60,7 +60,9 @@ export interface ReactRouterV6RouteMatch<ParamKey extends string = string> {
   route: ReactRouterV6RouteObject;
 }
 
-export type ReactRouterV6CreateRoutesFromChildren = (children: ReactNode) => ReactRouterV6RouteObject[];
+export type ReactRouterV6CreateRoutesFromChildren = (
+  children: ReactNode
+) => ReactRouterV6RouteObject[] | RouteObjectV6DataRouter[];
 
 export type ReactRouterV6MatchRoutes = (
   routes: ReactRouterV6RouteObject[],
