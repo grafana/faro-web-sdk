@@ -5,6 +5,8 @@
 - Feature (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object
   (#476).
 - Feature (`@grafana/faro-web-sdk`): track window dimensions via the `browser meta` (#594).
+- Feature (`@grafana/faro-web-sdk`): If `logArgsSerializer` is set in the config
+  of `initializeFaro`, it will be forwarded to the core (#589).
 
 ## 1.7.2
 

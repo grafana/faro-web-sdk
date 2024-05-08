@@ -3,6 +3,7 @@ import {
   defaultBatchingConfig,
   defaultGlobalObjectKey,
   defaultInternalLoggerLevel,
+  defaultLogArgsSerializer,
   defaultUnpatchedConsole,
   isObject,
 } from '@grafana/faro-core';
@@ -67,6 +68,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
     internalLoggerLevel: browserConfig.internalLoggerLevel ?? defaultInternalLoggerLevel,
     isolate: browserConfig.isolate ?? false,
+    logArgsSerializer: browserConfig.logArgsSerializer ?? defaultLogArgsSerializer,
     metas: createMetas(),
     parseStacktrace,
     paused: browserConfig.paused ?? false,
