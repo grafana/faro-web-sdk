@@ -76,7 +76,7 @@ export function getUserSessionUpdater({
 
     const sessionFromStorage = fetchUserSession();
 
-    if (forceSessionExtend !== true && isUserSessionValid(sessionFromStorage)) {
+    if (forceSessionExtend === false && isUserSessionValid(sessionFromStorage)) {
       storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
     } else {
       let newSession = addSessionMetadataToNextSession(
