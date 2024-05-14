@@ -1,22 +1,22 @@
 version: '3.8'
 
 services:
-  cortex:
+  mimir:
     env_file:
       - './.env'
-    image: 'cortexproject/cortex:v1.14.1'
+    image: 'grafana/mimir:2.12.0'
     volumes:
-      - '${CORTEX_CONFIG_PATH_LOCAL}:${CORTEX_CONFIG_PATH}'
+      - '${MIMIR_CONFIG_PATH_LOCAL}:${MIMIR_CONFIG_PATH}'
     entrypoint:
-      - '/bin/cortex'
-      - '-config.file=${CORTEX_CONFIG_PATH}/${CORTEX_CONFIG_FILE}'
+      - '/bin/mimir'
+      - '-config.file=${MIMIR_CONFIG_PATH}/${MIMIR_CONFIG_FILE}'
     ports:
-      - '${CORTEX_PORT}:${CORTEX_PORT}'
+      - '${MIMIR_PORT}:${MIMIR_PORT}'
 
   grafana:
     env_file:
       - './.env'
-    image: 'grafana/grafana:latest'
+    image: 'grafana/grafana:10.4.2'
     volumes:
       - '${GRAFANA_CONFIG_PATH_LOCAL}:${GRAFANA_CONFIG_PATH}'
       - '${GRAFANA_DATASOURCES_PATH_LOCAL}:${GRAFANA_DATASOURCES_PATH}'
@@ -34,7 +34,7 @@ services:
   loki:
     env_file:
       - './.env'
-    image: 'grafana/loki:latest'
+    image: 'grafana/loki:3.0.0'
     command: '-config.file=${LOKI_CONFIG_PATH}/${LOKI_CONFIG_FILE}'
     ports:
       - '${LOKI_PORT}:${LOKI_PORT}'
@@ -42,7 +42,7 @@ services:
   tempo:
     env_file:
       - './.env'
-    image: 'grafana/tempo:2.0.0'
+    image: 'grafana/tempo:2.4.1'
     volumes:
       - '${TEMPO_CONFIG_PATH_LOCAL}:${TEMPO_CONFIG_PATH}'
     command:
@@ -51,25 +51,24 @@ services:
     ports:
       - '${TEMPO_PORT}:${TEMPO_PORT}'
 
-  agent:
+  alloy:
     env_file:
       - './.env'
-    image: 'grafana/agent:main'
+    image: 'grafana/alloy:v1.0.0'
     volumes:
-      - '${AGENT_CONFIG_PATH_LOCAL}:${AGENT_CONFIG_PATH}'
-      - 'demo_demo_logs:${AGENT_LOGS_PATH}'
+      - '${ALLOY_CONFIG_PATH_LOCAL}:${ALLOY_CONFIG_PATH}'
     entrypoint:
-      - '/bin/grafana-agent'
-      - '-config.file=${AGENT_CONFIG_PATH}/${AGENT_CONFIG_FILE}'
-      - '-config.expand-env'
-      - '-config.enable-read-api'
-      - '-enable-features=integrations-next'
+      - '/bin/alloy'
+      - 'run'
+      - '--server.http.listen-addr=0.0.0.0:12345'
+      - '--config.extra-args="-config.expand-env"'
+      - '${ALLOY_CONFIG_PATH}/${ALLOY_CONFIG_FILE}'
     ports:
       - '${AGENT_PORT}:${AGENT_PORT}'
       - '${AGENT_PORT_APP_RECEIVER}:${AGENT_PORT_APP_RECEIVER}'
       - '${TEMPO_PORT_OTLP_RECEIVER}:${TEMPO_PORT_OTLP_RECEIVER}'
     depends_on:
-      - 'cortex'
+      - 'mimir'
       - 'grafana'
       - 'loki'
       - 'tempo'
@@ -130,7 +129,7 @@ services:
       - '${DEMO_PORT}:${DEMO_PORT}'
       - '${DEMO_PORT_HMR}:${DEMO_PORT_HMR}'
     depends_on:
-      - 'agent'
+      - 'alloy'
       - 'database'
 
 volumes:
@@ -139,11 +138,6 @@ volumes:
   demo_node_modules:
   demo_demo_dist:
   demo_demo_logs:
-    driver: 'local'
-    driver_opts:
-      type: 'none'
-      device: '${PWD}/${DEMO_DEMO_PATH}/${DEMO_SERVER_LOGS_PATH}'
-      o: 'bind'
   demo_demo_node_modules:
   demo_core_dist:
   demo_core_node_modules:

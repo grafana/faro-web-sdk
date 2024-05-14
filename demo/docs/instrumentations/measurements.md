@@ -44,13 +44,13 @@ than Loki.**
     - Select the `Loki` datasource
     - Select `kind=measurement` in the filters
   - **API**
-    - Select the `Cortex` datasource
+    - Select the `Mimir` datasource
     - Run any PromQL query (i.e. `nodejs_active_handles`)
 
 ## Screenshots
 
 [<img src="../assets/instrumentations/measurementsViewExploreLoki.png" alt="Viewing measurements in Explore" height="100" />][assets-measurements-view-explore-loki]<!-- markdownlint-disable-line MD013 -->
-[<img src="../assets/instrumentations/measurementsViewExploreCortex.png" alt="Viewing measurements in Explore" height="100" />][assets-measurements-view-explore-cortex]<!-- markdownlint-disable-line MD013 -->
+[<img src="../assets/instrumentations/measurementsViewExploreMimir.png" alt="Viewing measurements in Explore" height="100" />][assets-measurements-view-explore-mimir]<!-- markdownlint-disable-line MD013 -->
 [<img src="../assets/instrumentations/measurementsViewDashboard.png" alt="Viewing measurements in Dashboard" height="100" />][assets-measurements-view-dashboard]<!-- markdownlint-disable-line MD013 -->
 
 [demo-features-page]: http://localhost:5173/features
@@ -61,5 +61,5 @@ than Loki.**
 [prom-client]: https://github.com/siimon/prom-client
 [web-vitals]: https://web.dev/vitals/
 [assets-measurements-view-dashboard]: ../assets/instrumentations/measurementsViewDashboard.png
-[assets-measurements-view-explore-cortex]: ../assets/instrumentations/measurementsViewExploreCortex.png
+[assets-measurements-view-explore-mimir]: ../assets/instrumentations/measurementsViewExploreMimir.png
 [assets-measurements-view-explore-loki]: ../assets/instrumentations/measurementsViewExploreLoki.png

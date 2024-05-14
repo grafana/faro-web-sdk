@@ -5,71 +5,89 @@ This document describes how to set up and use Grafana Faro Web SDK. For more inf
 
 ## Before you begin
 
-- Set up a Grafana Agent instance. For more information, refer to [Set up Grafana Agent][grafana-agent-setup].
+- Set up a Grafana Alloy instance. For more information, refer to [Set up Grafana Alloy][grafana-alloy-setup].
 - Configure your instance with `app-agent-receiver` integration. The integration exposes an http collection endpoint and
   runs with the `integrations-next` flag enabled.
 
-The following example shows a basic Grafana Agent configuration that exposes a collector endpoint at
-[http://host:12345/collect][grafana-agent-collect] and forwards collected telemetry to Loki, Tempo, and Prometheus
+The following example shows a basic Grafana Alloy configuration that exposes a collector endpoint at
+[http://host:12345/collect][grafana-alloy-collect] and forwards collected telemetry to Loki, Tempo, and Prometheus
 instances. This collector endpoint has to be accessible by your web application. For more information about the app
-agent receiver integration, refer to [app_agent_receiver_config][grafana-agent-receiver-config].
+agent receiver integration, refer to [app_agent_receiver_config][grafana-alloy-receiver-config].
 
-```yaml
-metrics:
-  wal_directory: /tmp/wal
-  global: {}
-  configs:
-    - name: default
-      remote_write:
-        - url: https://prometheus-us-central1.grafana.net/api/prom/push
-          basic_auth:
-            username: xxx
-            password: xxx
-logs:
-  positions_directory: /tmp/loki-pos
-  configs:
-    - name: default
-      scrape_configs: []
-      clients:
-        - url: https://xxx:xxx@logs-prod-us-central1.grafana.net/loki/api/v1/push
-traces:
-  configs:
-    - name: default
-      remote_write:
-        - endpoint: tempo-us-central1.grafana.net:443
-          basic_auth:
-            username: xxx
-            password: xxx
-      receivers:
-        otlp:
-          protocols:
-            grpc:
-            http:
-              cors:
-                allowed_origins:
-                  - http://localhost:1234
-                max_age: 7200
-integrations:
-  app_agent_receiver_configs:
-    - autoscrape:
-        enable: true
-        metrics_instance: 'default'
-      instance: 'frontend'
-      logs_instance: 'default'
-      traces_instance: 'default'
-      server:
-        host: 0.0.0.0
-        port: 12345
-        api_key: 'secret' # optional, if set, client will be required to provide it via x-api-key header
-        cors_allowed_origins:
-          - 'https://my-app.example.com'
-      logs_labels: # labels to add to loki log record
-        app: frontend # static value
-        kind: # value will be taken from log items. exception, log, measurement, etc
-      logs_send_timeout: 5000
-      sourcemaps:
-        download: true # will download source file, extract source map location,
-        # download source map and use it to transform stack trace locations
+```river
+prometheus.remote_write "metrics_write" {
+    endpoint {
+        name = "default"
+        url  = <remote_write_url>
+        queue_config { }
+        metadata_config { }
+    }
+}
+
+loki.process "logs_process_client" {
+    forward_to = [loki.write.logs_write_client.receiver]
+
+    stage.logfmt {
+        mapping = { "kind" = "", "service_name" = "", "app" = "" }
+    }
+
+    stage.labels {
+        values = { "kind" = "kind", "service_name" = "service_name", "app" = "app" }
+    }
+}
+
+loki.write "logs_write_client" {
+    endpoint {
+        url = <loki_write_url>
+    }
+}
+
+logging {
+    level = "info"
+}
+
+faro.receiver "integrations_app_agent_receiver" {
+    server {
+        listen_address           = "0.0.0.0"
+        listen_port              = 12345
+        cors_allowed_origins     = ["https://my-app.example.com"]
+        api_key                  = my_super_app_key
+        max_allowed_payload_size = "10MiB"
+
+        rate_limiting {
+            rate = 100
+        }
+    }
+
+    sourcemaps { }
+
+    output {
+        logs   = [loki.process.logs_process_client.receiver]
+        traces = [otelcol.exporter.otlp.trace_write.input]
+    }
+}
+
+otelcol.receiver.otlp "default" {
+    grpc {
+        include_metadata = true
+    }
+
+    output {
+        metrics = []
+        logs    = []
+        traces  = [otelcol.exporter.otlp.trace_write.input]
+    }
+}
+
+otelcol.exporter.otlp "trace_write" {
+    retry_on_failure {
+        max_elapsed_time = "1m0s"
+    }
+
+    client {
+        endpoint = <tempo_endpoint>
+    }
+}
 ```
 
 ## Install Grafana Faro Web SDK
@@ -390,13 +408,13 @@ import function.
 
 - monitor a web application using data collected by Faro Web SDK
 
-[Grafana Agent app agent receiver dashboard][faro-agent-dashboard]
+[Grafana Alloy app agent receiver dashboard][faro-agent-dashboard]
 
-- monitor Grafana Agent app receiver integration
+- monitor Grafana Alloy app receiver integration
 
-[grafana-agent-collect]: http://host:12345/collect
-[grafana-agent-receiver-config]: https://grafana.com/docs/agent/latest/configuration/integrations/integrations-next/app-agent-receiver-config/
-[grafana-agent-setup]: https://grafana.com/docs/agent/latest/set-up/
+[grafana-alloy-collect]: http://host:12345/collect
+[grafana-alloy-receiver-config]: https://grafana.com/docs/alloy/latest/reference/components/faro.receiver/
+[grafana-alloy-setup]: https://grafana.com/docs/alloy/latest/get-started/
 [opentelemetry-js]: https://opentelemetry.io/docs/instrumentation/js/
 [web-vitals]: https://github.com/GoogleChrome/web-vitals
 [demo-app]: ../../../demo

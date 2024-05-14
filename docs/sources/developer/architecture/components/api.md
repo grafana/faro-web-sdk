@@ -37,6 +37,16 @@ Methods:
 
 - `pushLog` - sends a log
 
+Logging arguments (`console.info('Hello', {foo: 'bar'})`) are by default each transformed into a string and
+concatenated by a space. If you want to use a different transformation, you can provide
+a custom `logArgsSerializer` function in the config object.
+
+```javascript
+initializeFaro({
+  logArgsSerializer: (args) => args.map((arg) => JSON.stringify(arg)).join(' '),
+});
+```
+
 ### Measurements
 
 Measurements are signals which can be seen as metrics.

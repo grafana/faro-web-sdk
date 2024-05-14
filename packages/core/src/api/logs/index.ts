@@ -1,3 +1,3 @@
 export { initializeLogsAPI } from './initialize';
 
-export type { LogContext, LogEvent, LogsAPI, PushLogOptions } from './types';
+export type { LogContext, LogEvent, LogArgsSerializer, LogsAPI, PushLogOptions } from './types';

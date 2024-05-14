@@ -1,0 +1,116 @@
+prometheus.scrape "metrics_scrape" {
+	targets = [{
+		__address__ = format("%s:%s", env("DEMO_HOST"), env("DEMO_PORT")),
+	}]
+	forward_to = [prometheus.remote_write.metrics_write.receiver]
+	job_name   = env("DEMO_SERVER_PACKAGE_NAME")
+}
+
+prometheus.remote_write "metrics_write" {
+	endpoint {
+		name = env("DEMO_PACKAGE_NAME")
+		url  = format("http://%s:%s/api/v1/push", env("MIMIR_HOST"), env("MIMIR_PORT"))
+		queue_config { }
+		metadata_config { }
+	}
+}
+
+loki.process "logs_process_client" {
+  forward_to = [loki.write.logs_write_client.receiver]
+
+  stage.logfmt {
+      mapping = { "kind" = "", "service_name" = "", "app" = "" }
+  }
+
+  stage.labels {
+      values = { "kind" = "kind", "service_name" = "service_name", "app" = "app" }
+  }
+}
+
+loki.write "logs_write_client" {
+	endpoint {
+		url = format("http://%s:%s/loki/api/v1/push", env("LOKI_HOST"), env("LOKI_PORT"))
+	}
+	external_labels = {
+        }
+}
+
+
+local.file_match "logs_file_server" {
+	path_targets = [{
+		__address__ = "localhost",
+		__path__    = "/var/log/server.log",
+		app         = env("DEMO_SERVER_PACKAGE_NAME"),
+	}]
+}
+
+loki.source.file "logs_source_server" {
+	targets               = local.file_match.logs_file_server.targets
+	forward_to            = [loki.write.logs_write_server.receiver]
+	legacy_positions_file = "/tmp/positions-server.yaml"
+}
+
+loki.write "logs_write_server" {
+	endpoint {
+		url = format("http://%s:%s/loki/api/v1/push", env("LOKI_HOST"), env("LOKI_PORT"))
+	}
+	external_labels = {
+        }
+}
+
+logging {
+	level = "info"
+}
+
+faro.receiver "integrations_app_agent_receiver" {
+	extra_log_labels = {
+		app  = env("DEMO_CLIENT_PACKAGE_NAME"),
+		kind = "",
+	}
+
+	server {
+		listen_address           = "0.0.0.0"
+		listen_port              = env("AGENT_PORT_APP_RECEIVER")
+		cors_allowed_origins     = ["*"]
+		api_key                  = env("AGENT_KEY_APP_RECEIVER")
+		max_allowed_payload_size = "10MiB"
+
+		rate_limiting {
+			rate = 50
+		}
+	}
+
+	sourcemaps { }
+
+	output {
+		logs   = [loki.process.logs_process_client.receiver]
+		traces = [otelcol.exporter.otlp.trace_write.input]
+	}
+}
+
+otelcol.receiver.otlp "default" {
+	grpc {
+		include_metadata = true
+	}
+
+	output {
+		metrics = []
+		logs    = []
+		traces  = [otelcol.exporter.otlp.trace_write.input]
+	}
+}
+
+
+otelcol.exporter.otlp "trace_write" {
+	retry_on_failure {
+		max_elapsed_time = "1m0s"
+	}
+
+	client {
+		endpoint = format("%s:%s", env("TEMPO_HOST"), env("TEMPO_PORT_OTLP_RECEIVER"))
+
+		tls {
+			insecure = true
+		}
+	}
+}

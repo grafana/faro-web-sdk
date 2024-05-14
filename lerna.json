@@ -4,6 +4,6 @@
     "experimental/*",
     "demo"
   ],
-  "version": "1.5.1",
+  "version": "1.7.2",
   "npmClient": "yarn"
 }

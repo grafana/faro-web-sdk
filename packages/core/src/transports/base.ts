@@ -1,3 +1,4 @@
+import type { Patterns } from '..';
 import { BaseExtension } from '../extensions';
 
 import type { Transport, TransportItem } from './types';
@@ -9,7 +10,7 @@ export abstract class BaseTransport extends BaseExtension implements Transport {
     return false;
   }
 
-  getIgnoreUrls(): Array<string | RegExp> {
+  getIgnoreUrls(): Patterns {
     return [];
   }
 }

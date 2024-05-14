@@ -24,3 +24,5 @@ export interface PushLogOptions {
 export interface LogsAPI {
   pushLog: (args: unknown[], options?: PushLogOptions) => void;
 }
+
+export type LogArgsSerializer = (args: unknown[]) => string;

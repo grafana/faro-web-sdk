@@ -38,7 +38,7 @@ metrics_generator:
   storage:
     path: '/tmp/tempo/generator/wal'
     remote_write:
-      - url: 'http://${CORTEX_HOST}:${CORTEX_PORT}/api/v1/push'
+      - url: 'http://${MIMIR_HOST}:${MIMIR_PORT}/api/v1/push'
         send_exemplars: true
 
 storage:

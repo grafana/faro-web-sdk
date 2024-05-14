@@ -3,6 +3,37 @@
 ## Next
 
 - Feature (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object (#476).
+
+## 1.7.2
+
+- Fix (`@grafana/faro-react`): Fixed a type issue in react v6 router dependencies (#585).
+
+## 1.7.1
+
+- Enhancement (`@grafana/faro-core`): Config has now a parameter `logArgsSerializer` to set a custom serializer for
+  log arguments (#564). This is useful if log message args are complex and might produce `[object Object]` in the logs.
+- Fix (`@grafana/faro-web-tracing`): Fix an import issue causing builds to fail (#581).
+- Fix (`@grafana/faro-react`): Fix type issues in react data route wrapper `withFaroRouterInstrumentation` (#584).
+
+## 1.7.0
+
+- Enhancement (`@grafana/faro-web-sdk`): provide option to globally
+  exclude endpoint URLs from being tracked. This applies to the following instrumentations:
+  performance, xhr, fetch and web-tracing (#554).
+- Update (`faro demo`): Update Demo to pin docker images and replace Cortex by Mimir (#563).
+- Enhancement (`faro demo`): Migrate demo Grafana agent to Grafana alloy
+
+## 1.6.0
+
+- Docs(`@grafana/faro-web-sdk`, `@grafana/faro-web-tracing`): Remove pre-release warning (#550).
+- Change (`@grafana/faro-web-tracing`): Remove redundant DocumentLoadInstrumentation.
+  Faro tracks page load data by default (#551).
+- Change(`@grafana/faro-web-sdk`): Performance instrumentation only tracks resource entries initiated
+  by calls to the `fetch` method or `xhr-html requests`. To track all resource entries set
+  `trackResources: true` (#560).
+
+## 1.5.1
+
 - Feature(`@grafana/faro-web-sdk`): Add parsing time to FaroNavigationTiming (#541).
 - Chore(`@grafana/faro-web-sdk`): Get rid of structureClone. It caused breakage in some
   sandboxed environments because of injected proxy objects (#536).

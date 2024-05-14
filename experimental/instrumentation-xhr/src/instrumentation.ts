@@ -21,7 +21,9 @@ export class XHRInstrumentation extends BaseInstrumentation {
    */
   initialize(): void {
     this.internalLogger.info('Initializing XHR instrumentation');
-    this.ignoredUrls = this.options?.ignoredUrls ?? this.getTransportIgnoreUrls();
+
+    this.ignoredUrls = [...(this.options?.ignoredUrls ?? []), ...(this.getTransportIgnoreUrls() ?? [])];
+
     const instrumentation = this;
     instrumentXMLHttpRequestOpen();
     instrumentXMLHttpRequestSend();
@@ -60,7 +62,9 @@ export class XHRInstrumentation extends BaseInstrumentation {
 
         // If the request url matches an ignored url, do not instrument the request
         if (
-          instrumentation.ignoredUrls?.some((ignoredUrl) => instrumentation.getRequestUrl(requestUrl).match(ignoredUrl))
+          instrumentation.ignoredUrls?.some((ignoredUrl) => {
+            return instrumentation.getRequestUrl(requestUrl).match(ignoredUrl) != null;
+          })
         ) {
           return instrumentation.originalSend.apply(this, [body === undefined ? null : body]);
         }

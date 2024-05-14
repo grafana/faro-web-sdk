@@ -1,5 +1,13 @@
-import { LogEvent, LogLevel, TraceEvent, TransportItem, TransportItemType, VERSION } from '@grafana/faro-core';
-import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
+import {
+  initializeFaro,
+  LogEvent,
+  LogLevel,
+  TraceEvent,
+  TransportItem,
+  TransportItemType,
+  VERSION,
+} from '@grafana/faro-core';
+import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import type { LogRecord, Logs } from './payload';
 import { OtlpHttpTransport } from './transport';
@@ -369,5 +377,29 @@ describe('OtlpHttpTransport', () => {
       keepalive: false,
       method: 'POST',
     });
+  });
+
+  it('will add global ignoredURLs to the ignoredUrls list ', async () => {
+    const tracesURL = 'www.example.com/v1/traces';
+    const logsURL = 'www.example.com/v1/logs';
+
+    const transport = new OtlpHttpTransport({
+      tracesURL,
+      logsURL,
+    });
+
+    const globalIgnoreUrls = [/.*foo-analytics/, 'http://example-analytics.com'];
+
+    const config = mockConfig({
+      transports: [transport],
+      ignoreUrls: globalIgnoreUrls,
+    });
+
+    const faro = initializeFaro(config);
+
+    transport.internalLogger = mockInternalLogger;
+
+    const ignoreUrls = faro.transports.transports.flatMap((transport) => transport.getIgnoreUrls());
+    expect(ignoreUrls).toStrictEqual([tracesURL, logsURL, ...globalIgnoreUrls]);
   });
 });

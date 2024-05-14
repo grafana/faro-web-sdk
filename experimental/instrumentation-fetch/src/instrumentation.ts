@@ -1,4 +1,5 @@
 import { BaseInstrumentation, faro, globalObject, isString, VERSION } from '@grafana/faro-core';
+import type { Patterns } from '@grafana/faro-core';
 
 import {
   faroRumHeader,
@@ -33,7 +34,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
    */
   initialize(): void {
     this.internalLogger.info('Initializing fetch instrumentation');
-    this.ignoredUrls = this.options?.ignoredUrls ?? this.getTransportIgnoreUrls();
+    this.ignoredUrls = [...(this.options?.ignoredUrls ?? []), ...(this.getTransportIgnoreUrls() ?? [])];
 
     Object.defineProperty(globalObject, fetchGlobalObjectKey, {
       configurable: true,
@@ -45,14 +46,14 @@ export class FetchInstrumentation extends BaseInstrumentation {
   /**
    * Get the list of ignored urls from all transports
    */
-  private getTransportIgnoreUrls(): Array<string | RegExp> {
+  private getTransportIgnoreUrls(): Patterns {
     return faro?.transports?.transports?.flatMap((transport) => transport.getIgnoreUrls());
   }
 
   /**
    * Get the list of ignored urls from all transports
    */
-  getIgnoredUrls(): Array<string | RegExp> {
+  getIgnoredUrls(): Patterns {
     return this.ignoredUrls ?? [];
   }
 
@@ -110,7 +111,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
       const requestUrl = instrumentation.getRequestUrl(input);
 
       // if the url is in the ignoredUrls list, skip instrumentation
-      if (instrumentation.ignoredUrls?.some((url) => requestUrl.match(url))) {
+      if (instrumentation.ignoredUrls?.some((url) => requestUrl.match(url) != null)) {
         instrumentation.internalLogger.info(
           `Skipping fetch instrumentation for ignored url "${requestUrl}" - using default fetch`
         );

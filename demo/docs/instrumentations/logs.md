@@ -16,7 +16,7 @@ provides an API called `pushLog` which can be used.
 ### API
 
 The logs that are captured server side are reported manually by writing them to a file which is then read by the
-[Grafana Agent][grafana-agent].
+[Grafana Alloy][grafana-alloy].
 
 **Captured logs are stored in Loki.**
 
@@ -42,5 +42,5 @@ The logs that are captured server side are reported manually by writing them to 
 
 [demo-features-page]: http://localhost:5173/features
 [demo-grafana-explore]: http://localhost:3000/explore
-[grafana-agent]: https://github.com/grafana/agent
+[grafana-alloy]: https://github.com/grafana/alloy
 [assets-logs-view-explore]: ../assets/instrumentations/logsViewExplore.png

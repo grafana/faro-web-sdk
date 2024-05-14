@@ -76,7 +76,7 @@ export class PerformanceTimelineInstrumentation extends BaseInstrumentation {
   }
 
   private setIgnoredUrls() {
-    this.ignoredUrls = this.options?.ignoredUrls ?? this.getIgnoreUrls();
+    this.ignoredUrls = [...(this.options?.ignoredUrls ?? []), ...(this.getIgnoreUrls() ?? [])];
   }
 
   private configureResourceTimingBuffer() {
