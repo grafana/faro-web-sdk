@@ -79,9 +79,8 @@ export class FetchTransport extends BaseTransport {
         })
           .then(async (response) => {
             if (response.status === ACCEPTED) {
-              // TODO: clarify if we verify the value or if existence of the header indicates an invalid session
-              // const isExpired = response.headers.get('X-Faro-Session-Status') !== null;
               const isExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
+
               if (isExpired) {
                 extendFaroSession(this.config, this.logDebug);
               }
