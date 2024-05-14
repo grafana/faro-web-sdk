@@ -52,7 +52,7 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-core": "file:.yalc/@grafana/faro-core",
+    "@grafana/faro-core": "^1.5.1",
     "ua-parser-js": "^1.0.32",
     "web-vitals": "^3.1.1"
   },

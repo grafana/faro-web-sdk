@@ -52,7 +52,7 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "file:.yalc/@grafana/faro-web-sdk",
+    "@grafana/faro-web-sdk": "^1.5.1",
     "@grafana/faro-web-tracing": "^1.5.1",
     "hoist-non-react-statics": "^3.3.2"
   },
