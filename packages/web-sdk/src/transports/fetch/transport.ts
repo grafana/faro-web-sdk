@@ -20,7 +20,7 @@ const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
 
 const BEACON_BODY_SIZE_LIMIT = 60000;
 const TOO_MANY_REQUESTS = 429;
-const BAD_REQUEST = 400;
+const ACCEPTED = 202;
 
 export class FetchTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-fetch';
@@ -78,18 +78,18 @@ export class FetchTransport extends BaseTransport {
           ...(restOfRequestOptions ?? {}),
         })
           .then(async (response) => {
+            if (response.status === ACCEPTED) {
+              // TODO: clarify if we verify the value or if existence of the header indicates an invalid session
+              // const isExpired = response.headers.get('X-Faro-Session-Status') !== null;
+              const isExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
+              if (isExpired) {
+                extendFaroSession(this.config, this.logDebug);
+              }
+            }
+
             if (response.status === TOO_MANY_REQUESTS) {
               this.disabledUntil = this.getRetryAfterDate(response);
               this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
-            }
-
-            if (response.status === BAD_REQUEST) {
-              const responseText = await response.text();
-
-              if (responseText === 'Session Expired') {
-                extendFaroSession(this.config, this.logDebug);
-                return response;
-              }
             }
 
             // read the body so the connection can be closed
