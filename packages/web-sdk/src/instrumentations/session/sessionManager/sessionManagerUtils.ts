@@ -56,8 +56,13 @@ type GetUserSessionUpdaterParams = {
   fetchUserSession: () => FaroUserSession | null;
 };
 
-export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: GetUserSessionUpdaterParams): () => void {
-  return function updateSession(): void {
+type UpdateSessionParams = { forceSessionExtend: boolean };
+
+export function getUserSessionUpdater({
+  fetchUserSession,
+  storeUserSession,
+}: GetUserSessionUpdaterParams): (options?: UpdateSessionParams) => void {
+  return function updateSession({ forceSessionExtend } = { forceSessionExtend: false }): void {
     if (!fetchUserSession || !storeUserSession) {
       return;
     }
@@ -71,7 +76,7 @@ export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: Ge
 
     const sessionFromStorage = fetchUserSession();
 
-    if (isUserSessionValid(sessionFromStorage)) {
+    if (forceSessionExtend !== true && isUserSessionValid(sessionFromStorage)) {
       storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
     } else {
       let newSession = addSessionMetadataToNextSession(
