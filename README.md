@@ -65,4 +65,4 @@ Faro releases follow the [Semantic Versioning](https://semver.org/) naming schem
 
   > NOTE: Our goal is to provide regular releases that are as stable as possible,
   > and we take backwards-compatibility seriously. As with any software, always read the release notes
-  > and the upgrade guide whenever choosing a new version of Loki to install.
+  > and the upgrade guide whenever choosing a new version of Faro to install.
