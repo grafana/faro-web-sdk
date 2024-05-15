@@ -3,11 +3,10 @@ import type { Config } from '@grafana/faro-core';
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
 
-import { PersistentSessionsManager } from './PersistentSessionsManager';
+import { PersistentSessionsManager, VolatileSessionsManager } from '.';
 import { isSampled } from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import type { FaroUserSession, SessionManager } from './types';
-import { VolatileSessionsManager } from './VolatileSessionManager';
 
 type CreateUserSessionObjectParams = {
   sessionId?: string;
