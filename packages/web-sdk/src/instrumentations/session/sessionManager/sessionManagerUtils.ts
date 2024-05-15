@@ -1,10 +1,13 @@
 import { dateNow, faro, genShortID } from '@grafana/faro-core';
+import type { Config } from '@grafana/faro-core';
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
 
+import { PersistentSessionsManager } from './PersistentSessionsManager';
 import { isSampled } from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
-import type { FaroUserSession } from './types';
+import type { FaroUserSession, SessionManager } from './types';
+import { VolatileSessionsManager } from './VolatileSessionManager';
 
 type CreateUserSessionObjectParams = {
   sessionId?: string;
@@ -107,4 +110,8 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
   };
 
   return sessionWithMeta;
+}
+
+export function getSessionManagerByConfig(sessionTrackingConfig: Config['sessionTracking']): SessionManager {
+  return sessionTrackingConfig?.persistent ? PersistentSessionsManager : VolatileSessionsManager;
 }

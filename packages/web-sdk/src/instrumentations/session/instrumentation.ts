@@ -15,11 +15,14 @@ import { createSession } from '../../metas';
 
 import { type FaroUserSession, isSampled } from './sessionManager';
 import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
-import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
-import { VolatileSessionsManager } from './sessionManager/VolatileSessionManager';
+import {
+  createUserSessionObject,
+  getSessionManagerByConfig,
+  isUserSessionValid,
+} from './sessionManager/sessionManagerUtils';
+import type { SessionManager } from './sessionManager/types';
 
 type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;
-type SessionManager = typeof VolatileSessionsManager | typeof PersistentSessionsManager;
 
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
@@ -141,7 +144,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     const sessionTrackingConfig = this.config.sessionTracking;
 
     if (sessionTrackingConfig?.enabled) {
-      const SessionManager = sessionTrackingConfig?.persistent ? PersistentSessionsManager : VolatileSessionsManager;
+      const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
 
       this.registerBeforeSendHook(SessionManager);
 

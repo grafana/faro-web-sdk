@@ -9,8 +9,10 @@ import {
 } from '@grafana/faro-core';
 import type { Config, Patterns, TransportItem } from '@grafana/faro-core';
 
-import { PersistentSessionsManager, VolatileSessionsManager } from '../../instrumentations';
-import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
+import {
+  getSessionManagerByConfig,
+  getUserSessionUpdater,
+} from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 
 import type { FetchTransportOptions } from './types';
 
@@ -79,10 +81,10 @@ export class FetchTransport extends BaseTransport {
         })
           .then(async (response) => {
             if (response.status === ACCEPTED) {
-              const isExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
+              const sessionExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
 
-              if (isExpired) {
-                extendFaroSession(this.config, this.logDebug);
+              if (sessionExpired) {
+                this.extendFaroSession(this.config, this.logDebug);
               }
             }
 
@@ -132,23 +134,20 @@ export class FetchTransport extends BaseTransport {
 
     return new Date(now + this.rateLimitBackoffMs);
   }
-}
 
-function extendFaroSession(config: Config, logDebug: BaseExtension['logDebug']) {
-  const SessionExpiredString = `Session expired, created new session.`;
+  private extendFaroSession(config: Config, logDebug: BaseExtension['logDebug']) {
+    const SessionExpiredString = `Session expired`;
 
-  const sessionTrackingConfig = config.sessionTracking;
-  if (sessionTrackingConfig?.enabled) {
-    const { fetchUserSession, storeUserSession } = sessionTrackingConfig?.persistent
-      ? PersistentSessionsManager
-      : VolatileSessionsManager;
+    const sessionTrackingConfig = config.sessionTracking;
 
-    const updateSession = getUserSessionUpdater({ fetchUserSession, storeUserSession });
+    if (sessionTrackingConfig?.enabled) {
+      const { fetchUserSession, storeUserSession } = getSessionManagerByConfig(sessionTrackingConfig);
 
-    updateSession({ forceSessionExtend: true });
+      getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
 
-    logDebug(SessionExpiredString);
-  } else {
-    logDebug(SessionExpiredString + ' created new session.');
+      logDebug(`${SessionExpiredString} created new session.`);
+    } else {
+      logDebug(`${SessionExpiredString}.`);
+    }
   }
 }
