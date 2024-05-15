@@ -3,12 +3,10 @@ import { getBundleId } from './sourceMaps';
 describe('sourceMapUpload utils', () => {
   beforeAll(() => {
     delete (global as any).__faroBundleId_foo;
-    delete (global as any).__faroBundleIds;
   });
 
   afterAll(() => {
     delete (global as any).__faroBundleId_foo;
-    delete (global as any).__faroBundleIds;
   });
 
   it('can get the bundle ID from the global object', () => {
