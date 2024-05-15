@@ -30,6 +30,7 @@ export interface MetaApp {
   release?: string;
   version?: string;
   environment?: string;
+  bundleId?: string;
 }
 
 export interface MetaUser {

@@ -2,6 +2,8 @@
 
 ## Next
 
+- Feature (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object (#476).
+
 ## 1.7.2
 
 - Fix (`@grafana/faro-react`): Fixed a type issue in react v6 router dependencies (#585).

@@ -10,6 +10,8 @@ export interface ExceptionStackFrame {
 
   colno?: number;
   lineno?: number;
+
+  bundleid?: string;
 }
 
 export interface ExtendedError extends Error {
