@@ -2,6 +2,9 @@
 
 ## Next
 
+- Enhancement (`@grafana/faro-web-sdk`): Auto extend a session if the Faro receiver indicates that a
+  session is invalid (#591).
+
 ## 1.7.3
 
 - Feature (`@grafana/faro-core`): source map uploads - add `bundleId` to the `MetaApp` `Meta` object
