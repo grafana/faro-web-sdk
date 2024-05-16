@@ -23,8 +23,8 @@ Properties:
 
 ### Browser
 
-The `browser` meta helps with identifying the environment where the app is running and it should not change across a
-session. Altough it is not handled automatically by the core package, nor is it the responsibility of the end-user to
+The `browser` meta helps with identifying the environment where the app is running and some extra it should not change across a
+session. Although it is not handled automatically by the core package, nor is it the responsibility of the end-user to
 define it. Wrapper packages like `web-sdk` should handle it.
 
 Properties:
@@ -33,6 +33,11 @@ Properties:
 - `version` - the version of the browser
 - `os` - the operating system name and version where the browser is running
 - `mobile` - a flag indication if the browser is running on a mobile device
+- `userAgent` -
+- `language` -
+- `brands` -
+- `windowWidth` -
+- `windowHeight` -
 
 ### Page
 
