@@ -36,8 +36,8 @@ Properties:
 - `userAgent` - details about the browser version, operating system, device type and other things
 - `language` - preferred language of the user. Usually this is language of the browser UI
 - `brands` - brands of the browser and its significant version numbers
-- `windowWidth` - height of the layout viewport
-- `windowHeight` - width of the layout viewport
+- `viewportWidth` - height of the layout viewport
+- `viewportHeight` - width of the layout viewport
 
 ### Page
 

@@ -21,8 +21,8 @@ export const browserMeta: MetaItem<Pick<Meta, 'browser'>> = () => {
       language: language ?? unknown,
       mobile,
       brands: brands ?? unknown,
-      windowWidth: `${window.innerWidth}`,
-      windowHeight: `${window.innerHeight}`,
+      viewportWidth: `${window.innerWidth}`,
+      viewportHeight: `${window.innerHeight}`,
     },
   };
 
