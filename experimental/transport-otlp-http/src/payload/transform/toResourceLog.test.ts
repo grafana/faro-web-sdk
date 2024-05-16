@@ -24,6 +24,8 @@ const item: Readonly<TransportItem<LogEvent>> = {
         { brand: 'Not(A:Brand', version: '8' },
         { brand: 'Chromium', version: '111' },
       ],
+      viewportHeight: '1080',
+      viewportWidth: '1920',
     },
     sdk: {
       name: 'integration-web-sdk-name',
@@ -141,6 +143,18 @@ const matchResourcePayload = {
     {
       key: 'browser.version',
       value: { stringValue: 'browser-v109.0' },
+    },
+    {
+      key: 'browser.screen_width',
+      value: {
+        stringValue: '1920',
+      },
+    },
+    {
+      key: 'browser.screen_height',
+      value: {
+        stringValue: '1080',
+      },
     },
     {
       key: 'telemetry.sdk.name',
