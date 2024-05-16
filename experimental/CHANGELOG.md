@@ -2,6 +2,9 @@
 
 ## Next
 
+- Feature (`@grafana/faro-transport-otlp-http`): Add resource attributes for viewport dimensions
+  (#594).
+
 ## 1.3.6
 
 - Enhancement (`@grafana/faro-transport-otlp-http`): Turn off beaconing if request body exceeds a
