@@ -241,6 +241,8 @@ function toResource(transportItem: TransportItem): Readonly<Resource> {
       toAttribute('browser.os', browser?.os),
       toAttribute('browser.name', browser?.name),
       toAttribute('browser.version', browser?.version),
+      toAttribute('browser.screen_width', browser?.viewportWidth),
+      toAttribute('browser.screen_height', browser?.viewportHeight),
 
       toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_NAME, sdk?.name),
       toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_VERSION, sdk?.version),
