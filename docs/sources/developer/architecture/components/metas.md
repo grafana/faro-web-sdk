@@ -33,11 +33,11 @@ Properties:
 - `version` - the version of the browser
 - `os` - the operating system name and version where the browser is running
 - `mobile` - a flag indication if the browser is running on a mobile device
-- `userAgent` -
-- `language` -
-- `brands` -
-- `windowWidth` -
-- `windowHeight` -
+- `userAgent` - details about the browser version, operating system, device type and other things
+- `language` - preferred language of the user. Usually this is language of the browser UI
+- `brands` - brands of the browser and its significant version numbers
+- `windowWidth` - height of the layout viewport
+- `windowHeight` - width of the layout viewport
 
 ### Page
 
