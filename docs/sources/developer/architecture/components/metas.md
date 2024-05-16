@@ -23,9 +23,10 @@ Properties:
 
 ### Browser
 
-The `browser` meta helps with identifying the environment where the app is running and some extra it should not change across a
-session. Although it is not handled automatically by the core package, nor is it the responsibility of the end-user to
-define it. Wrapper packages like `web-sdk` should handle it.
+The `browser` meta helps with identifying the environment where the app is running and some extra it
+should not change across a session. Although it is not handled automatically by the core package,
+nor is it the responsibility of the end-user to define it. Wrapper packages like `web-sdk` should
+handle it.
 
 Properties:
 
