@@ -64,6 +64,8 @@ export interface MetaBrowser {
   userAgent?: string;
   language?: string;
   brands?: NavigatorUABrandVersion[] | string;
+  windowWidth?: string;
+  windowHeight?: string;
 }
 
 export interface MetaView {
