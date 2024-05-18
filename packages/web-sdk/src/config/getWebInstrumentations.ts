@@ -7,6 +7,7 @@ import {
   SessionInstrumentation,
   ViewInstrumentation,
   WebVitalsInstrumentation,
+  WebVitalsWithAttributionInstrumentation,
 } from '../instrumentations';
 
 import type { GetWebInstrumentationsOptions } from './types';
@@ -14,7 +15,6 @@ import type { GetWebInstrumentationsOptions } from './types';
 export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {
   const instrumentations: Instrumentation[] = [
     new ErrorsInstrumentation(),
-    new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
     new ViewInstrumentation(),
   ];
@@ -30,6 +30,12 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
         disabledLevels: options.captureConsoleDisabledLevels,
       })
     );
+  }
+
+  if (options.captureWebVitalsAttribution === true) {
+    instrumentations.push(new WebVitalsWithAttributionInstrumentation());
+  } else {
+    instrumentations.push(new WebVitalsInstrumentation());
   }
 
   return instrumentations;
