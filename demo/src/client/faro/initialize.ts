@@ -18,6 +18,7 @@ export function initializeFaro(): Faro {
     instrumentations: [
       ...getWebInstrumentations({
         captureConsole: true,
+        captureWebVitalsAttribution: true,
       }),
 
       new TracingInstrumentation(),
