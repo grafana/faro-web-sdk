@@ -2,7 +2,9 @@
 
 ## Next
 
-- Feature (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object
+## 1.7.3
+
+- Feature (`@grafana/faro-core`): source map uploads - add `bundleId` to the `MetaApp` `Meta` object
   (#476).
 - Feature (`@grafana/faro-web-sdk`): track window dimensions via the `browser meta` (#594).
 
