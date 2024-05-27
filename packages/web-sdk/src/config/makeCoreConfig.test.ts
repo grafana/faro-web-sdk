@@ -1,4 +1,5 @@
-import { isFunction } from '@grafana/faro-core';
+import { defaultLogArgsSerializer, isFunction } from '@grafana/faro-core';
+import type { LogArgsSerializer } from '@grafana/faro-core';
 
 import { defaultMetas } from '../metas/const';
 
@@ -51,5 +52,32 @@ describe('defaultMetas', () => {
     expect(defaultMetas.map((item) => (isFunction(item) ? item() : item))).not.toContainEqual({
       k6: { isK6Browser: true },
     });
+  });
+});
+
+describe('config', () => {
+  it('includes custom logArgsSerializer if one was provided', () => {
+    const customLogArgsSerializer: LogArgsSerializer = () => 'test';
+
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      logArgsSerializer: customLogArgsSerializer,
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.logArgsSerializer).toBe(customLogArgsSerializer);
+  });
+
+  it('includes default logArgsSerializer if no custom one was provided', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.logArgsSerializer).toBe(defaultLogArgsSerializer);
   });
 });
