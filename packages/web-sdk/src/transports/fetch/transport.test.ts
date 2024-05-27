@@ -8,6 +8,8 @@ import {
 } from '@grafana/faro-core';
 import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
+import * as sessionManagerUtilsMock from '../../instrumentations/session/sessionManager/sessionManagerUtils';
+
 import { FetchTransport } from './transport';
 
 const fetch = jest.fn(() =>
@@ -50,6 +52,12 @@ const largeItem: TransportItem<LogEvent> = {
 describe('FetchTransport', () => {
   beforeEach(() => {
     fetch.mockClear();
+    jest.clearAllMocks();
+    jest.clearAllTimers();
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
   });
 
   it('will send event over fetch', () => {
@@ -239,5 +247,68 @@ describe('FetchTransport', () => {
 
     const ignoreUrls = faro.transports.transports.flatMap((transport) => transport.getIgnoreUrls());
     expect(ignoreUrls).toStrictEqual([collectorUrl, ...globalIgnoreUrls]);
+  });
+
+  it('creates a new faro session if collector response indicates an invalid session', async () => {
+    fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        status: 202,
+        headers: {
+          get: (name: string) => ({ 'X-Faro-Session-Status': 'invalid' })[name],
+        },
+
+        text: () => Promise.resolve(),
+      })
+    );
+
+    const mockGetUserSessionUpdater = jest.fn();
+    jest.spyOn(sessionManagerUtilsMock, 'getUserSessionUpdater').mockImplementationOnce(mockGetUserSessionUpdater);
+
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    const config = mockConfig({
+      transports: [transport],
+      sessionTracking: {
+        enabled: true,
+        persistent: false,
+      },
+    });
+
+    initializeFaro(config);
+
+    await transport.send([item]);
+
+    expect(mockGetUserSessionUpdater).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not create a new faro session for standard collector responses', async () => {
+    const mockGetUserSessionUpdater = jest.fn();
+    jest.spyOn(sessionManagerUtilsMock, 'getUserSessionUpdater').mockImplementationOnce(mockGetUserSessionUpdater);
+
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    const config = mockConfig({
+      transports: [transport],
+      sessionTracking: {
+        enabled: true,
+        persistent: false,
+      },
+    });
+
+    initializeFaro(config);
+
+    await transport.send([item]);
+
+    expect(mockGetUserSessionUpdater).not.toHaveBeenCalled();
   });
 });

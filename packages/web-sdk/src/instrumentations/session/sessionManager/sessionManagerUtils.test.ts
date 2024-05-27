@@ -1,16 +1,19 @@
-import { initializeFaro } from '@grafana/faro-core';
 import * as faroCore from '@grafana/faro-core';
+import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
+import { PersistentSessionsManager } from './PersistentSessionsManager';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import * as mockSessionManagerUtils from './sessionManagerUtils';
 import {
   addSessionMetadataToNextSession,
   createUserSessionObject,
+  getSessionManagerByConfig,
   getUserSessionUpdater,
   isUserSessionValid,
 } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
+import { VolatileSessionsManager } from './VolatileSessionManager';
 
 const fakeSystemTime = new Date('2023-01-01').getTime();
 const mockSessionId = '123';
@@ -300,5 +303,53 @@ describe('sessionManagerUtils', () => {
         },
       },
     });
+  });
+
+  it('forces userSessionUpdater to expand the current user session.', () => {
+    const mockOnSessionChange = jest.fn();
+
+    const config = mockConfig({
+      sessionTracking: {
+        enabled: true,
+        onSessionChange: mockOnSessionChange,
+      },
+    });
+
+    const faro = initializeFaro(config);
+
+    const mockIsUserSessionValid = jest.fn();
+    jest.spyOn(mockSessionManagerUtils, 'isUserSessionValid').mockImplementationOnce(() => {
+      mockIsUserSessionValid();
+      return true;
+    });
+
+    const mockFetchUserSession = jest.fn();
+    const mockStoreUserSession = jest.fn();
+
+    const updateSession = getUserSessionUpdater({
+      fetchUserSession: mockFetchUserSession,
+      storeUserSession: mockStoreUserSession,
+    });
+
+    const mockSetSession = jest.fn();
+    jest.spyOn(faro.api, 'setSession').mockImplementationOnce(mockSetSession);
+
+    updateSession({ forceSessionExtend: true });
+
+    expect(mockFetchUserSession).toHaveBeenCalledTimes(1);
+
+    expect(mockIsUserSessionValid).not.toHaveBeenCalled();
+
+    expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
+    expect(mockSetSession).toHaveBeenCalledTimes(1);
+    expect(mockOnSessionChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('Returns the configured session manager.', () => {
+    let SessionManager = getSessionManagerByConfig({ persistent: false /* default */ });
+    expect(new SessionManager()).toBeInstanceOf(VolatileSessionsManager);
+
+    SessionManager = getSessionManagerByConfig({ persistent: true });
+    expect(new SessionManager()).toBeInstanceOf(PersistentSessionsManager);
   });
 });
