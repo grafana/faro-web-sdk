@@ -4,6 +4,9 @@ import type { Metric } from 'web-vitals/attribution'
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 import type  { MeasurementEvent, PushMeasurementOptions } from '@grafana/faro-core'
 
+import { getItem, webStorageType } from '../../utils';
+import { NAVIGATION_ID_STORAGE_KEY } from '../performance'
+
 type Values = MeasurementEvent['values']
 type Context = Required<PushMeasurementOptions>['context']
 
@@ -145,10 +148,13 @@ export class WebVitalsWithAttributionInstrumentation extends BaseInstrumentation
   }
 
   private buildInitialContext(metric: Metric): Context {
+    const navigationEntryId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
+
     return {
       id: metric.id,
       rating: metric.rating,
       navigation_type: metric.navigationType,
+      navigation_entry_id: navigationEntryId,
     }
   }
 
