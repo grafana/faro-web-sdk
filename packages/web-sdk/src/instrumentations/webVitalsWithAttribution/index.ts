@@ -1,1 +1,0 @@
-export { WebVitalsWithAttributionInstrumentation } from './instrumentation'

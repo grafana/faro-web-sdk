@@ -1,10 +1,6 @@
 import type { MetricWithAttribution } from 'web-vitals/attribution'
 
-import { initializeFaro, MeasurementEvent, TransportItem } from '@grafana/faro-core';
-import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
-
-
-import { WebVitalsWithAttributionInstrumentation } from './instrumentation';
+import { WebVitalsWithAttribution } from './webVitalsWithAttribution';
 
 jest.mock('web-vitals/attribution', () => {
     type MetricName =  MetricWithAttribution['name'];
@@ -79,171 +75,159 @@ jest.mock('web-vitals/attribution', () => {
 
 describe('WebVitalsWithAttributionInstrumentation', () => {
     it('send cls metrics correctly', () => {
-        const transport = new MockTransport();
+        const pushMeasurement = jest.fn();
+        new WebVitalsWithAttribution(pushMeasurement).initialize();
 
-        initializeFaro(
-            mockConfig({
-                transports: [transport],
-                instrumentations: [new WebVitalsWithAttributionInstrumentation()],
-            })
-        );
-
-        const clsEvent = findTransportItemByMetricName(transport, 'cls');
-
-        expect(clsEvent).not.toBeUndefined()
-
-        expect(clsEvent.payload.values).toMatchObject({
+        const values = {
             cls: 0.1,
             largest_shift_value: 0.1,
             largest_shift_time: 0.1,
-        })
+            delta: 0.1,
+        };
 
-        expect(clsEvent.payload.context).toMatchObject({
+        const context = {
+            navigation_entry_id: 'unknown',
+            navigation_type: 'navigate',
+            id: 'id',
             largest_shift_target: 'target',
             load_state: 'loading',
             rating: 'good',
-        })
+        }
+
+        expect(pushMeasurement).toHaveBeenCalledWith({
+            type: 'web-vitals',
+            values,
+        }, { context })
     });
 
     it('send fcp metrics correctly', () => {
-        const transport = new MockTransport();
+        const pushMeasurement = jest.fn();
+        new WebVitalsWithAttribution(pushMeasurement).initialize();
 
-        initializeFaro(
-            mockConfig({
-                transports: [transport],
-                instrumentations: [new WebVitalsWithAttributionInstrumentation()],
-            })
-        );
-
-        const fcpEvent = findTransportItemByMetricName(transport, 'fcp');
-
-        expect(fcpEvent).not.toBeUndefined()
-
-        expect(fcpEvent.payload.values).toMatchObject({
+        const values = {
             fcp: 0.1,
+            delta: 0.1,
             first_byte_to_fcp: 0.1,
             time_to_first_byte: 0.1,
-        })
+        }
 
-        expect(fcpEvent.payload.context).toMatchObject({
+        const context = {
+            id: 'id',
+            navigation_entry_id: 'unknown',
+            navigation_type: 'navigate',
             rating: 'good',
             load_state: 'loading',
-        })
+        }
+
+        expect(pushMeasurement).toHaveBeenCalledWith({
+            type: 'web-vitals',
+            values,
+        }, { context })
     });
 
     it('send fid metrics correctly', () => {
-        const transport = new MockTransport();
+        const pushMeasurement = jest.fn();
+        new WebVitalsWithAttribution(pushMeasurement).initialize();
 
-        initializeFaro(
-            mockConfig({
-                transports: [transport],
-                instrumentations: [new WebVitalsWithAttributionInstrumentation()],
-            })
-        );
-
-        const fidEvent = findTransportItemByMetricName(transport, 'fid');
-
-        expect(fidEvent).not.toBeUndefined()
-
-        expect(fidEvent.payload.values).toMatchObject({
+        const values = {
             fid: 0.1,
+            delta: 0.1,
             event_time: 0.1,
-        })
+        }
 
-        expect(fidEvent.payload.context).toMatchObject({
+        const context = {
+            id: 'id',
+            navigation_entry_id: 'unknown',
+            navigation_type: 'navigate',
             rating: 'good',
             event_target: 'target',
             event_type: 'type',
             load_state: 'loading',
-        })
+        }
+
+        expect(pushMeasurement).toHaveBeenCalledWith({
+            type: 'web-vitals',
+            values,
+        }, { context })
     });
 
     it('send inp metrics correctly', () => {
-        const transport = new MockTransport();
+        const pushMeasurement = jest.fn();
+        new WebVitalsWithAttribution(pushMeasurement).initialize();
 
-        initializeFaro(
-            mockConfig({
-                transports: [transport],
-                instrumentations: [new WebVitalsWithAttributionInstrumentation()],
-            })
-        );
-
-        const inpEvent = findTransportItemByMetricName(transport, 'inp');
-
-        expect(inpEvent).not.toBeUndefined()
-
-        expect(inpEvent.payload.values).toMatchObject({
+        const values = {
             inp: 0.1,
+            delta: 0.1,
             interaction_time: 0.1,
-        })
+        }
 
-        expect(inpEvent.payload.context).toMatchObject({
+        const context = {
+            id: 'id',
+            navigation_entry_id: 'unknown',
+            navigation_type: 'navigate',
             rating: 'good',
             interaction_target: 'target',
             interaction_type: 'pointer',
             load_state: 'loading',
-        })
+        }
+
+        expect(pushMeasurement).toHaveBeenCalledWith({
+            type: 'web-vitals',
+            values,
+        }, { context })
     });
 
     it('send lcp metrics correctly', () => {
-        const transport = new MockTransport();
+        const pushMeasurement = jest.fn();
+        new WebVitalsWithAttribution(pushMeasurement).initialize();
 
-        initializeFaro(
-            mockConfig({
-                transports: [transport],
-                instrumentations: [new WebVitalsWithAttributionInstrumentation()],
-            })
-        );
-
-        const lcpEvent = findTransportItemByMetricName(transport, 'lcp');
-
-        expect(lcpEvent).not.toBeUndefined()
-
-        expect(lcpEvent.payload.values).toMatchObject({
+        const values = {
             lcp: 0.1,
+            delta: 0.1,
             element_render_delay: 0.1,
             resource_load_delay: 0.1,
             resource_load_duration: 0.1,
             time_to_first_byte: 0.1,
-        })
+        }
 
-        expect(lcpEvent.payload.context).toMatchObject({
+        const context = {
+            id: 'id',
+            navigation_entry_id: 'unknown',
+            navigation_type: 'navigate',
             rating: 'good',
             element: 'element',
-        })
+        }
+
+        expect(pushMeasurement).toHaveBeenCalledWith({
+            type: 'web-vitals',
+            values,
+        }, { context })
     });
 
     it('send ttfb metrics correctly', () => {
-        const transport = new MockTransport();
+        const pushMeasurement = jest.fn();
+        new WebVitalsWithAttribution(pushMeasurement).initialize();
 
-        initializeFaro(
-            mockConfig({
-                transports: [transport],
-                instrumentations: [new WebVitalsWithAttributionInstrumentation()],
-            })
-        );
-
-        const ttfbEvent = findTransportItemByMetricName(transport, 'ttfb');
-
-        expect(ttfbEvent).not.toBeUndefined()
-
-        expect(ttfbEvent.payload.values).toMatchObject({
+        const values = {
             ttfb: 0.1,
+            delta: 0.1,
+            cache_duration: 0.1,
             dns_duration: 0.1,
             connection_duration: 0.1,
             request_duration: 0.1,
             waiting_duration: 0.1,
-        })
+        }
 
-        expect(ttfbEvent.payload.context).toMatchObject({
+        const context = {
             rating: 'good',
-        })
-    });
+            id: 'id',
+            navigation_entry_id: 'unknown',
+            navigation_type: 'navigate',
+        }
 
-    function findTransportItemByMetricName(transport: MockTransport, name: string): TransportItem<MeasurementEvent> {
-        return transport.items.find(
-            (item) =>
-                (item as TransportItem<MeasurementEvent>).payload.values?.[name]
-        ) as TransportItem<MeasurementEvent>
-    }
+        expect(pushMeasurement).toHaveBeenCalledWith({
+            type: 'web-vitals',
+            values,
+        }, { context })
+    });
 });

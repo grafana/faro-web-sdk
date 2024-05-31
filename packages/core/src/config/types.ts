@@ -44,6 +44,7 @@ export interface Config<P = APIEvent> {
   eventDomain?: string;
 
   trackResources?: boolean;
+  trackWebVitalAttribution?: boolean;
 }
 
 export type Patterns = Array<string | RegExp>;

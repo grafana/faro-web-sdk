@@ -6,8 +6,7 @@ import {
   PerformanceInstrumentation,
   SessionInstrumentation,
   ViewInstrumentation,
-  WebVitalsInstrumentation,
-  WebVitalsWithAttributionInstrumentation,
+  WebVitalsInstrumentation
 } from '../instrumentations';
 
 import type { GetWebInstrumentationsOptions } from './types';
@@ -32,11 +31,7 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
     );
   }
 
-  if (options.captureWebVitalsAttribution === true) {
-    instrumentations.push(new WebVitalsWithAttributionInstrumentation());
-  } else {
-    instrumentations.push(new WebVitalsInstrumentation());
-  }
+  instrumentations.push(new WebVitalsInstrumentation());
 
   return instrumentations;
 }

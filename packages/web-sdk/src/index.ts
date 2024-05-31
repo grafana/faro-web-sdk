@@ -14,7 +14,6 @@ export {
   parseStacktrace,
   ViewInstrumentation,
   WebVitalsInstrumentation,
-  WebVitalsWithAttributionInstrumentation,
   SessionInstrumentation,
   PerformanceInstrumentation,
 } from './instrumentations';

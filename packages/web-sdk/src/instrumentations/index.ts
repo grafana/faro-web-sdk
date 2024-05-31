@@ -16,8 +16,6 @@ export { ViewInstrumentation } from './view';
 
 export { WebVitalsInstrumentation } from './webVitals';
 
-export { WebVitalsWithAttributionInstrumentation } from './webVitalsWithAttribution';
-
 export {
   PersistentSessionsManager,
   VolatileSessionsManager,

@@ -1,8 +1,7 @@
 import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB } from 'web-vitals/attribution'
 import type { Metric } from 'web-vitals/attribution'
 
-import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
-import type  { MeasurementEvent, PushMeasurementOptions } from '@grafana/faro-core'
+import type  { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '@grafana/faro-core'
 
 import { getItem, webStorageType } from '../../utils';
 import { NAVIGATION_ID_STORAGE_KEY } from '../performance'
@@ -36,12 +35,12 @@ const resourceLoadDuration = 'resource_load_duration';
 const timeToFirstByte = 'time_to_first_byte';
 const waitingDuration = 'waiting_duration';
 
-export class WebVitalsWithAttributionInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/faro-web-sdk:instrumentation-web-vitals-with-attribution'
-  readonly version = VERSION
+export class WebVitalsWithAttribution {
+  constructor(
+      private corePushMeasurement: MeasurementsAPI['pushMeasurement']
+  ) {}
 
   initialize(): void {
-    this.logDebug('Initializing');
     this.measureCLS()
     this.measureFCP()
     this.measureFID()
@@ -160,7 +159,7 @@ export class WebVitalsWithAttributionInstrumentation extends BaseInstrumentation
 
   private pushMeasurement(values: Values, context: Context): void {
     const type = 'web-vitals'
-    this.api.pushMeasurement({ type, values }, { context })
+    this.corePushMeasurement({ type, values }, { context })
   }
 
   private addIfPresent(source: Values | Context, key: string, metric?: number | string): void {

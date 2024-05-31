@@ -9,5 +9,4 @@ export interface GetWebInstrumentationsOptions {
   captureConsole?: boolean;
   captureConsoleDisabledLevels?: LogLevel[];
   enablePerformanceInstrumentation?: boolean;
-  captureWebVitalsAttribution?: boolean;
 }
