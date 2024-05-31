@@ -1,1 +1,1 @@
-export { WebVitalsInstrumentation } from './instrumentation'
+export { WebVitalsInstrumentation } from './instrumentation';
