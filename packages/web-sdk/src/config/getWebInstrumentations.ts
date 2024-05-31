@@ -14,6 +14,7 @@ import type { GetWebInstrumentationsOptions } from './types';
 export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {
   const instrumentations: Instrumentation[] = [
     new ErrorsInstrumentation(),
+    new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
     new ViewInstrumentation(),
   ];
@@ -30,8 +31,6 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
       })
     );
   }
-
-  instrumentations.push(new WebVitalsInstrumentation());
 
   return instrumentations;
 }
