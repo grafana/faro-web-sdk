@@ -20,7 +20,7 @@ jest.mock('web-vitals/attribution', () => {
             entries: [],
             navigationType: 'navigate',
             attribution,
-        };
+        } as MetricWithAttribution;
     }
 
     return {
@@ -28,18 +28,15 @@ jest.mock('web-vitals/attribution', () => {
             cb(createMetric('CLS', {
                 largestShiftValue: 0.1,
                 largestShiftTime: 0.1,
-                loadState: 'load',
                 largestShiftTarget: 'target',
-                largestShiftEntry: {
-                    value: 0.1,
-                },
+                loadState: 'loading',
             }));
         },
         onFCP: (cb: (metric: MetricWithAttribution) => void) => {
             cb(createMetric('FCP', {
                 firstByteToFCP: 0.1,
                 timeToFirstByte: 0.1,
-                loadState: 'load',
+                loadState: 'loading',
             }));
         },
         onFID: (cb: (metric: MetricWithAttribution) => void) => {
@@ -47,33 +44,34 @@ jest.mock('web-vitals/attribution', () => {
                 eventTime: 0.1,
                 eventTarget: 'target',
                 eventType: 'type',
-                loadState: 'load',
+                loadState: 'loading',
             }));
         },
         onLCP: (cb: (metric: MetricWithAttribution) => void) => {
             cb(createMetric('LCP', {
                 elementRenderDelay: 0.1,
                 resourceLoadDelay: 0.1,
-                resourceLoadTime: 0.1,
+                resourceLoadDuration: 0.1,
                 timeToFirstByte: 0.1,
                 element: 'element',
             }));
         },
         onTTFB: (cb: (metric: MetricWithAttribution) => void) => {
             cb(createMetric('TTFB', {
-                dnsTime: 0.1,
-                // intentionally removed to test when not present
-                // connectionTime: 0.1,
-                requestTime: 0.1,
-                waitingTime: 0.1,
+                dnsDuration: 0.1,
+                connectionDuration: 0.1,
+                requestDuration: 0.1,
+                waitingDuration: 0.1,
+                cacheDuration: 0.1,
             }));
         },
         onINP: (cb: (metric: MetricWithAttribution) => void) => {
             cb(createMetric('INP', {
                 eventTime: 0.1,
-                eventTarget: 'target',
-                eventType: 'type',
-                loadState: 'load',
+                interactionTarget: 'target',
+                interactionType: 'pointer',
+                loadState: 'loading',
+                interactionTime: 0.1,
             }));
         },
     };
@@ -98,12 +96,11 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
             cls: 0.1,
             largest_shift_value: 0.1,
             largest_shift_time: 0.1,
-            largest_shift_entry: 0.1,
         })
 
         expect(clsEvent.payload.context).toMatchObject({
             largest_shift_target: 'target',
-            load_state: 'load',
+            load_state: 'loading',
             rating: 'good',
         })
     });
@@ -130,7 +127,7 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
 
         expect(fcpEvent.payload.context).toMatchObject({
             rating: 'good',
-            load_state: 'load',
+            load_state: 'loading',
         })
     });
 
@@ -157,7 +154,7 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
             rating: 'good',
             event_target: 'target',
             event_type: 'type',
-            load_state: 'load',
+            load_state: 'loading',
         })
     });
 
@@ -177,14 +174,14 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
 
         expect(inpEvent.payload.values).toMatchObject({
             inp: 0.1,
-            event_time: 0.1,
+            interaction_time: 0.1,
         })
 
         expect(inpEvent.payload.context).toMatchObject({
             rating: 'good',
-            event_target: 'target',
-            event_type: 'type',
-            load_state: 'load',
+            interaction_target: 'target',
+            interaction_type: 'pointer',
+            load_state: 'loading',
         })
     });
 
@@ -206,7 +203,7 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
             lcp: 0.1,
             element_render_delay: 0.1,
             resource_load_delay: 0.1,
-            resource_load_time: 0.1,
+            resource_load_duration: 0.1,
             time_to_first_byte: 0.1,
         })
 
@@ -232,11 +229,10 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
 
         expect(ttfbEvent.payload.values).toMatchObject({
             ttfb: 0.1,
-            dns_time: 0.1,
-            // intentionally removed to test when not present
-            // connection_time: 0.1,
-            request_time: 0.1,
-            waiting_time: 0.1,
+            dns_duration: 0.1,
+            connection_duration: 0.1,
+            request_duration: 0.1,
+            waiting_duration: 0.1,
         })
 
         expect(ttfbEvent.payload.context).toMatchObject({

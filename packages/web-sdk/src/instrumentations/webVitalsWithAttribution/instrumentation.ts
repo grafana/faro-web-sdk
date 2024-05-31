@@ -7,24 +7,31 @@ import type  { MeasurementEvent, PushMeasurementOptions } from '@grafana/faro-co
 type Values = MeasurementEvent['values']
 type Context = Required<PushMeasurementOptions>['context']
 
-const connectionTime = 'connection_time';
-const dnsTime = 'dns_time';
+const cacheDuration = 'cache_duration';
+const connectionDuration = 'connection_duration';
+const dnsDuration = 'dns_duration';
 const element = 'element';
 const elementRenderDelay = 'element_render_delay';
 const eventTarget = 'event_target';
 const eventTime = 'event_time';
 const eventType = 'event_type';
 const firstByteToFCP = 'first_byte_to_fcp';
-const largestShiftEntry = 'largest_shift_entry';
+const inputDelay = 'input_delay';
+const interactionTarget = 'interaction_target';
+const interactionTime = 'interaction_time';
+const interactionType = 'interaction_type';
 const largestShiftTarget = 'largest_shift_target';
 const largestShiftTime = 'largest_shift_time';
 const largestShiftValue = 'largest_shift_value';
 const loadState = 'load_state';
-const requestTime = 'request_time';
+const nextPaintTime = 'next_paint_time';
+const presentationDelay = 'presentation_delay';
+const processingDuration = 'processing_duration';
+const requestDuration = 'request_duration';
 const resourceLoadDelay = 'resource_load_delay';
-const resourceLoadTime = 'resource_load_time';
+const resourceLoadDuration = 'resource_load_duration';
 const timeToFirstByte = 'time_to_first_byte';
-const waitingTime = 'waiting_time';
+const waitingDuration = 'waiting_duration';
 
 export class WebVitalsWithAttributionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-web-vitals-with-attribution'
@@ -43,7 +50,6 @@ export class WebVitalsWithAttributionInstrumentation extends BaseInstrumentation
   private measureCLS(): void {
     onCLS((metric) => {
       const values = this.buildInitialValues(metric)
-      this.addIfPresent(values, largestShiftEntry, metric.attribution.largestShiftEntry?.value)
       this.addIfPresent(values, largestShiftValue, metric.attribution.largestShiftValue)
       this.addIfPresent(values, largestShiftTime, metric.attribution.largestShiftTime)
 
@@ -85,12 +91,16 @@ export class WebVitalsWithAttributionInstrumentation extends BaseInstrumentation
   private measureINP(): void {
     onINP((metric) => {
       const values = this.buildInitialValues(metric)
-      this.addIfPresent(values, eventTime, metric.attribution.eventTime)
+      this.addIfPresent(values, interactionTime, metric.attribution.interactionTime)
+      this.addIfPresent(values, presentationDelay, metric.attribution.presentationDelay)
+      this.addIfPresent(values, inputDelay, metric.attribution.inputDelay)
+      this.addIfPresent(values, processingDuration, metric.attribution.processingDuration)
+      this.addIfPresent(values, nextPaintTime, metric.attribution.nextPaintTime)
 
       const context = this.buildInitialContext(metric)
-      this.addIfPresent(context, eventTarget, metric.attribution.eventTarget)
-      this.addIfPresent(context, eventType, metric.attribution.eventType)
       this.addIfPresent(context, loadState, metric.attribution.loadState)
+      this.addIfPresent(context, interactionTarget, metric.attribution.interactionTarget)
+      this.addIfPresent(context, interactionType, metric.attribution.interactionType)
 
       this.pushMeasurement(values, context)
     })
@@ -101,7 +111,7 @@ export class WebVitalsWithAttributionInstrumentation extends BaseInstrumentation
       const values = this.buildInitialValues(metric)
       this.addIfPresent(values, elementRenderDelay, metric.attribution.elementRenderDelay)
       this.addIfPresent(values, resourceLoadDelay, metric.attribution.resourceLoadDelay)
-      this.addIfPresent(values, resourceLoadTime, metric.attribution.resourceLoadTime)
+      this.addIfPresent(values, resourceLoadDuration, metric.attribution.resourceLoadDuration)
       this.addIfPresent(values, timeToFirstByte, metric.attribution.timeToFirstByte)
 
       const context = this.buildInitialContext(metric)
@@ -114,10 +124,11 @@ export class WebVitalsWithAttributionInstrumentation extends BaseInstrumentation
   private measureTTFB(): void {
     onTTFB((metric) => {
       const values = this.buildInitialValues(metric)
-      this.addIfPresent(values, dnsTime, metric.attribution.dnsTime)
-      this.addIfPresent(values, connectionTime, metric.attribution.connectionTime)
-      this.addIfPresent(values, requestTime, metric.attribution.requestTime)
-      this.addIfPresent(values, waitingTime, metric.attribution.waitingTime)
+      this.addIfPresent(values, dnsDuration, metric.attribution.dnsDuration)
+      this.addIfPresent(values, connectionDuration, metric.attribution.connectionDuration)
+      this.addIfPresent(values, requestDuration, metric.attribution.requestDuration)
+      this.addIfPresent(values, waitingDuration, metric.attribution.waitingDuration)
+      this.addIfPresent(values, cacheDuration, metric.attribution.cacheDuration)
 
       const context = this.buildInitialContext(metric)
 
@@ -127,11 +138,18 @@ export class WebVitalsWithAttributionInstrumentation extends BaseInstrumentation
 
   private buildInitialValues(metric: Metric): Values {
     const indicator = metric.name.toLowerCase()
-    return { [indicator]: metric.value }
+    return {
+      [indicator]: metric.value,
+      delta: metric.delta,
+    }
   }
 
   private buildInitialContext(metric: Metric): Context {
-    return { rating: metric.rating }
+    return {
+      id: metric.id,
+      rating: metric.rating,
+      navigation_type: metric.navigationType,
+    }
   }
 
   private pushMeasurement(values: Values, context: Context): void {
