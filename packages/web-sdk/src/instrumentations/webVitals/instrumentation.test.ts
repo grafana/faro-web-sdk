@@ -9,36 +9,36 @@ jest.mock('./webVitalsWithAttribution');
 jest.mock('./webVitalsBasic');
 
 describe('WebVitals Instrumentation', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-    it('load WebVitalsBasic by default', () => {
-        const transport = new MockTransport();
+  it('load WebVitalsBasic by default', () => {
+    const transport = new MockTransport();
 
-        initializeFaro(
-            mockConfig({
-                transports: [transport],
-                instrumentations: [new WebVitalsInstrumentation()],
-            })
-        );
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new WebVitalsInstrumentation()],
+      })
+    );
 
-        expect(WebVitalsBasic).toHaveBeenCalledTimes(1);
-        expect(WebVitalsWithAttribution).toHaveBeenCalledTimes(0);
-    });
+    expect(WebVitalsBasic).toHaveBeenCalledTimes(1);
+    expect(WebVitalsWithAttribution).toHaveBeenCalledTimes(0);
+  });
 
-    it('load WebVitalsWithAttribution when trackWebVitalAttribution is true', () => {
-        const transport = new MockTransport();
+  it('load WebVitalsWithAttribution when trackWebVitalAttribution is true', () => {
+    const transport = new MockTransport();
 
-        initializeFaro(
-            mockConfig({
-                trackWebVitalAttribution: true,
-                transports: [transport],
-                instrumentations: [new WebVitalsInstrumentation()],
-            })
-        );
+    initializeFaro(
+      mockConfig({
+        trackWebVitalAttribution: true,
+        transports: [transport],
+        instrumentations: [new WebVitalsInstrumentation()],
+      })
+    );
 
-        expect(WebVitalsBasic).toHaveBeenCalledTimes(0);
-        expect(WebVitalsWithAttribution).toHaveBeenCalledTimes(1);
-    });
+    expect(WebVitalsBasic).toHaveBeenCalledTimes(0);
+    expect(WebVitalsWithAttribution).toHaveBeenCalledTimes(1);
+  });
 });

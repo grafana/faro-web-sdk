@@ -4,8 +4,8 @@ import { WebVitalsBasic } from './webVitalsBasic';
 import { WebVitalsWithAttribution } from './webVitalsWithAttribution';
 
 export class WebVitalsInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/faro-web-sdk:instrumentation-web-vitals'
-  readonly version = VERSION
+  readonly name = '@grafana/faro-web-sdk:instrumentation-web-vitals';
+  readonly version = VERSION;
 
   initialize(): void {
     this.logDebug('Initializing');
@@ -15,8 +15,8 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
 
   private intializeWebVitalsInstrumentation() {
     if (this.config.trackWebVitalAttribution) {
-      return new WebVitalsWithAttribution(this.api.pushMeasurement)
+      return new WebVitalsWithAttribution(this.api.pushMeasurement);
     }
-    return new WebVitalsBasic(this.api.pushMeasurement)
+    return new WebVitalsBasic(this.api.pushMeasurement);
   }
 }

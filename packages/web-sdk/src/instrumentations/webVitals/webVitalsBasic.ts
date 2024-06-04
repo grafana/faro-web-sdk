@@ -12,9 +12,7 @@ export class WebVitalsBasic {
     ttfb: onTTFB,
   };
 
-  constructor(
-      private pushMeasurement: MeasurementsAPI['pushMeasurement']
-  ) {}
+  constructor(private pushMeasurement: MeasurementsAPI['pushMeasurement']) {}
 
   initialize(): void {
     Object.entries(WebVitalsBasic.mapping).forEach(([indicator, executor]) => {
