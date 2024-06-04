@@ -9,11 +9,11 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
 
   initialize(): void {
     this.logDebug('Initializing');
-    const webVitals = this.createWebVitals();
+    const webVitals = this.intializeWebVitalsInstrumentation();
     webVitals.initialize();
   }
 
-  private createWebVitals() {
+  private intializeWebVitalsInstrumentation() {
     if (this.config.trackWebVitalAttribution) {
       return new WebVitalsWithAttribution(this.api.pushMeasurement)
     }
