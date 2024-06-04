@@ -4,7 +4,7 @@ import * as webStorageModule from '../../utils/webStorage';
 import { webStorageType } from '../../utils/webStorage';
 
 import { getNavigationTimings } from './navigation';
-import { NAVIGATION_ID_STORAGE_KEY } from './performanceConstants';
+import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants';
 import * as performanceUtilsModule from './performanceUtils';
 import { createFaroNavigationTiming, createFaroResourceTiming } from './performanceUtils';
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';

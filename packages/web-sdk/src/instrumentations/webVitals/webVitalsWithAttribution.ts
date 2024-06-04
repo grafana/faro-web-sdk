@@ -4,7 +4,7 @@ import type { Metric } from 'web-vitals/attribution'
 import type  { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '@grafana/faro-core'
 
 import { getItem, webStorageType } from '../../utils';
-import { NAVIGATION_ID_STORAGE_KEY } from '../performance'
+import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants'
 
 type Values = MeasurementEvent['values']
 type Context = Required<PushMeasurementOptions>['context']
