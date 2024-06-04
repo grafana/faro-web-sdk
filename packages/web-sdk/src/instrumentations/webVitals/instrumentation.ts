@@ -1,4 +1,4 @@
-import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
 import { WebVitalsBasic } from './webVitalsBasic';
 import { WebVitalsWithAttribution } from './webVitalsWithAttribution';
@@ -14,7 +14,7 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
   }
 
   private createWebVitals() {
-    if (faro.config.trackWebVitalAttribution) {
+    if (this.config.trackWebVitalAttribution) {
       return new WebVitalsWithAttribution(this.api.pushMeasurement)
     }
     return new WebVitalsBasic(this.api.pushMeasurement)
