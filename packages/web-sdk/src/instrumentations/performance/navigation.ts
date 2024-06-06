@@ -24,6 +24,16 @@ export function getNavigationTimings(
       return;
     }
 
+    let trace_context = {};
+    for (const { name, description, duration } of navigationEntryRaw.toJSON()) {
+      if ("traceparent" === name) {
+        const [version, traceId, spanId, sampled] = description.split("-");
+
+        trace_context.trace_id = traceId;
+        trace_context.span_id = spanId;
+      }
+    }
+
     const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
 
     const faroNavigationEntry: FaroNavigationItem = {
