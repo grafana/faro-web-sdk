@@ -24,13 +24,13 @@ export function getNavigationTimings(
       return;
     }
 
-    let trace_context = {};
+    let spanContext = {};
     for (const { name, description, duration } of navigationEntryRaw.toJSON()) {
       if ("traceparent" === name) {
         const [version, traceId, spanId, sampled] = description.split("-");
 
-        trace_context.trace_id = traceId;
-        trace_context.span_id = spanId;
+        spanContext.trace_id = traceId;
+        spanContext.span_id = spanId;
       }
     }
 
@@ -44,7 +44,7 @@ export function getNavigationTimings(
 
     setItem(NAVIGATION_ID_STORAGE_KEY, faroNavigationEntry.faroNavigationId, webStorageType.session);
 
-    pushEvent('faro.performance.navigation', faroNavigationEntry);
+    pushEvent('faro.performance.navigation', faroNavigationEntry, undefined, { spanContext });
 
     faroNavigationEntryResolve(faroNavigationEntry);
   });
