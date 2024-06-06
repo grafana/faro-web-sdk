@@ -1,5 +1,5 @@
 import { genShortID } from '@grafana/faro-core';
-import type { EventsAPI } from '@grafana/faro-core';
+import type { EventsAPI, PushEventOptions } from '@grafana/faro-core';
 
 import { getItem, setItem, webStorageType } from '../../utils';
 import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants';
@@ -7,6 +7,8 @@ import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants';
 import { NAVIGATION_ENTRY } from './performanceConstants';
 import { createFaroNavigationTiming, entryUrlIsIgnored } from './performanceUtils';
 import type { FaroNavigationItem } from './types';
+
+type SpanContext = PushEventOptions['spanContext']
 
 export function getNavigationTimings(
   pushEvent: EventsAPI['pushEvent'],
@@ -24,20 +26,26 @@ export function getNavigationTimings(
       return;
     }
 
-    let spanContext = {};
-    for (const { name, description, duration } of navigationEntryRaw.toJSON()) {
+    const navEntryJson = navigationEntryRaw.toJSON();
+
+    let spanContext: Pick<SpanContext, 'traceId' | 'spanId'> = {
+      traceId: '',
+      spanId: '',
+    };
+
+    for (const { name, description } of navEntryJson) {
       if ("traceparent" === name) {
         const [version, traceId, spanId, sampled] = description.split("-");
 
-        spanContext.trace_id = traceId;
-        spanContext.span_id = spanId;
+        spanContext.traceId = traceId;
+        spanContext.spanId = spanId;
       }
     }
 
     const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
 
     const faroNavigationEntry: FaroNavigationItem = {
-      ...createFaroNavigationTiming(navigationEntryRaw.toJSON()),
+      ...createFaroNavigationTiming(navEntryJson),
       faroNavigationId: genShortID(),
       faroPreviousNavigationId,
     };
