@@ -11,8 +11,8 @@ type Context = Required<PushMeasurementOptions>['context'];
 
 // duplicate keys saved in variables to save bundle size
 // refs: https://github.com/grafana/faro-web-sdk/pull/595#discussion_r1615833968
-const loadState = 'load_state';
-const timeToFirstByte = 'time_to_first_byte';
+const loadStateKey = 'load_state';
+const timeToFirstByteKey = 'time_to_first_byte';
 
 export class WebVitalsWithAttribution {
   constructor(private corePushMeasurement: MeasurementsAPI['pushMeasurement']) {}
@@ -28,13 +28,15 @@ export class WebVitalsWithAttribution {
 
   private measureCLS(): void {
     onCLS((metric) => {
+      const { loadState, largestShiftValue, largestShiftTime, largestShiftTarget } = metric.attribution;
+
       const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'largest_shift_value', metric.attribution.largestShiftValue);
-      this.addIfPresent(values, 'largest_shift_time', metric.attribution.largestShiftTime);
+      this.addIfPresent(values, 'largest_shift_value', largestShiftValue);
+      this.addIfPresent(values, 'largest_shift_time', largestShiftTime);
 
       const context = this.buildInitialContext(metric);
-      this.addIfPresent(context, loadState, metric.attribution.loadState);
-      this.addIfPresent(context, 'largest_shift_target', metric.attribution.largestShiftTarget);
+      this.addIfPresent(context, loadStateKey, loadState);
+      this.addIfPresent(context, 'largest_shift_target', largestShiftTarget);
 
       this.pushMeasurement(values, context);
     });
@@ -42,12 +44,14 @@ export class WebVitalsWithAttribution {
 
   private measureFCP(): void {
     onFCP((metric) => {
+      const { firstByteToFCP, timeToFirstByte, loadState } = metric.attribution;
+
       const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'first_byte_to_fcp', metric.attribution.firstByteToFCP);
-      this.addIfPresent(values, timeToFirstByte, metric.attribution.timeToFirstByte);
+      this.addIfPresent(values, 'first_byte_to_fcp', firstByteToFCP);
+      this.addIfPresent(values, timeToFirstByteKey, timeToFirstByte);
 
       const context = this.buildInitialContext(metric);
-      this.addIfPresent(context, loadState, metric.attribution.loadState);
+      this.addIfPresent(context, loadStateKey, loadState);
 
       this.pushMeasurement(values, context);
     });
@@ -55,13 +59,15 @@ export class WebVitalsWithAttribution {
 
   private measureFID(): void {
     onFID((metric) => {
+      const { eventTime, eventTarget, eventType, loadState } = metric.attribution;
+
       const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'event_time', metric.attribution.eventTime);
+      this.addIfPresent(values, 'event_time', eventTime);
 
       const context = this.buildInitialContext(metric);
-      this.addIfPresent(context, 'event_target', metric.attribution.eventTarget);
-      this.addIfPresent(context, 'event_type', metric.attribution.eventType);
-      this.addIfPresent(context, loadState, metric.attribution.loadState);
+      this.addIfPresent(context, 'event_target', eventTarget);
+      this.addIfPresent(context, 'event_type', eventType);
+      this.addIfPresent(context, loadStateKey, loadState);
 
       this.pushMeasurement(values, context);
     });
@@ -69,17 +75,28 @@ export class WebVitalsWithAttribution {
 
   private measureINP(): void {
     onINP((metric) => {
+      const {
+        interactionTime,
+        presentationDelay,
+        inputDelay,
+        processingDuration,
+        nextPaintTime,
+        loadState,
+        interactionTarget,
+        interactionType,
+      } = metric.attribution;
+
       const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'interaction_time', metric.attribution.interactionTime);
-      this.addIfPresent(values, 'presentation_delay', metric.attribution.presentationDelay);
-      this.addIfPresent(values, 'input_delay', metric.attribution.inputDelay);
-      this.addIfPresent(values, 'processing_duration', metric.attribution.processingDuration);
-      this.addIfPresent(values, 'next_paint_time', metric.attribution.nextPaintTime);
+      this.addIfPresent(values, 'interaction_time', interactionTime);
+      this.addIfPresent(values, 'presentation_delay', presentationDelay);
+      this.addIfPresent(values, 'input_delay', inputDelay);
+      this.addIfPresent(values, 'processing_duration', processingDuration);
+      this.addIfPresent(values, 'next_paint_time', nextPaintTime);
 
       const context = this.buildInitialContext(metric);
-      this.addIfPresent(context, loadState, metric.attribution.loadState);
-      this.addIfPresent(context, 'interaction_target', metric.attribution.interactionTarget);
-      this.addIfPresent(context, 'interaction_type', metric.attribution.interactionType);
+      this.addIfPresent(context, loadStateKey, loadState);
+      this.addIfPresent(context, 'interaction_target', interactionTarget);
+      this.addIfPresent(context, 'interaction_type', interactionType);
 
       this.pushMeasurement(values, context);
     });
@@ -87,14 +104,17 @@ export class WebVitalsWithAttribution {
 
   private measureLCP(): void {
     onLCP((metric) => {
+      const { elementRenderDelay, resourceLoadDelay, resourceLoadDuration, timeToFirstByte, element } =
+        metric.attribution;
+
       const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'element_render_delay', metric.attribution.elementRenderDelay);
-      this.addIfPresent(values, 'resource_load_delay', metric.attribution.resourceLoadDelay);
-      this.addIfPresent(values, 'resource_load_duration', metric.attribution.resourceLoadDuration);
-      this.addIfPresent(values, timeToFirstByte, metric.attribution.timeToFirstByte);
+      this.addIfPresent(values, 'element_render_delay', elementRenderDelay);
+      this.addIfPresent(values, 'resource_load_delay', resourceLoadDelay);
+      this.addIfPresent(values, 'resource_load_duration', resourceLoadDuration);
+      this.addIfPresent(values, timeToFirstByteKey, timeToFirstByte);
 
       const context = this.buildInitialContext(metric);
-      this.addIfPresent(context, 'element', metric.attribution.element);
+      this.addIfPresent(context, 'element', element);
 
       this.pushMeasurement(values, context);
     });
@@ -102,12 +122,14 @@ export class WebVitalsWithAttribution {
 
   private measureTTFB(): void {
     onTTFB((metric) => {
+      const { dnsDuration, connectionDuration, requestDuration, waitingDuration, cacheDuration } = metric.attribution;
+
       const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'dns_duration', metric.attribution.dnsDuration);
-      this.addIfPresent(values, 'connection_duration', metric.attribution.connectionDuration);
-      this.addIfPresent(values, 'request_duration', metric.attribution.requestDuration);
-      this.addIfPresent(values, 'waiting_duration', metric.attribution.waitingDuration);
-      this.addIfPresent(values, 'cache_duration', metric.attribution.cacheDuration);
+      this.addIfPresent(values, 'dns_duration', dnsDuration);
+      this.addIfPresent(values, 'connection_duration', connectionDuration);
+      this.addIfPresent(values, 'request_duration', requestDuration);
+      this.addIfPresent(values, 'waiting_duration', waitingDuration);
+      this.addIfPresent(values, 'cache_duration', cacheDuration);
 
       const context = this.buildInitialContext(metric);
 
