@@ -33,13 +33,18 @@ export function getNavigationTimings(
       spanId: '',
     };
 
-    for (const { name, description } of navEntryJson) {
-      if ("traceparent" === name) {
-        const [version, traceId, spanId, sampled] = description.split("-");
-
-        spanContext.traceId = traceId;
-        spanContext.spanId = spanId;
-      }
+    if ('serverTiming' in navEntryJson) {
+        const serverTiming = navEntryJson.serverTiming;
+        if (serverTiming.length > 0) {
+          for (let i = 0; i < serverTiming.length; i++) {
+            if (serverTiming[i][0] === 'traceparent') {
+              const [version, traceId, spanId, sampled] = serverTiming[i][1].split('-');
+              spanContext.traceId = traceId;
+              spanContext.spanId = spanId;
+              break;
+            }
+          }
+        }
     }
 
     const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
