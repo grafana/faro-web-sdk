@@ -1,5 +1,18 @@
-import { BaseTransport, createPromiseBuffer, getTransportBody, noop, PromiseBuffer, VERSION } from '@grafana/faro-core';
-import type { Patterns, TransportItem } from '@grafana/faro-core';
+import {
+  BaseExtension,
+  BaseTransport,
+  createPromiseBuffer,
+  getTransportBody,
+  noop,
+  PromiseBuffer,
+  VERSION,
+} from '@grafana/faro-core';
+import type { Config, Patterns, TransportItem } from '@grafana/faro-core';
+
+import {
+  getSessionManagerByConfig,
+  getUserSessionUpdater,
+} from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 
 import type { FetchTransportOptions } from './types';
 
@@ -9,6 +22,7 @@ const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
 
 const BEACON_BODY_SIZE_LIMIT = 60000;
 const TOO_MANY_REQUESTS = 429;
+const ACCEPTED = 202;
 
 export class FetchTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-fetch';
@@ -65,14 +79,22 @@ export class FetchTransport extends BaseTransport {
           keepalive: body.length <= BEACON_BODY_SIZE_LIMIT,
           ...(restOfRequestOptions ?? {}),
         })
-          .then((response) => {
+          .then(async (response) => {
+            if (response.status === ACCEPTED) {
+              const sessionExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
+
+              if (sessionExpired) {
+                this.extendFaroSession(this.config, this.logDebug);
+              }
+            }
+
             if (response.status === TOO_MANY_REQUESTS) {
               this.disabledUntil = this.getRetryAfterDate(response);
               this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
             }
+
             // read the body so the connection can be closed
             response.text().catch(noop);
-
             return response;
           })
           .catch((err) => {
@@ -111,5 +133,21 @@ export class FetchTransport extends BaseTransport {
     }
 
     return new Date(now + this.rateLimitBackoffMs);
+  }
+
+  private extendFaroSession(config: Config, logDebug: BaseExtension['logDebug']) {
+    const SessionExpiredString = `Session expired`;
+
+    const sessionTrackingConfig = config.sessionTracking;
+
+    if (sessionTrackingConfig?.enabled) {
+      const { fetchUserSession, storeUserSession } = getSessionManagerByConfig(sessionTrackingConfig);
+
+      getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
+
+      logDebug(`${SessionExpiredString} created new session.`);
+    } else {
+      logDebug(`${SessionExpiredString}.`);
+    }
   }
 }

@@ -14,6 +14,7 @@ export type {
   StacktraceParser,
 } from './exceptions';
 
+export { defaultLogArgsSerializer } from './logs';
 export type { LogContext, LogEvent, LogArgsSerializer, LogsAPI, PushLogOptions } from './logs';
 
 export type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from './measurements';

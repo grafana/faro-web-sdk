@@ -1,4 +1,4 @@
-export { defaultExceptionType } from './api';
+export { defaultExceptionType, defaultLogArgsSerializer } from './api';
 export type {
   API,
   APIEvent,
@@ -9,6 +9,7 @@ export type {
   ExceptionStackFrame,
   ExceptionsAPI,
   ExtendedError,
+  LogArgsSerializer,
   LogContext,
   LogEvent,
   LogsAPI,

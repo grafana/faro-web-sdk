@@ -1,10 +1,12 @@
 import { dateNow, faro, genShortID } from '@grafana/faro-core';
+import type { Config } from '@grafana/faro-core';
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
 
+import { PersistentSessionsManager, VolatileSessionsManager } from '.';
 import { isSampled } from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
-import type { FaroUserSession } from './types';
+import type { FaroUserSession, SessionManager } from './types';
 
 type CreateUserSessionObjectParams = {
   sessionId?: string;
@@ -56,8 +58,13 @@ type GetUserSessionUpdaterParams = {
   fetchUserSession: () => FaroUserSession | null;
 };
 
-export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: GetUserSessionUpdaterParams): () => void {
-  return function updateSession(): void {
+type UpdateSessionParams = { forceSessionExtend: boolean };
+
+export function getUserSessionUpdater({
+  fetchUserSession,
+  storeUserSession,
+}: GetUserSessionUpdaterParams): (options?: UpdateSessionParams) => void {
+  return function updateSession({ forceSessionExtend } = { forceSessionExtend: false }): void {
     if (!fetchUserSession || !storeUserSession) {
       return;
     }
@@ -71,7 +78,7 @@ export function getUserSessionUpdater({ fetchUserSession, storeUserSession }: Ge
 
     const sessionFromStorage = fetchUserSession();
 
-    if (isUserSessionValid(sessionFromStorage)) {
+    if (forceSessionExtend === false && isUserSessionValid(sessionFromStorage)) {
       storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
     } else {
       let newSession = addSessionMetadataToNextSession(
@@ -102,4 +109,8 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
   };
 
   return sessionWithMeta;
+}
+
+export function getSessionManagerByConfig(sessionTrackingConfig: Config['sessionTracking']): SessionManager {
+  return sessionTrackingConfig?.persistent ? PersistentSessionsManager : VolatileSessionsManager;
 }

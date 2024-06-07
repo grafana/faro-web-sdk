@@ -39,4 +39,8 @@ module.exports = {
       },
     ],
   },
+  parserOptions: {
+    project: 'tsconfig.base.json',
+    tsconfigRootDir: __dirname,
+  },
 };

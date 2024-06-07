@@ -2,9 +2,16 @@
 
 ## Next
 
-- Feature (`@grafana/faro-core`): sourcemap uploads - add `bundleId` to the `MetaApp` `Meta` object
+- Enhancement (`@grafana/faro-web-sdk`): Auto extend a session if the Faro receiver indicates that a
+  session is invalid (#591).
+
+## 1.7.3
+
+- Feature (`@grafana/faro-core`): source map uploads - add `bundleId` to the `MetaApp` `Meta` object
   (#476).
 - Feature (`@grafana/faro-web-sdk`): track window dimensions via the `browser meta` (#594).
+- Feature (`@grafana/faro-web-sdk`): If `logArgsSerializer` is set in the config
+  of `initializeFaro`, it will be forwarded to the core (#589).
 
 ## 1.7.2
 

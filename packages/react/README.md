@@ -308,7 +308,7 @@ const pushErrorOptions: PushErrorOptions = {
 </FaroErrorBoundary>;
 ```
 
-## React erver side rendering support
+## React server side rendering support
 
 Follow this guide to learn how to initialize your Faro instrumentation to support React Server Side
 Rendering (SSR) for:

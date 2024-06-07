@@ -7,6 +7,7 @@ import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, defaultLogLevel, getCurrentTimestamp, isNull } from '../../utils';
 import type { TracesAPI } from '../traces';
 
+import { defaultLogArgsSerializer } from './const';
 import type { LogEvent, LogsAPI } from './types';
 
 export function initializeLogsAPI(
@@ -21,18 +22,7 @@ export function initializeLogsAPI(
 
   let lastPayload: Pick<LogEvent, 'message' | 'level' | 'context'> | null = null;
 
-  const logArgsSerializer =
-    config.logArgsSerializer ??
-    ((args) =>
-      args
-        .map((arg) => {
-          try {
-            return String(arg);
-          } catch (err) {
-            return '';
-          }
-        })
-        .join(' '));
+  const logArgsSerializer = config.logArgsSerializer ?? defaultLogArgsSerializer;
 
   const pushLog: LogsAPI['pushLog'] = (args, { context, level, skipDedupe, spanContext } = {}) => {
     try {
