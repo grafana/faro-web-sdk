@@ -4,7 +4,7 @@
 
 - Enhancement (`@grafana/faro-web-sdk`): Auto extend a session if the Faro receiver indicates that a
   session is invalid (#591).
-- Enhancement (`@grafana/faro-web-sdk`): track `web vital` attribution (#595).
+- Feature (`@grafana/faro-web-sdk`): track `web vital` attribution (#595).
 
 ## 1.7.3
 
