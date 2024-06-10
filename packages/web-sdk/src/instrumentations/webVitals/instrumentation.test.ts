@@ -32,7 +32,7 @@ describe('WebVitals Instrumentation', () => {
 
     initializeFaro(
       mockConfig({
-        trackWebVitalAttribution: true,
+        trackWebVitalsAttribution: true,
         transports: [transport],
         instrumentations: [new WebVitalsInstrumentation()],
       })

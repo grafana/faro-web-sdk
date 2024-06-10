@@ -89,7 +89,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     user: browserConfig.user,
     view: browserConfig.view ?? defaultViewMeta,
     trackResources: browserConfig.trackResources,
-    trackWebVitalAttribution: browserConfig.trackWebVitalAttribution,
+    trackWebVitalsAttribution: browserConfig.trackWebVitalsAttribution,
   };
 
   return config;
