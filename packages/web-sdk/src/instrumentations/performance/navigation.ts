@@ -2,8 +2,9 @@ import { genShortID } from '@grafana/faro-core';
 import type { EventsAPI } from '@grafana/faro-core';
 
 import { getItem, setItem, webStorageType } from '../../utils';
+import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants';
 
-import { NAVIGATION_ENTRY, NAVIGATION_ID_STORAGE_KEY } from './performanceConstants';
+import { NAVIGATION_ENTRY } from './performanceConstants';
 import { createFaroNavigationTiming, entryUrlIsIgnored } from './performanceUtils';
 import type { FaroNavigationItem } from './types';
 

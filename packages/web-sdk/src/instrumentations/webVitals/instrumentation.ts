@@ -1,33 +1,22 @@
-import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB } from 'web-vitals';
-
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
+
+import { WebVitalsBasic } from './webVitalsBasic';
+import { WebVitalsWithAttribution } from './webVitalsWithAttribution';
 
 export class WebVitalsInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-web-vitals';
   readonly version = VERSION;
 
-  static mapping = {
-    cls: onCLS,
-    fcp: onFCP,
-    fid: onFID,
-    inp: onINP,
-    lcp: onLCP,
-    ttfb: onTTFB,
-  };
-
   initialize(): void {
     this.logDebug('Initializing');
+    const webVitals = this.intializeWebVitalsInstrumentation();
+    webVitals.initialize();
+  }
 
-    Object.entries(WebVitalsInstrumentation.mapping).forEach(([indicator, executor]) => {
-      executor((metric) => {
-        this.api.pushMeasurement({
-          type: 'web-vitals',
-
-          values: {
-            [indicator]: metric.value,
-          },
-        });
-      });
-    });
+  private intializeWebVitalsInstrumentation() {
+    if (this.config.trackWebVitalsAttribution) {
+      return new WebVitalsWithAttribution(this.api.pushMeasurement);
+    }
+    return new WebVitalsBasic(this.api.pushMeasurement);
   }
 }

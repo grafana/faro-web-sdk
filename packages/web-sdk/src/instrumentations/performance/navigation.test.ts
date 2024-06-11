@@ -2,9 +2,9 @@ import * as faroCoreModule from '@grafana/faro-core';
 
 import * as webStorageModule from '../../utils/webStorage';
 import { webStorageType } from '../../utils/webStorage';
+import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants';
 
 import { getNavigationTimings } from './navigation';
-import { NAVIGATION_ID_STORAGE_KEY } from './performanceConstants';
 import * as performanceUtilsModule from './performanceUtils';
 import { createFaroNavigationTiming, createFaroResourceTiming } from './performanceUtils';
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
