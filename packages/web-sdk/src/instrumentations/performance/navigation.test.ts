@@ -86,7 +86,7 @@ describe('Navigation observer', () => {
         faroNavigationId: mockNavigationId,
         faroPreviousNavigationId: 'unknown',
       },
-      expect.anything(),
+      undefined,
       {
         spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' },
       }
@@ -103,7 +103,7 @@ describe('Navigation observer', () => {
     getNavigationTimings(mockPushEvent, ['']);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
-    expect(mockPushEvent).toHaveBeenNthCalledWith(1, expect.anything(), expect.anything(), expect.anything(), {
+    expect(mockPushEvent).toHaveBeenNthCalledWith(1, expect.anything(), expect.anything(), undefined, {
       spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' },
     });
   });
@@ -121,12 +121,19 @@ describe('Navigation observer', () => {
     getNavigationTimings(mockPushEvent, ['']);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
-    expect(mockPushEvent).toHaveBeenCalledWith('faro.performance.navigation', {
-      ...createFaroResourceTiming(performanceNavigationEntry),
-      ...createFaroNavigationTiming(performanceNavigationEntry),
-      faroNavigationId: mockNewNavigationId,
-      faroPreviousNavigationId: mockPreviousNavigationId,
-    });
+    expect(mockPushEvent).toHaveBeenCalledWith(
+      'faro.performance.navigation',
+      {
+        ...createFaroResourceTiming(performanceNavigationEntry),
+        ...createFaroNavigationTiming(performanceNavigationEntry),
+        faroNavigationId: mockNewNavigationId,
+        faroPreviousNavigationId: mockPreviousNavigationId,
+      },
+      undefined,
+      {
+        spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' },
+      }
+    );
   });
 
   it('Stores navigationId in sessionStorage', () => {
