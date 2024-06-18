@@ -1,5 +1,6 @@
-import type { RequestHandler } from '../utils';
 import { trace } from '@opentelemetry/api';
+
+import type { RequestHandler } from '../utils';
 
 export const serverTimingMiddleware: RequestHandler = async (req, res, next) => {
   const span = trace.getActiveSpan();
