@@ -1,7 +1,7 @@
 export { initializeAPI } from './initialize';
 export type { API, APIEvent } from './types';
 
-export type { EventAttributes, EventEvent, EventsAPI } from './events';
+export type { EventAttributes, EventEvent, EventsAPI, PushEventOptions } from './events';
 
 export { defaultExceptionType } from './exceptions';
 export type {
