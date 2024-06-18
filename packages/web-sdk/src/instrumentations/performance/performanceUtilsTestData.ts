@@ -26,7 +26,7 @@ export const performanceNavigationEntry = {
     {
       name: 'traceparent',
       duration: 0,
-      description: '00-1234-5678-01',
+      description: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
     },
   ],
   unloadEventStart: 0,
@@ -68,7 +68,7 @@ export const performanceResourceEntry = {
     {
       name: 'traceparent',
       duration: 0,
-      description: '00-1234-5678-01',
+      description: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
     },
     {
       name: 'foo',

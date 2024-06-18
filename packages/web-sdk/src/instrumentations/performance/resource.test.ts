@@ -78,7 +78,7 @@ describe('Resource observer', () => {
     expect(mockPushEvent).not.toHaveBeenCalled();
   });
 
-  it('Builds entry for first navigation', () => {
+  it('Builds entry for first resource', () => {
     const mockPushEvent = jest.fn();
     jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
 
