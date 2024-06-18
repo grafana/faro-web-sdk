@@ -8,7 +8,7 @@ import { NAVIGATION_ENTRY } from './performanceConstants';
 import { createFaroNavigationTiming, entryUrlIsIgnored } from './performanceUtils';
 import type { FaroNavigationItem } from './types';
 
-type SpanContext = PushEventOptions['spanContext']
+type SpanContext = PushEventOptions['spanContext'];
 
 export function getNavigationTimings(
   pushEvent: EventsAPI['pushEvent'],
@@ -18,6 +18,8 @@ export function getNavigationTimings(
   const faroNavigationEntryPromise = new Promise<FaroNavigationItem>((resolve) => {
     faroNavigationEntryResolve = resolve;
   });
+
+  const w3cTraceparentFormat = /^00-[a-f0-9]{32}-[a-f0-9]{16}-[0-9]{2}$/;
 
   const observer = new PerformanceObserver((observedEntries) => {
     const [navigationEntryRaw] = observedEntries.getEntries();
@@ -34,9 +36,13 @@ export function getNavigationTimings(
     const { serverTiming = [] }: { serverTiming: PerformanceServerTiming[] } = navEntryJson;
     for (const serverEntry of serverTiming) {
       if (serverEntry.name === 'traceparent') {
-        const [, traceId, spanId,] = serverEntry.description.split('-');
+        if (!w3cTraceparentFormat.test(serverEntry.description)) {
+          continue;
+        }
+
+        const [, traceId, spanId] = serverEntry.description.split('-');
         if (traceId != null && spanId != null) {
-          spanContext = {traceId, spanId};
+          spanContext = { traceId, spanId };
         }
 
         break;

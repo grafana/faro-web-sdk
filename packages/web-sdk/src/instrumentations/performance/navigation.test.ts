@@ -78,12 +78,19 @@ describe('Navigation observer', () => {
     getNavigationTimings(mockPushEvent, ['']);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
-    expect(mockPushEvent).toHaveBeenCalledWith('faro.performance.navigation', {
-      ...createFaroResourceTiming(performanceNavigationEntry),
-      ...createFaroNavigationTiming(performanceNavigationEntry),
-      faroNavigationId: mockNavigationId,
-      faroPreviousNavigationId: 'unknown',
-    });
+    expect(mockPushEvent).toHaveBeenCalledWith(
+      'faro.performance.navigation',
+      {
+        ...createFaroResourceTiming(performanceNavigationEntry),
+        ...createFaroNavigationTiming(performanceNavigationEntry),
+        faroNavigationId: mockNavigationId,
+        faroPreviousNavigationId: 'unknown',
+      },
+      expect.anything(),
+      {
+        spanContext: { traceId: '1234', spanId: '5678' },
+      }
+    );
   });
 
   it('Captures Server-Timings for w3c trace context', () => {
@@ -96,14 +103,9 @@ describe('Navigation observer', () => {
     getNavigationTimings(mockPushEvent, ['']);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
-    expect(mockPushEvent).toHaveBeenNthCalledWith(1,
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        {
-          spanContext: { traceId: '1234', spanId: '5678' }
-        }
-    );
+    expect(mockPushEvent).toHaveBeenNthCalledWith(1, expect.anything(), expect.anything(), expect.anything(), {
+      spanContext: { traceId: '1234', spanId: '5678' },
+    });
   });
 
   it('Builds entry for subsequent navigation', () => {
