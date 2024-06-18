@@ -5,7 +5,7 @@ import { getItem, setItem, webStorageType } from '../../utils';
 import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants';
 
 import { NAVIGATION_ENTRY } from './performanceConstants';
-import { createFaroNavigationTiming, entryUrlIsIgnored } from './performanceUtils';
+import { createFaroNavigationTiming, entryUrlIsIgnored, getSpanContextFromServerTiming } from './performanceUtils';
 import type { FaroNavigationItem } from './types';
 
 type SpanContext = PushEventOptions['spanContext'];
@@ -19,8 +19,6 @@ export function getNavigationTimings(
     faroNavigationEntryResolve = resolve;
   });
 
-  const w3cTraceparentFormat = /^00-[a-f0-9]{32}-[a-f0-9]{16}-[0-9]{2}$/;
-
   const observer = new PerformanceObserver((observedEntries) => {
     const [navigationEntryRaw] = observedEntries.getEntries();
 
@@ -30,24 +28,7 @@ export function getNavigationTimings(
 
     const navEntryJson = navigationEntryRaw.toJSON();
 
-    let spanContext: SpanContext = undefined;
-
-    // Extract traceparent from serverTiming, if present
-    const { serverTiming = [] }: { serverTiming: PerformanceServerTiming[] } = navEntryJson;
-    for (const serverEntry of serverTiming) {
-      if (serverEntry.name === 'traceparent') {
-        if (!w3cTraceparentFormat.test(serverEntry.description)) {
-          continue;
-        }
-
-        const [, traceId, spanId] = serverEntry.description.split('-');
-        if (traceId != null && spanId != null) {
-          spanContext = { traceId, spanId };
-        }
-
-        break;
-      }
-    }
+    let spanContext: SpanContext = getSpanContextFromServerTiming(navEntryJson?.serverTiming);
 
     const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
 

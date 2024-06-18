@@ -66,6 +66,11 @@ export const performanceResourceEntry = {
   decodedBodySize: 10526,
   serverTiming: [
     {
+      name: 'traceparent',
+      duration: 0,
+      description: '00-1234-5678-01',
+    },
+    {
       name: 'foo',
       duration: 0,
       description: 'bar',

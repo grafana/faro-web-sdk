@@ -92,11 +92,17 @@ describe('Resource observer', () => {
 
     expect(mockPushEvent).toHaveBeenCalledTimes(3);
 
-    expect(mockPushEvent).toHaveBeenNthCalledWith(1, 'faro.performance.resource', {
-      ...createFaroResourceTiming(performanceResourceEntry),
-      faroNavigationId: mockNavigationId,
-      faroResourceId: mockResourceId,
-    });
+    expect(mockPushEvent).toHaveBeenNthCalledWith(
+      1,
+      'faro.performance.resource',
+      {
+        ...createFaroResourceTiming(performanceResourceEntry),
+        faroNavigationId: mockNavigationId,
+        faroResourceId: mockResourceId,
+      },
+      undefined,
+      { spanContext: { traceId: '1234', spanId: '5678' } }
+    );
   });
 
   it('Tracks default resource entries if trackResource is unset', () => {

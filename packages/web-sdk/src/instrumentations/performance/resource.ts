@@ -1,8 +1,15 @@
-import { faro, genShortID } from '@grafana/faro-core';
+import { faro, genShortID, type PushEventOptions } from '@grafana/faro-core';
 import type { EventsAPI } from '@grafana/faro-core';
 
 import { RESOURCE_ENTRY } from './performanceConstants';
-import { createFaroResourceTiming, entryUrlIsIgnored, includePerformanceEntry } from './performanceUtils';
+import {
+  createFaroResourceTiming,
+  entryUrlIsIgnored,
+  getSpanContextFromServerTiming,
+  includePerformanceEntry,
+} from './performanceUtils';
+
+type SpanContext = PushEventOptions['spanContext'];
 
 const DEFAULT_TRACK_RESOURCES = { initiatorType: ['xmlhttprequest', 'fetch'] };
 
@@ -23,6 +30,8 @@ export function observeResourceTimings(
 
       const resourceEntryRawJSON = resourceEntryRaw.toJSON();
 
+      let spanContext: SpanContext = getSpanContextFromServerTiming(resourceEntryRawJSON?.serverTiming);
+
       if (
         (trackResources == null && includePerformanceEntry(resourceEntryRawJSON, DEFAULT_TRACK_RESOURCES)) ||
         trackResources
@@ -33,7 +42,7 @@ export function observeResourceTimings(
           faroResourceId: genShortID(),
         };
 
-        pushEvent('faro.performance.resource', faroResourceEntry);
+        pushEvent('faro.performance.resource', faroResourceEntry, undefined, { spanContext });
       }
     }
   });

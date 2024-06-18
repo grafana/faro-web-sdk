@@ -1,6 +1,30 @@
-import { isArray } from '@grafana/faro-core';
+import { isArray, type PushEventOptions } from '@grafana/faro-core';
 
 import type { CacheType, FaroNavigationTiming, FaroResourceTiming } from './types';
+
+const w3cTraceparentFormat = /^00-[a-f0-9]{32}-[a-f0-9]{16}-[0-9]{2}$/;
+
+type SpanContext = PushEventOptions['spanContext'];
+
+// Extract traceparent from serverTiming, if present
+export function getSpanContextFromServerTiming(serverTimings: PerformanceServerTiming[] = []): SpanContext | undefined {
+  for (const serverEntry of serverTimings) {
+    if (serverEntry.name === 'traceparent') {
+      if (!w3cTraceparentFormat.test(serverEntry.description)) {
+        continue;
+      }
+
+      const [, traceId, spanId] = serverEntry.description.split('-');
+      if (traceId != null && spanId != null) {
+        return { traceId, spanId };
+      }
+
+      break;
+    }
+  }
+
+  return undefined;
+}
 
 export function performanceObserverSupported(): boolean {
   return 'PerformanceObserver' in window;
