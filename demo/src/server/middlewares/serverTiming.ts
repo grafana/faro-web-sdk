@@ -1,0 +1,17 @@
+import type { RequestHandler } from '../utils';
+import { trace } from '@opentelemetry/api';
+
+export const serverTimingMiddleware: RequestHandler = async (req, res, next) => {
+  const span = trace.getActiveSpan();
+
+  // inject server-timing header and format as traceparent
+  // {version}-{trace_id}-{span_id}-{trace_flags}
+  res.setHeader(
+    'Server-Timing',
+    `traceparent;desc="00-${span?.spanContext().traceId}-${span?.spanContext().spanId}-${span
+      ?.spanContext()
+      .traceFlags.toString()}"`
+  );
+
+  next();
+};

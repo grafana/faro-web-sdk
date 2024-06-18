@@ -1,6 +1,6 @@
 import { Express, Router } from 'express';
 
-import { tokenMiddleware, traceparentMiddleware } from '../middlewares';
+import { serverTimingMiddleware, tokenMiddleware, traceparentMiddleware } from '../middlewares';
 
 import { registerApiRoutes } from './api';
 import { registerMetricsRoutes } from './metrics';
@@ -8,6 +8,8 @@ import { registerRenderRoutes } from './render';
 
 export async function registerRoutes(app: Express): Promise<Router> {
   const globalRouter = Router();
+
+  app.use(serverTimingMiddleware);
 
   app.use(tokenMiddleware);
 
