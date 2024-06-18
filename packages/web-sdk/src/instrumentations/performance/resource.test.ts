@@ -101,7 +101,7 @@ describe('Resource observer', () => {
         faroResourceId: mockResourceId,
       },
       undefined,
-      { spanContext: { traceId: '1234', spanId: '5678' } }
+      { spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' } }
     );
   });
 
