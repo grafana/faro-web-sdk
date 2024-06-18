@@ -22,7 +22,13 @@ export const performanceNavigationEntry = {
   transferSize: 127601,
   encodedBodySize: 126111,
   decodedBodySize: 530675,
-  serverTiming: [],
+  serverTiming: [
+    {
+        name: 'traceparent',
+        duration: 0,
+        description: '00-1234-5678-01',
+    }
+  ],
   unloadEventStart: 0,
   unloadEventEnd: 0,
   domInteractive: 1247,

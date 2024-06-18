@@ -28,23 +28,19 @@ export function getNavigationTimings(
 
     const navEntryJson = navigationEntryRaw.toJSON();
 
-    let spanContext: Pick<SpanContext, 'traceId' | 'spanId'> = {
-      traceId: '',
-      spanId: '',
-    };
+    let spanContext: SpanContext = undefined;
 
-    if ('serverTiming' in navEntryJson) {
-        const serverTiming = navEntryJson.serverTiming;
-        if (serverTiming.length > 0) {
-          for (let i = 0; i < serverTiming.length; i++) {
-            if (serverTiming[i][0] === 'traceparent') {
-              const [version, traceId, spanId, sampled] = serverTiming[i][1].split('-');
-              spanContext.traceId = traceId;
-              spanContext.spanId = spanId;
-              break;
-            }
-          }
+    // Extract traceparent from serverTiming, if present
+    const { serverTiming = [] }: { serverTiming: PerformanceServerTiming[] } = navEntryJson;
+    for (const serverEntry of serverTiming) {
+      if (serverEntry.name === 'traceparent') {
+        const [, traceId, spanId,] = serverEntry.description.split('-');
+        if (traceId != null && spanId != null) {
+          spanContext = {traceId, spanId};
         }
+
+        break;
+      }
     }
 
     const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';

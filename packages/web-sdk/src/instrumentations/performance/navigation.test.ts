@@ -86,6 +86,26 @@ describe('Navigation observer', () => {
     });
   });
 
+  it('Captures Server-Timings for w3c trace context', () => {
+    const mockPushEvent = jest.fn();
+    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
+
+    const mockNavigationId = '123';
+    jest.spyOn(faroCoreModule, 'genShortID').mockReturnValueOnce(mockNavigationId);
+
+    getNavigationTimings(mockPushEvent, ['']);
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
+    expect(mockPushEvent).toHaveBeenNthCalledWith(1,
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        {
+          spanContext: { traceId: '1234', spanId: '5678' }
+        }
+    );
+  });
+
   it('Builds entry for subsequent navigation', () => {
     const mockPushEvent = jest.fn();
     jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
