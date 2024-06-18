@@ -175,7 +175,7 @@ describe('performanceUtils', () => {
     ];
 
     const spanContext = getSpanContextFromServerTiming(serverTimings);
-    expect(spanContext).toStrictEqual({ traceId: '1234', spanId: '5678' });
+    expect(spanContext).toStrictEqual({ traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' });
   });
 
   it('Ignores incoming traceparent server-timings if they are not conformant to w3c trace-context', () => {
