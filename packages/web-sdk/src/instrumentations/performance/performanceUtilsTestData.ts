@@ -24,10 +24,10 @@ export const performanceNavigationEntry = {
   decodedBodySize: 530675,
   serverTiming: [
     {
-        name: 'traceparent',
-        duration: 0,
-        description: '00-1234-5678-01',
-    }
+      name: 'traceparent',
+      duration: 0,
+      description: '00-1234-5678-01',
+    },
   ],
   unloadEventStart: 0,
   unloadEventEnd: 0,
