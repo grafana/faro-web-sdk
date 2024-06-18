@@ -2,7 +2,7 @@ import {
   createFaroNavigationTiming,
   createFaroResourceTiming,
   getSpanContextFromServerTiming,
-  includePerformanceEntry
+  includePerformanceEntry,
 } from './performanceUtils';
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
 import type { FaroNavigationTiming, FaroResourceTiming } from './types';
@@ -168,10 +168,9 @@ describe('performanceUtils', () => {
     const serverTimings: PerformanceServerTiming[] = [
       {
         name: 'traceparent',
-        description: "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01",
+        description: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
         duration: 0,
-        toJSON(): any {
-        }
+        toJSON(): any {},
       },
     ];
 
@@ -185,8 +184,7 @@ describe('performanceUtils', () => {
         name: 'traceparent',
         description: '00-1234-5678-01-02',
         duration: 0,
-        toJSON(): any {
-        }
+        toJSON(): any {},
       },
     ];
 
@@ -202,4 +200,3 @@ describe('performanceUtils', () => {
     expect(spanContextUndefined).toBeUndefined();
   });
 });
-
