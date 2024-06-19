@@ -48,7 +48,7 @@
   },
   "homepage": "https://github.com/grafana/faro-web-sdk",
   "dependencies": {
-    "@grafana/faro-core": "^1.7.3"
+    "@grafana/faro-core": "^1.7.4"
   },
   "devDependencies": {
     "@remix-run/web-fetch": "^4.3.4"

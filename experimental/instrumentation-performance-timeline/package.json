@@ -50,7 +50,7 @@
     "quality:circular-deps": "madge --circular ."
   },
   "devDependencies": {
-    "@grafana/faro-core": "^1.7.3"
+    "@grafana/faro-core": "^1.7.4"
   },
   "publishConfig": {
     "access": "public"
