@@ -51,8 +51,8 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@opentelemetry/api": "^1.7.0",
-    "@opentelemetry/otlp-transformer": "^0.48.0"
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/otlp-transformer": "^0.52.0"
   },
   "publishConfig": {
     "access": "public"
