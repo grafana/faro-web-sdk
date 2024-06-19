@@ -78,7 +78,7 @@ describe('Resource observer', () => {
     expect(mockPushEvent).not.toHaveBeenCalled();
   });
 
-  it('Builds entry for first navigation', () => {
+  it('Builds entry for first resource', () => {
     const mockPushEvent = jest.fn();
     jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
 
@@ -92,11 +92,17 @@ describe('Resource observer', () => {
 
     expect(mockPushEvent).toHaveBeenCalledTimes(3);
 
-    expect(mockPushEvent).toHaveBeenNthCalledWith(1, 'faro.performance.resource', {
-      ...createFaroResourceTiming(performanceResourceEntry),
-      faroNavigationId: mockNavigationId,
-      faroResourceId: mockResourceId,
-    });
+    expect(mockPushEvent).toHaveBeenNthCalledWith(
+      1,
+      'faro.performance.resource',
+      {
+        ...createFaroResourceTiming(performanceResourceEntry),
+        faroNavigationId: mockNavigationId,
+        faroResourceId: mockResourceId,
+      },
+      undefined,
+      { spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' } }
+    );
   });
 
   it('Tracks default resource entries if trackResource is unset', () => {

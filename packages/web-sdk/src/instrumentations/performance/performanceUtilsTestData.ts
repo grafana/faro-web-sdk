@@ -22,7 +22,13 @@ export const performanceNavigationEntry = {
   transferSize: 127601,
   encodedBodySize: 126111,
   decodedBodySize: 530675,
-  serverTiming: [],
+  serverTiming: [
+    {
+      name: 'traceparent',
+      duration: 0,
+      description: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
+    },
+  ],
   unloadEventStart: 0,
   unloadEventEnd: 0,
   domInteractive: 1247,
@@ -59,6 +65,11 @@ export const performanceResourceEntry = {
   encodedBodySize: 10526,
   decodedBodySize: 10526,
   serverTiming: [
+    {
+      name: 'traceparent',
+      duration: 0,
+      description: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
+    },
     {
       name: 'foo',
       duration: 0,

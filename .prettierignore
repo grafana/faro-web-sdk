@@ -35,3 +35,4 @@ yarn-error.log*
 # App plugin
 infra/grafana/plugins/
 infra/grafana/plugins-provisioning/*.yaml
+.yarn/releases/*.js

@@ -1,4 +1,9 @@
-import { createFaroNavigationTiming, createFaroResourceTiming, includePerformanceEntry } from './performanceUtils';
+import {
+  createFaroNavigationTiming,
+  createFaroResourceTiming,
+  getSpanContextFromServerTiming,
+  includePerformanceEntry,
+} from './performanceUtils';
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
 import type { FaroNavigationTiming, FaroResourceTiming } from './types';
 
@@ -157,5 +162,41 @@ describe('performanceUtils', () => {
       initiatorType: ['NOfetch', 'NOxmlhttprequest', 'link'],
     });
     expect(matchByMultiValues1).toBe(false);
+  });
+
+  it('Can extract a span context if server returns a traceId and spanId', () => {
+    const serverTimings: PerformanceServerTiming[] = [
+      {
+        name: 'traceparent',
+        description: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
+        duration: 0,
+        toJSON(): any {},
+      },
+    ];
+
+    const spanContext = getSpanContextFromServerTiming(serverTimings);
+    expect(spanContext).toStrictEqual({ traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' });
+  });
+
+  it('Ignores incoming traceparent server-timings if they are not conformant to w3c trace-context', () => {
+    const serverTimings: PerformanceServerTiming[] = [
+      {
+        name: 'traceparent',
+        description: '00-1234-5678-01-02',
+        duration: 0,
+        toJSON(): any {},
+      },
+    ];
+
+    const spanContext = getSpanContextFromServerTiming(serverTimings);
+    expect(spanContext).toBeUndefined();
+
+    const emptyServerTimings: PerformanceServerTiming[] = [];
+    const spanContextEmpty = getSpanContextFromServerTiming(emptyServerTimings);
+    expect(spanContextEmpty).toBeUndefined();
+
+    const undefinedServerTimings = undefined;
+    const spanContextUndefined = getSpanContextFromServerTiming(undefinedServerTimings);
+    expect(spanContextUndefined).toBeUndefined();
   });
 });
