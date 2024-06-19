@@ -2,7 +2,7 @@ import { isArray, type PushEventOptions } from '@grafana/faro-core';
 
 import type { CacheType, FaroNavigationTiming, FaroResourceTiming } from './types';
 
-const w3cTraceparentFormat = /^00-[a-f0-9]{32}-[a-f0-9]{16}-[0-9]{2}$/;
+const w3cTraceparentFormat = /^00-[a-f0-9]{32}-[a-f0-9]{16}-[0-9]{1,2}$/;
 
 type SpanContext = PushEventOptions['spanContext'];
 
