@@ -1,8 +1,16 @@
 import type { IKeyValue } from '@opentelemetry/otlp-transformer';
 import {
-  SemanticAttributes,
-  SemanticResourceAttributes,
-  TelemetrySdkLanguageValues,
+  SEMATTRS_ENDUSER_ID,
+  SEMATTRS_EXCEPTION_MESSAGE,
+  SEMATTRS_EXCEPTION_TYPE,
+  SEMATTRS_HTTP_URL,
+  SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
+  SEMRESATTRS_SERVICE_NAME,
+  SEMRESATTRS_SERVICE_VERSION,
+  SEMRESATTRS_TELEMETRY_SDK_LANGUAGE,
+  SEMRESATTRS_TELEMETRY_SDK_NAME,
+  SEMRESATTRS_TELEMETRY_SDK_VERSION,
+  TELEMETRYSDKLANGUAGEVALUES_WEBJS,
 } from '@opentelemetry/semantic-conventions';
 
 import {
@@ -152,8 +160,8 @@ export function getLogTransforms(
       ...(body ? { body } : {}),
       attributes: [
         ...getCommonLogAttributes(meta),
-        toAttribute(SemanticAttributes.EXCEPTION_TYPE, payload.type),
-        toAttribute(SemanticAttributes.EXCEPTION_MESSAGE, payload.value),
+        toAttribute(SEMATTRS_EXCEPTION_TYPE, payload.type),
+        toAttribute(SEMATTRS_EXCEPTION_MESSAGE, payload.value),
         // toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined),
         toAttribute('faro.error.stacktrace', payload.stacktrace),
         toAttribute('faro.error.context', payload.context),
@@ -190,12 +198,12 @@ export function getLogTransforms(
 
     return [
       toAttribute('view.name', view?.name),
-      toAttribute(SemanticAttributes.HTTP_URL, page?.url),
+      toAttribute(SEMATTRS_HTTP_URL, page?.url),
       toAttribute('page.id', page?.id),
       toAttribute('page.attributes', page?.attributes),
       toAttribute('session.id', session?.id),
       toAttribute('session.attributes', session?.attributes),
-      toAttribute(SemanticAttributes.ENDUSER_ID, user?.id),
+      toAttribute(SEMATTRS_ENDUSER_ID, user?.id),
       toAttribute('enduser.name', user?.username),
       toAttribute('enduser.email', user?.email),
       toAttribute('enduser.attributes', user?.attributes),
@@ -244,15 +252,13 @@ function toResource(transportItem: TransportItem): Readonly<Resource> {
       toAttribute('browser.screen_width', browser?.viewportWidth),
       toAttribute('browser.screen_height', browser?.viewportHeight),
 
-      toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_NAME, sdk?.name),
-      toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_VERSION, sdk?.version),
-      Boolean(sdk)
-        ? toAttribute(SemanticResourceAttributes.TELEMETRY_SDK_LANGUAGE, TelemetrySdkLanguageValues.WEBJS)
-        : undefined,
+      toAttribute(SEMRESATTRS_TELEMETRY_SDK_NAME, sdk?.name),
+      toAttribute(SEMRESATTRS_TELEMETRY_SDK_VERSION, sdk?.version),
+      Boolean(sdk) ? toAttribute(SEMRESATTRS_TELEMETRY_SDK_LANGUAGE, TELEMETRYSDKLANGUAGEVALUES_WEBJS) : undefined,
 
-      toAttribute(SemanticResourceAttributes.SERVICE_NAME, app?.name),
-      toAttribute(SemanticResourceAttributes.SERVICE_VERSION, app?.version),
-      toAttribute(SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT, app?.environment),
+      toAttribute(SEMRESATTRS_SERVICE_NAME, app?.name),
+      toAttribute(SEMRESATTRS_SERVICE_VERSION, app?.version),
+      toAttribute(SEMRESATTRS_DEPLOYMENT_ENVIRONMENT, app?.environment),
     ].filter(isAttribute),
   };
 }
