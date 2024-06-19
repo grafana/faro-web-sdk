@@ -1,6 +1,10 @@
 export { FaroRoute } from './FaroRoute';
 
-export { initializeReactRouterV4V5Instrumentation } from './initialize';
+export {
+  createReactRouterV4Options,
+  createReactRouterV5Options,
+  initializeReactRouterV4V5Instrumentation,
+} from './initialize';
 
 export { setReactRouterV4V5SSRDependencies } from './routerDependencies';
 
