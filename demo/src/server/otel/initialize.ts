@@ -7,7 +7,11 @@ import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { WinstonInstrumentation } from '@opentelemetry/instrumentation-winston';
 import { Resource } from '@opentelemetry/resources';
 import { BatchSpanProcessor, NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import {
+  SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
+  SEMRESATTRS_SERVICE_NAME,
+  SEMRESATTRS_SERVICE_VERSION,
+} from '@opentelemetry/semantic-conventions';
 
 import { env } from '../utils';
 
@@ -17,9 +21,9 @@ import { env } from '../utils';
 const provider = new NodeTracerProvider({
   resource: Resource.default().merge(
     new Resource({
-      [SemanticResourceAttributes.SERVICE_NAME]: env.server.packageName,
-      [SemanticResourceAttributes.SERVICE_VERSION]: env.package.version,
-      [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: env.mode.name,
+      [SEMRESATTRS_SERVICE_NAME]: env.server.packageName,
+      [SEMRESATTRS_SERVICE_VERSION]: env.package.version,
+      [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: env.mode.name,
     })
   ),
 });
