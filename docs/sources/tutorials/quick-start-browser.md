@@ -255,7 +255,8 @@ import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 import { Resource } from '@opentelemetry/resources';
 import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+
 import { initializeFaro } from '@grafana/faro-web-sdk';
 import { FaroSessionSpanProcessor, FaroTraceExporter } from '@grafana/faro-web-tracing';
 
@@ -276,8 +277,8 @@ const faro = initializeFaro({
 // set up otel
 const resource = Resource.default().merge(
   new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: NAME,
-    [SemanticResourceAttributes.SERVICE_VERSION]: VERSION,
+    [SEMRESATTRS_SERVICE_NAME]: NAME,
+    [SEMRESATTRS_SERVICE_VERSION]: VERSION,
   })
 );
 

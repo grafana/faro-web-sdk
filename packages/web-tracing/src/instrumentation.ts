@@ -4,7 +4,11 @@ import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
 import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import {
+  SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
+  SEMRESATTRS_SERVICE_NAME,
+  SEMRESATTRS_SERVICE_VERSION,
+} from '@opentelemetry/semantic-conventions';
 
 import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-web-sdk';
 
@@ -33,15 +37,15 @@ export class TracingInstrumentation extends BaseInstrumentation {
     const attributes: ResourceAttributes = {};
 
     if (this.config.app.name) {
-      attributes[SemanticResourceAttributes.SERVICE_NAME] = this.config.app.name;
+      attributes[SEMRESATTRS_SERVICE_NAME] = this.config.app.name;
     }
 
     if (this.config.app.version) {
-      attributes[SemanticResourceAttributes.SERVICE_VERSION] = this.config.app.version;
+      attributes[SEMRESATTRS_SERVICE_VERSION] = this.config.app.version;
     }
 
     if (this.config.app.environment) {
-      attributes[SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT] = this.config.app.environment;
+      attributes[SEMRESATTRS_DEPLOYMENT_ENVIRONMENT] = this.config.app.environment;
     }
 
     Object.assign(attributes, options.resourceAttributes);

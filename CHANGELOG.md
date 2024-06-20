@@ -2,10 +2,16 @@
 
 ## Next
 
-- Enhancement (`@grafana/faro-web-sdk`): Auto extend a session if the Faro receiver indicates that a
-  session is invalid (#591).
 - Feature (`@grafana/faro-web-sdk`): track `web vitals` attribution (#595).
 - Feature (`@grafana/faro-web-sdk`): set span context for navigation events (#608).
+
+- Enhancement (`@grafana/faro-web-sdk`): Auto extend a session if the Faro receiver indicates that a
+  session is invalid (#591).
+
+- Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#621).
+- Dependencies (`@grafana/faro-core`): upgrade otel deps (#621).
+- Dependencies (`@grafana/faro-transport-otlp-http [experimental]`): upgrade otel deps (#621).
+
 - Fix (`@grafana/faro-react`): Mark `react-router-dom` peer dependency as optional (#617).
 
 ## 1.7.3
