@@ -78,7 +78,7 @@ initializeFaro({
     new ReactIntegration({
       router: createReactRouterV6DataOptions({
         matchRoutes,
-      })
+      }),
     }),
   ],
 });
@@ -179,7 +179,8 @@ initializeFaro({
     ...getWebInstrumentations(),
 
     new ReactIntegration({
-      router: createReactRouterV5Options({ // or createReactRouterV4Options
+      // or createReactRouterV4Options
+      router: createReactRouterV5Options({
         history, // the history object used by react-router
         Route, // Route component imported from react-router package
       }),
