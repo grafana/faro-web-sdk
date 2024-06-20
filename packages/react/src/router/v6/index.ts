@@ -1,6 +1,11 @@
 export { FaroRoutes } from './FaroRoutes';
 
-export { initializeReactRouterV6Instrumentation, initializeReactRouterV6DataRouterInstrumentation } from './initialize';
+export {
+  createReactRouterV6Options,
+  createReactRouterV6DataOptions,
+  initializeReactRouterV6Instrumentation,
+  initializeReactRouterV6DataRouterInstrumentation,
+} from './initialize';
 
 export { setReactRouterV6SSRDependencies } from './routerDependencies';
 

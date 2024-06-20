@@ -76,12 +76,9 @@ initializeFaro({
     ...getWebInstrumentations(),
 
     new ReactIntegration({
-      router: {
-        version: ReactRouterVersion.V6_data_router,
-        dependencies: {
-          matchRoutes,
-        },
-      },
+      router: createReactRouterV6DataOptions({
+        matchRoutes,
+      }),
     }),
   ],
 });
@@ -126,16 +123,13 @@ initializeFaro({
     ...getWebInstrumentations(),
 
     new ReactIntegration({
-      router: {
-        version: ReactRouterVersion.V6,
-        dependencies: {
-          createRoutesFromChildren,
-          matchRoutes,
-          Routes,
-          useLocation,
-          useNavigationType,
-        },
-      },
+      router: createReactRouterV6Options({
+        createRoutesFromChildren,
+        matchRoutes,
+        Routes,
+        useLocation,
+        useNavigationType,
+      }),
     }),
   ],
 });
@@ -185,13 +179,11 @@ initializeFaro({
     ...getWebInstrumentations(),
 
     new ReactIntegration({
-      router: {
-        version: ReactRouterVersion.V5, // or ReactRouterVersion.V4,
-        dependencies: {
-          history, // the history object used by react-router
-          Route, // Route component imported from react-router package
-        },
-      },
+      // or createReactRouterV4Options
+      router: createReactRouterV5Options({
+        history, // the history object used by react-router
+        Route, // Route component imported from react-router package
+      }),
     }),
   ],
 });

@@ -3,7 +3,8 @@ import type { FunctionComponent } from 'react';
 
 import { globalObject } from '@grafana/faro-web-sdk';
 
-import { NavigationType } from '../types';
+import type { ReactRouterV4V5Config } from '../../types';
+import { NavigationType, ReactRouterVersion } from '../types';
 
 import { createNewActiveEvent, sendActiveEvent } from './activeEvent';
 import { FaroRoute } from './FaroRoute';
@@ -27,4 +28,18 @@ export function initializeReactRouterV4V5Instrumentation(dependencies: ReactRout
       createNewActiveEvent(globalObject.location?.href);
     }
   });
+}
+
+export function createReactRouterV4Options(dependencies: ReactRouterV4V5Dependencies): ReactRouterV4V5Config {
+  return {
+    version: ReactRouterVersion.V4,
+    dependencies,
+  };
+}
+
+export function createReactRouterV5Options(dependencies: ReactRouterV4V5Dependencies): ReactRouterV4V5Config {
+  return {
+    version: ReactRouterVersion.V5,
+    dependencies,
+  };
 }
