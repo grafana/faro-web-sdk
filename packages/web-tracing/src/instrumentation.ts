@@ -7,6 +7,7 @@ import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-
 import {
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
   SEMRESATTRS_SERVICE_NAME,
+  SEMRESATTRS_SERVICE_NAMESPACE,
   SEMRESATTRS_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions';
 
@@ -38,6 +39,10 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     if (this.config.app.name) {
       attributes[SEMRESATTRS_SERVICE_NAME] = this.config.app.name;
+    }
+
+    if (this.config.app.namespace) {
+      attributes[SEMRESATTRS_SERVICE_NAMESPACE] = this.config.app.namespace;
     }
 
     if (this.config.app.version) {
