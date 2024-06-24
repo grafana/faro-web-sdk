@@ -43,8 +43,6 @@ export function initializeFaro(): Faro {
     },
   });
 
-  console.log('env.client.packageNamespace :>> ', env.client.packageNamespace);
-
   faro.api.pushLog(['Faro was initialized']);
 
   return faro;
