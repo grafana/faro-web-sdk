@@ -14,7 +14,6 @@ Metas can be either:
 The `app` meta ties signals with a specific app and it should not be changed across a session. It is required during
 initialization and it is the responsibility of the end-user to define it.
 
-Note:
 When using the Faro web-tracing package the `name`, `namespace` and `version` will be attached as
 `service.name|namespace|version` to the resource attributes object.
 The `environment` attribute will become `deployment.environment` in the resource object.
