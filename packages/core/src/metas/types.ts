@@ -27,6 +27,7 @@ export interface MetaSDK {
 
 export interface MetaApp {
   name?: string;
+  namespace?: string;
   release?: string;
   version?: string;
   environment?: string;

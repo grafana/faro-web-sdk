@@ -20,6 +20,7 @@ export function getEnvConfig(vars: Record<string, string | undefined>, nodeEnv?:
     },
     client: {
       packageName: vars['DEMO_CLIENT_PACKAGE_NAME']!,
+      packageNamespace: vars['DEMO_CLIENT_PACKAGE_NAMESPACE']!,
     },
     database: {
       host: vars['DEMO_SERVER_DATABASE_HOST']! || vars['DATABASE_HOST']!,
