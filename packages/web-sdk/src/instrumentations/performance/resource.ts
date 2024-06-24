@@ -1,5 +1,5 @@
-import { faro, genShortID, type PushEventOptions } from '@grafana/faro-core';
-import type { EventsAPI } from '@grafana/faro-core';
+import { faro, genShortID } from '@grafana/faro-core';
+import type { EventsAPI, PushEventOptions } from '@grafana/faro-core';
 
 import { RESOURCE_ENTRY } from './performanceConstants';
 import {
