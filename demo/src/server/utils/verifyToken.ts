@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 
 import type { UserPublicModel } from '../../common';
-import { getUserById, getUserPublicFromUser } from '../db';
-import { logger } from '../logger';
+import { getUserById, getUserPublicFromUser } from '../db/handlers/users';
+import { logger } from '../logger/logger';
 
 import { authorizationSecret } from './const';
 
