@@ -13,13 +13,9 @@ import type { Config } from '@grafana/faro-core';
 import type { TransportItem } from '../..';
 import { createSession } from '../../metas';
 
-import { type FaroUserSession, isSampled } from './sessionManager';
+import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
 import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
-import {
-  createUserSessionObject,
-  getSessionManagerByConfig,
-  isUserSessionValid,
-} from './sessionManager/sessionManagerUtils';
+import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
 import type { SessionManager } from './sessionManager/types';
 
 type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;

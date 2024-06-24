@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize';
 
-import { logger } from '../logger';
+import { logger } from '../logger/logger';
 import { env } from '../utils';
 
 import { setDb } from './db';

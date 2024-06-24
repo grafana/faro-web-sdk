@@ -14,3 +14,5 @@ export {
 export { isSampled } from './sampling';
 
 export type { FaroUserSession } from './types';
+
+export { getSessionManagerByConfig } from './getSessionManagerByConfig';
