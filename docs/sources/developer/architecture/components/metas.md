@@ -14,10 +14,15 @@ Metas can be either:
 The `app` meta ties signals with a specific app and it should not be changed across a session. It is required during
 initialization and it is the responsibility of the end-user to define it.
 
+When using the Faro web-tracing package the `name`, `namespace` and `version` will be attached as
+`service.name|namespace|version` to the resource attributes object.
+The `environment` attribute will become `deployment.environment` in the resource object.
+
 Properties:
 
 - `name` - the name of the app
 - `version` - the version of the app
+- `namespace` - a namespace for `app.name`
 - `release` - a release identifier for the app, like a commit hash, a build number or a Docker container tag
 - `environment` - the environment where the app is running, like `staging` or `production`
 

@@ -15,6 +15,7 @@ export function initializeFaro(): Faro {
   const faro = coreInit({
     url: `http://localhost:${env.faro.portAppReceiver}/collect`,
     apiKey: env.faro.apiKey,
+    trackWebVitalsAttribution: true,
     instrumentations: [
       ...getWebInstrumentations({
         captureConsole: true,
@@ -36,6 +37,7 @@ export function initializeFaro(): Faro {
     ],
     app: {
       name: env.client.packageName,
+      namespace: env.client.packageNamespace,
       version: env.package.version,
       environment: env.mode.name,
     },

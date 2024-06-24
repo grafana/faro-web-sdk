@@ -1,2 +1,2 @@
-export type { EventAttributes, EventEvent, EventsAPI } from './types';
+export type { EventAttributes, EventEvent, EventsAPI, PushEventOptions } from './types';
 export { initializeEventsAPI } from './initialize';

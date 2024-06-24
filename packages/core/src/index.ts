@@ -18,6 +18,7 @@ export type {
   MetaAPI,
   OTELApi,
   PushErrorOptions,
+  PushEventOptions,
   PushLogOptions,
   PushMeasurementOptions,
   Stacktrace,

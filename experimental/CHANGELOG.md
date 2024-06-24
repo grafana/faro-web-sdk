@@ -2,6 +2,12 @@
 
 ## Next
 
+## 1.8.0
+
+- Dependencies (`@grafana/faro-transport-otlp-http`): upgrade otel deps (#621).
+
+## 1.3.6 – 1.7.3
+
 - Feature (`@grafana/faro-transport-otlp-http`): Add resource attributes for viewport dimensions
   (#594).
 

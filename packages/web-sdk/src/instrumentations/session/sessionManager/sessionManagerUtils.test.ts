@@ -2,13 +2,13 @@ import * as faroCore from '@grafana/faro-core';
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
+import { getSessionManagerByConfig } from './getSessionManagerByConfig';
 import { PersistentSessionsManager } from './PersistentSessionsManager';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import * as mockSessionManagerUtils from './sessionManagerUtils';
 import {
   addSessionMetadataToNextSession,
   createUserSessionObject,
-  getSessionManagerByConfig,
   getUserSessionUpdater,
   isUserSessionValid,
 } from './sessionManagerUtils';

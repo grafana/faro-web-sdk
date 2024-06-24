@@ -68,6 +68,15 @@ additional React specific functionality like router instrumentation, a custom Er
 ### Router v6 with Data Router
 
 ```ts
+import {
+  initializeFaro,
+  createReactRouterV6DataOptions,
+  ReactIntegration,
+  getWebInstrumentations,
+} from '@grafana/faro-react';
+
+import { matchRoutes } from 'react-router-dom';
+
 initializeFaro({
   // ...
 
@@ -76,12 +85,9 @@ initializeFaro({
     ...getWebInstrumentations(),
 
     new ReactIntegration({
-      router: {
-        version: ReactRouterVersion.V6_data_router,
-        dependencies: {
-          matchRoutes,
-        },
-      },
+      router: createReactRouterV6DataOptions({
+        matchRoutes,
+      }),
     }),
   ],
 });
@@ -93,6 +99,8 @@ In the file you create your data router, often the App.\* file pass your data ro
 function `withFaroRouterInstrumentation` to wrap all your routes and apply Faro auto instrumentation:
 
 ```ts
+import { createBrowserRouter } from '@grafana/faro-react';
+
 const reactBrowserRouter = createBrowserRouter([
   // your routes...
 ]);
@@ -108,7 +116,13 @@ In the file you define your router, import `createRoutesFromChildren`, `matchRou
 ```ts
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
 
-import { getWebInstrumentations, initializeFaro, ReactIntegration, ReactRouterVersion } from '@grafana/faro-react';
+import {
+  createReactRouterV6Options,
+  getWebInstrumentations,
+  initializeFaro,
+  ReactIntegration,
+  ReactRouterVersion,
+} from '@grafana/faro-react';
 
 initializeFaro({
   // Mandatory, the URL of the Grafana collector
@@ -126,16 +140,13 @@ initializeFaro({
     ...getWebInstrumentations(),
 
     new ReactIntegration({
-      router: {
-        version: ReactRouterVersion.V6,
-        dependencies: {
-          createRoutesFromChildren,
-          matchRoutes,
-          Routes,
-          useLocation,
-          useNavigationType,
-        },
-      },
+      router: createReactRouterV6Options({
+        createRoutesFromChildren,
+        matchRoutes,
+        Routes,
+        useLocation,
+        useNavigationType,
+      }),
     }),
   ],
 });
@@ -165,7 +176,14 @@ The final result should look similar like this example:
 import { createBrowserHistory } from 'history';
 import { Route } from 'react-router-dom';
 
-import { getWebInstrumentations, initializeFaro, ReactIntegration, ReactRouterVersion } from '@grafana/faro-react';
+import {
+  // or createReactRouterV4Options
+  createReactRouterV5Options,
+  getWebInstrumentations,
+  initializeFaro,
+  ReactIntegration,
+  ReactRouterVersion,
+} from '@grafana/faro-react';
 
 const history = createBrowserHistory();
 
@@ -185,13 +203,11 @@ initializeFaro({
     ...getWebInstrumentations(),
 
     new ReactIntegration({
-      router: {
-        version: ReactRouterVersion.V5, // or ReactRouterVersion.V4,
-        dependencies: {
-          history, // the history object used by react-router
-          Route, // Route component imported from react-router package
-        },
-      },
+      // or createReactRouterV4Options
+      router: createReactRouterV5Options({
+        history, // the history object used by react-router
+        Route, // Route component imported from react-router package
+      }),
     }),
   ],
 });
@@ -308,7 +324,7 @@ const pushErrorOptions: PushErrorOptions = {
 </FaroErrorBoundary>;
 ```
 
-## React erver side rendering support
+## React server side rendering support
 
 Follow this guide to learn how to initialize your Faro instrumentation to support React Server Side
 Rendering (SSR) for:
