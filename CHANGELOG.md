@@ -11,7 +11,7 @@
 - Enhancement (`@grafana/faro-web-sdk`): Auto extend a session if the Faro receiver indicates that a
   session is invalid (#591).
 - Enhancement (`@grafana/faro-web-tracing`): provide the `app.namespace` attribute in the app meta
-  which is attached as `servise.namespace` to the resource attributes object (#627).
+  which is attached as `service.namespace` to the resource attributes object (#627).
 
 - Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#621).
 - Dependencies (`@grafana/faro-core`): upgrade otel deps (#621).
