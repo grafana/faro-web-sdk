@@ -9,10 +9,8 @@ import {
 } from '@grafana/faro-core';
 import type { Config, Patterns, TransportItem } from '@grafana/faro-core';
 
-import {
-  getSessionManagerByConfig,
-  getUserSessionUpdater,
-} from '../../instrumentations/session/sessionManager/sessionManagerUtils';
+import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
+import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 
 import type { FetchTransportOptions } from './types';
 
