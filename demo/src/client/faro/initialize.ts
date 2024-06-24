@@ -37,10 +37,13 @@ export function initializeFaro(): Faro {
     ],
     app: {
       name: env.client.packageName,
+      namespace: env.client.packageNamespace,
       version: env.package.version,
       environment: env.mode.name,
     },
   });
+
+  console.log('env.client.packageNamespace :>> ', env.client.packageNamespace);
 
   faro.api.pushLog(['Faro was initialized']);
 
