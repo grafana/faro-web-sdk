@@ -21,7 +21,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         /* eslint-disable-next-line no-console */
         console[level] = (...args) => {
           try {
-            this.api.pushLog(args, { level });
+            this.api.pushLog(args, { level, spanContext: this.currentSpanContext() });
           } catch (err) {
             this.logError(err);
           } finally {
@@ -29,5 +29,9 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
           }
         };
       });
+  }
+  private currentSpanContext(): { traceId: string; spanId: string } | undefined {
+    const traceContext = this.api.getTraceContext();
+    return traceContext ? { traceId: traceContext.trace_id, spanId: traceContext.span_id } : undefined;
   }
 }

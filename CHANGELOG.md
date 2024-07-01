@@ -2,6 +2,8 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-sdk`): span context is now passed to pushLogs in the console instrumentation (#632).
+
 ## 1.8.0
 
 - Feature (`@grafana/faro-web-sdk`): track `web vitals` attribution (#595).
