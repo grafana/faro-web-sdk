@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+require('source-map-support').install();
+const yargs = require('yargs');
+
+async function configMiddleware(argv) {
+  const endpoint = argv.endpoint || process.env.FARO_APP_ENDPOINT;
+  const sourcemap = argv.sourcemap;
+
+  if (endpoint === undefined) {
+    console.error('Frontend Observatory App endpoint is required - you can set it with the --endpoint flag or the FARO_APP_ENDPOINT environment variable');
+    process.exit(1);
+  }
+
+  if (sourcemap === undefined) {
+    console.error('Sourcemap is required - you can set it with the --sourcemap flag');
+    process.exit(1);
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+yargs
+  .command(require('./commands/upload'))
+  .demandCommand(1)
+  .option('verbose', {
+    alias: 'v',
+    type: 'boolean',
+    description: 'Enable verbose output',
+  })
+  .strict(true)
+  .argv;
