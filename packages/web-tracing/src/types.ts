@@ -1,5 +1,7 @@
 import type { ContextManager, TextMapPropagator } from '@opentelemetry/api';
 import type { Instrumentation } from '@opentelemetry/instrumentation';
+import type { FetchCustomAttributeFunction } from '@opentelemetry/instrumentation-fetch';
+import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request';
 import type { ResourceAttributes } from '@opentelemetry/resources';
 import type { SpanProcessor } from '@opentelemetry/sdk-trace-web';
 
@@ -20,9 +22,20 @@ export interface TracingInstrumentationOptions {
   contextManager?: ContextManager;
   instrumentations?: InstrumentationOption[];
   spanProcessor?: SpanProcessor;
-  instrumentationOptions?: {
-    propagateTraceHeaderCorsUrls: MatchUrlDefinitions;
-  };
+  instrumentationOptions?: Omit<DefaultInstrumentationsOptions, 'ignoreUrls'>;
 }
 
 export type MatchUrlDefinitions = Patterns;
+
+export type DefaultInstrumentationsOptions = {
+  ignoreUrls?: MatchUrlDefinitions;
+  propagateTraceHeaderCorsUrls?: MatchUrlDefinitions;
+
+  fetchInstrumentationOptions?: {
+    applyCustomAttributesOnSpan?: FetchCustomAttributeFunction;
+  };
+
+  xhrInstrumentationOptions?: {
+    applyCustomAttributesOnSpan?: XHRCustomAttributeFunction;
+  };
+};

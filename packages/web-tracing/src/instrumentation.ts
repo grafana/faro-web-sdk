@@ -15,6 +15,7 @@ import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-web-sdk';
 
 import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
+import { fetchCustomAttributeFunctionWithDefaults } from './instrumentationUtils';
 import { getSamplingDecision } from './sampler';
 import { FaroSessionSpanProcessor } from './sessionSpanProcessor';
 import type { TracingInstrumentationOptions } from './types';
@@ -90,6 +91,14 @@ export class TracingInstrumentation extends BaseInstrumentation {
         getDefaultOTELInstrumentations({
           ignoreUrls: this.getIgnoreUrls(),
           propagateTraceHeaderCorsUrls: this.options.instrumentationOptions?.propagateTraceHeaderCorsUrls,
+          fetchInstrumentationOptions: {
+            applyCustomAttributesOnSpan: fetchCustomAttributeFunctionWithDefaults(
+              this.options.instrumentationOptions?.fetchInstrumentationOptions?.applyCustomAttributesOnSpan
+            ),
+          },
+          xhrInstrumentationOptions: {
+            ...this.options.instrumentationOptions?.xhrInstrumentationOptions,
+          },
         }),
     });
 

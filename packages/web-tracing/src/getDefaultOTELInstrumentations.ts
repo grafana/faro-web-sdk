@@ -1,20 +1,20 @@
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
-import type { InstrumentationOption, MatchUrlDefinitions } from './types';
+import type { DefaultInstrumentationsOptions, InstrumentationOption } from './types';
 
-type DefaultInstrumentationsOptions = {
-  ignoreUrls?: MatchUrlDefinitions;
-  propagateTraceHeaderCorsUrls?: MatchUrlDefinitions;
-};
-
-const initialIntrumentationsOptions = {
+const initialInstrumentationsOptions = {
   ignoreUrls: [],
   propagateTraceHeaderCorsUrls: [],
 };
 
 export function getDefaultOTELInstrumentations(
-  options: DefaultInstrumentationsOptions = initialIntrumentationsOptions
+  options: DefaultInstrumentationsOptions = initialInstrumentationsOptions
 ): InstrumentationOption[] {
-  return [new FetchInstrumentation(options), new XMLHttpRequestInstrumentation(options)];
+  const { fetchInstrumentationOptions, xhrInstrumentationOptions, ...sharedOptions } = options;
+
+  return [
+    new FetchInstrumentation({ ...sharedOptions, ...fetchInstrumentationOptions }),
+    new XMLHttpRequestInstrumentation({ ...sharedOptions, ...xhrInstrumentationOptions }),
+  ];
 }
