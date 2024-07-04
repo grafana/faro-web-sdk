@@ -2,6 +2,9 @@
 
 ## Next
 
+- Enhancement (`@grafana/faro-web-tracing`): ensure that span status is always set to error for
+  erroneous fetch requests (#641).
+
 ## 1.8.0
 
 - Feature (`@grafana/faro-web-sdk`): track `web vitals` attribution (#595).
