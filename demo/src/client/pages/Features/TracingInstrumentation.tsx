@@ -36,7 +36,7 @@ export function TracingInstrumentation() {
         <Button data-cy="btn-fetch-success" onClick={fetchSuccess}>
           Fetch Success
         </Button>
-        <Button data-cy="btn-fetch-success" onClick={xhrSuccess}>
+        <Button data-cy="btn-xhr-success" onClick={xhrSuccess}>
           XHR Success
         </Button>
         <Button data-cy="btn-trace-with-log" onClick={traceWithLog}>
