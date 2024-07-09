@@ -1,5 +1,6 @@
 import { Span, SpanStatusCode } from '@opentelemetry/api';
 import type { FetchCustomAttributeFunction } from '@opentelemetry/instrumentation-fetch';
+import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request';
 
 export interface FetchError {
   status?: number;
@@ -17,7 +18,14 @@ export interface FetchError {
  */
 export function setSpanStatusOnFetchError(span: Span, _request: Request | RequestInit, result: Response | FetchError) {
   const httpStatusCode = result instanceof Error ? 0 : result.status;
+  setSpanStatus(span, httpStatusCode);
+}
 
+export function setSpanStatusOnXMLHttpRequestError(span: Span, xhr: XMLHttpRequest) {
+  setSpanStatus(span, xhr.status);
+}
+
+function setSpanStatus(span: Span, httpStatusCode?: number) {
   if (httpStatusCode == null) {
     return;
   }
@@ -34,5 +42,12 @@ export function fetchCustomAttributeFunctionWithDefaults(callback?: FetchCustomA
   return (span: Span, request: Request | RequestInit, result: Response | FetchError) => {
     setSpanStatusOnFetchError(span, request, result);
     callback?.(span, request, result);
+  };
+}
+
+export function xhrCustomAttributeFunctionWithDefaults(callback?: XHRCustomAttributeFunction) {
+  return (span: Span, xhr: XMLHttpRequest) => {
+    setSpanStatusOnXMLHttpRequestError(span, xhr);
+    callback?.(span, xhr);
   };
 }
