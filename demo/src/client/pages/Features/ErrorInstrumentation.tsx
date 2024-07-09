@@ -19,6 +19,12 @@ export function ErrorInstrumentation() {
     });
   };
 
+  const xhrError = () => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'http://localhost:64999');
+    xhr.send();
+  };
+
   const promiseReject = () => {
     new Promise((_accept, reject) => {
       reject('This is a rejected promise');
@@ -41,6 +47,9 @@ export function ErrorInstrumentation() {
         </Button>
         <Button data-cy="btn-fetch-error" onClick={fetchError}>
           Fetch Error
+        </Button>
+        <Button data-cy="btn-fetch-error" onClick={xhrError}>
+          XHR Error
         </Button>
         <Button data-cy="btn-promise-reject" onClick={promiseReject}>
           Promise Reject

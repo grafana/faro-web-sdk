@@ -25,7 +25,12 @@ export function initializeFaro(): Faro {
         instrumentationOptions: {
           fetchInstrumentationOptions: {
             applyCustomAttributesOnSpan: () => {
-              console.log('hello from fetch');
+              console.log('fetchInstrumentationOptions: applyCustomAttributesOnSpan');
+            },
+          },
+          xhrInstrumentationOptions: {
+            applyCustomAttributesOnSpan: () => {
+              console.log('xhrInstrumentationOptions: applyCustomAttributesOnSpan');
             },
           },
         },

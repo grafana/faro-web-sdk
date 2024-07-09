@@ -9,6 +9,12 @@ export function TracingInstrumentation() {
     fetch('/');
   };
 
+  const xhrSuccess = () => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/');
+    xhr.send();
+  };
+
   const traceWithLog = () => {
     const otel = faro.api.getOTEL();
 
@@ -29,6 +35,9 @@ export function TracingInstrumentation() {
       <ButtonGroup>
         <Button data-cy="btn-fetch-success" onClick={fetchSuccess}>
           Fetch Success
+        </Button>
+        <Button data-cy="btn-fetch-success" onClick={xhrSuccess}>
+          XHR Success
         </Button>
         <Button data-cy="btn-trace-with-log" onClick={traceWithLog}>
           Trace with Log
