@@ -13,9 +13,14 @@ context('Errors', () => {
       value: 'test is not defined',
     },
     {
-      title: 'unhandled error',
+      title: 'unhandled fetch error',
       btnName: 'fetch-error',
       value: 'Failed to fetch',
+    },
+    {
+      title: 'unhandled xhr error',
+      btnName: 'xhr-error',
+      value: 'Network error',
     },
     {
       title: 'unhandled rejection',
@@ -27,6 +32,8 @@ context('Errors', () => {
   ].forEach(({ title, btnName, type = 'Error', value, expectStacktrace = true }) => {
     it(`will capture ${title}`, () => {
       cy.interceptCollector((body) => {
+        console.log('body :>> ', body);
+
         const item = body.exceptions?.find(
           (item: ExceptionEvent) =>
             item?.type === type &&

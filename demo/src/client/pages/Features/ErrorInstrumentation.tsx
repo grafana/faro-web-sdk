@@ -19,6 +19,15 @@ export function ErrorInstrumentation() {
     });
   };
 
+  const xhrError = () => {
+    return new Promise((_resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'http://localhost:64999');
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.send();
+    });
+  };
+
   const promiseReject = () => {
     new Promise((_accept, reject) => {
       reject('This is a rejected promise');
@@ -41,6 +50,9 @@ export function ErrorInstrumentation() {
         </Button>
         <Button data-cy="btn-fetch-error" onClick={fetchError}>
           Fetch Error
+        </Button>
+        <Button data-cy="btn-xhr-error" onClick={xhrError}>
+          XHR Error (promise)
         </Button>
         <Button data-cy="btn-promise-reject" onClick={promiseReject}>
           Promise Reject

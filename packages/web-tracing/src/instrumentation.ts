@@ -15,7 +15,10 @@ import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-web-sdk';
 
 import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
-import { fetchCustomAttributeFunctionWithDefaults } from './instrumentationUtils';
+import {
+  fetchCustomAttributeFunctionWithDefaults,
+  xhrCustomAttributeFunctionWithDefaults,
+} from './instrumentationUtils';
 import { getSamplingDecision } from './sampler';
 import { FaroSessionSpanProcessor } from './sessionSpanProcessor';
 import type { TracingInstrumentationOptions } from './types';
@@ -97,7 +100,9 @@ export class TracingInstrumentation extends BaseInstrumentation {
             ),
           },
           xhrInstrumentationOptions: {
-            ...this.options.instrumentationOptions?.xhrInstrumentationOptions,
+            applyCustomAttributesOnSpan: xhrCustomAttributeFunctionWithDefaults(
+              this.options.instrumentationOptions?.xhrInstrumentationOptions?.applyCustomAttributesOnSpan
+            ),
           },
         }),
     });
