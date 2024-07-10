@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.8.2
+
 - Enhancement (`@grafana/faro-web-tracing`): ensure that span status is always set to error for
   erroneous xhr requests (#644).
 
