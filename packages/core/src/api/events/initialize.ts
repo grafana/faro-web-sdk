@@ -25,12 +25,6 @@ export function initializeEventsAPI(
     domain,
     { skipDedupe, spanContext, timestampOverwriteMs } = {}
   ) => {
-    console.log(
-      'timestampAdjust :>> ',
-      timestampOverwriteMs ? new Date(timestampOverwriteMs).toISOString() : 'undefined'
-    );
-    console.log('currentTimestamp :>> ', getCurrentTimestamp());
-
     try {
       const item: TransportItem<EventEvent> = {
         meta: metas.value,

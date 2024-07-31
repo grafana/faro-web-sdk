@@ -6,6 +6,6 @@ export function getCurrentTimestamp(): string {
   return new Date().toISOString();
 }
 
-export function timestampToIsoString(value: string): string {
+export function timestampToIsoString(value: number): string {
   return new Date(value).toISOString();
 }
