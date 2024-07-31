@@ -5,6 +5,7 @@ import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
+import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
 import type { MeasurementEvent, MeasurementsAPI } from './types';
@@ -21,7 +22,10 @@ export function initializeMeasurementsAPI(
 
   let lastPayload: Pick<MeasurementEvent, 'type' | 'values' | 'context'> | null = null;
 
-  const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (payload, { skipDedupe, context, spanContext } = {}) => {
+  const pushMeasurement: MeasurementsAPI['pushMeasurement'] = (
+    payload,
+    { skipDedupe, context, spanContext, timestampOverwriteMs } = {}
+  ) => {
     try {
       const item: TransportItem<MeasurementEvent> = {
         type: TransportItemType.MEASUREMENT,
@@ -33,7 +37,7 @@ export function initializeMeasurementsAPI(
                 span_id: spanContext.spanId,
               }
             : tracesApi.getTraceContext(),
-          timestamp: payload.timestamp ?? getCurrentTimestamp(),
+          timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
           context: context ?? {},
         },
         meta: metas.value,

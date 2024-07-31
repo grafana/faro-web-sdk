@@ -129,5 +129,11 @@ describe('api.logs', () => {
         expect((transport.items[0]?.payload as LogEvent).message).toBe('[1,"test",{"a":1}]');
       });
     });
+
+    it('Sets the timestamp to the provided custom timestamp', () => {
+      api.pushEvent('test', undefined, undefined, { timestampOverwriteMs: 123 });
+      expect(transport.items).toHaveLength(1);
+      expect((transport.items[0]?.payload as LogEvent).timestamp).toBe('1970-01-01T00:00:00.123Z');
+    });
   });
 });

@@ -116,7 +116,7 @@ describe('api.events', () => {
         });
       });
 
-      it('Sets the timestamp to teh provided custom timestamp', () => {
+      it('Sets the timestamp to the provided custom timestamp', () => {
         api.pushEvent('test', undefined, undefined, { timestampOverwriteMs: 123 });
         expect(transport.items).toHaveLength(1);
         expect((transport.items[0]?.payload as EventEvent).timestamp).toBe('1970-01-01T00:00:00.123Z');

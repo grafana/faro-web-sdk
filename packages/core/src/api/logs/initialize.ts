@@ -5,6 +5,7 @@ import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, defaultLogLevel, getCurrentTimestamp, isNull } from '../../utils';
+import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
 import { defaultLogArgsSerializer } from './const';
@@ -24,7 +25,10 @@ export function initializeLogsAPI(
 
   const logArgsSerializer = config.logArgsSerializer ?? defaultLogArgsSerializer;
 
-  const pushLog: LogsAPI['pushLog'] = (args, { context, level, skipDedupe, spanContext } = {}) => {
+  const pushLog: LogsAPI['pushLog'] = (
+    args,
+    { context, level, skipDedupe, spanContext, timestampOverwriteMs } = {}
+  ) => {
     try {
       const item: TransportItem<LogEvent> = {
         type: TransportItemType.LOG,
@@ -32,7 +36,7 @@ export function initializeLogsAPI(
           message: logArgsSerializer(args),
           level: level ?? defaultLogLevel,
           context: context ?? {},
-          timestamp: getCurrentTimestamp(),
+          timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
           trace: spanContext
             ? {
                 trace_id: spanContext.traceId,
