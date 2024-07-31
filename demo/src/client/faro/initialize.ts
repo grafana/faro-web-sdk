@@ -13,6 +13,7 @@ import { env } from '../utils';
 
 export function initializeFaro(): Faro {
   const faro = coreInit({
+    // url: 'https://faro-collector-prod-us-central-0.grafana.net/collect/2b420d8dde37317f7458f034cf3e3e44',
     url: `http://localhost:${env.faro.portAppReceiver}/collect`,
     apiKey: env.faro.apiKey,
     trackWebVitalsAttribution: true,

@@ -16,6 +16,11 @@ export interface EventEvent {
 export interface PushEventOptions {
   skipDedupe?: boolean;
   spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
+  /**
+   * Custom timestamp in milliseconds.
+   * Useful for events where the real start time happened ate a different time to when the event was pushed.
+   */
+  timestampOverwriteMs?: string;
 }
 
 export interface EventsAPI {

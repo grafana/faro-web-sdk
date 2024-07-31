@@ -8,6 +8,13 @@ import { performanceResourceEntry } from './performanceUtilsTestData';
 import { observeResourceTimings } from './resource';
 
 describe('Resource observer', () => {
+  const originalTimeOrigin = performance.timeOrigin;
+  const mockTimeOriginValue = 1000;
+  Object.defineProperty(performance, 'timeOrigin', {
+    value: mockTimeOriginValue,
+    configurable: true,
+  });
+
   class MockPerformanceObserver {
     constructor(private cb: PerformanceObserverCallback) {}
 
@@ -58,7 +65,13 @@ describe('Resource observer', () => {
 
   afterAll(() => {
     jest.restoreAllMocks();
+
     (global as any).PerformanceObserver = originalPerformanceObserver;
+
+    Object.defineProperty(performance, 'timeOrigin', {
+      value: originalTimeOrigin,
+      configurable: true,
+    });
   });
 
   it('Ignores entries where name matches ignoredUrls entry', () => {
@@ -101,7 +114,10 @@ describe('Resource observer', () => {
         faroResourceId: mockResourceId,
       },
       undefined,
-      { spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' } }
+      {
+        spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' },
+        timestampOverwriteMs: mockTimeOriginValue + performanceResourceEntry.startTime,
+      }
     );
   });
 

@@ -40,7 +40,10 @@ export function getNavigationTimings(
 
     setItem(NAVIGATION_ID_STORAGE_KEY, faroNavigationEntry.faroNavigationId, webStorageType.session);
 
-    pushEvent('faro.performance.navigation', faroNavigationEntry, undefined, { spanContext });
+    pushEvent('faro.performance.navigation', faroNavigationEntry, undefined, {
+      spanContext,
+      timestampOverwriteMs: performance.timeOrigin + navEntryJson.startTime,
+    });
 
     faroNavigationEntryResolve(faroNavigationEntry);
   });

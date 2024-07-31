@@ -10,6 +10,13 @@ import { createFaroNavigationTiming, createFaroResourceTiming } from './performa
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
 
 describe('Navigation observer', () => {
+  const originalTimeOrigin = performance.timeOrigin;
+  const mockTimeOriginValue = 1722437937;
+  Object.defineProperty(performance, 'timeOrigin', {
+    value: mockTimeOriginValue,
+    configurable: true,
+  });
+
   class MockPerformanceObserver {
     constructor(private cb: PerformanceObserverCallback) {}
 
@@ -50,7 +57,13 @@ describe('Navigation observer', () => {
 
   afterAll(() => {
     jest.restoreAllMocks();
+
     (global as any).PerformanceObserver = originalPerformanceObserver;
+
+    Object.defineProperty(performance, 'timeOrigin', {
+      value: originalTimeOrigin,
+      configurable: true,
+    });
   });
 
   it('Ignores entries where name matches ignoredUrls entry', () => {
@@ -89,6 +102,7 @@ describe('Navigation observer', () => {
       undefined,
       {
         spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' },
+        timestampOverwriteMs: mockTimeOriginValue,
       }
     );
   });
@@ -105,6 +119,7 @@ describe('Navigation observer', () => {
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent).toHaveBeenNthCalledWith(1, expect.anything(), expect.anything(), undefined, {
       spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' },
+      timestampOverwriteMs: mockTimeOriginValue,
     });
   });
 
@@ -132,6 +147,7 @@ describe('Navigation observer', () => {
       undefined,
       {
         spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' },
+        timestampOverwriteMs: mockTimeOriginValue,
       }
     );
   });
