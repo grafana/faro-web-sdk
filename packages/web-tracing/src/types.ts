@@ -33,9 +33,11 @@ export type DefaultInstrumentationsOptions = {
 
   fetchInstrumentationOptions?: {
     applyCustomAttributesOnSpan?: FetchCustomAttributeFunction;
+    ignoreNetworkEvents?: boolean;
   };
 
   xhrInstrumentationOptions?: {
     applyCustomAttributesOnSpan?: XHRCustomAttributeFunction;
+    ignoreNetworkEvents?: boolean;
   };
 };
