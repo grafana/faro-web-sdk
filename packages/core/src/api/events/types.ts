@@ -16,6 +16,7 @@ export interface EventEvent {
 export interface PushEventOptions {
   skipDedupe?: boolean;
   spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
+  timestampOverwriteMs?: number;
 }
 
 export interface EventsAPI {

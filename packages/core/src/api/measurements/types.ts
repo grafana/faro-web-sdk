@@ -17,6 +17,7 @@ export interface PushMeasurementOptions {
   skipDedupe?: boolean;
   context?: MeasurementContext;
   spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
+  timestampOverwriteMs?: number;
 }
 
 export interface MeasurementsAPI {

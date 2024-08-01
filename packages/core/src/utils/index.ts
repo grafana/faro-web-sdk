@@ -2,7 +2,7 @@ export type { BaseObject, BaseObjectKey, BaseObjectPrimitiveValue, BaseObjectVal
 
 export { deepEqual } from './deepEqual';
 
-export { getCurrentTimestamp } from './getCurrentTimestamp';
+export { getCurrentTimestamp } from './date';
 
 export {
   isArray,

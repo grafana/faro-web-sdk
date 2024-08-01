@@ -28,21 +28,24 @@ export function observeResourceTimings(
         return;
       }
 
-      const resourceEntryRawJSON = resourceEntryRaw.toJSON();
+      const resourceEntryJson = resourceEntryRaw.toJSON();
 
-      let spanContext: SpanContext = getSpanContextFromServerTiming(resourceEntryRawJSON?.serverTiming);
+      let spanContext: SpanContext = getSpanContextFromServerTiming(resourceEntryJson?.serverTiming);
 
       if (
-        (trackResources == null && includePerformanceEntry(resourceEntryRawJSON, DEFAULT_TRACK_RESOURCES)) ||
+        (trackResources == null && includePerformanceEntry(resourceEntryJson, DEFAULT_TRACK_RESOURCES)) ||
         trackResources
       ) {
         const faroResourceEntry = {
-          ...createFaroResourceTiming(resourceEntryRawJSON),
+          ...createFaroResourceTiming(resourceEntryJson),
           faroNavigationId,
           faroResourceId: genShortID(),
         };
 
-        pushEvent('faro.performance.resource', faroResourceEntry, undefined, { spanContext });
+        pushEvent('faro.performance.resource', faroResourceEntry, undefined, {
+          spanContext,
+          timestampOverwriteMs: performance.timeOrigin + resourceEntryJson.startTime,
+        });
       }
     }
   });

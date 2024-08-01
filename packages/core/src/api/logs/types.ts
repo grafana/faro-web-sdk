@@ -19,6 +19,7 @@ export interface PushLogOptions {
   level?: LogLevel;
   skipDedupe?: boolean;
   spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
+  timestampOverwriteMs?: number;
 }
 
 export interface LogsAPI {

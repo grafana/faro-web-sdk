@@ -41,6 +41,7 @@ export interface PushErrorOptions {
   type?: string;
   context?: ExceptionContext;
   spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
+  timestampOverwriteMs?: number;
 }
 
 export interface ExceptionsAPI {

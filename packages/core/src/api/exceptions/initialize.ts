@@ -5,6 +5,7 @@ import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
+import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
 import { defaultExceptionType } from './const';
@@ -36,7 +37,7 @@ export function initializeExceptionsAPI(
 
   const pushError: ExceptionsAPI['pushError'] = (
     error,
-    { skipDedupe, stackFrames, type, context, spanContext } = {}
+    { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs } = {}
   ) => {
     type = type || error.name || defaultExceptionType;
 
@@ -45,7 +46,7 @@ export function initializeExceptionsAPI(
       payload: {
         type,
         value: error.message,
-        timestamp: getCurrentTimestamp(),
+        timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
         trace: spanContext
           ? {
               trace_id: spanContext.traceId,
