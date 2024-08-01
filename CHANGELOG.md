@@ -6,8 +6,13 @@
 
 - Enhancement (`@grafana/faro-web-sdk`): Provide and option to pass a correction timestamp via the
   Faro API (#658).
+
 - Bug (`@grafana/faro-web-sdk`): Adjust the timestamp of a navigation or resource event to reflect
   the actual time the event occurred, rather than the signal's creation time. (#658).
+
+- Change: (`@grafana/faro-web-tracing`) The underlying XHR and Fetch instrumentation are now
+  configured to ignore network events by default. This behavior can be enabled back through the
+  options in the WebTracing class.
 
 ## 1.8.2
 
