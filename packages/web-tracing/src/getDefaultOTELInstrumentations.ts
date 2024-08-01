@@ -7,14 +7,7 @@ import {
 } from './instrumentationUtils';
 import type { DefaultInstrumentationsOptions, InstrumentationOption } from './types';
 
-const initialInstrumentationsOptions = {
-  ignoreUrls: [],
-  propagateTraceHeaderCorsUrls: [],
-};
-
-export function getDefaultOTELInstrumentations(
-  options: DefaultInstrumentationsOptions = initialInstrumentationsOptions
-): InstrumentationOption[] {
+export function getDefaultOTELInstrumentations(options: DefaultInstrumentationsOptions = {}): InstrumentationOption[] {
   const { fetchInstrumentationOptions, xhrInstrumentationOptions, ...sharedOptions } = options;
 
   const fetchOpts = createFetchInstrumentationOptions(fetchInstrumentationOptions, sharedOptions);
@@ -28,12 +21,9 @@ function createFetchInstrumentationOptions(
 ) {
   return {
     ...sharedOptions,
-
     ignoreNetworkEvents: true,
-
     // keep this here to overwrite the defaults above if provided by the users
     ...fetchInstrumentationOptions,
-
     // always keep this function
     applyCustomAttributesOnSpan: fetchCustomAttributeFunctionWithDefaults(
       fetchInstrumentationOptions?.applyCustomAttributesOnSpan
@@ -47,12 +37,9 @@ function createXhrInstrumentationOptions(
 ) {
   return {
     ...sharedOptions,
-
     ignoreNetworkEvents: true,
-
     // keep this here to overwrite the defaults above if provided by the users
     ...xhrInstrumentationOptions,
-
     // always keep this function
     applyCustomAttributesOnSpan: xhrCustomAttributeFunctionWithDefaults(
       xhrInstrumentationOptions?.applyCustomAttributesOnSpan
