@@ -15,10 +15,6 @@ import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-web-sdk';
 
 import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
-import {
-  fetchCustomAttributeFunctionWithDefaults,
-  xhrCustomAttributeFunctionWithDefaults,
-} from './instrumentationUtils';
 import { getSamplingDecision } from './sampler';
 import { FaroSessionSpanProcessor } from './sessionSpanProcessor';
 import type { TracingInstrumentationOptions } from './types';
@@ -88,22 +84,17 @@ export class TracingInstrumentation extends BaseInstrumentation {
       contextManager: options.contextManager ?? new ZoneContextManager(),
     });
 
+    const { propagateTraceHeaderCorsUrls, fetchInstrumentationOptions, xhrInstrumentationOptions } =
+      this.options.instrumentationOptions ?? {};
+
     registerInstrumentations({
       instrumentations:
         options.instrumentations ??
         getDefaultOTELInstrumentations({
           ignoreUrls: this.getIgnoreUrls(),
-          propagateTraceHeaderCorsUrls: this.options.instrumentationOptions?.propagateTraceHeaderCorsUrls,
-          fetchInstrumentationOptions: {
-            applyCustomAttributesOnSpan: fetchCustomAttributeFunctionWithDefaults(
-              this.options.instrumentationOptions?.fetchInstrumentationOptions?.applyCustomAttributesOnSpan
-            ),
-          },
-          xhrInstrumentationOptions: {
-            applyCustomAttributesOnSpan: xhrCustomAttributeFunctionWithDefaults(
-              this.options.instrumentationOptions?.xhrInstrumentationOptions?.applyCustomAttributesOnSpan
-            ),
-          },
+          propagateTraceHeaderCorsUrls,
+          fetchInstrumentationOptions,
+          xhrInstrumentationOptions,
         }),
     });
 
