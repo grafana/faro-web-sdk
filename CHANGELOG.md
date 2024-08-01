@@ -2,6 +2,13 @@
 
 ## Next
 
+## 1.8.3
+
+- Enhancement (`@grafana/faro-web-sdk`): Provide and option to pass a correction timestamp via the
+  Faro API (#658).
+- Bug (`@grafana/faro-web-sdk`): Adjust the timestamp of a navigation or resource event to reflect
+  the actual time the event occurred, rather than the signal's creation time. (#658).
+
 ## 1.8.2
 
 - Enhancement (`@grafana/faro-web-tracing`): ensure that span status is always set to error for
