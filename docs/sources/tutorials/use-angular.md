@@ -3,7 +3,7 @@
 Create file `faro-initializer.ts` and add your SDK configuration:
 
 ```typescript
-import { initializeFaro } from '@grafana/faro-web-sdk';
+import { initializeFaro, getWebInstrumentations } from '@grafana/faro-web-sdk';
 
 export function faroInitializer(): Function {
   return async () => {
