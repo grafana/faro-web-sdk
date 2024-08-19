@@ -402,4 +402,20 @@ describe('OtlpHttpTransport', () => {
     const ignoreUrls = faro.transports.transports.flatMap((transport) => transport.getIgnoreUrls());
     expect(ignoreUrls).toStrictEqual([tracesURL, logsURL, ...globalIgnoreUrls]);
   });
+
+  it('consumes the response body', async () => {
+    const transport = new OtlpHttpTransport({
+      logsURL: 'www.example.com/v1/logs',
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    const mockResponseTextFn = jest.fn(() => Promise.resolve({}));
+    fetch.mockImplementationOnce(() => Promise.resolve({ status: 200, text: mockResponseTextFn }));
+
+    await transport.send([logTransportItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(mockResponseTextFn).toHaveBeenCalledTimes(1);
+  });
 });
