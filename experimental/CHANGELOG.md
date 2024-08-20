@@ -2,6 +2,8 @@
 
 ## Next
 
+- Fix (`@grafana/faro-transport-otlp-http`): Properly consume response body (#664).
+
 ## 1.8.0
 
 - Dependencies (`@grafana/faro-transport-otlp-http`): upgrade otel deps (#621).

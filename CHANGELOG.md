@@ -2,6 +2,8 @@
 
 ## Next
 
+- Fix (`@grafana/faro-transport-otlp-http [experimental]`): Properly consume response body (#664).
+
 ## 1.9.0
 
 - Enhancement (`@grafana/faro-web-sdk`): Provide and option to pass a correction timestamp via the

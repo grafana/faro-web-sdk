@@ -1,4 +1,12 @@
-import { BaseTransport, createPromiseBuffer, isArray, PromiseBuffer, TransportItem, VERSION } from '@grafana/faro-core';
+import {
+  BaseTransport,
+  createPromiseBuffer,
+  isArray,
+  noop,
+  PromiseBuffer,
+  TransportItem,
+  VERSION,
+} from '@grafana/faro-core';
 import type { Patterns } from '@grafana/faro-core';
 
 import { OtelPayload, OtelTransportPayload } from './payload';
@@ -108,6 +116,8 @@ export class OtlpHttpTransport extends BaseTransport {
                 this.logWarn(`Too many requests, backing off until ${disabledUntil}`);
               }
 
+              // read the body so the connection can be closed
+              response.text().catch(noop);
               return response;
             })
             .catch((error) => {
