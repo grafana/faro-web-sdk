@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.9.1
+
 - Fix (`@grafana/faro-transport-otlp-http`): Properly consume response body (#664).
 
 ## 1.8.0
