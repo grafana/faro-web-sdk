@@ -5960,9 +5960,9 @@ humanize-ms@^1.2.1:
     ms "^2.0.0"
 
 husky@^9.0.7:
-  version "9.0.7"
-  resolved "https://registry.yarnpkg.com/husky/-/husky-9.0.7.tgz#047f24ec1b6c681206af714b4217c13ee97fff20"
-  integrity sha512-vWdusw+y12DUEeoZqW1kplOFqk3tedGV8qlga8/SF6a3lOiWLqGZZQvfWvY0fQYdfiRi/u1DFNpudTSV9l1aCg==
+  version "9.1.5"
+  resolved "https://registry.yarnpkg.com/husky/-/husky-9.1.5.tgz#2b6edede53ee1adbbd3a3da490628a23f5243b83"
+  integrity sha512-rowAVRUBfI0b4+niA4SJMhfQwc107VLkBUgEYYAOQAbqDCnra1nYh83hF/MDmhYs9t9n1E3DuKOrs2LYNC+0Ag==
 
 iconv-lite@0.4.24, iconv-lite@^0.4.24:
   version "0.4.24"
