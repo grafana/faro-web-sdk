@@ -10,6 +10,7 @@ import {
   ATTR_URL_FULL,
   TELEMETRY_SDK_LANGUAGE_VALUE_WEBJS,
 } from '@opentelemetry/semantic-conventions';
+// False positive. Package can be resolved.
 // eslint-disable-next-line import/no-unresolved
 import { ATTR_DEPLOYMENT_ENVIRONMENT_NAME, ATTR_USER_ID } from '@opentelemetry/semantic-conventions/incubating';
 
