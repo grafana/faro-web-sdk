@@ -11,9 +11,9 @@
 - Dependencies (`@grafana/faro-transport-otlp-http [experimental]`): upgrade otel deps (#670).
   - Note: some attributes have been changed due to otel semantic attributes spec:
     - `enduser.id` is replaced by `user.id`
-      `enduser.name` is replaced by `user.username`),
-      `enduser.email` is replaced by `user.email`),
-      `enduser.attributes` is replaced by `user.attributes`),
+    - `enduser.name` is replaced by `user.username`,
+    - `enduser.email` is replaced by `user.email`,
+    - `enduser.attributes` is replaced by `user.attributes`,
     - `http.url` is replaced by `url.full`
     - `deployment.environment` is replaced by `deployment.environment.name`
 
