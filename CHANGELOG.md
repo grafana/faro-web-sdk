@@ -5,6 +5,10 @@
 - Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#670).
 - Dependencies (`@grafana/faro-core`): upgrade otel deps (#670).
 - Dependencies (`@grafana/faro-transport-otlp-http [experimental]`): upgrade otel deps (#670).
+  - Note: some attributes have been changed due to otel semantic attributes spec:
+    - `enduser.id` is replaced by `user.id`
+    - `http.url` is replaced by `url.full`
+    - `deployment.environment` is replaced by `deployment.environment.name`
 
 ## 1.9.1
 
