@@ -54,5 +54,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@opentelemetry/semantic-conventions": "^1.27.0"
   }
 }
