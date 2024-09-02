@@ -2,6 +2,10 @@
 
 ## Next
 
+- Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#670).
+- Dependencies (`@grafana/faro-core`): upgrade otel deps (#670).
+- Dependencies (`@grafana/faro-transport-otlp-http [experimental]`): upgrade otel deps (#670).
+
 ## 1.9.1
 
 - Fix (`@grafana/faro-transport-otlp-http [experimental]`): Properly consume response body (#664).
