@@ -61,7 +61,7 @@ const matchLogLogRecord = {
       },
     },
     {
-      key: 'http.url',
+      key: 'url.full',
       value: {
         stringValue: 'http://localhost:5173',
       },
@@ -119,7 +119,7 @@ const matchLogLogRecord = {
       },
     },
     {
-      key: 'enduser.id',
+      key: 'user.id',
       value: { stringValue: 'user-abc123' },
     },
     {
