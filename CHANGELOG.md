@@ -4,9 +4,10 @@
 
 - Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#670).
   - Note: some attributes have been changed due to otel semantic attributes spec or are now aligned
-    with it:
-    - `deployment.environment` is replaced by `deployment.environment.name`
-    - `session_id` is replaced by `session.id`
+    with it. For the web-tracing package we provide both attribute versions for now:
+    - `deployment.environment` is now deprecated and will be replaced by
+      `deployment.environment.name`.
+    - `session_id` is now deprecated and will be replaced by `session.id`
 - Dependencies (`@grafana/faro-core`): upgrade otel deps (#670).
 - Dependencies (`@grafana/faro-transport-otlp-http [experimental]`): upgrade otel deps (#670).
   - Note: some attributes have been changed due to otel semantic attributes spec:
