@@ -22,6 +22,10 @@ export class FaroSessionSpanProcessor implements SpanProcessor {
 
     if (session?.id) {
       span.attributes[ATTR_SESSION_ID] = session.id;
+      /**
+       * @deprecated will be removed in the future use ATTR_DEPLOYMENT_ENVIRONMENT_NAME instead
+       */
+      span.attributes['session_id'] = session.id;
     }
 
     this.processor.onStart(span, parentContext);

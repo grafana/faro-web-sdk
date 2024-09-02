@@ -4,7 +4,11 @@ import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
 import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
-import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_DEPLOYMENT_ENVIRONMENT,
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
+} from '@opentelemetry/semantic-conventions';
 // eslint-disable-next-line import/no-unresolved
 import {
   ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
@@ -52,6 +56,10 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     if (this.config.app.environment) {
       attributes[ATTR_DEPLOYMENT_ENVIRONMENT_NAME] = this.config.app.environment;
+      /**
+       * @deprecated will be removed in the future use ATTR_DEPLOYMENT_ENVIRONMENT_NAME instead
+       */
+      attributes[ATTR_DEPLOYMENT_ENVIRONMENT] = this.config.app.environment;
     }
 
     Object.assign(attributes, options.resourceAttributes);
