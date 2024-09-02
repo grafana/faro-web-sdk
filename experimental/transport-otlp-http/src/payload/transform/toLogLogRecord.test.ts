@@ -123,15 +123,15 @@ const matchLogLogRecord = {
       value: { stringValue: 'user-abc123' },
     },
     {
-      key: 'enduser.name',
+      key: 'user.name',
       value: { stringValue: 'user-joe' },
     },
     {
-      key: 'enduser.email',
+      key: 'user.email',
       value: { stringValue: 'user@example.com' },
     },
     {
-      key: 'enduser.attributes',
+      key: 'user.attributes',
       value: {
         kvlistValue: {
           values: [

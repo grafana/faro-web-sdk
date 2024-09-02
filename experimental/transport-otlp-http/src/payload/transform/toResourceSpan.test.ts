@@ -43,7 +43,7 @@ const item: Readonly<TransportItem<TraceEvent>> = {
                     },
                   },
                   {
-                    key: 'http.url',
+                    key: 'url.full',
                     value: {
                       stringValue: 'http://localhost:5173/src/client/pages/Features/Features.tsx?t=1679329135042',
                     },
@@ -225,7 +225,7 @@ const matchResourceSpanPayload = {
         value: { stringValue: 'app-v2.0.0' },
       },
       {
-        key: 'deployment.environment',
+        key: 'deployment.environment.name',
         value: { stringValue: 'app-production' },
       },
     ],
@@ -246,7 +246,7 @@ const matchResourceSpanPayload = {
             { key: 'session_id', value: { stringValue: 'RcuKRynkwa' } },
             { key: 'component', value: { stringValue: 'document-load' } },
             {
-              key: 'http.url',
+              key: 'url.full',
               value: { stringValue: 'http://localhost:5173/src/client/pages/Features/Features.tsx?t=1679329135042' },
             },
             { key: 'http.response_content_length', value: { intValue: 9951 } },

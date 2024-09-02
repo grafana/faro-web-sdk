@@ -12,7 +12,12 @@ import {
 } from '@opentelemetry/semantic-conventions';
 // False positive. Package can be resolved.
 // eslint-disable-next-line import/no-unresolved
-import { ATTR_DEPLOYMENT_ENVIRONMENT_NAME, ATTR_USER_ID } from '@opentelemetry/semantic-conventions/incubating';
+import {
+  ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
+  ATTR_USER_EMAIL,
+  ATTR_USER_ID,
+  ATTR_USER_NAME,
+} from '@opentelemetry/semantic-conventions/incubating';
 
 import {
   EventEvent,
@@ -205,9 +210,9 @@ export function getLogTransforms(
       toAttribute('session.id', session?.id),
       toAttribute('session.attributes', session?.attributes),
       toAttribute(ATTR_USER_ID, user?.id),
-      toAttribute('enduser.name', user?.username),
-      toAttribute('enduser.email', user?.email),
-      toAttribute('enduser.attributes', user?.attributes),
+      toAttribute(ATTR_USER_NAME, user?.username),
+      toAttribute(ATTR_USER_EMAIL, user?.email),
+      toAttribute('user.attributes', user?.attributes),
     ].filter(isAttribute);
   }
 

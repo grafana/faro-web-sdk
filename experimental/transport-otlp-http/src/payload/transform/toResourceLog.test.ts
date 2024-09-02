@@ -178,7 +178,7 @@ const matchResourcePayload = {
       value: { stringValue: 'app-v2.0.0' },
     },
     {
-      key: 'deployment.environment',
+      key: 'deployment.environment.name',
       value: { stringValue: 'app-production' },
     },
   ],
