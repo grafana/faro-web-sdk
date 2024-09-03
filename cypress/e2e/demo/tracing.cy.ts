@@ -29,7 +29,7 @@ context('Tracing', () => {
           }
 
           return undefined;
-        });
+        }).as('trace');
       },
     },
   ].forEach(({ title, btnName, interceptor }) => {

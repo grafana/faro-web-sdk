@@ -42,7 +42,7 @@ context('Errors', () => {
         );
 
         return item != null ? 'exception' : undefined;
-      });
+      }).as('exception');
 
       cy.on('uncaught:exception', () => false);
 
