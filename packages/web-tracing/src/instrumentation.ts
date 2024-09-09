@@ -5,11 +5,16 @@ import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
 import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import {
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
-  SEMRESATTRS_SERVICE_NAME,
-  SEMRESATTRS_SERVICE_NAMESPACE,
-  SEMRESATTRS_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
+  ATTR_SERVICE_NAMESPACE,
+  // False positive. Package can be resolved.
+  // eslint-disable-next-line import/no-unresolved
+} from '@opentelemetry/semantic-conventions/incubating';
 
 import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-web-sdk';
 
@@ -38,18 +43,22 @@ export class TracingInstrumentation extends BaseInstrumentation {
     const attributes: ResourceAttributes = {};
 
     if (this.config.app.name) {
-      attributes[SEMRESATTRS_SERVICE_NAME] = this.config.app.name;
+      attributes[ATTR_SERVICE_NAME] = this.config.app.name;
     }
 
     if (this.config.app.namespace) {
-      attributes[SEMRESATTRS_SERVICE_NAMESPACE] = this.config.app.namespace;
+      attributes[ATTR_SERVICE_NAMESPACE] = this.config.app.namespace;
     }
 
     if (this.config.app.version) {
-      attributes[SEMRESATTRS_SERVICE_VERSION] = this.config.app.version;
+      attributes[ATTR_SERVICE_VERSION] = this.config.app.version;
     }
 
     if (this.config.app.environment) {
+      attributes[ATTR_DEPLOYMENT_ENVIRONMENT_NAME] = this.config.app.environment;
+      /**
+       * @deprecated will be removed in the future and has been replaced by ATTR_DEPLOYMENT_ENVIRONMENT_NAME (deployment.environment.name)
+       */
       attributes[SEMRESATTRS_DEPLOYMENT_ENVIRONMENT] = this.config.app.environment;
     }
 

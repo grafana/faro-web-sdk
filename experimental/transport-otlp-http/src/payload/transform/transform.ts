@@ -1,17 +1,23 @@
 import type { IKeyValue } from '@opentelemetry/otlp-transformer';
 import {
-  SEMATTRS_ENDUSER_ID,
-  SEMATTRS_EXCEPTION_MESSAGE,
-  SEMATTRS_EXCEPTION_TYPE,
-  SEMATTRS_HTTP_URL,
-  SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
-  SEMRESATTRS_SERVICE_NAME,
-  SEMRESATTRS_SERVICE_VERSION,
-  SEMRESATTRS_TELEMETRY_SDK_LANGUAGE,
-  SEMRESATTRS_TELEMETRY_SDK_NAME,
-  SEMRESATTRS_TELEMETRY_SDK_VERSION,
-  TELEMETRYSDKLANGUAGEVALUES_WEBJS,
+  ATTR_EXCEPTION_MESSAGE,
+  ATTR_EXCEPTION_TYPE,
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
+  ATTR_TELEMETRY_SDK_LANGUAGE,
+  ATTR_TELEMETRY_SDK_NAME,
+  ATTR_TELEMETRY_SDK_VERSION,
+  ATTR_URL_FULL,
+  TELEMETRY_SDK_LANGUAGE_VALUE_WEBJS,
 } from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
+  ATTR_USER_EMAIL,
+  ATTR_USER_ID,
+  ATTR_USER_NAME,
+  // False positive. Package can be resolved.
+  // eslint-disable-next-line import/no-unresolved
+} from '@opentelemetry/semantic-conventions/incubating';
 
 import {
   EventEvent,
@@ -160,8 +166,8 @@ export function getLogTransforms(
       ...(body ? { body } : {}),
       attributes: [
         ...getCommonLogAttributes(meta),
-        toAttribute(SEMATTRS_EXCEPTION_TYPE, payload.type),
-        toAttribute(SEMATTRS_EXCEPTION_MESSAGE, payload.value),
+        toAttribute(ATTR_EXCEPTION_TYPE, payload.type),
+        toAttribute(ATTR_EXCEPTION_MESSAGE, payload.value),
         // toAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, undefined),
         toAttribute('faro.error.stacktrace', payload.stacktrace),
         toAttribute('faro.error.context', payload.context),
@@ -198,15 +204,15 @@ export function getLogTransforms(
 
     return [
       toAttribute('view.name', view?.name),
-      toAttribute(SEMATTRS_HTTP_URL, page?.url),
+      toAttribute(ATTR_URL_FULL, page?.url),
       toAttribute('page.id', page?.id),
       toAttribute('page.attributes', page?.attributes),
       toAttribute('session.id', session?.id),
       toAttribute('session.attributes', session?.attributes),
-      toAttribute(SEMATTRS_ENDUSER_ID, user?.id),
-      toAttribute('enduser.name', user?.username),
-      toAttribute('enduser.email', user?.email),
-      toAttribute('enduser.attributes', user?.attributes),
+      toAttribute(ATTR_USER_ID, user?.id),
+      toAttribute(ATTR_USER_NAME, user?.username),
+      toAttribute(ATTR_USER_EMAIL, user?.email),
+      toAttribute('user.attributes', user?.attributes),
     ].filter(isAttribute);
   }
 
@@ -252,13 +258,13 @@ function toResource(transportItem: TransportItem): Readonly<Resource> {
       toAttribute('browser.screen_width', browser?.viewportWidth),
       toAttribute('browser.screen_height', browser?.viewportHeight),
 
-      toAttribute(SEMRESATTRS_TELEMETRY_SDK_NAME, sdk?.name),
-      toAttribute(SEMRESATTRS_TELEMETRY_SDK_VERSION, sdk?.version),
-      Boolean(sdk) ? toAttribute(SEMRESATTRS_TELEMETRY_SDK_LANGUAGE, TELEMETRYSDKLANGUAGEVALUES_WEBJS) : undefined,
+      toAttribute(ATTR_TELEMETRY_SDK_NAME, sdk?.name),
+      toAttribute(ATTR_TELEMETRY_SDK_VERSION, sdk?.version),
+      Boolean(sdk) ? toAttribute(ATTR_TELEMETRY_SDK_LANGUAGE, TELEMETRY_SDK_LANGUAGE_VALUE_WEBJS) : undefined,
 
-      toAttribute(SEMRESATTRS_SERVICE_NAME, app?.name),
-      toAttribute(SEMRESATTRS_SERVICE_VERSION, app?.version),
-      toAttribute(SEMRESATTRS_DEPLOYMENT_ENVIRONMENT, app?.environment),
+      toAttribute(ATTR_SERVICE_NAME, app?.name),
+      toAttribute(ATTR_SERVICE_VERSION, app?.version),
+      toAttribute(ATTR_DEPLOYMENT_ENVIRONMENT_NAME, app?.environment),
     ].filter(isAttribute),
   };
 }
