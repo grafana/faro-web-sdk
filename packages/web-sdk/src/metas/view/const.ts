@@ -1,3 +1,1 @@
-export const defaultViewMeta = {
-  name: null,
-};
+export const defaultViewMeta = {};
