@@ -28,8 +28,6 @@ export class ViewInstrumentation extends BaseInstrumentation {
   }
 
   initialize() {
-    this.sendViewChangedEvent(this.metas.value);
-
     this.metas.addListener(this.sendViewChangedEvent.bind(this));
   }
 }
