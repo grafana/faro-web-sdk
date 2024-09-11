@@ -1,3 +1,5 @@
+import type { unknownString } from '@grafana/faro-core';
+
 export type FaroNavigationTiming = Readonly<
   {
     duration: string;
@@ -28,7 +30,7 @@ export type FaroResourceTiming = Readonly<{
   decodedBodySize: string;
   encodedBodySize: string;
   cacheHitStatus: 'cache' | 'conditionalFetch' | 'fullLoad';
-  renderBlockingStatus: 'blocking' | 'non-blocking' | 'unknown';
+  renderBlockingStatus: 'blocking' | 'non-blocking' | typeof unknownString;
   initiatorType: string;
   // serverTiming: PerformanceServerTiming[];
 }>;

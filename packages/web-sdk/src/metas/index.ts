@@ -6,6 +6,4 @@ export { pageMeta } from './page';
 
 export { createSession } from './session';
 
-export { defaultViewMeta } from './view';
-
 export { sdkMeta } from './sdk';

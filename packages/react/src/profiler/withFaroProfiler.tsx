@@ -1,7 +1,7 @@
 import hoistNonReactStatics from 'hoist-non-react-statics';
 import type { ComponentType, FC } from 'react';
 
-import { unknownString } from '../utils';
+import { unknownString } from '@grafana/faro-core';
 
 import { FaroProfiler } from './FaroProfiler';
 import type { FaroProfilerProps } from './FaroProfiler';

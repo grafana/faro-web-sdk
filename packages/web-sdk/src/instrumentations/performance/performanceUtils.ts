@@ -1,4 +1,4 @@
-import { isArray, type PushEventOptions } from '@grafana/faro-core';
+import { isArray, type PushEventOptions, unknownString } from '@grafana/faro-core';
 
 import type { CacheType, FaroNavigationTiming, FaroResourceTiming } from './types';
 
@@ -189,7 +189,7 @@ function getDocumentParsingTime(): number | null {
 
 function toFaroPerformanceTimingString(v: unknown): string {
   if (v == null) {
-    return 'unknown';
+    return unknownString;
   }
 
   if (typeof v === 'number') {

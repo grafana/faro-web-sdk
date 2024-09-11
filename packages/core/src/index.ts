@@ -137,3 +137,5 @@ export type {
 } from './utils';
 
 export { VERSION } from './version';
+
+export { unknownString } from './consts';

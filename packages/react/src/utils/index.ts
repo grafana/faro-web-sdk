@@ -1,4 +1,7 @@
-export { unknownString } from './const';
+/**
+ * @deprecated Will be removed in the future. Use `unknownString` from `@grafana/faro-core` instead.
+ */
+export { unknownString } from '@grafana/faro-core';
 
 export {
   getMajorReactVersion,

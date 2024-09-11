@@ -1,6 +1,7 @@
 import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB } from 'web-vitals/attribution';
 import type { Metric } from 'web-vitals/attribution';
 
+import { unknownString } from '@grafana/faro-core';
 import type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '@grafana/faro-core';
 
 import { getItem, webStorageType } from '../../utils';
@@ -146,7 +147,7 @@ export class WebVitalsWithAttribution {
   }
 
   private buildInitialContext(metric: Metric): Context {
-    const navigationEntryId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
+    const navigationEntryId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? unknownString;
 
     return {
       id: metric.id,

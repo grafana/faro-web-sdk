@@ -76,7 +76,6 @@ export {
   defaultInternalLoggerLevel,
   defaultLogLevel,
   defaultMetas,
-  defaultViewMeta,
   ErrorsInstrumentation,
   FetchTransport,
   genShortID,

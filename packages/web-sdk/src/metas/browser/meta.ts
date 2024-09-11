@@ -1,5 +1,6 @@
 import { UAParser } from 'ua-parser-js';
 
+import { unknownString } from '@grafana/faro-core';
 import type { Meta, MetaBrowser, MetaItem } from '@grafana/faro-core';
 
 export const browserMeta: MetaItem<Pick<Meta, 'browser'>> = () => {
@@ -10,17 +11,16 @@ export const browserMeta: MetaItem<Pick<Meta, 'browser'>> = () => {
   const language = navigator.language;
   const mobile = navigator.userAgent.includes('Mobi');
   const brands = getBrands();
-  const unknown = 'unknown';
 
   return {
     browser: {
-      name: name ?? unknown,
-      version: version ?? unknown,
-      os: `${osName ?? unknown} ${osVersion ?? unknown}`,
-      userAgent: userAgent ?? unknown,
-      language: language ?? unknown,
+      name: name ?? unknownString,
+      version: version ?? unknownString,
+      os: `${osName ?? unknownString} ${osVersion ?? unknownString}`,
+      userAgent: userAgent ?? unknownString,
+      language: language ?? unknownString,
       mobile,
-      brands: brands ?? unknown,
+      brands: brands ?? unknownString,
       viewportWidth: `${window.innerWidth}`,
       viewportHeight: `${window.innerHeight}`,
     },

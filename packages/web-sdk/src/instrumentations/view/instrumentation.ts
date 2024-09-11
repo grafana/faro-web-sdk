@@ -1,4 +1,4 @@
-import { BaseInstrumentation, EVENT_VIEW_CHANGED, Meta, MetaView, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, EVENT_VIEW_CHANGED, Meta, MetaView, unknownString, VERSION } from '@grafana/faro-core';
 
 // all this does is send VIEW_CHANGED event
 export class ViewInstrumentation extends BaseInstrumentation {
@@ -16,8 +16,8 @@ export class ViewInstrumentation extends BaseInstrumentation {
       this.api.pushEvent(
         EVENT_VIEW_CHANGED,
         {
-          fromView: this.notifiedView?.name ?? '',
-          toView: view.name,
+          fromView: this.notifiedView?.name ?? unknownString,
+          toView: view.name ?? unknownString,
         },
         undefined,
         { skipDedupe: true }
