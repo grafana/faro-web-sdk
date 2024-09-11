@@ -70,7 +70,7 @@ export interface MetaBrowser {
 }
 
 export interface MetaView {
-  name?: string;
+  name: string;
 }
 
 export interface MetaK6 {
