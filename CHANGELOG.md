@@ -2,14 +2,15 @@
 
 ## Next
 
-- Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#670).
+- Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#670)
   - Note: some attributes have been changed due to otel semantic attributes spec or are now aligned
     with it. For the web-tracing package we provide both attribute versions for now:
     - `deployment.environment` is now deprecated and will be replaced by
       `deployment.environment.name`.
     - `session_id` is now deprecated and will be replaced by `session.id`
 - Dependencies (`@grafana/faro-core`): upgrade otel deps (#670).
-- Dependencies (`@grafana/faro-transport-otlp-http [experimental]`): upgrade otel deps (#670).
+
+- Dependencies (`@grafana/faro-transport-otlp-http [experimental]`): upgrade otel deps (#670)
   - Note: some attributes have been changed due to otel semantic attributes spec:
     - `enduser.id` is replaced by `user.id`
     - `enduser.name` is replaced by `user.username`,
@@ -17,6 +18,9 @@
     - `enduser.attributes` is replaced by `user.attributes`,
     - `http.url` is replaced by `url.full`
     - `deployment.environment` is replaced by `deployment.environment.name`
+
+- Change (`@grafana/faro-web-sdk`): don't automatically send a `view_change` event for the default
+  view (#647)
 
 ## 1.9.1
 
@@ -100,7 +104,7 @@
 ## 1.5.1
 
 - Feature(`@grafana/faro-web-sdk`): Add parsing time to FaroNavigationTiming (#541).
-- Chore(`@grafana/faro-web-sdk`): Get rid of structureClone. It caused breakage in some
+- Change ()(`@grafana/faro-web-sdk`): Get rid of structureClone. It caused breakage in some
   sandboxed environments because of injected proxy objects (#536).
 - Feat(`@grafana/faro-web-sdk`): Add K6 test ID to K6 meta if available in window.k6 object (#531).
 
@@ -218,7 +222,7 @@
 
 - Feat: Add x-faro-session header to identify client session id to server
   for fetch and xhr instrumentations (#377)
-- Chore: Always send x-faro-session-id header, independent of the chosen session management (#381).
+- Change (): Always send x-faro-session-id header, independent of the chosen session management (#381).
 - Change: If new session management is used, send dedicated session lifecycle events to reflect if a
   new session is started, a session is resume or extended (#380)
 
