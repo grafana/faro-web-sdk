@@ -6,7 +6,7 @@ export const domExceptionType = 'DOMException';
 
 export const objectEventValue = 'Non-Error exception captured with keys:';
 
-export const unknownString = '?';
+export const unknownSymbolString = '?';
 
 export const valueTypeRegex =
   /^(?:[Uu]ncaught (?:exception: )?)?(?:((?:Eval|Internal|Range|Reference|Syntax|Type|URI|)Error): )?(.*)$/i;

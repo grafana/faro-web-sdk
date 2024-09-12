@@ -1,6 +1,6 @@
 export const newLineString = '\n';
 export const evalString = 'eval';
-export const unknownString = '?';
+export const unknownSymbolString = '?';
 export const atString = '@';
 
 export const webkitLineRegex =

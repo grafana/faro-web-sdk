@@ -1,4 +1,4 @@
-import { genShortID } from '@grafana/faro-core';
+import { genShortID, unknownString } from '@grafana/faro-core';
 import type { EventsAPI, PushEventOptions } from '@grafana/faro-core';
 
 import { getItem, setItem, webStorageType } from '../../utils';
@@ -30,7 +30,7 @@ export function getNavigationTimings(
 
     let spanContext: SpanContext = getSpanContextFromServerTiming(navEntryJson?.serverTiming);
 
-    const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? 'unknown';
+    const faroPreviousNavigationId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? unknownString;
 
     const faroNavigationEntry: FaroNavigationItem = {
       ...createFaroNavigationTiming(navEntryJson),

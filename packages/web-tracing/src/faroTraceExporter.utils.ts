@@ -1,7 +1,7 @@
 import type { SpanContext } from '@opentelemetry/api';
 import { ESpanKind, IResourceSpans } from '@opentelemetry/otlp-transformer';
 
-import { faro } from '@grafana/faro-core';
+import { faro, unknownString } from '@grafana/faro-core';
 import type { EventAttributes as FaroEventAttributes } from '@grafana/faro-web-sdk';
 
 export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
@@ -28,7 +28,7 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
         }
 
         const index = (scope?.name ?? '').indexOf('-');
-        let eventName = 'unknown';
+        let eventName = unknownString;
 
         if (scope?.name) {
           if (index === -1) {

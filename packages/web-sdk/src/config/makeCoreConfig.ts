@@ -12,7 +12,7 @@ import type { Config, MetaItem, Transport } from '@grafana/faro-core';
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
-import { defaultMetas, defaultViewMeta } from '../metas';
+import { defaultMetas } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { FetchTransport } from '../transports';
 
@@ -87,7 +87,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     },
 
     user: browserConfig.user,
-    view: browserConfig.view ?? defaultViewMeta,
+    view: browserConfig.view,
     trackResources: browserConfig.trackResources,
     trackWebVitalsAttribution: browserConfig.trackWebVitalsAttribution,
   };

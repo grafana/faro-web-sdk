@@ -97,7 +97,7 @@ describe('Navigation observer', () => {
         ...createFaroResourceTiming(performanceNavigationEntry),
         ...createFaroNavigationTiming(performanceNavigationEntry),
         faroNavigationId: mockNavigationId,
-        faroPreviousNavigationId: 'unknown',
+        faroPreviousNavigationId: faroCoreModule.unknownString,
       },
       undefined,
       {

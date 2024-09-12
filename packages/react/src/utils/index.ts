@@ -1,5 +1,3 @@
-export { unknownString } from './const';
-
 export {
   getMajorReactVersion,
   isReactVersionAtLeast,
