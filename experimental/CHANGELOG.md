@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.10.0
+
 - Dependencies (`@grafana/faro-transport-otlp-http`): upgrade otel deps (#670).
   - Note: some attributes have been changed due to otel semantic attributes spec:
     - `enduser.id` is replaced by `user.id`
