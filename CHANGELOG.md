@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.10.0
+
 - Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#670)
   - Note: some attributes have been changed due to otel semantic attributes spec or are now aligned
     with it. For the web-tracing package we provide both attribute versions for now:
