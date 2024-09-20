@@ -13,6 +13,9 @@ The repository consists of multiple packages that can be combined depending on y
 
 ## Get started
 
+> [!NOTE]
+> For more information, you can find the Faro documentation in the [Grafana Cloud docs for Faro](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/instrument/).
+
 See [quick start for web applications][faro-quick-start].
 
 ## Packages
