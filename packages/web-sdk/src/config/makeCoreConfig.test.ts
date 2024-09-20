@@ -80,4 +80,40 @@ describe('config', () => {
     expect(config).toBeTruthy();
     expect(config?.logArgsSerializer).toBe(defaultLogArgsSerializer);
   });
+
+  it('adds default urls to ignoreUrls', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.ignoreUrls).toEqual([/\/collect(?:\/[\w]*)?$/]);
+  });
+
+  it('merges configured urls with default URLs into ignoreUrls list', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      ignoreUrls: ['http://example.com/ignore-me'],
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.ignoreUrls).toEqual([browserConfig.ignoreUrls[0], /\/collect(?:\/[\w]*)?$/]);
+  });
+
+  it.each(['http://example.com/collect', 'http://example.com/collect/874jdhalkfh7a9'])(
+    'Matches default ignoreUrl with urls ending with /collect or ending with /collect followed by alphanumeric characters',
+    (url) => {
+      const config = makeCoreConfig({ url: '', app: {} });
+      expect(config).toBeTruthy();
+      // @ts-expect-error
+      expect(config?.ignoreUrls[0]).toEqual(/\/collect(?:\/[\w]*)?$/);
+
+      // @ts-expect-error
+      expect(config.ignoreUrls[0].test(url)).toBe(true);
+    }
+  );
 });
