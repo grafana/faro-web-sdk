@@ -2,6 +2,11 @@
 
 ## Next
 
+## 1.10.1
+
+- Enhancement (`@grafana/faro-web-sdk`): Isolated Faro instances now exclude the default collector
+  URLs of other instances by default (#684).
+
 ## 1.10.0
 
 - Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#670)
