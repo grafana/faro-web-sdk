@@ -8,10 +8,16 @@ import {
   ATTR_TELEMETRY_SDK_NAME,
   ATTR_TELEMETRY_SDK_VERSION,
   ATTR_URL_FULL,
+  ATTR_USER_AGENT_ORIGINAL,
   TELEMETRY_SDK_LANGUAGE_VALUE_WEBJS,
 } from '@opentelemetry/semantic-conventions';
 import {
+  ATTR_BROWSER_BRANDS,
+  ATTR_BROWSER_LANGUAGE,
+  ATTR_BROWSER_MOBILE,
+  ATTR_BROWSER_PLATFORM,
   ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
+  ATTR_SERVICE_NAMESPACE,
   ATTR_USER_EMAIL,
   ATTR_USER_ID,
   ATTR_USER_NAME,
@@ -47,20 +53,6 @@ import type {
   StringValueNonNullable,
   TraceTransform,
 } from './types';
-
-/**
- * Seems currently to be missing in the semantic-conventions npm package.
- * See: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/semantic_conventions/README.md#todos
- *
- * Attributes are as defined by the Otel docs
- */
-const SemanticBrowserAttributes = {
-  BROWSER_BRANDS: 'browser.brands',
-  BROWSER_PLATFORM: 'browser.platform',
-  BROWSER_MOBILE: 'browser.mobile',
-  BROWSER_USER_AGENT: 'browser.user_agent',
-  BROWSER_LANGUAGE: 'browser.language',
-} as const;
 
 export function getLogTransforms(
   internalLogger: InternalLogger,
@@ -248,11 +240,11 @@ function toResource(transportItem: TransportItem): Readonly<Resource> {
 
   return {
     attributes: [
-      toAttribute(SemanticBrowserAttributes.BROWSER_MOBILE, browser?.mobile),
-      toAttribute(SemanticBrowserAttributes.BROWSER_USER_AGENT, browser?.userAgent),
-      toAttribute(SemanticBrowserAttributes.BROWSER_LANGUAGE, browser?.language),
-      toAttribute(SemanticBrowserAttributes.BROWSER_BRANDS, browser?.brands),
-      toAttribute('browser.os', browser?.os),
+      toAttribute(ATTR_BROWSER_MOBILE, browser?.mobile),
+      toAttribute(ATTR_USER_AGENT_ORIGINAL, browser?.userAgent),
+      toAttribute(ATTR_BROWSER_LANGUAGE, browser?.language),
+      toAttribute(ATTR_BROWSER_BRANDS, browser?.brands),
+      toAttribute(ATTR_BROWSER_PLATFORM, browser?.os),
       toAttribute('browser.name', browser?.name),
       toAttribute('browser.version', browser?.version),
       toAttribute('browser.screen_width', browser?.viewportWidth),
@@ -264,6 +256,7 @@ function toResource(transportItem: TransportItem): Readonly<Resource> {
 
       toAttribute(ATTR_SERVICE_NAME, app?.name),
       toAttribute(ATTR_SERVICE_VERSION, app?.version),
+      toAttribute(ATTR_SERVICE_NAMESPACE, app?.namespace),
       toAttribute(ATTR_DEPLOYMENT_ENVIRONMENT_NAME, app?.environment),
     ].filter(isAttribute),
   };

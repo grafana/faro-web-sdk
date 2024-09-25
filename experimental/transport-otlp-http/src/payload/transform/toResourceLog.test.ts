@@ -58,7 +58,7 @@ const matchResourcePayload = {
     },
 
     {
-      key: 'browser.user_agent',
+      key: 'user_agent.original',
       value: { stringValue: 'browser-ua-string' },
     },
     {
@@ -129,13 +129,9 @@ const matchResourcePayload = {
       },
     },
     {
-      key: 'browser.os',
+      key: 'browser.platform',
       value: { stringValue: 'browser-operating-system' },
     },
-    // {
-    //   key: 'browser.platform',
-    //   value: { stringValue: 'browser-MyOperationSystem' },
-    // },
     {
       key: 'browser.name',
       value: { stringValue: 'browser-name' },

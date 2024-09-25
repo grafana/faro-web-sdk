@@ -2,6 +2,18 @@
 
 ## Next
 
+## 1.10.1
+
+- Fix (`@grafana/faro-transport-otlp-http [experimental]`): add `service.namespace` attribute if set
+  (#684).
+
+### Breaking
+
+- Change (`@grafana/faro-transport-otlp-http [experimental]`): update semantic attributes
+  for browser (#687).
+  - `browser.user_agent` is replaced by `user_agent.original`
+  - `browser.os` is replaced by `browser.platform`
+
 ## 1.10.0
 
 - Dependencies (`@grafana/faro-transport-otlp-http`): upgrade otel deps (#670).
