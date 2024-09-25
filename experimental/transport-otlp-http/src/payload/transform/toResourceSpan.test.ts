@@ -168,7 +168,7 @@ const matchResourceSpanPayload = {
       },
 
       {
-        key: 'browser.user_agent',
+        key: 'user_agent.original',
         value: { stringValue: 'browser-ua-string' },
       },
       {
@@ -176,13 +176,9 @@ const matchResourceSpanPayload = {
         value: { stringValue: 'browser-language' },
       },
       {
-        key: 'browser.os',
+        key: 'browser.platform',
         value: { stringValue: 'browser-operating-system' },
       },
-      // {
-      //   key: 'browser.platform',
-      //   value: { stringValue: 'browser-MyOperationSystem' },
-      // },
       {
         key: 'browser.name',
         value: { stringValue: 'browser-name' },
