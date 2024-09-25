@@ -44,8 +44,13 @@ export interface PushErrorOptions {
   timestampOverwriteMs?: number;
 }
 
+// ts type is missing the cause property
+export type ErrorWithIndexProperties = Error & {
+  cause?: any;
+};
+
 export interface ExceptionsAPI {
   changeStacktraceParser: (stacktraceParser: StacktraceParser) => void;
   getStacktraceParser: () => StacktraceParser | undefined;
-  pushError: (value: Error, options?: PushErrorOptions) => void;
+  pushError: (value: ErrorWithIndexProperties, options?: PushErrorOptions) => void;
 }

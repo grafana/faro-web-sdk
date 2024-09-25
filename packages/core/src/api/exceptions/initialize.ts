@@ -4,12 +4,12 @@ import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
+import { deepEqual, getCurrentTimestamp, isArray, isError, isNull, isObject } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
 import { defaultExceptionType } from './const';
-import type { ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
+import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
 
 let stacktraceParser: StacktraceParser | undefined;
 
@@ -53,7 +53,10 @@ export function initializeExceptionsAPI(
               span_id: spanContext.spanId,
             }
           : tracesApi.getTraceContext(),
-        context: context ?? {},
+        context: {
+          ...parseCause(error),
+          ...(context ?? {}),
+        },
       },
       type: TransportItemType.EXCEPTION,
     };
@@ -93,4 +96,17 @@ export function initializeExceptionsAPI(
     getStacktraceParser,
     pushError,
   };
+}
+function parseCause(error: ErrorWithIndexProperties): {} | { cause: string } {
+  let cause = error.cause;
+
+  if (isError(cause)) {
+    cause = error.cause.toString();
+  } else if (isObject(error.cause) || isArray(error.cause)) {
+    cause = JSON.stringify(error.cause);
+  } else if (cause != null) {
+    cause = error.cause.toString();
+  }
+
+  return cause == null ? {} : { cause };
 }
