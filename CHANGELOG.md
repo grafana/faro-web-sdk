@@ -7,7 +7,20 @@
 - Enhancement (`@grafana/faro-web-sdk`): Isolated Faro instances now exclude the default collector
   URLs of other instances by default (#684).
 
+- Fix (`@grafana/faro-transport-otlp-http [experimental]`): add `service.namespace` attribute if set
+  (#684).
+
+### Breaking
+
+- Change (`@grafana/faro-transport-otlp-http [experimental]`): update semantic attributes
+  for browser (#684).
+  - `browser.user_agent` is replaced by `user_agent.original`
+  - `browser.os` is replaced by `browser.platform`
+
 ## 1.10.0
+
+- Change (`@grafana/faro-web-sdk`): don't automatically send a `view_change` event for the default
+  view (#647)
 
 - Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#670)
   - Note: some attributes have been changed due to otel semantic attributes spec or are now aligned
@@ -16,6 +29,8 @@
       `deployment.environment.name`.
     - `session_id` is now deprecated and will be replaced by `session.id`
 - Dependencies (`@grafana/faro-core`): upgrade otel deps (#670).
+
+### Breaking
 
 - Dependencies (`@grafana/faro-transport-otlp-http [experimental]`): upgrade otel deps (#670)
 
@@ -26,9 +41,6 @@
     - `enduser.attributes` is replaced by `user.attributes`,
     - `http.url` is replaced by `url.full`
     - `deployment.environment` is replaced by `deployment.environment.name`
-
-- Change (`@grafana/faro-web-sdk`): don't automatically send a `view_change` event for the default
-  view (#647)
 
 ## 1.9.1
 
