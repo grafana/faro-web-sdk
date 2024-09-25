@@ -102,7 +102,9 @@ function parseCause(error: ErrorWithIndexProperties): {} | { cause: string } {
 
   if (isError(cause)) {
     cause = error.cause.toString();
-  } else if (isObject(error.cause) || isArray(error.cause)) {
+    // typeof operator on null returns "object". This is a well-known quirk in JavaScript and is considered a bug that cannot be fixed due to backward compatibility issues.
+    // MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof#typeof_null
+  } else if (cause !== null && (isObject(error.cause) || isArray(error.cause))) {
     cause = JSON.stringify(error.cause);
   } else if (cause != null) {
     cause = error.cause.toString();
