@@ -8,7 +8,7 @@
   URLs of other instances by default (#684).
 
 - Fix (`@grafana/faro-transport-otlp-http [experimental]`): add `service.namespace` attribute if set
-  (#684).
+  (#687).
 
 ### Breaking
 

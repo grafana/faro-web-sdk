@@ -10,7 +10,7 @@
 ### Breaking
 
 - Change (`@grafana/faro-transport-otlp-http [experimental]`): update semantic attributes
-  for browser (#684).
+  for browser (#687).
   - `browser.user_agent` is replaced by `user_agent.original`
   - `browser.os` is replaced by `browser.platform`
 
