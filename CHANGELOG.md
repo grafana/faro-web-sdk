@@ -10,7 +10,7 @@
 - Fix (`@grafana/faro-transport-otlp-http [experimental]`): add `service.namespace` attribute if set
   (#687).
 
-### Breaking
+**Breaking**
 
 - Change (`@grafana/faro-transport-otlp-http [experimental]`): update semantic attributes
   for browser (#684).
@@ -30,7 +30,7 @@
     - `session_id` is now deprecated and will be replaced by `session.id`
 - Dependencies (`@grafana/faro-core`): upgrade otel deps (#670).
 
-### Breaking
+**Breaking**
 
 - Dependencies (`@grafana/faro-transport-otlp-http [experimental]`): upgrade otel deps (#670)
 
