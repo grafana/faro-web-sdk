@@ -200,6 +200,40 @@ describe('api.exceptions', () => {
         expect(transport.items).toHaveLength(1);
         expect((transport.items[0]?.payload as ExceptionEvent).timestamp).toBe('1970-01-01T00:00:00.123Z');
       });
+
+      it('Adds error cause to error context', () => {
+        // @ts-expect-error cause is missing in TS type Error
+        const error = new Error('test', { cause: 'foo' });
+        // @ts-expect-error cause is missing in TS type Error
+        const error2 = new Error('test2', { cause: [1, 3] });
+        // @ts-expect-error cause is missing in TS type Error
+        const error3 = new Error('test3', { cause: { a: 'b' } });
+        // @ts-expect-error cause is missing in TS type Error
+        const error4 = new Error('test4', { cause: new Error('original error') });
+        // @ts-expect-error cause is missing in TS type Error
+        const error5 = new Error('test5', { cause: null });
+        // @ts-expect-error cause is missing in TS type Error
+        const error6 = new Error('test6', { cause: undefined });
+        const error7 = new Error('test6');
+
+        api.pushError(error);
+        api.pushError(error2);
+        api.pushError(error3);
+        api.pushError(error4);
+        api.pushError(error5);
+        api.pushError(error6);
+        api.pushError(error7);
+
+        expect(transport.items).toHaveLength(7);
+
+        expect((transport.items[0]?.payload as ExceptionEvent)?.context).toEqual({ cause: 'foo' });
+        expect((transport.items[1]?.payload as ExceptionEvent)?.context).toEqual({ cause: '[1,3]' });
+        expect((transport.items[2]?.payload as ExceptionEvent)?.context).toEqual({ cause: '{"a":"b"}' });
+        expect((transport.items[3]?.payload as ExceptionEvent)?.context).toEqual({ cause: 'Error: original error' });
+        expect((transport.items[4]?.payload as ExceptionEvent)?.context).toEqual({});
+        expect((transport.items[5]?.payload as ExceptionEvent)?.context).toEqual({});
+        expect((transport.items[5]?.payload as ExceptionEvent)?.context).toEqual({});
+      });
     });
   });
 });

@@ -10,4 +10,5 @@ export type {
   PushErrorOptions,
   Stacktrace,
   StacktraceParser,
+  ErrorWithIndexProperties,
 } from './types';
