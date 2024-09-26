@@ -6,6 +6,8 @@
 
 - Enhancement (`@grafana/faro-web-sdk`): Isolated Faro instances now exclude the default collector
   URLs of other instances by default (#684).
+- Enhancement (`@grafana/faro-web-sdk`): The `pushError` API now automatically includes `error.cause`
+  in the Faro exception context (#688).
 
 - Fix (`@grafana/faro-transport-otlp-http [experimental]`): add `service.namespace` attribute if set
   (#687).
