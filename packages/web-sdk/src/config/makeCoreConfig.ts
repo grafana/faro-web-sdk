@@ -80,7 +80,8 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
     ignoreErrors: browserConfig.ignoreErrors,
     // ignore cloud collector urls by default. These are URLs ending with /collect or /collect/ followed by alphanumeric characters.
-    ignoreUrls: (browserConfig.ignoreUrls ?? []).concat([/\/collect(?:\/[\w]*)?$/]),
+    // ignoreUrls: (browserConfig.ignoreUrls ?? []).concat([/\/collect(?:\/[\w]*)?$/]),
+    ignoreUrls: browserConfig.ignoreUrls ?? [/\/collect(?:\/[\w]*)?$/],
 
     sessionTracking: {
       ...defaultSessionTrackingConfig,
