@@ -17,7 +17,7 @@ export class FaroXhrInstrumentation extends XMLHttpRequestInstrumentation {
     this.parentCreateSpan = self._createSpan.bind(this);
   }
 
-  // Patching the private method to take handle url type string or URL
+  // Patching the parent's private method to handle url type string or URL
   protected override _patchOpen() {
     return (original: OpenFunction): OpenFunction => {
       const plugin = this;
