@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.10.2
+
 - Fix (`@grafana/faro-web-tracing`): Enhance the xhr instrumentation to handle both URL objects and
   strings seamlessly (#695).
 
