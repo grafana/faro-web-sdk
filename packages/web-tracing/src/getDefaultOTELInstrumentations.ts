@@ -1,6 +1,6 @@
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
-import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
+import { FaroXhrInstrumentation } from './faroXhrInstrumentation';
 import {
   fetchCustomAttributeFunctionWithDefaults,
   xhrCustomAttributeFunctionWithDefaults,
@@ -13,7 +13,7 @@ export function getDefaultOTELInstrumentations(options: DefaultInstrumentationsO
   const fetchOpts = createFetchInstrumentationOptions(fetchInstrumentationOptions, sharedOptions);
   const xhrOpts = createXhrInstrumentationOptions(xhrInstrumentationOptions, sharedOptions);
 
-  return [new FetchInstrumentation(fetchOpts), new XMLHttpRequestInstrumentation(xhrOpts)];
+  return [new FetchInstrumentation(fetchOpts), new FaroXhrInstrumentation(xhrOpts)];
 }
 function createFetchInstrumentationOptions(
   fetchInstrumentationOptions: DefaultInstrumentationsOptions['fetchInstrumentationOptions'],

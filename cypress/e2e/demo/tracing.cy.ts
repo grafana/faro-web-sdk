@@ -2,9 +2,13 @@ import type { TraceContext } from '@grafana/faro-core';
 
 context('Tracing', () => {
   [
-    {
-      title: 'log with trace context',
-      btnName: 'trace-with-log',
+    { btnName: 'trace-with-log', title: 'log with trace context' },
+    { btnName: 'xhr-success', title: 'XHR success' },
+    { btnName: 'fetch-success', title: 'FETCH success' },
+  ]
+    .map(({ btnName, title }) => ({
+      title,
+      btnName,
       interceptor: () => {
         let trace: TraceContext | undefined = undefined;
 
@@ -31,16 +35,16 @@ context('Tracing', () => {
           return undefined;
         }).as('trace');
       },
-    },
-  ].forEach(({ title, btnName, interceptor }) => {
-    it(`will capture ${title}`, () => {
-      interceptor();
+    }))
+    .forEach(({ title, btnName, interceptor }) => {
+      it(`will capture ${title}`, () => {
+        interceptor();
 
-      cy.visit('/features');
+        cy.visit('/features');
 
-      cy.clickButton(`btn-${btnName}`);
+        cy.clickButton(`btn-${btnName}`);
 
-      cy.wait('@trace');
+        cy.wait('@trace');
+      });
     });
-  });
 });

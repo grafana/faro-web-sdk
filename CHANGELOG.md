@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-tracing`): Enhance the xhr instrumentation to handle both URL objects and
+  strings seamlessly (#695).
+
 ## 1.10.1
 
 - Enhancement (`@grafana/faro-web-sdk`): Isolated Faro instances now exclude the default collector
