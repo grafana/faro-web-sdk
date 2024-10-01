@@ -1,13 +1,13 @@
 import type { Span } from '@opentelemetry/api';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 import type { XMLHttpRequestInstrumentationConfig } from '@opentelemetry/instrumentation-xml-http-request';
-import { OpenFunction } from '@opentelemetry/instrumentation-xml-http-request/build/src/types';
+import type { OpenFunction } from '@opentelemetry/instrumentation-xml-http-request/build/src/types';
 
 type Parent = {
   _createSpan: (xhr: XMLHttpRequest, url: string, method: string) => Span | undefined;
 };
 
-export class FaroXhrWrapper extends XMLHttpRequestInstrumentation {
+export class FaroXhrInstrumentation extends XMLHttpRequestInstrumentation {
   private parentCreateSpan: Parent['_createSpan'];
 
   constructor(config: XMLHttpRequestInstrumentationConfig = {}) {
@@ -22,10 +22,11 @@ export class FaroXhrWrapper extends XMLHttpRequestInstrumentation {
       const plugin = this;
       return function patchOpen(this: XMLHttpRequest, ...args): void {
         const method: string = args[0];
-        const url: string = args[1];
+        let url: string | URL = args[1];
 
-        console.log('method :>> ', method);
-        console.log('url :>> ', url);
+        if (isInstanceOfURL(url)) {
+          url = url.href;
+        }
 
         plugin.parentCreateSpan(this, url, method);
 
@@ -33,4 +34,8 @@ export class FaroXhrWrapper extends XMLHttpRequestInstrumentation {
       };
     };
   }
+}
+
+function isInstanceOfURL(item: any): item is URL {
+  return item instanceof URL;
 }
