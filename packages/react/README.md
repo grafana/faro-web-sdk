@@ -99,7 +99,7 @@ In the file you create your data router, often the App.\* file pass your data ro
 function `withFaroRouterInstrumentation` to wrap all your routes and apply Faro auto instrumentation:
 
 ```ts
-import { createBrowserRouter } from '@grafana/faro-react';
+import { createBrowserRouter } from 'react-router-dom';
 
 const reactBrowserRouter = createBrowserRouter([
   // your routes...
