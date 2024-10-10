@@ -2,6 +2,9 @@
 
 ## Next
 
+- Improvement (`@grafana/faro-web-sdk`): Isolated Faro instances now exclude the default collector
+  URLs of other instances by default (#684).
+
 ## 1.10.2
 
 - Fix (`@grafana/faro-web-tracing`): Enhance the xhr instrumentation to handle both URL objects and
@@ -9,9 +12,9 @@
 
 ## 1.10.1
 
-- Enhancement (`@grafana/faro-web-sdk`): Isolated Faro instances now exclude the default collector
+- Improvement (`@grafana/faro-web-sdk`): Isolated Faro instances now exclude the default collector
   URLs of other instances by default (#684).
-- Enhancement (`@grafana/faro-web-sdk`): The `pushError` API now automatically includes `error.cause`
+- Improvement (`@grafana/faro-web-sdk`): The `pushError` API now automatically includes `error.cause`
   in the Faro exception context (#688).
 
 - Fix (`@grafana/faro-transport-otlp-http [experimental]`): add `service.namespace` attribute if set
@@ -19,14 +22,14 @@
 
 ### Breaking
 
-- Change (`@grafana/faro-transport-otlp-http [experimental]`): update semantic attributes
+- Improvement (`@grafana/faro-transport-otlp-http [experimental]`): update semantic attributes
   for browser (#684).
   - `browser.user_agent` is replaced by `user_agent.original`
   - `browser.os` is replaced by `browser.platform`
 
 ## 1.10.0
 
-- Change (`@grafana/faro-web-sdk`): don't automatically send a `view_change` event for the default
+- Improvement (`@grafana/faro-web-sdk`): don't automatically send a `view_change` event for the default
   view (#647)
 
 - Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#670)
@@ -55,24 +58,24 @@
 
 ## 1.9.0
 
-- Enhancement (`@grafana/faro-web-sdk`): Provide and option to pass a correction timestamp via the
+- Improvement (`@grafana/faro-web-sdk`): Provide and option to pass a correction timestamp via the
   Faro API (#658).
 
 - Fix (`@grafana/faro-web-sdk`): Adjust the timestamp of a navigation or resource event to reflect
   the actual time the event occurred, rather than the signal creation time. (#658).
 
-- Change: (`@grafana/faro-web-tracing`) The underlying XHR and Fetch instrumentation are now
+- Improvement: (`@grafana/faro-web-tracing`) The underlying XHR and Fetch instrumentation are now
   configured to ignore network events by default. This behavior can be enabled back through the
   options in the WebTracing class.
 
 ## 1.8.2
 
-- Enhancement (`@grafana/faro-web-tracing`): ensure that span status is always set to error for
+- Improvement (`@grafana/faro-web-tracing`): ensure that span status is always set to error for
   erroneous xhr requests (#644).
 
 ## 1.8.1
 
-- Enhancement (`@grafana/faro-web-tracing`): ensure that span status is always set to error for
+- Improvement (`@grafana/faro-web-tracing`): ensure that span status is always set to error for
   erroneous fetch requests (#641).
 
 ## 1.8.0
@@ -81,9 +84,9 @@
 - Feature (`@grafana/faro-web-sdk`): set span context for navigation events (#608).
 - Feature (`@grafana/faro-react`): add helper functions to initialize React Router integration (#622).
 
-- Enhancement (`@grafana/faro-web-sdk`): Auto extend a session if the Faro receiver indicates that a
+- Improvement (`@grafana/faro-web-sdk`): Auto extend a session if the Faro receiver indicates that a
   session is invalid (#591).
-- Enhancement (`@grafana/faro-web-tracing`): provide the `app.namespace` attribute in the app meta
+- Improvement (`@grafana/faro-web-tracing`): provide the `app.namespace` attribute in the app meta
   which is attached as `service.namespace` to the resource attributes object (#627).
 
 - Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#621).
@@ -106,32 +109,32 @@
 
 ## 1.7.1
 
-- Enhancement (`@grafana/faro-core`): Config has now a parameter `logArgsSerializer` to set a custom serializer for
+- Improvement (`@grafana/faro-core`): Config has now a parameter `logArgsSerializer` to set a custom serializer for
   log arguments (#564). This is useful if log message args are complex and might produce `[object Object]` in the logs.
 - Fix (`@grafana/faro-web-tracing`): Fix an import issue causing builds to fail (#581).
 - Fix (`@grafana/faro-react`): Fix type issues in react data route wrapper `withFaroRouterInstrumentation` (#584).
 
 ## 1.7.0
 
-- Enhancement (`@grafana/faro-web-sdk`): provide option to globally
+- Improvement (`@grafana/faro-web-sdk`): provide option to globally
   exclude endpoint URLs from being tracked. This applies to the following instrumentations:
   performance, xhr, fetch and web-tracing (#554).
 - Update (`faro demo`): Update Demo to pin docker images and replace Cortex by Mimir (#563).
-- Enhancement (`faro demo`): Migrate demo Grafana agent to Grafana alloy
+- Improvement (`faro demo`): Migrate demo Grafana agent to Grafana alloy
 
 ## 1.6.0
 
 - Docs(`@grafana/faro-web-sdk`, `@grafana/faro-web-tracing`): Remove pre-release warning (#550).
-- Change (`@grafana/faro-web-tracing`): Remove redundant DocumentLoadInstrumentation.
+- Improvement (`@grafana/faro-web-tracing`): Remove redundant DocumentLoadInstrumentation.
   Faro tracks page load data by default (#551).
-- Change(`@grafana/faro-web-sdk`): Performance instrumentation only tracks resource entries initiated
+- Improvement(`@grafana/faro-web-sdk`): Performance instrumentation only tracks resource entries initiated
   by calls to the `fetch` method or `xhr-html requests`. To track all resource entries set
   `trackResources: true` (#560).
 
 ## 1.5.1
 
 - Feature(`@grafana/faro-web-sdk`): Add parsing time to FaroNavigationTiming (#541).
-- Change ()(`@grafana/faro-web-sdk`): Get rid of structureClone. It caused breakage in some
+- Improvement ()(`@grafana/faro-web-sdk`): Get rid of structureClone. It caused breakage in some
   sandboxed environments because of injected proxy objects (#536).
 - Feat(`@grafana/faro-web-sdk`): Add K6 test ID to K6 meta if available in window.k6 object (#531).
 
@@ -152,16 +155,16 @@
 
 ## 1.4.1
 
-- Enhancement (`@grafana/faro-web-tracing`): Dedupe Faro trace events (#507).
+- Improvement (`@grafana/faro-web-tracing`): Dedupe Faro trace events (#507).
 
 ## 1.4.0
 
 - Feat (`@grafana/faro-web-sdk`): Enable Faro Navigation and Resource timings instrumentation by default (#482).
-- Enhancement (`@grafana/faro-web-tracing`): Send a dedicated Faro event for traces of kind=client (#499).
+- Improvement (`@grafana/faro-web-tracing`): Send a dedicated Faro event for traces of kind=client (#499).
 
 ## 1.3.9
 
-- Enhancement (`@grafana/faro-web-sdk`): add `duration` property in `faro.performance.resource` timings and
+- Improvement (`@grafana/faro-web-sdk`): add `duration` property in `faro.performance.resource` timings and
   rename property `totalNavigationTime` to `duration` in `faro.performance.navigation` timings (#490).
 - Fix (`@grafana/faro-web-sdk`): crash when navigator.userAgentData is undefined (#494).
 
@@ -171,7 +174,7 @@
 
 ## 1.3.7
 
-- Enhancement (`@grafana/faro-web-sdk`): add response time to performance timings (#465).
+- Improvement (`@grafana/faro-web-sdk`): add response time to performance timings (#465).
 - Deps (`@grafana/faro-web-tracing`): Update `instrumentation-document-load` which prevents build.
   from breaking (#467).
 
@@ -179,9 +182,9 @@
 
 - Feature preview (`@grafana/faro-web-sdk`): instrument navigation and resource timings. As long as
   this feature is in preview it is disabled by default (#434)
-- Enhancement (`@grafana/faro-web-tracing`): Automatically add the value of the MetaApp environment
+- Improvement (`@grafana/faro-web-tracing`): Automatically add the value of the MetaApp environment
   property to the resource attributes `deployment.environment` property (#453)
-- Change (`@grafana/faro-web-sdk`): change storage key prefix for Faro session to use reverse domain
+- Improvement (`@grafana/faro-web-sdk`): change storage key prefix for Faro session to use reverse domain
   notation (#432)
 - Fix (`@grafana/faro-core`): make check for presence of Event more robust (#436)
 
@@ -229,7 +232,7 @@
 - Deps: upgrade OTEL dependencies, remove outdated resolutions (#391).
 - Fix (Web Tracing): send otel timings, like timeUnixNano, as string instead in LongBits format (#391).
 - Feat: session based sampling (#385).
-- Change: Send better attributes with the view and route transition events to contain information about
+- Improvement: Send better attributes with the view and route transition events to contain information about
   the previous route or view (`from*`) and the destination route or view (`to*`) (#397).
 - Breaking❗️: React Instrumentation, the route transition event is renamed from `routeChange` to
   `route_change`. The `url` and `route` attributes sent with the event are renamed to `toRoute` and
@@ -237,8 +240,8 @@
 
 ## 1.2.8
 
-- Change: Custom x-faro-session-id header will now be added to legacy sessions as well (#384).
-- Change: Lower maxSessionPersistenceTime for tracked sessions and export tooling to make it easier
+- Improvement: Custom x-faro-session-id header will now be added to legacy sessions as well (#384).
+- Improvement: Lower maxSessionPersistenceTime for tracked sessions and export tooling to make it easier
   to manually remove a persisted session (#387)
 
 ## 1.2.7
@@ -249,8 +252,8 @@
 
 - Feat: Add x-faro-session header to identify client session id to server
   for fetch and xhr instrumentations (#377)
-- Change (): Always send x-faro-session-id header, independent of the chosen session management (#381).
-- Change: If new session management is used, send dedicated session lifecycle events to reflect if a
+- Improvement (): Always send x-faro-session-id header, independent of the chosen session management (#381).
+- Improvement: If new session management is used, send dedicated session lifecycle events to reflect if a
   new session is started, a session is resume or extended (#380)
 
 ## 1.2.5
