@@ -1,4 +1,4 @@
-import { initializeFaro } from '@grafana/faro-core';
+import { ExceptionEvent, initializeFaro, TransportItem } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
@@ -30,14 +30,12 @@ describe('ConsoleInstrumentation', () => {
     console.error('with object', { foo: 'bar', baz: 'bam' });
 
     expect(mockTransport.items).toHaveLength(2);
-    // @ts-expect-error
-    expect(mockTransport.items[0]?.payload.type).toBe('Error');
-    // @ts-expect-error
-    expect(mockTransport.items[0]?.payload.value).toBe('console.error no 1');
 
-    // @ts-expect-error
-    expect(mockTransport.items[1]?.payload.type).toBe('Error');
-    // @ts-expect-error
-    expect(mockTransport.items[1]?.payload.value).toBe('with object {"foo":"bar","baz":"bam"}');
+    expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.type).toBe('Error');
+    expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.value).toBe('console.error no 1');
+    expect((mockTransport.items[1] as TransportItem<ExceptionEvent>)?.payload.type).toBe('Error');
+    expect((mockTransport.items[1] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
+      'with object {"foo":"bar","baz":"bam"}'
+    );
   });
 });
