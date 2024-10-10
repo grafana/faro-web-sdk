@@ -2,8 +2,8 @@
 
 ## Next
 
-- Improvement (`@grafana/faro-web-sdk`): Isolated Faro instances now exclude the default collector
-  URLs of other instances by default (#684).
+- Improvement (`@grafana/faro-web-sdk`): The console instrumentation now sends an `Error` signal
+  instead of a `Log` signal for `console.error()` calls (#703).
 
 ## 1.10.2
 
