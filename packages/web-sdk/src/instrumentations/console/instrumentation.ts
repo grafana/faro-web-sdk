@@ -1,4 +1,4 @@
-import { allLogLevels, BaseInstrumentation, LogLevel, VERSION } from '@grafana/faro-core';
+import { allLogLevels, BaseInstrumentation, isArray, isObject, LogLevel, VERSION } from '@grafana/faro-core';
 
 import type { ConsoleInstrumentationOptions } from './types';
 
@@ -21,7 +21,13 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         /* eslint-disable-next-line no-console */
         console[level] = (...args) => {
           try {
-            this.api.pushLog(args, { level });
+            if (level === LogLevel.ERROR) {
+              this.api.pushError(
+                new Error(args.map((arg) => (isObject(arg) || isArray(arg) ? JSON.stringify(arg) : arg)).join(' '))
+              );
+            } else {
+              this.api.pushLog(args, { level });
+            }
           } catch (err) {
             this.logError(err);
           } finally {
