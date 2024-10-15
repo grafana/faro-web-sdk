@@ -118,6 +118,8 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
     renderBlockingStatus: toFaroPerformanceTimingString(rbs) as FaroResourceTiming['renderBlockingStatus'],
     protocol: nextHopProtocol,
     initiatorType: initiatorType,
+    visibilityState: document.visibilityState,
+    ttfb: toFaroPerformanceTimingString(responseStart - requestStart),
 
     // TODO: add in future iteration, ideally after nested objects are supported by the collector.
     // serverTiming: resourceEntryRaw.serverTiming,
@@ -159,20 +161,18 @@ export function createFaroNavigationTiming(navigationEntryRaw: PerformanceNaviga
   const parserStart = getDocumentParsingTime();
 
   return {
-    visibilityState: document.visibilityState,
+    ...createFaroResourceTiming(navigationEntryRaw),
     pageLoadTime: toFaroPerformanceTimingString(domComplete - fetchStart),
     documentParsingTime: toFaroPerformanceTimingString(parserStart ? domInteractive - parserStart : null),
     domProcessingTime: toFaroPerformanceTimingString(domComplete - domInteractive),
     domContentLoadHandlerTime: toFaroPerformanceTimingString(domContentLoadedEventEnd - domContentLoadedEventStart),
     onLoadTime: toFaroPerformanceTimingString(loadEventEnd - loadEventStart),
 
+    // For navigation entries we can calculate the TTFB based on activationStart. We overwrite the TTFB value coming with the resource entry.
     // For more accuracy on prerendered pages page we calculate relative top the activationStart instead of the start of the navigation.
     // clamp to 0 if activationStart occurs after first byte is received.
     ttfb: toFaroPerformanceTimingString(Math.max(responseStart - (activationStart ?? 0), 0)),
-
     type: type,
-
-    ...createFaroResourceTiming(navigationEntryRaw),
   };
 }
 

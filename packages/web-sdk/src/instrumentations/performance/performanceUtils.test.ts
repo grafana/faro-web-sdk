@@ -71,6 +71,8 @@ describe('performanceUtils', () => {
       renderBlockingStatus: 'unknown',
       protocol: 'h2',
       initiatorType: 'img',
+      ttfb: '359',
+      visibilityState: 'visible',
     } as FaroResourceTiming);
   });
 
