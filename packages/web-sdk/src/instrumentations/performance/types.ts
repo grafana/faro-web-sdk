@@ -3,13 +3,11 @@ import type { unknownString } from '@grafana/faro-core';
 export type FaroNavigationTiming = Readonly<
   {
     duration: string;
-    visibilityState: DocumentVisibilityState;
     documentParsingTime: string;
     domProcessingTime: string;
     pageLoadTime: string;
     domContentLoadHandlerTime: string;
     onLoadTime: string;
-    ttfb: string;
     type: NavigationTimingType;
   } & FaroResourceTiming
 >;
@@ -33,6 +31,8 @@ export type FaroResourceTiming = Readonly<{
   renderBlockingStatus: 'blocking' | 'non-blocking' | typeof unknownString;
   initiatorType: string;
   // serverTiming: PerformanceServerTiming[];
+  visibilityState: DocumentVisibilityState;
+  ttfb: string;
 }>;
 
 export type FaroNavigationItem = {
