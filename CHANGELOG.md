@@ -2,10 +2,13 @@
 
 ## Next
 
+## 1.11.0
+
 - Improvement (`@grafana/faro-web-sdk`): The console instrumentation now sends an `Error` signal
   instead of a `Log` signal for `console.error()` calls (#703).
 - Improvement (`@grafana/faro-web-sdk`): The resource timings instrumentation now includes `ttfb`
-  (Time to First Byte) and `visibilityState` in `faro.performance.resource` timings.
+  (Time to First Byte) and `visibilityState` in `faro.performance.resource` timings (#708).
+- Deps (`@grafana/faro-*`): Minor dependency updates.
 
 ## 1.10.2
 
