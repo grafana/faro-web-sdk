@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-instrumentation-xhr",
-  "version": "1.10.2",
+  "version": "1.11.0",
   "description": "Faro XHR auto-instrumentation package",
   "keywords": [
     "observability",
@@ -38,7 +38,7 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-core": "^1.10.2"
+    "@grafana/faro-core": "^1.11.0"
   },
   "devDependencies": {
     "@remix-run/web-fetch": "^4.3.4"
