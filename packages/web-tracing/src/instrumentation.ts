@@ -104,6 +104,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
           propagateTraceHeaderCorsUrls,
           fetchInstrumentationOptions,
           xhrInstrumentationOptions,
+          ...options.additionalInstrumentations ?? [],
         }),
     });
 
