@@ -2,6 +2,7 @@ import { faro } from '@grafana/faro-core';
 import type { Meta } from '@grafana/faro-core';
 
 import { throttle } from '../../../utils';
+import { getCircularDependencyReplacer } from '../../../utils/json';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
 import { isSampled } from './sampling';
@@ -27,7 +28,11 @@ export class PersistentSessionsManager {
   }
 
   static storeUserSession(session: FaroUserSession): void {
-    setItem(STORAGE_KEY, JSON.stringify(session), PersistentSessionsManager.storageTypeLocal);
+    setItem(
+      STORAGE_KEY,
+      JSON.stringify(session, getCircularDependencyReplacer()),
+      PersistentSessionsManager.storageTypeLocal
+    );
   }
 
   static fetchUserSession(): FaroUserSession | null {

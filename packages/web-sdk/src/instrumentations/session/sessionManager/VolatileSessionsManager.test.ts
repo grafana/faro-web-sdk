@@ -183,7 +183,7 @@ describe('Volatile Sessions Manager.', () => {
     expect(mockOnNewSessionCreated).toHaveBeenCalledWith(oldStoredMeta, matchNewSessionMeta);
   });
 
-  it('Creates a new Faro user session if setSession(§) is called outside the Faro session manager.', () => {
+  it('Creates a new Faro user session if setSession() is called outside the Faro session manager.', () => {
     const mockIsSampled = jest.fn();
     jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
 
@@ -205,5 +205,22 @@ describe('Volatile Sessions Manager.', () => {
 
     const newSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
     expect(newSession.sessionId).toBe(manualSetSessionId);
+  });
+
+  it('Stores in the locals storage even if it contains objects with circular references.', () => {
+    const circularObject = { a: 'b' };
+    (circularObject as any).circular = circularObject;
+
+    const storedSession = {
+      sessionId: mockInitialSessionId,
+      isSampled: true,
+      circularObject,
+      lastActivity: fakeSystemTime,
+      started: fakeSystemTime,
+    };
+
+    expect(() => {
+      VolatileSessionsManager.storeUserSession(storedSession);
+    }).not.toThrow();
   });
 });

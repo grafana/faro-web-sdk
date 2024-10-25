@@ -217,4 +217,21 @@ describe('Persistent Sessions Manager.', () => {
     const newSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
     expect(newSession.sessionId).toBe(manualSetSessionId);
   });
+
+  it('Stores in the locals storage even if it contains objects with circular references.', () => {
+    const circularObject = { a: 'b' };
+    (circularObject as any).circular = circularObject;
+
+    const storedSession = {
+      sessionId: mockInitialSessionId,
+      isSampled: true,
+      circularObject,
+      lastActivity: fakeSystemTime,
+      started: fakeSystemTime,
+    };
+
+    expect(() => {
+      PersistentSessionsManager.storeUserSession(storedSession);
+    }).not.toThrow();
+  });
 });
