@@ -91,23 +91,23 @@ export class TracingInstrumentation extends BaseInstrumentation {
     provider.register({
       propagator: options.propagator ?? new W3CTraceContextPropagator(),
       contextManager: options.contextManager ?? new ZoneContextManager(),
-    });
-
+    })
     const { propagateTraceHeaderCorsUrls, fetchInstrumentationOptions, xhrInstrumentationOptions } =
       this.options.instrumentationOptions ?? {};
 
-    registerInstrumentations({
-      instrumentations:
-        options.instrumentations ??
-        getDefaultOTELInstrumentations({
+    const instrumentations = options.instrumentations ?? [
+        ...getDefaultOTELInstrumentations({
           ignoreUrls: this.getIgnoreUrls(),
           propagateTraceHeaderCorsUrls,
           fetchInstrumentationOptions,
           xhrInstrumentationOptions,
-          ...options.additionalInstrumentations ?? [],
-        }),
-    });
+        })];
 
+    if (options.additionalInstrumentations) {
+      instrumentations.push(...options.additionalInstrumentations({ignoreUrls: this.getIgnoreUrls()}) ?? []);
+    }
+
+    registerInstrumentations({instrumentations: instrumentations});
     this.api.initOTEL(trace, context);
   }
 

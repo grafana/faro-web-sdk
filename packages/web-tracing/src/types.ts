@@ -23,7 +23,7 @@ export interface TracingInstrumentationOptions {
   instrumentations?: InstrumentationOption[];
   spanProcessor?: SpanProcessor;
   instrumentationOptions?: Omit<DefaultInstrumentationsOptions, 'ignoreUrls'>;
-  additionalInstrumentations?: Instrumentation[];
+  additionalInstrumentations?: ({ignoreUrls}: {ignoreUrls: Patterns}) => Instrumentation[];
 }
 
 export type MatchUrlDefinitions = Patterns;
