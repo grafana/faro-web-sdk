@@ -150,10 +150,10 @@ The ex-member is
 
 If needed, we reserve the right to publicly announce removal.
 
-[announce]: https://github.com/grafana/faro/discussions/categories/announcements
-[coc]: https://github.com/grafana/faro/blob/master/CODE_OF_CONDUCT.md
-[devs]: https://github.com/grafana/faro/discussions/categories/development
-[maintainers]: https://github.com/grafana/faro/blob/master/MAINTAINERS.md
+[announce]: https://github.com/grafana/faro-web-sdk/discussions/categories/announcements
+[coc]: https://github.com/grafana/faro-web-sdk/blob/master/CODE_OF_CONDUCT.md
+[devs]: https://github.com/grafana/faro-web-sdk/discussions/categories/development
+[maintainers]: https://github.com/grafana/faro-web-sdk/blob/master/MAINTAINERS.md
 [rough]: https://tools.ietf.org/html/rfc7282
 [team]: https://groups.google.com/g/faro-team
-[users]: https://github.com/grafana/faro/discussions
+[users]: https://github.com/grafana/faro-web-sdk/discussions
