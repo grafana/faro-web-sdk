@@ -5,6 +5,9 @@
 - Improvement (`@grafana/faro-web-sdk`): Guards user session stringifier against circular object
   references (#715)
 
+- Feat (`@grafana/faro-web-sdk`): Provide a `getIgnoreUrls()` function to easily retrieve the
+  configured ignoreUrls (#732)
+
 ## 1.11.0
 
 - Improvement (`@grafana/faro-web-sdk`): The console instrumentation now sends an `Error` signal
