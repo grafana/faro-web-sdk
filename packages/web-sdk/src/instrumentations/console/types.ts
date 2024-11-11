@@ -1,5 +1,7 @@
-import type { LogLevel } from '@grafana/faro-core';
+import type { Config } from '@grafana/faro-core';
 
-export interface ConsoleInstrumentationOptions {
-  disabledLevels?: LogLevel[];
-}
+/**
+ * @deprecated Configure console instrumentation using the `consoleInstrumentation` object in the
+ * Faro config.
+ */
+export type ConsoleInstrumentationOptions = Config['consoleInstrumentation'];

@@ -91,6 +91,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     view: browserConfig.view,
     trackResources: browserConfig.trackResources,
     trackWebVitalsAttribution: browserConfig.trackWebVitalsAttribution,
+    consoleInstrumentation: browserConfig.consoleInstrumentation,
   };
 
   return config;
