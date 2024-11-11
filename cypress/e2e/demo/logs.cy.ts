@@ -6,7 +6,9 @@ context('Console logs', () => {
       cy.interceptCollector((body) => {
         let item =
           level === 'error'
-            ? body.exceptions?.find((item: ExceptionEvent) => item?.value === `This is a console ${level} message`)
+            ? body.exceptions?.find(
+                (item: ExceptionEvent) => item?.value === `console.error: This is a console ${level} message`
+              )
             : body.logs?.find(
                 (item: LogEvent) => item?.level === level && item?.message === `This is a console ${level} message`
               );
