@@ -6,6 +6,9 @@
 - Fix (`@grafana/faro-web-sdk`): Prevents circular references in objects sent via `console.error`
   messages (#730)
 
+- Refactor(ConsoleInstrumentation): Provide config option to send log messages for console.error
+  calls (#731)
+
 - Feat (`@grafana/faro-web-sdk`): Provide a `getIgnoreUrls()` function to easily retrieve the
   configured ignoreUrls (#732)
 
