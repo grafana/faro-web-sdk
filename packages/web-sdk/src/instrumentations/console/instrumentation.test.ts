@@ -1,4 +1,4 @@
-import { initializeFaro, TransportItem } from '@grafana/faro-core';
+import { initializeFaro, LogLevel, TransportItem } from '@grafana/faro-core';
 import type { ExceptionEvent, LogEvent } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
@@ -94,5 +94,35 @@ describe('ConsoleInstrumentation', () => {
     expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe(
       'console.error log with object {"foo":"bar","baz":"bam"}'
     );
+  });
+
+  it('Uses legacy config options', () => {
+    const mockTransport = new MockTransport();
+    initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [mockTransport],
+          instrumentations: [
+            new ConsoleInstrumentation({
+              consoleErrorAsLog: true,
+              disabledLevels: [LogLevel.LOG],
+            }),
+          ],
+          unpatchedConsole: {
+            error: jest.fn(),
+            log: jest.fn(),
+            info: jest.fn(),
+          } as unknown as Console,
+        })
+      )!
+    );
+
+    console.error('error logs are enabled');
+    console.info('info logs are enabled');
+    console.log('log logs are disabled');
+
+    expect(mockTransport.items).toHaveLength(2);
+    expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe('error logs are enabled');
+    expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe('info logs are enabled');
   });
 });
