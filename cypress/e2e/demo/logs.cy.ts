@@ -13,8 +13,6 @@ context('Console logs', () => {
                 (item: LogEvent) => item?.level === level && item?.message === `This is a console ${level} message`
               );
 
-        console.log('item :>> ', item);
-
         return item != null ? 'log' : undefined;
       });
 
