@@ -26,7 +26,8 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
             if (level === LogLevel.ERROR) {
               this.api.pushError(
                 new Error(
-                  args.map((arg) => (isObject(arg) || isArray(arg) ? stringifyExternalJson(arg) : arg)).join(' ')
+                  'console.error: ' +
+                    args.map((arg) => (isObject(arg) || isArray(arg) ? stringifyExternalJson(arg) : arg)).join(' ')
                 )
               );
             } else {
