@@ -10,3 +10,13 @@ export function getCircularDependencyReplacer() {
     return value;
   };
 }
+
+type JSONObject = {
+  [key: string]: JSONValue;
+};
+type JSONArray = JSONValue[] & {};
+type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
+
+export function stringifyExternalJson(json: any = {}) {
+  return JSON.stringify(json ?? {}, getCircularDependencyReplacer());
+}

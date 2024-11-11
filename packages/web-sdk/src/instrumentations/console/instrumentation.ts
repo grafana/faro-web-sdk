@@ -1,5 +1,7 @@
 import { allLogLevels, BaseInstrumentation, isArray, isObject, LogLevel, VERSION } from '@grafana/faro-core';
 
+import { stringifyExternalJson } from '../../utils';
+
 import type { ConsoleInstrumentationOptions } from './types';
 
 export class ConsoleInstrumentation extends BaseInstrumentation {
@@ -23,7 +25,9 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
           try {
             if (level === LogLevel.ERROR) {
               this.api.pushError(
-                new Error(args.map((arg) => (isObject(arg) || isArray(arg) ? JSON.stringify(arg) : arg)).join(' '))
+                new Error(
+                  args.map((arg) => (isObject(arg) || isArray(arg) ? stringifyExternalJson(arg) : arg)).join(' ')
+                )
               );
             } else {
               this.api.pushLog(args, { level });
