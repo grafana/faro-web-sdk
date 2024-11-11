@@ -2,8 +2,9 @@
 
 ## Next
 
-- Improvement (`@grafana/faro-web-sdk`): Guards user session stringifier against circular object
-  references (#715)
+- Fix (`@grafana/faro-web-sdk`): Guard user session stringifier against circular object references (#715)
+- Fix (`@grafana/faro-web-sdk`): Prevents circular references in objects sent via `console.error`
+  messages (#730)
 
 - Feat (`@grafana/faro-web-sdk`): Provide a `getIgnoreUrls()` function to easily retrieve the
   configured ignoreUrls (#732)
