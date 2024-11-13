@@ -166,3 +166,5 @@ export {
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,
 } from './instrumentations/session';
+
+export { getIgnoreUrls } from './utils/url';

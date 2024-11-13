@@ -9,3 +9,5 @@ export {
 } from './webStorage';
 
 export { throttle } from './throttle';
+
+export { getIgnoreUrls } from './url';
