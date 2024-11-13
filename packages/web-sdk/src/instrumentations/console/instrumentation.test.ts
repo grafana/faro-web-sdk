@@ -7,9 +7,23 @@ import { makeCoreConfig } from '../../config';
 import { ConsoleInstrumentation } from './instrumentation';
 
 describe('ConsoleInstrumentation', () => {
+  const originalConsole = console;
+
+  beforeEach(() => {
+    global.console = {
+      error: jest.fn(),
+      log: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      trace: jest.fn(),
+      debug: jest.fn(),
+    } as unknown as Console;
+  });
+
   afterEach(() => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
+    global.console = originalConsole;
   });
 
   it('sends a faro error when console.error is called', () => {
@@ -124,5 +138,47 @@ describe('ConsoleInstrumentation', () => {
     expect(mockTransport.items).toHaveLength(2);
     expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe('error logs are enabled');
     expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe('info logs are enabled');
+  });
+
+  it('sends logs for the default enabled event if no config is provided', () => {
+    const mockTransport = new MockTransport();
+
+    initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [mockTransport],
+          instrumentations: [new ConsoleInstrumentation()],
+          unpatchedConsole: {
+            error: jest.fn(),
+            log: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            trace: jest.fn(),
+            debug: jest.fn(),
+          } as unknown as Console,
+        })
+      )!
+    );
+
+    // included by default
+    console.info('info is logged by default');
+    console.warn('warn is logged by default');
+    console.error('error is logged by default');
+
+    // excluded by default
+    console.log("log isn't logged by default");
+    console.trace("trace isn't logged by default");
+    console.debug("debug isn't logged by default");
+
+    expect(mockTransport.items).toHaveLength(3);
+
+    expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe('info is logged by default');
+    expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.level).toBe('info');
+
+    expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe('warn is logged by default');
+    expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.level).toBe('warn');
+
+    // error is logged by default and is logged as an exception signal
+    expect((mockTransport.items[2] as TransportItem<ExceptionEvent>)?.payload.value).toBe('error is logged by default');
   });
 });
