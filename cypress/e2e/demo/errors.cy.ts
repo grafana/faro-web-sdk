@@ -32,8 +32,6 @@ context('Errors', () => {
   ].forEach(({ title, btnName, type = 'Error', value, expectStacktrace = true }) => {
     it(`will capture ${title}`, () => {
       cy.interceptCollector((body) => {
-        console.log('body :>> ', body);
-
         const item = body.exceptions?.find(
           (item: ExceptionEvent) =>
             item?.type === type &&
