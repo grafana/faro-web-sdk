@@ -26,8 +26,6 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         /* eslint-disable-next-line no-console */
         console[level] = (...args) => {
           try {
-            console.log('this.options?.consoleErrorAsLog :>> ', this.options?.consoleErrorAsLog);
-
             if (level === LogLevel.ERROR && !this.options?.consoleErrorAsLog) {
               this.api.pushError(
                 new Error(
