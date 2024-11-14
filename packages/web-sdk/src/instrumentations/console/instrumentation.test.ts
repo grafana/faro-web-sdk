@@ -161,26 +161,37 @@ describe('ConsoleInstrumentation', () => {
     );
 
     // included by default
-    console.info('info is logged by default');
-    console.warn('warn is logged by default');
-    console.error('error is logged by default');
+    const infoLogMessage = 'info is logged by default';
+    console.info(infoLogMessage);
+
+    const warnLogMessage = 'warn is logged by default';
+    console.warn(warnLogMessage);
+
+    const errorLogMessage = 'error is logged by default';
+    console.error(errorLogMessage);
+
+    const excludedLogMessage = "log isn't logged by default";
 
     // excluded by default
-    console.log("log isn't logged by default");
+    console.log(excludedLogMessage);
+    const excludedTraceLogMessage = "trace isn't logged by default";
     // eslint-disable-next-line no-console
-    console.trace("trace isn't logged by default");
+    console.trace(excludedTraceLogMessage);
+    const excludedDebugMessage = "debug isn't logged by default";
     // eslint-disable-next-line no-console
-    console.debug("debug isn't logged by default");
+    console.debug(excludedDebugMessage);
 
     expect(mockTransport.items).toHaveLength(3);
 
-    expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe('info is logged by default');
+    expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe(infoLogMessage);
     expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.level).toBe('info');
 
-    expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe('warn is logged by default');
+    expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe(warnLogMessage);
     expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.level).toBe('warn');
 
     // error is logged by default and is logged as an exception signal
-    expect((mockTransport.items[2] as TransportItem<ExceptionEvent>)?.payload.value).toBe('error is logged by default');
+    expect((mockTransport.items[2] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
+      'console.error: ' + errorLogMessage
+    );
   });
 });
