@@ -90,5 +90,8 @@
     "typescript": "^4.9.4"
   },
   "packageManager": "yarn@1.22.19",
+  "resolutions": {
+    "tough-cookie": "^4.1.3"
+  },
   "dependencies": {}
 }
