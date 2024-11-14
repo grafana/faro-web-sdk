@@ -36,3 +36,5 @@ yarn-error.log*
 infra/grafana/plugins/
 infra/grafana/plugins-provisioning/*.yaml
 .yarn/releases/*.js
+
+/.nx/workspace-data
