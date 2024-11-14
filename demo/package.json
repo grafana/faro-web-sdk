@@ -52,7 +52,7 @@
     "@opentelemetry/sdk-node": "^0.53.0",
     "@opentelemetry/sdk-trace-node": "^1.26.0",
     "@opentelemetry/semantic-conventions": "^1.27.0",
-    "@reduxjs/toolkit": "^1.9.1",
+    "@reduxjs/toolkit": "^2.3.0",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
     "bootstrap": "^5.2.3",
