@@ -167,7 +167,9 @@ describe('ConsoleInstrumentation', () => {
 
     // excluded by default
     console.log("log isn't logged by default");
+    // eslint-disable-next-line no-console
     console.trace("trace isn't logged by default");
+    // eslint-disable-next-line no-console
     console.debug("debug isn't logged by default");
 
     expect(mockTransport.items).toHaveLength(3);
