@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.12.0
+
 - Fix (`@grafana/faro-web-sdk`): Guard user session stringifier against circular object references (#715)
 - Fix (`@grafana/faro-web-sdk`): Prevents circular references in objects sent via `console.error`
   messages (#730)
