@@ -34,10 +34,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
                 )
               );
             } else {
-              this.api.pushLog(
-                [args.map((arg) => (isObject(arg) || isArray(arg) ? JSON.stringify(arg) : arg)).join(' ')],
-                { level }
-              );
+              this.api.pushLog(args, { level });
             }
           } catch (err) {
             this.logError(err);
