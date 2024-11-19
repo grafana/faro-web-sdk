@@ -2,7 +2,8 @@
 
 ## Next
 
-- Fix (`@grafana/faro-web-sdk`): Remove args.mapper form logs parser for standard logs in console instrumentation (#742)
+- Fix (`@grafana/faro-web-sdk`): Guard console instrumentation stringifier against circular object
+  references for non-error logs (#742)
 
 ## 1.12.0
 
