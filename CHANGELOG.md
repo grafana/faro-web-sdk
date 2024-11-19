@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.12.1
+
 - Fix (`@grafana/faro-web-sdk`): Guard console instrumentation stringifier against circular object
   references for non-error logs (#742)
 
