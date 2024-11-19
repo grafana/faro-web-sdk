@@ -27,17 +27,9 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         console[level] = (...args) => {
           try {
             if (level === LogLevel.ERROR && !this.options?.consoleErrorAsLog) {
-              this.api.pushError(
-                new Error(
-                  'console.error: ' +
-                    args.map((arg) => (isObject(arg) || isArray(arg) ? stringifyExternalJson(arg) : arg)).join(' ')
-                )
-              );
+              this.api.pushError(new Error('console.error: ' + formatConsoleArgs(args)));
             } else {
-              this.api.pushLog(
-                [args.map((arg) => (isObject(arg) || isArray(arg) ? JSON.stringify(arg) : arg)).join(' ')],
-                { level }
-              );
+              this.api.pushLog([formatConsoleArgs(args)], { level });
             }
           } catch (err) {
             this.logError(err);
@@ -47,4 +39,8 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         };
       });
   }
+}
+
+function formatConsoleArgs(args: [any?, ...any[]]) {
+  return args.map((arg) => (isObject(arg) || isArray(arg) ? stringifyExternalJson(arg) : arg)).join(' ');
 }
