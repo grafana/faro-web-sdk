@@ -52,7 +52,7 @@ describe('ConsoleInstrumentation', () => {
     );
     expect((mockTransport.items[1] as TransportItem<ExceptionEvent>)?.payload.type).toBe('Error');
     expect((mockTransport.items[1] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
-      'console.error: with object {"foo":"bar","baz":"bam"}'
+      'console.error: with object [object Object]'
     );
   });
 
@@ -77,7 +77,7 @@ describe('ConsoleInstrumentation', () => {
     console.error('with circular refs object', objWithCircularRef);
 
     expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
-      'console.error: with circular refs object {"foo":"bar","baz":"bam","circular":null}'
+      'console.error: with circular refs object [object Object]'
     );
   });
 
@@ -106,7 +106,7 @@ describe('ConsoleInstrumentation', () => {
 
     expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe('console.error log no 1');
     expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe(
-      'console.error log with object {"foo":"bar","baz":"bam"}'
+      'console.error log with object [object Object]'
     );
   });
 

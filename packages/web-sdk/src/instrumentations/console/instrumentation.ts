@@ -1,6 +1,4 @@
-import { allLogLevels, BaseInstrumentation, isArray, isObject, LogLevel, VERSION } from '@grafana/faro-core';
-
-import { stringifyExternalJson } from '../../utils';
+import { allLogLevels, BaseInstrumentation, defaultLogArgsSerializer, LogLevel, VERSION } from '@grafana/faro-core';
 
 import type { ConsoleInstrumentationOptions } from './types';
 
@@ -27,9 +25,9 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         console[level] = (...args) => {
           try {
             if (level === LogLevel.ERROR && !this.options?.consoleErrorAsLog) {
-              this.api.pushError(new Error('console.error: ' + formatConsoleArgs(args)));
+              this.api.pushError(new Error('console.error: ' + defaultLogArgsSerializer(args)));
             } else {
-              this.api.pushLog([formatConsoleArgs(args)], { level });
+              this.api.pushLog(args, { level });
             }
           } catch (err) {
             this.logError(err);
@@ -39,8 +37,4 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         };
       });
   }
-}
-
-function formatConsoleArgs(args: [any?, ...any[]]) {
-  return args.map((arg) => (isObject(arg) || isArray(arg) ? stringifyExternalJson(arg) : arg)).join(' ');
 }
