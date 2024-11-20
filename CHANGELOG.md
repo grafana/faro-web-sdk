@@ -2,6 +2,11 @@
 
 ## Next
 
+## 1.12.2
+
+- Fix (`@grafana/faro-web-sdk`): Update Faro log parsing in console instrumentation to use Faro's
+  default log parser (#745)
+
 ## 1.12.1
 
 - Fix (`@grafana/faro-web-sdk`): Guard console instrumentation stringifier against circular object
