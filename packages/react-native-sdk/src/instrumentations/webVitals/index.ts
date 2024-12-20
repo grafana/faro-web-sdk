@@ -1,0 +1,1 @@
+export { WebVitalsInstrumentation } from './instrumentation';
