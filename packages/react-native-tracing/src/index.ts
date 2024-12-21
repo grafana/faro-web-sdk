@@ -11,3 +11,7 @@ export { getSamplingDecision } from './sampler';
 export type { FaroTraceExporterConfig, TracingInstrumentationOptions } from './types';
 
 export { setSpanStatusOnFetchError, fetchCustomAttributeFunctionWithDefaults } from './instrumentationUtils';
+
+// react-navigation integration
+
+export { initializeReactNavigationInstrumentation, ReactNavigationIntegration } from './react-navigation';
