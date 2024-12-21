@@ -28,6 +28,18 @@ const modules = {
     globalName: 'GrafanaFaroWebTracing',
     externals: ['webSdk'],
   },
+  rnSdk: {
+    name: '@grafana/react-native-sdk',
+    bundleName: 'react-native-sdk',
+    globalName: 'GrafanaFaroReactNativeSdk',
+    externals: [],
+  },
+  rnTracing: {
+    name: '@grafana/react-native-tracing',
+    bundleName: 'react-native-tracing',
+    globalName: 'GrafanaFaroReactNativeTracing',
+    externals: ['rnSdk'],
+  },
   transportOtlpHttp: {
     name: '@grafana/faro-transport-otlp-http',
     bundleName: 'faro-transport-otlp-http',

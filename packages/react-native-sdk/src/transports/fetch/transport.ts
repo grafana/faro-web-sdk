@@ -23,7 +23,7 @@ const TOO_MANY_REQUESTS = 429;
 const ACCEPTED = 202;
 
 export class FetchTransport extends BaseTransport {
-  readonly name = '@grafana/faro-web-sdk:transport-fetch';
+  readonly name = '@grafana/faro-react-native-sdk:transport-fetch';
   readonly version = VERSION;
 
   promiseBuffer: PromiseBuffer<Response | void>;

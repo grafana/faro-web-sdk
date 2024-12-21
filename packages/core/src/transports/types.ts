@@ -58,4 +58,6 @@ export interface BatchExecutorOptions {
   // Buffer "sendLimit" is the number of signals before sending the payload
   readonly itemLimit?: number;
   readonly paused?: boolean;
+
+  readonly ignoreBrowserApi?: boolean;
 }

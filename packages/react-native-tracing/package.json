@@ -68,5 +68,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "peerDependencies": {
+    "@grafana/react-native-sdk": "^1.12.2"
   }
 }

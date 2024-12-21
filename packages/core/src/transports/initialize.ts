@@ -145,6 +145,7 @@ export function initializeTransports(
     batchExecutor = new BatchExecutor(batchedSend, {
       sendTimeout: config.batching.sendTimeout,
       itemLimit: config.batching.itemLimit,
+      ignoreBrowserApi: config.batching.ignoreBrowserApi,
       paused,
     });
   }
