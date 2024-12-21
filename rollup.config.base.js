@@ -58,6 +58,12 @@ const modules = {
     globalName: 'GrafanaFaroInstrumentationK6Browser',
     externals: [],
   },
+  instrumentationWebSocket: {
+    name: '@grafana/faro-instrumentation-websocket',
+    bundleName: 'faro-instrumentation-websocket',
+    globalName: 'GrafanaFaroInstrumentationWebSocket',
+    externals: [],
+  },
 };
 
 exports.getRollupConfigBase = (moduleName) => {
