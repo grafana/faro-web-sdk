@@ -2,11 +2,11 @@ import {context, trace} from '@opentelemetry/api';
 import {W3CTraceContextPropagator} from '@opentelemetry/core';
 import {registerInstrumentations} from '@opentelemetry/instrumentation';
 import {Resource, ResourceAttributes} from '@opentelemetry/resources';
-import {BatchSpanProcessor, StackContextManager, WebTracerProvider} from '@opentelemetry/sdk-trace-web';
+import {BatchSpanProcessor,  WebTracerProvider} from '@opentelemetry/sdk-trace-web';
 import {ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION,} from '@opentelemetry/semantic-conventions';
 
 
-import {BaseInstrumentation, Transport, VERSION} from '@grafana/faro-web-sdk';
+import {BaseInstrumentation, Transport, VERSION} from '@grafana/react-native-sdk';
 
 import {FaroTraceExporter} from './faroTraceExporter';
 import {getDefaultOTELInstrumentations} from './getDefaultOTELInstrumentations';
@@ -19,7 +19,7 @@ import type {TracingInstrumentationOptions} from './types';
 // taking app name from it
 
 export class TracingInstrumentation extends BaseInstrumentation {
-  name = '@grafana/faro-web-tracing';
+  name = '@grafana/faro-react-native-tracing';
   version = VERSION;
 
   static SCHEDULED_BATCH_DELAY_MS = 1000;
@@ -69,7 +69,6 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     provider.register({
       propagator: options.propagator ?? new W3CTraceContextPropagator(),
-      contextManager: options.contextManager ?? new StackContextManager(),
     });
 
     const { propagateTraceHeaderCorsUrls, fetchInstrumentationOptions, xhrInstrumentationOptions } =
