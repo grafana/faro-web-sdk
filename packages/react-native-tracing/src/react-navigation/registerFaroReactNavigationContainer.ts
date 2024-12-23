@@ -14,7 +14,6 @@ let lastRoute: {
  * @param navigationContainerRef Ref to a NavigationContainer
  */
 export function registerFaroReactNavigationContainer(navigationContainerRef: NavigationContainerRef): void {
-  console.log('registerFaroReactNavigationContainer');
   let navigationContainer: NavigationContainer;
 
   // Handle both ref and direct container
@@ -29,6 +28,7 @@ export function registerFaroReactNavigationContainer(navigationContainerRef: Nav
     return;
   }
 
+  // Set initial route
   const initialRoute = navigationContainer.getCurrentRoute();
   if (initialRoute) {
     api.setView({
@@ -37,14 +37,13 @@ export function registerFaroReactNavigationContainer(navigationContainerRef: Nav
     updateCurrentRoute(initialRoute.name);
   }
 
+  // Listen for route changes
   navigationContainer.addListener('state', () => {
     const currentRoute = navigationContainer.getCurrentRoute();
-
     if (!currentRoute) {
       return;
     }
 
-    // Update view and page meta
     api.setView({
       name: currentRoute.name,
     });
