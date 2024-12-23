@@ -6,6 +6,7 @@ const WS_MODULE = 'WebSocket';
 
 const VERSION = '0.0.1';
 
+// TODO(@lucasbento): move this somewhere else
 // Helper function to check if URL is localhost
 function isLocalhost(url: string): boolean {
   try {
@@ -16,10 +17,17 @@ function isLocalhost(url: string): boolean {
   }
 }
 
+// TODO(@lucasbento): move this somewhere else
+function generateRequestId(): number {
+  return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+}
+
 export class WebSocketInstrumentation extends InstrumentationBase {
   readonly component: string = 'websocket';
   readonly version: string = VERSION;
   moduleName = this.component;
+  private pendingRequests = new Map<number, { span: any; startTime: number }>();
+
   constructor() {
     super('faro-instrumentation-websocket', VERSION, {});
   }
@@ -41,9 +49,6 @@ export class WebSocketInstrumentation extends InstrumentationBase {
     ];
   }
 
-  /**
-   * Implements enable function
-   */
   override enable(): void {
     if (typeof WebSocket === 'undefined') {
       this._diag.error('WebSocket is not available in this environment');
@@ -63,9 +68,6 @@ export class WebSocketInstrumentation extends InstrumentationBase {
     }
   }
 
-  /**
-   * Implements disable function
-   */
   override disable(): void {
     try {
       if (isWrapped(_globalThis.WebSocket)) {
@@ -104,20 +106,15 @@ export class WebSocketInstrumentation extends InstrumentationBase {
         this.wsContext = trace.setSpan(context.active(), this.wsSpan);
 
         this.addEventListener('message', (event) => {
-          const messageSpan = tracer.startSpan(
-            'websocket.receive',
-            {
-              kind: SpanKind.CLIENT,
-              attributes: {
-                'websocket.url': url,
-                'websocket.message_type': typeof event.data,
-                'websocket.message_size': event.data?.length,
-                'websocket.message_payload': event.data,
-              },
-            },
-            this.wsContext
-          );
-          messageSpan.end();
+          try {
+            const response = JSON.parse(event.data);
+            if (response.requestId && self.pendingRequests.has(response.requestId)) {
+              const { span } = self.pendingRequests.get(response.requestId)!;
+              span.end();
+
+              self.pendingRequests.delete(response.requestId);
+            }
+          } catch (_ignored) {}
         });
 
         this.addEventListener('open', () => {
@@ -141,7 +138,16 @@ export class WebSocketInstrumentation extends InstrumentationBase {
         const originalSend = this.send;
         this.send = function (data: string) {
           try {
-            originalSend.call(this, data);
+            const requestId = generateRequestId();
+            let modifiedData = data;
+            try {
+              const payload = JSON.parse(data);
+              payload.requestId = requestId;
+              modifiedData = JSON.stringify(payload);
+            } catch (e) {
+              self._diag.debug('Failed to modify payload, not JSON:', e);
+            }
+
             const sendSpan = tracer.startSpan(
               'websocket.send',
               {
@@ -150,11 +156,18 @@ export class WebSocketInstrumentation extends InstrumentationBase {
                   'websocket.url': url,
                   'websocket.message_type': typeof data,
                   'websocket.message_payload': data,
+                  'websocket.request_id': requestId,
                 },
               },
               this.wsContext
             );
-            sendSpan.end();
+
+            self.pendingRequests.set(requestId, {
+              span: sendSpan,
+              startTime: Date.now(),
+            });
+
+            originalSend.call(this, modifiedData);
           } catch (error: unknown) {
             this.wsSpan.setStatus({
               code: SpanStatusCode.ERROR,
