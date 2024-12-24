@@ -17,13 +17,9 @@ export interface ReactNavigationInstrumentation {
   registerFaroReactNavigationContainer: (navigationContainerRef: NavigationContainerRef) => void;
 }
 
-export interface RouteState {
-  fromRoute?: string;
-}
-
 export interface NavigationState {
   activeSpan: Span | undefined;
-  lastRoute: RouteState;
+  fromRoute: string;
   isInitialized: boolean;
   stateChangeTimeout?: ReturnType<typeof setTimeout>;
 }

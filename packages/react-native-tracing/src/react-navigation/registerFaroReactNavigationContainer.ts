@@ -1,6 +1,7 @@
 import { api, internalLogger } from './dependencies';
 import { handleNavigationComplete, handleNavigationStart, initializeInitialRoute } from './handlers';
-import type { NavigationContainerRef, NavigationState } from './types';
+import { navigationState } from './metaPage';
+import type { NavigationContainerRef } from './types';
 
 /**
  * Registers route change tracking for React Navigation.
@@ -24,12 +25,6 @@ export function registerFaroReactNavigationContainer(navigationContainerRef: Nav
   }
 
   const tracer = otel.trace.getTracer('react-navigation');
-  const navigationState: NavigationState = {
-    activeSpan: undefined,
-    lastRoute: {},
-    isInitialized: false,
-    stateChangeTimeout: undefined,
-  };
 
   initializeInitialRoute(navigationContainer, navigationState);
 

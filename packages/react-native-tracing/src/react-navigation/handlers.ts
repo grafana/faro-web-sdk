@@ -3,7 +3,6 @@ import { SpanStatusCode, Tracer } from '@opentelemetry/api';
 import { EVENT_ROUTE_CHANGE } from '@grafana/faro-web-sdk';
 
 import { api, internalLogger } from './dependencies';
-import { updateCurrentRoute } from './metaPage';
 import { NavigationContainer, NavigationState, ROUTE_CHANGE_TIMEOUT_MS, SPAN_ATTRIBUTES, SPAN_NAME } from './types';
 
 /**
@@ -40,17 +39,16 @@ export function handleNavigationStart(
     internalLogger.debug('Interrupting active navigation');
     discardNavigation(state, 'Navigation interrupted');
   }
+  // Record source route
+  state.fromRoute = currentRoute.name;
 
   // Start new navigation span
   state.activeSpan = tracer.startSpan(SPAN_NAME, {
     attributes: {
       [SPAN_ATTRIBUTES.type]: 'navigation',
-      [SPAN_ATTRIBUTES.fromRoute]: currentRoute.name,
+      [SPAN_ATTRIBUTES.fromRoute]: state.fromRoute,
     },
   });
-
-  // Record source route
-  state.lastRoute = { fromRoute: currentRoute.name };
 
   // Set timeout for navigation completion
   state.stateChangeTimeout = setTimeout(() => {
@@ -74,12 +72,11 @@ export function handleNavigationComplete(state: NavigationState, currentRoute: {
     state.stateChangeTimeout = undefined;
   }
 
-  const { activeSpan, lastRoute } = state;
+  const { activeSpan, fromRoute } = state;
 
   // Update span with final route information
   activeSpan.setAttributes({
     [SPAN_ATTRIBUTES.toRoute]: currentRoute.name,
-    [SPAN_ATTRIBUTES.fromRoute]: lastRoute.fromRoute ?? 'unknown',
   });
 
   // Complete the navigation span
@@ -89,15 +86,14 @@ export function handleNavigationComplete(state: NavigationState, currentRoute: {
 
   // Update view and emit events
   api.setView({ name: currentRoute.name });
-  updateCurrentRoute(currentRoute.name);
 
   api.pushEvent(EVENT_ROUTE_CHANGE, {
+    fromRoute: fromRoute,
     toRoute: currentRoute.name,
-    ...lastRoute,
   });
 
   // Update route state
-  state.lastRoute = { fromRoute: currentRoute.name };
+  state.fromRoute = currentRoute.name;
 }
 
 /**
@@ -107,7 +103,7 @@ export function initializeInitialRoute(navigationContainer: NavigationContainer,
   const initialRoute = navigationContainer.getCurrentRoute();
   if (initialRoute && !state.isInitialized) {
     api.setView({ name: initialRoute.name });
-    updateCurrentRoute(initialRoute.name);
+    state.fromRoute = initialRoute.name;
     state.isInitialized = true;
   }
 }

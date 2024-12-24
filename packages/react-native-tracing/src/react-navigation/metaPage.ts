@@ -1,14 +1,17 @@
 import type { Meta, MetaItem } from '@grafana/faro-core';
 
-let currentRoute = 'startup';
+import type { NavigationState } from './types';
+
+export const navigationState: NavigationState = {
+  activeSpan: undefined,
+  fromRoute: 'unknown',
+  isInitialized: false, // Not used yet
+  stateChangeTimeout: undefined,
+};
 
 export const metaPage: MetaItem<Pick<Meta, 'page'>> = () => ({
   page: {
-    id: currentRoute,
-    url: currentRoute,
+    id: navigationState.fromRoute,
+    url: navigationState.fromRoute,
   },
 });
-
-export function updateCurrentRoute(routeName: string): void {
-  currentRoute = routeName;
-}
