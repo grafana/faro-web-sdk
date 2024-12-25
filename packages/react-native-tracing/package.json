@@ -28,7 +28,10 @@
     ".browserslistrc",
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "android",
+    "ios",
+    "react-native-tracing.podspec"
   ],
   "scripts": {
     "start": "yarn watch",

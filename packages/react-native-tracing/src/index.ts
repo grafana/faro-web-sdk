@@ -15,3 +15,6 @@ export { setSpanStatusOnFetchError, fetchCustomAttributeFunctionWithDefaults } f
 // react-navigation integration
 
 export { initializeReactNavigationInstrumentation, ReactNavigationIntegration } from './react-navigation';
+
+export { wrap } from './wrapHOC';
+export { NativeInstrumentation } from './faroNativeInstrumentation';
