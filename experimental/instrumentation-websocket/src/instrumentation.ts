@@ -124,7 +124,7 @@ export class WebSocketInstrumentation extends InstrumentationBase {
         this.addEventListener('error', (error: Event) => {
           this.wsSpan.setStatus({
             code: SpanStatusCode.ERROR,
-            message: error instanceof ErrorEvent ? error.message : 'WebSocket error',
+            message: error instanceof Error ? error.message : 'WebSocket error',
           });
           this.wsSpan.setAttribute('websocket.state', 'error');
         });
