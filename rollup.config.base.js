@@ -76,6 +76,18 @@ const modules = {
     globalName: 'GrafanaFaroInstrumentationWebSocket',
     externals: [],
   },
+  instrumentationOtelAxios: {
+    name: '@grafana/faro-instrumentation-otel-axios',
+    bundleName: 'faro-instrumentation-otel-axios',
+    globalName: 'GrafanaFaroInstrumentationOtelAxios',
+    externals: [],
+  },
+  instrumentationOtelReduxSaga: {
+    name: '@grafana/faro-instrumentation-otel-redux-saga',
+    bundleName: 'faro-instrumentation-otel-redux-saga',
+    globalName: 'GrafanaFaroInstrumentationOtelReduxSaga',
+    externals: [],
+  }
 };
 
 exports.getRollupConfigBase = (moduleName) => {
