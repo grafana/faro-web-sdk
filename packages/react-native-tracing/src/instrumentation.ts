@@ -69,6 +69,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     provider.register({
       propagator: options.propagator ?? new W3CTraceContextPropagator(),
+      contextManager: options.contextManager,
     });
 
     const { propagateTraceHeaderCorsUrls, fetchInstrumentationOptions, xhrInstrumentationOptions } =

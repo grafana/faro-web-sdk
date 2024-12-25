@@ -4,7 +4,7 @@ import { setDependencies } from './dependencies';
 import { metaPage } from './metaPage';
 
 export class ReactNavigationIntegration extends BaseInstrumentation {
-  name = '@grafana/faro-react-native-tracing';
+  name = '@grafana/faro-react-native-navigation-tracing';
   version = VERSION;
 
   constructor() {

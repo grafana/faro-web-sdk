@@ -1,7 +1,7 @@
 {
   "name": "@grafana/react-native-sdk",
   "version": "1.12.2",
-  "description": "Faro instrumentations, metas, transports for web.",
+  "description": "Faro instrumentations, metas, transports for rn.",
   "keywords": [
     "observability",
     "apm",
