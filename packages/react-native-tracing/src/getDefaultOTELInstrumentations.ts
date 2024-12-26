@@ -1,8 +1,6 @@
 // @ts-nocheck
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 
-import { WebSocketInstrumentation } from '@grafana/faro-instrumentation-websocket';
-
 import { FaroXhrInstrumentation } from './faroXhrInstrumentation';
 import {
   fetchCustomAttributeFunctionWithDefaults,
@@ -16,12 +14,7 @@ export function getDefaultOTELInstrumentations(options: DefaultInstrumentationsO
   const fetchOpts = createFetchInstrumentationOptions(fetchInstrumentationOptions, sharedOptions);
   const xhrOpts = createXhrInstrumentationOptions(xhrInstrumentationOptions, sharedOptions);
 
-  return [
-    new FetchInstrumentation(fetchOpts),
-    new FaroXhrInstrumentation(xhrOpts),
-    // TODO(@lucasbento): fix this type
-    new WebSocketInstrumentation(),
-  ];
+  return [new FetchInstrumentation(fetchOpts), new FaroXhrInstrumentation(xhrOpts)];
 }
 function createFetchInstrumentationOptions(
   fetchInstrumentationOptions: DefaultInstrumentationsOptions['fetchInstrumentationOptions'],

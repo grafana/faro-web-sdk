@@ -2,34 +2,27 @@ import { context, diag, SpanKind, SpanStatusCode, trace } from '@opentelemetry/a
 import { _globalThis } from '@opentelemetry/core';
 import { InstrumentationBase, InstrumentationNodeModuleDefinition, isWrapped } from '@opentelemetry/instrumentation';
 
+import type { MessageTransform, PendingRequest, WebSocketInstrumentationConfig, WebSocketMessage } from './types';
+import { generateRequestId, isLocalhost } from './utils';
+
 const WS_MODULE = 'WebSocket';
 
 const VERSION = '0.0.1';
 
-// TODO(@lucasbento): move this somewhere else
-// Helper function to check if URL is localhost
-function isLocalhost(url: string): boolean {
-  try {
-    const wsUrl = new URL(url);
-    return wsUrl.hostname === 'localhost' || wsUrl.hostname === '127.0.0.1' || wsUrl.hostname === '[::1]';
-  } catch {
-    return false;
-  }
-}
-
-// TODO(@lucasbento): move this somewhere else
-function generateRequestId(): number {
-  return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-}
-
-export class WebSocketInstrumentation extends InstrumentationBase {
+export class WebSocketInstrumentation<T = Record<string, unknown>> extends InstrumentationBase {
   readonly component: string = 'websocket';
   readonly version: string = VERSION;
-  moduleName = this.component;
-  private pendingRequests = new Map<number, { span: any; startTime: number }>();
 
-  constructor() {
+  moduleName = this.component;
+
+  private messageTransform: MessageTransform<T>;
+
+  private pendingRequests = new Map<number, PendingRequest>();
+
+  constructor(options: WebSocketInstrumentationConfig<T> = {}) {
     super('faro-instrumentation-websocket', VERSION, {});
+
+    this.messageTransform = options.messageTransform ?? this.defaultMessageTransform;
   }
 
   protected init() {
@@ -47,6 +40,10 @@ export class WebSocketInstrumentation extends InstrumentationBase {
         }
       ),
     ];
+  }
+
+  private defaultMessageTransform(message: WebSocketMessage<T>): WebSocketMessage<T> | null | undefined {
+    return message;
   }
 
   override enable(): void {
@@ -108,12 +105,34 @@ export class WebSocketInstrumentation extends InstrumentationBase {
         this.addEventListener('message', (event) => {
           try {
             const response = JSON.parse(event.data);
+
             if (response.requestId && self.pendingRequests.has(response.requestId)) {
               const { span } = self.pendingRequests.get(response.requestId)!;
               span.end();
 
               self.pendingRequests.delete(response.requestId);
             }
+
+            const transformedMessage = self.messageTransform(response);
+            if (!transformedMessage) {
+              return;
+            }
+
+            const messageSpan = tracer.startSpan(
+              'websocket.receive',
+              {
+                kind: SpanKind.CLIENT,
+                attributes: {
+                  'websocket.url': url,
+                  'websocket.message_type': typeof event.data,
+                  'websocket.message_size': event.data?.length,
+                  'websocket.message_payload':
+                    typeof transformedMessage === 'string' ? transformedMessage : JSON.stringify(transformedMessage),
+                },
+              },
+              this.wsContext
+            );
+            messageSpan.end();
           } catch (_ignored) {}
         });
 
