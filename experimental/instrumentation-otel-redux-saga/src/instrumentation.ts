@@ -35,15 +35,18 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
         try {
           // Called when a new effect is triggered (e.g. call, put, take, fork, etc.)
           const { effectId, effect } = info;
-          const payload = effect?.payload?.args?.[0]?.payload;
+          const args = effect?.payload?.args;
+          const payload = args?.[0]?.payload;
           const traceparent = payload?.traceparent;
+          const traceable = args?.[2]?.traceable;
+
           if (traceparent) {
             const parentContext = api.propagation.extract(api.context.active(), payload);
             const spanName = instrumentation._getEffectName(effect);
             const span = instrumentation.tracer.startSpan(
                 spanName,
                 {
-                  kind: api.SpanKind.INTERNAL
+                  kind: api.SpanKind.CLIENT
                 },
                 parentContext
             );
@@ -51,6 +54,7 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
 
             return;
           }
+
           const parentId = info?.parentEffectId;
 
           const parentSpan = instrumentation._spans.get(parentId);
@@ -61,7 +65,7 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
             // Use the parent span's context to create a child span
             const childSpan = instrumentation.tracer.startSpan(
                 spanName,
-                { kind: api.SpanKind.INTERNAL },
+                { kind: api.SpanKind.CLIENT },
                 api.trace.setSpan(api.context.active(), parentSpan)
             );
 
@@ -71,13 +75,25 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
               effect.payload.action.payload = effectPayload;
             }
 
-            // if (effect.type === 'CALL') {
-            //   console.log("WITH CALL NOW")
-            //   const childContext = api.trace.setSpan(api.context.active(), childSpan);
-            //   effect.fn = api.context.bind(childContext, effect.fn);
-            // }
+            if (effect.type === 'CALL') {
+              const childContext = api.trace.setSpan(api.context.active(), childSpan);
+              effect.fn = api.context.bind(childContext, effect.fn);
+            }
 
             instrumentation._spans.set(effectId, childSpan);
+          } else if (traceable){
+            console.log('START ACTIVE SPAN')
+            const spanName = instrumentation._getEffectName(effect);
+            return instrumentation.tracer.startActiveSpan(
+                spanName,
+                {
+                  kind: api.SpanKind.CLIENT
+                },
+                (span)=>{
+                  console.log('SPAN', span);
+                  instrumentation._spans.set(effectId, span);
+                }
+            );
           }
         } catch (e) {
           console.log('Error in effectTriggered', e);
@@ -95,11 +111,13 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
               // You can add any final attributes or set success
               span.setStatus({ code: SpanStatusCode.OK });
               span.end();
+              instrumentation._spans.delete(effectId);
               return res;
             });
           } else {
             span.setStatus({ code: SpanStatusCode.OK });
             span.end();
+            instrumentation._spans.delete(effectId);
           }
         } catch (e) {
           console.log('Error in effectResolved', e);
