@@ -87,8 +87,6 @@ export class AxiosInstrumentation extends InstrumentationBase<AxiosInstrumentati
   }
 
   private _endSpan<T = any>(span: api.Span, response?: AxiosResponse<T>, error?: Error) {
-    const endTime = core.millisToHrTime(Date.now());
-
     if (response) {
       // It's an AxiosResponse
       this._addFinalSpanAttributes(span, response);
@@ -106,7 +104,7 @@ export class AxiosInstrumentation extends InstrumentationBase<AxiosInstrumentati
       }
     }
 
-    span.end(endTime);
+    span.end();
   }
 
   private _patchAxios() {
@@ -141,9 +139,10 @@ export class AxiosInstrumentation extends InstrumentationBase<AxiosInstrumentati
                 return response;
               })
               .catch((error: any) => {
+                console.log("CATCHED ERROR", error?.response);
                 plugin._endSpan(
                     span,
-                    undefined,
+                    error?.response,
                     error?.response || {
                       message: error?.message || 'Unknown error',
                       name: error?.name || 'Error'

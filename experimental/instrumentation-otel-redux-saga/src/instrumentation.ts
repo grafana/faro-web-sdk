@@ -3,13 +3,14 @@ import {Span, SpanStatusCode} from '@opentelemetry/api';
 import {InstrumentationBase} from '@opentelemetry/instrumentation';
 import type {InstrumentationConfig} from '@opentelemetry/instrumentation';
 import type {SagaMonitor} from 'redux-saga';
-import type {CallEffect, PutEffect} from 'redux-saga/effects';
+import type {PutEffect} from 'redux-saga/effects';
+
 
 export interface ReduxSagaInstrumentationConfig extends InstrumentationConfig {
   // Add any custom config fields you'd like here.
   // For example, you might ignore certain effect types, or customize naming, etc.
   shouldPropagateTraceContextPut?: (effect: PutEffect) => boolean;
-  propagateContextToCall?: (effect: CallEffect) => boolean;
+  propagateContextToCall?: boolean
 }
 
 /**
@@ -65,7 +66,7 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
             // Use the parent span's context to create a child span
             const childSpan = instrumentation.tracer.startSpan(
                 spanName,
-                { kind: api.SpanKind.CLIENT },
+                { kind: api.SpanKind.CLIENT},
                 api.trace.setSpan(api.context.active(), parentSpan)
             );
 
@@ -77,23 +78,19 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
 
             if (effect.type === 'CALL') {
               const childContext = api.trace.setSpan(api.context.active(), childSpan);
-              effect.fn = api.context.bind(childContext, effect.fn);
+              effect.payload.fn = api.context.bind(childContext, effect.payload.fn);
             }
 
             instrumentation._spans.set(effectId, childSpan);
           } else if (traceable){
-            console.log('START ACTIVE SPAN')
             const spanName = instrumentation._getEffectName(effect);
-            return instrumentation.tracer.startActiveSpan(
+            const span =  instrumentation.tracer.startSpan(
                 spanName,
                 {
                   kind: api.SpanKind.CLIENT
-                },
-                (span)=>{
-                  console.log('SPAN', span);
-                  instrumentation._spans.set(effectId, span);
                 }
             );
+            instrumentation._spans.set(effectId, span);
           }
         } catch (e) {
           console.log('Error in effectTriggered', e);
