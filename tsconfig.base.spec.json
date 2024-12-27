@@ -2,6 +2,9 @@
   "extends": "./tsconfig.base.cjs.json",
   "compilerOptions": {
     "isolatedModules": false,
-    "types": ["jest"]
+    "types": [
+      "jest",
+      "node"
+    ]
   }
 }

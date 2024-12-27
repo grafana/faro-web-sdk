@@ -1,5 +1,5 @@
 import type { ContextAPI as OTELContextAPI, TraceAPI as OTELTraceAPI } from '@opentelemetry/api';
-import type { IResourceSpans } from '@opentelemetry/otlp-transformer';
+import type { IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 
 // TODO: Revert temporary patching
 // in latest OpenTelemetry packages protobuf type "instrumentationLibrary" has been renamed to "scope"

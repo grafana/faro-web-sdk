@@ -1,4 +1,4 @@
-import type { IKeyValue } from '@opentelemetry/otlp-transformer';
+import type { IKeyValue } from '@opentelemetry/otlp-transformer/build/src/common/internal-types';
 import {
   ATTR_EXCEPTION_MESSAGE,
   ATTR_EXCEPTION_TYPE,
