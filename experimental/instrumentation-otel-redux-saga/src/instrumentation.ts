@@ -20,7 +20,7 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
   private _spans: Map<number, Span> = new Map();
 
   constructor(config: ReduxSagaInstrumentationConfig = {}) {
-    super('@example/redux-saga-instrumentation', '1.0.0', config);
+    super('@grafana/redux-saga-instrumentation', '1.0.0', config);
   }
 
   init() {}
