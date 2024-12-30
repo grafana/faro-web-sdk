@@ -93,7 +93,7 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
             instrumentation._spans.set(effectId, span);
           }
         } catch (e) {
-          console.log('Error in effectTriggered', e);
+          instrumentation._diag.error('Error in effectTriggered', e);
         }
       },
 
@@ -117,7 +117,7 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
             instrumentation._spans.delete(effectId);
           }
         } catch (e) {
-          console.log('Error in effectResolved', e);
+          instrumentation._diag.error('Error in effectResolved', e);
         }
       },
 
@@ -132,7 +132,7 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
           span.end();
           instrumentation._spans.delete(effectId);
         } catch (e) {
-          console.log('Error in effectRejected', e);
+          instrumentation._diag.error('Error in effectRejected', e);
         }
       },
 
@@ -147,7 +147,7 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
           span.end();
           instrumentation._spans.delete(effectId);
         } catch (e) {
-          console.log('Error in effectCancelled', e);
+          instrumentation._diag.error('Error in effectCancelled', e);
         }
       },
     };

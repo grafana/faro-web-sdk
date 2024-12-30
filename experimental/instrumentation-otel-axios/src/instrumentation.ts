@@ -139,15 +139,18 @@ export class AxiosInstrumentation extends InstrumentationBase<AxiosInstrumentati
                 return response;
               })
               .catch((error: any) => {
-                console.log("CATCHED ERROR", error?.response);
-                plugin._endSpan(
-                    span,
-                    error?.response,
-                    error?.response || {
-                      message: error?.message || 'Unknown error',
-                      name: error?.name || 'Error'
-                    }
-                );
+                try {
+                  plugin._endSpan(
+                      span,
+                      error?.response,
+                      error?.response || {
+                        message: error?.message || 'Unknown error',
+                        name: error?.name || 'Error'
+                      }
+                  );
+                } catch (e) {
+                    plugin._diag.error('Error ending span', e);
+                }
                 throw error;
               });
         });
