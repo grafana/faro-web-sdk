@@ -8,24 +8,22 @@ import {
   SEMATTRS_HTTP_SCHEME,
   SEMATTRS_HTTP_STATUS_CODE,
   SEMATTRS_HTTP_URL,
-  SEMATTRS_HTTP_USER_AGENT
+  SEMATTRS_HTTP_USER_AGENT,
 } from '@opentelemetry/semantic-conventions';
 import { Axios, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-import {AttributeNames} from "./constants";
-import type {AxiosInstrumentationOptions} from "./types";
+import { AttributeNames } from './constants';
+import type { AxiosInstrumentationOptions } from './types';
 
 /**
  * Additional custom attribute names
  */
-
 
 export const VERSION = '1.12.3';
 
 /**
  * Configuration interface for the AxiosInstrumentation
  */
-
 
 export class AxiosInstrumentation extends InstrumentationBase<AxiosInstrumentationOptions> {
   readonly component: string = 'axios';
@@ -58,6 +56,12 @@ export class AxiosInstrumentation extends InstrumentationBase<AxiosInstrumentati
     if (typeof navigator !== 'undefined') {
       span.setAttribute(SEMATTRS_HTTP_USER_AGENT, navigator.userAgent);
     }
+
+    try {
+      this._config.applyCustomAttributesOnSpan?.(span as web.Span, response);
+    } catch (e) {
+      this._diag.error('Error applying custom attributes', e);
+    }
   }
 
   private _addAxiosHeaders(config: AxiosRequestConfig): void {
@@ -81,8 +85,8 @@ export class AxiosInstrumentation extends InstrumentationBase<AxiosInstrumentati
       attributes: {
         [AttributeNames.COMPONENT]: this.moduleName,
         [SEMATTRS_HTTP_METHOD]: method,
-        [SEMATTRS_HTTP_URL]: url
-      }
+        [SEMATTRS_HTTP_URL]: url,
+      },
     });
   }
 
@@ -115,21 +119,26 @@ export class AxiosInstrumentation extends InstrumentationBase<AxiosInstrumentati
       plugin._unwrap(Axios.prototype, 'request');
     }
 
-    plugin._wrap(Axios.prototype, 'request', (original: <T = any, R = AxiosResponse<T>, D=any>(config: AxiosRequestConfig<D>) => Promise<R>) => {
-      return function patchRequest<T = any, R = AxiosResponse<T>, D = any>(this: AxiosInstance, requestConfig: AxiosRequestConfig<D>): Promise<R> {
-        const url = requestConfig.url ?? '';
+    plugin._wrap(
+      Axios.prototype,
+      'request',
+      (original: <T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>) => Promise<R>) => {
+        return function patchRequest<T = any, R = AxiosResponse<T>, D = any>(
+          this: AxiosInstance,
+          requestConfig: AxiosRequestConfig<D>
+        ): Promise<R> {
+          const url = requestConfig.url ?? '';
 
-        // Create a new span if the URL is not ignored
-        const span = plugin.createSpan(url, { method: requestConfig.method });
-        if (!span) {
-          return original.apply(this, [requestConfig]) as Promise<R>;
-        }
+          // Create a new span if the URL is not ignored
+          const span = plugin.createSpan(url, { method: requestConfig.method });
+          if (!span) {
+            return original.apply(this, [requestConfig]) as Promise<R>;
+          }
 
-        return api.context.with(api.trace.setSpan(api.context.active(), span), () => {
-          plugin._addAxiosHeaders(requestConfig);
+          return api.context.with(api.trace.setSpan(api.context.active(), span), () => {
+            plugin._addAxiosHeaders(requestConfig);
 
-          return (original
-              .apply(this, [requestConfig]) as Promise<R>)
+            return (original.apply(this, [requestConfig]) as Promise<R>)
               .then((response: R) => {
                 try {
                   plugin._endSpan<T>(span, response as AxiosResponse<T>);
@@ -139,21 +148,24 @@ export class AxiosInstrumentation extends InstrumentationBase<AxiosInstrumentati
                 return response;
               })
               .catch((error: any) => {
-                console.log("CATCHED ERROR", error?.response);
-                plugin._endSpan(
+                try {
+                  plugin._endSpan(
                     span,
                     error?.response,
                     error?.response || {
                       message: error?.message || 'Unknown error',
-                      name: error?.name || 'Error'
+                      name: error?.name || 'Error',
                     }
-                );
+                  );
+                } catch (e) {
+                  plugin._diag.error('Error ending span', e);
+                }
                 throw error;
               });
-        });
-      };
-    });
-
+          });
+        };
+      }
+    );
   }
 
   override enable(): void {
