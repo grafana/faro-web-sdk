@@ -16,13 +16,15 @@ export class WebSocketInstrumentation<T = Record<string, unknown>> extends Instr
   moduleName = this.component;
 
   private messageTransform: MessageTransform<T>;
+  private sendTransform: MessageTransform<T>;
 
   private pendingRequests = new Map<number, PendingRequest>();
 
   constructor(options: WebSocketInstrumentationConfig<T> = {}) {
     super('faro-instrumentation-websocket', VERSION, {});
 
-    this.messageTransform = options.messageTransform ?? this.defaultMessageTransform;
+    this.messageTransform = options.messageTransform ?? this.defaultTransform;
+    this.sendTransform = options.sendTransform ?? this.defaultTransform;
   }
 
   protected init() {
@@ -42,7 +44,7 @@ export class WebSocketInstrumentation<T = Record<string, unknown>> extends Instr
     ];
   }
 
-  private defaultMessageTransform(message: WebSocketMessage<T>): WebSocketMessage<T> | null | undefined {
+  private defaultTransform(message: WebSocketMessage<T>): WebSocketMessage<T> | null | undefined {
     return message;
   }
 
@@ -124,8 +126,6 @@ export class WebSocketInstrumentation<T = Record<string, unknown>> extends Instr
                 kind: SpanKind.CLIENT,
                 attributes: {
                   'websocket.url': url,
-                  'websocket.message_type': typeof event.data,
-                  'websocket.message_size': event.data?.length,
                   'websocket.message_payload':
                     typeof transformedMessage === 'string' ? transformedMessage : JSON.stringify(transformedMessage),
                 },
@@ -158,13 +158,24 @@ export class WebSocketInstrumentation<T = Record<string, unknown>> extends Instr
         this.send = function (data: string) {
           try {
             const requestId = generateRequestId();
-            let modifiedData = data;
+            let modifiedData;
             try {
               const payload = JSON.parse(data);
               payload.requestId = requestId;
-              modifiedData = JSON.stringify(payload);
+              modifiedData = payload;
             } catch (e) {
               self._diag.debug('Failed to modify payload, not JSON:', e);
+
+              originalSend.call(this, data);
+
+              return;
+            }
+
+            originalSend.call(this, JSON.stringify(modifiedData));
+
+            const transformedData = self.sendTransform(modifiedData);
+            if (!transformedData) {
+              return;
             }
 
             const sendSpan = tracer.startSpan(
@@ -173,9 +184,7 @@ export class WebSocketInstrumentation<T = Record<string, unknown>> extends Instr
                 kind: SpanKind.CLIENT,
                 attributes: {
                   'websocket.url': url,
-                  'websocket.message_type': typeof data,
-                  'websocket.message_payload': data,
-                  'websocket.request_id': requestId,
+                  'websocket.message_payload': JSON.stringify(transformedData),
                 },
               },
               this.wsContext
@@ -185,8 +194,6 @@ export class WebSocketInstrumentation<T = Record<string, unknown>> extends Instr
               span: sendSpan,
               startTime: Date.now(),
             });
-
-            originalSend.call(this, modifiedData);
           } catch (error: unknown) {
             this.wsSpan.setStatus({
               code: SpanStatusCode.ERROR,
