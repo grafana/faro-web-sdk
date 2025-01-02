@@ -1,8 +1,3 @@
-// TODO(@lucasbento): fix this
-/* eslint-disable import/no-unresolved */
-// @ts-expect-error
-import { NativeModules } from 'react-native';
-
 import { BaseInstrumentation, VERSION } from '@grafana/react-native-sdk';
 
 import { setDependencies } from './dependencies';
