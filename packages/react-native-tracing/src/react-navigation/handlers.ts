@@ -103,6 +103,10 @@ export function initializeInitialRoute(navigationContainer: NavigationContainer,
   const initialRoute = navigationContainer.getCurrentRoute();
   if (initialRoute && !state.isInitialized) {
     api.setView({ name: initialRoute.name });
+    api.pushEvent(EVENT_ROUTE_CHANGE, {
+      fromRoute: state.fromRoute,
+      toRoute: initialRoute.name,
+    });
     state.fromRoute = initialRoute.name;
     state.isInitialized = true;
   }

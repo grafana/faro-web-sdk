@@ -4,7 +4,7 @@ import type { NavigationState } from './types';
 
 export const navigationState: NavigationState = {
   activeSpan: undefined,
-  fromRoute: 'unknown',
+  fromRoute: 'startup',
   isInitialized: false, // Not used yet
   stateChangeTimeout: undefined,
 };
