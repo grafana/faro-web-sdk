@@ -85,4 +85,12 @@ public class NativeInstrumentationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void removeListeners(Integer count) {}
+
+    @Override
+    public void receiveTouches(String eventName, WritableArray touches, WritableArray changedIndices) {
+    }
+
+    @Override
+    public void receiveEvent(int targetTag, String eventName, WritableMap event) {
+    }
 } 
