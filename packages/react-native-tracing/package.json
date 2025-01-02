@@ -24,6 +24,7 @@
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
+  "react-native": "src/index",
   "files": [
     ".browserslistrc",
     "dist",
@@ -72,11 +73,11 @@
     "@types/react": "^17.0.0",
     "@types/react-native": "^0.63.0",
     "react": "^17.0.0",
-    "react-native": "^0.63.0"
+    "react-native": "^0.72.13"
   },
   "peerDependencies": {
-    "react": "^16.8.0 || ^17.0.0",
-    "react-native": "^0.63.0"
+    "react": "*",
+    "react-native": "*"
   },
   "publishConfig": {
     "access": "public"
