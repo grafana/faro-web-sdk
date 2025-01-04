@@ -17,7 +17,7 @@ const measureStartupTime = async (): Promise<void> => {
     api.pushMeasurement({
       type: 'app_startup_time',
       values: {
-        startup_duration_ms: metrics.startupDuration,
+        startup_duration: metrics.startupDuration,
       },
     });
   } catch (error) {

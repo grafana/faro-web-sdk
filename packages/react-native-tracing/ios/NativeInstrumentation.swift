@@ -9,7 +9,7 @@ public class NativeInstrumentation: NSObject, RCTBridgeModule {
     @objc
     public static func initializeNativeInstrumentation() {
         NativeInstrumentation.cachedMetrics = nil
-        NativeInstrumentation.startTime = Date().timeIntervalSince1970 * 1000
+        NativeInstrumentation.startTime = Date().timeIntervalSince1970
     }
     
     override init() {
@@ -38,7 +38,7 @@ public class NativeInstrumentation: NSObject, RCTBridgeModule {
             return
         }
         
-        let endTime = Date().timeIntervalSince1970 * 1000
+        let endTime = Date().timeIntervalSince1970
         let duration = endTime - startTime
         
         let metrics: [String: Double] = [
