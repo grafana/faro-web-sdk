@@ -63,17 +63,17 @@ public class NativeInstrumentationModule extends ReactContextBaseJavaModule impl
         }
 
         long endTime = System.currentTimeMillis();
-        long duration = endTime - startTime;
+        double duration = (endTime - startTime) / 1000.0;
 
         android.util.Log.d(NAME, String.format(
-            "Calculating metrics - Start: %d, End: %d, Duration: %d ms",
+            "Calculating metrics - Start: %d, End: %d, Duration: %f seconds",
             startTime, endTime, duration
         ));
 
         WritableMap params = Arguments.createMap();
-        params.putDouble("startStartupTime", startTime.doubleValue());
+        params.putDouble("startStartupTime", (double) startTime);
         params.putDouble("endStartupTime", (double) endTime);
-        params.putDouble("startupDuration", (double) duration);
+        params.putDouble("startupDuration", duration);
 
         cachedMetrics = params;
         android.util.Log.d(NAME, "Metrics cached and being returned");
