@@ -14,7 +14,7 @@
     "jsx": "react-jsx",
     "lib": [
       "DOM",
-      "ES2016"
+      "ES6"
     ],
     "moduleResolution": "Node",
     "noEmitOnError": true,
