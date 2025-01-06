@@ -7,7 +7,6 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "importsNotUsedAsValues": "error",
     "incremental": true,
     "inlineSources": true,
     "isolatedModules": true,
