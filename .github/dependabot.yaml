@@ -5,8 +5,9 @@
 
 version: 2
 updates:
-  - package-ecosystem: 'npm' # See documentation for possible values
-    directory: '/' # Location of package manifests
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: 'monthly' # will be changed once we updated all the deps after initial activation
+      interval: 'daily'
     target-branch: 'main'
+    open-pull-requests-limit: 10
