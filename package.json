@@ -55,7 +55,7 @@
   "devDependencies": {
     "@grafana/eslint-config": "^8.0.0",
     "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.0.0",
     "@stylistic/eslint-plugin-ts": "^2.11.0",
