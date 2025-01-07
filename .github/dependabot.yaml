@@ -12,5 +12,5 @@ updates:
     target-branch: 'main'
     open-pull-requests-limit: 10
     commit-message:
-      prefix: "chore"
+      prefix: 'chore'
       include: 'scope'
