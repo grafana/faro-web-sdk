@@ -2,6 +2,11 @@
 
 ## Next
 
+## 1.12.3
+
+- Fix (`@grafana/faro-transport-otlp-http [experimental]`): Prevent sending requests when the
+  endpoint URL is not configured (#827).
+
 ## 1.12.2
 
 - Fix (`@grafana/faro-web-sdk`): Update Faro log parsing in console instrumentation to use Faro's
