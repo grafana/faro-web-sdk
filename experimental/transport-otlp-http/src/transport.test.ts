@@ -175,15 +175,16 @@ describe('OtlpHttpTransport', () => {
 
   // TODO: add case for resourceSpans once the respective transform is implemented
   it.each([
-    { v: logTransportItem, type: 'resourceLogs' },
-    { v: traceTransportItem, type: 'resourceSpans' },
+    { v: logTransportItem, type: 'resourceLogs', otelEndpointUrl: 'www.example.com/v1/logs' },
+    { v: traceTransportItem, type: 'resourceSpans', otelEndpointUrl: 'www.example.com/v1/traces' },
   ])(
     'will back off on 429 for default interval if retry-after header present, with delay while sending $type',
-    async ({ v }) => {
+    async ({ v, otelEndpointUrl }) => {
       jest.useFakeTimers();
 
       const transport = new OtlpHttpTransport({
-        logsURL: 'www.example.com/v1/logs',
+        logsURL: otelEndpointUrl,
+        tracesURL: otelEndpointUrl,
         defaultRateLimitBackoffMs: 1000,
       });
 
@@ -213,15 +214,16 @@ describe('OtlpHttpTransport', () => {
   );
 
   it.each([
-    { v: logTransportItem, type: 'resourceLogs' },
-    { v: traceTransportItem, type: 'resourceSpans' },
+    { v: logTransportItem, type: 'resourceLogs', otelEndpointUrl: 'www.example.com/v1/logs' },
+    { v: traceTransportItem, type: 'resourceSpans', otelEndpointUrl: 'www.example.com/v1/traces' },
   ])(
     'will back off on 429 for default interval if retry-after header present, with date while sending $type',
-    async ({ v }) => {
+    async ({ v, otelEndpointUrl }) => {
       jest.useFakeTimers();
 
       const transport = new OtlpHttpTransport({
-        logsURL: 'www.example.com/v1/logs',
+        logsURL: otelEndpointUrl,
+        tracesURL: otelEndpointUrl,
         defaultRateLimitBackoffMs: 1000,
       });
 
@@ -417,5 +419,31 @@ describe('OtlpHttpTransport', () => {
 
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(mockResponseTextFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('will not send traces data if traces URL is not set', () => {
+    const transport = new OtlpHttpTransport({
+      logsURL: 'www.example.com/v1/logs',
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    transport.send([traceTransportItem]);
+    transport.send([logTransportItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('will not send logs data if logs URL is not set', () => {
+    const transport = new OtlpHttpTransport({
+      logsURL: 'www.example.com/v1/traces',
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    transport.send([traceTransportItem]);
+    transport.send([logTransportItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });

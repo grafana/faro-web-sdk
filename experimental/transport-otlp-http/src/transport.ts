@@ -98,6 +98,10 @@ export class OtlpHttpTransport extends BaseTransport {
         const { requestOptions, apiKey } = this.options;
         const { headers, ...restOfRequestOptions } = requestOptions ?? {};
 
+        if (!url) {
+          continue;
+        }
+
         this.promiseBuffer.add(() => {
           return fetch(url, {
             method: 'POST',
