@@ -53,12 +53,17 @@
   },
   "dependencies": {
     "@grafana/faro-core": "^1.12.2",
+    "react-native-device-info": "^14.0.2",
     "ua-parser-js": "^1.0.32",
     "web-vitals": "^4.0.1"
   },
   "devDependencies": {
     "@types/ua-parser-js": "^0.7.36",
+    "react-native": "0.72.6",
     "user-agent-data-types": "^0.4.2"
+  },
+  "peerDependencies": {
+    "react-native": ">=0.70.0"
   },
   "publishConfig": {
     "access": "public"

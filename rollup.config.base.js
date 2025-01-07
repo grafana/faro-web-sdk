@@ -87,40 +87,72 @@ const modules = {
     bundleName: 'faro-instrumentation-otel-redux-saga',
     globalName: 'GrafanaFaroInstrumentationOtelReduxSaga',
     externals: [],
-  }
+  },
 };
 
 exports.getRollupConfigBase = (moduleName) => {
   const module = modules[moduleName];
 
-  return {
+  const isReactNative = moduleName.startsWith('rn');
+
+  const baseConfig = {
     input: './src/index.ts',
     output: {
       file: `./dist/bundle/${module.bundleName}.iife.js`,
       format: 'iife',
-      globals: module.externals.reduce(
-        (acc, external) => ({
-          ...acc,
-          [modules[external].name]: modules[external].globalName,
-        }),
-        {}
-      ),
+      globals: {
+        'react-native': 'ReactNative',
+        react: 'React',
+        ...module.externals.reduce(
+          (acc, external) => ({
+            ...acc,
+            [modules[external].name]: modules[external].globalName,
+          }),
+          {}
+        ),
+      },
       name: module.globalName,
     },
-    external: module.externals.map((external) => modules[external].name),
+    external: ['react-native', 'react', ...module.externals.map((external) => modules[external].name)],
     plugins: [
       resolve({
         browser: true,
+        preferBuiltins: false,
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+        moduleDirectories: ['node_modules'],
       }),
-      commonjs(),
+      commonjs({
+        ignore: isReactNative ? ['react-native'] : [],
+        requireReturnsDefault: 'auto',
+        transformMixedEsModules: true,
+        exclude: isReactNative ? ['node_modules/react-native/**'] : [],
+      }),
       typescript({
         cacheDir: '../../.cache/rollup',
         inlineSources: false,
         outputToFilesystem: true,
         sourceMap: false,
         tsconfig: './tsconfig.esm.json',
+        exclude: ['node_modules/**'],
       }),
       terser(),
     ],
   };
+
+  if (isReactNative) {
+    baseConfig.onwarn = (warning, warn) => {
+      // Suppress certain warnings for React Native
+      if (warning.code === 'CIRCULAR_DEPENDENCY') {
+        return;
+      }
+
+      if (warning.code === 'THIS_IS_UNDEFINED') {
+        return;
+      }
+
+      warn(warning);
+    };
+  }
+
+  return baseConfig;
 };

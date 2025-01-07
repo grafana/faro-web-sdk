@@ -1,7 +1,4 @@
 import React, { useEffect } from 'react';
-// @ts-expect-error
-// eslint-disable-next-line
-import { NativeModules } from 'react-native';
 
 import { api } from './dependencies';
 
@@ -14,12 +11,13 @@ interface StartupMetrics {
 // TODO(@lucasbento): figure out where to best place this function
 const measureStartupTime = async (): Promise<void> => {
   try {
-    const metrics: StartupMetrics = await NativeModules.NativeInstrumentation.getStartupTime();
+    const metrics: StartupMetrics =
+      await require('react-native')['NativeModules']['NativeInstrumentation'].getStartupTime();
 
     api.pushMeasurement({
       type: 'app_startup_time',
       values: {
-        startup_duration_ms: metrics.startupDuration,
+        startup_duration: metrics.startupDuration,
       },
     });
   } catch (error) {
