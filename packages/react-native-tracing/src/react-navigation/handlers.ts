@@ -1,6 +1,6 @@
 import { SpanStatusCode, Tracer } from '@opentelemetry/api';
 
-import { EVENT_ROUTE_CHANGE } from '@grafana/faro-web-sdk';
+import { EVENT_ROUTE_CHANGE } from '@grafana/faro-core';
 
 import { api, internalLogger } from './dependencies';
 import { NavigationContainer, NavigationState, ROUTE_CHANGE_TIMEOUT_MS, SPAN_ATTRIBUTES, SPAN_NAME } from './types';
