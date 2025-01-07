@@ -1,4 +1,4 @@
-import type { IKeyValue, IAnyValue } from '@opentelemetry/otlp-transformer/build/src/common/internal-types';
+import type { IAnyValue, IKeyValue } from '@opentelemetry/otlp-transformer/build/src/common/internal-types';
 
 import { isArray, isBoolean, isInt, isNumber, isObject, isString } from '@grafana/faro-core';
 

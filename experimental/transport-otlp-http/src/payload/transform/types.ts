@@ -1,5 +1,5 @@
-import type { IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 import type { IKeyValue, IResource } from '@opentelemetry/otlp-transformer/build/src/common/internal-types';
+import type { IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 
 import type { APIEvent, Meta, TraceEvent, TransportItem } from '@grafana/faro-core';
 

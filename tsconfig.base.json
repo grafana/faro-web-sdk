@@ -12,10 +12,7 @@
     "inlineSources": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "lib": [
-      "DOM",
-      "ES6"
-    ],
+    "lib": ["DOM", "ES6"],
     "moduleResolution": "Node",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
@@ -31,10 +28,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "types": [
-      "jest",
-      "node"
-    ]
+    "types": ["jest", "node"]
   },
   "ts-node": {
     "esm": true

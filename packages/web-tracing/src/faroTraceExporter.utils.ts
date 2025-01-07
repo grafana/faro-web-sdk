@@ -1,5 +1,5 @@
 import type { SpanContext } from '@opentelemetry/api';
-import { type IResourceSpans, ESpanKind } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
+import { ESpanKind, type IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 
 import { faro, unknownString } from '@grafana/faro-core';
 import type { EventAttributes as FaroEventAttributes } from '@grafana/faro-web-sdk';
