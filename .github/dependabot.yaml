@@ -11,3 +11,5 @@ updates:
       interval: 'daily'
     target-branch: 'main'
     open-pull-requests-limit: 10
+    commit-message:
+      include: "scope"
