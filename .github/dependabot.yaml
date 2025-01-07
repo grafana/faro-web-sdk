@@ -14,3 +14,6 @@ updates:
     commit-message:
       prefix: 'chore'
       include: 'scope'
+    ignore:
+      - dependency-name: 'ua-parser-js'
+        versions: ['2.x']
