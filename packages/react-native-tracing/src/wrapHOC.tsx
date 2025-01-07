@@ -21,7 +21,7 @@ const measureStartupTime = async (): Promise<void> => {
       },
     });
   } catch (error) {
-    console.error('[NativeInstrumentation] Failed to measure startup time:', error);
+    console.warn('[NativeInstrumentation] Failed to measure startup time:', error);
   }
 };
 
