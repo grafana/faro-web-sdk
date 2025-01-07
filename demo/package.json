@@ -47,7 +47,7 @@
     "@opentelemetry/instrumentation-express": "^0.41.1",
     "@opentelemetry/instrumentation-http": "^0.53.0",
     "@opentelemetry/instrumentation-pg": "^0.43.0",
-    "@opentelemetry/instrumentation-winston": "^0.39.0",
+    "@opentelemetry/instrumentation-winston": "^0.44.0",
     "@opentelemetry/resources": "^1.26.0",
     "@opentelemetry/sdk-node": "^0.53.0",
     "@opentelemetry/sdk-trace-node": "^1.26.0",
