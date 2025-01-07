@@ -13,14 +13,14 @@ export function registerFaroReactNavigationContainer(navigationContainerRef: Nav
   const navigationContainer = navigationContainerRef.current;
 
   if (!navigationContainer) {
-    internalLogger.warn('Received invalid navigation container ref');
+    internalLogger.error('Received invalid navigation container ref');
     return;
   }
 
   const otel = api.getOTEL();
 
   if (!otel) {
-    internalLogger.warn('OpenTelemetry not initialized');
+    internalLogger.error('OpenTelemetry not initialized');
     return;
   }
 
