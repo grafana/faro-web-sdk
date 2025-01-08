@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@grafana/eslint-config": "^8.0.0",
-    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.0.0",
@@ -64,7 +64,7 @@
     "@typescript-eslint/parser": "^5.48.2",
     "cypress": "^13.15.2",
     "eslint": "^8.32.0",
-    "eslint-config-prettier": "^8.6.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-jsdoc": "^50.6.1",
     "eslint-plugin-no-only-tests": "^3.1.0",
