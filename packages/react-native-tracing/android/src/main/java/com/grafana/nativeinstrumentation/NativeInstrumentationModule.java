@@ -16,7 +16,10 @@ import com.facebook.react.uimanager.events.RCTEventEmitter;
 public class NativeInstrumentationModule extends ReactContextBaseJavaModule implements RCTEventEmitter {
     public static final String NAME = "NativeInstrumentation";
     private static Long startTime = null;
-    private static WritableMap cachedMetrics = null;
+
+    private static Double cachedStartStartupTime = null;
+    private static Double cachedEndStartupTime = null;
+    private static Double cachedStartupDuration = null;
 
     static {
         ReactMarker.addListener((name, tag, instanceKey) -> {
@@ -41,9 +44,28 @@ public class NativeInstrumentationModule extends ReactContextBaseJavaModule impl
 
     public static void initializeNativeInstrumentation() {
         android.util.Log.d(NAME, "Initializing native instrumentation...");
-        cachedMetrics = null;
+        cachedStartStartupTime = null;
+        cachedEndStartupTime = null;
+        cachedStartupDuration = null;
         startTime = System.currentTimeMillis();
         android.util.Log.d(NAME, String.format("Initialized with start time: %d (previous metrics cleared)", startTime));
+    }
+
+    /**
+     * Creates a fresh WritableMap with startup metrics.
+     * Note: Each WritableMap can only be consumed once when passed through the React Native bridge.
+     * This method ensures we always create a new instance for each request.
+     * 
+     * Each map can be consumed once by the JS side (i.e., going through the bridge).
+     *
+     * @return A new WritableMap instance containing the startup metrics
+     */
+    private WritableMap createStartupMetricsMap(double startStartupTime, double endStartupTime, double startupDuration) {
+        WritableMap params = Arguments.createMap();
+        params.putDouble("startStartupTime", startStartupTime);
+        params.putDouble("endStartupTime", endStartupTime);
+        params.putDouble("startupDuration", startupDuration);
+        return params;
     }
 
     @ReactMethod
@@ -56,9 +78,9 @@ public class NativeInstrumentationModule extends ReactContextBaseJavaModule impl
             return;
         }
 
-        if (cachedMetrics != null) {
+        if (cachedStartupDuration != null) {
             android.util.Log.d(NAME, "Returning cached metrics");
-            promise.resolve(cachedMetrics);
+            promise.resolve(createStartupMetricsMap(cachedStartStartupTime, cachedEndStartupTime, cachedStartupDuration));
             return;
         }
 
@@ -70,14 +92,12 @@ public class NativeInstrumentationModule extends ReactContextBaseJavaModule impl
             startTime, endTime, duration
         ));
 
-        WritableMap params = Arguments.createMap();
-        params.putDouble("startStartupTime", (double) startTime);
-        params.putDouble("endStartupTime", (double) endTime);
-        params.putDouble("startupDuration", duration);
+        cachedStartStartupTime = (double) startTime;
+        cachedEndStartupTime = (double) endTime;
+        cachedStartupDuration = duration;
 
-        cachedMetrics = params;
         android.util.Log.d(NAME, "Metrics cached and being returned");
-        promise.resolve(params);
+        promise.resolve(createStartupMetricsMap(cachedStartStartupTime, cachedEndStartupTime, cachedStartupDuration));
     }
 
     @ReactMethod
