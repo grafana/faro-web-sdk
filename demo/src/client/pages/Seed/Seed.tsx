@@ -1,5 +1,4 @@
-import Alert from 'react-bootstrap/Alert';
-import Button from 'react-bootstrap/Button';
+import { Alert, Button } from 'react-bootstrap';
 
 import { faro } from '@grafana/faro-react';
 
