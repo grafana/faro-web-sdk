@@ -1385,17 +1385,17 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/context-async-hooks/-/context-async-hooks-1.30.1.tgz#4f76280691a742597fd0bf682982126857622948"
   integrity sha512-s5vvxXPVdjqS3kTLKMeBMvop9hbWkwzBpu+mUO2M7sZtlkyDJGwFe33wRKnbaYDo8ExRVBIIdwIGrqpxHuKttA==
 
-"@opentelemetry/context-zone-peer-dep@1.30.0":
-  version "1.30.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/context-zone-peer-dep/-/context-zone-peer-dep-1.30.0.tgz#2a50097b1d84d8ddc45b70ac13478ec5e16d0dd0"
-  integrity sha512-5T3cM1f6hnHUodbZK6X61wtRKT4q0dmITJolwXSN5XA55WLpkTY0D6u4WhNYDybvOd6/nWxsSVeACUyMa22few==
+"@opentelemetry/context-zone-peer-dep@1.30.1":
+  version "1.30.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/context-zone-peer-dep/-/context-zone-peer-dep-1.30.1.tgz#1e947cb5408a0815a3fbdfabca09b861d0b169df"
+  integrity sha512-8oJQR+MBblY5WGOm26AOBLogN+FoO26QEZssH9WJd1qSD7ABMefq9qyGyN9xilFFl2ABPHgcMzkfYb8vx9JBEA==
 
-"@opentelemetry/context-zone@1.30.0":
-  version "1.30.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/context-zone/-/context-zone-1.30.0.tgz#8936020a2c38aa8303d19c79df28e4d1f24eb3b0"
-  integrity sha512-iN/l3LJUST1XXTLLoZionIfaBxgMXUnnmbAs4DJa50xHVDn9qvQUfeI0WCfPHetfAUyC0oAYlUycXEtTZE3XIQ==
+"@opentelemetry/context-zone@1.30.1":
+  version "1.30.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/context-zone/-/context-zone-1.30.1.tgz#b2676f91e53f4f7ff2ef4602b6ff671c4ee8bb7e"
+  integrity sha512-N6CACt5sxXD6XzS2jJPqstNJZ/QFqeW56IiKfHb6hYOelCXVvYfxheF7byAeRXa7+N8rmXUP7aRdupALXP5hdQ==
   dependencies:
-    "@opentelemetry/context-zone-peer-dep" "1.30.0"
+    "@opentelemetry/context-zone-peer-dep" "1.30.1"
     zone.js "^0.11.0 || ^0.12.0 || ^0.13.0 || ^0.14.0 || ^0.15.0"
 
 "@opentelemetry/core@1.30.0":
