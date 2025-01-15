@@ -6,23 +6,8 @@ on:
       - '*'
 
 jobs:
-  release:
+  test:
     runs-on: ubuntu-latest
-
-    services:
-      database:
-        image: postgres:latest
-        env:
-          POSTGRES_DB: demo
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_USER: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -51,6 +36,42 @@ jobs:
       - name: Unit tests
         run: yarn quality:test
 
+  e2e:
+    runs-on: ubuntu-latest
+    needs: test
+
+    services:
+      database:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: demo
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
       - name: E2E tests
         uses: cypress-io/github-action@v6
         env:
@@ -63,6 +84,28 @@ jobs:
         with:
           command: yarn quality:e2e:ci
           install: false
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [test, e2e]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'yarn'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
 
       - name: Publish
         run: yarn run publish from-git --yes --no-verify-access

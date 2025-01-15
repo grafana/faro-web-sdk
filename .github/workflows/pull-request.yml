@@ -11,6 +11,33 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: Lint
+        run: yarn quality:lint
+
+      - name: Check circular dependencies
+        run: yarn quality:circular-deps
+
+      - name: Unit tests
+        run: yarn quality:test
+
+  e2e:
+    runs-on: ubuntu-latest
+
     services:
       database:
         image: postgres:latest
@@ -40,15 +67,6 @@ jobs:
 
       - name: Build
         run: yarn build
-
-      - name: Lint
-        run: yarn quality:lint
-
-      - name: Check circular dependencies
-        run: yarn quality:circular-deps
-
-      - name: Unit tests
-        run: yarn quality:test
 
       - name: E2E tests
         uses: cypress-io/github-action@v6
