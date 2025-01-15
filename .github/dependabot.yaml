@@ -17,3 +17,18 @@ updates:
     ignore:
       - dependency-name: 'ua-parser-js'
         versions: ['2.x']
+  - package-ecosystem: 'docker'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+    commit-message:
+      prefix: 'chore'
+      include: 'scope'
+  # github actions
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+    commit-message:
+      prefix: 'chore'
+      include: 'scope'
