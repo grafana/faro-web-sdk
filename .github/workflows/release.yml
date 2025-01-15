@@ -54,6 +54,11 @@ jobs:
       - name: E2E tests
         uses: cypress-io/github-action@v6
         env:
+          DATABASE_HOST: postgres
+          DATABASE_PORT: 5432
+          DATABASE_NAME: demo
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres
           IS_TEST: 1
         with:
           command: yarn quality:e2e:ci
