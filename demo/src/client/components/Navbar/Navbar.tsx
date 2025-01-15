@@ -1,5 +1,5 @@
 import type { MouseEventHandler } from 'react';
-import Container from 'react-bootstrap/Container';
+import { Container } from 'react-bootstrap';
 import Nav from 'react-bootstrap/Nav';
 import BootstrapNavbar from 'react-bootstrap/Navbar';
 import { LinkContainer } from 'react-router-bootstrap';
