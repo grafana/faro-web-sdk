@@ -27,6 +27,11 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
           faroEventAttributes[attribute.key] = String(Object.values(attribute.value)[0]);
         }
 
+        // Add span duration in nanoseconds
+        if (!Number.isNaN(span.endTimeUnixNano) && !Number.isNaN(span.startTimeUnixNano)) {
+          faroEventAttributes['duration_ns'] = String(Number(span.endTimeUnixNano) - Number(span.startTimeUnixNano));
+        }
+
         const index = (scope?.name ?? '').indexOf('-');
         let eventName = unknownString;
 
