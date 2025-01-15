@@ -1,3 +1,5 @@
+import type { IResourceSpans, IScopeSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
+
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
@@ -15,14 +17,12 @@ describe('faroTraceExporter.utils', () => {
     jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
 
     // remove scopeSpan which contains client span
-    const data = {
-      ...testData[0],
-      scopeSpans: testData[0]?.scopeSpans.map((s) => ({ ...s })),
+    const data: IResourceSpans = {
+      resource: { attributes: [], droppedAttributesCount: 0 },
+      scopeSpans: testData[0]?.scopeSpans?.slice(0, -1) ?? [],
     };
 
-    data.scopeSpans!.pop();
-
-    sendFaroEvents([data as any]);
+    sendFaroEvents([data]);
 
     expect(mockPushEvent).toBeCalledTimes(0);
   });
@@ -48,6 +48,7 @@ describe('faroTraceExporter.utils', () => {
       'http.status_text': 'Unauthorized',
       'http.url': 'http://foo/bar',
       'http.user_agent': 'my-user-agent',
+      duration_ns: '15000064',
     });
   });
 
@@ -58,13 +59,19 @@ describe('faroTraceExporter.utils', () => {
     jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
 
     // add scope name without "-"
-    const data = {
-      ...testData[0],
-      scopeSpans: testData[0]?.scopeSpans.map((s) => ({ ...s })),
+    const scopeSpans = testData[0]?.scopeSpans?.map((s) => ({ ...s })) ?? [];
+    const data: IResourceSpans = {
+      resource: { attributes: [], droppedAttributesCount: 0 },
+      scopeSpans,
     };
-    data.scopeSpans!.at(-1)!.scope.name = '@foo/coolName';
 
-    sendFaroEvents([data as any]);
+    if (scopeSpans.length === 0) {
+      throw new Error('Test data is invalid - scopeSpans should not be empty');
+    }
+    const lastScopeSpan = scopeSpans[scopeSpans.length - 1] as IScopeSpans & { scope: { name: string } };
+    lastScopeSpan.scope.name = '@foo/coolName';
+
+    sendFaroEvents([data]);
 
     expect(mockPushEvent).toBeCalledTimes(1);
     expect(mockPushEvent.mock.lastCall[0]).toBe('faro.tracing.coolName');
@@ -77,13 +84,19 @@ describe('faroTraceExporter.utils', () => {
     jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
 
     // add scope name without "-"
-    const data = {
-      ...testData[0],
-      scopeSpans: testData[0]?.scopeSpans.map((s) => ({ ...s })),
+    const scopeSpans = testData[0]?.scopeSpans?.map((s) => ({ ...s })) ?? [];
+    const data: IResourceSpans = {
+      resource: { attributes: [], droppedAttributesCount: 0 },
+      scopeSpans,
     };
-    data.scopeSpans!.at(-1)!.scope.name = '@foo/coolName';
 
-    sendFaroEvents([data as any]);
+    if (scopeSpans.length === 0) {
+      throw new Error('Test data is invalid - scopeSpans should not be empty');
+    }
+    const lastScopeSpan = scopeSpans[scopeSpans.length - 1] as IScopeSpans & { scope: { name: string } };
+    lastScopeSpan.scope.name = '@foo/coolName';
+
+    sendFaroEvents([data]);
 
     expect(mockPushEvent).toBeCalledTimes(1);
     expect(mockPushEvent.mock.lastCall[3]).toStrictEqual({
@@ -93,10 +106,92 @@ describe('faroTraceExporter.utils', () => {
       },
     });
   });
+
+  it('Does not include duration when timestamps are missing', () => {
+    const faro = initializeFaro(mockConfig());
+    const mockPushEvent = jest.fn();
+    jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
+
+    const data: IResourceSpans = {
+      resource: { attributes: [], droppedAttributesCount: 0 },
+      scopeSpans: [
+        {
+          scope: {
+            name: '@opentelemetry/instrumentation-fetch',
+            version: '0.45.1',
+          },
+          spans: [
+            {
+              traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
+              spanId: '4c47d5f85e4b2aec',
+              parentSpanId: 'da5a27b83e0f2871',
+              name: 'HTTP GET',
+              kind: 3,
+              startTimeUnixNano: '',
+              endTimeUnixNano: '',
+              attributes: [],
+              droppedAttributesCount: 0,
+              events: [],
+              droppedEventsCount: 0,
+              status: { code: 0 },
+              links: [],
+              droppedLinksCount: 0,
+            },
+          ],
+        },
+      ],
+    };
+
+    sendFaroEvents([data]);
+
+    expect(mockPushEvent).toBeCalledTimes(1);
+    expect(mockPushEvent.mock.lastCall[0]).not.toHaveProperty('duration_ns');
+  });
+
+  it('Does not include duration when timestamps are invalid', () => {
+    const faro = initializeFaro(mockConfig());
+    const mockPushEvent = jest.fn();
+    jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
+
+    const data: IResourceSpans = {
+      resource: { attributes: [], droppedAttributesCount: 0 },
+      scopeSpans: [
+        {
+          scope: {
+            name: '@opentelemetry/instrumentation-fetch',
+            version: '0.45.1',
+          },
+          spans: [
+            {
+              traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
+              spanId: '4c47d5f85e4b2aec',
+              parentSpanId: 'da5a27b83e0f2871',
+              name: 'HTTP GET',
+              kind: 3,
+              startTimeUnixNano: 'invalid',
+              endTimeUnixNano: 'invalid',
+              attributes: [],
+              droppedAttributesCount: 0,
+              events: [],
+              droppedEventsCount: 0,
+              status: { code: 0 },
+              links: [],
+              droppedLinksCount: 0,
+            },
+          ],
+        },
+      ],
+    };
+
+    sendFaroEvents([data]);
+
+    expect(mockPushEvent).toBeCalledTimes(1);
+    expect(mockPushEvent.mock.lastCall[0]).not.toHaveProperty('duration_ns');
+  });
 });
 
 // some unnecessary parts are removed to shorten the object a bit.
-const testData = [
+const testData: IResourceSpans[] = [
   {
     resource: {
       attributes: [],
