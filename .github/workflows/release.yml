@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    services:
+      database:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: demo
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'yarn'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: Lint
+        run: yarn quality:lint
+
+      - name: Check circular dependencies
+        run: yarn quality:circular-deps
+
+      - name: Unit tests
+        run: yarn quality:test
+
+      - name: E2E tests
+        uses: cypress-io/github-action@v6
+        env:
+          IS_TEST: 1
+        with:
+          command: yarn quality:e2e:ci
+          install: false
+
+      - name: Publish
+        run: yarn run publish from-git --yes --no-verify-access
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
