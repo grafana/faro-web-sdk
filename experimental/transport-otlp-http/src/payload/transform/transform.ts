@@ -21,10 +21,9 @@ import {
   ATTR_USER_EMAIL,
   ATTR_USER_ID,
   ATTR_USER_NAME,
-  // False positive. Package can be resolved.
-  // eslint-disable-next-line import/no-unresolved
 } from '@opentelemetry/semantic-conventions/incubating';
 
+import type { InternalLogger, TraceEvent } from '@grafana/faro-core';
 import {
   EventEvent,
   ExceptionEvent,
@@ -36,7 +35,6 @@ import {
   TransportItemType,
   VERSION,
 } from '@grafana/faro-core';
-import type { InternalLogger, TraceEvent } from '@grafana/faro-core';
 
 import type { OtlpHttpTransportOptions } from '../../types';
 import { isAttribute, toAttribute, toAttributeValue } from '../attribute';
@@ -48,7 +46,6 @@ import type {
   Resource,
   ResourceLog,
   ResourceMeta,
-  ResourceSpan,
   ScopeLog,
   StringValueNonNullable,
   TraceTransform,
@@ -220,7 +217,7 @@ export function getLogTransforms(
 }
 
 export function getTraceTransforms(_internalLogger?: InternalLogger): TraceTransform {
-  function toResourceSpan(transportItem: TransportItem<TraceEvent>): ResourceSpan {
+  function toResourceSpan(transportItem: TransportItem<TraceEvent>): any {
     const resource = toResource(transportItem);
     const scopeSpans = transportItem.payload.resourceSpans?.[0]?.scopeSpans;
 
