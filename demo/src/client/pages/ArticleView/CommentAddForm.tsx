@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
+import { Alert, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 
 import { faro } from '@grafana/faro-react';
 
 import type { ArticleCommentAddPayload } from '../../../common';
 import { usePostArticleCommentMutation } from '../../api';
-import { Alert, Button, Form } from 'react-bootstrap';
 
 export type CommentAddFormProps = {
   articleId: string;
