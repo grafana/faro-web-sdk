@@ -54,7 +54,7 @@ jobs:
       - name: E2E tests
         uses: cypress-io/github-action@v6
         env:
-          DATABASE_HOST: postgres
+          DATABASE_HOST: database
           DATABASE_PORT: 5432
           DATABASE_NAME: demo
           DATABASE_USER: postgres
