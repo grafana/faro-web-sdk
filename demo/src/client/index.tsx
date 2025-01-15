@@ -1,5 +1,5 @@
 import { StrictMode } from 'react';
-import SSRProvider from 'react-bootstrap/SSRProvider';
+import { SSRProvider } from 'react-bootstrap';
 import { hydrateRoot } from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
 import { Provider as ReduxProvider } from 'react-redux';
