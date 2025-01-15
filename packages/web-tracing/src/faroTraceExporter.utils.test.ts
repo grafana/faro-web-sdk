@@ -48,7 +48,7 @@ describe('faroTraceExporter.utils', () => {
       'http.status_text': 'Unauthorized',
       'http.url': 'http://foo/bar',
       'http.user_agent': 'my-user-agent',
-      'duration_ns': '15000064',
+      duration_ns: '15000064',
     });
   });
 
@@ -114,28 +114,32 @@ describe('faroTraceExporter.utils', () => {
 
     const data: IResourceSpans = {
       resource: { attributes: [], droppedAttributesCount: 0 },
-      scopeSpans: [{
-        scope: {
-          name: '@opentelemetry/instrumentation-fetch',
-          version: '0.45.1',
+      scopeSpans: [
+        {
+          scope: {
+            name: '@opentelemetry/instrumentation-fetch',
+            version: '0.45.1',
+          },
+          spans: [
+            {
+              traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
+              spanId: '4c47d5f85e4b2aec',
+              parentSpanId: 'da5a27b83e0f2871',
+              name: 'HTTP GET',
+              kind: 3,
+              startTimeUnixNano: '',
+              endTimeUnixNano: '',
+              attributes: [],
+              droppedAttributesCount: 0,
+              events: [],
+              droppedEventsCount: 0,
+              status: { code: 0 },
+              links: [],
+              droppedLinksCount: 0,
+            },
+          ],
         },
-        spans: [{
-          traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
-          spanId: '4c47d5f85e4b2aec',
-          parentSpanId: 'da5a27b83e0f2871',
-          name: 'HTTP GET',
-          kind: 3,
-          startTimeUnixNano: '',
-          endTimeUnixNano: '',
-          attributes: [],
-          droppedAttributesCount: 0,
-          events: [],
-          droppedEventsCount: 0,
-          status: { code: 0 },
-          links: [],
-          droppedLinksCount: 0,
-        }],
-      }],
+      ],
     };
 
     sendFaroEvents([data]);
@@ -151,28 +155,32 @@ describe('faroTraceExporter.utils', () => {
 
     const data: IResourceSpans = {
       resource: { attributes: [], droppedAttributesCount: 0 },
-      scopeSpans: [{
-        scope: {
-          name: '@opentelemetry/instrumentation-fetch',
-          version: '0.45.1',
+      scopeSpans: [
+        {
+          scope: {
+            name: '@opentelemetry/instrumentation-fetch',
+            version: '0.45.1',
+          },
+          spans: [
+            {
+              traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
+              spanId: '4c47d5f85e4b2aec',
+              parentSpanId: 'da5a27b83e0f2871',
+              name: 'HTTP GET',
+              kind: 3,
+              startTimeUnixNano: 'invalid',
+              endTimeUnixNano: 'invalid',
+              attributes: [],
+              droppedAttributesCount: 0,
+              events: [],
+              droppedEventsCount: 0,
+              status: { code: 0 },
+              links: [],
+              droppedLinksCount: 0,
+            },
+          ],
         },
-        spans: [{
-          traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
-          spanId: '4c47d5f85e4b2aec',
-          parentSpanId: 'da5a27b83e0f2871',
-          name: 'HTTP GET',
-          kind: 3,
-          startTimeUnixNano: 'invalid',
-          endTimeUnixNano: 'invalid',
-          attributes: [],
-          droppedAttributesCount: 0,
-          events: [],
-          droppedEventsCount: 0,
-          status: { code: 0 },
-          links: [],
-          droppedLinksCount: 0,
-        }],
-      }],
+      ],
     };
 
     sendFaroEvents([data]);

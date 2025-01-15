@@ -4,6 +4,8 @@ import { ESpanKind, type IResourceSpans } from '@opentelemetry/otlp-transformer/
 import { faro, unknownString } from '@grafana/faro-core';
 import type { EventAttributes as FaroEventAttributes } from '@grafana/faro-web-sdk';
 
+const DURATION_NS_KEY = 'duration_ns';
+
 export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
   for (const resourceSpan of resourceSpans) {
     const { scopeSpans } = resourceSpan;
@@ -29,7 +31,7 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
 
         // Add span duration in nanoseconds
         if (!Number.isNaN(span.endTimeUnixNano) && !Number.isNaN(span.startTimeUnixNano)) {
-          faroEventAttributes['duration_ns'] = String(Number(span.endTimeUnixNano) - Number(span.startTimeUnixNano));
+          faroEventAttributes[DURATION_NS_KEY] = String(Number(span.endTimeUnixNano) - Number(span.startTimeUnixNano));
         }
 
         const index = (scope?.name ?? '').indexOf('-');
