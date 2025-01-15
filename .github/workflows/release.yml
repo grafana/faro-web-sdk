@@ -38,7 +38,9 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    container: node:20-bookworm-slim
+    container:
+      image: cypress/browsers:22.12.0
+      options: --user 1001
     needs: test
 
     services:
