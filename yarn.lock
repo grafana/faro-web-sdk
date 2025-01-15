@@ -1498,7 +1498,7 @@
     "@opentelemetry/resources" "1.30.0"
     "@opentelemetry/sdk-metrics" "1.30.0"
 
-"@opentelemetry/exporter-trace-otlp-grpc@0.57.0", "@opentelemetry/exporter-trace-otlp-grpc@^0.57.0":
+"@opentelemetry/exporter-trace-otlp-grpc@0.57.0":
   version "0.57.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/exporter-trace-otlp-grpc/-/exporter-trace-otlp-grpc-0.57.0.tgz#e1a54c5bf1660005931b5c2bdb676cb799456f1b"
   integrity sha512-QqN+d8IFyu7HUkzAROSRZGB/gfFZ0DM06YAP2J4IvObhk8paTgg1wP+nW+hl0jgSDD/p8cOj7xg5dgPI8m1LnQ==
@@ -1509,6 +1509,18 @@
     "@opentelemetry/otlp-transformer" "0.57.0"
     "@opentelemetry/resources" "1.30.0"
     "@opentelemetry/sdk-trace-base" "1.30.0"
+
+"@opentelemetry/exporter-trace-otlp-grpc@^0.57.0":
+  version "0.57.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/exporter-trace-otlp-grpc/-/exporter-trace-otlp-grpc-0.57.1.tgz#45df3f53fbce7007c45288cf62ae1ddc22309fe9"
+  integrity sha512-a9/4w2nyfehxMA64VGcZ4OXePGLjTz9H/dvqbOzVmIBZe9R6bkOeT68M9WoxAEdUZcJDK8XS3EloJId1rjPrag==
+  dependencies:
+    "@grpc/grpc-js" "^1.7.1"
+    "@opentelemetry/core" "1.30.1"
+    "@opentelemetry/otlp-grpc-exporter-base" "0.57.1"
+    "@opentelemetry/otlp-transformer" "0.57.1"
+    "@opentelemetry/resources" "1.30.1"
+    "@opentelemetry/sdk-trace-base" "1.30.1"
 
 "@opentelemetry/exporter-trace-otlp-http@0.57.0":
   version "0.57.0"
@@ -1662,6 +1674,16 @@
     "@opentelemetry/core" "1.30.0"
     "@opentelemetry/otlp-exporter-base" "0.57.0"
     "@opentelemetry/otlp-transformer" "0.57.0"
+
+"@opentelemetry/otlp-grpc-exporter-base@0.57.1":
+  version "0.57.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/otlp-grpc-exporter-base/-/otlp-grpc-exporter-base-0.57.1.tgz#ac9068348394374cf3dc9525c03bace1adc79a73"
+  integrity sha512-wWflmkDhH/3wf6yEqPmzmqA6r+A8+LQABfIVZC0jDGtWVJj6eCWcGHU41UxupMbbsgjZRLYtWDilaCHOjmR7gg==
+  dependencies:
+    "@grpc/grpc-js" "^1.7.1"
+    "@opentelemetry/core" "1.30.1"
+    "@opentelemetry/otlp-exporter-base" "0.57.1"
+    "@opentelemetry/otlp-transformer" "0.57.1"
 
 "@opentelemetry/otlp-transformer@0.57.0":
   version "0.57.0"
