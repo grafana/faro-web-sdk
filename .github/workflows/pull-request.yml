@@ -37,6 +37,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    container: node:20-bookworm-slim
 
     services:
       database:
