@@ -122,18 +122,25 @@ export function getSessionMetaUpdateHandler({
     const session = meta.session;
     const sessionFromSessionStorage = fetchUserSession();
 
+    const sessionMeta = sessionFromSessionStorage?.sessionMeta;
+    const previousSessionId = sessionFromSessionStorage?.sessionId;
+
+    const { attributes: newAttributes, overrides: newOverrides } = session ?? {};
     let sessionId = session?.id;
 
     if (
-      (session && session.id !== sessionFromSessionStorage?.sessionId) ||
-      (session?.attributes && !deepEqual(session?.attributes, sessionFromSessionStorage?.sessionMeta?.attributes))
+      (session && sessionId !== previousSessionId) || // session id changed
+      (newAttributes && !deepEqual(newAttributes, sessionMeta?.attributes)) || // session attributes changed
+      (newOverrides && !deepEqual(newOverrides, sessionMeta?.overrides)) // session overrides changed
     ) {
       if (sessionId == null && isUserSessionValid(sessionFromSessionStorage)) {
-        sessionId = sessionFromSessionStorage?.sessionId;
+        sessionId = previousSessionId;
       }
 
       const userSession = addSessionMetadataToNextSession(
-        createUserSessionObject({ sessionId, isSampled: isSampled() }),
+        {
+          ...createUserSessionObject({ sessionId, isSampled: isSampled() }),
+        },
         sessionFromSessionStorage
       );
 

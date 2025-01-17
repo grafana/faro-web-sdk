@@ -3,7 +3,7 @@ import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas } from '../../metas';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual } from '../../utils/deepEqual';
+// import { deepEqual } from '../../utils/deepEqual';
 
 import type { MetaAPI } from './types';
 
@@ -35,14 +35,20 @@ export function initializeMetaAPI(
   const setSession: MetaAPI['setSession'] = (session, options) => {
     const overrides = options?.overrides;
 
-    if (deepEqual(metaSession?.session, session) && deepEqual(metaSession?.session?.overrides, overrides)) {
-      return;
-    }
+    // const noNewOverrides = overrides && deepEqual(metaSession?.session?.overrides, overrides);
+    // const oldAndNewSessionIdentical = deepEqual(metaSession?.session, session);
+
+    // if (oldAndNewSessionIdentical && noNewOverrides) {
+    //   return;
+    // }
 
     const previousSession = metaSession;
 
     metaSession = {
-      session,
+      session: {
+        ...session,
+        ...(overrides ?? {}),
+      },
     };
 
     metas.add(metaSession);
