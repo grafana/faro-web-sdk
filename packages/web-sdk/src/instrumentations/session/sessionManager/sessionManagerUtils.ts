@@ -1,4 +1,4 @@
-import { dateNow, faro, genShortID, Meta } from '@grafana/faro-core';
+import { dateNow, deepEqual, faro, genShortID, Meta } from '@grafana/faro-core';
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
 
@@ -153,13 +153,16 @@ export function getSessionMetaUpdateHandler({
 
     let sessionId = session?.id;
 
-    if (session && session.id !== sessionFromSessionStorage?.sessionId) {
+    if (
+      (session && session.id !== sessionFromSessionStorage?.sessionId) ||
+      !deepEqual(session?.attributes, sessionFromSessionStorage?.sessionMeta?.attributes)
+    ) {
       if (sessionId == null && isUserSessionValid(sessionFromSessionStorage)) {
         sessionId = sessionFromSessionStorage?.sessionId;
       }
 
       const userSession = addSessionMetadataToNextSession(
-        createUserSessionObject({ sessionId: session.id, isSampled: isSampled() }),
+        createUserSessionObject({ sessionId, isSampled: isSampled() }),
         sessionFromSessionStorage
       );
 
