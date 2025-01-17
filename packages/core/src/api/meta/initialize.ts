@@ -1,6 +1,8 @@
+import { deepEqual, Meta } from '@grafana/faro-core';
+
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
-import type { Meta, Metas } from '../../metas';
+import type { Metas } from '../../metas';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 
@@ -32,20 +34,30 @@ export function initializeMetaAPI(
   };
 
   const setSession: MetaAPI['setSession'] = (session) => {
-    if (metaSession) {
-      metas.remove(metaSession);
+    if (deepEqual(metaSession, session)) {
+      return;
     }
+
+    const previousSession = metaSession;
 
     metaSession = {
       session,
     };
 
     metas.add(metaSession);
+
+    if (previousSession) {
+      metas.remove(previousSession);
+    }
   };
 
   const getSession: MetaAPI['getSession'] = () => metas.value.session;
 
-  const setView: MetaAPI['setView'] = (view) => {
+  const setView: MetaAPI['setView'] = (view, context) => {
+    if (context?.overrides) {
+      setSession({ overrides: context.overrides });
+    }
+
     if (metaView?.view?.name === view?.name) {
       return;
     }
