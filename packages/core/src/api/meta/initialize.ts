@@ -45,8 +45,13 @@ export function initializeMetaAPI(
     const previousSession = metaSession;
 
     metaSession = {
+      session,
+    };
+
+    metaSession = {
       session: {
         ...session,
+        id: session?.id ?? previousSession?.session?.id,
         ...(overrides ?? {}),
       },
     };

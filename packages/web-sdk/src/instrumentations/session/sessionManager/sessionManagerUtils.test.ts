@@ -486,4 +486,7 @@ describe('sessionManagerUtils', () => {
       );
     });
   });
+
+  // TODO: Add for newAttributes faroUserSession updates
+  // TODO: Add for newOverrides faroUserSession updates
 });

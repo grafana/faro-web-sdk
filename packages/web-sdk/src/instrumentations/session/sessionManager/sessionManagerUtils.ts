@@ -133,9 +133,10 @@ export function getSessionMetaUpdateHandler({
       (newAttributes && !deepEqual(newAttributes, sessionMeta?.attributes)) || // session attributes changed
       (newOverrides && !deepEqual(newOverrides, sessionMeta?.overrides)) // session overrides changed
     ) {
-      if (sessionId == null && isUserSessionValid(sessionFromSessionStorage)) {
-        sessionId = previousSessionId;
-      }
+      // TODO: should be handled by the setSession method
+      // if (sessionId == null && isUserSessionValid(sessionFromSessionStorage)) {
+      //   sessionId = previousSessionId;
+      // }
 
       const userSession = addSessionMetadataToNextSession(
         {
