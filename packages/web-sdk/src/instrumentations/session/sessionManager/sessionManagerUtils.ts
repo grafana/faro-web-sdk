@@ -155,7 +155,7 @@ export function getSessionMetaUpdateHandler({
 
     if (
       (session && session.id !== sessionFromSessionStorage?.sessionId) ||
-      !deepEqual(session?.attributes, sessionFromSessionStorage?.sessionMeta?.attributes)
+      (session?.attributes && !deepEqual(session?.attributes, sessionFromSessionStorage?.sessionMeta?.attributes))
     ) {
       if (sessionId == null && isUserSessionValid(sessionFromSessionStorage)) {
         sessionId = sessionFromSessionStorage?.sessionId;
