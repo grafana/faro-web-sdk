@@ -1,17 +1,10 @@
 import { faro } from '@grafana/faro-core';
-import type { Meta } from '@grafana/faro-core';
 
 import { stringifyExternalJson, throttle } from '../../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
-import { isSampled } from './sampling';
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
-import {
-  addSessionMetadataToNextSession,
-  createUserSessionObject,
-  getSessionMetaUpdateHandler,
-  getUserSessionUpdater,
-} from './sessionManagerUtils';
+import { getSessionMetaUpdateHandler, getUserSessionUpdater } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
 export class PersistentSessionsManager {

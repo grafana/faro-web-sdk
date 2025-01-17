@@ -4,6 +4,7 @@ import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { getSessionManagerByConfig } from './getSessionManagerByConfig';
 import { PersistentSessionsManager } from './PersistentSessionsManager';
+import * as samplingModule from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import * as mockSessionManagerUtils from './sessionManagerUtils';
 import {
@@ -351,5 +352,138 @@ describe('sessionManagerUtils', () => {
 
     SessionManager = getSessionManagerByConfig({ persistent: true });
     expect(new SessionManager()).toBeInstanceOf(PersistentSessionsManager);
+  });
+
+  describe('sessionMetaUpdateHandler', () => {
+    it('Creates a new Faro user session if new sessionID is set.', () => {
+      const mockIsSampled = jest.fn();
+      jest.spyOn(samplingModule, 'isSampled').mockImplementationOnce(mockIsSampled);
+
+      const mockStoreUserSession = jest.fn();
+      jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+
+      initializeFaro(mockConfig({}));
+
+      const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
+        fetchUserSession: VolatileSessionsManager.fetchUserSession,
+        storeUserSession: VolatileSessionsManager.storeUserSession,
+      });
+
+      const newSessionId = 'new-session-id';
+      handler({
+        session: {
+          id: newSessionId,
+        },
+      });
+
+      expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
+      expect(mockStoreUserSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: newSessionId,
+        })
+      );
+    });
+
+    it('Does not update Faro user session if the meta session object and stored session meta are identical.', () => {
+      const mockStoreUserSession = jest.fn();
+      jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+
+      const storedSession: FaroUserSession = {
+        sessionId: mockSessionId,
+        isSampled: true,
+        lastActivity: fakeSystemTime,
+        started: fakeSystemTime,
+        sessionMeta: {
+          id: mockSessionId,
+          attributes: {
+            previousSession: 'none',
+            isSampled: 'true',
+            foo: 'bar',
+          },
+        },
+      };
+
+      jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValueOnce(storedSession);
+
+      initializeFaro(mockConfig({}));
+
+      const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
+        fetchUserSession: VolatileSessionsManager.fetchUserSession,
+        storeUserSession: VolatileSessionsManager.storeUserSession,
+      });
+
+      handler({
+        session: {
+          id: mockSessionId,
+          attributes: {
+            previousSession: 'none',
+            isSampled: 'true',
+            foo: 'bar',
+          },
+        },
+      });
+
+      expect(mockStoreUserSession).not.toHaveBeenCalled();
+    });
+
+    it('Creates a new Faro user session if new meta attributes are added.', () => {
+      const mockStoreUserSession = jest.fn();
+      jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+
+      const storedSession: FaroUserSession = {
+        sessionId: mockSessionId,
+        isSampled: true,
+        lastActivity: fakeSystemTime,
+        started: fakeSystemTime,
+        sessionMeta: {
+          id: mockSessionId,
+          attributes: {
+            isSampled: 'true',
+          },
+        },
+      };
+
+      jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValue(storedSession);
+
+      const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
+        fetchUserSession: VolatileSessionsManager.fetchUserSession,
+        storeUserSession: VolatileSessionsManager.storeUserSession,
+      });
+
+      const faro = initializeFaro(mockConfig({}));
+
+      // after user calls set session, the session meta is updated and the handler is called
+      // since we test the handler, we need to simulate the session meta update
+      faro.api.setSession({
+        id: mockSessionId,
+        attributes: {
+          isSampled: 'true',
+          foo: 'bar',
+        },
+      });
+
+      handler({
+        session: {
+          id: mockSessionId,
+          attributes: {
+            isSampled: 'true',
+            foo: 'bar',
+          },
+        },
+      });
+
+      expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
+      expect(mockStoreUserSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: mockSessionId,
+          isSampled: true,
+          sessionMeta: expect.objectContaining({
+            attributes: expect.objectContaining({
+              foo: 'bar',
+            }),
+          }),
+        })
+      );
+    });
   });
 });
