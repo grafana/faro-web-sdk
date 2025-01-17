@@ -33,8 +33,10 @@ export function initializeMetaAPI(
     metas.add(metaUser);
   };
 
-  const setSession: MetaAPI['setSession'] = (session) => {
-    if (deepEqual(metaSession, session)) {
+  const setSession: MetaAPI['setSession'] = (session, options) => {
+    const overrides = options?.overrides;
+
+    if (deepEqual(metaSession?.session, session) && deepEqual(metaSession?.session?.overrides, overrides)) {
       return;
     }
 
@@ -53,9 +55,9 @@ export function initializeMetaAPI(
 
   const getSession: MetaAPI['getSession'] = () => metas.value.session;
 
-  const setView: MetaAPI['setView'] = (view, context) => {
-    if (context?.overrides) {
-      setSession({ overrides: context.overrides });
+  const setView: MetaAPI['setView'] = (view, options) => {
+    if (options?.overrides) {
+      setSession({ overrides: options.overrides });
     }
 
     if (metaView?.view?.name === view?.name) {
