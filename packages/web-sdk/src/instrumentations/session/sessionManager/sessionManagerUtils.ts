@@ -151,7 +151,13 @@ export function getSessionMetaUpdateHandler({
     const session = meta.session;
     const sessionFromSessionStorage = fetchUserSession();
 
+    let sessionId = session?.id;
+
     if (session && session.id !== sessionFromSessionStorage?.sessionId) {
+      if (sessionId == null && isUserSessionValid(sessionFromSessionStorage)) {
+        sessionId = sessionFromSessionStorage?.sessionId;
+      }
+
       const userSession = addSessionMetadataToNextSession(
         createUserSessionObject({ sessionId: session.id, isSampled: isSampled() }),
         sessionFromSessionStorage
