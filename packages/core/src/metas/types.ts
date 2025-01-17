@@ -44,6 +44,7 @@ export interface MetaUser {
 export interface MetaSession {
   id?: string;
   attributes?: MetaAttributes;
+  overrides?: MetaOverrides;
 }
 
 export interface MetaPage {
@@ -88,3 +89,10 @@ export interface Meta {
   view?: MetaView;
   k6?: MetaK6;
 }
+
+/**
+ * Overrides are instructions that allow the receiver to override certain properties.
+ */
+export type MetaOverrides = {
+  serviceName?: string;
+};
