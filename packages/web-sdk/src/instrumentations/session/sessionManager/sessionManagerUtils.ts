@@ -1,4 +1,4 @@
-import { dateNow, faro, genShortID } from '@grafana/faro-core';
+import { dateNow, faro, genShortID, Meta } from '@grafana/faro-core';
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
 
@@ -107,4 +107,58 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
   };
 
   return sessionWithMeta;
+}
+
+type GetUserSessionMetaUpdateHandlerParams = {
+  storeUserSession: (session: FaroUserSession) => void;
+  fetchUserSession: () => FaroUserSession | null;
+};
+
+export function getSessionMetaUpdateHandler({
+  fetchUserSession,
+  storeUserSession,
+}: GetUserSessionMetaUpdateHandlerParams) {
+  return function syncSessionIfChangedExternally(meta: Meta) {
+    //   const session = meta.session;
+    //   const sessionFromSessionStorage = fetchUserSession();
+    //   const { id: metaSessionId, attributes: metaAttributes } = session ?? {};
+    //   const { sessionId: sessionFromStorageId, sessionMeta: sessionFromStorageMeta } = sessionFromSessionStorage ?? {};
+    //   const sessionFromStorageMetaAttributes = sessionFromStorageMeta?.attributes;
+    //   const sessionIdsIdentical = session?.id === sessionFromStorageId;
+    //   const attributesIdentical = deepEqual(metaAttributes, sessionFromStorageMetaAttributes);
+    //   const internalSessionAttributesIdentical = deepEqual(session?.internal, sessionFromStorageMeta?.internal);
+    //   if (sessionIdsIdentical && attributesIdentical && internalSessionAttributesIdentical) {
+    //     return;
+    //   }
+    //   const sessionIdManuallyUpdated = metaSessionId && metaSessionId !== sessionFromStorageId;
+    //   const attributesManuallyUpdated = Boolean(
+    //     metaAttributes && !deepEqual(metaAttributes, sessionFromStorageMetaAttributes)
+    //   );
+    //   if (sessionIdManuallyUpdated || attributesManuallyUpdated) {
+    //     let sessionId = metaSessionId;
+    //     if (sessionId == null && isUserSessionValid(sessionFromSessionStorage)) {
+    //       sessionId = sessionFromSessionStorage?.sessionId;
+    //     }
+    //     const userSession = addSessionMetadataToNextSession(
+    //       createUserSessionObject({ sessionId, isSampled: isSampled() }),
+    //       sessionFromSessionStorage
+    //     );
+    //     storeUserSession(userSession);
+    //     faro.api.setSession(userSession.sessionMeta);
+    //   }
+    // };
+
+    const session = meta.session;
+    const sessionFromSessionStorage = fetchUserSession();
+
+    if (session && session.id !== sessionFromSessionStorage?.sessionId) {
+      const userSession = addSessionMetadataToNextSession(
+        createUserSessionObject({ sessionId: session.id, isSampled: isSampled() }),
+        sessionFromSessionStorage
+      );
+
+      storeUserSession(userSession);
+      faro.api.setSession(userSession.sessionMeta);
+    }
+  };
 }
