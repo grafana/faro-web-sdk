@@ -62,7 +62,7 @@
     "@types/jest": "^29.2.5",
     "@typescript-eslint/eslint-plugin": "^5.48.2",
     "@typescript-eslint/parser": "^5.48.2",
-    "cypress": "^13.15.2",
+    "cypress": "^14.0.0",
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-import": "^2.27.5",
