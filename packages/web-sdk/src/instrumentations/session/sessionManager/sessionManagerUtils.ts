@@ -139,9 +139,7 @@ export function getSessionMetaUpdateHandler({
       // }
 
       const userSession = addSessionMetadataToNextSession(
-        {
-          ...createUserSessionObject({ sessionId, isSampled: isSampled() }),
-        },
+        createUserSessionObject({ sessionId, isSampled: isSampled() }),
         sessionFromSessionStorage
       );
 

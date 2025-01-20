@@ -487,6 +487,98 @@ describe('sessionManagerUtils', () => {
     });
   });
 
-  // TODO: Add for newAttributes faroUserSession updates
-  // TODO: Add for newOverrides faroUserSession updates
+  it('Updates session attributes without creating a new Faro user session if only attributes have changed.', () => {
+    const mockStoreUserSession = jest.fn();
+    jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+
+    const storedSession: FaroUserSession = {
+      sessionId: mockSessionId,
+      isSampled: true,
+      lastActivity: fakeSystemTime,
+      started: fakeSystemTime,
+      sessionMeta: {
+        id: mockSessionId,
+        attributes: {
+          isSampled: 'true',
+        },
+      },
+    };
+
+    jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValueOnce(storedSession);
+
+    const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
+      fetchUserSession: VolatileSessionsManager.fetchUserSession,
+      storeUserSession: VolatileSessionsManager.storeUserSession,
+    });
+
+    const updatedAttributes = {
+      isSampled: 'true',
+      foo: 'bar',
+    };
+
+    handler({
+      session: {
+        id: mockSessionId,
+        attributes: updatedAttributes,
+      },
+    });
+
+    expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
+    expect(mockStoreUserSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: mockSessionId,
+        isSampled: true,
+        sessionMeta: expect.objectContaining({
+          attributes: expect.objectContaining(updatedAttributes),
+        }),
+      })
+    );
+  });
+
+  // it('Updates session overrides without creating a new Faro user session if only overrides have changed.', () => {
+  //   const mockStoreUserSession = jest.fn();
+  //   jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+
+  //   const storedSession: FaroUserSession = {
+  //     sessionId: mockSessionId,
+  //     isSampled: true,
+  //     lastActivity: fakeSystemTime,
+  //     started: fakeSystemTime,
+  //     sessionMeta: {
+  //       id: mockSessionId,
+  //       attributes: {
+  //         isSampled: 'true',
+  //       },
+  //     },
+  //   };
+
+  //   jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValueOnce(storedSession);
+
+  //   const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
+  //     fetchUserSession: VolatileSessionsManager.fetchUserSession,
+  //     storeUserSession: VolatileSessionsManager.storeUserSession,
+  //   });
+
+  //   const updatedAttributes: MetaSession['overrides'] = {
+  //     serviceName: 'new-service-name',
+  //   };
+
+  //   handler({
+  //     session: {
+  //       id: mockSessionId,
+  //       overrides: updatedAttributes,
+  //     },
+  //   });
+
+  //   expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
+  //   expect(mockStoreUserSession).toHaveBeenCalledWith(
+  //     expect.objectContaining({
+  //       sessionId: mockSessionId,
+  //       isSampled: true,
+  //       sessionMeta: expect.objectContaining({
+  //         overrides: updatedAttributes,
+  //       }),
+  //     })
+  //   );
+  // });
 });
