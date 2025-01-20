@@ -4,8 +4,10 @@
 
 ## 1.12.3
 
+- Feat (`@grafana/faro-web-tracing`): add duration to events from traces (#861)
 - Fix (`@grafana/faro-transport-otlp-http [experimental]`): Prevent sending requests when the
   endpoint URL is not configured (#827).
+- Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#763)
 
 ## 1.12.2
 
