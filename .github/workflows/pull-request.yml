@@ -9,15 +9,19 @@ concurrency:
 
 jobs:
   test:
+    name: Testing with Node version (${{ matrix.node }})
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 23]
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/jod'
+          node-version: ${{ matrix.node }}
           cache: 'yarn'
 
       - name: Install dependencies
