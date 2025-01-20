@@ -7,8 +7,6 @@ export const webStorageType = {
 
 type StorageMechanism = (typeof webStorageType)[keyof typeof webStorageType];
 
-// TODO: remove default storage type from all function
-
 /**
  * Check if selected web storage mechanism is available.
  * @param type storage mechanism to test availability for.

@@ -173,7 +173,6 @@ describe('OtlpHttpTransport', () => {
     }
   );
 
-  // TODO: add case for resourceSpans once the respective transform is implemented
   it.each([
     { v: logTransportItem, type: 'resourceLogs', otelEndpointUrl: 'www.example.com/v1/logs' },
     { v: traceTransportItem, type: 'resourceSpans', otelEndpointUrl: 'www.example.com/v1/traces' },

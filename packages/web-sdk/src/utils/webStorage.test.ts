@@ -2,7 +2,6 @@ import { isWebStorageAvailable } from './webStorage';
 
 let windowSpy: jest.SpyInstance;
 
-// TODO: adapt tests
 describe('webStorage', () => {
   beforeEach(() => {
     windowSpy = jest.spyOn(globalThis, 'window', 'get');
