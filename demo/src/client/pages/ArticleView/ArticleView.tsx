@@ -1,4 +1,4 @@
-import Container from 'react-bootstrap/Container';
+import { Container } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 
 import { useGetArticleQuery } from '../../api';

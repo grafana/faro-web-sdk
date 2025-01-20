@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react';
-import Container from 'react-bootstrap/Container';
+import { Container } from 'react-bootstrap';
 import { Outlet, useNavigate } from 'react-router-dom';
 
 import { faro } from '@grafana/faro-react';

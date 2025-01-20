@@ -1,5 +1,5 @@
 import { StrictMode } from 'react';
-import SSRProvider from 'react-bootstrap/SSRProvider';
+import { SSRProvider } from 'react-bootstrap';
 import { renderToString as reactRenderToString } from 'react-dom/server';
 import { HelmetProvider } from 'react-helmet-async';
 import type { FilledContext } from 'react-helmet-async';

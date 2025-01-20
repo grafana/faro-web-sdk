@@ -1,7 +1,5 @@
 import { useEffect } from 'react';
-import Alert from 'react-bootstrap/Alert';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
+import { Alert, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 
 import { faro } from '@grafana/faro-react';
