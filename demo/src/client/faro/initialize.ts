@@ -21,20 +21,7 @@ export function initializeFaro(): Faro {
         captureConsole: true,
       }),
 
-      new TracingInstrumentation({
-        instrumentationOptions: {
-          fetchInstrumentationOptions: {
-            applyCustomAttributesOnSpan: () => {
-              console.log('fetchInstrumentationOptions: applyCustomAttributesOnSpan');
-            },
-          },
-          xhrInstrumentationOptions: {
-            applyCustomAttributesOnSpan: () => {
-              console.log('xhrInstrumentationOptions: applyCustomAttributesOnSpan');
-            },
-          },
-        },
-      }),
+      new TracingInstrumentation(),
       new ReactIntegration({
         router: {
           version: ReactRouterVersion.V6,
