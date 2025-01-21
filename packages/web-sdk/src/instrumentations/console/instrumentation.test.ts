@@ -131,6 +131,10 @@ describe('ConsoleInstrumentation', () => {
       )!
     );
 
+    console.error('error logs are enabled');
+    console.info('info logs are enabled');
+    console.log('log logs are disabled');
+
     expect(mockTransport.items).toHaveLength(2);
     expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe('error logs are enabled');
     expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe('info logs are enabled');
