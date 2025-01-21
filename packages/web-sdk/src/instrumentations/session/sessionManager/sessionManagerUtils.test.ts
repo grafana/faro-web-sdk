@@ -1,5 +1,6 @@
 import * as faroCore from '@grafana/faro-core';
 import { initializeFaro } from '@grafana/faro-core';
+import type { MetaSession } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { getSessionManagerByConfig } from './getSessionManagerByConfig';
@@ -35,7 +36,7 @@ describe('sessionManagerUtils', () => {
     jest.useRealTimers();
   });
 
-  it('creates new user session object.', () => {
+  it('creates new user session object', () => {
     jest.spyOn(faroCore, 'genShortID').mockReturnValueOnce(mockSessionId);
 
     // create new id
@@ -60,7 +61,7 @@ describe('sessionManagerUtils', () => {
     });
   });
 
-  it('creates new user session object and uses user defined generateSessionId.', () => {
+  it('creates new user session object and uses user defined generateSessionId', () => {
     const customGeneratedSessionId = 'my-custom-id';
 
     const config = mockConfig({
@@ -84,7 +85,7 @@ describe('sessionManagerUtils', () => {
     });
   });
 
-  it('checks if user session is valid.', () => {
+  it('checks if user session is valid', () => {
     jest.spyOn(faroCore, 'genShortID').mockReturnValueOnce(mockSessionId);
 
     // return false if session is null
@@ -120,7 +121,7 @@ describe('sessionManagerUtils', () => {
     expect(isTimedOutSessionValid).toBe(true);
   });
 
-  it('configures userSessionUpdater and expands the current user session as well as the current sessionMeta.', () => {
+  it('configures userSessionUpdater and expands the current user session as well as the current sessionMeta', () => {
     const mockOnSessionChange = jest.fn();
 
     const config = mockConfig({
@@ -176,7 +177,7 @@ describe('sessionManagerUtils', () => {
     });
   });
 
-  it('configures userSessionUpdater and expands the current user session as well as the current sessionMeta for a session which already got expanded.', () => {
+  it('configures userSessionUpdater and expands the current user session as well as the current sessionMeta for a session which already got expanded', () => {
     const currentSessionMeta = {
       id: 'currentSession',
       attributes: {
@@ -237,7 +238,7 @@ describe('sessionManagerUtils', () => {
     expect(mockOnSessionChange).toHaveBeenCalledWith(currentSessionMeta, newSessionMeta);
   });
 
-  it('Takes session object and adds meta data.', () => {
+  it('Takes session object and adds meta data', () => {
     const config = mockConfig({});
     const { api } = initializeFaro(config);
 
@@ -306,7 +307,7 @@ describe('sessionManagerUtils', () => {
     });
   });
 
-  it('Takes session object and adds overrides.', () => {
+  it('Takes session object and adds overrides', () => {
     const config = mockConfig({});
     const { api } = initializeFaro(config);
 
@@ -357,7 +358,7 @@ describe('sessionManagerUtils', () => {
     });
   });
 
-  it('forces userSessionUpdater to expand the current user session.', () => {
+  it('forces userSessionUpdater to expand the current user session', () => {
     const mockOnSessionChange = jest.fn();
 
     const config = mockConfig({
@@ -397,7 +398,7 @@ describe('sessionManagerUtils', () => {
     expect(mockOnSessionChange).toHaveBeenCalledTimes(1);
   });
 
-  it('Returns the configured session manager.', () => {
+  it('Returns the configured session manager', () => {
     let SessionManager = getSessionManagerByConfig({ persistent: false /* default */ });
     expect(new SessionManager()).toBeInstanceOf(VolatileSessionsManager);
 
@@ -406,7 +407,7 @@ describe('sessionManagerUtils', () => {
   });
 
   describe('sessionMetaUpdateHandler', () => {
-    it('Creates a new Faro user session if new sessionID is set.', () => {
+    it('Creates a new Faro user session if new sessionID is set', () => {
       const mockIsSampled = jest.fn();
       jest.spyOn(samplingModule, 'isSampled').mockImplementationOnce(mockIsSampled);
 
@@ -435,7 +436,7 @@ describe('sessionManagerUtils', () => {
       );
     });
 
-    it('Updates session attributes without creating a new Faro user session if only attributes have changed.', () => {
+    it('Updates session attributes without creating a new Faro user session if only attributes have changed', () => {
       const mockStoreUserSession = jest.fn();
       jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
 
@@ -487,7 +488,7 @@ describe('sessionManagerUtils', () => {
       );
     });
 
-    it('Updates session overrides without creating a new Faro user session if only overrides have changed.', () => {
+    it('Updates session overrides without creating a new Faro user session if only overrides have changed', () => {
       const mockStoreUserSession = jest.fn();
       jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
 
@@ -520,7 +521,6 @@ describe('sessionManagerUtils', () => {
       // since we test the handler, we need to simulate the session meta update
       // faro.api.setSession({ id: 'ABC' }, { overrides: newOverrides });
       faro.api.setSession(storedSession.sessionMeta, { overrides: newOverrides });
-      console.log('faro.api.getSession() :>> ', faro.api.getSession());
 
       handler(faro.metas.value);
 
@@ -540,7 +540,7 @@ describe('sessionManagerUtils', () => {
       );
     });
 
-    it('creates a new session with overrides if the session is empty and only overrides are available.', () => {
+    it('creates a new session with overrides if the session is empty and only overrides are available', () => {
       const mockStoreUserSession = jest.fn();
       jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
 
@@ -564,6 +564,45 @@ describe('sessionManagerUtils', () => {
           sessionId: expect.any(String),
           isSampled: true,
           sessionMeta: expect.objectContaining({
+            overrides: newOverrides,
+          }),
+        })
+      );
+    });
+
+    it('does not create a new session if overrides are added via the setView API', () => {
+      const mockStoreUserSession = jest.fn();
+      jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+
+      const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
+        fetchUserSession: VolatileSessionsManager.fetchUserSession,
+        storeUserSession: VolatileSessionsManager.storeUserSession,
+      });
+
+      const initialSession: MetaSession = {
+        id: mockSessionId,
+        attributes: {
+          isSampled: 'true',
+          foo: 'bar',
+        },
+      };
+
+      const faro = initializeFaro(mockConfig({ sessionTracking: { session: initialSession } }));
+
+      const newOverrides = { serviceName: 'my-service' };
+
+      // Simulate setting session with only overrides
+      faro.api.setView({ name: 'my-service-view' }, { overrides: newOverrides });
+
+      handler(faro.metas.value);
+
+      expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
+      expect(mockStoreUserSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: initialSession.id,
+          isSampled: true,
+          sessionMeta: expect.objectContaining({
+            ...initialSession,
             overrides: newOverrides,
           }),
         })

@@ -54,7 +54,7 @@ export function initializeMetaAPI(
 
   const setView: MetaAPI['setView'] = (view, options) => {
     if (options?.overrides) {
-      setSession(undefined, { overrides: options.overrides });
+      setSession(getSession(), { overrides: options.overrides });
     }
 
     if (metaView?.view?.name === view?.name) {
