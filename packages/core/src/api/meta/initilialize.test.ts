@@ -2,6 +2,11 @@ import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 describe('Meta API', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+  });
+
   describe('setView', () => {
     it('updates the view meta if the new view meta is different to the previous one', () => {
       const { api } = initializeFaro(mockConfig());
@@ -33,36 +38,26 @@ describe('Meta API', () => {
   });
 
   describe('setSession', () => {
-    // it('updates the session meta if the new session meta is different to the previous one', () => {
-    //   const initialSession = { id: 'my-session' };
-    //   const { api } = initializeFaro(mockConfig({ sessionTracking: { session: initialSession } }));
-
-    //   const newSession = { id: 'my-new-session' };
-    //   api.setSession(newSession);
-
-    //   const previousSession = api.getSession();
-    //   expect(previousSession).toEqual(newSession);
-    // });
-
-    // it('does not update the session meta if the new session meta is identical to the previous one', () => {
-    //   const initialSession = { id: 'my-session' };
-    //   const { api } = initializeFaro(mockConfig({ sessionTracking: { session: initialSession } }));
-
-    //   const newSession = { id: 'my-session' };
-    //   api.setSession(newSession);
-    //   const previousSession = api.getSession();
-    //   expect(previousSession).toEqual(initialSession);
-    // });
-
     it('adds overrides to the session meta if provided via the setView() function call', () => {
       const initialSession = { id: 'my-session' };
-      const { api } = initializeFaro(mockConfig({ sessionTracking: { session: initialSession } }));
 
-      const newSession = { id: 'my-new-session' };
-      api.setSession(newSession, { overrides: { serviceName: 'foo' } });
+      const { api } = initializeFaro(mockConfig({ sessionTracking: { enabled: false, session: initialSession } }));
 
-      const previousSession = api.getSession();
-      expect(previousSession).toEqual({ ...newSession, overrides: { serviceName: 'foo' } });
+      expect(api.getSession()).toEqual(initialSession);
+
+      let overrides = { serviceName: 'service-1' };
+
+      const newSession = { id: 'my-new-session', attributes: { hello: 'world' } };
+      api.setSession(newSession, { overrides });
+      expect(api.getSession()).toEqual({ ...newSession, overrides });
+
+      overrides = { serviceName: 'service-2' };
+      api.setSession({}, { overrides });
+      expect(api.getSession()).toEqual({ ...newSession, overrides });
+
+      overrides = { serviceName: 'service-3' };
+      api.setSession(undefined, { overrides });
+      expect(api.getSession()).toEqual({ ...newSession, overrides });
     });
   });
 });

@@ -3,7 +3,7 @@ import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas } from '../../metas';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-// import { deepEqual } from '../../utils/deepEqual';
+import { isEmpty } from '../../utils/is';
 
 import type { MetaAPI } from './types';
 
@@ -35,39 +35,27 @@ export function initializeMetaAPI(
   const setSession: MetaAPI['setSession'] = (session, options) => {
     const overrides = options?.overrides;
 
-    // const noNewOverrides = overrides && deepEqual(metaSession?.session?.overrides, overrides);
-    // const oldAndNewSessionIdentical = deepEqual(metaSession?.session, session);
+    const newSession = isEmpty(session) ? metaSession?.session : session;
 
-    // if (oldAndNewSessionIdentical && noNewOverrides) {
-    //   return;
-    // }
-
-    const previousSession = metaSession;
-
-    metaSession = {
-      session,
-    };
+    if (metaSession) {
+      metas.remove(metaSession);
+    }
 
     metaSession = {
       session: {
-        ...session,
-        id: session?.id ?? previousSession?.session?.id,
-        ...(overrides ?? {}),
+        ...newSession,
+        overrides,
       },
     };
 
     metas.add(metaSession);
-
-    if (previousSession) {
-      metas.remove(previousSession);
-    }
   };
 
   const getSession: MetaAPI['getSession'] = () => metas.value.session;
 
   const setView: MetaAPI['setView'] = (view, options) => {
     if (options?.overrides) {
-      setSession({ overrides: options.overrides });
+      setSession(undefined, { overrides: options.overrides });
     }
 
     if (metaView?.view?.name === view?.name) {

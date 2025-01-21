@@ -37,7 +37,7 @@ describe('sessionManagerUtils', () => {
   });
 
   it('creates new user session object.', () => {
-    jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockSessionId);
+    jest.spyOn(faroCore, 'genShortID').mockReturnValueOnce(mockSessionId);
 
     // create new id
     const newSession = createUserSessionObject();
@@ -86,7 +86,7 @@ describe('sessionManagerUtils', () => {
   });
 
   it('checks if user session is valid.', () => {
-    jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockSessionId);
+    jest.spyOn(faroCore, 'genShortID').mockReturnValueOnce(mockSessionId);
 
     // return false if session is null
     const isNullSessionInvalid = isUserSessionValid(null);
@@ -455,7 +455,7 @@ describe('sessionManagerUtils', () => {
         },
       };
 
-      jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValue(storedSession);
+      jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValueOnce(storedSession);
 
       const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
         fetchUserSession: VolatileSessionsManager.fetchUserSession,
@@ -508,7 +508,7 @@ describe('sessionManagerUtils', () => {
         },
       };
 
-      jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValue(storedSession);
+      jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValueOnce(storedSession);
 
       const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
         fetchUserSession: VolatileSessionsManager.fetchUserSession,

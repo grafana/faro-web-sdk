@@ -72,3 +72,19 @@ export const isSyntheticEvent = ((value) =>
   'nativeEvent' in value &&
   'preventDefault' in value &&
   'stopPropagation' in value) as IsFnHelper<Event>;
+
+export function isEmpty(value: unknown): boolean {
+  if (!value) {
+    return true;
+  }
+
+  if (isArray(value)) {
+    return value.length === 0;
+  }
+
+  if (isObject(value)) {
+    return Object.keys(value).length === 0;
+  }
+
+  return false;
+}
