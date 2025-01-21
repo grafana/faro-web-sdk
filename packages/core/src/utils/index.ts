@@ -33,6 +33,7 @@ export {
   isToString,
   isTypeof,
   isUndefined,
+  isEmpty,
 } from './is';
 export type { IsFnHelper } from './is';
 

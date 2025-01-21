@@ -1,6 +1,5 @@
-import { initializeFaro } from '@grafana/faro-core';
 import * as faroCore from '@grafana/faro-core';
-import type { MetaSession } from '@grafana/faro-core';
+import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { getSessionManagerByConfig } from './getSessionManagerByConfig';
@@ -341,9 +340,7 @@ describe('sessionManagerUtils', () => {
       serviceName: 'my-service',
     };
 
-    const sessionMeta: MetaSession = { overrides };
-
-    api.setSession(sessionMeta);
+    api.setSession(undefined, { overrides });
 
     const sessionWithOverrides = addSessionMetadataToNextSession(newSession, previousSession);
 

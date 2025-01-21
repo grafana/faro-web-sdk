@@ -1,4 +1,4 @@
-import { dateNow, deepEqual, faro, genShortID, Meta } from '@grafana/faro-core';
+import { dateNow, deepEqual, faro, genShortID, isEmpty, Meta } from '@grafana/faro-core';
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
 
@@ -106,12 +106,12 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
   };
 
   const overrides = faro.metas.value.session?.overrides ?? previousSession?.sessionMeta?.overrides;
-  if (overrides) {
+  if (!isEmpty(overrides)) {
     sessionWithMeta.sessionMeta.overrides = overrides;
   }
 
   const previousSessionId = previousSession?.sessionId;
-  if (previousSessionId) {
+  if (previousSessionId != null) {
     sessionWithMeta.sessionMeta.attributes!['previousSession'] = previousSessionId;
   }
 

@@ -124,6 +124,7 @@ export {
   LogLevel,
   noop,
   dateNow,
+  isEmpty,
 } from './utils';
 export type {
   BaseObject,
