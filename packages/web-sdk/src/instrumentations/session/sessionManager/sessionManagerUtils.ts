@@ -100,11 +100,20 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
       attributes: {
         ...faro.config.sessionTracking?.session?.attributes,
         ...(faro.metas.value.session?.attributes ?? {}),
-        ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
         isSampled: newSession.isSampled.toString(),
       },
     },
   };
+
+  const overrides = faro.metas.value.session?.overrides ?? previousSession?.sessionMeta?.overrides;
+  if (overrides) {
+    sessionWithMeta.sessionMeta.overrides = overrides;
+  }
+
+  const previousSessionId = previousSession?.sessionId;
+  if (previousSessionId) {
+    sessionWithMeta.sessionMeta.attributes!['previousSession'] = previousSessionId;
+  }
 
   return sessionWithMeta;
 }
