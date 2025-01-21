@@ -539,5 +539,35 @@ describe('sessionManagerUtils', () => {
         })
       );
     });
+
+    it('creates a new session with overrides if the session is empty and only overrides are available.', () => {
+      const mockStoreUserSession = jest.fn();
+      jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+
+      const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
+        fetchUserSession: VolatileSessionsManager.fetchUserSession,
+        storeUserSession: VolatileSessionsManager.storeUserSession,
+      });
+
+      const faro = initializeFaro(mockConfig({}));
+
+      const newOverrides = { serviceName: 'my-service' };
+
+      // Simulate setting session with only overrides
+      faro.api.setSession(undefined, { overrides: newOverrides });
+
+      handler(faro.metas.value);
+
+      expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
+      expect(mockStoreUserSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: expect.any(String),
+          isSampled: true,
+          sessionMeta: expect.objectContaining({
+            overrides: newOverrides,
+          }),
+        })
+      );
+    });
   });
 });
