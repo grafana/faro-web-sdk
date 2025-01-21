@@ -53,7 +53,7 @@ describe('Meta API', () => {
 
       overrides = { serviceName: 'service-2' };
       api.setSession({}, { overrides });
-      expect(api.getSession()).toEqual({ ...newSession, overrides });
+      expect(api.getSession()).toEqual({ overrides });
 
       overrides = { serviceName: 'service-3' };
       api.setSession(undefined, { overrides });
