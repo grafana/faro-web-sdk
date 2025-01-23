@@ -3,6 +3,7 @@ import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas } from '../../metas';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
+import { isEmpty } from '../../utils/is';
 
 import type { MetaAPI } from './types';
 
@@ -31,13 +32,19 @@ export function initializeMetaAPI(
     metas.add(metaUser);
   };
 
-  const setSession: MetaAPI['setSession'] = (session) => {
+  const setSession: MetaAPI['setSession'] = (session, options) => {
+    const overrides = options?.overrides;
+
     if (metaSession) {
       metas.remove(metaSession);
     }
 
     metaSession = {
-      session,
+      session: {
+        // if session is empty, session manager force creates a new session
+        ...(isEmpty(session) ? undefined : session),
+        ...(overrides ? { overrides } : {}),
+      },
     };
 
     metas.add(metaSession);
@@ -45,7 +52,11 @@ export function initializeMetaAPI(
 
   const getSession: MetaAPI['getSession'] = () => metas.value.session;
 
-  const setView: MetaAPI['setView'] = (view) => {
+  const setView: MetaAPI['setView'] = (view, options) => {
+    if (options?.overrides) {
+      setSession(getSession(), { overrides: options.overrides });
+    }
+
     if (metaView?.view?.name === view?.name) {
       return;
     }

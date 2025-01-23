@@ -1,4 +1,4 @@
-import { dateNow, faro, genShortID } from '@grafana/faro-core';
+import { dateNow, deepEqual, faro, genShortID, isEmpty, Meta } from '@grafana/faro-core';
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
 
@@ -100,11 +100,55 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
       attributes: {
         ...faro.config.sessionTracking?.session?.attributes,
         ...(faro.metas.value.session?.attributes ?? {}),
-        ...(previousSession != null ? { previousSession: previousSession.sessionId } : {}),
         isSampled: newSession.isSampled.toString(),
       },
     },
   };
 
+  const overrides = faro.metas.value.session?.overrides ?? previousSession?.sessionMeta?.overrides;
+  if (!isEmpty(overrides)) {
+    sessionWithMeta.sessionMeta.overrides = overrides;
+  }
+
+  const previousSessionId = previousSession?.sessionId;
+  if (previousSessionId != null) {
+    sessionWithMeta.sessionMeta.attributes!['previousSession'] = previousSessionId;
+  }
+
   return sessionWithMeta;
+}
+
+type GetUserSessionMetaUpdateHandlerParams = {
+  storeUserSession: (session: FaroUserSession) => void;
+  fetchUserSession: () => FaroUserSession | null;
+};
+
+export function getSessionMetaUpdateHandler({
+  fetchUserSession,
+  storeUserSession,
+}: GetUserSessionMetaUpdateHandlerParams) {
+  return function syncSessionIfChangedExternally(meta: Meta) {
+    const session = meta.session;
+    const sessionFromSessionStorage = fetchUserSession();
+
+    const sessionMeta = sessionFromSessionStorage?.sessionMeta;
+    const previousSessionId = sessionFromSessionStorage?.sessionId;
+
+    const { attributes: newAttributes, overrides: newOverrides } = session ?? {};
+    let sessionId = session?.id;
+
+    if (
+      (session && sessionId !== previousSessionId) || // session id changed
+      (newAttributes && !deepEqual(newAttributes, sessionMeta?.attributes)) || // session attributes changed
+      (newOverrides && !deepEqual(newOverrides, sessionMeta?.overrides)) // session overrides changed
+    ) {
+      const userSession = addSessionMetadataToNextSession(
+        createUserSessionObject({ sessionId, isSampled: isSampled() }),
+        sessionFromSessionStorage
+      );
+
+      storeUserSession(userSession);
+      faro.api.setSession(userSession.sessionMeta);
+    }
+  };
 }

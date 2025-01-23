@@ -17,4 +17,5 @@ export type {
   MetaUser,
   MetaView,
   Metas,
+  MetaOverrides,
 } from './types';

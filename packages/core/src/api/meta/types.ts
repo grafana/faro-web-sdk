@@ -1,11 +1,21 @@
-import type { MetaSession, MetaUser, MetaView } from '../../metas';
+import type { MetaOverrides, MetaSession, MetaUser, MetaView } from '../../metas';
 
 export interface MetaAPI {
   setUser: (user?: MetaUser | undefined) => void;
   resetUser: () => void;
-  setSession: (session?: MetaSession | undefined) => void;
+  setSession: (
+    session?: MetaSession | undefined,
+    options?: {
+      overrides: MetaOverrides;
+    }
+  ) => void;
   resetSession: () => void;
   getSession: () => MetaSession | undefined;
-  setView: (view?: MetaView | undefined) => void;
+  setView: (
+    view?: MetaView | undefined,
+    options?: {
+      overrides: MetaOverrides;
+    }
+  ) => void;
   getView: () => MetaView | undefined;
 }
