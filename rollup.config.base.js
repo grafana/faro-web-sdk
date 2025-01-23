@@ -68,6 +68,7 @@ exports.getRollupConfigBase = (moduleName) => {
     output: {
       file: `./dist/bundle/${module.bundleName}.iife.js`,
       format: 'iife',
+      sourcemap: true,
       globals: module.externals.reduce(
         (acc, external) => ({
           ...acc,
