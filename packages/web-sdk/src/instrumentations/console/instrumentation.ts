@@ -1,4 +1,11 @@
-import { allLogLevels, BaseInstrumentation, defaultLogArgsSerializer, LogArgsSerializer, LogLevel, VERSION } from '@grafana/faro-core';
+import {
+  allLogLevels,
+  BaseInstrumentation,
+  defaultLogArgsSerializer,
+  LogArgsSerializer,
+  LogLevel,
+  VERSION,
+} from '@grafana/faro-core';
 
 import type { ConsoleInstrumentationOptions } from './types';
 
