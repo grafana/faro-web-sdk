@@ -325,8 +325,6 @@ describe('SessionInstrumentation', () => {
       isSampled: true,
     } as FaroUserSession);
 
-    console.log('mockStorage[STORAGE_KEY] :>> ', mockStorage[STORAGE_KEY]);
-
     const { metas } = initializeFaro(
       mockConfig({
         instrumentations: [new SessionInstrumentation()],
