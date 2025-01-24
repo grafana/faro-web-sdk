@@ -609,7 +609,7 @@ describe('sessionManagerUtils', () => {
       );
     });
 
-    it('send am serviceName override event if the service name has changed the first time', () => {
+    it('send a serviceName override event if the service name has changed the first time', () => {
       const faro = initializeFaro(
         mockConfig({
           app: {
@@ -643,7 +643,7 @@ describe('sessionManagerUtils', () => {
       });
     });
 
-    it('send am serviceName override event if the service name has at least changed once already', () => {
+    it('sends a serviceName override event if the service name has at least changed once already', () => {
       const previouslyChangedSession: MetaSession = {
         id: mockSessionId,
         overrides: {
