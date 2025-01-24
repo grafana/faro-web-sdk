@@ -608,5 +608,91 @@ describe('sessionManagerUtils', () => {
         })
       );
     });
+
+    it('send a serviceName override event if the service name has changed the first time', () => {
+      const faro = initializeFaro(
+        mockConfig({
+          app: {
+            name: 'my-app',
+            version: '1.0.0',
+          },
+        })
+      );
+
+      const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
+        fetchUserSession: VolatileSessionsManager.fetchUserSession,
+        storeUserSession: VolatileSessionsManager.storeUserSession,
+      });
+
+      let newOverrides = { serviceName: 'my-service' };
+
+      const mockPushEvent = jest.fn();
+      jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
+
+      handler({
+        session: {
+          id: mockSessionId,
+          overrides: newOverrides,
+        },
+      });
+
+      expect(mockPushEvent).toHaveBeenCalledTimes(1);
+      expect(mockPushEvent).toHaveBeenCalledWith('service_name_override', {
+        serviceName: 'my-service',
+        previousServiceName: 'my-app',
+      });
+    });
+
+    it('sends a serviceName override event if the service name has at least changed once already', () => {
+      const previouslyChangedSession: MetaSession = {
+        id: mockSessionId,
+        overrides: {
+          serviceName: 'my-service',
+        },
+      };
+
+      let faro = initializeFaro(
+        mockConfig({
+          app: {
+            name: 'my-app',
+            version: '1.0.0',
+          },
+          sessionTracking: {
+            session: previouslyChangedSession,
+          },
+        })
+      );
+
+      jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValueOnce({
+        sessionId: mockSessionId,
+        isSampled: true,
+        lastActivity: fakeSystemTime,
+        started: fakeSystemTime,
+        sessionMeta: previouslyChangedSession,
+      });
+
+      const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
+        fetchUserSession: VolatileSessionsManager.fetchUserSession,
+        storeUserSession: VolatileSessionsManager.storeUserSession,
+      });
+
+      const mockPushEvent = jest.fn();
+      jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
+
+      const newOverrides = { serviceName: 'my-new-service' };
+
+      handler({
+        session: {
+          id: mockSessionId,
+          overrides: newOverrides,
+        },
+      });
+
+      expect(mockPushEvent).toHaveBeenCalledTimes(1);
+      expect(mockPushEvent).toHaveBeenCalledWith('service_name_override', {
+        serviceName: 'my-new-service',
+        previousServiceName: 'my-service',
+      });
+    });
   });
 });

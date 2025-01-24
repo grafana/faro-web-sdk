@@ -76,14 +76,17 @@ export class SessionInstrumentation extends BaseInstrumentation {
         started: userSession?.started,
       });
 
+      const userSessionMeta = userSession?.sessionMeta;
+
       initialSession.sessionMeta = {
         id: sessionId,
         attributes: {
           ...sessionsConfig.session?.attributes,
-          ...userSession?.sessionMeta?.attributes,
+          ...userSessionMeta?.attributes,
           // For valid resumed sessions we do not want to recalculate the sampling decision on each init phase.
           isSampled: initialSession.isSampled.toString(),
         },
+        overrides: userSessionMeta?.overrides,
       };
 
       lifecycleType = EVENT_SESSION_RESUME;

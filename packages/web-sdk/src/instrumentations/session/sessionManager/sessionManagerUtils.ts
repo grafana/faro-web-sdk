@@ -1,4 +1,5 @@
-import { dateNow, deepEqual, faro, genShortID, isEmpty, Meta } from '@grafana/faro-core';
+import { dateNow, deepEqual, EVENT_OVERRIDES_SERVICE_NAME, faro, genShortID, isEmpty, Meta } from '@grafana/faro-core';
+import type { MetaOverrides } from '@grafana/faro-core';
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
 
@@ -131,24 +132,46 @@ export function getSessionMetaUpdateHandler({
     const session = meta.session;
     const sessionFromSessionStorage = fetchUserSession();
 
-    const sessionMeta = sessionFromSessionStorage?.sessionMeta;
-    const previousSessionId = sessionFromSessionStorage?.sessionId;
-
-    const { attributes: newAttributes, overrides: newOverrides } = session ?? {};
     let sessionId = session?.id;
+    const sessionAttributes = session?.attributes;
+    const sessionOverrides = session?.overrides;
 
-    if (
-      (session && sessionId !== previousSessionId) || // session id changed
-      (newAttributes && !deepEqual(newAttributes, sessionMeta?.attributes)) || // session attributes changed
-      (newOverrides && !deepEqual(newOverrides, sessionMeta?.overrides)) // session overrides changed
-    ) {
+    const storedSessionMeta = sessionFromSessionStorage?.sessionMeta;
+    const storedSessionMetaOverrides = storedSessionMeta?.overrides;
+
+    const hasSessionOverridesChanged = !!sessionOverrides && !deepEqual(sessionOverrides, storedSessionMetaOverrides);
+    const hasAttributesChanged = !!sessionAttributes && !deepEqual(sessionAttributes, storedSessionMeta?.attributes);
+    const hasSessionIdChanged = !!session && sessionId !== sessionFromSessionStorage?.sessionId;
+
+    if (hasSessionIdChanged || hasAttributesChanged || hasSessionOverridesChanged) {
       const userSession = addSessionMetadataToNextSession(
         createUserSessionObject({ sessionId, isSampled: isSampled() }),
         sessionFromSessionStorage
       );
 
       storeUserSession(userSession);
+      sendOverrideEvent(hasSessionOverridesChanged, sessionOverrides, storedSessionMetaOverrides);
       faro.api.setSession(userSession.sessionMeta);
     }
   };
+}
+
+function sendOverrideEvent(
+  hasSessionOverridesChanged: boolean,
+  sessionOverrides: MetaOverrides = {},
+  storedSessionOverrides: MetaOverrides = {}
+) {
+  if (!hasSessionOverridesChanged) {
+    return;
+  }
+
+  const serviceName = sessionOverrides.serviceName;
+  const previousServiceName = storedSessionOverrides.serviceName ?? faro.metas.value.app?.name ?? '';
+
+  if (serviceName && serviceName !== previousServiceName) {
+    faro.api.pushEvent(EVENT_OVERRIDES_SERVICE_NAME, {
+      serviceName,
+      previousServiceName,
+    });
+  }
 }

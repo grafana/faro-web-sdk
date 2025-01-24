@@ -2,6 +2,10 @@
 
 ## Next
 
+- Feature (`@grafana/faro-web-sdk`): Provide APIs to send `service.name` override instructions to the
+  receiver (#893)
+- Improvement (`@grafana/faro-web-sdk`): Send an event for `service.name` overrides (#903)
+
 ## 1.12.3
 
 - Feat (`@grafana/faro-web-tracing`): add duration to events from traces (#861)
