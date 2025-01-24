@@ -14,17 +14,16 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];
-  private errorSerializer: LogArgsSerializer;
+  private errorSerializer: LogArgsSerializer = defaultLogArgsSerializer;
 
   constructor(private options: ConsoleInstrumentationOptions = {}) {
     super();
-
-    this.errorSerializer = options.errorSerializer ?? defaultLogArgsSerializer;
   }
 
   initialize() {
     this.logDebug('Initializing\n', this.options);
     this.options = { ...this.options, ...this.config.consoleInstrumentation };
+    this.errorSerializer = this.options.errorSerializer ?? defaultLogArgsSerializer;
 
     allLogLevels
       .filter(
