@@ -304,7 +304,7 @@ describe('SessionInstrumentation', () => {
     });
   });
 
-  it('Initialize session meta with meta attributes from session picked up from web storage.', () => {
+  it('Initialize session meta with meta attributes and overrides from session picked up from web storage.', () => {
     const mockSessionMeta: MetaSession = {
       id: 'new-session',
       attributes: {
@@ -312,19 +312,26 @@ describe('SessionInstrumentation', () => {
         location: 'mars',
         isSampled: 'true',
       },
+      overrides: {
+        serviceName: 'my-service',
+      },
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify({
       sessionId: mockSessionMeta.id,
       sessionMeta: mockSessionMeta,
+      lastActivity: dateNow(),
+      started: dateNow(),
+      isSampled: true,
     } as FaroUserSession);
+
+    console.log('mockStorage[STORAGE_KEY] :>> ', mockStorage[STORAGE_KEY]);
 
     const { metas } = initializeFaro(
       mockConfig({
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
           enabled: true,
-          session: mockSessionMeta,
           samplingRate: 1, // default
         },
       })
