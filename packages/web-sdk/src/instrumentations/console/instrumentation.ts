@@ -1,4 +1,4 @@
-import { allLogLevels, BaseInstrumentation, defaultLogArgsSerializer, LogLevel, VERSION } from '@grafana/faro-core';
+import { allLogLevels, BaseInstrumentation, defaultLogArgsSerializer, LogArgsSerializer, LogLevel, VERSION } from '@grafana/faro-core';
 
 import type { ConsoleInstrumentationOptions } from './types';
 
@@ -7,9 +7,12 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];
+  private errorSerializer: LogArgsSerializer;
 
   constructor(private options: ConsoleInstrumentationOptions = {}) {
     super();
+
+    this.errorSerializer = options.errorSerializer ?? defaultLogArgsSerializer;
   }
 
   initialize() {
@@ -25,7 +28,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         console[level] = (...args) => {
           try {
             if (level === LogLevel.ERROR && !this.options?.consoleErrorAsLog) {
-              this.api.pushError(new Error('console.error: ' + defaultLogArgsSerializer(args)));
+              this.api.pushError(new Error('console.error: ' + this.errorSerializer(args)));
             } else {
               this.api.pushLog(args, { level });
             }

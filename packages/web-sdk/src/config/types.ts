@@ -1,4 +1,4 @@
-import type { Config, LogLevel } from '@grafana/faro-core';
+import type { Config, LogArgsSerializer, LogLevel } from '@grafana/faro-core';
 
 export interface BrowserConfig extends Partial<Omit<Config, 'app' | 'parseStacktrace'>>, Pick<Config, 'app'> {
   url?: string;
@@ -9,4 +9,5 @@ export interface GetWebInstrumentationsOptions {
   captureConsole?: boolean;
   captureConsoleDisabledLevels?: LogLevel[];
   enablePerformanceInstrumentation?: boolean;
+  consoleErrorSerializer?: LogArgsSerializer;
 }
