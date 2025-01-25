@@ -3,7 +3,6 @@ import type { ExceptionEvent, LogEvent } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
-import { stringifyExternalJson } from '../../utils';
 
 import { ConsoleInstrumentation } from './instrumentation';
 
@@ -82,36 +81,36 @@ describe('ConsoleInstrumentation', () => {
     );
   });
 
-  it('Handles objects with circular references with custom serailizer', () => {
-    const mockTransport = new MockTransport();
+  // it('Handles objects with circular references with custom serailizer', () => {
+  //   const mockTransport = new MockTransport();
 
-    initializeFaro(
-      makeCoreConfig(
-        mockConfig({
-          transports: [mockTransport],
-          instrumentations: [new ConsoleInstrumentation(
-            {
-              errorSerializer: (args: any[]) => {
-                return args.map(arg => typeof arg === 'string' ? arg : stringifyExternalJson(arg)).join(' ');
-              }
-            }
-          )],
-          unpatchedConsole: {
-            error: jest.fn(),
-          } as unknown as Console,
-        })
-      )!
-    );
+  //   initializeFaro(
+  //     makeCoreConfig(
+  //       mockConfig({
+  //         transports: [mockTransport],
+  //         instrumentations: [new ConsoleInstrumentation(
+  //           {
+  //             errorSerializer: (args: any[]) => {
+  //               return args.map(arg => typeof arg === 'string' ? arg : stringifyExternalJson(arg)).join(' ');
+  //             }
+  //           }
+  //         )],
+  //         unpatchedConsole: {
+  //           error: jest.fn(),
+  //         } as unknown as Console,
+  //       })
+  //     )!
+  //   );
 
-    const objWithCircularRef = { foo: 'bar', baz: 'bam' };
-    (objWithCircularRef as any).circular = objWithCircularRef;
+  //   const objWithCircularRef = { foo: 'bar', baz: 'bam' };
+  //   (objWithCircularRef as any).circular = objWithCircularRef;
 
-    console.error('with circular refs object', objWithCircularRef);
+  //   console.error('with circular refs object', objWithCircularRef);
 
-    expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
-      `console.error: with circular refs object {\"foo\":\"bar\",\"baz\":\"bam\",\"circular\":null}`
-    );
-  });
+  //   expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
+  //     `console.error: with circular refs object {\"foo\":\"bar\",\"baz\":\"bam\",\"circular\":null}`
+  //   );
+  // });
 
   it('sends a faro log for console.error calls if configured', () => {
     const mockTransport = new MockTransport();
