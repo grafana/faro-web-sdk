@@ -179,6 +179,11 @@ export interface Config<P = APIEvent> {
      * By default, Faro sends an error for console.error calls. If you want to send a log instead, set this to true.
      */
     consoleErrorAsLog?: boolean;
+
+    /**
+     * Custom function to serialize the contents of error messages
+     */
+    errorSerializer?: LogArgsSerializer;
   };
 }
 
