@@ -18,8 +18,6 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
 
   constructor(private options: ConsoleInstrumentationOptions = {}) {
     super();
-
-    this.errorSerializer = options.errorSerializer ?? defaultLogArgsSerializer;
   }
 
   initialize() {
