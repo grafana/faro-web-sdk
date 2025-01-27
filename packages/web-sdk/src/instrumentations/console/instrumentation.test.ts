@@ -82,7 +82,7 @@ describe('ConsoleInstrumentation', () => {
     );
   });
 
-  it('Handles objects with circular references with custom serailizer', () => {
+  it('Handles objects with circular references with custom serializer', () => {
     const mockTransport = new MockTransport();
 
     initializeFaro(
