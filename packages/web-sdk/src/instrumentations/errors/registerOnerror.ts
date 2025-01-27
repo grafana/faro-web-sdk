@@ -1,4 +1,4 @@
-import { isString } from '@grafana/faro-core';
+import { globalObject, isString } from '@grafana/faro-core';
 import type { API, ExceptionStackFrame } from '@grafana/faro-core';
 
 import { unknownSymbolString } from './const';
@@ -7,9 +7,9 @@ import { getValueAndTypeFromMessage } from './getValueAndTypeFromMessage';
 import { buildStackFrame } from './stackFrames';
 
 export function registerOnerror(api: API): void {
-  const oldOnerror = window.onerror;
+  const oldOnerror = globalObject.onerror;
 
-  window.onerror = (...args) => {
+  globalObject.onerror = (...args) => {
     try {
       const [evt, source, lineno, colno, error] = args;
       let value: string | undefined;

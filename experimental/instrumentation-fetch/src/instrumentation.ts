@@ -22,7 +22,7 @@ function isRequest(input: any): input is Request {
 export class FetchInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-fetch';
   readonly version = VERSION;
-  readonly originalFetch: WindowFetch = window.fetch.bind(globalObject);
+  readonly originalFetch: WindowFetch = globalObject.fetch.bind(globalObject);
   private ignoredUrls: FetchInstrumentationOptions['ignoredUrls'];
 
   constructor(private options?: FetchInstrumentationOptions) {
@@ -88,7 +88,7 @@ export class FetchInstrumentation extends BaseInstrumentation {
     }
 
     // add Faro RUM header to the request headers
-    const windowOrigin = window.location.origin;
+    const windowOrigin = globalObject.location.origin;
     const shouldAddRumHeaderToUrl = shouldPropagateRumHeaders(this.getRequestUrl(input), [
       ...(this.options?.propagateRumHeaderCorsUrls ?? []),
       windowOrigin,
