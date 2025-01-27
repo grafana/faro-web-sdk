@@ -5,6 +5,7 @@
 - Feature (`@grafana/faro-web-sdk`): Provide APIs to send `service.name` override instructions to the
   receiver (#893)
 - Improvement (`@grafana/faro-web-sdk`): Send an event for `service.name` overrides (#903)
+- Improvement (`@grafana/faro-*`) Add required Node engines to package.json ()
 
 ## 1.12.3
 
