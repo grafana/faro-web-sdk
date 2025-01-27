@@ -2,6 +2,8 @@
 
 ## Next
 
+- Feature (`@grafana/faro-web-sdk`): Add `errorSerializer` to the `consoleInstrumentation` property of the core
+  configuration object to provide custom ways to serialize data captured by the `ConsoleInstrumentation` (#902)
 - Feature (`@grafana/faro-web-sdk`): Provide APIs to send `service.name` override instructions to the
   receiver (#893)
 - Improvement (`@grafana/faro-web-sdk`): Send an event for `service.name` overrides (#903)
