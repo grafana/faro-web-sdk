@@ -2,6 +2,9 @@
   "name": "@grafana/faro-transport-otlp-http",
   "version": "1.12.3",
   "description": "Faro transport which converts the Faro data model to the Otlp data model.",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "keywords": [
     "observability",
     "apm",

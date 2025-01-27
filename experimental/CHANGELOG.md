@@ -2,6 +2,8 @@
 
 ## Next
 
+- Improvement (`@grafana/faro-*`) Add required Node engines to package.json ()
+
 ## 1.12.3
 
 - Fix (`@grafana/faro-transport-otlp-http`): Prevent sending requests when the

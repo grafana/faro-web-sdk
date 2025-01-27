@@ -2,6 +2,9 @@
   "name": "@grafana/faro-instrumentation-fetch",
   "version": "1.12.3",
   "description": "Faro fetch auto-instrumentation package",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "keywords": [
     "observability",
     "apm",

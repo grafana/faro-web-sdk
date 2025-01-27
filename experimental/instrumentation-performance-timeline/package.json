@@ -2,6 +2,9 @@
   "name": "@grafana/faro-instrumentation-performance-timeline",
   "version": "1.12.3",
   "description": "Faro instrumentation to capture Browser Performance Timeline data.",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "keywords": [
     "observability",
     "apm",
