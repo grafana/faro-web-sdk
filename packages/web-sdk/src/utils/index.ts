@@ -13,3 +13,5 @@ export { throttle } from './throttle';
 export { getCircularDependencyReplacer, stringifyExternalJson } from './json';
 
 export { getIgnoreUrls } from './url';
+
+export { getDetailsFromErrorArgs } from './errors';
