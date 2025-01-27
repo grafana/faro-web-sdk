@@ -1,4 +1,4 @@
-import { ExceptionStackFrame, globalObject, isPrimitive } from '@grafana/faro-core';
+import { ExceptionStackFrame, isPrimitive } from '@grafana/faro-core';
 import type { API } from '@grafana/faro-core';
 
 import { primitiveUnhandledType, primitiveUnhandledValue } from './const';
@@ -6,7 +6,7 @@ import { getErrorDetails } from './getErrorDetails';
 import type { ExtendedPromiseRejectionEvent } from './types';
 
 export function registerOnunhandledrejection(api: API): void {
-  globalObject.addEventListener('unhandledrejection', (evt: ExtendedPromiseRejectionEvent) => {
+  window.addEventListener('unhandledrejection', (evt: ExtendedPromiseRejectionEvent) => {
     let error = evt;
 
     if (error.reason) {

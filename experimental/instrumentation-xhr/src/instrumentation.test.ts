@@ -1,4 +1,4 @@
-import { globalObject, initializeFaro } from '@grafana/faro-core';
+import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 import { FetchTransport, makeCoreConfig, SessionInstrumentation } from '@grafana/faro-web-sdk';
 
@@ -54,7 +54,7 @@ describe('XHRInstrumentation', () => {
 
     const xhr = new XMLHttpRequest();
     // auto adds rum headers to requests sent to the same origin
-    xhr.open('GET', globalObject.location.origin + '/test');
+    xhr.open('GET', window.location.origin + '/test');
     expect(mockFetchSpyOpen).toHaveBeenCalledTimes(1);
 
     xhr.send();
