@@ -16,20 +16,7 @@ function myCustomParser(location: LocationReduced): string {
 }
 
 export const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => {
-  const handler = {
-    get(target: ExtendLocation, property: string) {
-      const _target = { ...target };
-
-      if (typeof myCustomParser === 'function') {
-        const { hash, host, hostname, href, origin, pathname, port, protocol } = target;
-        _target['pageId'] = myCustomParser({ hash, host, hostname, href, origin, pathname, port, protocol });
-      }
-
-      return _target[property as keyof ExtendLocation];
-    },
-  };
-
-  const { href, pageId } = new Proxy<ExtendLocation>(location, handler);
+  const { href, pageId } = new Proxy<ExtendLocation>(location, extendedLocationHandler);
 
   return {
     page: {
@@ -37,4 +24,18 @@ export const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => {
       ...(pageId ? { pageId } : {}),
     },
   };
+};
+
+const extendedLocationHandler = {
+  get(target: ExtendLocation, property: string) {
+    const _target = { ...target };
+
+    // TODO: myCustomParser needs to be injected via config
+    if (typeof myCustomParser === 'function') {
+      const { hash, host, hostname, href, origin, pathname, port, protocol } = target;
+      _target['pageId'] = myCustomParser({ hash, host, hostname, href, origin, pathname, port, protocol });
+    }
+
+    return _target[property as keyof ExtendLocation];
+  },
 };
