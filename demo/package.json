@@ -2,6 +2,9 @@
   "name": "@grafana/faro-demo",
   "version": "1.12.3",
   "description": "Demo of Faro",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "license": "Apache-2.0",
   "author": "Grafana Labs",
   "homepage": "https://github.com/grafana/faro-web-sdk",

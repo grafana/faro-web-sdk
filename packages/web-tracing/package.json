@@ -2,6 +2,9 @@
   "name": "@grafana/faro-web-tracing",
   "version": "1.12.3",
   "description": "Faro web tracing implementation.",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "keywords": [
     "observability",
     "apm",

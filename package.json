@@ -2,6 +2,9 @@
   "name": "faro-web-sdk",
   "version": "0.0.0",
   "description": "Monorepo for Faro Web SDK",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "license": "Apache-2.0",
   "author": "Grafana Labs",
   "homepage": "https://github.com/grafana/faro-web-sdk#readme",
