@@ -2,6 +2,9 @@
 
 ## Next
 
+- Feat (`@grafana/faro-web-sdk`): Add `errorSerializer` to the `consoleInstrumentation` property of the core
+  configuration object to provide custom ways to serialize data captured by the `ConsoleInstrumentation` (#902)
+
 ## 1.12.3
 
 - Feat (`@grafana/faro-web-tracing`): add duration to events from traces (#861)

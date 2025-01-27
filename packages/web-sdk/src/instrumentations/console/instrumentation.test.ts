@@ -89,13 +89,13 @@ describe('ConsoleInstrumentation', () => {
       makeCoreConfig(
         mockConfig({
           transports: [mockTransport],
-          instrumentations: [new ConsoleInstrumentation(
-            {
+          instrumentations: [
+            new ConsoleInstrumentation({
               errorSerializer: (args: any[]) => {
-                return args.map(arg => typeof arg === 'string' ? arg : stringifyExternalJson(arg)).join(' ');
-              }
-            }
-          )],
+                return args.map((arg) => (typeof arg === 'string' ? arg : stringifyExternalJson(arg))).join(' ');
+              },
+            }),
+          ],
           unpatchedConsole: {
             error: jest.fn(),
           } as unknown as Console,
