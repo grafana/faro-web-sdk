@@ -1,4 +1,3 @@
-import { globalObject } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { initializeFaro } from '../../initialize';
@@ -9,7 +8,7 @@ describe('registerOnerror', () => {
   it('will preserve the old callback', () => {
     let called = false;
 
-    globalObject.onerror = () => {
+    window.onerror = () => {
       called = true;
     };
 
@@ -22,7 +21,7 @@ describe('registerOnerror', () => {
 
     registerOnerror(api);
 
-    globalObject.onerror('boo', 'some file', 10, 10, new Error('boo'));
+    window.onerror('boo', 'some file', 10, 10, new Error('boo'));
     expect(called).toBe(true);
     expect(transport.items).toHaveLength(1);
   });

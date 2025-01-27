@@ -1,4 +1,4 @@
-import { globalObject, initializeFaro } from '@grafana/faro-core';
+import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 import { FetchTransport, makeCoreConfig, SessionInstrumentation } from '@grafana/faro-web-sdk';
 
@@ -135,7 +135,7 @@ describe('FetchInstrumentation', () => {
       };
     };
 
-    const requestUrl = globalObject.location.origin + '/test';
+    const requestUrl = window.location.origin + '/test';
 
     const actualResult = parseActualResult(
       instrumentation.buildRequestAndInit(new Request(requestUrl), {
@@ -257,7 +257,7 @@ describe('FetchInstrumentation', () => {
     const mockFetch = jest.fn();
     jest.spyOn(global, 'fetch').mockImplementationOnce(mockFetch);
 
-    globalObject.fetch('https://grafana.com');
+    window.fetch('https://grafana.com');
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
@@ -279,7 +279,7 @@ describe('FetchInstrumentation', () => {
     const mockPushEventApi = jest.fn();
     jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEventApi);
 
-    globalObject.fetch('https://example.com');
+    window.fetch('https://example.com');
 
     expect(mockPushEventApi).toHaveBeenCalledTimes(0);
   });

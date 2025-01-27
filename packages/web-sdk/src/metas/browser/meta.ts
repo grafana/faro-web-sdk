@@ -1,6 +1,6 @@
 import { UAParser } from 'ua-parser-js';
 
-import { globalObject, unknownString } from '@grafana/faro-core';
+import { unknownString } from '@grafana/faro-core';
 import type { Meta, MetaBrowser, MetaItem } from '@grafana/faro-core';
 
 export const browserMeta: MetaItem<Pick<Meta, 'browser'>> = () => {
@@ -21,8 +21,8 @@ export const browserMeta: MetaItem<Pick<Meta, 'browser'>> = () => {
       language: language ?? unknownString,
       mobile,
       brands: brands ?? unknownString,
-      viewportWidth: `${globalObject.innerWidth}`,
-      viewportHeight: `${globalObject.innerHeight}`,
+      viewportWidth: `${window.innerWidth}`,
+      viewportHeight: `${window.innerHeight}`,
     },
   };
 
