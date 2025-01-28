@@ -5,6 +5,7 @@ import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 import { makeCoreConfig } from '../../config';
 
 import { ConsoleInstrumentation } from './instrumentation';
+import { stringifyExternalJson } from '../../utils';
 
 describe('ConsoleInstrumentation', () => {
   const originalConsole = console;

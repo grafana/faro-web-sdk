@@ -1,4 +1,11 @@
-import { allLogLevels, BaseInstrumentation, defaultLogArgsSerializer, LogLevel, VERSION } from '@grafana/faro-core';
+import {
+  allLogLevels,
+  BaseInstrumentation,
+  LogLevel,
+  VERSION,
+} from '@grafana/faro-core';
+
+import { getDetailsFromErrorArgs } from '../../utils';
 
 import type { ConsoleInstrumentationOptions } from './types';
 
@@ -25,7 +32,9 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         console[level] = (...args) => {
           try {
             if (level === LogLevel.ERROR && !this.options?.consoleErrorAsLog) {
-              this.api.pushError(new Error('console.error: ' + defaultLogArgsSerializer(args)));
+              const { value, type, stackFrames } = getDetailsFromErrorArgs(args);
+
+              this.api.pushError(new Error('console.error: ' + value), { type, stackFrames });
             } else {
               this.api.pushLog(args, { level });
             }
