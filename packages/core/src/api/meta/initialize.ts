@@ -19,6 +19,7 @@ export function initializeMetaAPI(
   let metaSession: Partial<Meta> | undefined = undefined;
   let metaUser: Partial<Meta> | undefined = undefined;
   let metaView: Partial<Meta> | undefined = undefined;
+  let metaPage: Partial<Meta> | undefined = undefined;
 
   const setUser: MetaAPI['setUser'] = (user) => {
     if (metaUser) {
@@ -76,6 +77,20 @@ export function initializeMetaAPI(
 
   const getView: MetaAPI['getView'] = () => metas.value.view;
 
+  const setPage: MetaAPI['setPage'] = (page) => {
+    if (metaPage) {
+      metas.remove(metaPage);
+    }
+
+    metaPage = {
+      page,
+    };
+
+    metas.add(metaPage);
+  };
+
+  const getPage: MetaAPI['getPage'] = () => metas.value.page;
+
   return {
     setUser,
     resetUser: setUser as MetaAPI['resetUser'],
@@ -84,5 +99,7 @@ export function initializeMetaAPI(
     getSession,
     setView,
     getView,
+    setPage,
+    getPage,
   };
 }

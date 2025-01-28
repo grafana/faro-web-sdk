@@ -1,4 +1,4 @@
-import type { MetaOverrides, MetaSession, MetaUser, MetaView } from '../../metas';
+import type { MetaOverrides, MetaPage, MetaSession, MetaUser, MetaView } from '../../metas';
 
 export interface MetaAPI {
   setUser: (user?: MetaUser | undefined) => void;
@@ -18,4 +18,6 @@ export interface MetaAPI {
     }
   ) => void;
   getView: () => MetaView | undefined;
+  setPage: (view?: MetaPage | undefined) => void;
+  getPage: () => MetaPage | undefined;
 }

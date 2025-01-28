@@ -180,6 +180,13 @@ export interface Config<P = APIEvent> {
      */
     consoleErrorAsLog?: boolean;
   };
+
+  page?: {
+    /**
+     * Allows to provide a template for the page id
+     */
+    idParser?: (location: Location) => string;
+  };
 }
 
 export type Patterns = Array<string | RegExp>;

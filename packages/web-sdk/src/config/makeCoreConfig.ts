@@ -14,6 +14,7 @@ import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
 import { defaultMetas } from '../metas';
 import { k6Meta } from '../metas/k6';
+import { createPageMeta, pageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
@@ -42,7 +43,10 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
   }
 
   function createMetas(): MetaItem[] {
-    const initialMetas = defaultMetas;
+    // remove the legacy pageMeta
+    const initialMetas = defaultMetas.filter((meta) => meta !== pageMeta);
+    // add the new extended pageMeta
+    initialMetas.push(createPageMeta(browserConfig.page?.idParser));
 
     if (browserConfig.metas) {
       initialMetas.push(...browserConfig.metas);

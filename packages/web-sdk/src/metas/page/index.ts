@@ -1,1 +1,1 @@
-export { pageMeta } from './meta';
+export { pageMeta, createPageMeta } from './meta';
