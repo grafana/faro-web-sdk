@@ -4,7 +4,7 @@ type ExtendLocation = Location & {
   pageId?: string;
 };
 
-let currentUrl: string | undefined;
+let currentHref: string | undefined;
 let currentPageId: string | undefined;
 
 /**
@@ -19,16 +19,18 @@ export const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => {
 };
 
 export function createPageMeta(idParser?: (location: Location) => string): MetaItem<Pick<Meta, 'page'>> {
+  console.log('window.location :>> ', window.location);
+
   const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => {
     const { href, pageId } = new Proxy<ExtendLocation>(location, {
       get(target: ExtendLocation, property: string) {
         const _target = { ...target };
         const targetHref = target.href;
 
-        if (typeof idParser === 'function' && currentUrl !== targetHref) {
+        if (typeof idParser === 'function' && currentHref !== targetHref) {
           const pId = idParser(target);
 
-          currentUrl = targetHref;
+          currentHref = targetHref;
           currentPageId = pId;
         }
 
