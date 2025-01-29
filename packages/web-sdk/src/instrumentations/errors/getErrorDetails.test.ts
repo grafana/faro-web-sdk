@@ -73,6 +73,30 @@ describe('errors', () => {
     );
   });
 
+  it('parses text values and an object passed to console.error with custom serializer', () => {
+    const transport = new MockTransport();
+    const { api } = initializeFaro(
+      mockConfig({
+        instrumentations: [new ConsoleInstrumentation()],
+        transports: [transport],
+        consoleInstrumentation: {
+          errorSerializer: () => 'custom serializer',
+        },
+        unpatchedConsole: {
+          error: jest.fn(),
+        } as unknown as Console,
+      })
+    );
+
+    registerOnerror(api);
+
+    const details = { other: 'details' };
+    console.error('boo', details);
+    expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.value).toBe(
+      'console.error: custom serializer'
+    );
+  });
+
   it('parses text values and an object passed to console.error and returns it as a log', () => {
     const transport = new MockTransport();
     const { api } = initializeFaro(
