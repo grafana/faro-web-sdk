@@ -1,8 +1,9 @@
-import { isDomError, isDomException, isError, isErrorEvent, isEvent, isObject } from '@grafana/faro-core';
-import type { ExceptionStackFrame } from '@grafana/faro-core';
+import { isDomError, isDomException, isError, isErrorEvent, isEvent, isObject, isString } from '@grafana/faro-core';
+import type { ExceptionStackFrame, LogArgsSerializer } from '@grafana/faro-core';
 
-import { domErrorType, domExceptionType, objectEventValue } from './const';
-import { getStackFramesFromError } from './stackFrames';
+import { domErrorType, domExceptionType, objectEventValue, unknownSymbolString } from './const';
+import { getValueAndTypeFromMessage } from './getValueAndTypeFromMessage';
+import { buildStackFrame, getStackFramesFromError } from './stackFrames';
 import type { ErrorEvent } from './types';
 
 export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | undefined, ExceptionStackFrame[]] {
@@ -30,4 +31,41 @@ export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | 
   }
 
   return [value, type, stackFrames];
+}
+
+export interface ErrorDetails {
+  value?: string;
+  type?: string;
+  stackFrames?: ExceptionStackFrame[];
+}
+
+export function getDetailsFromErrorArgs(args: [any?, ...any[]]): ErrorDetails {
+  const [evt, source, lineno, colno, error] = args;
+
+  let value: string | undefined;
+  let type: string | undefined;
+  let stackFrames: ExceptionStackFrame[] = [];
+  const eventIsString = isString(evt);
+  const initialStackFrame = buildStackFrame(source, unknownSymbolString, lineno, colno);
+
+  if (error || !eventIsString) {
+    [value, type, stackFrames] = getErrorDetails((error ?? evt) as Error | Event);
+
+    if (stackFrames.length === 0) {
+      stackFrames = [initialStackFrame];
+    }
+  } else if (eventIsString) {
+    [value, type] = getValueAndTypeFromMessage(evt);
+    stackFrames = [initialStackFrame];
+  }
+
+  return { value, type, stackFrames };
+}
+
+export function getDetailsFromConsoleErrorArgs(args: [any?, ...any[]], serializer: LogArgsSerializer): ErrorDetails {
+  if (isError(args[0])) {
+    return getDetailsFromErrorArgs(args);
+  } else {
+    return { value: serializer(args) };
+  }
 }

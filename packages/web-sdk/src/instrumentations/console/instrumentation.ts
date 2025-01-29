@@ -7,7 +7,7 @@ import {
   VERSION,
 } from '@grafana/faro-core';
 
-import { getDetailsFromConsoleErrorArgs } from '../../utils/errors';
+import { getDetailsFromConsoleErrorArgs } from '../errors/getErrorDetails';
 
 import type { ConsoleInstrumentationOptions } from './types';
 

@@ -11,6 +11,3 @@ export {
 export { throttle } from './throttle';
 
 export { getIgnoreUrls } from './url';
-
-export { getDetailsFromErrorArgs } from './errors';
-export type { ErrorDetails } from './errors';

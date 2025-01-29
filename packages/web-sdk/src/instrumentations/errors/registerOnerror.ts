@@ -1,6 +1,6 @@
 import type { API } from '@grafana/faro-core';
 
-import { getDetailsFromErrorArgs } from '../../utils';
+import { getDetailsFromErrorArgs } from './getErrorDetails';
 
 export function registerOnerror(api: API): void {
   const oldOnerror = window.onerror;

@@ -166,7 +166,7 @@ describe('ConsoleInstrumentation', () => {
 
     expect(mockTransport.items).toHaveLength(2);
     expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe(
-      'console error: error logs are enabled'
+      'console.error: error logs are enabled'
     );
     expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe('info logs are enabled');
   });
