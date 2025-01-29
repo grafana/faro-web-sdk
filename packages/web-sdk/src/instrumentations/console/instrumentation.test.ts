@@ -126,14 +126,16 @@ describe('ConsoleInstrumentation', () => {
       )!
     );
 
-    console.error('console.error log no 1');
-    console.error('console.error log with object', { foo: 'bar', baz: 'bam' });
+    console.error('log no 1');
+
+    const context = { foo: 'bar', baz: 'bam' };
+    console.error('log with object', context);
 
     expect(mockTransport.items).toHaveLength(2);
 
-    expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe('console.error log no 1');
+    expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe('console.error: log no 1');
     expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe(
-      'console.error log with object [object Object]'
+      'console.error: log with object ' + stringifyExternalJson(context)
     );
   });
 
@@ -163,7 +165,9 @@ describe('ConsoleInstrumentation', () => {
     console.log('log logs are disabled');
 
     expect(mockTransport.items).toHaveLength(2);
-    expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe('error logs are enabled');
+    expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe(
+      'console error: error logs are enabled'
+    );
     expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe('info logs are enabled');
   });
 

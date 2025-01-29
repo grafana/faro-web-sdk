@@ -16,6 +16,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];
+  static consoleErrorPrefix = 'console.error: ';
   private errorSerializer: LogArgsSerializer = defaultErrorArgsSerializer;
 
   constructor(private options: ConsoleInstrumentationOptions = {}) {
@@ -38,15 +39,22 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
               const { value, type, stackFrames } = getDetailsFromConsoleErrorArgs(args, this.errorSerializer);
 
               if (value && !type && !stackFrames) {
-                this.api.pushError(new Error('console.error: ' + value));
+                this.api.pushError(new Error(ConsoleInstrumentation.consoleErrorPrefix + value));
                 return;
               }
 
-              this.api.pushError(new Error('console.error: ' + value), { type, stackFrames });
+              this.api.pushError(new Error(ConsoleInstrumentation.consoleErrorPrefix + value), { type, stackFrames });
             } else if (level === LogLevel.ERROR && this.options?.consoleErrorAsLog) {
-              const { value, type } = getDetailsFromConsoleErrorArgs(args, this.errorSerializer);
+              const { value, type, stackFrames } = getDetailsFromConsoleErrorArgs(args, this.errorSerializer);
 
-              this.api.pushLog(args, { level, context: { value: value ?? '', type: type ?? '' } });
+              this.api.pushLog(value ? [ConsoleInstrumentation.consoleErrorPrefix + value] : args, {
+                level,
+                context: {
+                  value: value ?? '',
+                  type: type ?? '',
+                  stackFrames: stackFrames?.length ? defaultErrorArgsSerializer(stackFrames) : '',
+                },
+              });
             } else {
               this.api.pushLog(args, { level });
             }

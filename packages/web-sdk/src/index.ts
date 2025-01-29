@@ -167,4 +167,5 @@ export {
   STORAGE_KEY,
 } from './instrumentations/session';
 
+export type { ErrorDetails } from './utils/errors';
 export { getIgnoreUrls } from './utils/url';

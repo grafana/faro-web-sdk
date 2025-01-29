@@ -1,11 +1,11 @@
-import { type ExceptionStackFrame, isError, isString, LogArgsSerializer } from "@grafana/faro-core";
+import { type ExceptionStackFrame, isError, isString, LogArgsSerializer } from '@grafana/faro-core';
 
-import { buildStackFrame } from "../instrumentations";
-import { unknownSymbolString } from "../instrumentations/errors/const";
-import { getErrorDetails } from "../instrumentations/errors/getErrorDetails";
-import { getValueAndTypeFromMessage } from "../instrumentations/errors/getValueAndTypeFromMessage";
+import { buildStackFrame } from '../instrumentations';
+import { unknownSymbolString } from '../instrumentations/errors/const';
+import { getErrorDetails } from '../instrumentations/errors/getErrorDetails';
+import { getValueAndTypeFromMessage } from '../instrumentations/errors/getValueAndTypeFromMessage';
 
-interface ErrorDetails {
+export interface ErrorDetails {
   value?: string;
   type?: string;
   stackFrames?: ExceptionStackFrame[];
