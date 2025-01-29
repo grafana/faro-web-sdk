@@ -4,6 +4,9 @@
 
 - Feature (`@grafana/faro-web-sdk`): Provide APIs to send `service.name` override instructions to the
   receiver (#893)
+- Feature (`@grafana/faro-web-sdk`): Introduced `setPage(meta)` API to overwrite page metadata and
+  added an option to inject a custom `pageId` parser for generating custom `pageId`s continuously
+  (#923)
 - Improvement (`@grafana/faro-web-sdk`): Send an event for `service.name` overrides (#903)
 - Improvement (`@grafana/faro-*`) Add required Node engines to package.json ()
 
