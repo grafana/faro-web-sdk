@@ -1,4 +1,4 @@
-export { defaultExceptionType, defaultLogArgsSerializer } from './api';
+export { defaultExceptionType, defaultLogArgsSerializer, defaultErrorArgsSerializer } from './api';
 export type {
   API,
   APIEvent,
@@ -126,6 +126,8 @@ export {
   noop,
   dateNow,
   isEmpty,
+  getCircularDependencyReplacer,
+  stringifyExternalJson,
 } from './utils';
 export type {
   BaseObject,

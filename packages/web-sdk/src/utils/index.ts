@@ -10,7 +10,7 @@ export {
 
 export { throttle } from './throttle';
 
-export { getCircularDependencyReplacer, stringifyExternalJson } from './json';
+export { getCircularDependencyReplacer, stringifyExternalJson } from '@grafana/faro-core/src/utils/json';
 
 export { getIgnoreUrls } from './url';
 

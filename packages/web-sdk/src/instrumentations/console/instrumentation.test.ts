@@ -3,9 +3,9 @@ import type { ExceptionEvent, LogEvent } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
+import { stringifyExternalJson } from '../../utils';
 
 import { ConsoleInstrumentation } from './instrumentation';
-import { stringifyExternalJson } from '../../utils';
 
 describe('ConsoleInstrumentation', () => {
   const originalConsole = console;
@@ -79,6 +79,33 @@ describe('ConsoleInstrumentation', () => {
 
     expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
       'console.error: with circular refs object [object Object]'
+    );
+  });
+
+  it('Handles objects with circular references with error serializer', () => {
+    const mockTransport = new MockTransport();
+
+    initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [mockTransport],
+          instrumentations: [new ConsoleInstrumentation({
+            errorSerializer: (args) => args.map((arg) => stringifyExternalJson(arg)).join(' '),
+          })],
+          unpatchedConsole: {
+            error: jest.fn(),
+          } as unknown as Console,
+        })
+      )!
+    );
+
+    const objWithCircularRef = { foo: 'bar', baz: 'bam' };
+    (objWithCircularRef as any).circular = objWithCircularRef;
+
+    console.error('with circular refs object', objWithCircularRef);
+
+    expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
+      'console.error: with circular refs object { foo: \'bar\', baz: \'bam\' }'
     );
   });
 

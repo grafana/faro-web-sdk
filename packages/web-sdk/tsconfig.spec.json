@@ -6,6 +6,6 @@
     "rootDir": "..",
     "tsBuildInfoFile": "../../.cache/tsc/webSdk.spec.tsbuildinfo"
   },
-  "include": ["./src"],
+  "include": ["./src", "../core/src/utils/json.test.ts", "../core/src/utils/json.ts"],
   "references": [{ "path": "../core/tsconfig.spec.json" }]
 }
