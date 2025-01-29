@@ -13,12 +13,6 @@ import { ConsoleInstrumentation } from '../console';
 import { ErrorDetails, getDetailsFromConsoleErrorArgs, getDetailsFromErrorArgs } from './getErrorDetails';
 import { registerOnerror } from './registerOnerror';
 
-// import { initializeFaro } from '../initialize';
-// import { ConsoleInstrumentation } from '../instrumentations';
-// import { registerOnerror } from '../instrumentations/errors/registerOnerror';
-
-// import { ErrorDetails, getDetailsFromConsoleErrorArgs, getDetailsFromErrorArgs } from './errors';
-
 describe('errors', () => {
   it('parses an Error passed to console.error', () => {
     const transport = new MockTransport();
