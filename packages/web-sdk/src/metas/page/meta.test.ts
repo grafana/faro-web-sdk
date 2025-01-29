@@ -8,8 +8,8 @@ describe('createPageMeta', () => {
     jest.spyOn(faroModule, 'genShortID').mockReturnValueOnce(initialPagePostfix);
 
     const initialUrl = 'http://localhost/initial-page/';
-    window.history.pushState({}, '', new URL(initialUrl));
-    expect(window.location.href).toBe(initialUrl);
+    global.window.history.pushState({}, '', new URL(initialUrl));
+    expect(global.window.location.href).toBe(initialUrl);
 
     // @ts-expect-error
     const meta = createPageMeta((location) => location.href + '_' + faroModule.genShortID())();
@@ -18,13 +18,16 @@ describe('createPageMeta', () => {
     expect(pageMeta.url).toBe(initialUrl);
     expect(pageMeta.id).toBe(initialUrl + '_' + initialPagePostfix);
 
+    // TODO: It seems that jest doesn't work well with JS proxies. At leas the proxied location object doesn't update.
+    // Code works well when manually tested in the browser. See attached video in the PR.
+
     // const newPagePostfix = 'new-page-postfix';
     // jest.spyOn(faroModule, 'genShortID').mockReturnValueOnce(newPagePostfix);
 
     // const newUrl = 'http://localhost/new-page/';
-    // window.history.pushState({}, '', new URL(newUrl));
+    // global.window.history.pushState({}, '', new URL(newUrl));
 
-    // // expect(pageMeta.url).toBe(newUrl);
+    // expect(pageMeta.url).toBe(newUrl);
     // expect(meta.page.id).toBe(newUrl + '_' + newPagePostfix);
   });
 });
