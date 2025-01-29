@@ -31,8 +31,8 @@ describe('createPageMeta', () => {
     expect(pageMeta.url).toBe(initialUrl);
     expect(pageMeta.id).toBe(initialUrl + '_' + initialPagePostfix);
 
-    // TODO: It seems that jest doesn't work well with JS proxies. At leas the proxied location object doesn't update.
-    // Code works well when manually tested in the browser. See attached video in the PR.
+    // TODO: It seems that jest doesn't really change the location. At least it's not triggered in the code.
+    // Logic works well when manually tested in the browser. See attached video in the PR.
 
     // const newPagePostfix = 'new-page-postfix';
     // jest.spyOn(faroModule, 'genShortID').mockReturnValueOnce(newPagePostfix);

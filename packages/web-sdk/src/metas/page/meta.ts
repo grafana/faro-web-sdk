@@ -1,9 +1,5 @@
 import type { Meta, MetaItem } from '@grafana/faro-core';
 
-type ExtendLocation = Location & {
-  pageId?: string;
-};
-
 let currentHref: string | undefined;
 let currentPageId: string | undefined;
 
@@ -20,26 +16,17 @@ export const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => {
 
 export function createPageMeta(idParser?: (location: Location) => string): MetaItem<Pick<Meta, 'page'>> {
   const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => {
-    const { href, pageId } = new Proxy<ExtendLocation>(location, {
-      get(target: ExtendLocation, property: string) {
-        const _target = { ...target };
-        const targetHref = target.href;
+    const locationHref = location.href;
 
-        if (typeof idParser === 'function' && currentHref !== targetHref) {
-          currentHref = targetHref;
-          currentPageId = idParser(target);
-        }
-
-        _target.pageId = currentPageId;
-
-        return _target[property as keyof ExtendLocation];
-      },
-    });
+    if (typeof idParser === 'function' && currentHref !== locationHref) {
+      currentHref = locationHref;
+      currentPageId = idParser(location);
+    }
 
     return {
       page: {
-        url: href,
-        ...(pageId ? { id: pageId } : {}),
+        url: locationHref,
+        ...(currentPageId ? { id: currentPageId } : {}),
       },
     };
   };
