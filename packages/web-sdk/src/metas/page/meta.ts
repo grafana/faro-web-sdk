@@ -19,8 +19,6 @@ export const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => {
 };
 
 export function createPageMeta(idParser?: (location: Location) => string): MetaItem<Pick<Meta, 'page'>> {
-  console.log('window.location :>> ', window.location);
-
   const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => {
     const { href, pageId } = new Proxy<ExtendLocation>(location, {
       get(target: ExtendLocation, property: string) {
