@@ -1,4 +1,4 @@
-import { defaultLogArgsSerializer, type ExceptionStackFrame, isError, isString, LogArgsSerializer } from "@grafana/faro-core";
+import { type ExceptionStackFrame, isError, isString, LogArgsSerializer } from "@grafana/faro-core";
 
 import { buildStackFrame } from "../instrumentations";
 import { unknownSymbolString } from "../instrumentations/errors/const";
@@ -13,8 +13,6 @@ interface ErrorDetails {
 
 export function getDetailsFromErrorArgs(args: [any?, ...any[]]): ErrorDetails {
   const [evt, source, lineno, colno, error] = args;
-
-  console.log('getDetailsFromErrorArgs', { evt, source, lineno, colno, error, args });
 
   let value: string | undefined;
   let type: string | undefined;
@@ -36,10 +34,10 @@ export function getDetailsFromErrorArgs(args: [any?, ...any[]]): ErrorDetails {
   return { value, type, stackFrames };
 }
 
-export function getDetailsFromConsoleErrorArgs(args: [any?, ...any[]], serializer?: LogArgsSerializer): ErrorDetails {
+export function getDetailsFromConsoleErrorArgs(args: [any?, ...any[]], serializer: LogArgsSerializer): ErrorDetails {
   if (isError(args[0])) {
     return getDetailsFromErrorArgs(args);
   } else {
-    return { value: serializer ? serializer(args) : defaultLogArgsSerializer(args) };
+    return { value: serializer(args) };
   }
 }

@@ -1,9 +1,8 @@
-import { initializeFaro, LogLevel, TransportItem } from '@grafana/faro-core';
+import { initializeFaro, LogLevel, stringifyExternalJson, TransportItem } from '@grafana/faro-core';
 import type { ExceptionEvent, LogEvent } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
-import { stringifyExternalJson } from '../../utils';
 
 import { ConsoleInstrumentation } from './instrumentation';
 
@@ -43,6 +42,8 @@ describe('ConsoleInstrumentation', () => {
     );
 
     console.error('console.error no 1');
+
+    const context = { foo: 'bar', baz: 'bam' };
     console.error('with object', { foo: 'bar', baz: 'bam' });
 
     expect(mockTransport.items).toHaveLength(2);
@@ -53,7 +54,7 @@ describe('ConsoleInstrumentation', () => {
     );
     expect((mockTransport.items[1] as TransportItem<ExceptionEvent>)?.payload.type).toBe('Error');
     expect((mockTransport.items[1] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
-      'console.error: with object [object Object]'
+      'console.error: with object ' + stringifyExternalJson(context)
     );
   });
 
@@ -78,7 +79,7 @@ describe('ConsoleInstrumentation', () => {
     console.error('with circular refs object', objWithCircularRef);
 
     expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
-      'console.error: with circular refs object [object Object]'
+      'console.error: with circular refs object ' + stringifyExternalJson(objWithCircularRef)
     );
   });
 
@@ -89,9 +90,7 @@ describe('ConsoleInstrumentation', () => {
       makeCoreConfig(
         mockConfig({
           transports: [mockTransport],
-          instrumentations: [new ConsoleInstrumentation({
-            errorSerializer: (args) => args.map((arg) => stringifyExternalJson(arg)).join(' '),
-          })],
+          instrumentations: [new ConsoleInstrumentation()],
           unpatchedConsole: {
             error: jest.fn(),
           } as unknown as Console,
@@ -105,7 +104,7 @@ describe('ConsoleInstrumentation', () => {
     console.error('with circular refs object', objWithCircularRef);
 
     expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
-      'console.error: with circular refs object { foo: \'bar\', baz: \'bam\' }'
+      'console.error: with circular refs object ' + stringifyExternalJson(objWithCircularRef)
     );
   });
 

@@ -16,7 +16,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];
-  private errorSerializer?: LogArgsSerializer;
+  private errorSerializer: LogArgsSerializer = defaultErrorArgsSerializer;
 
   constructor(private options: ConsoleInstrumentationOptions = {}) {
     super();
