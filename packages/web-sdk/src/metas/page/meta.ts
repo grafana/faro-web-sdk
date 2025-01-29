@@ -26,10 +26,8 @@ export function createPageMeta(idParser?: (location: Location) => string): MetaI
         const targetHref = target.href;
 
         if (typeof idParser === 'function' && currentHref !== targetHref) {
-          const pId = idParser(target);
-
           currentHref = targetHref;
-          currentPageId = pId;
+          currentPageId = idParser(target);
         }
 
         _target.pageId = currentPageId;
