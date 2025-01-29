@@ -60,4 +60,26 @@ describe('Meta API', () => {
       expect(api.getSession()).toEqual({ overrides });
     });
   });
+
+  describe('setPage', () => {
+    it('updates the page meta when setPage(meta) is called', () => {
+      const { api } = initializeFaro(mockConfig());
+
+      const page = { url: 'http://example.com/my-page', id: 'my-page' };
+      api.setPage(page);
+      expect(api.getPage()).toEqual(page);
+
+      const newPage = { url: 'http://example.com/my-new-page', id: 'my-new-page' };
+      api.setPage(newPage);
+      expect(api.getPage()).toEqual(newPage);
+    });
+
+    it('gets the page meta when getPage(meta) is called', () => {
+      const { api } = initializeFaro(mockConfig());
+
+      const page = { url: 'http://example.com/my-page', id: 'my-page' };
+      api.setPage(page);
+      expect(api.getPage()).toEqual(page);
+    });
+  });
 });
