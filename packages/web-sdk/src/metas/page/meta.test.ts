@@ -3,6 +3,19 @@ import * as faroModule from '@grafana/faro-core';
 import { createPageMeta } from './meta';
 
 describe('createPageMeta', () => {
+  it('does not add pageId by default', () => {
+    const initialUrl = 'http://localhost/initial-page/';
+    global.window.history.pushState({}, '', new URL(initialUrl));
+    expect(global.window.location.href).toBe(initialUrl);
+
+    // @ts-expect-error
+    const meta = createPageMeta()();
+    const pageMeta = meta.page;
+
+    expect(pageMeta.url).toBe(initialUrl);
+    expect(pageMeta.id).toBeUndefined();
+  });
+
   it('parse pageId with provided parser function ', () => {
     const initialPagePostfix = 'initial-page-postfix';
     jest.spyOn(faroModule, 'genShortID').mockReturnValueOnce(initialPagePostfix);

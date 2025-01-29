@@ -39,7 +39,7 @@ export function createPageMeta(idParser?: (location: Location) => string): MetaI
     return {
       page: {
         url: href,
-        id: pageId,
+        ...(pageId ? { id: pageId } : {}),
       },
     };
   };
