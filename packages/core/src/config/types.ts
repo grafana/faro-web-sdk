@@ -181,6 +181,13 @@ export interface Config<P = APIEvent> {
     consoleErrorAsLog?: boolean;
 
     /**
+     * If true, use the default Faro error serializer for console.error calls. If false, simply call toString() on the error.
+     * If enabled, payloads containing serialized errors may become very large. If left disabled, some error details may be lost.
+     * (default: false)
+     */
+    serializeErrors?: boolean;
+
+    /**
      * Custom function to serialize Error arguments
      */
     errorSerializer?: LogArgsSerializer;

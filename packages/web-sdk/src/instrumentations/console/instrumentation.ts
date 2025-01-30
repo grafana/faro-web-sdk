@@ -2,6 +2,7 @@ import {
   allLogLevels,
   BaseInstrumentation,
   defaultErrorArgsSerializer,
+  defaultLogArgsSerializer,
   LogArgsSerializer,
   LogLevel,
   VERSION,
@@ -17,7 +18,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
 
   static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];
   static consoleErrorPrefix = 'console.error: ';
-  private errorSerializer: LogArgsSerializer = defaultErrorArgsSerializer;
+  private errorSerializer: LogArgsSerializer = defaultLogArgsSerializer;
 
   constructor(private options: ConsoleInstrumentationOptions = {}) {
     super();
@@ -25,7 +26,11 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
 
   initialize() {
     this.options = { ...this.options, ...this.config.consoleInstrumentation };
-    this.errorSerializer = this.options?.errorSerializer ?? defaultErrorArgsSerializer;
+
+    const serializeErrors = this.options?.serializeErrors || !!this.options?.errorSerializer;
+    this.errorSerializer = serializeErrors
+      ? (this.options?.errorSerializer ?? defaultErrorArgsSerializer)
+      : defaultLogArgsSerializer;
 
     allLogLevels
       .filter(
