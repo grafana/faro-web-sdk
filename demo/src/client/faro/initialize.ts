@@ -42,16 +42,6 @@ export function initializeFaro(): Faro {
       version: env.package.version,
       environment: env.mode.name,
     },
-    pageTracking: {
-      generatePageId(location) {
-        return location.pathname + ' ' + genShortID();
-      },
-      page: {
-        attributes: {
-          foo: 'bar',
-        },
-      },
-    },
   });
 
   faro.api.pushLog(['Faro was initialized']);
