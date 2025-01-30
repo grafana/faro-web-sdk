@@ -3,7 +3,7 @@ import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas } from '../../metas';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { isEmpty } from '../../utils/is';
+import { isEmpty, isString } from '../../utils/is';
 
 import type { MetaAPI } from './types';
 
@@ -78,12 +78,19 @@ export function initializeMetaAPI(
   const getView: MetaAPI['getView'] = () => metas.value.view;
 
   const setPage: MetaAPI['setPage'] = (page) => {
+    const pageMeta = isString(page)
+      ? {
+          ...metaPage?.page,
+          id: page,
+        }
+      : page;
+
     if (metaPage) {
       metas.remove(metaPage);
     }
 
     metaPage = {
-      page,
+      page: pageMeta,
     };
 
     metas.add(metaPage);

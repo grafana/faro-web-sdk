@@ -18,6 +18,10 @@ export interface MetaAPI {
     }
   ) => void;
   getView: () => MetaView | undefined;
-  setPage: (view?: MetaPage | undefined) => void;
+  /**
+   * If a string is provided, it will be used as the page id.
+   * @returns
+   */
+  setPage: (page?: MetaPage | string | undefined) => void;
   getPage: () => MetaPage | undefined;
 }

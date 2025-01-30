@@ -61,7 +61,7 @@ describe('Meta API', () => {
     });
   });
 
-  describe('setPage', () => {
+  describe('setPage / getPage', () => {
     it('updates the page meta when setPage(meta) is called', () => {
       const { api } = initializeFaro(mockConfig());
 
@@ -72,6 +72,18 @@ describe('Meta API', () => {
       const newPage = { url: 'http://example.com/my-new-page', id: 'my-new-page' };
       api.setPage(newPage);
       expect(api.getPage()).toEqual(newPage);
+    });
+
+    it('updates the page id if the parameter of setPage is a string', () => {
+      const { api } = initializeFaro(mockConfig());
+
+      const initialPage = { url: 'http://example.com/my-page', id: 'my-page', attributes: { hello: 'world' } };
+      api.setPage(initialPage);
+      expect(api.getPage()).toStrictEqual(initialPage);
+
+      const newPageId = 'my-new-page-id';
+      api.setPage(newPageId);
+      expect(api.getPage()?.id).toEqual(newPageId);
     });
 
     it('gets the page meta when getPage(meta) is called', () => {
