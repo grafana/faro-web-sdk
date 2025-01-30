@@ -1,7 +1,7 @@
 import type { APIEvent, LogArgsSerializer, StacktraceParser } from '../api';
 import type { Instrumentation } from '../instrumentations';
 import type { InternalLoggerLevel } from '../internalLogger';
-import type { Meta, MetaApp, MetaItem, MetaSession, MetaUser, MetaView } from '../metas';
+import type { Meta, MetaApp, MetaItem, MetaPage, MetaSession, MetaUser, MetaView } from '../metas';
 import type { BatchExecutorOptions, BeforeSendHook, Transport } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 import type { LogLevel } from '../utils';
@@ -181,11 +181,16 @@ export interface Config<P = APIEvent> {
     consoleErrorAsLog?: boolean;
   };
 
-  page?: {
+  pageTracking?: {
+    /**
+     * The page meta for initial page settings
+     */
+    page?: MetaPage;
+
     /**
      * Allows to provide a template for the page id
      */
-    idParser?: (location: Location) => string;
+    generatePageId?: (location: Location) => string;
   };
 }
 

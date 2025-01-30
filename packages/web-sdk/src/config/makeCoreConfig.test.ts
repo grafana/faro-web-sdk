@@ -1,8 +1,6 @@
 import { defaultLogArgsSerializer, isFunction } from '@grafana/faro-core';
 import type { LogArgsSerializer } from '@grafana/faro-core';
 
-import { defaultMetas } from '../metas/const';
-
 import { makeCoreConfig } from './makeCoreConfig';
 
 describe('defaultMetas', () => {
@@ -29,7 +27,7 @@ describe('defaultMetas', () => {
     delete (global as any).k6;
   });
 
-  it('does not include K6 Object properties if not set', () => {
+  it('does not include K6Meta in defaultMetas for non-k6 (field) sessions', () => {
     (global as any).k6 = {};
 
     const browserConfig = {
@@ -45,13 +43,6 @@ describe('defaultMetas', () => {
     });
 
     delete (global as any).k6;
-  });
-
-  it('does not include K6Meta in defaultMetas for non-k6 (field) sessions', () => {
-    expect(defaultMetas).toHaveLength(2);
-    expect(defaultMetas.map((item) => (isFunction(item) ? item() : item))).not.toContainEqual({
-      k6: { isK6Browser: true },
-    });
   });
 });
 

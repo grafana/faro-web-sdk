@@ -19,7 +19,7 @@ export {
 } from './instrumentations';
 export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
-export { browserMeta, createSession, defaultMetas, pageMeta, sdkMeta } from './metas';
+export { browserMeta, createSession, pageMeta, sdkMeta } from './metas';
 
 export { ConsoleTransport, FetchTransport } from './transports';
 export type {

@@ -25,7 +25,7 @@ describe('createPageMeta', () => {
     expect(global.window.location.href).toBe(initialUrl);
 
     // @ts-expect-error
-    const meta = createPageMeta((location) => location.href + '_' + faroModule.genShortID())();
+    const meta = createPageMeta({ generatePageId: (location) => location.href + '_' + faroModule.genShortID() })();
     const pageMeta = meta.page;
 
     expect(pageMeta.url).toBe(initialUrl);

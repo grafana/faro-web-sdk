@@ -14,13 +14,18 @@ export const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => {
   };
 };
 
-export function createPageMeta(idParser?: (location: Location) => string): MetaItem<Pick<Meta, 'page'>> {
+type createPageMetaProps = {
+  generatePageId?: (location: Location) => string;
+  initialPageMeta?: Meta['page'];
+};
+
+export function createPageMeta({ generatePageId }: createPageMetaProps = {}): MetaItem<Pick<Meta, 'page'>> {
   const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => {
     const locationHref = location.href;
 
-    if (typeof idParser === 'function' && currentHref !== locationHref) {
+    if (typeof generatePageId === 'function' && currentHref !== locationHref) {
       currentHref = locationHref;
-      currentPageId = idParser(location);
+      currentPageId = generatePageId(location);
     }
 
     return {
