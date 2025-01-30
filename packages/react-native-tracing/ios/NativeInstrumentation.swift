@@ -26,21 +26,15 @@ public class NativeInstrumentation: NSObject, RCTBridgeModule {
     }
     
     @objc private func handleBundleLoadStart(_ notification: Notification) {
-        print("[NativeInstrumentation] Bundle load started")
-
         if NativeInstrumentation.hasAppRestarted {
-            print("[NativeInstrumentation] Skipping bundle load start as app has been restarted")
             return
         }
 
-        print("[NativeInstrumentation] App has been restarted");
         NativeInstrumentation.hasAppRestarted = true
     }
     
     @objc
     public func getStartupTime(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        print("[NativeInstrumentation] Getting startup time...")
-        
         var mib = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
         var size = MemoryLayout<kinfo_proc>.size
         var kp = kinfo_proc()
@@ -60,14 +54,11 @@ public class NativeInstrumentation: NSObject, RCTBridgeModule {
         if result == 0 {
             let startTime = kp.kp_proc.p_un.__p_starttime
             startTimeMs = Int64(startTime.tv_sec) * 1000 + Int64(startTime.tv_usec) / 1000
-            print("[NativeInstrumentation] Successfully got process start time: \(startTimeMs)ms")
         } else {
             startTimeMs = Int64(Date().timeIntervalSince1970 * 1000)
-            print("[NativeInstrumentation] Warning: Failed to get process start time, falling back to current time: \(startTimeMs)ms")
         }
         
         let response = ["startupTime": startTimeMs]
-        print("[NativeInstrumentation] Resolving with response: \(response)")
         resolve(response)
     }
     

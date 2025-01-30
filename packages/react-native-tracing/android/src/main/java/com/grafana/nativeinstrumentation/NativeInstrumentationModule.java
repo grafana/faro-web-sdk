@@ -18,7 +18,6 @@ import android.util.Log;
 
 @ReactModule(name = NativeInstrumentationModule.NAME)
 public class NativeInstrumentationModule extends ReactContextBaseJavaModule implements RCTEventEmitter {
-    public static final String NAME = "NativeInstrumentation";
     private static boolean hasAppRestarted = false;
     private static int bundleLoadCounter = 0;
 
@@ -31,14 +30,12 @@ public class NativeInstrumentationModule extends ReactContextBaseJavaModule impl
                     }
                     bundleLoadCounter++;
                 }
-                Log.d(NAME, String.format("JS bundle downloaded, hasAppRestarted: %b", hasAppRestarted));
             }
         });
     }
 
     public NativeInstrumentationModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        Log.d(NAME, "Module constructor called");
     }
 
     @Override
@@ -65,7 +62,6 @@ public class NativeInstrumentationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void getStartupTime(Promise promise) {
-        Log.d(NAME, "Getting startup time...");
         try {
             WritableMap response = Arguments.createMap();
 
