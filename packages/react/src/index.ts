@@ -120,7 +120,6 @@ export {
   LogLevel,
   makeCoreConfig,
   noop,
-  pageMeta,
   parseStacktrace,
   setInternalFaroOnGlobalObject,
   TransportItemType,
