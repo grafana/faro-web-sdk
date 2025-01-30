@@ -1,4 +1,4 @@
-export { defaultExceptionType } from './const';
+export { defaultExceptionType, defaultErrorArgsSerializer } from './const';
 
 export { initializeExceptionsAPI } from './initialize';
 

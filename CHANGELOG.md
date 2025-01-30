@@ -9,6 +9,7 @@
   (#923)
 - Improvement (`@grafana/faro-web-sdk`): Send an event for `service.name` overrides (#903)
 - Improvement (`@grafana/faro-*`) Add required Node engines to package.json ()
+- Feature (`@grafana/faro-web-sdk`) Adds the option to provide an serializer to serialize console error properties (#901)
 
 ## 1.12.3
 

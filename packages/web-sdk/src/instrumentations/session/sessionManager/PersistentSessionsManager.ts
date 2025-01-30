@@ -1,6 +1,6 @@
-import { faro } from '@grafana/faro-core';
+import { faro, stringifyExternalJson } from '@grafana/faro-core';
 
-import { stringifyExternalJson, throttle } from '../../../utils';
+import { throttle } from '../../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';

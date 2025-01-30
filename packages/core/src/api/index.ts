@@ -3,7 +3,7 @@ export type { API, APIEvent } from './types';
 
 export type { EventAttributes, EventEvent, EventsAPI, PushEventOptions } from './events';
 
-export { defaultExceptionType } from './exceptions';
+export { defaultExceptionType, defaultErrorArgsSerializer } from './exceptions';
 export type {
   ExceptionEvent,
   ExceptionStackFrame,
