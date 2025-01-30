@@ -1,7 +1,5 @@
+import { faro } from '@grafana/faro-core';
 import type { Meta, MetaItem } from '@grafana/faro-core';
-
-let currentHref: string | undefined;
-let currentPageId: string | undefined;
 
 /**
  * @deprecated legacy page meta, use createPageMeta(idParser?: (location: LocationReduced) => string) instead
@@ -19,19 +17,23 @@ type createPageMetaProps = {
   initialPageMeta?: Meta['page'];
 };
 
-export function createPageMeta({ generatePageId }: createPageMetaProps = {}): MetaItem<Pick<Meta, 'page'>> {
+export function createPageMeta({ generatePageId, initialPageMeta }: createPageMetaProps = {}): MetaItem<
+  Pick<Meta, 'page'>
+> {
   const pageMeta: MetaItem<Pick<Meta, 'page'>> = () => {
     const locationHref = location.href;
+    const currentPageUrl = faro.api.getPage()?.url;
+    let pageId: string | undefined;
 
-    if (typeof generatePageId === 'function' && currentHref !== locationHref) {
-      currentHref = locationHref;
-      currentPageId = generatePageId(location);
+    if (typeof generatePageId === 'function' && currentPageUrl !== locationHref) {
+      pageId = generatePageId(location);
     }
 
     return {
       page: {
         url: locationHref,
-        ...(currentPageId ? { id: currentPageId } : {}),
+        ...(pageId ? { id: pageId } : {}),
+        ...initialPageMeta,
       },
     };
   };

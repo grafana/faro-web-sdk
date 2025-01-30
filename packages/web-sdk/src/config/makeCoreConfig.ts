@@ -117,7 +117,5 @@ function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
     return [...initialMetas, k6Meta];
   }
 
-  console.log('initialMetas :>> ', initialMetas);
-
   return initialMetas;
 }
