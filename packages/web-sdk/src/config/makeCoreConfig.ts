@@ -12,14 +12,15 @@ import type { Config, MetaItem, Transport } from '@grafana/faro-core';
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
-import { defaultMetas } from '../metas';
+import { browserMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
+import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
 
-export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined {
+export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   const transports: Transport[] = [];
 
   const internalLogger = createInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
@@ -41,58 +42,80 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     internalLogger.error('either "url" or "transports" must be defined');
   }
 
-  function createMetas(): MetaItem[] {
-    const initialMetas = defaultMetas;
+  const {
+    app,
+    batching,
+    beforeSend,
+    consoleInstrumentation,
+    ignoreErrors,
+    sessionTracking,
+    trackResources,
+    trackWebVitalsAttribution,
+    user,
+    view,
 
-    if (browserConfig.metas) {
-      initialMetas.push(...browserConfig.metas);
-    }
+    // properties with default values
+    dedupe = true,
+    eventDomain = defaultEventDomain,
+    globalObjectKey = defaultGlobalObjectKey,
+    instrumentations = getWebInstrumentations(),
+    internalLoggerLevel = defaultInternalLoggerLevel,
+    isolate = false,
+    logArgsSerializer = defaultLogArgsSerializer,
+    metas = createDefaultMetas(browserConfig),
+    paused = false,
+    preventGlobalExposure = false,
+    unpatchedConsole = defaultUnpatchedConsole,
+  }: BrowserConfig = browserConfig;
 
-    const isK6BrowserSession = isObject((window as any).k6);
-
-    if (isK6BrowserSession) {
-      return [...initialMetas, k6Meta];
-    }
-
-    return initialMetas;
-  }
-
-  const config: Config = {
-    app: browserConfig.app,
+  return {
+    app,
     batching: {
       ...defaultBatchingConfig,
-      ...browserConfig.batching,
+      ...batching,
     },
-    dedupe: browserConfig.dedupe ?? true,
-    globalObjectKey: browserConfig.globalObjectKey || defaultGlobalObjectKey,
-    instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
-    internalLoggerLevel: browserConfig.internalLoggerLevel ?? defaultInternalLoggerLevel,
-    isolate: browserConfig.isolate ?? false,
-    logArgsSerializer: browserConfig.logArgsSerializer ?? defaultLogArgsSerializer,
-    metas: createMetas(),
+    dedupe: dedupe,
+    globalObjectKey,
+    instrumentations,
+    internalLoggerLevel,
+    isolate,
+    logArgsSerializer,
+    metas,
     parseStacktrace,
-    paused: browserConfig.paused ?? false,
-    preventGlobalExposure: browserConfig.preventGlobalExposure ?? false,
+    paused,
+    preventGlobalExposure,
     transports,
-    unpatchedConsole: browserConfig.unpatchedConsole ?? defaultUnpatchedConsole,
-
-    beforeSend: browserConfig.beforeSend,
-    eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
-    ignoreErrors: browserConfig.ignoreErrors,
+    unpatchedConsole,
+    beforeSend,
+    eventDomain,
+    ignoreErrors,
     // ignore cloud collector urls by default. These are URLs ending with /collect or /collect/ followed by alphanumeric characters.
     ignoreUrls: (browserConfig.ignoreUrls ?? []).concat([/\/collect(?:\/[\w]*)?$/]),
-
     sessionTracking: {
       ...defaultSessionTrackingConfig,
-      ...browserConfig.sessionTracking,
+      ...sessionTracking,
     },
-
-    user: browserConfig.user,
-    view: browserConfig.view,
-    trackResources: browserConfig.trackResources,
-    trackWebVitalsAttribution: browserConfig.trackWebVitalsAttribution,
-    consoleInstrumentation: browserConfig.consoleInstrumentation,
+    user,
+    view,
+    trackResources,
+    trackWebVitalsAttribution,
+    consoleInstrumentation,
   };
+}
 
-  return config;
+function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
+  const { page, generatePageId } = browserConfig?.pageTracking ?? {};
+
+  const initialMetas: MetaItem[] = [
+    browserMeta,
+    createPageMeta({ generatePageId, initialPageMeta: page }),
+    ...(browserConfig.metas ?? []),
+  ];
+
+  const isK6BrowserSession = isObject((window as any).k6);
+  if (isK6BrowserSession) {
+    return [...initialMetas, k6Meta];
+  }
+
+  return initialMetas;
 }

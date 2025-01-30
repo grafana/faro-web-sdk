@@ -3,7 +3,7 @@ import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas } from '../../metas';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { isEmpty } from '../../utils/is';
+import { isEmpty, isString } from '../../utils/is';
 
 import type { MetaAPI } from './types';
 
@@ -19,6 +19,7 @@ export function initializeMetaAPI(
   let metaSession: Partial<Meta> | undefined = undefined;
   let metaUser: Partial<Meta> | undefined = undefined;
   let metaView: Partial<Meta> | undefined = undefined;
+  let metaPage: Partial<Meta> | undefined = undefined;
 
   const setUser: MetaAPI['setUser'] = (user) => {
     if (metaUser) {
@@ -76,6 +77,27 @@ export function initializeMetaAPI(
 
   const getView: MetaAPI['getView'] = () => metas.value.view;
 
+  const setPage: MetaAPI['setPage'] = (page) => {
+    const pageMeta = isString(page)
+      ? {
+          ...metaPage?.page,
+          id: page,
+        }
+      : page;
+
+    if (metaPage) {
+      metas.remove(metaPage);
+    }
+
+    metaPage = {
+      page: pageMeta,
+    };
+
+    metas.add(metaPage);
+  };
+
+  const getPage: MetaAPI['getPage'] = () => metas.value.page;
+
   return {
     setUser,
     resetUser: setUser as MetaAPI['resetUser'],
@@ -84,5 +106,7 @@ export function initializeMetaAPI(
     getSession,
     setView,
     getView,
+    setPage,
+    getPage,
   };
 }
