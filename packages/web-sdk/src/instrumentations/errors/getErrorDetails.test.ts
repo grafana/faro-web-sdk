@@ -58,6 +58,9 @@ describe('errors', () => {
       mockConfig({
         instrumentations: [new ConsoleInstrumentation()],
         transports: [transport],
+        consoleInstrumentation: {
+          serializeErrors: true,
+        },
         unpatchedConsole: {
           error: jest.fn(),
         } as unknown as Console,
@@ -105,6 +108,7 @@ describe('errors', () => {
         transports: [transport],
         consoleInstrumentation: {
           consoleErrorAsLog: true,
+          serializeErrors: true,
         },
         unpatchedConsole: {
           error: jest.fn(),

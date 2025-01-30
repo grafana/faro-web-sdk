@@ -42,9 +42,42 @@ describe('ConsoleInstrumentation', () => {
     );
 
     console.error('console.error no 1');
+    console.error('with object', { foo: 'bar', baz: 'bam' });
+
+    expect(mockTransport.items).toHaveLength(2);
+
+    expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.type).toBe('Error');
+    expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
+      'console.error: console.error no 1'
+    );
+    expect((mockTransport.items[1] as TransportItem<ExceptionEvent>)?.payload.type).toBe('Error');
+    expect((mockTransport.items[1] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
+      'console.error: with object [object Object]'
+    );
+  });
+
+  it('sends a faro error serialized with error serializer when console.error is called', () => {
+    const mockTransport = new MockTransport();
+
+    initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [mockTransport],
+          instrumentations: [new ConsoleInstrumentation()],
+          consoleInstrumentation: {
+            serializeErrors: true,
+          },
+          unpatchedConsole: {
+            error: jest.fn(),
+          } as unknown as Console,
+        })
+      )!
+    );
+
+    console.error('console.error no 1');
 
     const context = { foo: 'bar', baz: 'bam' };
-    console.error('with object', { foo: 'bar', baz: 'bam' });
+    console.error('with object', context);
 
     expect(mockTransport.items).toHaveLength(2);
 
@@ -79,7 +112,7 @@ describe('ConsoleInstrumentation', () => {
     console.error('with circular refs object', objWithCircularRef);
 
     expect((mockTransport.items[0] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
-      'console.error: with circular refs object ' + stringifyExternalJson(objWithCircularRef)
+      'console.error: with circular refs object [object Object]'
     );
   });
 
@@ -91,6 +124,9 @@ describe('ConsoleInstrumentation', () => {
         mockConfig({
           transports: [mockTransport],
           instrumentations: [new ConsoleInstrumentation()],
+          consoleInstrumentation: {
+            serializeErrors: true,
+          },
           unpatchedConsole: {
             error: jest.fn(),
           } as unknown as Console,
@@ -121,6 +157,36 @@ describe('ConsoleInstrumentation', () => {
           } as unknown as Console,
           consoleInstrumentation: {
             consoleErrorAsLog: true,
+          },
+        })
+      )!
+    );
+
+    console.error('log no 1');
+    console.error('log with object', { foo: 'bar', baz: 'bam' });
+
+    expect(mockTransport.items).toHaveLength(2);
+
+    expect((mockTransport.items[0] as TransportItem<LogEvent>)?.payload.message).toBe('console.error: log no 1');
+    expect((mockTransport.items[1] as TransportItem<LogEvent>)?.payload.message).toBe(
+      'console.error: log with object [object Object]'
+    );
+  });
+
+  it('sends a faro log using error serializer for console.error calls if configured', () => {
+    const mockTransport = new MockTransport();
+
+    initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [mockTransport],
+          instrumentations: [new ConsoleInstrumentation()],
+          unpatchedConsole: {
+            error: jest.fn(),
+          } as unknown as Console,
+          consoleInstrumentation: {
+            consoleErrorAsLog: true,
+            serializeErrors: true,
           },
         })
       )!
