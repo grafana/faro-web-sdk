@@ -18,6 +18,7 @@ import android.util.Log;
 
 @ReactModule(name = NativeInstrumentationModule.NAME)
 public class NativeInstrumentationModule extends ReactContextBaseJavaModule implements RCTEventEmitter {
+    public static final String NAME = "NativeInstrumentation";
     private static boolean hasAppRestarted = false;
     private static int bundleLoadCounter = 0;
 
