@@ -1969,10 +1969,10 @@
   dependencies:
     dequal "^2.0.3"
 
-"@restart/ui@^1.9.3":
-  version "1.9.3"
-  resolved "https://registry.yarnpkg.com/@restart/ui/-/ui-1.9.3.tgz#32771ba81f27aa255f26387c1b9fc1a372f26638"
-  integrity sha512-2QwCC42ISRAu7nafKeO4khG1F65Xfu2n+cwQT30Ck5bxszKDXuT2AZMDIX2auXxHRednG2ynr8ffSA1fRrkOGg==
+"@restart/ui@^1.9.4":
+  version "1.9.4"
+  resolved "https://registry.yarnpkg.com/@restart/ui/-/ui-1.9.4.tgz#9d61f56f2647f5ab8a33d87b278b9ce183511a26"
+  integrity sha512-N4C7haUc3vn4LTwVUPlkJN8Ach/+yIMvRuTVIhjilNHqegY60SGLrzud6errOMNJwSnmYFnt1J0H/k8FE3A4KA==
   dependencies:
     "@babel/runtime" "^7.26.0"
     "@popperjs/core" "^2.11.8"
@@ -10175,13 +10175,13 @@ rc@^1.2.8:
     strip-json-comments "~2.0.1"
 
 react-bootstrap@^2.7.0:
-  version "2.10.8"
-  resolved "https://registry.yarnpkg.com/react-bootstrap/-/react-bootstrap-2.10.8.tgz#65537cba24d1253d2c83aef32de56f06f1b06a6b"
-  integrity sha512-Vw1B2QfGGsrcBge0HQt8rjhnw2syFbtlPQXl/50k/bAnA4Jwi9+Bd4aYYTa68oyBB2KXMtDbGy2oMGl7eSet9A==
+  version "2.10.9"
+  resolved "https://registry.yarnpkg.com/react-bootstrap/-/react-bootstrap-2.10.9.tgz#61a0e68ca8da03f4d6fb180e358d8ee613a93156"
+  integrity sha512-TJUCuHcxdgYpOqeWmRApM/Dy0+hVsxNRFvq2aRFQuxhNi/+ivOxC5OdWIeHS3agxvzJ4Ev4nDw2ZdBl9ymd/JQ==
   dependencies:
     "@babel/runtime" "^7.24.7"
     "@restart/hooks" "^0.4.9"
-    "@restart/ui" "^1.9.3"
+    "@restart/ui" "^1.9.4"
     "@types/prop-types" "^15.7.12"
     "@types/react-transition-group" "^4.4.6"
     classnames "^2.3.2"
