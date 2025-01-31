@@ -3,18 +3,7 @@ import React
 
 @objc(NativeInstrumentation)
 public class NativeInstrumentation: NSObject, RCTBridgeModule {
-    private static var startTime: TimeInterval?
-    private static var cachedMetrics: [String: Double]?
-    
-    @objc
-    public static func initializeNativeInstrumentation() {
-        NativeInstrumentation.cachedMetrics = nil
-        NativeInstrumentation.startTime = Date().timeIntervalSince1970
-    }
-    
-    override init() {
-        super.init()
-    }
+    private static var hasAppRestarted: Bool = false
     
     @objc
     public static func requiresMainQueueSetup() -> Bool {
@@ -26,28 +15,65 @@ public class NativeInstrumentation: NSObject, RCTBridgeModule {
         return "NativeInstrumentation"
     }
     
+    override init() {
+        super.init()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleBundleLoadStart(_:)),
+            name: NSNotification.Name("RCTJavaScriptWillStartLoadingNotification"),
+            object: nil
+        )
+    }
+    
+    @objc private func handleBundleLoadStart(_ notification: Notification) {
+        if NativeInstrumentation.hasAppRestarted {
+            return
+        }
+
+        NativeInstrumentation.hasAppRestarted = true
+    }
+    
     @objc
     public func getStartupTime(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        guard let startTime = NativeInstrumentation.startTime else {
-            reject("NO_START_TIME", "[NativeInstrumentation] Start time was not initialized", nil)
-            return
+        do {
+            var mib = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+            var size = MemoryLayout<kinfo_proc>.size
+            var kp = kinfo_proc()
+            
+            let result = mib.withUnsafeMutableBytes { mibBytes in
+                withUnsafeMutablePointer(to: &size) { sizeBytes in
+                    withUnsafeMutablePointer(to: &kp) { kpBytes in
+                        sysctl(mibBytes.baseAddress?.assumingMemoryBound(to: Int32.self), 4,
+                               kpBytes,
+                               sizeBytes,
+                               nil, 0)
+                    }
+                }
+            }
+            
+            let startTimeMs: Int64
+            if result == 0 {
+                let startTime = kp.kp_proc.p_un.__p_starttime
+                startTimeMs = Int64(startTime.tv_sec) * 1000 + Int64(startTime.tv_usec) / 1000
+            } else {
+                throw NSError(domain: "NativeInstrumentation", 
+                            code: Int(result), 
+                            userInfo: [NSLocalizedDescriptionKey: "Failed to get process info"])
+            }
+            
+            let response = ["startupTime": startTimeMs]
+            resolve(response)
+        } catch {
+            reject("STARTUP_TIME_ERROR", "Failed to get startup time: \(error.localizedDescription)", error)
         }
-        
-        if let metrics = NativeInstrumentation.cachedMetrics {
-            resolve(metrics)
-            return
-        }
-        
-        let endTime = Date().timeIntervalSince1970
-        let duration = endTime - startTime
-        
-        let metrics: [String: Double] = [
-            "startStartupTime": startTime,
-            "endStartupTime": endTime,
-            "startupDuration": duration
-        ]
-        
-        NativeInstrumentation.cachedMetrics = metrics
-        resolve(metrics)
+    }
+    
+    @objc
+    public func getHasAppRestarted(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(NativeInstrumentation.hasAppRestarted)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }

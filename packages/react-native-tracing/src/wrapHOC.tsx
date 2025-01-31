@@ -1,26 +1,35 @@
 import React, { useEffect } from 'react';
+// @ts-ignore
+// eslint-disable-next-line import/namespace
+import { Alert, NativeModules } from 'react-native';
 
 import { api } from './dependencies';
 
 interface StartupMetrics {
-  startStartupTime: number;
-  endStartupTime: number;
-  startupDuration: number;
+  startupTime: number;
 }
 
-// TODO(@lucasbento): figure out where to best place this function
 const measureStartupTime = async (): Promise<void> => {
   try {
-    const metrics: StartupMetrics =
-      await require('react-native')['NativeModules']['NativeInstrumentation'].getStartupTime();
+    const hasAppRestarted = await NativeModules['NativeInstrumentation'].getHasAppRestarted();
+
+    if (hasAppRestarted) {
+      return;
+    }
+
+    const metrics: StartupMetrics = await NativeModules['NativeInstrumentation'].getStartupTime();
+
+    const currentTime = Date.now();
+    const startupDuration = currentTime - metrics.startupTime;
 
     api.pushMeasurement({
       type: 'app_startup_time',
       values: {
-        startup_duration: metrics.startupDuration,
+        startup_duration: startupDuration,
       },
+      timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.warn('[NativeInstrumentation] Failed to measure startup time:', error);
   }
 };
@@ -31,6 +40,7 @@ export function wrap<P extends object>(WrappedComponent: React.ComponentType<P>)
       measureStartupTime();
     }, []);
 
+    // @ts-ignore
     return <WrappedComponent {...props} />;
   };
 }

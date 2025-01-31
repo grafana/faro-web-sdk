@@ -7,7 +7,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)getStartupTime:(RCTPromiseResolveBlock)resolve
               rejecter:(RCTPromiseRejectBlock)reject;
 
-+ (void)initializeNativeInstrumentation;
+- (void)getHasAppRestarted:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject;
 
 @end
 

@@ -4,5 +4,8 @@
 
 RCT_EXTERN_METHOD(getStartupTime:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
+                  
+RCT_EXTERN_METHOD(getHasAppRestarted:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
 @end 
