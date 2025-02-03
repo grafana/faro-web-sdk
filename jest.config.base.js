@@ -13,4 +13,5 @@ exports.jestBaseConfig = {
       },
     ],
   },
+  testEnvironment: 'jsdom',
 };
