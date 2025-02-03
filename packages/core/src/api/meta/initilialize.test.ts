@@ -1,10 +1,29 @@
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
+const originalWindow = window;
+
 describe('Meta API', () => {
+  const mockUrl = 'http://dummy.com';
+
   beforeEach(() => {
-    jest.resetAllMocks();
+    window = Object.create(window);
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: mockUrl,
+      },
+      writable: true, // possibility to override
+    });
+  });
+
+  beforeEach(() => {
+    jest.resetModules();
+    jest.clearAllMocks();
     jest.restoreAllMocks();
+  });
+
+  afterAll(() => {
+    window = originalWindow;
   });
 
   describe('setView', () => {
@@ -93,5 +112,10 @@ describe('Meta API', () => {
       api.setPage(page);
       expect(api.getPage()).toEqual(page);
     });
+
+    // Note: there's an integration test in the web-sdk that tests the following scenario:
+    // >>> it'sets the page meta correctly when setPage() is called and the locally cached meta is not set <<<
+    // This is because it needs web-sdk functions to be able to test the integration
+    // you can find it in the pageMeta test file: https://github.com/grafana/faro-web-sdk/blob/3c2ba0f8ea8bfdfb39cd79b704d9a6c07bc7834e/packages/web-sdk/src/metas/page/meta.test.ts#L10
   });
 });

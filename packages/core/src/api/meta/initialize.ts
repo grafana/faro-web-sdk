@@ -80,7 +80,10 @@ export function initializeMetaAPI(
   const setPage: MetaAPI['setPage'] = (page) => {
     const pageMeta = isString(page)
       ? {
-          ...metaPage?.page,
+          // metaPage is available once setPage() has been called.
+          // This is because page self updating metas like page need to be added as a function
+          // Thus we call getPage in case metaPage is empty
+          ...(metaPage?.page ?? getPage()),
           id: page,
         }
       : page;

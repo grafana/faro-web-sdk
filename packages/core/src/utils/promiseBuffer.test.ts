@@ -4,10 +4,10 @@ import { createPromiseBuffer } from './promiseBuffer';
 
 async function defer(fn: () => void) {
   return new Promise<void>((resolve) => {
-    setImmediate(() => {
+    setTimeout(() => {
       fn();
       resolve();
-    });
+    }, 0);
   });
 }
 
