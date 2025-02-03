@@ -1,6 +1,5 @@
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
-import { makeCoreConfig } from '@grafana/faro-web-sdk';
 
 const originalWindow = window;
 
@@ -29,7 +28,7 @@ describe('Meta API', () => {
 
   describe('setView', () => {
     it('updates the view meta if the new view meta is different to the previous one', () => {
-      const { api } = initializeFaro(makeCoreConfig(mockConfig()));
+      const { api } = initializeFaro(mockConfig());
 
       const view = { name: 'my-view' };
       api.setView(view);
@@ -43,7 +42,7 @@ describe('Meta API', () => {
     });
 
     it('does not update the view meta if the new view meta is identical to the previous one', () => {
-      const { api } = initializeFaro(makeCoreConfig(mockConfig()));
+      const { api } = initializeFaro(mockConfig());
 
       const view = { name: 'my-view' };
       api.setView(view);
@@ -83,7 +82,7 @@ describe('Meta API', () => {
 
   describe('setPage / getPage', () => {
     it('updates the page meta when setPage(meta) is called', () => {
-      const { api } = initializeFaro(makeCoreConfig(mockConfig()));
+      const { api } = initializeFaro(mockConfig());
 
       const page = { url: 'http://example.com/my-page', id: 'my-page' };
       api.setPage(page);
@@ -95,7 +94,7 @@ describe('Meta API', () => {
     });
 
     it('updates the page id if the parameter of setPage is a string', () => {
-      const { api } = initializeFaro(makeCoreConfig(mockConfig()));
+      const { api } = initializeFaro(mockConfig());
 
       const initialPage = { url: 'http://example.com/my-page', id: 'my-page', attributes: { hello: 'world' } };
       api.setPage(initialPage);
@@ -106,27 +105,17 @@ describe('Meta API', () => {
       expect(api.getPage()?.id).toEqual(newPageId);
     });
 
-    it('sets the page meta correctly when setPage() is called and the locally cached meta is not set', () => {
-      const _mockConfig = mockConfig();
-      // @ts-expect-error
-      delete _mockConfig.metas;
-
-      const { api } = initializeFaro(makeCoreConfig(_mockConfig));
-
-      const newPageId = 'my-new-page-id';
-      api.setPage(newPageId);
-      expect(api.getPage()).toStrictEqual({
-        url: mockUrl,
-        id: newPageId,
-      });
-    });
-
     it('gets the page meta when getPage(meta) is called', () => {
-      const { api } = initializeFaro(makeCoreConfig(mockConfig()));
+      const { api } = initializeFaro(mockConfig());
 
       const page = { url: 'http://example.com/my-page', id: 'my-page' };
       api.setPage(page);
       expect(api.getPage()).toEqual(page);
     });
+
+    // Note: there's an integration test in the web-sdk that tests the following scenario:
+    // >>> it'sets the page meta correctly when setPage() is called and the locally cached meta is not set <<<
+    // This is because it needs web-sdk functions to be able to test the integration
+    // you can find it in the pageMeta test file: https://github.com/grafana/faro-web-sdk/blob/3c2ba0f8ea8bfdfb39cd79b704d9a6c07bc7834e/packages/web-sdk/src/metas/page/meta.test.ts#L10
   });
 });

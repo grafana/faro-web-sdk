@@ -1,4 +1,7 @@
+import { initializeFaro } from '@grafana/faro-core';
 import * as faroModule from '@grafana/faro-core';
+import { mockConfig } from '@grafana/faro-core/src/testUtils';
+import { makeCoreConfig } from '@grafana/faro-web-sdk';
 
 import { createPageMeta } from './meta';
 
@@ -106,5 +109,20 @@ describe('createPageMeta', () => {
 
     expect(pageMeta?.url).toBe(mockUrl);
     expect(pageMeta?.id).toBe(mockUrl + '_' + initialPagePostfix);
+  });
+
+  it('sets the page meta correctly when setPage() is called and the locally cached meta is not set', () => {
+    const _mockConfig = mockConfig();
+    // @ts-expect-error
+    delete _mockConfig.metas;
+
+    const { api } = initializeFaro(makeCoreConfig(_mockConfig));
+
+    const newPageId = 'my-new-page-id';
+    api.setPage(newPageId);
+    expect(api.getPage()).toStrictEqual({
+      url: mockUrl,
+      id: newPageId,
+    });
   });
 });
