@@ -2,14 +2,19 @@
 
 ## Next
 
+## 1.13
+
 - Feature (`@grafana/faro-web-sdk`): Provide APIs to send `service.name` override instructions to the
   receiver (#893)
 - Feature (`@grafana/faro-web-sdk`): Introduced `setPage(meta)` API to overwrite page metadata and
   added an option to inject a custom `pageId` parser for generating custom `pageId`s continuously
   (#923)
+- Feature (`@grafana/faro-web-sdk`): Enables support to provide a custom serializer for console
+  error properties (#901)
+
 - Improvement (`@grafana/faro-web-sdk`): Send an event for `service.name` overrides (#903)
-- Improvement (`@grafana/faro-*`) Add required Node engines to package.json ()
-- Feature (`@grafana/faro-web-sdk`) Adds the option to provide an serializer to serialize console error properties (#901)
+- Improvement (`@grafana/faro-*`) Add required Node engines to package.json (#913)
+
 - Fix (`faro demo`): Add missing json files to Docker image (#925).
 
 ## 1.12.3
