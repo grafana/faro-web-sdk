@@ -2,6 +2,8 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-sdk`): Corrected the setPage() API to update only the pageId without merging with the initial page meta (#933)
+
 ## 1.13
 
 - Feature (`@grafana/faro-web-sdk`): Provide APIs to send `service.name` override instructions to the
