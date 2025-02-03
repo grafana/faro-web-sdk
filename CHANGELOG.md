@@ -2,7 +2,8 @@
 
 ## Next
 
-- Fix (`@grafana/faro-web-sdk`): Corrected the setPage() API to update only the pageId without merging with the initial page meta (#933)
+- Fix (`@grafana/faro-web-sdk`): Corrected the setPage() API to update only the pageId without
+  merging with the initial page meta (#933)
 
 ## 1.13
 
