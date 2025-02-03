@@ -106,9 +106,7 @@ describe('Meta API', () => {
       expect(api.getPage()?.id).toEqual(newPageId);
     });
 
-    it('sets the page meta correctly when setPage() is called for the first time', () => {
-      console.log('makeCoreConfig(mockConfig()) :>> ', makeCoreConfig(mockConfig()));
-
+    it('sets the page meta correctly when setPage() is called and the locally cached meta is not set', () => {
       const _mockConfig = mockConfig();
       // @ts-expect-error
       delete _mockConfig.metas;
@@ -118,8 +116,8 @@ describe('Meta API', () => {
       const newPageId = 'my-new-page-id';
       api.setPage(newPageId);
       expect(api.getPage()).toStrictEqual({
-        url: 'abc',
-        id: mockUrl,
+        url: mockUrl,
+        id: newPageId,
       });
     });
 
