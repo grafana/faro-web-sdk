@@ -7,6 +7,7 @@ export type MessageTransform<T = Record<string, unknown>> = (
 export interface WebSocketInstrumentationConfig<T = Record<string, unknown>> {
   messageTransform?: MessageTransform<T>;
   sendTransform?: MessageTransform<T>;
+  whiteListedURLs?: string[];
 }
 
 export interface PendingRequest {

@@ -17,6 +17,7 @@ export class WebSocketInstrumentation<T = Record<string, unknown>> extends Instr
 
   private messageTransform: MessageTransform<T>;
   private sendTransform: MessageTransform<T>;
+  private whiteListedURLs: string[];
 
   private pendingRequests = new Map<number, PendingRequest>();
 
@@ -25,6 +26,7 @@ export class WebSocketInstrumentation<T = Record<string, unknown>> extends Instr
 
     this.messageTransform = options.messageTransform ?? this.defaultTransform;
     this.sendTransform = options.sendTransform ?? this.defaultTransform;
+    this.whiteListedURLs = options.whiteListedURLs ?? [];
   }
 
   protected init() {
@@ -88,8 +90,10 @@ export class WebSocketInstrumentation<T = Record<string, unknown>> extends Instr
       constructor(url: string, protocols?: string | string[]) {
         super(url, protocols);
 
-        if (isLocalhost(url)) {
-          console.log('Skipping WebSocket instrumentation for localhost:', url);
+        const isURLWhitelistEmpty = self.whiteListedURLs.length === 0;
+
+        if (isLocalhost(url) || (!isURLWhitelistEmpty && !self.whiteListedURLs.includes(url))) {
+          console.log('Skipping WebSocket instrumentation for non-whitelisted URL:', url);
           return;
         }
 
