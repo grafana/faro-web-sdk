@@ -1,3 +1,5 @@
+import { isObject } from './is';
+
 export function getCircularDependencyReplacer() {
   const valueSeen = new WeakSet();
   return function (_key: string | Symbol, value: unknown) {
@@ -19,4 +21,14 @@ type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
 
 export function stringifyExternalJson(json: any = {}) {
   return JSON.stringify(json ?? {}, getCircularDependencyReplacer());
+}
+
+export function stringifyObjectValues(obj: Record<string, unknown> = {}) {
+  const o: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    o[key] = isObject(value) ? JSON.stringify(value) : String(value);
+  }
+
+  return o;
 }

@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-sdk`): The optional context object in the `pushError` API now correctly
+  stringifies all provided values (#944)
+
 ## 1.13.1
 
 - Fix (`@grafana/faro-web-sdk`): Corrected the `setPage()` API to update the `page.id` properly and

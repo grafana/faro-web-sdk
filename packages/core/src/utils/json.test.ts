@@ -1,4 +1,4 @@
-import { getCircularDependencyReplacer, stringifyExternalJson } from './json';
+import { getCircularDependencyReplacer, stringifyExternalJson, stringifyObjectValues } from './json';
 
 describe('json', () => {
   it('replace circular references with null value', () => {
@@ -15,5 +15,22 @@ describe('json', () => {
     (obj as any).circular = obj;
 
     expect(stringifyExternalJson(obj)).toBe('{"a":1,"circular":null}');
+  });
+
+  it('stringifyObjectValues function stringifies object values', () => {
+    const obj = { a: 1, b: { c: 2 }, d: 'foo', e: true, f: [true, 'a', 1] };
+
+    const objectWithStringifiedValues = stringifyObjectValues(obj);
+    expect(objectWithStringifiedValues).toStrictEqual({
+      a: '1',
+      b: '{"c":2}',
+      d: 'foo',
+      e: 'true',
+      f: '[true,\"a\",1]',
+    });
+
+    Object.values(objectWithStringifiedValues).forEach((key) => {
+      expect(typeof key).toBe('string');
+    });
   });
 });
