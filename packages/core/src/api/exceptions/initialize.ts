@@ -4,7 +4,7 @@ import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, getCurrentTimestamp, isArray, isError, isNull, isObject } from '../../utils';
+import { deepEqual, getCurrentTimestamp, isArray, isError, isNull, isObject, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
@@ -53,10 +53,10 @@ export function initializeExceptionsAPI(
               span_id: spanContext.spanId,
             }
           : tracesApi.getTraceContext(),
-        context: {
+        context: stringifyObjectValues({
           ...parseCause(error),
           ...(context ?? {}),
-        },
+        }),
       },
       type: TransportItemType.EXCEPTION,
     };

@@ -128,6 +128,7 @@ export {
   isEmpty,
   getCircularDependencyReplacer,
   stringifyExternalJson,
+  stringifyObjectValues,
 } from './utils';
 export type {
   BaseObject,

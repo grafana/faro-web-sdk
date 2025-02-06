@@ -234,6 +234,41 @@ describe('api.exceptions', () => {
         expect((transport.items[5]?.payload as ExceptionEvent)?.context).toEqual({});
         expect((transport.items[5]?.payload as ExceptionEvent)?.context).toEqual({});
       });
+
+      it('stringifies all values added to the context', () => {
+        api.pushError(new Error('Error with context'), {
+          context: {
+            // @ts-expect-error
+            a: 1,
+            b: 'foo',
+            // @ts-expect-error
+            c: true,
+            // @ts-expect-error
+            d: { e: 'bar' },
+            // @ts-expect-error
+            g: null,
+            // @ts-expect-error
+            h: undefined,
+            // @ts-expect-error
+            i: [1, 2, 3],
+          },
+        });
+
+        const context = (transport.items[0]?.payload as ExceptionEvent)?.context;
+        expect(context).toStrictEqual({
+          a: '1',
+          b: 'foo',
+          c: 'true',
+          d: '{"e":"bar"}',
+          g: 'null',
+          h: 'undefined',
+          i: '[1,2,3]',
+        });
+
+        Object.values(context ?? {}).forEach((value) => {
+          expect(typeof value).toBe('string');
+        });
+      });
     });
   });
 });

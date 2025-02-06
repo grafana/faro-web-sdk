@@ -50,4 +50,4 @@ export { getBundleId } from './sourceMaps';
 
 export { dateNow } from './date';
 
-export { getCircularDependencyReplacer, stringifyExternalJson } from './json';
+export { getCircularDependencyReplacer, stringifyExternalJson, stringifyObjectValues } from './json';
