@@ -23,10 +23,12 @@ export function stringifyExternalJson(json: any = {}) {
   return JSON.stringify(json ?? {}, getCircularDependencyReplacer());
 }
 
-export function stringifyObjectValues(obj: any = {}) {
-  return Object.fromEntries(
-    Object.entries(obj).map(([key, value]) => {
-      return [key, isObject(value) ? JSON.stringify(value) : String(value)];
-    })
-  );
+export function stringifyObjectValues(obj: Record<string, unknown> = {}) {
+  const o: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    o[key] = isObject(value) ? JSON.stringify(value) : String(value);
+  }
+
+  return o;
 }
