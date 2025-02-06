@@ -2,6 +2,30 @@
 
 ## Next
 
+### Breaking
+
+- Improvement (`@grafana/faro-web-tracing`): Removed `@opentelemetry/context-zone` as it is not
+  required for the default instrumentations.
+
+  Users who need `ZoneContextManager` for additional OTEL instrumentations can inject it via the
+  web-tracing configuration.
+
+  ```ts
+  initializeFaro({
+    // ...
+    instrumentations: [
+      // ...
+      new TracingInstrumentation({
+        contextManager: new ZoneContextManager(),
+        instrumentations: [
+          /* ... */
+        ],
+      }),
+    ],
+    // ...
+  });
+  ```
+
 ## 1.13.1
 
 - Fix (`@grafana/faro-web-sdk`): Corrected the `setPage()` API to update the `page.id` properly and

@@ -1,5 +1,4 @@
 import { context, trace } from '@opentelemetry/api';
-import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
@@ -75,22 +74,21 @@ export class TracingInstrumentation extends BaseInstrumentation {
           };
         },
       },
+      spanProcessors: [
+        options.spanProcessor ??
+          new FaroSessionSpanProcessor(
+            new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
+              scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
+              maxExportBatchSize: 30,
+            }),
+            this.metas
+          ),
+      ],
     });
-
-    provider.addSpanProcessor(
-      options.spanProcessor ??
-        new FaroSessionSpanProcessor(
-          new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
-            scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
-            maxExportBatchSize: 30,
-          }),
-          this.metas
-        )
-    );
 
     provider.register({
       propagator: options.propagator ?? new W3CTraceContextPropagator(),
-      contextManager: options.contextManager ?? new ZoneContextManager(),
+      contextManager: options.contextManager,
     });
 
     const { propagateTraceHeaderCorsUrls, fetchInstrumentationOptions, xhrInstrumentationOptions } =
