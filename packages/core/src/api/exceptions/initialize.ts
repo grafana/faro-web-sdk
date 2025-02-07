@@ -4,7 +4,16 @@ import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, getCurrentTimestamp, isArray, isError, isNull, isObject } from '../../utils';
+import {
+  deepEqual,
+  getCurrentTimestamp,
+  isArray,
+  isError,
+  isNull,
+  isObject,
+  stringifyExternalJson,
+  stringifyObjectValues,
+} from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
@@ -53,10 +62,10 @@ export function initializeExceptionsAPI(
               span_id: spanContext.spanId,
             }
           : tracesApi.getTraceContext(),
-        context: {
+        context: stringifyObjectValues({
           ...parseCause(error),
           ...(context ?? {}),
-        },
+        }),
       },
       type: TransportItemType.EXCEPTION,
     };
@@ -105,7 +114,7 @@ function parseCause(error: ErrorWithIndexProperties): {} | { cause: string } {
     // typeof operator on null returns "object". This is a well-known quirk in JavaScript and is considered a bug that cannot be fixed due to backward compatibility issues.
     // MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof#typeof_null
   } else if (cause !== null && (isObject(error.cause) || isArray(error.cause))) {
-    cause = JSON.stringify(error.cause);
+    cause = stringifyExternalJson(error.cause);
   } else if (cause != null) {
     cause = error.cause.toString();
   }
