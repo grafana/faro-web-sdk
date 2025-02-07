@@ -27,7 +27,7 @@ export function stringifyObjectValues(obj: Record<string, unknown> = {}) {
   const o: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    o[key] = isObject(value) ? JSON.stringify(value) : String(value);
+    o[key] = isObject(value) ? stringifyExternalJson(value) : String(value);
   }
 
   return o;
