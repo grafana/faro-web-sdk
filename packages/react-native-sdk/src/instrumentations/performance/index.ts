@@ -1,1 +1,0 @@
-export { PerformanceInstrumentation } from './instrumentation';

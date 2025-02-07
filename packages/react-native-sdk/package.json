@@ -60,10 +60,12 @@
   "devDependencies": {
     "@types/ua-parser-js": "^0.7.36",
     "react-native": "0.72.6",
+    "@react-native-async-storage/async-storage": "1.15.5",
     "user-agent-data-types": "^0.4.2"
   },
   "peerDependencies": {
-    "react-native": ">=0.70.0"
+    "react-native": ">=0.70.0",
+    "@react-native-async-storage/async-storage": ">= 1.15.5"
   },
   "publishConfig": {
     "access": "public"

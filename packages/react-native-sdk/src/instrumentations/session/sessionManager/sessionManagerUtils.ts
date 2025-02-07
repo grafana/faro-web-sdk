@@ -1,7 +1,5 @@
 import { dateNow, faro, genShortID } from '@grafana/faro-core';
 
-import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
-
 import { isSampled } from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import type { FaroUserSession } from './types';
@@ -52,8 +50,8 @@ export function isUserSessionValid(session: FaroUserSession | null): boolean {
 }
 
 type GetUserSessionUpdaterParams = {
-  storeUserSession: (session: FaroUserSession) => void;
-  fetchUserSession: () => FaroUserSession | null;
+  storeUserSession: (session: FaroUserSession) => Promise<void>;
+  fetchUserSession: () => Promise<FaroUserSession|null>;
 };
 
 type UpdateSessionParams = { forceSessionExtend: boolean };
@@ -62,29 +60,24 @@ export function getUserSessionUpdater({
   fetchUserSession,
   storeUserSession,
 }: GetUserSessionUpdaterParams): (options?: UpdateSessionParams) => void {
-  return function updateSession({ forceSessionExtend } = { forceSessionExtend: false }): void {
+  return async function updateSession({ forceSessionExtend } = { forceSessionExtend: false }): Promise<void> {
     if (!fetchUserSession || !storeUserSession) {
       return;
     }
 
     const sessionTrackingConfig = faro.config.sessionTracking;
-    const isPersistentSessions = sessionTrackingConfig?.persistent;
 
-    if ((isPersistentSessions && !isLocalStorageAvailable) || (!isPersistentSessions && !isSessionStorageAvailable)) {
-      return;
-    }
-
-    const sessionFromStorage = fetchUserSession();
+    const sessionFromStorage = await fetchUserSession();
 
     if (forceSessionExtend === false && isUserSessionValid(sessionFromStorage)) {
-      storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
+      await storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
     } else {
       let newSession = addSessionMetadataToNextSession(
         createUserSessionObject({ isSampled: isSampled() }),
         sessionFromStorage
       );
 
-      storeUserSession(newSession);
+      await storeUserSession(newSession);
 
       faro.api?.setSession(newSession.sessionMeta);
       sessionTrackingConfig?.onSessionChange?.(sessionFromStorage?.sessionMeta ?? null, newSession.sessionMeta!);
