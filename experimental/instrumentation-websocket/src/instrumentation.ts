@@ -17,7 +17,7 @@ export class WebSocketInstrumentation<T = Record<string, unknown>> extends Instr
 
   private messageTransform: MessageTransform<T>;
   private sendTransform: MessageTransform<T>;
-  private whiteListedURLs: string[];
+  private whiteListedURLs: string[] = [];
 
   private pendingRequests = new Map<number, PendingRequest>();
 
