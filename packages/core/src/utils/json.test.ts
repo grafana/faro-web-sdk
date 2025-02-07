@@ -18,7 +18,7 @@ describe('json', () => {
   });
 
   it('stringifyObjectValues function stringifies object values', () => {
-    const obj = { a: 1, b: { c: 2 }, d: 'foo', e: true, f: [true, 'a', 1] };
+    const obj = { a: 1, b: { c: 2 }, d: 'foo', e: true, f: [true, 'a', 1], g: null };
 
     const objectWithStringifiedValues = stringifyObjectValues(obj);
     expect(objectWithStringifiedValues).toStrictEqual({
@@ -27,6 +27,7 @@ describe('json', () => {
       d: 'foo',
       e: 'true',
       f: '[true,\"a\",1]',
+      g: 'null',
     });
 
     Object.values(objectWithStringifiedValues).forEach((key) => {
