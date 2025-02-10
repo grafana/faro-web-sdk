@@ -20,12 +20,12 @@ const measureStartupTime = async (): Promise<void> => {
     const metrics: StartupMetrics = await NativeModules['NativeInstrumentation'].getStartupTime();
 
     const currentTime = Date.now();
-    const startupDuration = currentTime - metrics.startupTime;
+    const startupDurationMs = currentTime - metrics.startupTime;
 
     api.pushMeasurement({
       type: 'app_startup_time',
       values: {
-        startup_duration: startupDuration,
+        startup_duration: startupDurationMs / 1000,
       },
       timestamp: new Date().toISOString(),
     });
