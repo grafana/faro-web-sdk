@@ -131,9 +131,40 @@ describe('api.logs', () => {
     });
 
     it('Sets the timestamp to the provided custom timestamp', () => {
-      api.pushEvent('test', undefined, undefined, { timestampOverwriteMs: 123 });
+      api.pushLog(['test'], { timestampOverwriteMs: 123 });
       expect(transport.items).toHaveLength(1);
       expect((transport.items[0]?.payload as LogEvent).timestamp).toBe('1970-01-01T00:00:00.123Z');
+    });
+
+    it('stringifies all values in the context object', () => {
+      api.pushLog(['test'], {
+        context: {
+          // @ts-expect-error
+          a: 1,
+          b: 'foo',
+          // @ts-expect-error
+          c: true,
+          // @ts-expect-error
+          d: { e: 'bar' },
+          // @ts-expect-error
+          g: null,
+          // @ts-expect-error
+          h: undefined,
+          // @ts-expect-error
+          i: [1, 2, 3],
+        },
+      });
+
+      // @ts-expect-error
+      expect(transport.items[0]?.payload.context).toStrictEqual({
+        a: '1',
+        b: 'foo',
+        c: 'true',
+        d: '{"e":"bar"}',
+        g: 'null',
+        h: 'undefined',
+        i: '[1,2,3]',
+      });
     });
   });
 });
