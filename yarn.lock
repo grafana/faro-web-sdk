@@ -2217,9 +2217,9 @@
     "@sinonjs/commons" "^3.0.0"
 
 "@stylistic/eslint-plugin-ts@^3.0.0":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@stylistic/eslint-plugin-ts/-/eslint-plugin-ts-3.0.1.tgz#0f428a023df4f25cc0acb46e3383fa05dce553a3"
-  integrity sha512-fBPKvYhp3KPlww9lZVe2htMwQZ/uh1v1Een6G2jnRpHWoQZfZ/qIhhWge7ovBtnK0z9QBa/DhBaBqcm7ZcLYKw==
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@stylistic/eslint-plugin-ts/-/eslint-plugin-ts-3.1.0.tgz#bb2622bdb307a258e041e04bbce8c398097d0dfa"
+  integrity sha512-ExsbaLmPTt3Y9bWN64nw+hpsnLAScLH25ncPxrV16FG2Lvg5wn6aRfMqldUGpu+YdqVmFFU1zehgFh6RIHT6YA==
   dependencies:
     "@typescript-eslint/utils" "^8.13.0"
     eslint-visitor-keys "^4.2.0"
