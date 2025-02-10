@@ -34,4 +34,8 @@ describe('json', () => {
       expect(typeof key).toBe('string');
     });
   });
+
+  it('stringifyObjectValues function return an empty object if parameter is undefined', () => {
+    expect(stringifyObjectValues()).toStrictEqual({});
+  });
 });
