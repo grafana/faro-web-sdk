@@ -4,7 +4,7 @@ import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
+import { deepEqual, getCurrentTimestamp, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
@@ -38,7 +38,7 @@ export function initializeMeasurementsAPI(
               }
             : tracesApi.getTraceContext(),
           timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
-          context: context ?? {},
+          context: stringifyObjectValues(context),
         },
         meta: metas.value,
       };
