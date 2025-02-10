@@ -2,6 +2,11 @@
 
 ## Next
 
+## 1.13.3
+
+- Chore (`@grafana/faro-web-sdk`): Ensure all properties in `attributes` and `context` objects are
+  stringified when sending custom signals (#952)
+
 ## 1.13.2
 
 - Fix (`@grafana/faro-web-sdk`): The optional context object in the `pushError` API now correctly
