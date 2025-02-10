@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.13.2
+
 - Fix (`@grafana/faro-web-sdk`): The optional context object in the `pushError` API now correctly
   stringifies all provided values (#944)
 
