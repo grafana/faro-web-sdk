@@ -4,7 +4,7 @@ import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, defaultLogLevel, getCurrentTimestamp, isNull } from '../../utils';
+import { deepEqual, defaultLogLevel, getCurrentTimestamp, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
@@ -35,7 +35,7 @@ export function initializeLogsAPI(
         payload: {
           message: logArgsSerializer(args),
           level: level ?? defaultLogLevel,
-          context: context ?? {},
+          context: stringifyObjectValues(context),
           timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
           trace: spanContext
             ? {

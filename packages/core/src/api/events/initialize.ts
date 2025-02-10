@@ -3,7 +3,7 @@ import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
+import { deepEqual, getCurrentTimestamp, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
@@ -31,7 +31,7 @@ export function initializeEventsAPI(
         payload: {
           name,
           domain: domain ?? config.eventDomain,
-          attributes,
+          attributes: stringifyObjectValues(attributes),
           timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
           trace: spanContext
             ? {

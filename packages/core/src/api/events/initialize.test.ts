@@ -121,6 +121,35 @@ describe('api.events', () => {
         expect(transport.items).toHaveLength(1);
         expect((transport.items[0]?.payload as EventEvent).timestamp).toBe('1970-01-01T00:00:00.123Z');
       });
+
+      it('stringifies all values in the attributes object', () => {
+        api.pushEvent('test', {
+          // @ts-expect-error
+          a: 1,
+          b: 'foo',
+          // @ts-expect-error
+          c: true,
+          // @ts-expect-error
+          d: { e: 'bar' },
+          // @ts-expect-error
+          g: null,
+          // @ts-expect-error
+          h: undefined,
+          // @ts-expect-error
+          i: [1, 2, 3],
+        });
+
+        // @ts-expect-error
+        expect(transport.items[0]?.payload.attributes).toStrictEqual({
+          a: '1',
+          b: 'foo',
+          c: 'true',
+          d: '{"e":"bar"}',
+          g: 'null',
+          h: 'undefined',
+          i: '[1,2,3]',
+        });
+      });
     });
   });
 });

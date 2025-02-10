@@ -194,9 +194,46 @@ describe('api.measurements', () => {
     });
 
     it('Sets the timestamp to the provided custom timestamp', () => {
-      api.pushEvent('test', undefined, undefined, { timestampOverwriteMs: 123 });
+      api.pushMeasurement(
+        {
+          type: 'custom',
+          values: {
+            a: 1,
+          },
+        },
+        { timestampOverwriteMs: 123 }
+      );
       expect(transport.items).toHaveLength(1);
       expect((transport.items[0]?.payload as MeasurementEvent).timestamp).toBe('1970-01-01T00:00:00.123Z');
+    });
+
+    it('stringifies all values in the attributes object', () => {
+      api.pushEvent('test', {
+        // @ts-expect-error
+        a: 1,
+        b: 'foo',
+        // @ts-expect-error
+        c: true,
+        // @ts-expect-error
+        d: { e: 'bar' },
+        // @ts-expect-error
+        g: null,
+        // @ts-expect-error
+        h: undefined,
+        // @ts-expect-error
+        i: [1, 2, 3],
+      });
+
+      // @ts-expect-error
+      expect(transport.items[0]?.payload.attributes).toStrictEqual({
+        a: '1',
+        b: 'foo',
+        c: 'true',
+        d: '{"e":"bar"}',
+        g: 'null',
+        h: 'undefined',
+        i: '[1,2,3]',
+      });
     });
   });
 });
