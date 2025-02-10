@@ -45,14 +45,14 @@ export class SessionInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private createInitialSession(
+  private async createInitialSession(
     SessionManager: SessionManager,
     sessionsConfig: Required<Config>['sessionTracking']
-  ): {
+  ): Promise<{
     initialSession: FaroUserSession;
     lifecycleType: LifecycleType;
-  } {
-    let userSession: FaroUserSession | null = SessionManager.fetchUserSession();
+  }> {
+    let userSession: FaroUserSession | null = await SessionManager.fetchUserSession();
 
     if (sessionsConfig.persistent && sessionsConfig.maxSessionPersistenceTime && userSession) {
       const now = dateNow();
@@ -134,7 +134,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     });
   }
 
-  initialize() {
+  async initialize() {
     this.logDebug('init session instrumentation');
 
     const sessionTrackingConfig = this.config.sessionTracking;
@@ -144,9 +144,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       this.registerBeforeSendHook(SessionManager);
 
-      const { initialSession, lifecycleType } = this.createInitialSession(SessionManager, sessionTrackingConfig);
+      const { initialSession, lifecycleType } = await this.createInitialSession(SessionManager, sessionTrackingConfig);
 
-      SessionManager.storeUserSession(initialSession);
+      await SessionManager.storeUserSession(initialSession);
 
       const initialSessionMeta = initialSession.sessionMeta;
 

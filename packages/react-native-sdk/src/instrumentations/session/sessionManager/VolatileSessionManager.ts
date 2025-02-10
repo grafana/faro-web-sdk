@@ -25,11 +25,11 @@ export class VolatileSessionsManager {
     this.storedSession = null;
   }
 
-  static storeUserSession(session: FaroUserSession): void {
+  static async storeUserSession(session: FaroUserSession): Promise<void> {
     this.storedSession = stringifyExternalJson(session)
   }
 
-  static fetchUserSession(): FaroUserSession | null {
+  static async fetchUserSession(): Promise<FaroUserSession | null> {
     if (this.storedSession) {
       return JSON.parse(this.storedSession) as FaroUserSession;
     }
@@ -41,9 +41,9 @@ export class VolatileSessionsManager {
 
   private init(): void {
     // Users can call the setSession() method, so we need to sync this with the local storage session
-    faro.metas.addListener(function syncSessionIfChangedExternally(meta: Meta) {
+    faro.metas.addListener(async function syncSessionIfChangedExternally(meta: Meta) {
       const session = meta.session;
-      const sessionFromSessionStorage = VolatileSessionsManager.fetchUserSession();
+      const sessionFromSessionStorage = await VolatileSessionsManager.fetchUserSession();
 
       if (session && session.id !== sessionFromSessionStorage?.sessionId) {
         const userSession = addSessionMetadataToNextSession(
@@ -51,7 +51,7 @@ export class VolatileSessionsManager {
           sessionFromSessionStorage
         );
 
-        VolatileSessionsManager.storeUserSession(userSession);
+        await VolatileSessionsManager.storeUserSession(userSession);
         faro.api.setSession(userSession.sessionMeta);
       }
     });

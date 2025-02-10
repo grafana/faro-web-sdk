@@ -13,9 +13,7 @@ export {
   getStackFramesFromError,
   parseStacktrace,
   ViewInstrumentation,
-  WebVitalsInstrumentation,
   SessionInstrumentation,
-  PerformanceInstrumentation,
 } from './instrumentations';
 export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 

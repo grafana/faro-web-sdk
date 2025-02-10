@@ -1,12 +1,8 @@
 export {
-  isLocalStorageAvailable,
-  isSessionStorageAvailable,
-  webStorageType,
   getItem,
-  isWebStorageAvailable,
   removeItem,
   setItem,
-} from './webStorage';
+} from './asyncStorage';
 
 export { throttle } from './throttle';
 
