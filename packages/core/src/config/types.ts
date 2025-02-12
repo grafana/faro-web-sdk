@@ -127,7 +127,7 @@ export interface Config<P = APIEvent> {
      */
     onSessionChange?: (oldSession: MetaSession | null, newSession: MetaSession) => void;
     /**
-     * Then sampling rate for the session based sampler (default: 1). If a session is not part of a sample, no signals for this session are tracked.
+     * Then sampling rate for the session based smpler (default: 1). If a session is not part of a sample, no signals for this session are tracked.
      */
     samplingRate?: number;
     /**
@@ -208,25 +208,6 @@ export interface Config<P = APIEvent> {
     generatePageId?: (location: Location) => string;
   };
 
-  grafanaCloud?: GrafanaCloudOnlyConfigurations;
-  // /**
-  //  * Configuration for the location tracking (Grafana cloud only)
-  //  */
-  // locationTracking?: {
-  //   /**
-  //    * Enable or disable geolocation tracking.
-  //    * Geolocation tracking must be enabled in the Grafana Cloud settings first.
-  //    * It cannot be enabled solely on the client side.
-  //    * This option allows control over tracking on the client side to comply with user
-  //    * privacy requirements.
-  //    */
-  //   enabled?: boolean;
-  // };
-}
-
-export type Patterns = Array<string | RegExp>;
-
-type GrafanaCloudOnlyConfigurations = {
   /**
    * Configuration for the location tracking (Grafana cloud only)
    */
@@ -240,4 +221,6 @@ type GrafanaCloudOnlyConfigurations = {
      */
     enabled?: boolean;
   };
-};
+}
+
+export type Patterns = Array<string | RegExp>;

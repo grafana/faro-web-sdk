@@ -42,6 +42,10 @@ export function initializeFaro(): Faro {
       version: env.package.version,
       environment: env.mode.name,
     },
+
+    locationTracking: {
+      enabled: true,
+    },
   });
 
   faro.api.pushLog(['Faro was initialized']);

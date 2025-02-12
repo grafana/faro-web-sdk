@@ -45,6 +45,7 @@ export interface MetaSession {
   id?: string;
   attributes?: MetaAttributes;
   overrides?: MetaOverrides;
+  commands?: MetaCommands;
 }
 
 export interface MetaPage {

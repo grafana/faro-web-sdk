@@ -5,9 +5,10 @@ import {
   defaultInternalLoggerLevel,
   defaultLogArgsSerializer,
   defaultUnpatchedConsole,
+  isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, MetaItem, Transport } from '@grafana/faro-core';
+import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
@@ -53,6 +54,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackWebVitalsAttribution,
     user,
     view,
+    locationTracking,
 
     // properties with default values
     dedupe = true,
@@ -94,6 +96,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     sessionTracking: {
       ...defaultSessionTrackingConfig,
       ...sessionTracking,
+      ...crateSessionMetaWithAttachedControlCommands({ locationTracking, sessionTracking }),
     },
     user,
     view,
@@ -118,4 +121,26 @@ function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
   }
 
   return initialMetas;
+}
+
+function crateSessionMetaWithAttachedControlCommands({
+  locationTracking,
+  sessionTracking,
+}: Pick<BrowserConfig, 'locationTracking' | 'sessionTracking'>): { session: MetaSession } | {} {
+  const commands: MetaSession['commands'] = {};
+
+  if (locationTracking?.enabled != null) {
+    commands.geolocationTrackingEnabled = locationTracking.enabled;
+  }
+
+  if (isEmpty(commands)) {
+    return {};
+  }
+
+  return {
+    session: {
+      ...(sessionTracking?.session ?? {}),
+      commands,
+    },
+  };
 }

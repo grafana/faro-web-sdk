@@ -107,4 +107,33 @@ describe('config', () => {
       expect(config.ignoreUrls[0].test(url)).toBe(true);
     }
   );
+
+  it('updates the command object in the session config with the locationTracking.enabled value', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+    };
+
+    let config = makeCoreConfig({ ...browserConfig, locationTracking: { enabled: true } });
+    expect(config?.sessionTracking?.session?.commands).toHaveProperty('geolocationTrackingEnabled');
+    expect(config?.sessionTracking?.session?.commands?.geolocationTrackingEnabled).toBe(true);
+
+    config = makeCoreConfig({ ...browserConfig, locationTracking: { enabled: false } });
+    expect(config?.sessionTracking?.session?.commands).toHaveProperty('geolocationTrackingEnabled');
+    expect(config?.sessionTracking?.session?.commands?.geolocationTrackingEnabled).toBe(false);
+
+    // Also test that the session object is not created or mutated if locationTracking is not enabled
+    config = makeCoreConfig(browserConfig);
+    expect(config?.sessionTracking?.session).toBeUndefined();
+
+    const sessionMeta = { id: 'test', attributes: { foo: 'bar' } };
+    config = makeCoreConfig({
+      ...browserConfig,
+      sessionTracking: { session: sessionMeta },
+    });
+
+    expect(config?.sessionTracking?.session).toBeDefined();
+    expect(config?.sessionTracking?.session?.commands).toBeUndefined();
+    expect(config?.sessionTracking?.session).toStrictEqual(sessionMeta);
+  });
 });
