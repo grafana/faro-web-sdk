@@ -127,20 +127,20 @@ function crateSessionMetaWithAttachedControlCommands({
   locationTracking,
   sessionTracking,
 }: Pick<BrowserConfig, 'locationTracking' | 'sessionTracking'>): { session: MetaSession } | {} {
-  const commands: MetaSession['commands'] = {};
+  const overrides: MetaSession['overrides'] = {};
 
   if (locationTracking?.enabled != null) {
-    commands.geolocationTrackingEnabled = locationTracking.enabled;
+    overrides.geolocationTrackingEnabled = locationTracking.enabled;
   }
 
-  if (isEmpty(commands)) {
+  if (isEmpty(overrides)) {
     return {};
   }
 
   return {
     session: {
       ...(sessionTracking?.session ?? {}),
-      commands,
+      overrides,
     },
   };
 }

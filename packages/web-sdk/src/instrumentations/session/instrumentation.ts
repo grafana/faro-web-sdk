@@ -77,8 +77,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
       });
 
       const userSessionMeta = userSession?.sessionMeta;
+      const overrides = userSessionMeta?.overrides ?? sessionsConfig.session?.overrides;
 
       initialSession.sessionMeta = {
+        ...sessionsConfig.session,
         id: sessionId,
         attributes: {
           ...sessionsConfig.session?.attributes,
@@ -86,7 +88,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
           // For valid resumed sessions we do not want to recalculate the sampling decision on each init phase.
           isSampled: initialSession.isSampled.toString(),
         },
-        overrides: userSessionMeta?.overrides,
+        // Resumed session we want to keep the previous overrides
+        ...(overrides ? { overrides } : {}),
       };
 
       lifecycleType = EVENT_SESSION_RESUME;
@@ -98,12 +101,16 @@ export class SessionInstrumentation extends BaseInstrumentation {
         isSampled: isSampled(),
       });
 
+      const overrides = sessionsConfig.session?.overrides;
+
       initialSession.sessionMeta = {
         id: sessionId,
         attributes: {
           isSampled: initialSession.isSampled.toString(),
           ...sessionsConfig.session?.attributes,
         },
+        // new session we don't care about previous overrides
+        ...(overrides ? { overrides } : {}),
       };
 
       lifecycleType = EVENT_SESSION_START;

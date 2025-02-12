@@ -115,12 +115,12 @@ describe('config', () => {
     };
 
     let config = makeCoreConfig({ ...browserConfig, locationTracking: { enabled: true } });
-    expect(config?.sessionTracking?.session?.commands).toHaveProperty('geolocationTrackingEnabled');
-    expect(config?.sessionTracking?.session?.commands?.geolocationTrackingEnabled).toBe(true);
+    expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geolocationTrackingEnabled');
+    expect(config?.sessionTracking?.session?.overrides?.geolocationTrackingEnabled).toBe(true);
 
     config = makeCoreConfig({ ...browserConfig, locationTracking: { enabled: false } });
-    expect(config?.sessionTracking?.session?.commands).toHaveProperty('geolocationTrackingEnabled');
-    expect(config?.sessionTracking?.session?.commands?.geolocationTrackingEnabled).toBe(false);
+    expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geolocationTrackingEnabled');
+    expect(config?.sessionTracking?.session?.overrides?.geolocationTrackingEnabled).toBe(false);
 
     // Also test that the session object is not created or mutated if locationTracking is not enabled
     config = makeCoreConfig(browserConfig);
@@ -133,7 +133,7 @@ describe('config', () => {
     });
 
     expect(config?.sessionTracking?.session).toBeDefined();
-    expect(config?.sessionTracking?.session?.commands).toBeUndefined();
+    expect(config?.sessionTracking?.session?.overrides).toBeUndefined();
     expect(config?.sessionTracking?.session).toStrictEqual(sessionMeta);
   });
 });

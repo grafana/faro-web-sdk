@@ -45,7 +45,6 @@ export interface MetaSession {
   id?: string;
   attributes?: MetaAttributes;
   overrides?: MetaOverrides;
-  commands?: MetaCommands;
 }
 
 export interface MetaPage {
@@ -96,15 +95,16 @@ export interface Meta {
  */
 export type MetaOverrides = {
   /**
-   * New service name
+   * New service name (Grafana Cloud only)
    */
   serviceName?: string;
-};
 
-/**
- * Commands instruct the receiver to change behavior.
- * These commands can be used to modify tracking settings or other configurations.
- */
-export type MetaCommands = {
+  /**
+   * Enable or disable geolocation tracking (Grafana Cloud only).
+   * Geolocation tracking must be enabled in the Grafana Cloud settings first.
+   * It cannot be enabled solely on the client side.
+   * This option allows control over tracking on the client side to comply with user
+   * privacy requirements.
+   */
   geolocationTrackingEnabled?: boolean;
 };
