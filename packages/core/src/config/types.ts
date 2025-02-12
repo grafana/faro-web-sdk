@@ -193,6 +193,9 @@ export interface Config<P = APIEvent> {
     errorSerializer?: LogArgsSerializer;
   };
 
+  /**
+   * Configuration for the page tracking
+   */
   pageTracking?: {
     /**
      * The page meta for initial page settings
@@ -204,6 +207,37 @@ export interface Config<P = APIEvent> {
      */
     generatePageId?: (location: Location) => string;
   };
+
+  grafanaCloud?: GrafanaCloudOnlyConfigurations;
+  // /**
+  //  * Configuration for the location tracking (Grafana cloud only)
+  //  */
+  // locationTracking?: {
+  //   /**
+  //    * Enable or disable geolocation tracking.
+  //    * Geolocation tracking must be enabled in the Grafana Cloud settings first.
+  //    * It cannot be enabled solely on the client side.
+  //    * This option allows control over tracking on the client side to comply with user
+  //    * privacy requirements.
+  //    */
+  //   enabled?: boolean;
+  // };
 }
 
 export type Patterns = Array<string | RegExp>;
+
+type GrafanaCloudOnlyConfigurations = {
+  /**
+   * Configuration for the location tracking (Grafana cloud only)
+   */
+  locationTracking?: {
+    /**
+     * Enable or disable geolocation tracking.
+     * Geolocation tracking must be enabled in the Grafana Cloud settings first.
+     * It cannot be enabled solely on the client side.
+     * This option allows control over tracking on the client side to comply with user
+     * privacy requirements.
+     */
+    enabled?: boolean;
+  };
+};

@@ -91,8 +91,19 @@ export interface Meta {
 }
 
 /**
- * Overrides are instructions that allow the receiver to override certain properties.
+ * MetaOverrides are instructions that allow the receiver to override certain properties (Grafana Cloud only).
  */
 export type MetaOverrides = {
+  /**
+   * New service name
+   */
   serviceName?: string;
+};
+
+/**
+ * Commands instruct the receiver to change behavior.
+ * These commands can be used to modify tracking settings or other configurations.
+ */
+export type MetaCommands = {
+  geolocationTrackingEnabled?: boolean;
 };
