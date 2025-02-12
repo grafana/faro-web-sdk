@@ -5,6 +5,7 @@ import {
   ErrorsInstrumentation,
   PerformanceInstrumentation,
   SessionInstrumentation,
+  TracingInstrumentation,
   ViewInstrumentation,
   WebVitalsInstrumentation,
 } from '../instrumentations';
@@ -22,6 +23,11 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
   if (options.enablePerformanceInstrumentation !== false) {
     // unshift to ensure that initialization starts before the other instrumentations
     instrumentations.unshift(new PerformanceInstrumentation());
+  }
+
+  if (options.enablePerformanceInstrumentation !== false) {
+    // unshift to ensure that initialization starts before the other instrumentations
+    instrumentations.push(new TracingInstrumentation());
   }
 
   if (options.captureConsole !== false) {

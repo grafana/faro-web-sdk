@@ -7,7 +7,7 @@ import {
   defaultUnpatchedConsole,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, MetaItem, Transport } from '@grafana/faro-core';
+import type { Config, LogArgsSerializer, LogLevel, MetaItem, MetaPage, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
@@ -18,9 +18,78 @@ import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
-import type { BrowserConfig } from './types';
+// import type { BrowserConfig } from './types';
 
-export function makeCoreConfig(browserConfig: BrowserConfig): Config {
+//  TODO: move to types file
+type WebSdkConfig = Config & {
+  /**
+   * Only resource timings for fetch and xhr requests are tracked by default. Set this to true to track all resources (default: false).
+   */
+  trackResources?: boolean;
+
+  /**
+   * Track web vitals attribution data (default: false)
+   */
+  trackWebVitalsAttribution?: boolean;
+
+  /**
+   * Configuration for the console instrumentation
+   */
+  consoleInstrumentation?: {
+    /**
+     * Configure what console levels should be captured by Faro. By default the follwoing levels
+     * are disabled: console.debug, console.trace, console.log
+     *
+     * If you want to collect all levels set captureConsoleDisabledLevels: [];
+     * If you want to disable only some levels set captureConsoleDisabledLevels: [LogLevel.DEBUG, LogLevel.TRACE];
+     */
+    disabledLevels?: LogLevel[];
+    /*
+     * By default, Faro sends an error for console.error calls. If you want to send a log instead, set this to true.
+     */
+    consoleErrorAsLog?: boolean;
+
+    /**
+     * If true, use the default Faro error serializer for console.error calls. If false, simply call toString() on the error arguments.
+     * If enabled, payloads containing serialized errors may become very large. If left disabled, some error details may be lost.
+     * (default: false)
+     */
+    serializeErrors?: boolean;
+
+    /**
+     * Custom function to serialize Error arguments
+     */
+    errorSerializer?: LogArgsSerializer;
+  };
+
+  pageTracking?: {
+    /**
+     * The page meta for initial page settings
+     */
+    page?: MetaPage;
+
+    /**
+     * Allows to provide a template for the page id
+     */
+    generatePageId?: (location: Location) => string;
+  };
+
+  webTracingInstrumentation?: {
+    /**
+     * Enable tracing instrumentation (default: true)
+     */
+    enabled?: boolean;
+  };
+};
+
+export interface BrowserConfig
+  extends Partial<Omit<WebSdkConfig, 'app' | 'parseStacktrace'>>,
+    Pick<WebSdkConfig, 'app'> {
+  url?: string;
+  apiKey?: string;
+}
+
+export function makeCoreConfig(browserConfig: BrowserConfig): WebSdkConfig {
   const transports: Transport[] = [];
 
   const internalLogger = createInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
