@@ -21,7 +21,7 @@ import type {
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
-import { TracingInstrumentationOptions } from '../instrumentations/webTracing';
+import type { TracingInstrumentationOptions } from '../instrumentations/webTracing';
 import { browserMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';

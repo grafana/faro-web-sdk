@@ -1,8 +1,7 @@
 import type { SpanContext } from '@opentelemetry/api';
 import { ESpanKind, type IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 
-import { faro, unknownString } from '@grafana/faro-core';
-import type { EventAttributes as FaroEventAttributes } from '@grafana/faro-web-sdk';
+import { EventAttributes, faro, unknownString } from '@grafana/faro-core';
 
 const DURATION_NS_KEY = 'duration_ns';
 
@@ -23,7 +22,7 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
           spanId: span.spanId.toString(),
         };
 
-        const faroEventAttributes: FaroEventAttributes = {};
+        const faroEventAttributes: EventAttributes = {};
 
         for (const attribute of span.attributes) {
           faroEventAttributes[attribute.key] = String(Object.values(attribute.value)[0]);

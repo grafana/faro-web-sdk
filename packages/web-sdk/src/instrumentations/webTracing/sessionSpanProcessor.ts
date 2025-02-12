@@ -4,7 +4,7 @@ import type { ReadableSpan, Span, SpanProcessor } from '@opentelemetry/sdk-trace
 // eslint-disable-next-line import/no-unresolved
 import { ATTR_SESSION_ID } from '@opentelemetry/semantic-conventions/incubating';
 
-import type { Metas } from '@grafana/faro-web-sdk';
+import type { Metas } from '@grafana/faro-core';
 
 export class FaroSessionSpanProcessor implements SpanProcessor {
   constructor(

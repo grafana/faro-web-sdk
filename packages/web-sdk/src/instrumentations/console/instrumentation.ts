@@ -25,6 +25,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
   }
 
   initialize() {
+    // TODO: we can make base instrumentation generic to inject Config
     this.options = { ...this.options, ...this.config.consoleInstrumentation };
 
     const serializeErrors = this.options?.serializeErrors || !!this.options?.errorSerializer;

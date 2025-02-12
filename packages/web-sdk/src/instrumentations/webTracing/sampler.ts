@@ -1,6 +1,6 @@
 import { SamplingDecision } from '@opentelemetry/sdk-trace-web';
 
-import type { MetaSession } from '@grafana/faro-web-sdk';
+import type { MetaSession } from '@grafana/faro-core';
 
 export function getSamplingDecision(sessionMeta: MetaSession = {}): SamplingDecision {
   const isSessionSampled = sessionMeta.attributes?.['isSampled'] === 'true';
