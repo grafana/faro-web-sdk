@@ -98,6 +98,18 @@ export interface Config<P = APIEvent> {
    * Path patterns for Endpoints that should be ignored form being tracked
    */
   ignoreUrls?: Patterns;
+
+  /**
+   * Meta object for user data
+   */
+  user?: MetaUser;
+
+  /**
+   * Meta object for view data
+   */
+  view?: MetaView;
+
+  eventDomain?: string;
 }
 
 export type Patterns = Array<string | RegExp>;

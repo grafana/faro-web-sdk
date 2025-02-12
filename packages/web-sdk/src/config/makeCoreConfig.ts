@@ -7,7 +7,16 @@ import {
   defaultUnpatchedConsole,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, LogArgsSerializer, LogLevel, MetaItem, MetaPage, Transport } from '@grafana/faro-core';
+import type {
+  Config,
+  LogArgsSerializer,
+  LogLevel,
+  Meta,
+  MetaItem,
+  MetaPage,
+  MetaSession,
+  Transport,
+} from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
@@ -22,6 +31,11 @@ import { getWebInstrumentations } from './getWebInstrumentations';
 // import type { BrowserConfig } from './types';
 
 //  TODO: move to types file
+type SamplingContext = {
+  metas: Meta;
+};
+
+//  TODO: move to types file
 type WebSdkConfig = Config & {
   /**
    * Only resource timings for fetch and xhr requests are tracked by default. Set this to true to track all resources (default: false).
@@ -32,6 +46,47 @@ type WebSdkConfig = Config & {
    * Track web vitals attribution data (default: false)
    */
   trackWebVitalsAttribution?: boolean;
+
+  /**
+   * Configuration for the built in session tracker
+   */
+  sessionTracking?: {
+    /**
+     * Enable session tracking (default: true)
+     */
+    enabled?: boolean;
+    /**
+     * Wether to use sticky sessions (default: false)
+     */
+    persistent?: boolean;
+    /**
+     * Session metadata object to be used when initializing session tracking
+     */
+    session?: MetaSession;
+    /**
+     * How long is a sticky session valid for recurring users (default: 15 minutes)
+     */
+    maxSessionPersistenceTime?: number;
+    /**
+     * Called each time a session changes. This can be when a new session is created or when an existing session is updated.
+     * @param oldSession
+     * @param newSession
+     */
+    onSessionChange?: (oldSession: MetaSession | null, newSession: MetaSession) => void;
+    /**
+     * Then sampling rate for the session based sampler (default: 1). If a session is not part of a sample, no signals for this session are tracked.
+     */
+    samplingRate?: number;
+    /**
+     * Custom sampler function if custom sampling logic is needed.
+     * @param context
+     */
+    sampler?: (context: SamplingContext) => number;
+    /**
+     * Custom function to generate session id. If available Faro uses this function instead of the internal one.
+     */
+    generateSessionId?: () => string;
+  };
 
   /**
    * Configuration for the console instrumentation
@@ -83,6 +138,7 @@ type WebSdkConfig = Config & {
   } & TracingInstrumentationOptions;
 };
 
+//  TODO: update original typpe in // import type { BrowserConfig } from './types';
 export interface BrowserConfig
   extends Partial<Omit<WebSdkConfig, 'app' | 'parseStacktrace'>>,
     Pick<WebSdkConfig, 'app'> {
