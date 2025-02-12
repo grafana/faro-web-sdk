@@ -1,10 +1,9 @@
 import type { APIEvent, LogArgsSerializer, StacktraceParser } from '../api';
 import type { Instrumentation } from '../instrumentations';
 import type { InternalLoggerLevel } from '../internalLogger';
-import type { Meta, MetaApp, MetaItem, MetaPage, MetaSession, MetaUser, MetaView } from '../metas';
+import type { Meta, MetaApp, MetaItem, MetaSession, MetaUser, MetaView } from '../metas';
 import type { BatchExecutorOptions, BeforeSendHook, Transport } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
-import type { LogLevel } from '../utils';
 
 type SamplingContext = {
   metas: Meta;
@@ -99,118 +98,6 @@ export interface Config<P = APIEvent> {
    * Path patterns for Endpoints that should be ignored form being tracked
    */
   ignoreUrls?: Patterns;
-
-  /**
-   * Configuration for the built in session tracker
-   */
-  sessionTracking?: {
-    /**
-     * Enable session tracking (default: true)
-     */
-    enabled?: boolean;
-    /**
-     * Wether to use sticky sessions (default: false)
-     */
-    persistent?: boolean;
-    /**
-     * Session metadata object to be used when initializing session tracking
-     */
-    session?: MetaSession;
-    /**
-     * How long is a sticky session valid for recurring users (default: 15 minutes)
-     */
-    maxSessionPersistenceTime?: number;
-    /**
-     * Called each time a session changes. This can be when a new session is created or when an existing session is updated.
-     * @param oldSession
-     * @param newSession
-     */
-    onSessionChange?: (oldSession: MetaSession | null, newSession: MetaSession) => void;
-    /**
-     * Then sampling rate for the session based sampler (default: 1). If a session is not part of a sample, no signals for this session are tracked.
-     */
-    samplingRate?: number;
-    /**
-     * Custom sampler function if custom sampling logic is needed.
-     * @param context
-     */
-    sampler?: (context: SamplingContext) => number;
-    /**
-     * Custom function to generate session id. If available Faro uses this function instead of the internal one.
-     */
-    generateSessionId?: () => string;
-  };
-
-  /**
-   * Meta object for user data
-   */
-  user?: MetaUser;
-
-  /**
-   * Meta object for view data
-   */
-  view?: MetaView;
-
-  eventDomain?: string;
-
-  // /**
-  //  * Only resource timings for fetch and xhr requests are tracked by default. Set this to true to track all resources (default: false).
-  //  */
-  // trackResources?: boolean;
-
-  // /**
-  //  * Track web vitals attribution data (default: false)
-  //  */
-  // trackWebVitalsAttribution?: boolean;
-
-  // /**
-  //  * Configuration for the console instrumentation
-  //  */
-  // consoleInstrumentation?: {
-  //   /**
-  //    * Configure what console levels should be captured by Faro. By default the follwoing levels
-  //    * are disabled: console.debug, console.trace, console.log
-  //    *
-  //    * If you want to collect all levels set captureConsoleDisabledLevels: [];
-  //    * If you want to disable only some levels set captureConsoleDisabledLevels: [LogLevel.DEBUG, LogLevel.TRACE];
-  //    */
-  //   disabledLevels?: LogLevel[];
-  //   /*
-  //    * By default, Faro sends an error for console.error calls. If you want to send a log instead, set this to true.
-  //    */
-  //   consoleErrorAsLog?: boolean;
-
-  //   /**
-  //    * If true, use the default Faro error serializer for console.error calls. If false, simply call toString() on the error arguments.
-  //    * If enabled, payloads containing serialized errors may become very large. If left disabled, some error details may be lost.
-  //    * (default: false)
-  //    */
-  //   serializeErrors?: boolean;
-
-  //   /**
-  //    * Custom function to serialize Error arguments
-  //    */
-  //   errorSerializer?: LogArgsSerializer;
-  // };
-
-  // pageTracking?: {
-  //   /**
-  //    * The page meta for initial page settings
-  //    */
-  //   page?: MetaPage;
-
-  //   /**
-  //    * Allows to provide a template for the page id
-  //    */
-  //   generatePageId?: (location: Location) => string;
-  // };
-
-  // webTracingInstrumentation?: {
-  //   /**
-  //    * Enable tracing instrumentation (default: true)
-  //    */
-  //   enabled?: boolean;
-  // };
 }
 
 export type Patterns = Array<string | RegExp>;
