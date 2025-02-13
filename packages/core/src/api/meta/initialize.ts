@@ -42,7 +42,7 @@ export function initializeMetaAPI(
 
     metaSession = {
       session: {
-        // if session is empty, session manager force creates a new session
+        // if session is undefined, session manager force creates a new session
         ...(isEmpty(session) ? undefined : session),
         ...(overrides ? { overrides } : {}),
       },

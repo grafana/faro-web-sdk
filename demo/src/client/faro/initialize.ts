@@ -2,7 +2,6 @@ import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigati
 
 import {
   initializeFaro as coreInit,
-  genShortID,
   getWebInstrumentations,
   ReactIntegration,
   ReactRouterVersion,
