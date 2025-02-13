@@ -34,7 +34,15 @@ export function initializeMetaAPI(
   };
 
   const setSession: MetaAPI['setSession'] = (session, options) => {
-    const overrides = options?.overrides;
+    const newOverrides = options?.overrides;
+    const overrides = newOverrides
+      ? {
+          overrides: {
+            ...metaSession?.session?.overrides,
+            ...newOverrides,
+          },
+        }
+      : {};
 
     if (metaSession) {
       metas.remove(metaSession);
@@ -44,7 +52,7 @@ export function initializeMetaAPI(
       session: {
         // if session is undefined, session manager force creates a new session
         ...(isEmpty(session) ? undefined : session),
-        ...(overrides ? { overrides } : {}),
+        ...overrides,
       },
     };
 

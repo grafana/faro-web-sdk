@@ -96,7 +96,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     sessionTracking: {
       ...defaultSessionTrackingConfig,
       ...sessionTracking,
-      ...crateSessionMetaWithAttachedControlCommands({ locationTracking, sessionTracking }),
+      ...crateSessionMeta({ locationTracking, sessionTracking }),
     },
     user,
     view,
@@ -123,7 +123,7 @@ function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
   return initialMetas;
 }
 
-function crateSessionMetaWithAttachedControlCommands({
+function crateSessionMeta({
   locationTracking,
   sessionTracking,
 }: Pick<BrowserConfig, 'locationTracking' | 'sessionTracking'>): { session: MetaSession } | {} {
