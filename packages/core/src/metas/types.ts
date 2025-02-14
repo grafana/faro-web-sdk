@@ -106,5 +106,5 @@ export type MetaOverrides = {
    * This option allows control over tracking on the client side to comply with user
    * privacy requirements.
    */
-  geolocationTrackingEnabled?: boolean;
+  geoLocationTrackingEnabled?: boolean;
 };

@@ -78,6 +78,35 @@ describe('Meta API', () => {
       api.setSession(undefined, { overrides });
       expect(api.getSession()).toEqual({ overrides });
     });
+
+    it('merges the new overrides with the existing session meta overrides', () => {
+      const initialSession = { id: 'my-session' };
+
+      const { api } = initializeFaro(
+        mockConfig({
+          sessionTracking: {
+            session: initialSession,
+          },
+          geoLocationTracking: {},
+        })
+      );
+
+      expect(api.getSession()).toEqual(initialSession);
+
+      const overrides = { serviceName: 'service-1' };
+
+      const newSession = { id: 'my-new-session' };
+      api.setSession(newSession, { overrides });
+      expect(api.getSession()).toEqual({ ...newSession, attributes: initialSession.attributes, overrides });
+
+      const newOverrides = { serviceName: 'service-2' };
+      api.setSession({}, { overrides: newOverrides });
+      expect(api.getSession()).toEqual({
+        ...newSession,
+        attributes: initialSession.attributes,
+        overrides: newOverrides,
+      });
+    });
   });
 
   describe('setPage / getPage', () => {

@@ -211,7 +211,7 @@ export interface Config<P = APIEvent> {
   /**
    * Configuration for the location tracking (Grafana cloud only)
    */
-  locationTracking?: {
+  geoLocationTracking?: {
     /**
      * Enable or disable geolocation tracking.
      * Geolocation tracking must be enabled in the Grafana Cloud settings first.

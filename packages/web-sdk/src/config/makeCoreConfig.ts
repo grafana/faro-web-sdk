@@ -54,7 +54,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackWebVitalsAttribution,
     user,
     view,
-    locationTracking,
+    geoLocationTracking,
 
     // properties with default values
     dedupe = true,
@@ -96,7 +96,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     sessionTracking: {
       ...defaultSessionTrackingConfig,
       ...sessionTracking,
-      ...crateSessionMeta({ locationTracking, sessionTracking }),
+      ...crateSessionMeta({ geoLocationTracking, sessionTracking }),
     },
     user,
     view,
@@ -124,13 +124,13 @@ function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
 }
 
 function crateSessionMeta({
-  locationTracking,
+  geoLocationTracking,
   sessionTracking,
-}: Pick<BrowserConfig, 'locationTracking' | 'sessionTracking'>): { session: MetaSession } | {} {
+}: Pick<BrowserConfig, 'geoLocationTracking' | 'sessionTracking'>): { session: MetaSession } | {} {
   const overrides: MetaSession['overrides'] = {};
 
-  if (locationTracking?.enabled != null) {
-    overrides.geolocationTrackingEnabled = locationTracking.enabled;
+  if (geoLocationTracking?.enabled != null) {
+    overrides.geoLocationTrackingEnabled = geoLocationTracking.enabled;
   }
 
   if (isEmpty(overrides)) {

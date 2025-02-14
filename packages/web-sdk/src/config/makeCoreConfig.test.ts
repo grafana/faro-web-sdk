@@ -108,21 +108,21 @@ describe('config', () => {
     }
   );
 
-  it('updates the command object in the session config with the locationTracking.enabled value', () => {
+  it('updates the command object in the session config with the geoLocationTracking.enabled value', () => {
     const browserConfig = {
       url: 'http://example.com/my-collector',
       app: {},
     };
 
-    let config = makeCoreConfig({ ...browserConfig, locationTracking: { enabled: true } });
-    expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geolocationTrackingEnabled');
-    expect(config?.sessionTracking?.session?.overrides?.geolocationTrackingEnabled).toBe(true);
+    let config = makeCoreConfig({ ...browserConfig, geoLocationTracking: { enabled: true } });
+    expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geoLocationTrackingEnabled');
+    expect(config?.sessionTracking?.session?.overrides?.geoLocationTrackingEnabled).toBe(true);
 
-    config = makeCoreConfig({ ...browserConfig, locationTracking: { enabled: false } });
-    expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geolocationTrackingEnabled');
-    expect(config?.sessionTracking?.session?.overrides?.geolocationTrackingEnabled).toBe(false);
+    config = makeCoreConfig({ ...browserConfig, geoLocationTracking: { enabled: false } });
+    expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geoLocationTrackingEnabled');
+    expect(config?.sessionTracking?.session?.overrides?.geoLocationTrackingEnabled).toBe(false);
 
-    // Also test that the session object is not created or mutated if locationTracking is not enabled
+    // Also test that the session object is not created or mutated if geoLocationTracking is not enabled
     config = makeCoreConfig(browserConfig);
     expect(config?.sessionTracking?.session).toBeUndefined();
 
