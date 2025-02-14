@@ -8,6 +8,7 @@ import {
   ViewInstrumentation,
   WebVitalsInstrumentation,
 } from '../instrumentations';
+import { TracingInstrumentation } from '../instrumentations/web-tracing';
 
 import type { GetWebInstrumentationsOptions } from './types';
 
@@ -28,6 +29,7 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
   }
 
   instrumentations.push(
+    new TracingInstrumentation(),
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
