@@ -7,7 +7,6 @@ import {
   ReactRouterVersion,
 } from '@grafana/faro-react';
 import type { Faro } from '@grafana/faro-react';
-import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
 import { env } from '../utils';
 
@@ -17,11 +16,7 @@ export function initializeFaro(): Faro {
     apiKey: env.faro.apiKey,
     trackWebVitalsAttribution: true,
     instrumentations: [
-      ...getWebInstrumentations({
-        captureConsole: true,
-      }),
-
-      new TracingInstrumentation(),
+      ...getWebInstrumentations(),
       new ReactIntegration({
         router: {
           version: ReactRouterVersion.V6,
@@ -40,10 +35,6 @@ export function initializeFaro(): Faro {
       namespace: env.client.packageNamespace,
       version: env.package.version,
       environment: env.mode.name,
-    },
-
-    locationTracking: {
-      enabled: true,
     },
   });
 
