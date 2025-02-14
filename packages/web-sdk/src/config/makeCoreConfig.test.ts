@@ -108,10 +108,13 @@ describe('config', () => {
     }
   );
 
-  it('updates the command object in the session config with the geoLocationTracking.enabled value', () => {
+  it('updates the overrides object in the session config with the geoLocationTracking.enabled value', () => {
     const browserConfig = {
       url: 'http://example.com/my-collector',
       app: {},
+      sessionTracking: {
+        session: { id: 'my-session' },
+      },
     };
 
     let config = makeCoreConfig({ ...browserConfig, geoLocationTracking: { enabled: true } });
@@ -124,7 +127,7 @@ describe('config', () => {
 
     // Also test that the session object is not created or mutated if geoLocationTracking is not enabled
     config = makeCoreConfig(browserConfig);
-    expect(config?.sessionTracking?.session).toBeUndefined();
+    expect(config?.sessionTracking?.session).toBeDefined();
 
     const sessionMeta = { id: 'test', attributes: { foo: 'bar' } };
     config = makeCoreConfig({
