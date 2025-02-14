@@ -168,3 +168,5 @@ export {
 } from './instrumentations/session';
 
 export { getIgnoreUrls } from './utils/url';
+
+export { getDefaultOTELInstrumentations } from './instrumentations/web-tracing';

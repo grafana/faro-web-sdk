@@ -21,10 +21,6 @@ import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations
 import { getSamplingDecision } from './sampler';
 import { FaroSessionSpanProcessor } from './sessionSpanProcessor';
 
-// the providing of app name here is not great
-// should delay initialization and provide the full Faro config,
-// taking app name from it
-
 export class TracingInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-web-tracing';
   readonly version = VERSION;
@@ -32,6 +28,11 @@ export class TracingInstrumentation extends BaseInstrumentation {
   static SCHEDULED_BATCH_DELAY_MS = 1000;
 
   initialize(): void {
+    if (this.config.webTracingInstrumentation?.enabled === false) {
+      this.logDebug('faro web-tracing instrumentation disabled');
+      return;
+    }
+
     const options = this.config.webTracingInstrumentation ?? {};
     const attributes: ResourceAttributes = {};
 

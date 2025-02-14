@@ -12,16 +12,11 @@ import {
 import type { GetWebInstrumentationsOptions } from './types';
 
 export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {
-  const instrumentations: Instrumentation[] = [
-    new ErrorsInstrumentation(),
-    new WebVitalsInstrumentation(),
-    new SessionInstrumentation(),
-    new ViewInstrumentation(),
-  ];
+  const instrumentations: Instrumentation[] = [];
 
   if (options.enablePerformanceInstrumentation !== false) {
-    // unshift to ensure that initialization starts before the other instrumentations
-    instrumentations.unshift(new PerformanceInstrumentation());
+    //  ensure that initialization starts before the other instrumentations
+    instrumentations.push(new PerformanceInstrumentation());
   }
 
   if (options.captureConsole !== false) {
@@ -31,6 +26,13 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
       })
     );
   }
+
+  instrumentations.push(
+    new ErrorsInstrumentation(),
+    new WebVitalsInstrumentation(),
+    new SessionInstrumentation(),
+    new ViewInstrumentation()
+  );
 
   return instrumentations;
 }

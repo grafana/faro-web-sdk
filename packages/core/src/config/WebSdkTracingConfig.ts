@@ -17,6 +17,7 @@ import type { Patterns } from './types';
 export type InstrumentationOption = Instrumentation | Instrumentation[];
 
 export interface TracingInstrumentationOptions {
+  enabled?: boolean;
   resourceAttributes?: ResourceAttributes;
   propagator?: TextMapPropagator;
   contextManager?: ContextManager;
