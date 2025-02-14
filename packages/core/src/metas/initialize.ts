@@ -5,10 +5,10 @@ import { isFunction } from '../utils';
 
 import type { Meta, MetaItem, Metas, MetasListener } from './types';
 
-export function initializeMetas(
+export function initializeMetas<T extends Config>(
   _unpatchedConsole: UnpatchedConsole,
   internalLogger: InternalLogger,
-  _config: Config
+  _config: T
 ): Metas {
   let items: MetaItem[] = [];
   let listeners: MetasListener[] = [];

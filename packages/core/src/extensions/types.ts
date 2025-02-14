@@ -3,13 +3,13 @@ import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 
-export interface Extension {
+export interface Extension<T extends Config = Config> {
   readonly name: string;
   readonly version: string;
 
   internalLogger: InternalLogger;
   unpatchedConsole: UnpatchedConsole;
-  config: Config;
+  config: T;
   metas: Metas;
 
   logDebug(...args: unknown[]): void;

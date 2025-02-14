@@ -1,5 +1,5 @@
 export { getWebInstrumentations, makeCoreConfig } from './config';
-export type { BrowserConfig } from './config';
+export type { BrowserConfig, WebSdkConfig } from './config';
 
 export { defaultEventDomain } from './consts';
 
@@ -30,7 +30,6 @@ export type {
 } from './transports';
 
 export {
-  faro,
   allLogLevels,
   BaseExtension,
   BaseInstrumentation,
@@ -95,7 +94,6 @@ export {
 } from '@grafana/faro-core';
 
 export type {
-  Faro,
   API,
   APIEvent,
   BaseObject,
@@ -168,3 +166,7 @@ export {
 } from './instrumentations/session';
 
 export { getIgnoreUrls } from './utils/url';
+
+export type { Faro } from './initialize';
+
+export { faro } from './consts';

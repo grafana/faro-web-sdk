@@ -1,5 +1,4 @@
 import {
-  BaseInstrumentation,
   dateNow,
   EVENT_SESSION_EXTEND,
   EVENT_SESSION_RESUME,
@@ -12,6 +11,7 @@ import type { Config } from '@grafana/faro-core';
 
 import type { TransportItem } from '../..';
 import { createSession } from '../../metas';
+import { WebSdkBaseInstrumentation } from '../WebSdkBaseInstrumentation';
 
 import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
 import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
@@ -20,7 +20,7 @@ import type { SessionManager } from './sessionManager/types';
 
 type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;
 
-export class SessionInstrumentation extends BaseInstrumentation {
+export class SessionInstrumentation extends WebSdkBaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
   readonly version = VERSION;
 

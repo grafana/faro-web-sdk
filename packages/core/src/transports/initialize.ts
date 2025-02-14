@@ -31,10 +31,10 @@ export function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): Befo
   };
 }
 
-export function initializeTransports(
+export function initializeTransports<T extends Config>(
   unpatchedConsole: UnpatchedConsole,
   internalLogger: InternalLogger,
-  config: Config,
+  config: T,
   metas: Metas
 ): Transports {
   internalLogger.debug('Initializing transports');

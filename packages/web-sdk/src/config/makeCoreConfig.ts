@@ -8,7 +8,7 @@ import {
   isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
@@ -19,9 +19,9 @@ import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
-import type { BrowserConfig } from './types';
+import type { BrowserConfig, WebSdkConfig } from './types';
 
-export function makeCoreConfig(browserConfig: BrowserConfig): Config {
+export function makeCoreConfig(browserConfig: BrowserConfig): WebSdkConfig | undefined {
   const transports: Transport[] = [];
 
   const internalLogger = createInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
@@ -54,7 +54,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackWebVitalsAttribution,
     user,
     view,
-    geoLocationTracking,
 
     // properties with default values
     dedupe = true,
@@ -64,7 +63,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     internalLoggerLevel = defaultInternalLoggerLevel,
     isolate = false,
     logArgsSerializer = defaultLogArgsSerializer,
-    metas = createDefaultMetas(browserConfig),
+    metas = createMetas(browserConfig),
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
@@ -96,7 +95,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     sessionTracking: {
       ...defaultSessionTrackingConfig,
       ...sessionTracking,
-      ...crateSessionMeta({ geoLocationTracking, sessionTracking }),
+      // ...crateSessionMeta({ geoLocationTracking, sessionTracking }),
     },
     user,
     view,
@@ -106,7 +105,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   };
 }
 
-function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
+function createMetas(browserConfig: BrowserConfig): MetaItem[] {
   const { page, generatePageId } = browserConfig?.pageTracking ?? {};
 
   const initialMetas: MetaItem[] = [
@@ -114,6 +113,15 @@ function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
     createPageMeta({ generatePageId, initialPageMeta: page }),
     ...(browserConfig.metas ?? []),
   ];
+
+  const sessionMeta = crateSessionMeta({
+    geoLocationTracking: browserConfig.geoLocationTracking,
+    sessionTracking: browserConfig.sessionTracking,
+  });
+
+  if (!isEmpty(sessionMeta)) {
+    initialMetas.push(() => sessionMeta);
+  }
 
   const isK6BrowserSession = isObject((window as any).k6);
   if (isK6BrowserSession) {

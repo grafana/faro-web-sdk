@@ -1,7 +1,9 @@
-import { BaseInstrumentation, EVENT_VIEW_CHANGED, Meta, MetaView, unknownString, VERSION } from '@grafana/faro-core';
+import { EVENT_VIEW_CHANGED, Meta, MetaView, unknownString, VERSION } from '@grafana/faro-core';
+
+import { WebSdkBaseInstrumentation } from '../WebSdkBaseInstrumentation';
 
 // all this does is send VIEW_CHANGED event
-export class ViewInstrumentation extends BaseInstrumentation {
+export class ViewInstrumentation extends WebSdkBaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-view';
   readonly version = VERSION;
 

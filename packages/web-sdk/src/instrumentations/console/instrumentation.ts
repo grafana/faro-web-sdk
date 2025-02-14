@@ -1,6 +1,5 @@
 import {
   allLogLevels,
-  BaseInstrumentation,
   defaultErrorArgsSerializer,
   defaultLogArgsSerializer,
   LogArgsSerializer,
@@ -9,10 +8,11 @@ import {
 } from '@grafana/faro-core';
 
 import { getDetailsFromConsoleErrorArgs } from '../errors/getErrorDetails';
+import { WebSdkBaseInstrumentation } from '../WebSdkBaseInstrumentation';
 
 import type { ConsoleInstrumentationOptions } from './types';
 
-export class ConsoleInstrumentation extends BaseInstrumentation {
+export class ConsoleInstrumentation extends WebSdkBaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-console';
   readonly version = VERSION;
 

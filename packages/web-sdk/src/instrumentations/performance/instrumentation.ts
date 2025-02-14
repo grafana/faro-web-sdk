@@ -1,11 +1,13 @@
-import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
+import { VERSION } from '@grafana/faro-core';
 import type { Patterns } from '@grafana/faro-core';
+
+import { WebSdkBaseInstrumentation } from '../WebSdkBaseInstrumentation';
 
 import { getNavigationTimings } from './navigation';
 import { onDocumentReady, performanceObserverSupported } from './performanceUtils';
 import { observeResourceTimings } from './resource';
 
-export class PerformanceInstrumentation extends BaseInstrumentation {
+export class PerformanceInstrumentation extends WebSdkBaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-performance';
   readonly version = VERSION;
 
