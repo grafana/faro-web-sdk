@@ -766,7 +766,7 @@ describe('SessionInstrumentation', () => {
     expect(sessionFromStorage.sessionMeta).toStrictEqual(initialSessionMeta);
   });
 
-  it('Uses the overrides from the config if the stored session is invalid.', () => {
+  it('Uses only the overrides provided in the config if the stored session is invalid.', () => {
     const transport = new MockTransport();
 
     const sessionId = '123';
@@ -789,6 +789,56 @@ describe('SessionInstrumentation', () => {
         sessionId,
         started: startTimeValid,
         lastActivity: lastActivityInvalid,
+      }),
+      sessionMeta: storedSessionMeta,
+    };
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(storedUserSession);
+
+    expect(JSON.parse(mockStorage[STORAGE_KEY]).sessionMeta).toStrictEqual(storedSessionMeta);
+
+    const initialSessionMeta = {
+      ...storedSessionMeta,
+      overrides: {
+        serviceName: 'do-not-use-this-override-because-it-should-be-overwritten-by-the-one-from-storage',
+      },
+    };
+
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          session: initialSessionMeta,
+        },
+      })
+    );
+
+    const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]);
+
+    expect(sessionFromStorage.sessionMeta).toStrictEqual(initialSessionMeta);
+  });
+
+  it('Initially configured session overrides take precedence over stored overrides when resuming a valid session.', () => {
+    const transport = new MockTransport();
+
+    const sessionId = '123';
+
+    const storedSessionMeta: MetaSession = {
+      id: sessionId,
+      attributes: {
+        foo: 'bar',
+        isSampled: 'true',
+      },
+      overrides: {
+        serviceName: 'my-service',
+      },
+    };
+
+    const storedUserSession: FaroUserSession = {
+      ...createUserSessionObject({
+        sessionId,
       }),
       sessionMeta: storedSessionMeta,
     };

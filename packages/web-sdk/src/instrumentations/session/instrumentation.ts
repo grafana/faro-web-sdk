@@ -81,7 +81,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       // For resumed sessions we want to merge the previous overrides with the configured ones.
       // If the same key is present in both, the new one will override the old one.
-      const overrides = { ...storedUserSessionMeta?.overrides, ...sessionsConfig.session?.overrides };
+      const overrides = { ...sessionsConfig.session?.overrides, ...storedUserSessionMeta?.overrides };
 
       initialSession.sessionMeta = {
         ...sessionsConfig.session,
