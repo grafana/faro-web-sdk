@@ -127,7 +127,7 @@ export interface Config<P = APIEvent> {
      */
     onSessionChange?: (oldSession: MetaSession | null, newSession: MetaSession) => void;
     /**
-     * Then sampling rate for the session based smpler (default: 1). If a session is not part of a sample, no signals for this session are tracked.
+     * Then sampling rate for the session based sampler (default: 1). If a session is not part of a sample, no signals for this session are tracked.
      */
     samplingRate?: number;
     /**
