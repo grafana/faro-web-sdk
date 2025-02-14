@@ -8,6 +8,6 @@ export { TracingInstrumentation } from './instrumentation';
 
 export { getSamplingDecision } from './sampler';
 
-export type { FaroTraceExporterConfig, TracingInstrumentationOptions } from './types';
+export type { FaroTraceExporterConfig } from './types';
 
-export { setSpanStatusOnFetchError, fetchCustomAttributeFunctionWithDefaults } from './instrumentationUtils';
+export { fetchCustomAttributeFunctionWithDefaults, setSpanStatusOnFetchError } from './instrumentationUtils';

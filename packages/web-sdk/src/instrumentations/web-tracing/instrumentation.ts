@@ -1,5 +1,4 @@
 import { context, trace } from '@opentelemetry/api';
-import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
@@ -21,7 +20,6 @@ import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 import { getSamplingDecision } from './sampler';
 import { FaroSessionSpanProcessor } from './sessionSpanProcessor';
-import type { TracingInstrumentationOptions } from './types';
 
 // the providing of app name here is not great
 // should delay initialization and provide the full Faro config,
@@ -33,12 +31,8 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
   static SCHEDULED_BATCH_DELAY_MS = 1000;
 
-  constructor(private options: TracingInstrumentationOptions = {}) {
-    super();
-  }
-
   initialize(): void {
-    const options = this.options;
+    const options = this.config.webTracingInstrumentation ?? {};
     const attributes: ResourceAttributes = {};
 
     if (this.config.app.name) {
@@ -74,26 +68,25 @@ export class TracingInstrumentation extends BaseInstrumentation {
           };
         },
       },
+      spanProcessors: [
+        options.spanProcessor ??
+          new FaroSessionSpanProcessor(
+            new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
+              scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
+              maxExportBatchSize: 30,
+            }),
+            this.metas
+          ),
+      ],
     });
-
-    provider.addSpanProcessor(
-      options.spanProcessor ??
-        new FaroSessionSpanProcessor(
-          new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
-            scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
-            maxExportBatchSize: 30,
-          }),
-          this.metas
-        )
-    );
 
     provider.register({
       propagator: options.propagator ?? new W3CTraceContextPropagator(),
-      contextManager: options.contextManager ?? new ZoneContextManager(),
+      contextManager: options.contextManager,
     });
 
     const { propagateTraceHeaderCorsUrls, fetchInstrumentationOptions, xhrInstrumentationOptions } =
-      this.options.instrumentationOptions ?? {};
+      options.instrumentationOptions ?? {};
 
     registerInstrumentations({
       instrumentations:
