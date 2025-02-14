@@ -1,11 +1,22 @@
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 
+import type { Config, Patterns } from '@grafana/faro-core';
+
 import { FaroXhrInstrumentation } from './faroXhrInstrumentation';
 import {
   fetchCustomAttributeFunctionWithDefaults,
   xhrCustomAttributeFunctionWithDefaults,
 } from './instrumentationUtils';
-import type { DefaultInstrumentationsOptions, InstrumentationOption } from './types';
+import type { InstrumentationOption } from './types';
+
+// TODO this should not be part of faro-core because it is a concern of the web-sdk package.
+// We eventually will refactor all faro packages so the Config can be extended with package specific options.
+// We also will remove all package specific functionality from the faro-core package.
+// For time reasons and conflicting priorities, we will leave it here for now.
+type WebTracingInstrumentationOptions = NonNullable<Config['webTracingInstrumentation']>;
+type DefaultInstrumentationsOptions = NonNullable<WebTracingInstrumentationOptions['instrumentationOptions']> & {
+  ignoreUrls?: Patterns;
+};
 
 export function getDefaultOTELInstrumentations(options: DefaultInstrumentationsOptions = {}): InstrumentationOption[] {
   const { fetchInstrumentationOptions, xhrInstrumentationOptions, ...sharedOptions } = options;
