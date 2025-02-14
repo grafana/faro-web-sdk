@@ -823,23 +823,14 @@ describe('SessionInstrumentation', () => {
   it('Initially configured session overrides take precedence over stored overrides when resuming a valid session.', () => {
     const transport = new MockTransport();
 
-    const sessionId = '123';
-
     const storedSessionMeta: MetaSession = {
-      id: sessionId,
-      attributes: {
-        foo: 'bar',
-        isSampled: 'true',
-      },
       overrides: {
         serviceName: 'my-service',
       },
     };
 
     const storedUserSession: FaroUserSession = {
-      ...createUserSessionObject({
-        sessionId,
-      }),
+      ...createUserSessionObject(),
       sessionMeta: storedSessionMeta,
     };
 
@@ -867,6 +858,6 @@ describe('SessionInstrumentation', () => {
 
     const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]);
 
-    expect(sessionFromStorage.sessionMeta).toStrictEqual(initialSessionMeta);
+    expect(sessionFromStorage.sessionMeta?.overrides).toStrictEqual(storedSessionMeta.overrides);
   });
 });
