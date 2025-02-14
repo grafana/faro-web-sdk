@@ -8,11 +8,12 @@ import {
   isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
+import { TracingInstrumentation } from '../instrumentations/web-tracing/instrumentation';
 import { browserMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
@@ -61,6 +62,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     eventDomain = defaultEventDomain,
     globalObjectKey = defaultGlobalObjectKey,
     instrumentations = getWebInstrumentations(),
+
     internalLoggerLevel = defaultInternalLoggerLevel,
     isolate = false,
     logArgsSerializer = defaultLogArgsSerializer,
@@ -78,7 +80,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations,
+    instrumentations: getInstrumentations(instrumentations),
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -143,4 +145,16 @@ function crateSessionMeta({
       overrides,
     },
   };
+}
+
+function getInstrumentations(instrumentations: Instrumentation[]): Instrumentation[] {
+  let filteredInstrumentations = instrumentations;
+
+  if (instrumentations.find((i) => i.name === '@grafana/faro-web-tracing')) {
+    filteredInstrumentations = instrumentations.filter(
+      (instrumentation) => instrumentation.name !== TracingInstrumentation.name
+    );
+  }
+
+  return filteredInstrumentations;
 }
