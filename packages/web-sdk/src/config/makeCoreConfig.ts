@@ -70,6 +70,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
+    webTracingInstrumentation,
   }: BrowserConfig = browserConfig;
 
   return {
@@ -105,6 +106,10 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackResources,
     trackWebVitalsAttribution,
     consoleInstrumentation,
+    webTracingInstrumentation: {
+      enabled: true,
+      ...webTracingInstrumentation,
+    },
   };
 }
 
