@@ -2,7 +2,6 @@ import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigati
 
 import {
   initializeFaro as coreInit,
-  genShortID,
   getWebInstrumentations,
   ReactIntegration,
   ReactRouterVersion,
@@ -41,6 +40,10 @@ export function initializeFaro(): Faro {
       namespace: env.client.packageNamespace,
       version: env.package.version,
       environment: env.mode.name,
+    },
+
+    locationTracking: {
+      enabled: true,
     },
   });
 

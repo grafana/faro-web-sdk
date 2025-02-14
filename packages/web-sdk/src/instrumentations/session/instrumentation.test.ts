@@ -691,4 +691,173 @@ describe('SessionInstrumentation', () => {
       },
     });
   });
+
+  it('Adds the overrides from the initial sessionMeta added to the Faro configuration.', () => {
+    const mockSessionMeta: MetaSession = {
+      id: 'new-session',
+      attributes: {
+        foo: 'bar',
+        isSampled: 'true',
+      },
+      overrides: {
+        serviceName: 'my-service',
+      },
+    };
+
+    const { metas } = initializeFaro(
+      mockConfig({
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          session: mockSessionMeta,
+          samplingRate: 1, // default
+        },
+      })
+    );
+
+    expect(metas.value.session).toStrictEqual(mockSessionMeta);
+  });
+
+  it('Uses the overrides from the stored user session on resumed sessions.', () => {
+    const transport = new MockTransport();
+
+    const sessionId = '123';
+
+    const initialSessionMeta: MetaSession = {
+      id: sessionId,
+      attributes: {
+        foo: 'bar',
+        isSampled: 'true',
+      },
+      overrides: {
+        serviceName: 'my-service',
+      },
+    };
+
+    const storedUserSession: FaroUserSession = {
+      ...createUserSessionObject({
+        sessionId,
+      }),
+      sessionMeta: initialSessionMeta,
+    };
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(storedUserSession);
+
+    expect(JSON.parse(mockStorage[STORAGE_KEY]).sessionMeta).toStrictEqual(initialSessionMeta);
+
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          session: {
+            overrides: {
+              serviceName: 'do-not-use-this-override-because-it-should-be-overwritten-by-the-one-from-storage',
+            },
+          },
+        },
+      })
+    );
+
+    const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]);
+
+    expect(sessionFromStorage.sessionId).toBe(sessionId);
+    expect(sessionFromStorage.sessionMeta).toStrictEqual(initialSessionMeta);
+  });
+
+  it('Uses only the overrides provided in the config if the stored session is invalid.', () => {
+    const transport = new MockTransport();
+
+    const sessionId = '123';
+    const startTimeValid = dateNow() - 5 * 60 * 1000;
+    const lastActivityInvalid = dateNow() - SESSION_EXPIRATION_TIME;
+
+    const storedSessionMeta: MetaSession = {
+      id: sessionId,
+      attributes: {
+        foo: 'bar',
+        isSampled: 'true',
+      },
+      overrides: {
+        serviceName: 'my-service',
+      },
+    };
+
+    const storedUserSession: FaroUserSession = {
+      ...createUserSessionObject({
+        sessionId,
+        started: startTimeValid,
+        lastActivity: lastActivityInvalid,
+      }),
+      sessionMeta: storedSessionMeta,
+    };
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(storedUserSession);
+
+    expect(JSON.parse(mockStorage[STORAGE_KEY]).sessionMeta).toStrictEqual(storedSessionMeta);
+
+    const initialSessionMeta = {
+      ...storedSessionMeta,
+      overrides: {
+        serviceName: 'do-not-use-this-override-because-it-should-be-overwritten-by-the-one-from-storage',
+      },
+    };
+
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          session: initialSessionMeta,
+        },
+      })
+    );
+
+    const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]);
+
+    expect(sessionFromStorage.sessionMeta).toStrictEqual(initialSessionMeta);
+  });
+
+  it('Initially configured session overrides take precedence over stored overrides when resuming a valid session.', () => {
+    const transport = new MockTransport();
+
+    const storedSessionMeta: MetaSession = {
+      overrides: {
+        serviceName: 'my-service',
+      },
+    };
+
+    const storedUserSession: FaroUserSession = {
+      ...createUserSessionObject(),
+      sessionMeta: storedSessionMeta,
+    };
+
+    mockStorage[STORAGE_KEY] = JSON.stringify(storedUserSession);
+
+    expect(JSON.parse(mockStorage[STORAGE_KEY]).sessionMeta).toStrictEqual(storedSessionMeta);
+
+    const initialSessionMeta = {
+      ...storedSessionMeta,
+      overrides: {
+        serviceName: 'do-not-use-this-override-because-it-should-be-overwritten-by-the-one-from-storage',
+      },
+    };
+
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          session: initialSessionMeta,
+        },
+      })
+    );
+
+    const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]);
+
+    expect(sessionFromStorage.sessionMeta?.overrides).toStrictEqual(storedSessionMeta.overrides);
+  });
 });

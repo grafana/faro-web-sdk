@@ -193,6 +193,9 @@ export interface Config<P = APIEvent> {
     errorSerializer?: LogArgsSerializer;
   };
 
+  /**
+   * Configuration for the page tracking
+   */
   pageTracking?: {
     /**
      * The page meta for initial page settings
@@ -203,6 +206,20 @@ export interface Config<P = APIEvent> {
      * Allows to provide a template for the page id
      */
     generatePageId?: (location: Location) => string;
+  };
+
+  /**
+   * Configuration for the location tracking (Grafana cloud only)
+   */
+  geoLocationTracking?: {
+    /**
+     * Enable or disable geolocation tracking.
+     * Geolocation tracking must be enabled in the Grafana Cloud settings first.
+     * It cannot be enabled solely on the client side.
+     * This option allows control over tracking on the client side to comply with user
+     * privacy requirements.
+     */
+    enabled?: boolean;
   };
 }
 

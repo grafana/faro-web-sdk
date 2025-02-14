@@ -1,12 +1,14 @@
 import type { MetaOverrides, MetaPage, MetaSession, MetaUser, MetaView } from '../../metas';
 
+type OverridesAvailableThroughApi = Pick<MetaOverrides, 'serviceName'>;
+
 export interface MetaAPI {
   setUser: (user?: MetaUser | undefined) => void;
   resetUser: () => void;
   setSession: (
     session?: MetaSession | undefined,
     options?: {
-      overrides: MetaOverrides;
+      overrides: OverridesAvailableThroughApi;
     }
   ) => void;
   resetSession: () => void;
@@ -14,13 +16,12 @@ export interface MetaAPI {
   setView: (
     view?: MetaView | undefined,
     options?: {
-      overrides: MetaOverrides;
+      overrides: OverridesAvailableThroughApi;
     }
   ) => void;
   getView: () => MetaView | undefined;
   /**
    * If a string is provided, it will be used as the page id.
-   * @returns
    */
   setPage: (page?: MetaPage | string | undefined) => void;
   getPage: () => MetaPage | undefined;

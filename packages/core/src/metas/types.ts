@@ -91,8 +91,20 @@ export interface Meta {
 }
 
 /**
- * Overrides are instructions that allow the receiver to override certain properties.
+ * MetaOverrides are instructions that allow the receiver to override certain properties (Grafana Cloud only).
  */
 export type MetaOverrides = {
+  /**
+   * New service name (Grafana Cloud only)
+   */
   serviceName?: string;
+
+  /**
+   * Enable or disable geolocation tracking (Grafana Cloud only).
+   * Geolocation tracking must be enabled in the Grafana Cloud settings first.
+   * It cannot be enabled solely on the client side.
+   * This option allows control over tracking on the client side to comply with user
+   * privacy requirements.
+   */
+  geoLocationTrackingEnabled?: boolean;
 };

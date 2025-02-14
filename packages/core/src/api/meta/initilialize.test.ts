@@ -78,6 +78,40 @@ describe('Meta API', () => {
       api.setSession(undefined, { overrides });
       expect(api.getSession()).toEqual({ overrides });
     });
+
+    it('merges the new overrides with the existing session meta overrides', () => {
+      const initialSession = { id: 'my-session' };
+
+      const mc = mockConfig({
+        sessionTracking: {
+          session: initialSession,
+        },
+        geoLocationTracking: {
+          enabled: false,
+        },
+      });
+
+      // mockConfig is the result of calling makeCoreConfig in faro-web-sdk package.
+      // It it reads the geoLocationTracking properties it adds them to the sessionTracking.session.overrides object.
+      mc.sessionTracking!.session!.overrides = { geoLocationTrackingEnabled: false };
+
+      const { api } = initializeFaro(mc);
+
+      expect(api.getSession()?.id).toEqual(initialSession.id);
+      expect(api.getSession()?.overrides).toBeDefined();
+      expect(api.getSession()?.overrides).toStrictEqual({ geoLocationTrackingEnabled: false });
+
+      const overrides = { serviceName: 'service-1' };
+      const newSession = { id: 'my-new-session' };
+      api.setSession(newSession, { overrides });
+      expect(api.getSession()?.id).toEqual(newSession.id);
+      expect(api.getSession()?.overrides).toStrictEqual({ ...overrides, geoLocationTrackingEnabled: false });
+
+      const newOverrides = { serviceName: 'service-2' };
+      api.setSession(newSession, { overrides: newOverrides });
+      expect(api.getSession()?.id).toEqual(newSession.id);
+      expect(api.getSession()?.overrides).toStrictEqual({ ...newOverrides, geoLocationTrackingEnabled: false });
+    });
   });
 
   describe('setPage / getPage', () => {

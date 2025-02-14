@@ -107,4 +107,36 @@ describe('config', () => {
       expect(config.ignoreUrls[0].test(url)).toBe(true);
     }
   );
+
+  it('updates the overrides object in the session config with the geoLocationTracking.enabled value', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      sessionTracking: {
+        session: { id: 'my-session' },
+      },
+    };
+
+    let config = makeCoreConfig({ ...browserConfig, geoLocationTracking: { enabled: true } });
+    expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geoLocationTrackingEnabled');
+    expect(config?.sessionTracking?.session?.overrides?.geoLocationTrackingEnabled).toBe(true);
+
+    config = makeCoreConfig({ ...browserConfig, geoLocationTracking: { enabled: false } });
+    expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geoLocationTrackingEnabled');
+    expect(config?.sessionTracking?.session?.overrides?.geoLocationTrackingEnabled).toBe(false);
+
+    // Also test that the session object is not created or mutated if geoLocationTracking is not enabled
+    config = makeCoreConfig(browserConfig);
+    expect(config?.sessionTracking?.session).toBeDefined();
+
+    const sessionMeta = { id: 'test', attributes: { foo: 'bar' } };
+    config = makeCoreConfig({
+      ...browserConfig,
+      sessionTracking: { session: sessionMeta },
+    });
+
+    expect(config?.sessionTracking?.session).toBeDefined();
+    expect(config?.sessionTracking?.session?.overrides).toBeUndefined();
+    expect(config?.sessionTracking?.session).toStrictEqual(sessionMeta);
+  });
 });
