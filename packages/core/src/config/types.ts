@@ -6,6 +6,8 @@ import type { BatchExecutorOptions, BeforeSendHook, Transport } from '../transpo
 import type { UnpatchedConsole } from '../unpatchedConsole';
 import type { LogLevel } from '../utils';
 
+import type { TracingInstrumentationOptions } from './WebSdkTracingConfig';
+
 type SamplingContext = {
   metas: Meta;
 };
@@ -221,6 +223,8 @@ export interface Config<P = APIEvent> {
      */
     enabled?: boolean;
   };
+
+  webTracingInstrumentation?: TracingInstrumentationOptions;
 }
 
 export type Patterns = Array<string | RegExp>;

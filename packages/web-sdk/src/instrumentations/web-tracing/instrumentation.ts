@@ -12,6 +12,7 @@ import {
 import {
   ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
   ATTR_SERVICE_NAMESPACE,
+  // eslint-disable-next-line import/no-unresolved
 } from '@opentelemetry/semantic-conventions/incubating';
 
 import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-core';
