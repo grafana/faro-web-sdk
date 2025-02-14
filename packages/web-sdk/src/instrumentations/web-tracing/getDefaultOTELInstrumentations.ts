@@ -13,8 +13,8 @@ import type { InstrumentationOption } from './types';
 // We eventually will refactor all faro packages so the Config can be extended with package specific options.
 // We also will remove all package specific functionality from the faro-core package.
 // For time reasons and conflicting priorities, we will leave it here for now.
-type WebTracingInstrumentationOptions = NonNullable<Config['webTracingInstrumentation']>;
-type DefaultInstrumentationsOptions = NonNullable<WebTracingInstrumentationOptions['instrumentationOptions']> & {
+type tracingInstrumentationOptions = NonNullable<Config['tracingInstrumentation']>;
+type DefaultInstrumentationsOptions = NonNullable<tracingInstrumentationOptions['instrumentationOptions']> & {
   ignoreUrls?: Patterns;
 };
 

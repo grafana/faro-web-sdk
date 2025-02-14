@@ -28,12 +28,12 @@ export class TracingInstrumentation extends BaseInstrumentation {
   static SCHEDULED_BATCH_DELAY_MS = 1000;
 
   initialize(): void {
-    if (this.config.webTracingInstrumentation?.enabled === false) {
+    if (this.config.tracingInstrumentation?.enabled === false) {
       this.logDebug('faro web-tracing instrumentation disabled');
       return;
     }
 
-    const options = this.config.webTracingInstrumentation ?? {};
+    const options = this.config.tracingInstrumentation ?? {};
     const attributes: ResourceAttributes = {};
 
     if (this.config.app.name) {

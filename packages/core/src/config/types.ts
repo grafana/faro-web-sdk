@@ -224,7 +224,7 @@ export interface Config<P = APIEvent> {
     enabled?: boolean;
   };
 
-  webTracingInstrumentation?: TracingInstrumentationOptions;
+  tracingInstrumentation?: TracingInstrumentationOptions;
 }
 
 export type Patterns = Array<string | RegExp>;
