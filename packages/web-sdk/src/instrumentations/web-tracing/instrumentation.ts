@@ -29,7 +29,6 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
   initialize(): void {
     if (this.config.tracingInstrumentation?.enabled === false) {
-      this.logDebug('faro web-tracing instrumentation disabled');
       return;
     }
 
