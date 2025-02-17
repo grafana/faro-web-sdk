@@ -224,6 +224,13 @@ export interface Config<P = APIEvent> {
     enabled?: boolean;
   };
 
+  /**
+   * Shortcut property to enable or disable the built-in tracing instrumentation
+   */
+  tracing?: boolean;
+  /**
+   * Advanced options to configure the built-in tracing instrumentation
+   */
   tracingInstrumentation?: TracingInstrumentationOptions;
 }
 
