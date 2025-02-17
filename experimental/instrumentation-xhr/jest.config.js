@@ -12,5 +12,5 @@ module.exports = {
     '^@remix-run/web-stream$': require.resolve('@remix-run/web-stream'),
     '^@web3-storage/multipart-parser$': require.resolve('@web3-storage/multipart-parser'),
   },
-  setupFiles: ['<rootDir>/packages/instrumentation-xhr/setup.jest.ts'],
+  setupFiles: ['<rootDir>/experimental/instrumentation-xhr/setup.jest.ts'],
 };
