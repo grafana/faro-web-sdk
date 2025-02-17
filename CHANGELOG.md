@@ -2,6 +2,12 @@
 
 ## Next
 
+Chore (`@grafana/faro-web-sdk`): Add round-trip-time (RTT) and first-party/third-party indicators
+to `faro.performance.*` events (#974)
+
+Chore (`@grafana/faro-web-sdk`): Add first-party and third-party indicators to fetch and xhr request
+attributes (#974)
+
 ## 1.13.3
 
 - Chore (`@grafana/faro-web-sdk`): Ensure all properties in `attributes` and `context` objects are
