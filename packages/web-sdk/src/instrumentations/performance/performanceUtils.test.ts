@@ -18,7 +18,30 @@ Object.defineProperty(window, 'performance', {
   writable: true,
 });
 
+const originalWindow = window;
 describe('performanceUtils', () => {
+  const mockUrl = 'http://dummy.com';
+
+  beforeEach(() => {
+    window = Object.create(window);
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: mockUrl,
+        hostname: 'dummy.com',
+      },
+      writable: true, // possibility to override
+    });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  afterAll(() => {
+    window = originalWindow;
+  });
+
   it(`calculates navigation timing`, () => {
     const faroNavigationTiming = createFaroNavigationTiming(performanceNavigationEntry);
     expect(faroNavigationTiming).toStrictEqual({
@@ -32,7 +55,7 @@ describe('performanceUtils', () => {
       ttfb: '542',
       type: 'navigate',
 
-      name: 'http://example.com',
+      name: 'http://dummy.com',
       tcpHandshakeTime: '53',
       dnsLookupTime: '139',
       tlsNegotiationTime: '33',
@@ -49,13 +72,14 @@ describe('performanceUtils', () => {
       protocol: 'h2',
       initiatorType: 'navigation',
       rtt: '305',
+      domainLevel: 'firstParty',
     } as FaroNavigationTiming);
   });
 
   it(`calculates resource timings`, () => {
     const faroResourceTiming = createFaroResourceTiming(performanceResourceEntry);
     expect(faroResourceTiming).toStrictEqual({
-      name: 'http://example.com/awesome-image',
+      name: 'http://third-party.com/awesome-image',
       duration: '370',
       tcpHandshakeTime: '0',
       dnsLookupTime: '0',
@@ -75,6 +99,7 @@ describe('performanceUtils', () => {
       ttfb: '359',
       visibilityState: 'visible',
       rtt: '370',
+      domainLevel: 'firstParty',
     } as FaroResourceTiming);
   });
 

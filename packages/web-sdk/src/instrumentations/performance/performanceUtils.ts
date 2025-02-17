@@ -1,5 +1,7 @@
 import { isArray, type PushEventOptions, unknownString } from '@grafana/faro-core';
 
+import { getDomainLevelAttribute } from '../../utils/url';
+
 import type { CacheType, FaroNavigationTiming, FaroResourceTiming } from './types';
 
 const w3cTraceparentFormat = /^00-[a-f0-9]{32}-[a-f0-9]{16}-[0-9]{1,2}$/;
@@ -121,6 +123,7 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
     visibilityState: document.visibilityState,
     ttfb: toFaroPerformanceTimingString(responseStart - requestStart),
     rtt: toFaroPerformanceTimingString(responseStart - fetchStart),
+    domainLevel: getDomainLevelAttribute(new URL(name)),
 
     // TODO: add in future iteration, ideally after nested objects are supported by the collector.
     // serverTiming: resourceEntryRaw.serverTiming,

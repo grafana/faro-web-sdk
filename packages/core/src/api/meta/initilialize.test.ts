@@ -16,8 +16,7 @@ describe('Meta API', () => {
     });
   });
 
-  beforeEach(() => {
-    jest.resetModules();
+  afterEach(() => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
   });

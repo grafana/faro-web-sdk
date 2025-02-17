@@ -34,6 +34,7 @@ export type FaroResourceTiming = Readonly<{
   visibilityState: DocumentVisibilityState;
   ttfb: string;
   rtt: string;
+  domainLevel: 'firstParty' | 'thirdParty';
 }>;
 
 export type FaroNavigationItem = {

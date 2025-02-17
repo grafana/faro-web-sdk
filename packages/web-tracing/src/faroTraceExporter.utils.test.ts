@@ -49,6 +49,7 @@ describe('faroTraceExporter.utils', () => {
       'http.url': 'http://foo/bar',
       'http.user_agent': 'my-user-agent',
       duration_ns: '15000064',
+      domainLevel: 'thirdParty',
     });
   });
 

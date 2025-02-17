@@ -167,4 +167,4 @@ export {
   STORAGE_KEY,
 } from './instrumentations/session';
 
-export { getIgnoreUrls } from './utils/url';
+export { getIgnoreUrls, getDomainLevelAttribute, isSameDomain } from './utils/url';

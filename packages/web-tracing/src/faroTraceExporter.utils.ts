@@ -2,7 +2,7 @@ import type { SpanContext } from '@opentelemetry/api';
 import { ESpanKind, type IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 
 import { faro, unknownString } from '@grafana/faro-core';
-import type { EventAttributes as FaroEventAttributes } from '@grafana/faro-web-sdk';
+import { type EventAttributes as FaroEventAttributes, getDomainLevelAttribute } from '@grafana/faro-web-sdk';
 
 const DURATION_NS_KEY = 'duration_ns';
 
@@ -33,6 +33,13 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
         if (!Number.isNaN(span.endTimeUnixNano) && !Number.isNaN(span.startTimeUnixNano)) {
           faroEventAttributes[DURATION_NS_KEY] = String(Number(span.endTimeUnixNano) - Number(span.startTimeUnixNano));
         }
+
+        const url = faroEventAttributes['http.url'];
+        if (url) {
+          faroEventAttributes['domainLevel'] = getDomainLevelAttribute(new URL(url));
+        }
+
+        console.log('faroEventAttributes :>> ', faroEventAttributes);
 
         const index = (scope?.name ?? '').indexOf('-');
         let eventName = unknownString;
