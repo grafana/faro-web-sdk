@@ -70,8 +70,11 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
+    tracing = false,
     tracingInstrumentation,
   }: BrowserConfig = browserConfig;
+
+  const tracingEnabled = Boolean(tracingInstrumentation?.enabled || tracing);
 
   return {
     app,
@@ -81,7 +84,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations: getInstrumentations(instrumentations, browserConfig),
+    instrumentations: preConfigureInstrumentations(instrumentations, { tracingEnabled }),
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -107,7 +110,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackWebVitalsAttribution,
     consoleInstrumentation,
     tracingInstrumentation: {
-      enabled: false,
+      enabled: tracingEnabled,
       ...tracingInstrumentation,
     },
   };
@@ -152,10 +155,13 @@ function crateSessionMeta({
   };
 }
 
-function getInstrumentations(instrumentations: Instrumentation[], config: BrowserConfig): Instrumentation[] {
+function preConfigureInstrumentations(
+  instrumentations: Instrumentation[],
+  { tracingEnabled }: { tracingEnabled: boolean }
+): Instrumentation[] {
   let filteredInstrumentations = instrumentations;
 
-  if (config.tracingInstrumentation?.enabled && instrumentations.find((i) => i.name === '@grafana/faro-web-tracing')) {
+  if (tracingEnabled && instrumentations.find((i) => i.name === '@grafana/faro-web-tracing')) {
     filteredInstrumentations = instrumentations.filter(
       (instrumentation) => instrumentation.name !== TracingInstrumentation.name
     );
