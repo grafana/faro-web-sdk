@@ -1,6 +1,6 @@
 // the values of this timings are contrived for testing.They do not necessarily reflect reality.
 export const performanceNavigationEntry = {
-  name: 'http://example.com',
+  name: 'http://dummy.com',
   entryType: 'navigation',
   startTime: 0,
   duration: 2700,
@@ -42,7 +42,7 @@ export const performanceNavigationEntry = {
 } as unknown as PerformanceNavigationTiming;
 
 export const performanceResourceEntry = {
-  name: 'http://example.com/awesome-image',
+  name: 'http://third-party.com/awesome-image',
   entryType: 'resource',
   startTime: 778,
   duration: 370,

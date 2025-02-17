@@ -1,3 +1,5 @@
+import { firstPartyDomainAttribute, thirdPartyDomainAttribute } from '../../utils/url';
+
 import {
   createFaroNavigationTiming,
   createFaroResourceTiming,
@@ -21,6 +23,7 @@ Object.defineProperty(window, 'performance', {
 const originalWindow = window;
 describe('performanceUtils', () => {
   const mockUrl = 'http://dummy.com';
+  const name = mockUrl;
 
   beforeEach(() => {
     window = Object.create(window);
@@ -55,7 +58,7 @@ describe('performanceUtils', () => {
       ttfb: '542',
       type: 'navigate',
 
-      name: 'http://dummy.com',
+      name,
       tcpHandshakeTime: '53',
       dnsLookupTime: '139',
       tlsNegotiationTime: '33',
@@ -72,7 +75,7 @@ describe('performanceUtils', () => {
       protocol: 'h2',
       initiatorType: 'navigation',
       rtt: '305',
-      domainLevel: 'firstParty',
+      domainLevel: firstPartyDomainAttribute,
     } as FaroNavigationTiming);
   });
 
@@ -99,37 +102,44 @@ describe('performanceUtils', () => {
       ttfb: '359',
       visibilityState: 'visible',
       rtt: '370',
-      domainLevel: 'firstParty',
+      domainLevel: thirdPartyDomainAttribute,
     } as FaroResourceTiming);
   });
 
   it(`calculates cacheHitStatus`, () => {
-    expect(createFaroResourceTiming({ transferSize: 0 } as any).cacheHitStatus).toBe('fullLoad');
-    expect(createFaroResourceTiming({ transferSize: 1 } as any).cacheHitStatus).toBe('fullLoad');
+    let resourceTiming = { transferSize: 0, name } as any;
+    expect(createFaroResourceTiming(resourceTiming).cacheHitStatus).toBe('fullLoad');
 
-    expect(createFaroResourceTiming({ transferSize: 0, decodedBodySize: 1 } as any).cacheHitStatus).toBe('cache');
+    resourceTiming = { transferSize: 1, name } as any;
+    expect(createFaroResourceTiming(resourceTiming).cacheHitStatus).toBe('fullLoad');
 
-    expect(createFaroResourceTiming({ transferSize: 1, encodedBodySize: 0 } as any).cacheHitStatus).toBe('fullLoad');
-    expect(createFaroResourceTiming({ transferSize: 1, encodedBodySize: 1 } as any).cacheHitStatus).toBe('fullLoad');
-    expect(createFaroResourceTiming({ transferSize: 1, encodedBodySize: 2 } as any).cacheHitStatus).toBe(
-      'conditionalFetch'
-    );
+    resourceTiming = { transferSize: 0, decodedBodySize: 1, name } as any;
+    expect(createFaroResourceTiming(resourceTiming).cacheHitStatus).toBe('cache');
+
+    resourceTiming = { transferSize: 1, encodedBodySize: 0, name } as any;
+    expect(createFaroResourceTiming(resourceTiming).cacheHitStatus).toBe('fullLoad');
+
+    resourceTiming = { transferSize: 1, encodedBodySize: 1, name } as any;
+    expect(createFaroResourceTiming(resourceTiming).cacheHitStatus).toBe('fullLoad');
+
+    resourceTiming = { transferSize: 1, encodedBodySize: 2, name } as any;
+    expect(createFaroResourceTiming(resourceTiming).cacheHitStatus).toBe('conditionalFetch');
 
     // For browsers supporting the responseStatus property
-    expect(
-      createFaroResourceTiming({ transferSize: 1, encodedBodySize: 1, responseStatus: 200 } as any).cacheHitStatus
-    ).toBe('fullLoad');
-    expect(
-      createFaroResourceTiming({ transferSize: 1, encodedBodySize: 1, responseStatus: 304 } as any).cacheHitStatus
-    ).toBe('conditionalFetch');
+    resourceTiming = { transferSize: 1, encodedBodySize: 1, responseStatus: 200, name } as any;
+    expect(createFaroResourceTiming(resourceTiming).cacheHitStatus).toBe('fullLoad');
+
+    resourceTiming = { transferSize: 1, encodedBodySize: 1, responseStatus: 304, name } as any;
+    expect(createFaroResourceTiming(resourceTiming).cacheHitStatus).toBe('conditionalFetch');
   });
 
   it(`Sets renderBlockingStatus`, () => {
     // For browsers supporting the responseStatus property
-    expect(createFaroResourceTiming({ renderBlockingStatus: 'blocking' } as any).renderBlockingStatus).toBe('blocking');
+    let resourceTiming = { renderBlockingStatus: 'blocking', name } as any;
+    expect(createFaroResourceTiming(resourceTiming).renderBlockingStatus).toBe('blocking');
 
     // For browsers which do not support the responseStatus property
-    expect(createFaroResourceTiming({} as any).renderBlockingStatus).toBe('unknown');
+    expect(createFaroResourceTiming({ name } as any).renderBlockingStatus).toBe('unknown');
   });
 
   it(`Sets documentParsingTime to "unknown" in case it is not supported by a certain browser`, () => {
