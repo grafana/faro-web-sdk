@@ -33,6 +33,7 @@ export type FaroResourceTiming = Readonly<{
   // serverTiming: PerformanceServerTiming[];
   visibilityState: DocumentVisibilityState;
   ttfb: string;
+  rtt: string;
 }>;
 
 export type FaroNavigationItem = {

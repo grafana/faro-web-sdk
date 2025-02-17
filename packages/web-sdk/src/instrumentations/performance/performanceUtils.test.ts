@@ -48,6 +48,7 @@ describe('performanceUtils', () => {
       renderBlockingStatus: 'unknown',
       protocol: 'h2',
       initiatorType: 'navigation',
+      rtt: '305',
     } as FaroNavigationTiming);
   });
 
@@ -73,6 +74,7 @@ describe('performanceUtils', () => {
       initiatorType: 'img',
       ttfb: '359',
       visibilityState: 'visible',
+      rtt: '370',
     } as FaroResourceTiming);
   });
 
