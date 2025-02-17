@@ -7,6 +7,7 @@ import { createFaroResourceTiming } from './performanceUtils';
 import { performanceResourceEntry } from './performanceUtilsTestData';
 import { observeResourceTimings } from './resource';
 
+const originalWindow = window;
 describe('Resource observer', () => {
   const originalTimeOrigin = performance.timeOrigin;
   const mockTimeOriginValue = 1000;
@@ -32,19 +33,19 @@ describe('Resource observer', () => {
                 }),
               },
               {
-                name: 'resource_fetch',
+                name: 'http://resource_fetch.com',
                 toJSON: () => ({
                   ...performanceResourceEntry,
                   initiatorType: 'fetch',
-                  name: 'resource_fetch',
+                  name: 'http://resource_fetch.com',
                 }),
               },
               {
-                name: 'resource_xmlhttprequest',
+                name: 'http://resource_xmlhttprequest',
                 toJSON: () => ({
                   ...performanceResourceEntry,
                   initiatorType: 'xmlhttprequest',
-                  name: 'resource_xmlhttprequest',
+                  name: 'http://resource_xmlhttprequest',
                 }),
               },
             ];
@@ -59,8 +60,22 @@ describe('Resource observer', () => {
 
   (global as any).PerformanceObserver = MockPerformanceObserver;
 
+  const mockUrl = 'http://dummy.com';
+
   beforeEach(() => {
+    window = Object.create(window);
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: mockUrl,
+        hostname: 'dummy.com',
+      },
+      writable: true, // possibility to override
+    });
+  });
+
+  afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   afterAll(() => {
@@ -72,6 +87,8 @@ describe('Resource observer', () => {
       value: originalTimeOrigin,
       configurable: true,
     });
+
+    window = originalWindow;
   });
 
   it('Ignores entries where name matches ignoredUrls entry', () => {
@@ -82,11 +99,11 @@ describe('Resource observer', () => {
 
     initializeFaro(mockConfig({ trackResources: true }));
 
-    const ignoredUrls = ['http://example.com'];
+    const ignoredUrls = ['http://dummy.com'];
     observeResourceTimings('123', mockPushEvent, ignoredUrls);
 
-    expect(mockEntryUrlIsIgnored).toBeCalledTimes(1);
-    expect(mockEntryUrlIsIgnored).toBeCalledWith(ignoredUrls, performanceResourceEntry.name);
+    expect(mockEntryUrlIsIgnored).toHaveBeenCalledTimes(1);
+    expect(mockEntryUrlIsIgnored).toHaveBeenCalledWith(ignoredUrls, performanceResourceEntry.name);
 
     expect(mockPushEvent).not.toHaveBeenCalled();
   });

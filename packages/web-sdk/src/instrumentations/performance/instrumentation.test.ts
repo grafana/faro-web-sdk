@@ -129,7 +129,7 @@ describe('Performance Instrumentation', () => {
     const config = mockConfig({
       transports: [fetchTransport],
       instrumentations: [new PerformanceInstrumentation()],
-      ignoreUrls: [/.*foo-analytics/, /.*.analytics.com/, 'http://example.com/awesome-image'],
+      ignoreUrls: [/.*foo-analytics/, /.*.analytics.com/, 'http://third-party.com/awesome-image'],
       trackResources: true,
     });
 
@@ -147,6 +147,6 @@ describe('Performance Instrumentation', () => {
     expect(mockTransport.items.length).toBe(1);
 
     const item = mockTransport.items[0] as TransportItem<EventEvent>;
-    expect(item.payload.attributes?.['name']).toBe('http://example.com');
+    expect(item.payload.attributes?.['name']).toBe('http://dummy.com');
   });
 });
