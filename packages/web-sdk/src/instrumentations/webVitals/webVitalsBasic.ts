@@ -12,7 +12,7 @@ export class WebVitalsBasic {
     ttfb: onTTFB,
   };
 
-  constructor(private pushMeasurement: MeasurementsAPI['pushMeasurement']) {}
+  constructor(private pushMeasurement: MeasurementsAPI['pushMeasurement'], private reportAllChanges?: boolean) {}
 
   initialize(): void {
     Object.entries(WebVitalsBasic.mapping).forEach(([indicator, executor]) => {
@@ -24,7 +24,7 @@ export class WebVitalsBasic {
             [indicator]: metric.value,
           },
         });
-      });
+      }, { reportAllChanges: this.reportAllChanges });
     });
   }
 }

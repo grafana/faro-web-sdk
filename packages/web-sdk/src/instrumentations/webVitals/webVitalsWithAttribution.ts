@@ -16,7 +16,7 @@ const loadStateKey = 'load_state';
 const timeToFirstByteKey = 'time_to_first_byte';
 
 export class WebVitalsWithAttribution {
-  constructor(private corePushMeasurement: MeasurementsAPI['pushMeasurement']) {}
+  constructor(private corePushMeasurement: MeasurementsAPI['pushMeasurement'], private reportAllChanges?: boolean) {}
 
   initialize(): void {
     this.measureCLS();
@@ -40,7 +40,7 @@ export class WebVitalsWithAttribution {
       this.addIfPresent(context, 'largest_shift_target', largestShiftTarget);
 
       this.pushMeasurement(values, context);
-    });
+    }, { reportAllChanges: this.reportAllChanges });
   }
 
   private measureFCP(): void {
@@ -55,7 +55,7 @@ export class WebVitalsWithAttribution {
       this.addIfPresent(context, loadStateKey, loadState);
 
       this.pushMeasurement(values, context);
-    });
+    }, { reportAllChanges: this.reportAllChanges });
   }
 
   private measureFID(): void {
@@ -71,7 +71,7 @@ export class WebVitalsWithAttribution {
       this.addIfPresent(context, loadStateKey, loadState);
 
       this.pushMeasurement(values, context);
-    });
+    }, { reportAllChanges: this.reportAllChanges });
   }
 
   private measureINP(): void {
@@ -100,7 +100,7 @@ export class WebVitalsWithAttribution {
       this.addIfPresent(context, 'interaction_type', interactionType);
 
       this.pushMeasurement(values, context);
-    });
+    }, { reportAllChanges: this.reportAllChanges });
   }
 
   private measureLCP(): void {
@@ -118,7 +118,7 @@ export class WebVitalsWithAttribution {
       this.addIfPresent(context, 'element', element);
 
       this.pushMeasurement(values, context);
-    });
+    }, { reportAllChanges: this.reportAllChanges });
   }
 
   private measureTTFB(): void {
@@ -135,7 +135,7 @@ export class WebVitalsWithAttribution {
       const context = this.buildInitialContext(metric);
 
       this.pushMeasurement(values, context);
-    });
+    }, { reportAllChanges: this.reportAllChanges });
   }
 
   private buildInitialValues(metric: Metric): Values {
