@@ -16,7 +16,10 @@ const loadStateKey = 'load_state';
 const timeToFirstByteKey = 'time_to_first_byte';
 
 export class WebVitalsWithAttribution {
-  constructor(private corePushMeasurement: MeasurementsAPI['pushMeasurement'], private reportAllChanges?: boolean) {}
+  constructor(
+    private corePushMeasurement: MeasurementsAPI['pushMeasurement'],
+    private reportAllChanges?: boolean
+  ) {}
 
   initialize(): void {
     this.measureCLS();
@@ -28,114 +31,132 @@ export class WebVitalsWithAttribution {
   }
 
   private measureCLS(): void {
-    onCLS((metric) => {
-      const { loadState, largestShiftValue, largestShiftTime, largestShiftTarget } = metric.attribution;
+    onCLS(
+      (metric) => {
+        const { loadState, largestShiftValue, largestShiftTime, largestShiftTarget } = metric.attribution;
 
-      const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'largest_shift_value', largestShiftValue);
-      this.addIfPresent(values, 'largest_shift_time', largestShiftTime);
+        const values = this.buildInitialValues(metric);
+        this.addIfPresent(values, 'largest_shift_value', largestShiftValue);
+        this.addIfPresent(values, 'largest_shift_time', largestShiftTime);
 
-      const context = this.buildInitialContext(metric);
-      this.addIfPresent(context, loadStateKey, loadState);
-      this.addIfPresent(context, 'largest_shift_target', largestShiftTarget);
+        const context = this.buildInitialContext(metric);
+        this.addIfPresent(context, loadStateKey, loadState);
+        this.addIfPresent(context, 'largest_shift_target', largestShiftTarget);
 
-      this.pushMeasurement(values, context);
-    }, { reportAllChanges: this.reportAllChanges });
+        this.pushMeasurement(values, context);
+      },
+      { reportAllChanges: this.reportAllChanges }
+    );
   }
 
   private measureFCP(): void {
-    onFCP((metric) => {
-      const { firstByteToFCP, timeToFirstByte, loadState } = metric.attribution;
+    onFCP(
+      (metric) => {
+        const { firstByteToFCP, timeToFirstByte, loadState } = metric.attribution;
 
-      const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'first_byte_to_fcp', firstByteToFCP);
-      this.addIfPresent(values, timeToFirstByteKey, timeToFirstByte);
+        const values = this.buildInitialValues(metric);
+        this.addIfPresent(values, 'first_byte_to_fcp', firstByteToFCP);
+        this.addIfPresent(values, timeToFirstByteKey, timeToFirstByte);
 
-      const context = this.buildInitialContext(metric);
-      this.addIfPresent(context, loadStateKey, loadState);
+        const context = this.buildInitialContext(metric);
+        this.addIfPresent(context, loadStateKey, loadState);
 
-      this.pushMeasurement(values, context);
-    }, { reportAllChanges: this.reportAllChanges });
+        this.pushMeasurement(values, context);
+      },
+      { reportAllChanges: this.reportAllChanges }
+    );
   }
 
   private measureFID(): void {
-    onFID((metric) => {
-      const { eventTime, eventTarget, eventType, loadState } = metric.attribution;
+    onFID(
+      (metric) => {
+        const { eventTime, eventTarget, eventType, loadState } = metric.attribution;
 
-      const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'event_time', eventTime);
+        const values = this.buildInitialValues(metric);
+        this.addIfPresent(values, 'event_time', eventTime);
 
-      const context = this.buildInitialContext(metric);
-      this.addIfPresent(context, 'event_target', eventTarget);
-      this.addIfPresent(context, 'event_type', eventType);
-      this.addIfPresent(context, loadStateKey, loadState);
+        const context = this.buildInitialContext(metric);
+        this.addIfPresent(context, 'event_target', eventTarget);
+        this.addIfPresent(context, 'event_type', eventType);
+        this.addIfPresent(context, loadStateKey, loadState);
 
-      this.pushMeasurement(values, context);
-    }, { reportAllChanges: this.reportAllChanges });
+        this.pushMeasurement(values, context);
+      },
+      { reportAllChanges: this.reportAllChanges }
+    );
   }
 
   private measureINP(): void {
-    onINP((metric) => {
-      const {
-        interactionTime,
-        presentationDelay,
-        inputDelay,
-        processingDuration,
-        nextPaintTime,
-        loadState,
-        interactionTarget,
-        interactionType,
-      } = metric.attribution;
+    onINP(
+      (metric) => {
+        const {
+          interactionTime,
+          presentationDelay,
+          inputDelay,
+          processingDuration,
+          nextPaintTime,
+          loadState,
+          interactionTarget,
+          interactionType,
+        } = metric.attribution;
 
-      const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'interaction_time', interactionTime);
-      this.addIfPresent(values, 'presentation_delay', presentationDelay);
-      this.addIfPresent(values, 'input_delay', inputDelay);
-      this.addIfPresent(values, 'processing_duration', processingDuration);
-      this.addIfPresent(values, 'next_paint_time', nextPaintTime);
+        const values = this.buildInitialValues(metric);
+        this.addIfPresent(values, 'interaction_time', interactionTime);
+        this.addIfPresent(values, 'presentation_delay', presentationDelay);
+        this.addIfPresent(values, 'input_delay', inputDelay);
+        this.addIfPresent(values, 'processing_duration', processingDuration);
+        this.addIfPresent(values, 'next_paint_time', nextPaintTime);
 
-      const context = this.buildInitialContext(metric);
-      this.addIfPresent(context, loadStateKey, loadState);
-      this.addIfPresent(context, 'interaction_target', interactionTarget);
-      this.addIfPresent(context, 'interaction_type', interactionType);
+        const context = this.buildInitialContext(metric);
+        this.addIfPresent(context, loadStateKey, loadState);
+        this.addIfPresent(context, 'interaction_target', interactionTarget);
+        this.addIfPresent(context, 'interaction_type', interactionType);
 
-      this.pushMeasurement(values, context);
-    }, { reportAllChanges: this.reportAllChanges });
+        this.pushMeasurement(values, context);
+      },
+      { reportAllChanges: this.reportAllChanges }
+    );
   }
 
   private measureLCP(): void {
-    onLCP((metric) => {
-      const { elementRenderDelay, resourceLoadDelay, resourceLoadDuration, timeToFirstByte, element } =
-        metric.attribution;
+    onLCP(
+      (metric) => {
+        const { elementRenderDelay, resourceLoadDelay, resourceLoadDuration, timeToFirstByte, element } =
+          metric.attribution;
 
-      const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'element_render_delay', elementRenderDelay);
-      this.addIfPresent(values, 'resource_load_delay', resourceLoadDelay);
-      this.addIfPresent(values, 'resource_load_duration', resourceLoadDuration);
-      this.addIfPresent(values, timeToFirstByteKey, timeToFirstByte);
+        const values = this.buildInitialValues(metric);
+        this.addIfPresent(values, 'element_render_delay', elementRenderDelay);
+        this.addIfPresent(values, 'resource_load_delay', resourceLoadDelay);
+        this.addIfPresent(values, 'resource_load_duration', resourceLoadDuration);
+        this.addIfPresent(values, timeToFirstByteKey, timeToFirstByte);
 
-      const context = this.buildInitialContext(metric);
-      this.addIfPresent(context, 'element', element);
+        const context = this.buildInitialContext(metric);
+        this.addIfPresent(context, 'element', element);
 
-      this.pushMeasurement(values, context);
-    }, { reportAllChanges: this.reportAllChanges });
+        this.pushMeasurement(values, context);
+      },
+      { reportAllChanges: this.reportAllChanges }
+    );
   }
 
   private measureTTFB(): void {
-    onTTFB((metric) => {
-      const { dnsDuration, connectionDuration, requestDuration, waitingDuration, cacheDuration } = metric.attribution;
+    onTTFB(
+      (metric) => {
+        const { dnsDuration, connectionDuration, requestDuration, waitingDuration, cacheDuration } = metric.attribution;
 
-      const values = this.buildInitialValues(metric);
-      this.addIfPresent(values, 'dns_duration', dnsDuration);
-      this.addIfPresent(values, 'connection_duration', connectionDuration);
-      this.addIfPresent(values, 'request_duration', requestDuration);
-      this.addIfPresent(values, 'waiting_duration', waitingDuration);
-      this.addIfPresent(values, 'cache_duration', cacheDuration);
+        const values = this.buildInitialValues(metric);
+        this.addIfPresent(values, 'dns_duration', dnsDuration);
+        this.addIfPresent(values, 'connection_duration', connectionDuration);
+        this.addIfPresent(values, 'request_duration', requestDuration);
+        this.addIfPresent(values, 'waiting_duration', waitingDuration);
+        this.addIfPresent(values, 'cache_duration', cacheDuration);
 
-      const context = this.buildInitialContext(metric);
+        const context = this.buildInitialContext(metric);
 
-      this.pushMeasurement(values, context);
-    }, { reportAllChanges: this.reportAllChanges });
+        this.pushMeasurement(values, context);
+      },
+      { reportAllChanges: this.reportAllChanges }
+    );
   }
 
   private buildInitialValues(metric: Metric): Values {

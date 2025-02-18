@@ -12,19 +12,25 @@ export class WebVitalsBasic {
     ttfb: onTTFB,
   };
 
-  constructor(private pushMeasurement: MeasurementsAPI['pushMeasurement'], private reportAllChanges?: boolean) {}
+  constructor(
+    private pushMeasurement: MeasurementsAPI['pushMeasurement'],
+    private reportAllChanges?: boolean
+  ) {}
 
   initialize(): void {
     Object.entries(WebVitalsBasic.mapping).forEach(([indicator, executor]) => {
-      executor((metric) => {
-        this.pushMeasurement({
-          type: 'web-vitals',
+      executor(
+        (metric) => {
+          this.pushMeasurement({
+            type: 'web-vitals',
 
-          values: {
-            [indicator]: metric.value,
-          },
-        });
-      }, { reportAllChanges: this.reportAllChanges });
+            values: {
+              [indicator]: metric.value,
+            },
+          });
+        },
+        { reportAllChanges: this.reportAllChanges }
+      );
     });
   }
 }
