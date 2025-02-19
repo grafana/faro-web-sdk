@@ -4,4 +4,5 @@ module.exports = {
   ...jestBaseConfig,
   roots: ['experimental/instrumentation-performance-timeline/src'],
   testEnvironment: 'jsdom',
+  setupFiles: ['<rootDir>/experimental/instrumentation-performance-timeline/setup.jest.ts'],
 };
