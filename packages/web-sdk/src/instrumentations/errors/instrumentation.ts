@@ -1,9 +1,11 @@
-import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
+import { VERSION } from '@grafana/faro-core';
+
+import { WebSdkBaseInstrumentation } from '../WebSdkBaseInstrumentation';
 
 import { registerOnerror } from './registerOnerror';
 import { registerOnunhandledrejection } from './registerOnunhandledrejection';
 
-export class ErrorsInstrumentation extends BaseInstrumentation {
+export class ErrorsInstrumentation extends WebSdkBaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-errors';
   readonly version = VERSION;
 

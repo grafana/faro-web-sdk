@@ -1,9 +1,11 @@
-import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
+import { VERSION } from '@grafana/faro-core';
+
+import { WebSdkBaseInstrumentation } from '../WebSdkBaseInstrumentation';
 
 import { WebVitalsBasic } from './webVitalsBasic';
 import { WebVitalsWithAttribution } from './webVitalsWithAttribution';
 
-export class WebVitalsInstrumentation extends BaseInstrumentation {
+export class WebVitalsInstrumentation extends WebSdkBaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-web-vitals';
   readonly version = VERSION;
 

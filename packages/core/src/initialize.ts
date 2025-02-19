@@ -8,7 +8,7 @@ import type { Faro } from './sdk';
 import { initializeTransports, registerInitialTransports } from './transports';
 import { initializeUnpatchedConsole } from './unpatchedConsole';
 
-export function initializeFaro(config: Config): Faro {
+export function initializeFaro<T extends Config = Config>(config: T): Faro {
   const unpatchedConsole = initializeUnpatchedConsole(config);
   const internalLogger = initializeInternalLogger(unpatchedConsole, config);
 
@@ -23,10 +23,17 @@ export function initializeFaro(config: Config): Faro {
   internalLogger.debug('Initializing');
 
   // Initializing the APIs
-  const metas = initializeMetas(unpatchedConsole, internalLogger, config);
-  const transports = initializeTransports(unpatchedConsole, internalLogger, config, metas);
+  const metas = initializeMetas<T>(unpatchedConsole, internalLogger, config);
+  const transports = initializeTransports<T>(unpatchedConsole, internalLogger, config, metas);
   const api = initializeAPI(unpatchedConsole, internalLogger, config, metas, transports);
-  const instrumentations = initializeInstrumentations(unpatchedConsole, internalLogger, config, metas, transports, api);
+  const instrumentations = initializeInstrumentations<T>(
+    unpatchedConsole,
+    internalLogger,
+    config,
+    metas,
+    transports,
+    api
+  );
   const faro = registerFaro(unpatchedConsole, internalLogger, config, metas, transports, api, instrumentations);
 
   // make sure Faro is initialized before registering default metas, instrumentations, transports etc.

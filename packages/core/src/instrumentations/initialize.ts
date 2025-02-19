@@ -7,10 +7,10 @@ import type { UnpatchedConsole } from '../unpatchedConsole';
 
 import type { Instrumentation, Instrumentations } from './types';
 
-export function initializeInstrumentations(
+export function initializeInstrumentations<T extends Config>(
   unpatchedConsole: UnpatchedConsole,
   internalLogger: InternalLogger,
-  config: Config,
+  config: T,
   metas: Metas,
   transports: Transports,
   api: API

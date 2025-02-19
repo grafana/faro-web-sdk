@@ -1,16 +1,9 @@
-import {
-  BaseExtension,
-  BaseTransport,
-  createPromiseBuffer,
-  getTransportBody,
-  noop,
-  PromiseBuffer,
-  VERSION,
-} from '@grafana/faro-core';
+import { BaseExtension, createPromiseBuffer, getTransportBody, noop, PromiseBuffer, VERSION } from '@grafana/faro-core';
 import type { Config, Patterns, TransportItem } from '@grafana/faro-core';
 
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
 import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
+import { WebSdkBaseTransport } from '../WebSdkBaseTransport';
 
 import type { FetchTransportOptions } from './types';
 
@@ -22,7 +15,7 @@ const BEACON_BODY_SIZE_LIMIT = 60000;
 const TOO_MANY_REQUESTS = 429;
 const ACCEPTED = 202;
 
-export class FetchTransport extends BaseTransport {
+export class FetchTransport extends WebSdkBaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-fetch';
   readonly version = VERSION;
 

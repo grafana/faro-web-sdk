@@ -5,13 +5,13 @@ import { defaultUnpatchedConsole } from '../unpatchedConsole';
 
 import type { Extension } from './types';
 
-export abstract class BaseExtension implements Extension {
+export abstract class BaseExtension<T extends Config = Config> implements Extension {
   abstract readonly name: string;
   abstract readonly version: string;
 
   unpatchedConsole = defaultUnpatchedConsole;
   internalLogger = defaultInternalLogger;
-  config = {} as Config;
+  config = {} as T;
   metas = {} as Metas;
 
   logDebug(...args: unknown[]): void {
