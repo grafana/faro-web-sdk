@@ -164,6 +164,15 @@ export interface Config<P = APIEvent> {
   trackWebVitalsAttribution?: boolean;
 
   /**
+   * Report all changes for web vitals (default: false)
+   *
+   * In most cases, you only want the callback function to be called when the metric is ready to be reported.
+   * However, it is possible to report every change (e.g. each larger layout shift as it happens)
+   * by setting reportAllChanges to true.
+   */
+  reportAllWebVitalChanges?: boolean;
+
+  /**
    * Configuration for the console instrumentation
    */
   consoleInstrumentation?: {
