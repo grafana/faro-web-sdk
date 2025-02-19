@@ -2,7 +2,8 @@
 
 ## Next
 
-- Feature (`@grafana/faro-web-sdk`): Provide a `webVitals.reportAllWebVitalChanges` option to report all changes for web vitals (#981)
+- Feature (`@grafana/faro-web-sdk`): Provide a `webVitals.reportAllWebVitalChanges` option to report
+  all changes for web vitals (#981)
 
 ## 1.13.3
 
