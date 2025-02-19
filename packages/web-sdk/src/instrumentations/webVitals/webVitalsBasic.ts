@@ -1,6 +1,6 @@
 import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB } from 'web-vitals';
 
-import type { MeasurementsAPI } from '@grafana/faro-core';
+import type { Config, MeasurementsAPI } from '@grafana/faro-core';
 
 export class WebVitalsBasic {
   static mapping = {
@@ -14,7 +14,7 @@ export class WebVitalsBasic {
 
   constructor(
     private pushMeasurement: MeasurementsAPI['pushMeasurement'],
-    private reportAllChanges?: boolean
+    private webVitalConfig?: Config['webVitals']
   ) {}
 
   initialize(): void {
@@ -29,7 +29,7 @@ export class WebVitalsBasic {
             },
           });
         },
-        { reportAllChanges: this.reportAllChanges }
+        { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
       );
     });
   }

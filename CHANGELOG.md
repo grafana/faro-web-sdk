@@ -2,6 +2,8 @@
 
 ## Next
 
+- Feature (`@grafana/faro-web-sdk`): Provide a `webVitals.reportAllWebVitalChanges` option to report all changes for web vitals (#981)
+
 ## 1.13.3
 
 - Chore (`@grafana/faro-web-sdk`): Ensure all properties in `attributes` and `context` objects are

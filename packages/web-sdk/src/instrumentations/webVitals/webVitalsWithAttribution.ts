@@ -2,7 +2,7 @@ import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB } from 'web-vitals/attributio
 import type { Metric } from 'web-vitals/attribution';
 
 import { unknownString } from '@grafana/faro-core';
-import type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '@grafana/faro-core';
+import type { Config, MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '@grafana/faro-core';
 
 import { getItem, webStorageType } from '../../utils';
 import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants';
@@ -18,7 +18,7 @@ const timeToFirstByteKey = 'time_to_first_byte';
 export class WebVitalsWithAttribution {
   constructor(
     private corePushMeasurement: MeasurementsAPI['pushMeasurement'],
-    private reportAllChanges?: boolean
+    private webVitalConfig?: Config['webVitals']
   ) {}
 
   initialize(): void {
@@ -45,7 +45,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.reportAllChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
     );
   }
 
@@ -63,7 +63,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.reportAllChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
     );
   }
 
@@ -82,7 +82,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.reportAllChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
     );
   }
 
@@ -114,7 +114,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.reportAllChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
     );
   }
 
@@ -135,7 +135,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.reportAllChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
     );
   }
 
@@ -155,7 +155,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.reportAllChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
     );
   }
 

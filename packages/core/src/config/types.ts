@@ -164,20 +164,28 @@ export interface Config<P = APIEvent> {
   trackWebVitalsAttribution?: boolean;
 
   /**
-   * Report all changes for web vitals (default: false)
-   *
-   * In most cases, you only want the callback function to be called when the metric is ready to be reported.
-   * However, it is possible to report every change (e.g. each larger layout shift as it happens)
-   * by setting reportAllChanges to true.
+   * Configuration for the web vitals instrumentation
    */
-  reportAllWebVitalChanges?: boolean;
+  webVitals?: {
+    /**
+     * Report all changes for web vitals (default: false)
+     *
+     * In most cases, you only want the callback function to be called when the metric is ready to be reported.
+     * However, it is possible to report every change (e.g. each larger layout shift as it happens)
+     * by setting reportAllChanges to true.
+     *
+     * This can be useful when debugging, but in general using reportAllWebVitalChanges is not needed (or recommended)
+     * for measuring these metrics in production.
+     */
+    reportAllWebVitalChanges?: boolean;
+  };
 
   /**
    * Configuration for the console instrumentation
    */
   consoleInstrumentation?: {
     /**
-     * Configure what console levels should be captured by Faro. By default the follwoing levels
+     * Configure what console levels should be captured by Faro. By default the following levels
      * are disabled: console.debug, console.trace, console.log
      *
      * If you want to collect all levels set captureConsoleDisabledLevels: [];
