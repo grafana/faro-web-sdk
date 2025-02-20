@@ -15,8 +15,8 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
 
   private intializeWebVitalsInstrumentation() {
     if (this.config?.trackWebVitalsAttribution) {
-      return new WebVitalsWithAttribution(this.api.pushMeasurement, this.config.webVitals);
+      return new WebVitalsWithAttribution(this.api.pushMeasurement, this.config.webVitalsInstrumentation);
     }
-    return new WebVitalsBasic(this.api.pushMeasurement, this.config.webVitals);
+    return new WebVitalsBasic(this.api.pushMeasurement, this.config.webVitalsInstrumentation);
   }
 }

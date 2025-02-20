@@ -88,15 +88,15 @@ describe('config', () => {
       url: 'http://example.com/my-collector',
       app: {},
       trackWebVitalsAttribution: true,
-      webVitals: {
-        reportAllWebVitalChanges: true,
+      webVitalsInstrumentation: {
+        reportAllChanges: true,
       },
     };
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
     expect(config?.trackWebVitalsAttribution).toBe(true);
-    expect(config?.webVitals?.reportAllWebVitalChanges).toBe(true);
+    expect(config?.webVitalsInstrumentation?.reportAllChanges).toBe(true);
   });
 
   it('merges configured urls with default URLs into ignoreUrls list', () => {

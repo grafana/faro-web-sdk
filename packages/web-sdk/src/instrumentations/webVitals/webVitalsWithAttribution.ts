@@ -18,7 +18,7 @@ const timeToFirstByteKey = 'time_to_first_byte';
 export class WebVitalsWithAttribution {
   constructor(
     private corePushMeasurement: MeasurementsAPI['pushMeasurement'],
-    private webVitalConfig?: Config['webVitals']
+    private webVitalConfig?: Config['webVitalsInstrumentation']
   ) {}
 
   initialize(): void {
@@ -45,7 +45,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
     );
   }
 
@@ -63,7 +63,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
     );
   }
 
@@ -82,7 +82,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
     );
   }
 
@@ -114,7 +114,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
     );
   }
 
@@ -135,7 +135,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
     );
   }
 
@@ -155,7 +155,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
     );
   }
 

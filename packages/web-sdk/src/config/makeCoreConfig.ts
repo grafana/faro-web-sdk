@@ -67,7 +67,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
-    webVitals,
+    webVitalsInstrumentation,
   }: BrowserConfig = browserConfig;
 
   return {
@@ -103,7 +103,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackResources,
     trackWebVitalsAttribution,
     consoleInstrumentation,
-    webVitals,
+    webVitalsInstrumentation,
   };
 }
 

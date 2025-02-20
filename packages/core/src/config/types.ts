@@ -166,7 +166,7 @@ export interface Config<P = APIEvent> {
   /**
    * Configuration for the web vitals instrumentation
    */
-  webVitals?: {
+  webVitalsInstrumentation?: {
     /**
      * Report all changes for web vitals (default: false)
      *
@@ -174,10 +174,10 @@ export interface Config<P = APIEvent> {
      * However, it is possible to report every change (e.g. each larger layout shift as it happens)
      * by setting reportAllChanges to true.
      *
-     * This can be useful when debugging, but in general using reportAllWebVitalChanges is not needed (or recommended)
+     * This can be useful when debugging, but in general using reportAllChanges is not needed (or recommended)
      * for measuring these metrics in production.
      */
-    reportAllWebVitalChanges?: boolean;
+    reportAllChanges?: boolean;
   };
 
   /**

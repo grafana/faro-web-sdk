@@ -14,7 +14,7 @@ export class WebVitalsBasic {
 
   constructor(
     private pushMeasurement: MeasurementsAPI['pushMeasurement'],
-    private webVitalConfig?: Config['webVitals']
+    private webVitalConfig?: Config['webVitalsInstrumentation']
   ) {}
 
   initialize(): void {
@@ -29,7 +29,7 @@ export class WebVitalsBasic {
             },
           });
         },
-        { reportAllChanges: this.webVitalConfig?.reportAllWebVitalChanges }
+        { reportAllChanges: this.webVitalConfig?.reportAllChanges }
       );
     });
   }
