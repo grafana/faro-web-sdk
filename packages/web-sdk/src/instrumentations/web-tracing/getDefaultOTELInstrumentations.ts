@@ -9,8 +9,8 @@ import {
 } from './instrumentationUtils';
 import type { InstrumentationOption } from './types';
 
-// TODO this should not be part of faro-core because it is a concern of the web-sdk package.
-// We eventually will refactor all faro packages so the Config can be extended with package specific options.
+// The types shouldn't be part of faro-core because it is a concern of the web-sdk package.
+// We eventually will refactor all faro packages so the Config can be extended with package specific options so we keep the core clean.
 // We also will remove all package specific functionality from the faro-core package.
 // For time reasons and conflicting priorities, we will leave it here for now.
 type tracingInstrumentationOptions = NonNullable<Config['tracingInstrumentation']>;
