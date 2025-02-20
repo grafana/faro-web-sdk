@@ -44,13 +44,13 @@ export interface MetaUser {
    */
   id?: string;
   /**
-   * User’s full name
+   * Short name or login/username of the user.
    */
   username?: string;
   /**
-   * Short name or login/username of the user.
+   * User’s full name
    */
-  shortName?: string;
+  fullName?: string;
   /**
    * comma separated list of user roles. "admin",editor" etc.
    */

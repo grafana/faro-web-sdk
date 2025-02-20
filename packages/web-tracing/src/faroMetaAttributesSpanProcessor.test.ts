@@ -16,8 +16,8 @@ describe('faroMetaAttributesSpanProcessor', () => {
         user: {
           email: 'email',
           id: 'id',
-          username: 'username',
-          shortName: 'shortName',
+          username: 'user-short-name',
+          fullName: 'user-full-name',
           roles: 'admin, editor,viewer',
           hash: 'hash',
         },
@@ -41,8 +41,8 @@ describe('faroMetaAttributesSpanProcessor', () => {
       session_id: 'session-id',
       'user.email': 'email',
       'user.id': 'id',
-      'user.full_name': 'username',
-      'user.name': 'shortName',
+      'user.full_name': 'user-full-name',
+      'user.name': 'user-short-name',
       'user.roles': ['admin', 'editor', 'viewer'],
       'user.hash': 'hash',
     });

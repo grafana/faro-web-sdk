@@ -38,11 +38,11 @@ export class FaroMetaAttributesSpanProcessor implements SpanProcessor {
     }
 
     if (user.username) {
-      span.attributes['user.full_name'] = user.username;
+      span.attributes['user.name'] = user.username;
     }
 
-    if (user.shortName) {
-      span.attributes['user.name'] = user.shortName;
+    if (user.fullName) {
+      span.attributes['user.full_name'] = user.fullName;
     }
 
     if (user.roles) {
