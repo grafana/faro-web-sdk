@@ -35,9 +35,33 @@ export interface MetaApp {
 }
 
 export interface MetaUser {
+  /**
+   * User email address.
+   */
   email?: string;
+  /**
+   * Unique identifier
+   */
   id?: string;
+  /**
+   * User’s full name
+   */
   username?: string;
+  /**
+   * Short name or login/username of the user.
+   */
+  shortName?: string;
+  /**
+   * comma separated list of user roles. "admin",editor" etc.
+   */
+  roles?: string;
+  /**
+   * Unique user hash to correlate information for a user in anonymized form.
+   */
+  hash?: string;
+  /**
+   * arbitrary user attributes, must be of type string.
+   */
   attributes?: MetaAttributes;
 }
 

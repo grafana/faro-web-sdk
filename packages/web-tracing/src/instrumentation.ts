@@ -18,10 +18,10 @@ import {
 
 import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-web-sdk';
 
+import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
 import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 import { getSamplingDecision } from './sampler';
-import { FaroSessionSpanProcessor } from './sessionSpanProcessor';
 import type { TracingInstrumentationOptions } from './types';
 
 // the providing of app name here is not great
@@ -77,7 +77,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
       },
       spanProcessors: [
         options.spanProcessor ??
-          new FaroSessionSpanProcessor(
+          new FaroMetaAttributesSpanProcessor(
             new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
               scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
               maxExportBatchSize: 30,
