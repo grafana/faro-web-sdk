@@ -1361,7 +1361,7 @@
   dependencies:
     "@octokit/openapi-types" "^18.0.0"
 
-"@opentelemetry/api-logs@0.57.2", "@opentelemetry/api-logs@^0.57.0":
+"@opentelemetry/api-logs@0.57.2", "@opentelemetry/api-logs@^0.57.1":
   version "0.57.2"
   resolved "https://registry.yarnpkg.com/@opentelemetry/api-logs/-/api-logs-0.57.2.tgz#d4001b9aa3580367b40fe889f3540014f766cc87"
   integrity sha512-uIX52NnTM0iBh84MShlpouI7UKqkZ7MrUszTmaypHBu4r7NofznSnQRfJ+uUeDtQDj6w8eFGg5KBLDAwAPz1+A==
@@ -1568,12 +1568,12 @@
     "@types/pg-pool" "2.0.6"
 
 "@opentelemetry/instrumentation-winston@^0.44.0":
-  version "0.44.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-winston/-/instrumentation-winston-0.44.0.tgz#f26d0516cb85c8dd775eb35bf5f74dc420dfe4fe"
-  integrity sha512-2uIrdmDIU9qJuHHKXTI3Gef+tNQmKtcwXDA6S0tm+KpKgkMwZB6AC0rNmGNQsxbGJSORj0NJvy5TVvk6jjsaqg==
+  version "0.44.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-winston/-/instrumentation-winston-0.44.1.tgz#9800c0e398f6af2ec4e9357ca237d254ba5e816a"
+  integrity sha512-iexblTsT3fP0hHUz/M1mWr+Ylg3bsYN2En/jvKXZtboW3Qkvt17HrQJYTF9leVIkXAfN97QxAcTE99YGbQW7vQ==
   dependencies:
-    "@opentelemetry/api-logs" "^0.57.0"
-    "@opentelemetry/instrumentation" "^0.57.0"
+    "@opentelemetry/api-logs" "^0.57.1"
+    "@opentelemetry/instrumentation" "^0.57.1"
 
 "@opentelemetry/instrumentation-xml-http-request@^0.57.0":
   version "0.57.2"
