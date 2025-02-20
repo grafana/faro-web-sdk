@@ -55,7 +55,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     user,
     view,
     geoLocationTracking,
-
     // properties with default values
     dedupe = true,
     eventDomain = defaultEventDomain,
@@ -68,6 +67,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
+    webVitalsInstrumentation,
   }: BrowserConfig = browserConfig;
 
   return {
@@ -103,6 +103,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackResources,
     trackWebVitalsAttribution,
     consoleInstrumentation,
+    webVitalsInstrumentation,
   };
 }
 
