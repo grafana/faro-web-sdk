@@ -1,9 +1,9 @@
-import { type Config, defaultBatchingConfig } from '../config';
+import type { Config } from '../config';
 import { defaultInternalLoggerLevel } from '../internalLogger';
 
 import { mockStacktraceParser } from './mockStacktraceParser';
 
-export function mockConfig(overrides: Partial<Config> = {}): Config {
+export function mockConfig<T extends Config = Config>(overrides: Partial<T> = {}): Config {
   return {
     app: {
       name: 'test',
@@ -23,9 +23,6 @@ export function mockConfig(overrides: Partial<Config> = {}): Config {
     preventGlobalExposure: true,
     transports: [],
     unpatchedConsole: console,
-    sessionTracking: {
-      ...defaultBatchingConfig,
-    },
     ...overrides,
   };
 }

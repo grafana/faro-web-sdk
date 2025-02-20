@@ -12,10 +12,10 @@ import { initializeMetaAPI } from './meta';
 import { initializeTracesAPI } from './traces';
 import type { API } from './types';
 
-export function initializeAPI(
+export function initializeAPI<T extends Config>(
   unpatchedConsole: UnpatchedConsole,
   internalLogger: InternalLogger,
-  config: Config,
+  config: T,
   metas: Metas,
   transports: Transports
 ): API {

@@ -14,11 +14,6 @@ export function registerInitialMetas(faro: Faro): void {
     },
   };
 
-  const session = faro.config.sessionTracking?.session;
-  if (session) {
-    faro.api.setSession(session);
-  }
-
   if (faro.config.app) {
     initial.app = { ...faro.config.app, ...initial.app };
   }

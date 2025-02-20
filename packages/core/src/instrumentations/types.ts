@@ -1,8 +1,9 @@
 import type { API } from '../api';
+import type { Config } from '../config';
 import type { Extension } from '../extensions';
 import type { Transports } from '../transports';
 
-export interface Instrumentation extends Extension {
+export interface Instrumentation<T extends Config = Config> extends Extension<T> {
   api: API;
   transports: Transports;
 
