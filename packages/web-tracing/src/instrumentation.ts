@@ -75,18 +75,17 @@ export class TracingInstrumentation extends BaseInstrumentation {
           };
         },
       },
+      spanProcessors: [
+        options.spanProcessor ??
+          new FaroSessionSpanProcessor(
+            new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
+              scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
+              maxExportBatchSize: 30,
+            }),
+            this.metas
+          ),
+      ],
     });
-
-    provider.addSpanProcessor(
-      options.spanProcessor ??
-        new FaroSessionSpanProcessor(
-          new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
-            scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
-            maxExportBatchSize: 30,
-          }),
-          this.metas
-        )
-    );
 
     provider.register({
       propagator: options.propagator ?? new W3CTraceContextPropagator(),
