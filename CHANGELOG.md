@@ -6,6 +6,8 @@
   error object, making it accessible within the `beforeSend` function for advanced error handling
   (#1133).
 
+- Improvement (`@grafana/faro-web-sdk`): Change `trackWebVitalsAttribution` default value to true (#991)
+
 ## 1.16.0
 
 - Improvement (`@grafana/faro-web-sdk`): Provide a function to start a user-action (#1115).
