@@ -78,6 +78,7 @@ export {
   isToString,
   isTypeof,
   isUndefined,
+  isEmpty,
   InternalLoggerLevel,
   LogLevel,
   noop,
