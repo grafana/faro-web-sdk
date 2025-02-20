@@ -4,7 +4,10 @@
 
 - Feature (`@grafana/faro-web-sdk`): Provide a `webVitalsInstrumentation.reportAllChanges` option to report
   all changes for web vitals (#981)
-- feat (`@grafana/faro-web-sdk`): Enhance user meta properties to align with OTEL semantic
+- Feature (`@grafana/faro-web-sdk`): Provide a `webVitalsInstrumentation.trackAttribution` option to track
+  web vitals attribution (#991)
+- Feature (`@grafana/faro-web-sdk`): Change `trackWebVitalsAttribution` default value to true (#991)
+- Feature (`@grafana/faro-web-sdk`): Enhance user meta properties to align with OTEL semantic
   conventions for user attributes (#990)
 - Chore (`@grafana/faro-web-tracing`): Add user attributes to spans (#990)
 
