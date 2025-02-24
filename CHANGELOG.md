@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.14.0
+
 - Feature (`@grafana/faro-web-sdk`): Provide a `webVitalsInstrumentation.reportAllChanges` option to report
   all changes for web vitals (#981)
 - Feature (`@grafana/faro-web-sdk`): Enhance user meta properties to align with OTEL semantic
