@@ -8,6 +8,30 @@
   conventions for user attributes (#990)
 - Chore (`@grafana/faro-web-tracing`): Add user attributes to spans (#990)
 
+### Breaking
+
+- Improvement (`@grafana/faro-web-tracing`): Removed `@opentelemetry/context-zone` as it is not
+  required for the default instrumentations.
+
+  Users who need `ZoneContextManager` for additional OTEL instrumentations can inject it via the
+  web-tracing configuration.
+
+  ```ts
+  initializeFaro({
+    // ...
+    instrumentations: [
+      // ...
+      new TracingInstrumentation({
+        contextManager: new ZoneContextManager(),
+        instrumentations: [
+          /* custom instruments */
+        ],
+      }),
+    ],
+    // ...
+  });
+  ```
+
 ## 1.13.3
 
 - Chore (`@grafana/faro-web-sdk`): Ensure all properties in `attributes` and `context` objects are
