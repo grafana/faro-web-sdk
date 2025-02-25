@@ -16,6 +16,7 @@ import {
 } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
+import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
 import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
@@ -44,11 +45,20 @@ export function initializeExceptionsAPI(
 
   const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => stacktraceParser;
 
+  const { ignoreErrors = [] } = config;
+
   const pushError: ExceptionsAPI['pushError'] = (
     error,
     { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs } = {}
   ) => {
     type = type || error.name || defaultExceptionType;
+
+    const { message, name, stack } = error;
+    const isIgnored = shouldIgnoreEvent(ignoreErrors, message + ' ' + name + ' ' + stack);
+
+    if (isIgnored) {
+      return;
+    }
 
     const item: TransportItem<ExceptionEvent> = {
       meta: metas.value,
