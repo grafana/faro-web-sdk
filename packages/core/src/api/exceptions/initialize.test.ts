@@ -270,5 +270,36 @@ describe('api.exceptions', () => {
         });
       });
     });
+
+    describe('config.ignoreErrors', () => {
+      it('will filter out errors by string or regex', () => {
+        const transport = new MockTransport();
+
+        const { api } = initializeFaro(
+          mockConfig({
+            transports: [transport],
+            ignoreErrors: ['Error: ResizeObserver', /FetchError[:\s\w\/]*pwc/, 'chrome-extension://mock-extension-id'],
+          })
+        );
+
+        api.pushError(new Error('Error: ResizeObserver loop limit exceeded'));
+        api.pushError(new Error('FetchError: 404 \n  Instantiating https://pwc.grafana.net/public/react-router-dom'));
+        api.pushError(new Error('FetchError: 404 \n  Instantiating https://pwc.grafana.net/public/@emotion/css'));
+
+        const typeErrorMsg = 'TypeError: _.viz is undefined';
+        api.pushError(new Error(typeErrorMsg));
+
+        const mockErrorWithStacktrace = new Error('Mock error for testing');
+        mockErrorWithStacktrace.name = 'MockError';
+        mockErrorWithStacktrace.stack = `MockError: Mock error for testing
+    at mockFunction (chrome-extension://mock-extension-id/mock-file.js:10:15)
+    at anotherFunction (chrome-extension://mock-extension-id/mock-file.js:20:5)
+    at Object.<anonymous> (chrome-extension://mock-extension-id/mock-file.js:30:3)`;
+        api.pushError(mockErrorWithStacktrace);
+
+        expect(transport.items).toHaveLength(1);
+        expect((transport.items[0]?.payload as ExceptionEvent).value).toEqual(typeErrorMsg);
+      });
+    });
   });
 });

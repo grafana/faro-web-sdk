@@ -1,4 +1,4 @@
-import { Patterns } from '../config/types';
+import type { Patterns } from '../config/types';
 import { isString } from '../utils/is';
 
 export function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
