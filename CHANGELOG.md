@@ -2,14 +2,41 @@
 
 ## Next
 
-- Feature (`@grafana/faro-web-sdk`): Provide a `webVitalsInstrumentation.reportAllChanges` option to report
-  all changes for web vitals (#981)
 - Feature (`@grafana/faro-web-sdk`): Provide a `webVitalsInstrumentation.trackAttribution` option to track
   web vitals attribution (#991)
 - Feature (`@grafana/faro-web-sdk`): Change `trackWebVitalsAttribution` default value to true (#991)
+
+## 1.14.0
+
+- Feature (`@grafana/faro-web-sdk`): Provide a `webVitalsInstrumentation.reportAllChanges` option to report
+  all changes for web vitals (#981)
 - Feature (`@grafana/faro-web-sdk`): Enhance user meta properties to align with OTEL semantic
   conventions for user attributes (#990)
-- Chore (`@grafana/faro-web-tracing`): Add user attributes to spans (#990)
+- Feature (`@grafana/faro-web-tracing`): Add user attributes to spans (#990)
+
+### Breaking
+
+- Improvement (`@grafana/faro-web-tracing`): Removed `@opentelemetry/context-zone` as it is not
+  required for the default instrumentations.
+
+  Users who need `ZoneContextManager` for additional OTEL instrumentations can inject it via the
+  web-tracing configuration.
+
+  ```ts
+  initializeFaro({
+    // ...
+    instrumentations: [
+      // ...
+      new TracingInstrumentation({
+        contextManager: new ZoneContextManager(),
+        instrumentations: [
+          /* custom instruments */
+        ],
+      }),
+    ],
+    // ...
+  });
+  ```
 
 ## 1.13.3
 

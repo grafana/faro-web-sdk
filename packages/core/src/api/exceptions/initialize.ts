@@ -1,4 +1,4 @@
-import type { Config } from '../../config';
+import type { Config, Patterns } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
@@ -16,6 +16,7 @@ import {
 } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
+import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
 import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
@@ -44,16 +45,20 @@ export function initializeExceptionsAPI(
 
   const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => stacktraceParser;
 
+  const { ignoreErrors = [] } = config;
+
   const pushError: ExceptionsAPI['pushError'] = (
     error,
     { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs } = {}
   ) => {
-    type = type || error.name || defaultExceptionType;
+    if (isErrorIgnored(ignoreErrors, error)) {
+      return;
+    }
 
     const item: TransportItem<ExceptionEvent> = {
       meta: metas.value,
       payload: {
-        type,
+        type: type || error.name || defaultExceptionType,
         value: error.message,
         timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
         trace: spanContext
@@ -106,6 +111,7 @@ export function initializeExceptionsAPI(
     pushError,
   };
 }
+
 function parseCause(error: ErrorWithIndexProperties): {} | { cause: string } {
   let cause = error.cause;
 
@@ -120,4 +126,9 @@ function parseCause(error: ErrorWithIndexProperties): {} | { cause: string } {
   }
 
   return cause == null ? {} : { cause };
+}
+
+function isErrorIgnored(ignoreErrors: Patterns, error: ErrorWithIndexProperties): boolean {
+  const { message, name, stack } = error;
+  return shouldIgnoreEvent(ignoreErrors, message + ' ' + name + ' ' + stack);
 }

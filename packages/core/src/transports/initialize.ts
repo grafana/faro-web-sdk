@@ -1,35 +1,11 @@
 import type { TransportItem } from '..';
-import type { ExceptionEvent } from '../api';
-import type { Config, Patterns } from '../config';
+import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { UnpatchedConsole } from '../unpatchedConsole';
-import { isString } from '../utils';
 
 import { BatchExecutor } from './batchExecutor';
-import { TransportItemType } from './const';
 import type { BeforeSendHook, Transport, Transports } from './types';
-
-export function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
-  return patterns.some((pattern) => {
-    return isString(pattern) ? msg.includes(pattern) : !!msg.match(pattern);
-  });
-}
-
-export function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
-  return (item: TransportItem) => {
-    if (item.type === TransportItemType.EXCEPTION && item.payload) {
-      const evt = item.payload as ExceptionEvent;
-      const msg = `${evt.type}: ${evt.value}`;
-
-      if (shouldIgnoreEvent(patterns, msg)) {
-        return null;
-      }
-    }
-
-    return item;
-  };
-}
 
 export function initializeTransports(
   unpatchedConsole: UnpatchedConsole,
@@ -74,16 +50,6 @@ export function initializeTransports(
     newBeforeSendHooks.forEach((beforeSendHook) => {
       if (beforeSendHook) {
         beforeSendHooks.push(beforeSendHook);
-      }
-    });
-  };
-
-  const addIgnoreErrorsPatterns: Transports['addIgnoreErrorsPatterns'] = (...ignoreErrorsPatterns) => {
-    internalLogger.debug('Adding ignoreErrorsPatterns\n', ignoreErrorsPatterns);
-
-    ignoreErrorsPatterns.forEach((ignoreErrorsPattern) => {
-      if (ignoreErrorsPattern) {
-        beforeSendHooks.push(createBeforeSendHookFromIgnorePatterns(ignoreErrorsPattern));
       }
     });
   };
@@ -211,7 +177,6 @@ export function initializeTransports(
   return {
     add,
     addBeforeSendHooks,
-    addIgnoreErrorsPatterns,
     getBeforeSendHooks,
     execute,
     isPaused,

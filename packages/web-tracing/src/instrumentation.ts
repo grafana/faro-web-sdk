@@ -1,5 +1,4 @@
 import { context, trace } from '@opentelemetry/api';
-import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
@@ -89,7 +88,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     provider.register({
       propagator: options.propagator ?? new W3CTraceContextPropagator(),
-      contextManager: options.contextManager ?? new ZoneContextManager(),
+      contextManager: options.contextManager,
     });
 
     const { propagateTraceHeaderCorsUrls, fetchInstrumentationOptions, xhrInstrumentationOptions } =

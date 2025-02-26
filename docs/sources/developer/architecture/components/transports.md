@@ -15,7 +15,6 @@ Methods and properties:
 
 - `add()` - adds a new transport
 - `addBeforeSendHook()` - adds a hook that is called before a signal is sent to each transport
-- `addIgnoreErrorsPatterns()` - adds a pattern that matches errors which should be ignored
 - `getBeforeSendHooks()` - returns the list of hooks that are called before a signal is sent to each transport
 - `execute()` - sends a signal to each registered transport
 - `isPaused()` - returns whether the transports are paused or not
