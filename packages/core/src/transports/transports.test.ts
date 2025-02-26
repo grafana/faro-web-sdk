@@ -42,33 +42,6 @@ class MockTransport extends BaseTransport implements Transport {
 const sendMock = jest.spyOn(MockTransport.prototype, 'send');
 
 describe('transports', () => {
-  describe('config.ignoreErrors', () => {
-    it('will filter out errors by string or regex', () => {
-      const transport = new MockTransport();
-
-      const { transports } = initializeFaro(
-        mockConfig({
-          transports: [transport],
-          ignoreErrors: ['Error: ResizeObserver', /FetchError[:\s\w\/]*pwc/],
-        })
-      );
-
-      transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));
-      transports.execute(makeExceptionTransportItem('TypeError', '_.viz is undefined'));
-      transports.execute(
-        makeExceptionTransportItem(
-          'FetchError',
-          '404 \n  Instantiating https://pwc.grafana.net/public/react-router-dom'
-        )
-      );
-      transports.execute(
-        makeExceptionTransportItem('FetchError', '404 \n  Instantiating https://pwc.grafana.net/public/@emotion/css')
-      );
-      expect(transport.sentItems).toHaveLength(1);
-      expect((transport.sentItems[0]?.payload as ErrorEvent).type).toEqual('TypeError');
-    });
-  });
-
   describe('config.beforeSend', () => {
     it('will not send events that are rejected by beforeSend hook', () => {
       const transport = new MockTransport();

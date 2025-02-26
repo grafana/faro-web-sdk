@@ -40,7 +40,6 @@ export interface TransportBody {
 export interface Transports {
   add: (...transports: Transport[]) => void;
   addBeforeSendHooks: (...hooks: Array<BeforeSendHook | undefined>) => void;
-  addIgnoreErrorsPatterns: (...ignoreErrorsPatterns: Array<Patterns | undefined>) => void;
   execute: (transportItem: TransportItem) => void;
   getBeforeSendHooks: () => BeforeSendHook[];
   isPaused: () => boolean;
