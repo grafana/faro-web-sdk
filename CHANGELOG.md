@@ -2,6 +2,10 @@
 
 ## Next
 
+- Feature (`@grafana/faro-web-sdk`): Provide a `webVitalsInstrumentation.trackAttribution` option to track
+  web vitals attribution (#991)
+- Feature (`@grafana/faro-web-sdk`): Change `trackWebVitalsAttribution` default value to true (#991)
+
 ## 1.14.0
 
 - Feature (`@grafana/faro-web-sdk`): Provide a `webVitalsInstrumentation.reportAllChanges` option to report

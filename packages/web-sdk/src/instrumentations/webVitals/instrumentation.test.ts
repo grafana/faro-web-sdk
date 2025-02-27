@@ -13,7 +13,7 @@ describe('WebVitals Instrumentation', () => {
     jest.clearAllMocks();
   });
 
-  it('load WebVitalsBasic by default', () => {
+  it('load WebVitalsWithAttribution by default', () => {
     const transport = new MockTransport();
 
     initializeFaro(
@@ -23,16 +23,33 @@ describe('WebVitals Instrumentation', () => {
       })
     );
 
-    expect(WebVitalsBasic).toHaveBeenCalledTimes(1);
-    expect(WebVitalsWithAttribution).toHaveBeenCalledTimes(0);
+    expect(WebVitalsBasic).toHaveBeenCalledTimes(0);
+    expect(WebVitalsWithAttribution).toHaveBeenCalledTimes(1);
   });
 
-  it('load WebVitalsWithAttribution when trackWebVitalAttribution is true', () => {
+  it('load WebVitalsBasic when trackWebVitalAttribution is false', () => {
     const transport = new MockTransport();
 
     initializeFaro(
       mockConfig({
-        trackWebVitalsAttribution: true,
+        trackWebVitalsAttribution: false,
+        transports: [transport],
+        instrumentations: [new WebVitalsInstrumentation()],
+      })
+    );
+
+    expect(WebVitalsBasic).toHaveBeenCalledTimes(1);
+    expect(WebVitalsWithAttribution).toHaveBeenCalledTimes(0);
+  });
+
+  it('load WebVitalsWithAttribution when webVitalsInstrumentation.trackAttribution is true', () => {
+    const transport = new MockTransport();
+
+    initializeFaro(
+      mockConfig({
+        webVitalsInstrumentation: {
+          trackAttribution: true,
+        },
         transports: [transport],
         instrumentations: [new WebVitalsInstrumentation()],
       })
