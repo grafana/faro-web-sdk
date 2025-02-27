@@ -2,6 +2,11 @@
 
 ## Next
 
+## 1.14.1
+
+- Improvement (`@grafana/faro-web-sdk`): The ignored errors parser now also parses stack traces.
+  This is helpful, for example, to exclude all errors thrown by extensions (#1000).
+
 ## 1.14.0
 
 - Feature (`@grafana/faro-web-sdk`): Provide a `webVitalsInstrumentation.reportAllChanges` option to report
