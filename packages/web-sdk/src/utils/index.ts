@@ -11,3 +11,5 @@ export {
 export { throttle } from './throttle';
 
 export { getIgnoreUrls } from './url';
+
+export { isClickableElement } from './dom';

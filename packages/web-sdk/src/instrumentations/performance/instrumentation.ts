@@ -1,9 +1,11 @@
-import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, Observable, VERSION } from '@grafana/faro-core';
 import type { Patterns } from '@grafana/faro-core';
 
 import { getNavigationTimings } from './navigation';
 import { onDocumentReady, performanceObserverSupported } from './performanceUtils';
 import { observeResourceTimings } from './resource';
+
+export const performanceEntriesSubscription = new Observable();
 
 export class PerformanceInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-performance';
@@ -22,7 +24,7 @@ export class PerformanceInstrumentation extends BaseInstrumentation {
       const { faroNavigationId } = await getNavigationTimings(pushEvent, ignoredUrls);
 
       if (faroNavigationId != null) {
-        observeResourceTimings(faroNavigationId, pushEvent, ignoredUrls);
+        observeResourceTimings(faroNavigationId, pushEvent, ignoredUrls, performanceEntriesSubscription);
       }
     });
   }

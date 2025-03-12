@@ -51,3 +51,6 @@ export { getBundleId } from './sourceMaps';
 export { dateNow } from './date';
 
 export { getCircularDependencyReplacer, stringifyExternalJson, stringifyObjectValues } from './json';
+
+export { Observable, merge } from './reactive';
+export type { Subscription } from './reactive';
