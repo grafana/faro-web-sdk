@@ -1,5 +1,5 @@
 import { faro, genShortID } from '@grafana/faro-core';
-import type { EventsAPI, PushEventOptions } from '@grafana/faro-core';
+import type { EventsAPI, Observable, PushEventOptions } from '@grafana/faro-core';
 
 import { RESOURCE_ENTRY } from './performanceConstants';
 import {
@@ -16,7 +16,8 @@ const DEFAULT_TRACK_RESOURCES = { initiatorType: ['xmlhttprequest', 'fetch'] };
 export function observeResourceTimings(
   faroNavigationId: string,
   pushEvent: EventsAPI['pushEvent'],
-  ignoredUrls: Array<string | RegExp>
+  ignoredUrls: Array<string | RegExp>,
+  observable?: Observable
 ) {
   const trackResources = faro.config.trackResources;
 
@@ -41,6 +42,11 @@ export function observeResourceTimings(
           faroNavigationId,
           faroResourceId: genShortID(),
         };
+
+        observable?.notify({
+          type: RESOURCE_ENTRY,
+          data: faroResourceEntry,
+        });
 
         pushEvent('faro.performance.resource', faroResourceEntry, undefined, {
           spanContext,
