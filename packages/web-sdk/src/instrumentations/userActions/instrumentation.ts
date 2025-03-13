@@ -15,24 +15,15 @@ export class UserActionInstrumentation extends BaseInstrumentation {
     const performanceEntriesMonitor = monitorPerformanceEntries();
 
     let timeoutId: number | undefined;
-    function startTimeout(cb?: () => void) {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-
-      //@ts-expect-error for some reason vscode is using the node types
-      timeoutId = setTimeout(() => {
-        cb?.();
-        console.log('Timeout completed');
-      }, 100);
-    }
-
     let actionRunning = false;
     let allMonitorsSub: Subscription | undefined;
 
     const self = this;
 
-    window.addEventListener('pointerdown', (event) => {
+    window.addEventListener('pointerdown', processEvent);
+    window.addEventListener('keydown', processEvent);
+
+    function processEvent(event: PointerEvent | KeyboardEvent) {
       const userActionName = getUserActionName(event.target as HTMLElement);
 
       if (actionRunning || userActionName == null) {
@@ -40,15 +31,14 @@ export class UserActionInstrumentation extends BaseInstrumentation {
       }
 
       actionRunning = true;
+
       const startTime = performance.now();
       let endTime: number | undefined;
-
       let hadFollowupActivity = false;
 
-      startTimeout(() => {
+      timeoutId = startTimeout(timeoutId, () => {
         endTime = performance.now();
         console.log('Time taken 1:', endTime - startTime!);
-
         actionRunning = false;
       });
 
@@ -57,7 +47,8 @@ export class UserActionInstrumentation extends BaseInstrumentation {
         .subscribe((_data) => {
           console.log('User action data:', _data);
           hadFollowupActivity = true;
-          startTimeout(() => {
+
+          timeoutId = startTimeout(timeoutId, () => {
             endTime = performance.now();
             console.log('Time taken 2:', endTime - startTime!);
 
@@ -74,19 +65,44 @@ export class UserActionInstrumentation extends BaseInstrumentation {
             }
           });
         });
-    });
+    }
 
-    // Unsubscribe from all monitors when the tab goes into the background to free up resources (merge.unsubscribe() also unsubscribes from all inner observables)
-    document.addEventListener('visibilitychange', () => {
-      console.log('Visibility changed:', document.visibilityState);
-      if (document.visibilityState === 'hidden') {
-        allMonitorsSub?.unsubscribe();
-        allMonitorsSub = undefined;
-      }
-    });
+    registerVisibilityChangeHandler(allMonitorsSub);
   }
 }
 
+function registerVisibilityChangeHandler(allMonitorsSub: Subscription | undefined) {
+  // stop monitoring background tabs
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      // Unsubscribe from all monitors when the tab goes into the background to free up resources (merge.unsubscribe() also unsubscribes from all inner observables)
+      allMonitorsSub?.unsubscribe();
+      allMonitorsSub = undefined;
+    }
+  });
+}
+
 function getUserActionName(element: HTMLElement): string | undefined {
-  return Object.keys(element.dataset).find((key) => key.startsWith(USER_ACTION_DATA_ATTRIBUTE_PREFIX));
+  const dataset = element.dataset;
+  for (const key in dataset) {
+    if (key.startsWith(USER_ACTION_DATA_ATTRIBUTE_PREFIX)) {
+      return dataset[key];
+    }
+  }
+
+  return undefined;
+}
+
+function startTimeout(timeoutId: number | undefined, cb?: () => void) {
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+  }
+
+  //@ts-expect-error for some reason vscode is using the node types
+  timeoutId = setTimeout(() => {
+    cb?.();
+    console.log('Timeout completed');
+  }, 100);
+
+  return timeoutId;
 }
