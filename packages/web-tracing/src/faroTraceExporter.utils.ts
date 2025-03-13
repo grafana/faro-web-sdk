@@ -47,7 +47,11 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
           }
         }
 
-        faro.api.pushEvent(`faro.tracing.${eventName}`, faroEventAttributes, undefined, { spanContext });
+        faro.api.pushEvent(`faro.tracing.${eventName}`, faroEventAttributes, undefined, {
+          spanContext,
+          // Convert nanoseconds to milliseconds
+          timestampOverwriteMs: Number(span.endTimeUnixNano) / 1_000_000,
+        });
       }
     }
   }

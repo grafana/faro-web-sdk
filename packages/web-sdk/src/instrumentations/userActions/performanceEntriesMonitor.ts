@@ -10,7 +10,6 @@ export function monitorPerformanceEntries(): Observable {
 
   performanceEntriesSubscription.subscribe((data) => {
     if (data.type === RESOURCE_ENTRY) {
-      console.log('Resource data:', data);
       observable.notify({ type: MESSAGE_TYPE_RESOURCE_ENTRY });
     }
   });

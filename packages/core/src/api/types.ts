@@ -8,3 +8,9 @@ import type { TraceEvent, TracesAPI } from './traces';
 export type APIEvent = LogEvent | ExceptionEvent | MeasurementEvent | TraceEvent | EventEvent;
 
 export type API = LogsAPI & ExceptionsAPI & MeasurementsAPI & TracesAPI & MetaAPI & EventsAPI;
+
+export type ApiMessageBusMessage = {
+  type: 'user-action-start' | 'user-action-end' | 'user-action-cancel';
+  name: string;
+  parentId: string;
+};
