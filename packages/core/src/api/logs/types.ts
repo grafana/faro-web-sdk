@@ -2,6 +2,7 @@ import type { SpanContext } from '@opentelemetry/api';
 
 import type { LogLevel } from '../../utils';
 import type { TraceContext } from '../traces';
+import type { UserAction } from '../types';
 
 export type LogContext = Record<string, string>;
 
@@ -12,6 +13,7 @@ export interface LogEvent {
   timestamp: string;
 
   trace?: TraceContext;
+  action?: UserAction;
 }
 
 export interface PushLogOptions {

@@ -42,10 +42,10 @@ export function initializeAPI(
           ...item,
           payload: {
             ...item.payload,
-            attributes: {
-              ...(item as TransportItem<EventEvent>).payload.attributes,
-              actionName: thisMessage.name,
-              actionParentId: thisMessage.parentId,
+            action: {
+              name: thisMessage.name,
+              parentId: thisMessage.parentId,
+              id: thisMessage.id,
             },
           },
         } as TransportItem<EventEvent>;
