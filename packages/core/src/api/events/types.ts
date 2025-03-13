@@ -1,6 +1,7 @@
 import type { SpanContext } from '@opentelemetry/api';
 
 import type { TraceContext } from '../traces';
+import type { UserAction } from '../types';
 
 export type EventAttributes = Record<string, string>;
 
@@ -11,6 +12,8 @@ export interface EventEvent {
   domain?: string;
   attributes?: EventAttributes;
   trace?: TraceContext;
+
+  action?: UserAction;
 }
 
 export interface PushEventOptions {
