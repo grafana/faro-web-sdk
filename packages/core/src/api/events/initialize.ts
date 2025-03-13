@@ -6,18 +6,30 @@ import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
+import type { ItemBuffer } from '../initialize';
 import type { TracesAPI } from '../traces';
+import type { ApiMessageBusMessage } from '../types';
 
 import type { EventEvent, EventsAPI } from './types';
 
-export function initializeEventsAPI(
-  _unpatchedConsole: UnpatchedConsole,
-  internalLogger: InternalLogger,
-  config: Config,
-  metas: Metas,
-  transports: Transports,
-  tracesApi: TracesAPI
-): EventsAPI {
+export function initializeEventsAPI({
+  internalLogger,
+  config,
+  metas,
+  transports,
+  tracesApi,
+  actionBuffer,
+  getMessage,
+}: {
+  unpatchedConsole: UnpatchedConsole;
+  internalLogger: InternalLogger;
+  config: Config;
+  metas: Metas;
+  transports: Transports;
+  tracesApi: TracesAPI;
+  actionBuffer: ItemBuffer<TransportItem>;
+  getMessage: () => ApiMessageBusMessage | undefined;
+}): EventsAPI {
   let lastPayload: Pick<EventEvent, 'name' | 'domain' | 'attributes'> | null = null;
 
   const pushEvent: EventsAPI['pushEvent'] = (
@@ -62,7 +74,12 @@ export function initializeEventsAPI(
 
       internalLogger.debug('Pushing event\n', item);
 
-      transports.execute(item);
+      const msg = getMessage();
+      if (msg && msg.type === 'user-action-start') {
+        actionBuffer.addItem(item);
+      } else {
+        transports.execute(item);
+      }
     } catch (err) {
       internalLogger.error('Error pushing event', err);
     }

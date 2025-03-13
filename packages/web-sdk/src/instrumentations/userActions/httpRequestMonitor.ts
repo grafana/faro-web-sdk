@@ -23,13 +23,11 @@ export function monitorHttpRequests(): Observable {
 
   monitorFetch((active: number) => {
     activeFetchRequests = active;
-    console.log('Active fetch requests:', activeFetchRequests);
     emitMessage();
   });
 
   monitorXhr((active: number) => {
     activeXhrRequests = active;
-    console.log('Active XHR requests:', activeXhrRequests);
     emitMessage();
   });
 
@@ -42,12 +40,12 @@ function monitorXhr(setActiveCallback: (active: number) => void) {
   let activeRequests = 0;
 
   XMLHttpRequest.prototype.open = function () {
-    const isIgnoreUrl = isUrlIgnored(arguments[1]);
+    const url = arguments[1];
+    const isIgnoreUrl = isUrlIgnored(url);
 
     this.addEventListener('loadstart', () => {
       if (!isIgnoreUrl) {
         activeRequests++;
-        console.log('Request started. Active requests:', activeRequests);
         setActiveCallback(activeRequests);
       }
     });
@@ -55,7 +53,6 @@ function monitorXhr(setActiveCallback: (active: number) => void) {
     this.addEventListener('loadend', () => {
       if (!isIgnoreUrl) {
         activeRequests--;
-        console.log('Request ended. Active requests:', activeRequests);
         setActiveCallback(activeRequests);
       }
     });
@@ -79,7 +76,6 @@ function monitorFetch(setActiveCallback: (active: number) => void) {
     // fetch started
     if (!isIgnoreUrl) {
       activeRequests++;
-      console.log('Fetch request started. Active requests:', activeRequests);
       setActiveCallback(activeRequests);
     }
 
@@ -87,7 +83,6 @@ function monitorFetch(setActiveCallback: (active: number) => void) {
       // fetch ended
       if (!isIgnoreUrl) {
         activeRequests--;
-        console.log('Fetch request ended. Active requests:', activeRequests);
         setActiveCallback(activeRequests);
       }
     });

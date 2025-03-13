@@ -1,4 +1,4 @@
-import { BaseInstrumentation, merge, Subscription, VERSION } from '@grafana/faro-core';
+import { apiMessageBus, BaseInstrumentation, genShortID, merge, Subscription, VERSION } from '@grafana/faro-core';
 
 import { USER_ACTION_DATA_ATTRIBUTE_PREFIX } from './const';
 import { monitorDomMutations } from './domMutationMonitor';
@@ -29,38 +29,55 @@ export class UserActionInstrumentation extends BaseInstrumentation {
       if (actionRunning || userActionName == null) {
         return;
       }
-
       actionRunning = true;
 
       const startTime = performance.now();
       let endTime: number | undefined;
+
       let hadFollowupActivity = false;
+
+      const actionId = genShortID();
+
+      apiMessageBus.notify({
+        type: 'user-action-start',
+        name: userActionName,
+        parentId: actionId,
+      });
 
       timeoutId = startTimeout(timeoutId, () => {
         endTime = performance.now();
-        console.log('Time taken 1:', endTime - startTime!);
         actionRunning = false;
       });
 
       allMonitorsSub = merge(httpMonitor, domMutationsMonitor, performanceEntriesMonitor)
         .takeWhile(() => actionRunning)
         .subscribe((_data) => {
-          console.log('User action data:', _data);
           hadFollowupActivity = true;
 
           timeoutId = startTimeout(timeoutId, () => {
             endTime = performance.now();
-            console.log('Time taken 2:', endTime - startTime!);
-
             actionRunning = false;
 
             if (hadFollowupActivity) {
-              console.log('Action had followup activity');
+              // action is valid. Leads to adding the parentId to items, flushing the buffer and sending the items to the server
+              apiMessageBus.notify({
+                type: 'user-action-end',
+                name: userActionName,
+                parentId: actionId,
+              });
 
-              self.api.pushEvent('faro.user-action', {
+              self.api.pushEvent(`user-action-${userActionName}`, {
                 name: userActionName,
                 type: event.type,
                 duration: (endTime! - startTime).toString(),
+                id: actionId,
+              });
+            } else {
+              // action is invalid. Flushing the buffer and sending the items to the server without adding the parentId to items
+              apiMessageBus.notify({
+                type: 'user-action-cancel',
+                name: userActionName,
+                parentId: actionId,
               });
             }
           });
@@ -94,6 +111,8 @@ function getUserActionName(element: HTMLElement): string | undefined {
 }
 
 function startTimeout(timeoutId: number | undefined, cb?: () => void) {
+  const maxTimeSpanTillUserActionEnd = 100;
+
   if (timeoutId) {
     clearTimeout(timeoutId);
   }
@@ -101,8 +120,7 @@ function startTimeout(timeoutId: number | undefined, cb?: () => void) {
   //@ts-expect-error for some reason vscode is using the node types
   timeoutId = setTimeout(() => {
     cb?.();
-    console.log('Timeout completed');
-  }, 100);
+  }, maxTimeSpanTillUserActionEnd);
 
   return timeoutId;
 }

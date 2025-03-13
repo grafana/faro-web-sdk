@@ -16,7 +16,9 @@ import {
   stringifyObjectValues,
 } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
+import type { ItemBuffer } from '../initialize';
 import type { TracesAPI } from '../traces';
+import type { ApiMessageBusMessage } from '../types';
 import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
@@ -24,14 +26,24 @@ import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, Stacktrac
 
 let stacktraceParser: StacktraceParser | undefined;
 
-export function initializeExceptionsAPI(
-  _unpatchedConsole: UnpatchedConsole,
-  internalLogger: InternalLogger,
-  config: Config,
-  metas: Metas,
-  transports: Transports,
-  tracesApi: TracesAPI
-): ExceptionsAPI {
+export function initializeExceptionsAPI({
+  internalLogger,
+  config,
+  metas,
+  transports,
+  tracesApi,
+  actionBuffer,
+  getMessage,
+}: {
+  unpatchedConsole: UnpatchedConsole;
+  internalLogger: InternalLogger;
+  config: Config;
+  metas: Metas;
+  transports: Transports;
+  tracesApi: TracesAPI;
+  actionBuffer: ItemBuffer<TransportItem>;
+  getMessage: () => ApiMessageBusMessage | undefined;
+}): ExceptionsAPI {
   internalLogger.debug('Initializing exceptions API');
 
   let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace' | 'context'> | null = null;
@@ -55,55 +67,63 @@ export function initializeExceptionsAPI(
     if (isErrorIgnored(ignoreErrors, error)) {
       return;
     }
+    try {
+      const ctx = stringifyObjectValues({
+        ...parseCause(error),
+        ...(context ?? {}),
+      });
 
-    const ctx = stringifyObjectValues({
-      ...parseCause(error),
-      ...(context ?? {}),
-    });
-
-    const item: TransportItem<ExceptionEvent> = {
-      meta: metas.value,
-      payload: {
-        type: type || error.name || defaultExceptionType,
-        value: error.message,
-        timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
-        trace: spanContext
-          ? {
-              trace_id: spanContext.traceId,
-              span_id: spanContext.spanId,
-            }
-          : tracesApi.getTraceContext(),
-        context: isEmpty(ctx) ? undefined : ctx,
-      },
-      type: TransportItemType.EXCEPTION,
-    };
-
-    stackFrames = stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
-
-    if (stackFrames?.length) {
-      item.payload.stacktrace = {
-        frames: stackFrames,
+      const item: TransportItem<ExceptionEvent> = {
+        meta: metas.value,
+        payload: {
+          type: type || error.name || defaultExceptionType,
+          value: error.message,
+          timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
+          trace: spanContext
+            ? {
+                trace_id: spanContext.traceId,
+                span_id: spanContext.spanId,
+              }
+            : tracesApi.getTraceContext(),
+          context: isEmpty(ctx) ? undefined : ctx,
+        },
+        type: TransportItemType.EXCEPTION,
       };
+
+      stackFrames = stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
+
+      if (stackFrames?.length) {
+        item.payload.stacktrace = {
+          frames: stackFrames,
+        };
+      }
+
+      const testingPayload = {
+        type: item.payload.type,
+        value: item.payload.value,
+        stackTrace: item.payload.stacktrace,
+        context: item.payload.context,
+      };
+
+      if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
+        internalLogger.debug('Skipping error push because it is the same as the last one\n', item.payload);
+
+        return;
+      }
+
+      lastPayload = testingPayload;
+
+      internalLogger.debug('Pushing exception\n', item);
+
+      const msg = getMessage();
+      if (msg && msg.type === 'user-action-start') {
+        actionBuffer.addItem(item);
+      } else {
+        transports.execute(item);
+      }
+    } catch (err) {
+      internalLogger.error('Error pushing event', err);
     }
-
-    const testingPayload = {
-      type: item.payload.type,
-      value: item.payload.value,
-      stackTrace: item.payload.stacktrace,
-      context: item.payload.context,
-    };
-
-    if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
-      internalLogger.debug('Skipping error push because it is the same as the last one\n', item.payload);
-
-      return;
-    }
-
-    lastPayload = testingPayload;
-
-    internalLogger.debug('Pushing exception\n', item);
-
-    transports.execute(item);
   };
 
   changeStacktraceParser(config.parseStacktrace);

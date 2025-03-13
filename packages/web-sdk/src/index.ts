@@ -94,6 +94,9 @@ export {
   EVENT_SESSION_RESUME,
   EVENT_SESSION_START,
   EVENT_VIEW_CHANGED,
+  apiMessageBus,
+  Observable,
+  merge,
 } from '@grafana/faro-core';
 
 export type {
@@ -157,6 +160,7 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
+  ApiMessageBusMessage,
 } from '@grafana/faro-core';
 
 export {

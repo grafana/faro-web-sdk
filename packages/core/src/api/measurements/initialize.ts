@@ -6,18 +6,30 @@ import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
+import type { ItemBuffer } from '../initialize';
 import type { TracesAPI } from '../traces';
+import type { ApiMessageBusMessage } from '../types';
 
 import type { MeasurementEvent, MeasurementsAPI } from './types';
 
-export function initializeMeasurementsAPI(
-  _unpatchedConsole: UnpatchedConsole,
-  internalLogger: InternalLogger,
-  config: Config,
-  metas: Metas,
-  transports: Transports,
-  tracesApi: TracesAPI
-): MeasurementsAPI {
+export function initializeMeasurementsAPI({
+  internalLogger,
+  config,
+  metas,
+  transports,
+  tracesApi,
+  actionBuffer,
+  getMessage,
+}: {
+  unpatchedConsole: UnpatchedConsole;
+  internalLogger: InternalLogger;
+  config: Config;
+  metas: Metas;
+  transports: Transports;
+  tracesApi: TracesAPI;
+  actionBuffer: ItemBuffer<TransportItem>;
+  getMessage: () => ApiMessageBusMessage | undefined;
+}): MeasurementsAPI {
   internalLogger.debug('Initializing measurements API');
 
   let lastPayload: Pick<MeasurementEvent, 'type' | 'values' | 'context'> | null = null;
@@ -61,7 +73,12 @@ export function initializeMeasurementsAPI(
 
       internalLogger.debug('Pushing measurement\n', item);
 
-      transports.execute(item);
+      const msg = getMessage();
+      if (msg && msg.type === 'user-action-start') {
+        actionBuffer.addItem(item);
+      } else {
+        transports.execute(item);
+      }
     } catch (err) {
       internalLogger.error('Error pushing measurement\n', err);
     }

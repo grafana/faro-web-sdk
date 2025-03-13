@@ -1,16 +1,19 @@
 import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
-import type { Transports } from '../transports';
+import type { TransportItem, Transports } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
+import { isFunction, Observable } from '../utils';
 
-import { initializeEventsAPI } from './events';
+import { EventEvent, initializeEventsAPI } from './events';
 import { initializeExceptionsAPI } from './exceptions';
 import { initializeLogsAPI } from './logs';
 import { initializeMeasurementsAPI } from './measurements';
 import { initializeMetaAPI } from './meta';
 import { initializeTracesAPI } from './traces';
-import type { API } from './types';
+import type { API, ApiMessageBusMessage } from './types';
+
+export const apiMessageBus = new Observable<ApiMessageBusMessage>();
 
 export function initializeAPI(
   unpatchedConsole: UnpatchedConsole,
@@ -21,14 +24,87 @@ export function initializeAPI(
 ): API {
   internalLogger.debug('Initializing API');
 
+  let message: ApiMessageBusMessage | undefined;
+
+  apiMessageBus.subscribe((msg) => {
+    if (msg.type === 'user-action-start') {
+      message = msg;
+      return;
+    }
+
+    if (msg.type === 'user-action-end') {
+      const thisMessage = msg;
+      message = undefined;
+      actionBuffer.flushBuffer((item) => {
+        const _item = {
+          ...item,
+          payload: {
+            ...item.payload,
+            attributes: {
+              ...(item as TransportItem<EventEvent>).payload.attributes,
+              actionName: thisMessage.name,
+              actionParentId: thisMessage.parentId,
+            },
+          },
+        } as TransportItem<EventEvent>;
+
+        transports.execute(_item);
+      });
+      return;
+    }
+
+    if (msg.type === 'user-action-cancel') {
+      message = undefined;
+      actionBuffer.flushBuffer((item) => {
+        transports.execute(item);
+      });
+    }
+  });
+
+  const actionBuffer = new ItemBuffer<TransportItem>();
+  const getMessage = (): typeof message => message;
+
   const tracesApi = initializeTracesAPI(unpatchedConsole, internalLogger, config, metas, transports);
+
+  const props = {
+    unpatchedConsole,
+    internalLogger,
+    config,
+    metas,
+    transports,
+    tracesApi,
+    actionBuffer,
+    getMessage,
+  };
 
   return {
     ...tracesApi,
-    ...initializeExceptionsAPI(unpatchedConsole, internalLogger, config, metas, transports, tracesApi),
-    ...initializeMetaAPI(unpatchedConsole, internalLogger, config, metas, transports),
-    ...initializeLogsAPI(unpatchedConsole, internalLogger, config, metas, transports, tracesApi),
-    ...initializeMeasurementsAPI(unpatchedConsole, internalLogger, config, metas, transports, tracesApi),
-    ...initializeEventsAPI(unpatchedConsole, internalLogger, config, metas, transports, tracesApi),
+    ...initializeExceptionsAPI(props),
+    ...initializeMetaAPI(props),
+    ...initializeLogsAPI(props),
+    ...initializeMeasurementsAPI(props),
+    ...initializeEventsAPI(props),
   };
+}
+
+export class ItemBuffer<T> {
+  private buffer: T[];
+
+  constructor() {
+    this.buffer = [];
+  }
+
+  addItem(item: T) {
+    this.buffer.push(item);
+  }
+
+  flushBuffer(cb?: (item: T) => void) {
+    if (isFunction(cb)) {
+      for (const item of [...this.buffer]) {
+        cb(item);
+      }
+    }
+
+    this.buffer.length = 0;
+  }
 }
