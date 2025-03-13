@@ -30,10 +30,6 @@ export function performanceObserverSupported(): boolean {
   return 'PerformanceObserver' in window;
 }
 
-export function entryUrlIsIgnored(ignoredUrls: Array<string | RegExp> = [], entryName: string): boolean {
-  return ignoredUrls.some((url) => url && entryName.match(url) != null);
-}
-
 export function onDocumentReady(handleReady: () => void) {
   if (document.readyState === 'complete') {
     handleReady();

@@ -2,7 +2,8 @@ import * as faroCoreModule from '@grafana/faro-core';
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
-import * as performanceUtilsModule from './performanceUtils';
+import * as urlUtilsModule from '../../utils/url';
+
 import { createFaroResourceTiming } from './performanceUtils';
 import { performanceResourceEntry } from './performanceUtilsTestData';
 import { observeResourceTimings } from './resource';
@@ -78,22 +79,21 @@ describe('Resource observer', () => {
     const mockPushEvent = jest.fn();
 
     const mockEntryUrlIsIgnored = jest.fn(() => true);
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockImplementationOnce(mockEntryUrlIsIgnored);
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockImplementationOnce(mockEntryUrlIsIgnored);
 
     initializeFaro(mockConfig({ trackResources: true }));
 
-    const ignoredUrls = ['http://example.com'];
-    observeResourceTimings('123', mockPushEvent, ignoredUrls);
+    observeResourceTimings('123', mockPushEvent);
 
-    expect(mockEntryUrlIsIgnored).toBeCalledTimes(1);
-    expect(mockEntryUrlIsIgnored).toBeCalledWith(ignoredUrls, performanceResourceEntry.name);
+    expect(mockEntryUrlIsIgnored).toHaveBeenCalledTimes(1);
+    expect(mockEntryUrlIsIgnored).toHaveBeenCalledWith(performanceResourceEntry.name);
 
     expect(mockPushEvent).not.toHaveBeenCalled();
   });
 
   it('Builds entry for first resource', () => {
     const mockPushEvent = jest.fn();
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
     const mockResourceId = 'abc';
     jest.spyOn(faroCoreModule, 'genShortID').mockReturnValueOnce(mockResourceId);
@@ -101,7 +101,7 @@ describe('Resource observer', () => {
     initializeFaro(mockConfig({ trackResources: true }));
 
     const mockNavigationId = '123';
-    observeResourceTimings(mockNavigationId, mockPushEvent, ['']);
+    observeResourceTimings(mockNavigationId, mockPushEvent);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(3);
 
@@ -123,39 +123,39 @@ describe('Resource observer', () => {
 
   it('Tracks default resource entries if trackResource is unset', () => {
     const mockPushEvent = jest.fn();
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
     const trackResourcesNotSetConfig = mockConfig({});
     initializeFaro(trackResourcesNotSetConfig);
 
     const mockNavigationId = '123';
-    observeResourceTimings(mockNavigationId, mockPushEvent, ['']);
+    observeResourceTimings(mockNavigationId, mockPushEvent);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(2);
   });
 
   it('Tracks all resource entries if trackResource is set to true', () => {
     const mockPushEvent = jest.fn();
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
     const trackAllResourcesConfig = mockConfig({ trackResources: true });
     initializeFaro(trackAllResourcesConfig);
 
     const mockNavigationId = '123';
-    observeResourceTimings(mockNavigationId, mockPushEvent, ['']);
+    observeResourceTimings(mockNavigationId, mockPushEvent);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(3);
   });
 
   it('Does not track any resource entries if trackResource is set to false', () => {
     const mockPushEvent = jest.fn();
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
     const trackAllResourcesConfig = mockConfig({ trackResources: false });
     initializeFaro(trackAllResourcesConfig);
 
     const mockNavigationId = '123';
-    observeResourceTimings(mockNavigationId, mockPushEvent, ['']);
+    observeResourceTimings(mockNavigationId, mockPushEvent);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(0);
   });
