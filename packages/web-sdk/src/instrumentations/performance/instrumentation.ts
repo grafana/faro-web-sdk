@@ -1,5 +1,4 @@
 import { BaseInstrumentation, Observable, VERSION } from '@grafana/faro-core';
-import type { Patterns } from '@grafana/faro-core';
 
 import { getNavigationTimings } from './navigation';
 import { onDocumentReady, performanceObserverSupported } from './performanceUtils';
@@ -19,17 +18,12 @@ export class PerformanceInstrumentation extends BaseInstrumentation {
 
     onDocumentReady(async () => {
       const pushEvent = this.api.pushEvent;
-      const ignoredUrls = this.getIgnoreUrls();
 
-      const { faroNavigationId } = await getNavigationTimings(pushEvent, ignoredUrls);
+      const { faroNavigationId } = await getNavigationTimings(pushEvent);
 
       if (faroNavigationId != null) {
-        observeResourceTimings(faroNavigationId, pushEvent, ignoredUrls, performanceEntriesSubscription);
+        observeResourceTimings(faroNavigationId, pushEvent, performanceEntriesSubscription);
       }
     });
-  }
-
-  private getIgnoreUrls(): Patterns {
-    return this.transports.transports?.flatMap((transport) => transport.getIgnoreUrls());
   }
 }

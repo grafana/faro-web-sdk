@@ -1,11 +1,11 @@
 import * as faroCoreModule from '@grafana/faro-core';
 
+import * as urlUtilsModule from '../../utils/url';
 import * as webStorageModule from '../../utils/webStorage';
 import { webStorageType } from '../../utils/webStorage';
 import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants';
 
 import { getNavigationTimings } from './navigation';
-import * as performanceUtilsModule from './performanceUtils';
 import { createFaroNavigationTiming, createFaroResourceTiming } from './performanceUtils';
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
 
@@ -70,25 +70,24 @@ describe('Navigation observer', () => {
     const mockPushEvent = jest.fn();
 
     const mockEntryUrlIsIgnored = jest.fn(() => true);
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockImplementationOnce(mockEntryUrlIsIgnored);
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockImplementationOnce(mockEntryUrlIsIgnored);
 
-    const ignoredUrls = ['http://example.com'];
-    getNavigationTimings(mockPushEvent, ignoredUrls);
+    getNavigationTimings(mockPushEvent);
 
-    expect(mockEntryUrlIsIgnored).toBeCalledTimes(1);
-    expect(mockEntryUrlIsIgnored).toBeCalledWith(ignoredUrls, performanceNavigationEntry.name);
+    expect(mockEntryUrlIsIgnored).toHaveBeenCalledTimes(1);
+    expect(mockEntryUrlIsIgnored).toHaveBeenCalledWith(performanceNavigationEntry.name);
 
     expect(mockPushEvent).not.toHaveBeenCalled();
   });
 
   it('Builds entry for first navigation', () => {
     const mockPushEvent = jest.fn();
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
     const mockNavigationId = '123';
     jest.spyOn(faroCoreModule, 'genShortID').mockReturnValueOnce(mockNavigationId);
 
-    getNavigationTimings(mockPushEvent, ['']);
+    getNavigationTimings(mockPushEvent);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent).toHaveBeenCalledWith(
@@ -109,12 +108,12 @@ describe('Navigation observer', () => {
 
   it('Captures Server-Timings for w3c trace context', () => {
     const mockPushEvent = jest.fn();
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
     const mockNavigationId = '123';
     jest.spyOn(faroCoreModule, 'genShortID').mockReturnValueOnce(mockNavigationId);
 
-    getNavigationTimings(mockPushEvent, ['']);
+    getNavigationTimings(mockPushEvent);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent).toHaveBeenNthCalledWith(1, expect.anything(), expect.anything(), undefined, {
@@ -125,7 +124,7 @@ describe('Navigation observer', () => {
 
   it('Builds entry for subsequent navigation', () => {
     const mockPushEvent = jest.fn();
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
     const mockNewNavigationId = '456';
     jest.spyOn(faroCoreModule, 'genShortID').mockReturnValueOnce(mockNewNavigationId);
@@ -133,7 +132,7 @@ describe('Navigation observer', () => {
     const mockPreviousNavigationId = '123';
     jest.spyOn(webStorageModule, 'getItem').mockReturnValueOnce(mockPreviousNavigationId);
 
-    getNavigationTimings(mockPushEvent, ['']);
+    getNavigationTimings(mockPushEvent);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent).toHaveBeenCalledWith(
@@ -154,7 +153,7 @@ describe('Navigation observer', () => {
 
   it('Stores navigationId in sessionStorage', () => {
     const mockPushEvent = jest.fn();
-    jest.spyOn(performanceUtilsModule, 'entryUrlIsIgnored').mockReturnValueOnce(false);
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
     const mockNewNavigationId = '456';
     jest.spyOn(faroCoreModule, 'genShortID').mockReturnValueOnce(mockNewNavigationId);
@@ -164,7 +163,7 @@ describe('Navigation observer', () => {
     const mockSetItem = jest.fn();
     jest.spyOn(webStorageModule, 'setItem').mockImplementationOnce(mockSetItem);
 
-    getNavigationTimings(mockPushEvent, ['']);
+    getNavigationTimings(mockPushEvent);
 
     expect(mockSetItem).toHaveBeenCalledTimes(1);
     expect(mockSetItem).toHaveBeenCalledWith(NAVIGATION_ID_STORAGE_KEY, mockNewNavigationId, webStorageType.session);
