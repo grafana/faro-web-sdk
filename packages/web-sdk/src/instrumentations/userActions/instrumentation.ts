@@ -1,7 +1,6 @@
 import { BaseInstrumentation, merge, Subscription, VERSION } from '@grafana/faro-core';
 
-import { isClickableElement } from '../../utils';
-
+import { USER_ACTION_DATA_ATTRIBUTE_PREFIX } from './const';
 import { monitorDomMutations } from './domMutationMonitor';
 import { monitorHttpRequests } from './httpRequestMonitor';
 import { monitorPerformanceEntries } from './performanceEntriesMonitor';
@@ -14,12 +13,6 @@ export class UserActionInstrumentation extends BaseInstrumentation {
     const httpMonitor = monitorHttpRequests();
     const domMutationsMonitor = monitorDomMutations();
     const performanceEntriesMonitor = monitorPerformanceEntries();
-    // const allMonitors = merge(httpMonitor, domMutationsMonitor, performanceEntriesMonitor);
-
-    // let allMonitorsSub: Subscription | undefined = allMonitors.subscribe((data) => {
-    //   //   this.api.pushLog(data);
-    //   console.log('User action data:', data);
-    // });
 
     let timeoutId: number | undefined;
     function startTimeout(cb?: () => void) {
@@ -35,15 +28,14 @@ export class UserActionInstrumentation extends BaseInstrumentation {
     }
 
     let actionRunning = false;
-
-    // const allMonitorsObservable = allMonitors.takeWhile(() => actionRunning);
-
     let allMonitorsSub: Subscription | undefined;
 
-    const api = this.api;
+    const self = this;
 
     window.addEventListener('pointerdown', (event) => {
-      if (actionRunning || !isClickableElement(event.target as HTMLElement)) {
+      const userActionName = getUserActionName(event.target as HTMLElement);
+
+      if (actionRunning || userActionName == null) {
         return;
       }
 
@@ -74,8 +66,9 @@ export class UserActionInstrumentation extends BaseInstrumentation {
             if (hadFollowupActivity) {
               console.log('Action had followup activity');
 
-              api.pushEvent('faro.user-action', {
-                type: 'click',
+              self.api.pushEvent('faro.user-action', {
+                name: userActionName,
+                type: event.type,
                 duration: (endTime! - startTime).toString(),
               });
             }
@@ -83,7 +76,7 @@ export class UserActionInstrumentation extends BaseInstrumentation {
         });
     });
 
-    // Disable tracking for background tabs to free up resources
+    // Unsubscribe from all monitors when the tab goes into the background to free up resources (merge.unsubscribe() also unsubscribes from all inner observables)
     document.addEventListener('visibilitychange', () => {
       console.log('Visibility changed:', document.visibilityState);
       if (document.visibilityState === 'hidden') {
@@ -92,4 +85,8 @@ export class UserActionInstrumentation extends BaseInstrumentation {
       }
     });
   }
+}
+
+function getUserActionName(element: HTMLElement): string | undefined {
+  return Object.keys(element.dataset).find((key) => key.startsWith(USER_ACTION_DATA_ATTRIBUTE_PREFIX));
 }
