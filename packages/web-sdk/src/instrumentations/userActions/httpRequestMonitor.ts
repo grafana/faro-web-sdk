@@ -42,8 +42,6 @@ function monitorXhr(setActiveCallback: (active: number) => void) {
   let activeRequests = 0;
 
   XMLHttpRequest.prototype.open = function () {
-    console.log('arguments xhr :>> ', arguments);
-
     const isIgnoreUrl = isUrlIgnored(arguments[1]);
 
     this.addEventListener('loadstart', () => {
