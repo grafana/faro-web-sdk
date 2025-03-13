@@ -66,8 +66,9 @@ export class UserActionInstrumentation extends BaseInstrumentation {
                 parentId: actionId,
               });
 
+              // TODO: updat api to create a user-action object derived from the attributes and name
               self.api.pushEvent(`user-action-${userActionName}`, {
-                name: userActionName,
+                action: 'user-action',
                 type: event.type,
                 duration: (endTime! - startTime).toString(),
                 id: actionId,
