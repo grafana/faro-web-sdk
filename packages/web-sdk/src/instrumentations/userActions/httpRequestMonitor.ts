@@ -1,4 +1,6 @@
-import { Observable } from '@grafana/faro-core';
+import { isFunction, isString, Observable } from '@grafana/faro-core';
+
+import { isUrlIgnored } from '../../utils/url';
 
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
 
@@ -40,16 +42,24 @@ function monitorXhr(setActiveCallback: (active: number) => void) {
   let activeRequests = 0;
 
   XMLHttpRequest.prototype.open = function () {
+    console.log('arguments xhr :>> ', arguments);
+
+    const isIgnoreUrl = isUrlIgnored(arguments[1]);
+
     this.addEventListener('loadstart', () => {
-      activeRequests++;
-      console.log('Request started. Active requests:', activeRequests);
-      setActiveCallback(activeRequests);
+      if (!isIgnoreUrl) {
+        activeRequests++;
+        console.log('Request started. Active requests:', activeRequests);
+        setActiveCallback(activeRequests);
+      }
     });
 
     this.addEventListener('loadend', () => {
-      activeRequests--;
-      console.log('Request ended. Active requests:', activeRequests);
-      setActiveCallback(activeRequests);
+      if (!isIgnoreUrl) {
+        activeRequests--;
+        console.log('Request ended. Active requests:', activeRequests);
+        setActiveCallback(activeRequests);
+      }
     });
 
     originalOpen.apply(this, arguments as any);
@@ -65,14 +75,34 @@ function monitorFetch(setActiveCallback: (active: number) => void) {
   let activeRequests = 0;
 
   window.fetch = function () {
-    activeRequests++;
-    console.log('Fetch request started. Active requests:', activeRequests);
-    setActiveCallback(activeRequests);
+    const url = getUrlFromResource(arguments[0]);
+    const isIgnoreUrl = isUrlIgnored(url);
+
+    // fetch started
+    if (!isIgnoreUrl) {
+      activeRequests++;
+      console.log('Fetch request started. Active requests:', activeRequests);
+      setActiveCallback(activeRequests);
+    }
 
     return originalFetch.apply(this, arguments as any).finally(() => {
-      activeRequests--;
-      console.log('Fetch request ended. Active requests:', activeRequests);
-      setActiveCallback(activeRequests);
+      // fetch ended
+      if (!isIgnoreUrl) {
+        activeRequests--;
+        console.log('Fetch request ended. Active requests:', activeRequests);
+        setActiveCallback(activeRequests);
+      }
     });
   };
+}
+
+function getUrlFromResource(resource: any): string | undefined {
+  if (isString(resource)) {
+    return resource;
+  } else if (resource instanceof URL) {
+    return resource.href;
+  } else if (isFunction(resource?.toString)) {
+    return resource.toString();
+  }
+  return undefined;
 }
