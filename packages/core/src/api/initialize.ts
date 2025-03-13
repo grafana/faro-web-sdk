@@ -24,6 +24,8 @@ export function initializeAPI(
 ): API {
   internalLogger.debug('Initializing API');
 
+  const actionBuffer = new ItemBuffer<TransportItem>();
+
   let message: ApiMessageBusMessage | undefined;
 
   apiMessageBus.subscribe((msg) => {
@@ -56,12 +58,12 @@ export function initializeAPI(
     if (msg.type === 'user-action-cancel') {
       message = undefined;
       actionBuffer.flushBuffer((item) => {
+        // TODO: filter unrelated and user defined signals.
         transports.execute(item);
       });
     }
   });
 
-  const actionBuffer = new ItemBuffer<TransportItem>();
   const getMessage = (): typeof message => message;
 
   const tracesApi = initializeTracesAPI(unpatchedConsole, internalLogger, config, metas, transports);
