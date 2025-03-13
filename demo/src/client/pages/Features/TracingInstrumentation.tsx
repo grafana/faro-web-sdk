@@ -32,13 +32,13 @@ export function TracingInstrumentation() {
     <>
       <h3>Tracing Instrumentation</h3>
       <ButtonGroup>
-        <Button data-cy="btn-fetch-success" onClick={fetchSuccess}>
+        <Button data-cy="btn-fetch-success" onClick={fetchSuccess} data-faro-user-action-name="fetch-success">
           Fetch Success
         </Button>
-        <Button data-cy="btn-xhr-success" onClick={xhrSuccess}>
+        <Button data-cy="btn-xhr-success" onClick={xhrSuccess} data-faro-user-action-name="xhr-success">
           XHR Success
         </Button>
-        <Button data-cy="btn-trace-with-log" onClick={traceWithLog}>
+        <Button data-cy="btn-trace-with-log" onClick={traceWithLog} data-faro-user-action-name="trace-with-log">
           Trace with Log
         </Button>
       </ButtonGroup>
