@@ -2,8 +2,8 @@ export interface Subscription {
   unsubscribe: () => void;
 }
 
-export class Observable {
-  private subscribers: Array<(data: any) => void>;
+export class Observable<T = any> {
+  private subscribers: Array<(data: T) => void>;
 
   constructor() {
     this.subscribers = [];
@@ -14,7 +14,7 @@ export class Observable {
    * @param callback - The function to call when the observable emits a value.
    * @returns A subscription object with an unsubscribe method to cancel the subscription.
    */
-  subscribe(callback: (data: any) => void): Subscription {
+  subscribe(callback: (data: T) => void): Subscription {
     this.subscribers.push(callback);
 
     return {
@@ -26,7 +26,7 @@ export class Observable {
    * Notifies all subscribers with the given data.
    * @param data - The data to emit to all subscribers.
    */
-  notify(data: any): void {
+  notify(data: T): void {
     this.subscribers.forEach((callback) => callback(data));
   }
 
@@ -35,7 +35,7 @@ export class Observable {
    * @param callback - The function to call when the observable emits a value.
    * @returns A subscription object with an unsubscribe method to cancel the subscription.
    */
-  first(callback: (data: any) => void): Subscription {
+  first(callback: (data: T) => void): Subscription {
     const subscription = this.subscribe((data) => {
       callback(data);
       subscription.unsubscribe();
@@ -49,8 +49,8 @@ export class Observable {
    * @param project - The function that maps each value from the source observable to a new observable.
    * @returns A new observable that emits values from the most recent inner observable.
    */
-  switchMap<T, R>(project: (value: T) => Observable): Observable {
-    const result = new Observable();
+  switchMap<R>(project: (value: T) => Observable<R>): Observable<R> {
+    const result = new Observable<R>();
     let innerSubscription: Subscription | null = null;
 
     this.subscribe((value: T) => {
@@ -72,8 +72,8 @@ export class Observable {
    * @param predicate - A function that evaluates each value emitted by the source observable.
    * @returns A new observable that emits values from the source observable while the predicate returns true.
    */
-  takeWhile<T>(predicate: (value: T) => boolean): Observable {
-    const result = new Observable();
+  takeWhile(predicate: (value: T) => boolean): Observable<T> {
+    const result = new Observable<T>();
     const subscription = this.subscribe((value: T) => {
       if (predicate(value)) {
         result.notify(value);
@@ -107,8 +107,8 @@ export class Observable {
  * @remarks
  * The returned observable's `unsubscribe` method, when called, will unsubscribe from the merge observable and all input observables.
  */
-export function merge<T>(...observables: Observable[]): Observable {
-  const mainObservable = new Observable();
+export function merge<T>(...observables: Array<Observable<T>>): Observable<T> {
+  const mainObservable = new Observable<T>();
   const subscriptions: Subscription[] = [];
 
   observables.forEach((observable) => {

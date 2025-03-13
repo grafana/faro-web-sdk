@@ -47,10 +47,10 @@ export function ErrorInstrumentation() {
         <Button data-cy="btn-call-undefined" onClick={callUndefined}>
           Call Undefined Method
         </Button>
-        <Button data-cy="btn-fetch-error" onClick={fetchError}>
+        <Button data-cy="btn-fetch-error" onClick={fetchError} data-faro-user-action-name="fetch-error">
           Fetch Error
         </Button>
-        <Button data-cy="btn-xhr-error" onClick={xhrError}>
+        <Button data-cy="btn-xhr-error" onClick={xhrError} data-faro-user-action-name="xhr-error">
           XHR Error (promise)
         </Button>
         <Button data-cy="btn-promise-reject" onClick={promiseReject}>
