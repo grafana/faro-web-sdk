@@ -8,7 +8,7 @@ import {
   isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
@@ -68,6 +68,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
     webVitalsInstrumentation,
+    trackUserActions = false,
   }: BrowserConfig = browserConfig;
 
   return {
@@ -78,7 +79,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations,
+    instrumentations: getFilteredInstrumentations(instrumentations, browserConfig),
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -104,7 +105,20 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackWebVitalsAttribution,
     consoleInstrumentation,
     webVitalsInstrumentation,
+    trackUserActions,
   };
+}
+
+function getFilteredInstrumentations(
+  instrumentations: Instrumentation[],
+  { trackUserActions }: BrowserConfig
+): Instrumentation[] {
+  return instrumentations.filter((instr) => {
+    if (instr.name === '@grafana/faro-web-sdk:instrumentation-user-action' && !trackUserActions) {
+      return false;
+    }
+    return true;
+  });
 }
 
 function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {

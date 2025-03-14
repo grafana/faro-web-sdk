@@ -77,7 +77,7 @@ describe('faroTraceExporter.utils', () => {
     expect(mockPushEvent.mock.lastCall[0]).toBe('faro.tracing.coolName');
   });
 
-  it('Call Faro event API with traceID and spanID of contained in teh span', () => {
+  it('Call Faro event API with traceID and spanID of contained in the span', () => {
     const faro = initializeFaro(mockConfig());
 
     const mockPushEvent = jest.fn();
@@ -99,11 +99,12 @@ describe('faroTraceExporter.utils', () => {
     sendFaroEvents([data]);
 
     expect(mockPushEvent).toBeCalledTimes(1);
-    expect(mockPushEvent.mock.lastCall[3]).toStrictEqual({
+    expect(mockPushEvent.mock.lastCall[3]).toMatchObject({
       spanContext: {
         spanId: '4c47d5f85e4b2aec',
         traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
       },
+      timestampOverwriteMs: expect.any(Number),
     });
   });
 

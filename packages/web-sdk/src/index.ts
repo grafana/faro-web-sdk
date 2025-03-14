@@ -16,6 +16,7 @@ export {
   WebVitalsInstrumentation,
   SessionInstrumentation,
   PerformanceInstrumentation,
+  UserActionInstrumentation,
 } from './instrumentations';
 export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
@@ -93,6 +94,9 @@ export {
   EVENT_SESSION_RESUME,
   EVENT_SESSION_START,
   EVENT_VIEW_CHANGED,
+  apiMessageBus,
+  Observable,
+  merge,
 } from '@grafana/faro-core';
 
 export type {
@@ -156,6 +160,11 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
+  ApiMessageBusMessages,
+  UserActionStartMessage,
+  UserActionEndMessage,
+  UserActionCancelMessage,
+  UserAction,
 } from '@grafana/faro-core';
 
 export {
