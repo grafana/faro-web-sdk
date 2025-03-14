@@ -1,19 +1,21 @@
 import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
-import type { TransportItem, Transports } from '../transports';
+import { faro } from '../sdk';
+import { type TransportItem, TransportItemType, type Transports } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 import { isFunction, Observable } from '../utils';
 
 import { EventEvent, initializeEventsAPI } from './events';
 import { initializeExceptionsAPI } from './exceptions';
+import { ItemBuffer } from './ItemBuffer';
 import { initializeLogsAPI } from './logs';
 import { initializeMeasurementsAPI } from './measurements';
 import { initializeMetaAPI } from './meta';
 import { initializeTracesAPI } from './traces';
-import type { API, ApiMessageBusMessage } from './types';
+import type { API, ApiMessageBusMessages } from './types';
 
-export const apiMessageBus = new Observable<ApiMessageBusMessage>();
+export const apiMessageBus = new Observable<ApiMessageBusMessages>();
 
 export function initializeAPI(
   unpatchedConsole: UnpatchedConsole,
@@ -24,47 +26,7 @@ export function initializeAPI(
 ): API {
   internalLogger.debug('Initializing API');
 
-  const actionBuffer = new ItemBuffer<TransportItem>();
-
-  let message: ApiMessageBusMessage | undefined;
-
-  apiMessageBus.subscribe((msg) => {
-    if (msg.type === 'user-action-start') {
-      message = msg;
-      return;
-    }
-
-    if (msg.type === 'user-action-end') {
-      const thisMessage = msg;
-      message = undefined;
-      actionBuffer.flushBuffer((item) => {
-        const _item = {
-          ...item,
-          payload: {
-            ...item.payload,
-            action: {
-              name: thisMessage.name,
-              parentId: thisMessage.parentId,
-              id: thisMessage.id,
-            },
-          },
-        } as TransportItem<EventEvent>;
-
-        transports.execute(_item);
-      });
-      return;
-    }
-
-    if (msg.type === 'user-action-cancel') {
-      message = undefined;
-      actionBuffer.flushBuffer((item) => {
-        // TODO: filter unrelated and user defined signals.
-        transports.execute(item);
-      });
-    }
-  });
-
-  const getMessage = (): typeof message => message;
+  const { actionBuffer, getMessage } = createUserActionLifecycleHandler(transports);
 
   const tracesApi = initializeTracesAPI(unpatchedConsole, internalLogger, config, metas, transports);
 
@@ -89,24 +51,80 @@ export function initializeAPI(
   };
 }
 
-export class ItemBuffer<T> {
-  private buffer: T[];
+function createUserActionLifecycleHandler(transports: Transports) {
+  const actionBuffer = new ItemBuffer<TransportItem>();
 
-  constructor() {
-    this.buffer = [];
-  }
+  let message: ApiMessageBusMessages | undefined;
 
-  addItem(item: T) {
-    this.buffer.push(item);
-  }
-
-  flushBuffer(cb?: (item: T) => void) {
-    if (isFunction(cb)) {
-      for (const item of [...this.buffer]) {
-        cb(item);
-      }
+  apiMessageBus.subscribe((msg) => {
+    if (msg.type === 'user-action-start') {
+      message = msg;
+      return;
     }
 
-    this.buffer.length = 0;
-  }
+    if (msg.type === 'user-action-end') {
+      const { duration, endTime, id, name, startTime, type } = msg;
+
+      // Faro API is available at this point
+      faro.api.pushEvent(
+        `user-action-${name}`,
+        {
+          action: 'user-action',
+        },
+        undefined,
+        { timestampOverwriteMs: startTime }
+      );
+
+      actionBuffer.flushBuffer((item) => {
+        let isUserActionEvent = false;
+
+        if (isEventPayload(item) && item.payload.attributes?.['action'] === 'user-action') {
+          isUserActionEvent = true;
+          delete item.payload.attributes['action'];
+        }
+
+        const _item = {
+          ...item,
+          payload: {
+            ...item.payload,
+            action: {
+              ...(isUserActionEvent ? { parentId: id } : { id }),
+              name,
+            },
+            ...(isUserActionEvent
+              ? {
+                  attributes: {
+                    ...((item as TransportItem<EventEvent>).payload.attributes || {}),
+                    startTime: startTime.toString(),
+                    endTime: endTime.toString(),
+                    duration: duration.toString(),
+                    type,
+                  },
+                }
+              : {}),
+          },
+        } as TransportItem;
+
+        transports.execute(_item);
+      });
+
+      message = undefined;
+      return;
+    }
+
+    if (msg.type === 'user-action-cancel') {
+      message = undefined;
+      actionBuffer.flushBuffer((item) => {
+        // TODO: filter unrelated and user defined signals.
+        transports.execute(item);
+      });
+    }
+  });
+
+  const getMessage = (): typeof message => message;
+  return { actionBuffer, getMessage };
+}
+
+function isEventPayload(item: TransportItem): item is TransportItem<EventEvent> {
+  return item.type === TransportItemType.EVENT;
 }
