@@ -11,7 +11,7 @@ import {
 import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
-import { parseStacktrace, UserActionInstrumentation } from '../instrumentations';
+import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
 import { browserMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
@@ -112,9 +112,9 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 function getFilteredInstrumentations(
   instrumentations: Instrumentation[],
   { trackUserActions }: BrowserConfig
-): Array<import('/Users/marcoschaefer/Code/Repos/Grafana/faro-web-sdk/packages/core/src/index').Instrumentation> {
+): Instrumentation[] {
   return instrumentations.filter((instr) => {
-    if (!trackUserActions && instr.name === UserActionInstrumentation.name) {
+    if (instr.name === '@grafana/faro-web-sdk:instrumentation-user-action' && !trackUserActions) {
       return false;
     }
     return true;
