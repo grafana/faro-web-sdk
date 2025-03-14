@@ -77,7 +77,7 @@ export class UserActionInstrumentation extends BaseInstrumentation {
 
               // Send the final action parent event
               api.pushEvent(
-                `user-action-${userActionName}`,
+                userActionName,
                 {
                   userActionStartTime: startTime.toString(),
                   userActionEndTime: endTime.toString(),
