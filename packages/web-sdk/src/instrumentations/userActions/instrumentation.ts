@@ -21,6 +21,8 @@ export class UserActionInstrumentation extends BaseInstrumentation {
     window.addEventListener('pointerdown', processEvent);
     window.addEventListener('keydown', processEvent);
 
+    const api = this.api;
+
     function processEvent(event: PointerEvent | KeyboardEvent) {
       const userActionName = getUserActionName(event.target as HTMLElement);
 
@@ -58,15 +60,43 @@ export class UserActionInstrumentation extends BaseInstrumentation {
 
             if (hadFollowupActivity) {
               // action is valid. Leads to adding the parentId to items, flushing the buffer and sending the items to the server
+
+              const duration = endTime - startTime;
+              const eventType = event.type;
+
+              // order matters, first notify the user-action-end event and then push the event
               apiMessageBus.notify({
                 type: 'user-action-end',
                 name: userActionName,
                 id: actionId,
                 startTime,
                 endTime,
-                duration: endTime! - startTime,
-                eventType: event.type,
+                duration,
+                eventType,
               });
+
+              // Send the final action parent event
+              api.pushEvent(
+                `user-action-${userActionName}`,
+                {
+                  userActionStartTime: startTime.toString(),
+                  userActionEndTime: endTime.toString(),
+                  userActionDuration: duration.toString(),
+                  userActionEventType: eventType,
+                },
+                undefined,
+                {
+                  timestampOverwriteMs: startTime,
+                  customPayloadParser: (payload) => {
+                    payload.action = {
+                      id: actionId,
+                      name: userActionName,
+                    };
+
+                    return payload;
+                  },
+                }
+              );
             } else {
               // action is invalid. Flushing the buffer and sending the items to the server without adding the parentId to items
               apiMessageBus.notify({
