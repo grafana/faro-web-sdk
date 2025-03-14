@@ -36,14 +36,14 @@ export function initializeEventsAPI({
     name,
     attributes,
     domain,
-    { skipDedupe, spanContext, timestampOverwriteMs } = {}
+    { skipDedupe, spanContext, timestampOverwriteMs, customPayloadParser = (payload: EventEvent) => payload } = {}
   ) => {
     try {
       const attrs = stringifyObjectValues(attributes);
 
       const item: TransportItem<EventEvent> = {
         meta: metas.value,
-        payload: {
+        payload: customPayloadParser({
           name,
           domain: domain ?? config.eventDomain,
           attributes: isEmpty(attrs) ? undefined : attrs,
@@ -54,7 +54,7 @@ export function initializeEventsAPI({
                 span_id: spanContext.spanId,
               }
             : tracesApi.getTraceContext(),
-        },
+        }),
         type: TransportItemType.EVENT,
       };
 
