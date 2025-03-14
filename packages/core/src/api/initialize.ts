@@ -66,6 +66,7 @@ function createUserActionLifecycleHandler(transports: Transports) {
       const { duration, endTime, id, name, startTime, type } = msg;
 
       // Faro API is available at this point
+      // Send the final action parent event
       faro.api.pushEvent(
         `user-action-${name}`,
         {
@@ -88,6 +89,7 @@ function createUserActionLifecycleHandler(transports: Transports) {
           payload: {
             ...item.payload,
             action: {
+              // children have parentId and the parent "user action" event has id
               ...(isUserActionEvent ? { parentId: id } : { id }),
               name,
             },

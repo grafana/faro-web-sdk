@@ -27,6 +27,10 @@ export type {
   TraceEvent,
   TracesAPI,
   ApiMessageBusMessages,
+  UserActionStartMessage,
+  UserActionEndMessage,
+  UserActionCancelMessage,
+  UserAction,
 } from './api';
 
 export { BaseExtension } from './extensions';
