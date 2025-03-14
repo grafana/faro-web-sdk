@@ -1,5 +1,13 @@
 export { initializeAPI } from './initialize';
-export type { API, APIEvent, ApiMessageBusMessage, UserAction } from './types';
+export type {
+  API,
+  APIEvent,
+  ApiMessageBusMessages,
+  UserActionCancelMessage,
+  UserActionEndMessage,
+  UserActionStartMessage,
+  UserAction,
+} from './types';
 
 export type { EventAttributes, EventEvent, EventsAPI, PushEventOptions } from './events';
 

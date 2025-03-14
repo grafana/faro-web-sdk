@@ -26,7 +26,7 @@ export type {
   TraceContext,
   TraceEvent,
   TracesAPI,
-  ApiMessageBusMessage,
+  ApiMessageBusMessages,
 } from './api';
 
 export { BaseExtension } from './extensions';
