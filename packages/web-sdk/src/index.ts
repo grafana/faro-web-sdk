@@ -160,7 +160,11 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
-  ApiMessageBusMessage,
+  ApiMessageBusMessages,
+  UserActionStartMessage,
+  UserActionEndMessage,
+  UserActionCancelMessage,
+  UserAction,
 } from '@grafana/faro-core';
 
 export {

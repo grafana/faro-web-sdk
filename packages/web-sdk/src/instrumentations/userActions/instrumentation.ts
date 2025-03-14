@@ -18,8 +18,6 @@ export class UserActionInstrumentation extends BaseInstrumentation {
     let actionRunning = false;
     let allMonitorsSub: Subscription | undefined;
 
-    const self = this;
-
     window.addEventListener('pointerdown', processEvent);
     window.addEventListener('keydown', processEvent);
 
