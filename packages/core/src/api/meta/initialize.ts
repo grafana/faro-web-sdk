@@ -4,9 +4,9 @@ import type { Meta, Metas } from '../../metas';
 import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { isEmpty, isString } from '../../utils/is';
-import type { ItemBuffer } from '../initialize';
+import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
-import type { ApiMessageBusMessage } from '../types';
+import type { ApiMessageBusMessages } from '../types';
 
 import type { MetaAPI } from './types';
 
@@ -21,7 +21,7 @@ export function initializeMetaAPI({
   transports: Transports;
   tracesApi: TracesAPI;
   actionBuffer: ItemBuffer<TransportItem>;
-  getMessage: () => ApiMessageBusMessage | undefined;
+  getMessage: () => ApiMessageBusMessages | undefined;
 }): MetaAPI {
   internalLogger.debug('Initializing meta API');
 

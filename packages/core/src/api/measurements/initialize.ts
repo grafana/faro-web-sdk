@@ -6,9 +6,9 @@ import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
-import type { ItemBuffer } from '../initialize';
+import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
-import type { ApiMessageBusMessage } from '../types';
+import type { ApiMessageBusMessages } from '../types';
 
 import type { MeasurementEvent, MeasurementsAPI } from './types';
 
@@ -28,7 +28,7 @@ export function initializeMeasurementsAPI({
   transports: Transports;
   tracesApi: TracesAPI;
   actionBuffer: ItemBuffer<TransportItem>;
-  getMessage: () => ApiMessageBusMessage | undefined;
+  getMessage: () => ApiMessageBusMessages | undefined;
 }): MeasurementsAPI {
   internalLogger.debug('Initializing measurements API');
 
