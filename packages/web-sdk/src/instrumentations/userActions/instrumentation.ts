@@ -62,9 +62,10 @@ export class UserActionInstrumentation extends BaseInstrumentation {
                 type: 'user-action-end',
                 name: userActionName,
                 id: actionId,
-                startTime: startTime,
-                endTime: endTime,
+                startTime,
+                endTime,
                 duration: endTime! - startTime,
+                eventType: event.type,
               });
             } else {
               // action is invalid. Flushing the buffer and sending the items to the server without adding the parentId to items
@@ -75,6 +76,7 @@ export class UserActionInstrumentation extends BaseInstrumentation {
               });
             }
 
+            // Ensure action is blocked until it is fully processed.
             actionRunning = false;
           });
         });
@@ -85,10 +87,11 @@ export class UserActionInstrumentation extends BaseInstrumentation {
 }
 
 function registerVisibilityChangeHandler(allMonitorsSub: Subscription | undefined) {
-  // stop monitoring background tabs
+  // stop monitoring in background tabs
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       // Unsubscribe from all monitors when the tab goes into the background to free up resources (merge.unsubscribe() also unsubscribes from all inner observables)
+      // Monitors will be re-subscribed in the processEvent function when the first user action is detected
       allMonitorsSub?.unsubscribe();
       allMonitorsSub = undefined;
     }
