@@ -16,7 +16,7 @@ export function CounterComponent({ description, title, value, onChange }: Counte
       <p>{description}</p>
       <p>
         Counter: {value}{' '}
-        <Button onClick={() => onChange(value + 1)} data-faro-user-action-name="counter-increment">
+        <Button onClick={() => onChange(value + 1)} data-faro-action-user-name="counter-increment">
           Increment
         </Button>
       </p>
