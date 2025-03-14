@@ -28,6 +28,7 @@ export type UserActionEndMessage = {
   startTime: number;
   endTime: number;
   duration: number;
+  eventType: string;
 
   /**
    * Unique identifier for the user action. Will be undefined for messages related to child actions.
