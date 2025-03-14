@@ -4,7 +4,7 @@ import type { Metas } from '../metas';
 import { faro } from '../sdk';
 import { type TransportItem, TransportItemType, type Transports } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
-import { isFunction, Observable } from '../utils';
+import { Observable } from '../utils';
 
 import { EventEvent, initializeEventsAPI } from './events';
 import { initializeExceptionsAPI } from './exceptions';
