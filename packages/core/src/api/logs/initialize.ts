@@ -6,9 +6,9 @@ import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, defaultLogLevel, getCurrentTimestamp, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
-import type { ItemBuffer } from '../initialize';
+import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
-import type { ApiMessageBusMessage } from '../types';
+import type { ApiMessageBusMessages } from '../types';
 
 import { defaultLogArgsSerializer } from './const';
 import type { LogEvent, LogsAPI } from './types';
@@ -29,7 +29,7 @@ export function initializeLogsAPI({
   transports: Transports;
   tracesApi: TracesAPI;
   actionBuffer: ItemBuffer<TransportItem>;
-  getMessage: () => ApiMessageBusMessage | undefined;
+  getMessage: () => ApiMessageBusMessages | undefined;
 }): LogsAPI {
   internalLogger.debug('Initializing logs API');
 
