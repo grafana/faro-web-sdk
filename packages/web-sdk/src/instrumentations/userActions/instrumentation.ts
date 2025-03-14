@@ -41,6 +41,7 @@ export class UserActionInstrumentation extends BaseInstrumentation {
       apiMessageBus.notify({
         type: 'user-action-start',
         name: userActionName,
+        startTime: startTime,
         parentId: actionId,
       });
 
@@ -56,22 +57,16 @@ export class UserActionInstrumentation extends BaseInstrumentation {
 
           timeoutId = startTimeout(timeoutId, () => {
             endTime = performance.now();
-            actionRunning = false;
 
             if (hadFollowupActivity) {
               // action is valid. Leads to adding the parentId to items, flushing the buffer and sending the items to the server
               apiMessageBus.notify({
                 type: 'user-action-end',
                 name: userActionName,
-                parentId: actionId,
-              });
-
-              // TODO: updat api to create a user-action object derived from the attributes and name
-              self.api.pushEvent(`user-action-${userActionName}`, {
-                action: 'user-action',
-                type: event.type,
-                duration: (endTime! - startTime).toString(),
                 id: actionId,
+                startTime: startTime,
+                endTime: endTime,
+                duration: endTime! - startTime,
               });
             } else {
               // action is invalid. Flushing the buffer and sending the items to the server without adding the parentId to items
@@ -81,6 +76,8 @@ export class UserActionInstrumentation extends BaseInstrumentation {
                 parentId: actionId,
               });
             }
+
+            actionRunning = false;
           });
         });
     }

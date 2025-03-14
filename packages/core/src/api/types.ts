@@ -9,26 +9,40 @@ export type APIEvent = LogEvent | ExceptionEvent | MeasurementEvent | TraceEvent
 
 export type API = LogsAPI & ExceptionsAPI & MeasurementsAPI & TracesAPI & MetaAPI & EventsAPI;
 
-export type ApiMessageBusMessage = {
-  /**
-   * Type of the message.
-   */
-  type: 'user-action-start' | 'user-action-end' | 'user-action-cancel';
+export type ApiMessageBusMessages = UserActionStartMessage | UserActionEndMessage | UserActionCancelMessage;
 
-  /**
-   * Name of the user action.
-   */
+export type UserActionStartMessage = {
+  type: 'user-action-start';
   name: string;
+  startTime: number;
 
   /**
-   * Id of the parent user action. Will be undefined for a parent action message.
+   * Unique identifier of the parent user action to which this action belongs.
    */
-  parentId?: string;
+  parentId: string;
+};
+
+export type UserActionEndMessage = {
+  type: 'user-action-end';
+  name: string;
+  startTime: number;
+  endTime: number;
+  duration: number;
 
   /**
    * Unique identifier for the user action. Will be undefined for messages related to child actions.
    */
-  id?: string;
+  id: string;
+};
+
+export type UserActionCancelMessage = {
+  type: 'user-action-cancel';
+  name: string;
+
+  /**
+   * Unique identifier of the parent user action to which this action belongs.
+   */
+  parentId?: string;
 };
 
 export type UserAction = {
