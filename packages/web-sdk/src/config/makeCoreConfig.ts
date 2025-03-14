@@ -9,10 +9,10 @@ import {
   isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
-import { parseStacktrace } from '../instrumentations';
+import { parseStacktrace, UserActionInstrumentation } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
 import { browserMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
@@ -69,6 +69,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
     webVitalsInstrumentation,
+    trackUserActions = false,
   }: BrowserConfig = browserConfig;
 
   return {
@@ -79,7 +80,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations,
+    instrumentations: getFilteredInstrumentations(instrumentations, browserConfig),
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -105,7 +106,20 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackWebVitalsAttribution,
     consoleInstrumentation,
     webVitalsInstrumentation,
+    trackUserActions,
   };
+}
+
+function getFilteredInstrumentations(
+  instrumentations: Instrumentation[],
+  { trackUserActions }: BrowserConfig
+): Array<import('/Users/marcoschaefer/Code/Repos/Grafana/faro-web-sdk/packages/core/src/index').Instrumentation> {
+  return instrumentations.filter((instr) => {
+    if (!trackUserActions && instr.name === UserActionInstrumentation.name) {
+      return false;
+    }
+    return true;
+  });
 }
 
 function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {

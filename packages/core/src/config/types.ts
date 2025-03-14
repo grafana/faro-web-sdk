@@ -233,6 +233,12 @@ export interface Config<P = APIEvent> {
    * privacy requirements.
    */
   trackGeolocation?: boolean;
+
+  /**
+   * This is a preview feature.
+   * We have tested it thoroughly, but it is possible that it might not work as expected in all cases.
+   */
+  trackUserActions?: boolean;
 }
 
 export type Patterns = Array<string | RegExp>;
