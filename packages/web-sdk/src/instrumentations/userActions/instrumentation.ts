@@ -1,4 +1,12 @@
-import { apiMessageBus, BaseInstrumentation, genShortID, merge, Subscription, VERSION } from '@grafana/faro-core';
+import {
+  apiMessageBus,
+  BaseInstrumentation,
+  dateNow,
+  genShortID,
+  merge,
+  Subscription,
+  VERSION,
+} from '@grafana/faro-core';
 
 import { USER_ACTION_DATA_ATTRIBUTE_PREFIX } from './const';
 import { monitorDomMutations } from './domMutationMonitor';
@@ -31,7 +39,7 @@ export class UserActionInstrumentation extends BaseInstrumentation {
       }
       actionRunning = true;
 
-      const startTime = performance.now();
+      const startTime = dateNow();
       let endTime: number | undefined;
 
       let hadFollowupActivity = false;
@@ -46,7 +54,7 @@ export class UserActionInstrumentation extends BaseInstrumentation {
       });
 
       timeoutId = startTimeout(timeoutId, () => {
-        endTime = performance.now();
+        endTime = dateNow();
         actionRunning = false;
       });
 
@@ -56,7 +64,7 @@ export class UserActionInstrumentation extends BaseInstrumentation {
           hadFollowupActivity = true;
 
           timeoutId = startTimeout(timeoutId, () => {
-            endTime = performance.now();
+            endTime = dateNow();
 
             if (hadFollowupActivity) {
               // action is valid. Leads to adding the parentId to items, flushing the buffer and sending the items to the server
