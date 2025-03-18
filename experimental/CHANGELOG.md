@@ -2,6 +2,10 @@
 
 ## Next
 
+- Dependencies (`@grafana/faro-transport-otlp-http`): upgrade otel deps (#1053)
+
+## 1.13.0
+
 - Improvement (`@grafana/faro-*`) Add required Node engines to package.json ()
 
 ## 1.12.3
