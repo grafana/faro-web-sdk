@@ -20,4 +20,8 @@ export class ItemBuffer<T> {
 
     this.buffer.length = 0;
   }
+
+  size() {
+    return this.buffer.length;
+  }
 }
