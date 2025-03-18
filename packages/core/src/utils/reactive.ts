@@ -45,29 +45,6 @@ export class Observable<T = any> {
   }
 
   /**
-   * Switches to a new observable whenever the source observable emits a new value.
-   * @param project - The function that maps each value from the source observable to a new observable.
-   * @returns A new observable that emits values from the most recent inner observable.
-   */
-  switchMap<R>(project: (value: T) => Observable<R>): Observable<R> {
-    const result = new Observable<R>();
-    let innerSubscription: Subscription | null = null;
-
-    this.subscribe((value: T) => {
-      if (innerSubscription) {
-        innerSubscription.unsubscribe();
-      }
-
-      const innerObservable = project(value);
-      innerSubscription = innerObservable.subscribe((innerValue: R) => {
-        result.notify(innerValue);
-      });
-    });
-
-    return result;
-  }
-
-  /**
    * Emits values from the source observable until the provided predicate function returns false.
    * @param predicate - A function that evaluates each value emitted by the source observable.
    * @returns A new observable that emits values from the source observable while the predicate returns true.
