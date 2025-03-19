@@ -48,7 +48,7 @@
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.200.0",
     "@opentelemetry/instrumentation": "^0.200.0",
     "@opentelemetry/instrumentation-express": "^0.48.0",
-    "@opentelemetry/instrumentation-http": "^0.57.0",
+    "@opentelemetry/instrumentation-http": "^0.200.0",
     "@opentelemetry/instrumentation-pg": "^0.52.0",
     "@opentelemetry/instrumentation-winston": "^0.45.0",
     "@opentelemetry/resources": "^1.30.0",
