@@ -5,6 +5,7 @@ import { isUrlIgnored } from '../../utils/url';
 
 import { RESOURCE_ENTRY } from './performanceConstants';
 import { createFaroResourceTiming, getSpanContextFromServerTiming, includePerformanceEntry } from './performanceUtils';
+import type { ResourceEntryMessage } from './types';
 
 type SpanContext = PushEventOptions['spanContext'];
 
@@ -13,7 +14,7 @@ const DEFAULT_TRACK_RESOURCES = { initiatorType: ['xmlhttprequest', 'fetch'] };
 export function observeResourceTimings(
   faroNavigationId: string,
   pushEvent: EventsAPI['pushEvent'],
-  observable?: Observable
+  observable: Observable<ResourceEntryMessage>
 ) {
   const trackResources = faro.config.trackResources;
 
@@ -39,10 +40,11 @@ export function observeResourceTimings(
           faroResourceId: genShortID(),
         };
 
-        observable?.notify({
-          type: RESOURCE_ENTRY,
-          data: faroResourceEntry,
-        });
+        if (faro.config.trackUserActions) {
+          observable?.notify({
+            type: RESOURCE_ENTRY,
+          });
+        }
 
         pushEvent('faro.performance.resource', faroResourceEntry, undefined, {
           spanContext,
