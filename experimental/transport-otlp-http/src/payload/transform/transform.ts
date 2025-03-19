@@ -17,10 +17,13 @@ import {
   ATTR_BROWSER_MOBILE,
   ATTR_BROWSER_PLATFORM,
   ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
+  ATTR_EVENT_NAME,
   ATTR_SERVICE_NAMESPACE,
+  ATTR_SESSION_ID,
   ATTR_USER_EMAIL,
   ATTR_USER_ID,
   ATTR_USER_NAME,
+
   // False positive. Package can be resolved.
   // eslint-disable-next-line import/no-unresolved
 } from '@opentelemetry/semantic-conventions/incubating';
@@ -139,7 +142,7 @@ export function getLogTransforms(
       body,
       attributes: [
         ...getCommonLogAttributes(meta),
-        toAttribute('event.name', payload.name), // This is a semantic attribute. But event.name constant is currently missing in sematic-conventions npm package
+        toAttribute(ATTR_EVENT_NAME, payload.name), // This is a semantic attribute. But event.name constant is currently missing in sematic-conventions npm package
         toAttribute('event.domain', payload.domain), // This is a semantic attribute. But event.domain constant is currently missing in sematic-conventions npm package
         toAttribute('event.attributes', payload.attributes),
       ].filter(isAttribute),
@@ -199,7 +202,7 @@ export function getLogTransforms(
       toAttribute(ATTR_URL_FULL, page?.url),
       toAttribute('page.id', page?.id),
       toAttribute('page.attributes', page?.attributes),
-      toAttribute('session.id', session?.id),
+      toAttribute(ATTR_SESSION_ID, session?.id),
       toAttribute('session.attributes', session?.attributes),
       toAttribute(ATTR_USER_ID, user?.id),
       toAttribute(ATTR_USER_NAME, user?.username),
