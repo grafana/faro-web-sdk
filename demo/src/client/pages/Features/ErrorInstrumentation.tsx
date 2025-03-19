@@ -18,7 +18,6 @@ export function ErrorInstrumentation() {
     });
 
     setTimeout(() => {
-      console.log('Fetch error log');
       faro.api.pushLog(['Fetch error log']);
       faro.api.pushError(new Error('TEST - This is a fetch error'));
     }, 80);

@@ -71,7 +71,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     unpatchedConsole = defaultUnpatchedConsole,
     webVitalsInstrumentation,
     trackUserActions = false,
-    trackUserActionsDataAttributeName = parseActionAttributeName(userActionDataAttribute),
+    trackUserActionsDataAttributeName = userActionDataAttribute,
   }: BrowserConfig = browserConfig;
 
   return {
@@ -109,7 +109,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     consoleInstrumentation,
     webVitalsInstrumentation,
     trackUserActions,
-    trackUserActionsDataAttributeName,
+    trackUserActionsDataAttributeName: parseActionAttributeName(trackUserActionsDataAttributeName),
   };
 }
 
