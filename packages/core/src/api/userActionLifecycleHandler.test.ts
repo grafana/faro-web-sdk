@@ -114,7 +114,7 @@ describe('userActionLifecycleHandler', () => {
     const apiMessageBus = new Observable<ApiMessageBusMessages>();
 
     const mockExecute = jest.fn();
-    const { actionBuffer } = createUserActionLifecycleHandler(apiMessageBus, {
+    const { actionBuffer, getMessage } = createUserActionLifecycleHandler(apiMessageBus, {
       ...mockTransports,
       execute: mockExecute,
     });
@@ -162,5 +162,6 @@ describe('userActionLifecycleHandler', () => {
       },
     });
     expect(mockExecute).toHaveBeenNthCalledWith(2, itemMeasurement);
+    expect(getMessage()).toBeUndefined();
   });
 });
