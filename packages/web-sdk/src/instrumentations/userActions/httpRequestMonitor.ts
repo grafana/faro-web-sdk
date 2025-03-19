@@ -3,12 +3,13 @@ import { isFunction, isString, Observable } from '@grafana/faro-core';
 import { isUrlIgnored } from '../../utils/url';
 
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
+import type { HttpRequestEndMessage, HttpRequestStartMessage } from './types';
 
 /**
  * Monitors if any http requests are in progress.
  */
 export function monitorHttpRequests(): Observable {
-  const observable = new Observable();
+  const observable = new Observable<HttpRequestStartMessage | HttpRequestEndMessage>();
 
   let activeXhrRequests = 0;
   let activeFetchRequests = 0;
