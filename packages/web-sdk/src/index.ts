@@ -178,3 +178,5 @@ export {
 } from './instrumentations/session';
 
 export { getIgnoreUrls } from './utils/url';
+
+export { userActionDataAttribute } from './instrumentations/userActions/const';
