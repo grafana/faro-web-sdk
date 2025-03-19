@@ -2,11 +2,13 @@ import * as faroCoreModule from '@grafana/faro-core';
 import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
+import type { Observable } from '../..';
 import * as urlUtilsModule from '../../utils/url';
 
 import { createFaroResourceTiming } from './performanceUtils';
 import { performanceResourceEntry } from './performanceUtilsTestData';
 import { observeResourceTimings } from './resource';
+import type { ResourceEntryMessage } from './types';
 
 describe('Resource observer', () => {
   const originalTimeOrigin = performance.timeOrigin;
@@ -60,8 +62,14 @@ describe('Resource observer', () => {
 
   (global as any).PerformanceObserver = MockPerformanceObserver;
 
+  const mockNavigationId = '123';
+
+  const mockObservable = {
+    notify: jest.fn(),
+  } as unknown as Observable<ResourceEntryMessage>;
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   afterAll(() => {
@@ -83,7 +91,7 @@ describe('Resource observer', () => {
 
     initializeFaro(mockConfig({ trackResources: true }));
 
-    observeResourceTimings('123', mockPushEvent);
+    observeResourceTimings('123', mockPushEvent, mockObservable);
 
     expect(mockEntryUrlIsIgnored).toHaveBeenCalledTimes(1);
     expect(mockEntryUrlIsIgnored).toHaveBeenCalledWith(performanceResourceEntry.name);
@@ -100,8 +108,7 @@ describe('Resource observer', () => {
 
     initializeFaro(mockConfig({ trackResources: true }));
 
-    const mockNavigationId = '123';
-    observeResourceTimings(mockNavigationId, mockPushEvent);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(3);
 
@@ -128,8 +135,7 @@ describe('Resource observer', () => {
     const trackResourcesNotSetConfig = mockConfig({});
     initializeFaro(trackResourcesNotSetConfig);
 
-    const mockNavigationId = '123';
-    observeResourceTimings(mockNavigationId, mockPushEvent);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(2);
   });
@@ -141,8 +147,7 @@ describe('Resource observer', () => {
     const trackAllResourcesConfig = mockConfig({ trackResources: true });
     initializeFaro(trackAllResourcesConfig);
 
-    const mockNavigationId = '123';
-    observeResourceTimings(mockNavigationId, mockPushEvent);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(3);
   });
@@ -154,9 +159,33 @@ describe('Resource observer', () => {
     const trackAllResourcesConfig = mockConfig({ trackResources: false });
     initializeFaro(trackAllResourcesConfig);
 
-    const mockNavigationId = '123';
-    observeResourceTimings(mockNavigationId, mockPushEvent);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(0);
+  });
+
+  it('Emits a RESOURCE_ENTRY message when a resource is observed and trackUserActions is enabled', () => {
+    const mockPushEvent = jest.fn();
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
+
+    const trackUserActionsConfig = mockConfig({ trackUserActions: true });
+    initializeFaro(trackUserActionsConfig);
+
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
+
+    expect(mockObservable.notify).toHaveBeenCalledTimes(2);
+    expect(mockObservable.notify).toHaveBeenCalledWith({ type: 'resource' });
+  });
+
+  it('Does not emit a RESOURCE_ENTRY message when a resource is observed and trackUserActions is disabled', () => {
+    const mockPushEvent = jest.fn();
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
+
+    const trackUserActionsConfig = mockConfig({ trackUserActions: false });
+    initializeFaro(trackUserActionsConfig);
+
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
+
+    expect(mockObservable.notify).not.toHaveBeenCalled();
   });
 });
