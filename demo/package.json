@@ -53,7 +53,7 @@
     "@opentelemetry/instrumentation-winston": "^0.45.0",
     "@opentelemetry/resources": "^1.30.0",
     "@opentelemetry/sdk-node": "^0.57.1",
-    "@opentelemetry/sdk-trace-node": "^1.30.0",
+    "@opentelemetry/sdk-trace-node": "^2.0.0",
     "@opentelemetry/semantic-conventions": "^1.28.0",
     "@reduxjs/toolkit": "^2.3.0",
     "bcrypt": "^5.1.0",
