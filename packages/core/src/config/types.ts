@@ -239,6 +239,10 @@ export interface Config<P = APIEvent> {
    * We have tested it thoroughly, but it is possible that it might not work as expected in all cases.
    */
   trackUserActions?: boolean;
+  /**
+   * Configure your own attribute name for tracking user actions. Default is 'data-faro-user-action-name'
+   */
+  trackUserActionsDataAttributeName?: string;
 }
 
 export type Patterns = Array<string | RegExp>;

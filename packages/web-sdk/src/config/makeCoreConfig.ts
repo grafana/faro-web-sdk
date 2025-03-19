@@ -14,6 +14,7 @@ import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
+import { userActionDataAttribute } from '../instrumentations/userActions/const';
 import { browserMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
@@ -70,6 +71,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     unpatchedConsole = defaultUnpatchedConsole,
     webVitalsInstrumentation,
     trackUserActions = false,
+    trackUserActionsDataAttributeName = parseActionAttributeName(userActionDataAttribute),
   }: BrowserConfig = browserConfig;
 
   return {
@@ -107,6 +109,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     consoleInstrumentation,
     webVitalsInstrumentation,
     trackUserActions,
+    trackUserActionsDataAttributeName,
   };
 }
 
@@ -159,4 +162,17 @@ function crateSessionMeta({
       overrides,
     },
   };
+}
+
+/**
+ * Parses the action attribute name by removing the 'data-' prefix and converting
+ * the remaining string to camelCase.
+ *
+ * This is needed because the browser will remove the 'data-' prefix and the dashes from
+ * data attributes and make then camelCase.
+ */
+function parseActionAttributeName(userActionDataAttribute: string) {
+  const withoutData = userActionDataAttribute.split('data-')[1];
+  const withUpperCase = withoutData?.replace(/-(.)/g, (_, char) => char.toUpperCase());
+  return withUpperCase?.replace(/-/g, '');
 }
