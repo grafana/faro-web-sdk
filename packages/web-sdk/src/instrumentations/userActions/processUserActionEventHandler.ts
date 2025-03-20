@@ -57,8 +57,6 @@ export function getUserEventHandler(faro: Faro) {
     allMonitorsSub = allMonitorsObserver
       .takeWhile(() => actionRunning)
       .subscribe((msg) => {
-        console.log('msg all :>> ', msg);
-
         // Http request, dom mutation or performance entry happened so we have a follow up activity and start the timeout again
         // If timeout is triggered the user action is done and we send respective messages and events
         timeoutId = startTimeout(timeoutId, () => {

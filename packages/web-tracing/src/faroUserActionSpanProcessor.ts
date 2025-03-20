@@ -8,7 +8,6 @@ export class FaroUserActionSpanProcessor implements SpanProcessor {
 
   constructor(private processor: SpanProcessor) {
     apiMessageBus.subscribe((msg) => {
-      console.log(msg);
       if (msg.type === 'user-action-start') {
         this.message = msg;
         return;
