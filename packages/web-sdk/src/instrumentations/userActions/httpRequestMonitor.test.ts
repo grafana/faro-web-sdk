@@ -17,10 +17,6 @@ describe('monitorHttpRequests', () => {
     xhr.open('GET', 'https://www.grafana.com');
     xhr.send();
 
-    // TODO: loadend event is never called in the jest test. Need to find out why.
-    // Normally we should see two calls to notify, one for the start and one for the end of the request.
-    // Second call should be for the end of the request.
-    // It works in the browser.
     expect(mockNotify).toHaveBeenCalledTimes(1);
     expect(mockNotify).toHaveBeenNthCalledWith(1, { type: MESSAGE_TYPE_HTTP_REQUEST_START });
   });
@@ -42,9 +38,6 @@ describe('monitorHttpRequests', () => {
 
     fetch('https://www.grafana.com');
 
-    // TODO: same as above. Works in the browser but and in the code.
-    // For example adding console.log message for start and end of the request shows it works.
-    // Need to find out why it doesn't work in the test.
     expect(mockNotify).toHaveBeenCalledTimes(1);
     expect(mockNotify).toHaveBeenNthCalledWith(1, { type: MESSAGE_TYPE_HTTP_REQUEST_START });
   });
