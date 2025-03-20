@@ -32,8 +32,6 @@ export function getUserEventHandler(faro: Faro) {
     const startTime = dateNow();
     let endTime: number | undefined;
 
-    let hadFollowupActivity = false;
-
     const actionId = genShortID();
 
     apiMessageBus.notify({
@@ -43,66 +41,59 @@ export function getUserEventHandler(faro: Faro) {
       parentId: actionId,
     });
 
+    // Triggers if no initial action happened within the first 100ms
     timeoutId = startTimeout(timeoutId, () => {
       endTime = dateNow();
+
+      // Listening for follow up activities stops once action is cancelled (set to false)
       actionRunning = false;
+      sendUserActionCancelMessage(userActionName, actionId);
     });
 
     allMonitorsSub = merge(httpMonitor, domMutationsMonitor, performanceEntriesMonitor)
       .takeWhile(() => actionRunning)
       .subscribe((_data) => {
-        hadFollowupActivity = true;
-
+        // Http request, dom mutation or performance entry happened so we have a follow up activity and start the timeout again
+        // If timeout is triggered the user action is done and we send respective messages and events
         timeoutId = startTimeout(timeoutId, () => {
           endTime = dateNow();
 
-          if (hadFollowupActivity) {
-            // action is valid. Leads to adding the parentId to items, flushing the buffer and sending the items to the server
+          const duration = endTime - startTime;
+          const eventType = event.type;
 
-            const duration = endTime - startTime;
-            const eventType = event.type;
+          // order matters, first emit the user-action-end event and then push the event
+          apiMessageBus.notify({
+            type: 'user-action-end',
+            name: userActionName,
+            id: actionId,
+            startTime,
+            endTime,
+            duration,
+            eventType,
+          });
 
-            // order matters, first notify the user-action-end event and then push the event
-            apiMessageBus.notify({
-              type: 'user-action-end',
-              name: userActionName,
-              id: actionId,
-              startTime,
-              endTime,
-              duration,
-              eventType,
-            });
+          // Send the final action parent event
+          api.pushEvent(
+            userActionName,
+            {
+              userActionStartTime: startTime.toString(),
+              userActionEndTime: endTime.toString(),
+              userActionDuration: duration.toString(),
+              userActionEventType: eventType,
+            },
+            undefined,
+            {
+              timestampOverwriteMs: startTime,
+              customPayloadParser: (payload) => {
+                payload.action = {
+                  id: actionId,
+                  name: userActionName,
+                };
 
-            // Send the final action parent event
-            api.pushEvent(
-              userActionName,
-              {
-                userActionStartTime: startTime.toString(),
-                userActionEndTime: endTime.toString(),
-                userActionDuration: duration.toString(),
-                userActionEventType: eventType,
+                return payload;
               },
-              undefined,
-              {
-                timestampOverwriteMs: startTime,
-                customPayloadParser: (payload) => {
-                  payload.action = {
-                    id: actionId,
-                    name: userActionName,
-                  };
-
-                  return payload;
-                },
-              }
-            );
-          } else {
-            // action is invalid. Flushing the buffer and sending the items to the server without adding the parentId to items
-            apiMessageBus.notify({
-              type: 'user-action-cancel',
-              name: userActionName,
-              parentId: actionId,
-            });
-          }
+            }
+          );
 
           // Ensure action is blocked until it is fully processed.
           actionRunning = false;
@@ -140,6 +131,14 @@ function startTimeout(timeoutId: number | undefined, cb?: () => void) {
   }, maxTimeSpanTillUserActionEnd);
 
   return timeoutId;
+}
+
+function sendUserActionCancelMessage(userActionName: string, actionId: string) {
+  apiMessageBus.notify({
+    type: 'user-action-cancel',
+    name: userActionName,
+    parentId: actionId,
+  });
 }
 
 function registerVisibilityChangeHandler(allMonitorsSub: Subscription | undefined) {
