@@ -29,6 +29,25 @@ describe('Reactive', () => {
       expect(callback).toHaveBeenCalledWith(1);
     });
 
+    it('Unsubscribes all subscriptions from the observable when unsubscribeAll is called', () => {
+      const observable = new Observable<number>();
+      const callback = jest.fn();
+
+      observable.subscribe(callback);
+      observable.subscribe(callback);
+      observable.subscribe(callback);
+
+      observable.notify(1);
+      observable.unsubscribeAll();
+
+      observable.subscribe(callback);
+      observable.subscribe(callback);
+      observable.subscribe(callback);
+
+      expect(callback).toHaveBeenCalledTimes(3);
+      expect(callback).toHaveBeenCalledWith(1);
+    });
+
     it('takes emitted values until the predicate returns false', () => {
       const observable = new Observable<number>();
       const callback = jest.fn();
@@ -59,9 +78,9 @@ describe('Reactive', () => {
       const observable = new Observable<number>();
       const callback = jest.fn();
 
-      observable.subscribe(callback);
+      const sub = observable.subscribe(callback);
       observable.notify(1);
-      observable.unsubscribe(callback);
+      sub.unsubscribe();
       observable.notify(2);
 
       expect(callback).toHaveBeenCalledTimes(1);
@@ -89,16 +108,18 @@ describe('Reactive', () => {
       expect(callback).toHaveBeenNthCalledWith(4, 'B');
     });
 
-    it('Unsubscribes from all observables when the merged observable is unsubscribed', () => {
+    it('Unsubscribes from all observables when merge.unsubscribeAll isCalled', () => {
       const observable1 = new Observable<number>();
       const observable2 = new Observable<number>();
       const callback = jest.fn();
 
-      const subscription = merge(observable1, observable2).subscribe(callback);
+      const mergeObserver = merge(observable1, observable2);
+      mergeObserver.subscribe(callback);
+
       observable1.notify(1);
       observable2.notify(2);
 
-      subscription.unsubscribe();
+      mergeObserver.unsubscribeAll();
       observable1.notify(3);
       observable2.notify(4);
 
