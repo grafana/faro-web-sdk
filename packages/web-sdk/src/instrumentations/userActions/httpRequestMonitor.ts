@@ -2,7 +2,7 @@ import { isFunction, isString, Observable } from '@grafana/faro-core';
 
 import { isUrlIgnored } from '../../utils/url';
 
-import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
+import { MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
 import type { HttpRequestEndMessage, HttpRequestStartMessage } from './types';
 
 /**
@@ -17,9 +17,14 @@ export function monitorHttpRequests(): Observable {
   function emitMessage() {
     if (activeXhrRequests + activeFetchRequests > 0) {
       observable.notify({ type: MESSAGE_TYPE_HTTP_REQUEST_START });
-    } else {
-      observable.notify({ type: MESSAGE_TYPE_HTTP_REQUEST_END });
     }
+
+    // TODO: double check if this is needed
+    // if (activeXhrRequests + activeFetchRequests > 0) {
+    //   observable.notify({ type: MESSAGE_TYPE_HTTP_REQUEST_START });
+    // } else {
+    //   observable.notify({ type: MESSAGE_TYPE_HTTP_REQUEST_END });
+    // }
   }
 
   monitorFetch((active: number) => {
