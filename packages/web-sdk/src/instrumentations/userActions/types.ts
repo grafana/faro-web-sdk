@@ -10,8 +10,10 @@ export type DomMutationMessage = {
 
 export type HttpRequestStartMessage = {
   type: typeof MESSAGE_TYPE_HTTP_REQUEST_START;
+  pending: number;
 };
 
 export type HttpRequestEndMessage = {
   type: typeof MESSAGE_TYPE_HTTP_REQUEST_END;
+  pending: number;
 };

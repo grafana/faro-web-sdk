@@ -1,4 +1,4 @@
-import { apiMessageBus, dateNow, Faro, genShortID, merge, Subscription } from '@grafana/faro-core';
+import { apiMessageBus, dateNow, Faro, genShortID, merge, Observable, Subscription } from '@grafana/faro-core';
 
 import { userActionDataAttributeParsed as userActionDataAttribute } from './const';
 import { monitorDomMutations } from './domMutationMonitor';
@@ -14,6 +14,7 @@ export function getUserEventHandler(faro: Faro) {
   const performanceEntriesMonitor = monitorPerformanceEntries();
 
   let allMonitorsSub: Subscription | undefined;
+  let allMonitorsObserver: Observable | undefined;
 
   let timeoutId: number | undefined;
   let actionRunning = false;
@@ -51,9 +52,13 @@ export function getUserEventHandler(faro: Faro) {
       sendUserActionCancelMessage(userActionName, actionId);
     });
 
-    allMonitorsSub = merge(httpMonitor, domMutationsMonitor, performanceEntriesMonitor)
+    allMonitorsObserver = merge(httpMonitor, domMutationsMonitor, performanceEntriesMonitor);
+
+    allMonitorsSub = allMonitorsObserver
       .takeWhile(() => actionRunning)
-      .subscribe((_data) => {
+      .subscribe((msg) => {
+        console.log('msg all :>> ', msg);
+
         // Http request, dom mutation or performance entry happened so we have a follow up activity and start the timeout again
         // If timeout is triggered the user action is done and we send respective messages and events
         timeoutId = startTimeout(timeoutId, () => {
@@ -98,11 +103,13 @@ export function getUserEventHandler(faro: Faro) {
 
           // Ensure action is blocked until it is fully processed.
           actionRunning = false;
+          allMonitorsSub?.unsubscribe();
+          allMonitorsObserver?.unsubscribeAll();
         });
       });
   }
 
-  registerVisibilityChangeHandler(allMonitorsSub);
+  registerVisibilityChangeHandler(allMonitorsSub, allMonitorsObserver);
 
   return processUserEvent;
 }
@@ -120,7 +127,7 @@ function getUserActionName(element: HTMLElement, dataAttributeName: string): str
   return undefined;
 }
 
-function startTimeout(timeoutId: number | undefined, cb?: () => void) {
+function startTimeout(timeoutId: number | undefined, cb: () => void) {
   const maxTimeSpanTillUserActionEnd = 100;
 
   if (timeoutId) {
@@ -129,7 +136,7 @@ function startTimeout(timeoutId: number | undefined, cb?: () => void) {
 
   //@ts-expect-error for some reason vscode is using the node types
   timeoutId = setTimeout(() => {
-    cb?.();
+    cb();
   }, maxTimeSpanTillUserActionEnd);
 
   return timeoutId;
@@ -143,7 +150,10 @@ function sendUserActionCancelMessage(userActionName: string, actionId: string) {
   });
 }
 
-function registerVisibilityChangeHandler(allMonitorsSub: Subscription | undefined) {
+function registerVisibilityChangeHandler(
+  allMonitorsSub: Subscription | undefined,
+  allMonitorsObserver: Observable | undefined
+) {
   // stop monitoring in background tabs
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
@@ -151,6 +161,9 @@ function registerVisibilityChangeHandler(allMonitorsSub: Subscription | undefine
       // Monitors will be re-subscribed in the processEvent function when the first user action is detected
       allMonitorsSub?.unsubscribe();
       allMonitorsSub = undefined;
+
+      allMonitorsObserver?.unsubscribeAll();
+      allMonitorsObserver = undefined;
     }
   });
 }
