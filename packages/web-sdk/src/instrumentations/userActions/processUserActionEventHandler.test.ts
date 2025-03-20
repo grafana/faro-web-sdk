@@ -11,6 +11,10 @@ import { getUserEventHandler } from './processUserActionEventHandler';
 describe('UserActionsInstrumentation', () => {
   let mockFaro: Faro;
 
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+
   beforeEach(() => {
     jest.resetAllMocks();
     jest.clearAllTimers();
@@ -31,8 +35,6 @@ describe('UserActionsInstrumentation', () => {
   });
 
   it('Emits a user-action-end message if a user action has follow upa activity within 100ms', () => {
-    jest.useFakeTimers();
-
     const mockApiMessageBusNotify = jest.fn();
     jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
 
@@ -84,8 +86,6 @@ describe('UserActionsInstrumentation', () => {
   });
 
   it('Emits a user-action-cancel message if a user action has no follow up activity within 100ms', () => {
-    jest.useFakeTimers();
-
     const mockApiMessageBusNotify = jest.fn();
     jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
 
