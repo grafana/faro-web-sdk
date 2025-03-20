@@ -15,7 +15,6 @@ export class FaroUserActionSpanProcessor implements SpanProcessor {
       }
 
       if (['user-action-end', 'user-action-cancel'].includes(msg.type)) {
-        console.log('clearing message');
         this.message = undefined;
       }
     });
