@@ -5,6 +5,7 @@ import {
   defaultInternalLoggerLevel,
   defaultLogArgsSerializer,
   defaultUnpatchedConsole,
+  isBoolean,
   isEmpty,
   isObject,
 } from '@grafana/faro-core';
@@ -54,7 +55,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackWebVitalsAttribution,
     user,
     view,
-    geoLocationTracking,
+    trackGeolocation,
     // properties with default values
     dedupe = true,
     eventDomain = defaultEventDomain,
@@ -96,7 +97,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     sessionTracking: {
       ...defaultSessionTrackingConfig,
       ...sessionTracking,
-      ...crateSessionMeta({ geoLocationTracking, sessionTracking }),
+      ...crateSessionMeta({ trackGeolocation, sessionTracking }),
     },
     user,
     view,
@@ -125,13 +126,13 @@ function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
 }
 
 function crateSessionMeta({
-  geoLocationTracking,
+  trackGeolocation,
   sessionTracking,
-}: Pick<BrowserConfig, 'geoLocationTracking' | 'sessionTracking'>): { session: MetaSession } | {} {
+}: Pick<BrowserConfig, 'trackGeolocation' | 'sessionTracking'>): { session: MetaSession } | {} {
   const overrides: MetaSession['overrides'] = {};
 
-  if (geoLocationTracking?.enabled != null) {
-    overrides.geoLocationTrackingEnabled = geoLocationTracking.enabled;
+  if (isBoolean(trackGeolocation)) {
+    overrides.geoLocationTrackingEnabled = trackGeolocation;
   }
 
   if (isEmpty(overrides)) {

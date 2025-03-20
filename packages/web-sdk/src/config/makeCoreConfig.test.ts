@@ -133,11 +133,11 @@ describe('config', () => {
       },
     };
 
-    let config = makeCoreConfig({ ...browserConfig, geoLocationTracking: { enabled: true } });
+    let config = makeCoreConfig({ ...browserConfig, trackGeolocation: true });
     expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geoLocationTrackingEnabled');
     expect(config?.sessionTracking?.session?.overrides?.geoLocationTrackingEnabled).toBe(true);
 
-    config = makeCoreConfig({ ...browserConfig, geoLocationTracking: { enabled: false } });
+    config = makeCoreConfig({ ...browserConfig, trackGeolocation: false });
     expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geoLocationTrackingEnabled');
     expect(config?.sessionTracking?.session?.overrides?.geoLocationTrackingEnabled).toBe(false);
 
