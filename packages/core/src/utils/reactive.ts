@@ -63,13 +63,16 @@ export class Observable<T = any> {
   }
 
   /**
-   * Unsubscribes a callback function from the list of subscribers.
-   * This function should never be used directly.
-   * Use the unsubscribe function returned by subscribing to the observable.
+   * Unsubscribes all subscribers by clearing the subscribers array.
    *
-   * @param callback - The callback function to be removed from the subscribers list.
+   * @remarks
+   * This method sets the `subscribers` array to an empty array, effectively removing all current subscribers.
    */
-  unsubscribe(callback: (data: any) => void): void {
+  unsubscribeAll(): void {
+    this.subscribers = [];
+  }
+
+  private unsubscribe(callback: (data: any) => void): void {
     this.subscribers = this.subscribers.filter((sub) => sub !== callback);
   }
 }
@@ -80,9 +83,6 @@ export class Observable<T = any> {
  * @template T - The type of the values emitted by the observables.
  * @param {...Observable[]} observables - The observables to merge.
  * @returns {Observable} A new observable that emits values from all input observables.
- *
- * @remarks
- * The returned observable's `unsubscribe` method, when called, will unsubscribe from the merge observable and all input observables.
  */
 export function merge<T>(...observables: Array<Observable<T>>): Observable<T> {
   const mainObservable = new Observable<T>();
@@ -95,11 +95,15 @@ export function merge<T>(...observables: Array<Observable<T>>): Observable<T> {
     subscriptions.push(subscription);
   });
 
-  const originalUnsubscribe = mainObservable.unsubscribe.bind(mainObservable);
-  mainObservable.unsubscribe = (callback: (data: any) => void) => {
-    originalUnsubscribe(callback);
-    subscriptions.forEach((subscription) => subscription.unsubscribe());
-  };
-
-  return mainObservable;
+  return {
+    subscribe: mainObservable.subscribe.bind(mainObservable),
+    takeWhile: mainObservable.takeWhile.bind(mainObservable),
+    first: mainObservable.first.bind(mainObservable),
+    notify: mainObservable.notify.bind(mainObservable),
+    unsubscribeAll: () => {
+      observables.forEach((observable) => {
+        observable.unsubscribeAll();
+      });
+    },
+  } as Observable<T>;
 }
