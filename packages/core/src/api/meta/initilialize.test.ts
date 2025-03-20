@@ -86,9 +86,7 @@ describe('Meta API', () => {
         sessionTracking: {
           session: initialSession,
         },
-        geoLocationTracking: {
-          enabled: false,
-        },
+        trackGeolocation: false,
       });
 
       // mockConfig is the result of calling makeCoreConfig in faro-web-sdk package.

@@ -226,18 +226,13 @@ export interface Config<P = APIEvent> {
   };
 
   /**
-   * Configuration for the location tracking (Grafana cloud only)
+   * Enable or disable geolocation tracking.
+   * Geolocation tracking must be enabled in the Grafana Cloud settings first.
+   * It cannot be enabled solely on the client side.
+   * This option allows control over tracking on the client side to comply with user
+   * privacy requirements.
    */
-  geoLocationTracking?: {
-    /**
-     * Enable or disable geolocation tracking.
-     * Geolocation tracking must be enabled in the Grafana Cloud settings first.
-     * It cannot be enabled solely on the client side.
-     * This option allows control over tracking on the client side to comply with user
-     * privacy requirements.
-     */
-    enabled?: boolean;
-  };
+  trackGeolocation?: boolean;
 }
 
 export type Patterns = Array<string | RegExp>;
