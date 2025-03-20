@@ -4,6 +4,7 @@ import { userActionDataAttributeParsed as userActionDataAttribute } from './cons
 import { monitorDomMutations } from './domMutationMonitor';
 import { monitorHttpRequests } from './httpRequestMonitor';
 import { monitorPerformanceEntries } from './performanceEntriesMonitor';
+import { convertDataAttributeName } from './util';
 
 export function getUserEventHandler(faro: Faro) {
   const { api, config } = faro;
@@ -107,10 +108,11 @@ export function getUserEventHandler(faro: Faro) {
 }
 
 function getUserActionName(element: HTMLElement, dataAttributeName: string): string | undefined {
+  const parsedDataAttributeName = convertDataAttributeName(dataAttributeName);
   const dataset = element.dataset;
 
   for (const key in dataset) {
-    if (key === dataAttributeName) {
+    if (key === parsedDataAttributeName) {
       return dataset[key];
     }
   }
