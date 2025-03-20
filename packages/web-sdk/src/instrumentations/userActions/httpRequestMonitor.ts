@@ -2,7 +2,7 @@ import { isFunction, isString, Observable } from '@grafana/faro-core';
 
 import { isUrlIgnored } from '../../utils/url';
 
-import { MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
+import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
 import type { HttpRequestEndMessage, HttpRequestStartMessage } from './types';
 
 /**
@@ -11,55 +11,59 @@ import type { HttpRequestEndMessage, HttpRequestStartMessage } from './types';
 export function monitorHttpRequests(): Observable {
   const observable = new Observable<HttpRequestStartMessage | HttpRequestEndMessage>();
 
-  let activeXhrRequests = 0;
-  let activeFetchRequests = 0;
+  let pendingXhrRequests = 0;
+  let pendingFetchRequests = 0;
 
-  function emitMessage() {
-    if (activeXhrRequests + activeFetchRequests > 0) {
-      observable.notify({ type: MESSAGE_TYPE_HTTP_REQUEST_START });
-    }
-
-    // TODO: double check if this is needed
-    // if (activeXhrRequests + activeFetchRequests > 0) {
-    //   observable.notify({ type: MESSAGE_TYPE_HTTP_REQUEST_START });
-    // } else {
-    //   observable.notify({ type: MESSAGE_TYPE_HTTP_REQUEST_END });
-    // }
+  function emitStartMessage() {
+    observable.notify({ type: MESSAGE_TYPE_HTTP_REQUEST_START, pending: pendingXhrRequests + pendingFetchRequests });
   }
 
-  monitorFetch((active: number) => {
-    activeFetchRequests = active;
-    emitMessage();
-  });
+  function emitEndMessage() {
+    observable.notify({ type: MESSAGE_TYPE_HTTP_REQUEST_END, pending: pendingXhrRequests + pendingFetchRequests });
+  }
 
-  monitorXhr((active: number) => {
-    activeXhrRequests = active;
-    emitMessage();
-  });
+  monitorFetch(
+    () => {
+      pendingFetchRequests++;
+      emitStartMessage();
+    },
+    () => {
+      pendingFetchRequests--;
+      emitEndMessage();
+    }
+  );
+
+  monitorXhr(
+    () => {
+      pendingXhrRequests++;
+      emitStartMessage();
+    },
+    () => {
+      pendingXhrRequests--;
+      emitEndMessage();
+    }
+  );
 
   return observable;
 }
 
-function monitorXhr(setActiveCallback: (active: number) => void) {
+function monitorXhr(onRequestStart: () => void, onRequestEnd: () => void) {
   const originalOpen = XMLHttpRequest.prototype.open;
   const originalSend = XMLHttpRequest.prototype.send;
-  let activeRequests = 0;
 
   XMLHttpRequest.prototype.open = function () {
     const url = arguments[1];
-    const isIgnoreUrl = isUrlIgnored(url);
+    const isIgnoredUrl = isUrlIgnored(url);
 
     this.addEventListener('loadstart', () => {
-      if (!isIgnoreUrl) {
-        activeRequests++;
-        setActiveCallback(activeRequests);
+      if (!isIgnoredUrl) {
+        onRequestStart();
       }
     });
 
     this.addEventListener('loadend', () => {
-      if (!isIgnoreUrl) {
-        activeRequests--;
-        setActiveCallback(activeRequests);
+      if (!isIgnoredUrl) {
+        onRequestEnd();
       }
     });
 
@@ -71,25 +75,22 @@ function monitorXhr(setActiveCallback: (active: number) => void) {
   };
 }
 
-function monitorFetch(setActiveCallback: (active: number) => void) {
+function monitorFetch(onRequestsStart: () => void, onRequestEnd: () => void) {
   const originalFetch = window.fetch;
-  let activeRequests = 0;
 
   window.fetch = function () {
     const url = getUrlFromResource(arguments[0]);
-    const isIgnoreUrl = isUrlIgnored(url);
+    const isIgnoredUrl = isUrlIgnored(url);
 
     // fetch started
-    if (!isIgnoreUrl) {
-      activeRequests++;
-      setActiveCallback(activeRequests);
+    if (!isIgnoredUrl) {
+      onRequestsStart();
     }
 
     return originalFetch.apply(this, arguments as any).finally(() => {
       // fetch ended
-      if (!isIgnoreUrl) {
-        activeRequests--;
-        setActiveCallback(activeRequests);
+      if (!isIgnoredUrl) {
+        onRequestEnd();
       }
     });
   };
