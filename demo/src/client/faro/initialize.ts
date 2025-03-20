@@ -49,7 +49,6 @@ export function initializeFaro(): Faro {
     },
 
     trackUserActions: true,
-    trackUserActionsDataAttributeName: 'data-faro-user-action-name-custom',
   });
 
   faro.api.pushLog(['Faro was initialized']);
