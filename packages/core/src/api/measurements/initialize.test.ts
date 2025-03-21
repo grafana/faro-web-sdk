@@ -10,6 +10,11 @@ import {
 import { initializeFaro } from '../../initialize';
 import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
 import { mockMetas, mockTracesApi, mockTransports } from '../apiTestHelpers';
+import {
+  USER_ACTION_CANCEL_MESSAGE_TYPE,
+  USER_ACTION_END_MESSAGE_TYPE,
+  USER_ACTION_START_MESSAGE_TYPE,
+} from '../const';
 import { ItemBuffer } from '../ItemBuffer';
 import type { API } from '../types';
 
@@ -319,7 +324,7 @@ describe('api.measurements', () => {
   });
 
   describe('User action', () => {
-    it('buffers the error if a user action is in progress', () => {
+    it('buffers the item if a user action is in progress', () => {
       const internalLogger = mockInternalLogger;
       const config = mockConfig();
 
@@ -329,7 +334,12 @@ describe('api.measurements', () => {
 
       const getMessage = () => message;
 
-      message = { type: 'user-action-start', name: 'testAction', startTime: Date.now(), parentId: 'parent-id' };
+      message = {
+        type: USER_ACTION_START_MESSAGE_TYPE,
+        name: 'testAction',
+        startTime: Date.now(),
+        parentId: 'parent-id',
+      };
       const api = initializeMeasurementsAPI({
         unpatchedConsole: console,
         internalLogger,
@@ -345,7 +355,7 @@ describe('api.measurements', () => {
       expect(actionBuffer.size()).toBe(1);
 
       message = {
-        type: 'user-action-end',
+        type: USER_ACTION_END_MESSAGE_TYPE,
         name: 'testAction',
         id: 'parent-id',
         startTime: dateNow(),
@@ -358,7 +368,7 @@ describe('api.measurements', () => {
       expect(actionBuffer.size()).toBe(1);
 
       message = {
-        type: 'user-action-cancel',
+        type: USER_ACTION_CANCEL_MESSAGE_TYPE,
         name: 'testAction',
         parentId: 'parent-id',
       };

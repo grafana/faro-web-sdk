@@ -1,6 +1,7 @@
 import { type TransportItem, TransportItemType, type Transports } from '../transports';
 import type { Observable } from '../utils';
 
+import { USER_ACTION_CANCEL_MESSAGE_TYPE, USER_ACTION_END_MESSAGE_TYPE, USER_ACTION_START_MESSAGE_TYPE } from './const';
 import { ItemBuffer } from './ItemBuffer';
 import type { MeasurementEvent } from './measurements';
 import type { APIEvent, ApiMessageBusMessages } from './types';
@@ -14,12 +15,12 @@ export function createUserActionLifecycleHandler(
   let message: ApiMessageBusMessages | undefined;
 
   apiMessageBus.subscribe((msg) => {
-    if (msg.type === 'user-action-start') {
+    if (msg.type === USER_ACTION_START_MESSAGE_TYPE) {
       message = msg;
       return;
     }
 
-    if (msg.type === 'user-action-end') {
+    if (msg.type === USER_ACTION_END_MESSAGE_TYPE) {
       const { id, name } = msg;
 
       actionBuffer.flushBuffer((item) => {
@@ -47,7 +48,7 @@ export function createUserActionLifecycleHandler(
       return;
     }
 
-    if (msg.type === 'user-action-cancel') {
+    if (msg.type === USER_ACTION_CANCEL_MESSAGE_TYPE) {
       message = undefined;
       actionBuffer.flushBuffer((item) => {
         transports.execute(item);

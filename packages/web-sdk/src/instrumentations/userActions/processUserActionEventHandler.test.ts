@@ -1,8 +1,12 @@
 import { apiMessageBus, initializeFaro } from '@grafana/faro-core';
-import type { Config, Faro } from '@grafana/faro-core';
+import type { Config, Faro, UserActionEndMessage } from '@grafana/faro-core';
+import {
+  USER_ACTION_CANCEL_MESSAGE_TYPE,
+  USER_ACTION_END_MESSAGE_TYPE,
+  USER_ACTION_START_MESSAGE_TYPE,
+} from '@grafana/faro-core/src/api/const';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
-import type { UserActionEndMessage } from '../..';
 import { makeCoreConfig } from '../../config';
 
 import { userActionDataAttribute } from './const';
@@ -34,7 +38,7 @@ describe('UserActionsInstrumentation', () => {
     jest.clearAllTimers();
   });
 
-  it('Emits a user-action-end message if a user action has follow upa activity within 100ms', () => {
+  it('Emits a user-action-end message if a user action has follow up activity within 100ms', () => {
     const mockApiMessageBusNotify = jest.fn();
     jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
 
@@ -61,7 +65,7 @@ describe('UserActionsInstrumentation', () => {
 
     expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(2);
     expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
-      type: 'user-action-end',
+      type: USER_ACTION_END_MESSAGE_TYPE,
       name: 'test-action',
       id: expect.any(String),
       startTime: expect.any(Number),
@@ -125,7 +129,7 @@ describe('UserActionsInstrumentation', () => {
 
     expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(2);
     expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
-      type: 'user-action-cancel',
+      type: USER_ACTION_CANCEL_MESSAGE_TYPE,
       name: 'test-action',
       parentId: expect.any(String),
     });
@@ -173,7 +177,7 @@ describe('UserActionsInstrumentation', () => {
       name: 'test-action',
       parentId: expect.any(String),
       startTime: expect.any(Number),
-      type: 'user-action-start',
+      type: USER_ACTION_START_MESSAGE_TYPE,
     });
   });
 });

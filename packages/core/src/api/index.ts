@@ -32,3 +32,5 @@ export type { MetaAPI } from './meta';
 export type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './traces';
 
 export { apiMessageBus } from './initialize';
+
+export { USER_ACTION_CANCEL_MESSAGE_TYPE, USER_ACTION_END_MESSAGE_TYPE, USER_ACTION_START_MESSAGE_TYPE } from './const';

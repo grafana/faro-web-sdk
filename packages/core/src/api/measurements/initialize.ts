@@ -6,6 +6,7 @@ import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
+import { USER_ACTION_START_MESSAGE_TYPE } from '../const';
 import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
 import type { ApiMessageBusMessages } from '../types';
@@ -74,7 +75,7 @@ export function initializeMeasurementsAPI({
       internalLogger.debug('Pushing measurement\n', item);
 
       const msg = getMessage();
-      if (msg && msg.type === 'user-action-start') {
+      if (msg && msg.type === USER_ACTION_START_MESSAGE_TYPE) {
         actionBuffer.addItem(item);
       } else {
         transports.execute(item);
