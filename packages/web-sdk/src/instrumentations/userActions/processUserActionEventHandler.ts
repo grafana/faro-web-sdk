@@ -1,5 +1,11 @@
-import { apiMessageBus, dateNow, Faro, genShortID, merge, Observable, Subscription } from '@grafana/faro-core';
 import {
+  apiMessageBus,
+  dateNow,
+  Faro,
+  genShortID,
+  merge,
+  Observable,
+  Subscription,
   USER_ACTION_CANCEL_MESSAGE_TYPE,
   USER_ACTION_END_MESSAGE_TYPE,
   USER_ACTION_START_MESSAGE_TYPE,
