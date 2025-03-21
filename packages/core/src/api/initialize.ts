@@ -25,7 +25,7 @@ export function initializeAPI(
 ): API {
   internalLogger.debug('Initializing API');
 
-  const { actionBuffer, getMessage } = createUserActionLifecycleHandler(apiMessageBus, transports);
+  const { actionBuffer, getMessage } = createUserActionLifecycleHandler({ apiMessageBus, transports, config });
 
   const tracesApi = initializeTracesAPI(unpatchedConsole, internalLogger, config, metas, transports);
 
