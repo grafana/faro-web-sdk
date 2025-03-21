@@ -5,7 +5,7 @@ import {
   USER_ACTION_CANCEL_MESSAGE_TYPE,
   USER_ACTION_END_MESSAGE_TYPE,
   USER_ACTION_START_MESSAGE_TYPE,
-} from '@grafana/faro-core/src/api/const';
+} from '@grafana/faro-core';
 import { apiMessageBus, type UserActionStartMessage } from '@grafana/faro-web-sdk';
 
 export class FaroUserActionSpanProcessor implements SpanProcessor {

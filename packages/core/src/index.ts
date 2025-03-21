@@ -1,4 +1,12 @@
-export { defaultExceptionType, defaultLogArgsSerializer, defaultErrorArgsSerializer, apiMessageBus } from './api';
+export {
+  defaultExceptionType,
+  defaultLogArgsSerializer,
+  defaultErrorArgsSerializer,
+  apiMessageBus,
+  USER_ACTION_CANCEL_MESSAGE_TYPE,
+  USER_ACTION_END_MESSAGE_TYPE,
+  USER_ACTION_START_MESSAGE_TYPE,
+} from './api';
 export type {
   API,
   APIEvent,
