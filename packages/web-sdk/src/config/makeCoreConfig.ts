@@ -72,6 +72,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     webVitalsInstrumentation,
     trackUserActions = false,
     trackUserActionsDataAttributeName = userActionDataAttribute,
+    trackUserActionsExcludeItem,
   }: BrowserConfig = browserConfig;
 
   return {
@@ -110,6 +111,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     webVitalsInstrumentation,
     trackUserActions,
     trackUserActionsDataAttributeName,
+    trackUserActionsExcludeItem,
   };
 }
 

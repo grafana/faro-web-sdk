@@ -1,7 +1,9 @@
 import {
   type APIEvent,
   ApiMessageBusMessages,
+  type Config,
   dateNow,
+  EventEvent,
   type Meta,
   TransportItem,
   TransportItemType,
@@ -17,7 +19,11 @@ describe('userActionLifecycleHandler', () => {
   it('assigns the user-action-start message to the message variable when it receives it', () => {
     const apiMessageBus = new Observable<ApiMessageBusMessages>();
 
-    const { getMessage } = createUserActionLifecycleHandler(apiMessageBus, mockTransports);
+    const { getMessage } = createUserActionLifecycleHandler({
+      apiMessageBus,
+      transports: mockTransports,
+      config: {} as Config,
+    });
 
     const message: UserActionStartMessage = {
       type: USER_ACTION_START_MESSAGE_TYPE,
@@ -35,9 +41,13 @@ describe('userActionLifecycleHandler', () => {
     const apiMessageBus = new Observable<ApiMessageBusMessages>();
 
     const mockExecute = jest.fn();
-    const { actionBuffer, getMessage } = createUserActionLifecycleHandler(apiMessageBus, {
-      ...mockTransports,
-      execute: mockExecute,
+    const { actionBuffer, getMessage } = createUserActionLifecycleHandler({
+      apiMessageBus,
+      transports: {
+        ...mockTransports,
+        execute: mockExecute,
+      },
+      config: {} as Config,
     });
 
     const message: UserActionStartMessage = {
@@ -69,9 +79,13 @@ describe('userActionLifecycleHandler', () => {
     const apiMessageBus = new Observable<ApiMessageBusMessages>();
 
     const mockExecute = jest.fn();
-    const { actionBuffer } = createUserActionLifecycleHandler(apiMessageBus, {
-      ...mockTransports,
-      execute: mockExecute,
+    const { actionBuffer } = createUserActionLifecycleHandler({
+      apiMessageBus,
+      transports: {
+        ...mockTransports,
+        execute: mockExecute,
+      },
+      config: {} as Config,
     });
 
     const message: UserActionStartMessage = {
@@ -115,9 +129,17 @@ describe('userActionLifecycleHandler', () => {
     const apiMessageBus = new Observable<ApiMessageBusMessages>();
 
     const mockExecute = jest.fn();
-    const { actionBuffer, getMessage } = createUserActionLifecycleHandler(apiMessageBus, {
-      ...mockTransports,
-      execute: mockExecute,
+    const { actionBuffer, getMessage } = createUserActionLifecycleHandler({
+      apiMessageBus,
+      transports: {
+        ...mockTransports,
+        execute: mockExecute,
+      },
+      config: {
+        trackUserActionsExcludeItem(item) {
+          return item.type === TransportItemType.EVENT && (item.payload as EventEvent).name === 'i-am-excludedX';
+        },
+      } as Config,
     });
 
     const message: UserActionStartMessage = {
@@ -139,6 +161,16 @@ describe('userActionLifecycleHandler', () => {
     };
     actionBuffer.addItem(itemMeasurement);
 
+    const itemEventExcluded: TransportItem<EventEvent> = {
+      type: TransportItemType.EVENT,
+      payload: {
+        timestamp: dateNow().toString(),
+        name: 'i-am-excluded',
+      },
+      meta: {} as Meta,
+    };
+    actionBuffer.addItem(itemEventExcluded);
+
     const endMessage: ApiMessageBusMessages = {
       type: USER_ACTION_END_MESSAGE_TYPE,
       id: '123',
@@ -151,7 +183,7 @@ describe('userActionLifecycleHandler', () => {
 
     apiMessageBus.notify(endMessage);
 
-    expect(mockExecute).toHaveBeenCalledTimes(2);
+    expect(mockExecute).toHaveBeenCalledTimes(3);
     expect(mockExecute).toHaveBeenNthCalledWith(1, {
       ...itemEvent,
       payload: {
@@ -163,6 +195,7 @@ describe('userActionLifecycleHandler', () => {
       },
     });
     expect(mockExecute).toHaveBeenNthCalledWith(2, itemMeasurement);
+    expect(mockExecute).toHaveBeenNthCalledWith(3, itemEventExcluded);
     expect(getMessage()).toBeUndefined();
   });
 });

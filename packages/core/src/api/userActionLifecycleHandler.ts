@@ -1,3 +1,4 @@
+import type { Config } from '../config';
 import { type TransportItem, TransportItemType, type Transports } from '../transports';
 import type { Observable } from '../utils';
 
@@ -6,12 +7,17 @@ import { ItemBuffer } from './ItemBuffer';
 import type { MeasurementEvent } from './measurements';
 import type { APIEvent, ApiMessageBusMessages } from './types';
 
-export function createUserActionLifecycleHandler(
-  apiMessageBus: Observable<ApiMessageBusMessages>,
-  transports: Transports
-) {
+export function createUserActionLifecycleHandler({
+  apiMessageBus,
+  transports,
+  config,
+}: {
+  apiMessageBus: Observable<ApiMessageBusMessages>;
+  transports: Transports;
+  config: Config;
+}) {
   const actionBuffer = new ItemBuffer<TransportItem>();
-
+  const trackUserActionsExcludeItem = config.trackUserActionsExcludeItem;
   let message: ApiMessageBusMessages | undefined;
 
   apiMessageBus.subscribe((msg) => {
@@ -25,7 +31,7 @@ export function createUserActionLifecycleHandler(
 
       actionBuffer.flushBuffer((item) => {
         // Exclude web-vitals from user actions
-        if (isExcludeFromUserAction(item)) {
+        if (isExcludeFromUserAction(item, trackUserActionsExcludeItem)) {
           transports.execute(item);
           return;
         }
@@ -60,6 +66,12 @@ export function createUserActionLifecycleHandler(
   return { actionBuffer, getMessage };
 }
 
-function isExcludeFromUserAction(item: TransportItem<APIEvent>) {
-  return item.type === TransportItemType.MEASUREMENT && (item.payload as MeasurementEvent).type === 'web-vitals';
+function isExcludeFromUserAction(
+  item: TransportItem<APIEvent>,
+  trackUserActionsExcludeItem: Config['trackUserActionsExcludeItem']
+) {
+  return (
+    trackUserActionsExcludeItem?.(item) ||
+    (item.type === TransportItemType.MEASUREMENT && (item.payload as MeasurementEvent).type === 'web-vitals')
+  );
 }
