@@ -250,7 +250,7 @@ describe('faroTraceExporter.utils', () => {
       },
       attributes: {
         duration_ns: 'NaN',
-        // 'faro.action.user.name' and 'faro.action.user.parentId' should be removed from the attributes by the customPayloadParser
+        // 'faro.action.user.name' and 'faro.action.user.parentId' should be removed from the attributes by the customPayloadTransformer
       },
       domain: undefined,
       name: 'faro.tracing.fetch',
