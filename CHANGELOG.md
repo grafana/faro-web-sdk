@@ -2,10 +2,6 @@
 
 ## Next
 
-- Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#1053)
-- Dependencies (`@grafana/faro-core`): upgrade otel deps (#1053)
-- Dependencies (`@grafana/faro-transport-otlp-http [experimental]`): upgrade otel deps (#1053)
-
 ## 1.14.1
 
 - Improvement (`@grafana/faro-web-sdk`): The ignored errors parser now also parses stack traces.
