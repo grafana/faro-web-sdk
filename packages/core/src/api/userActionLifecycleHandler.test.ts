@@ -137,7 +137,7 @@ describe('userActionLifecycleHandler', () => {
       },
       config: {
         trackUserActionsExcludeItem(item) {
-          return item.type === TransportItemType.EVENT && (item.payload as EventEvent).name === 'i-am-excludedX';
+          return item.type === TransportItemType.EVENT && (item.payload as EventEvent).name === 'i-am-excluded';
         },
       } as Config,
     });

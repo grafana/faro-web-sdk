@@ -36,7 +36,7 @@ export function createUserActionLifecycleHandler({
           return;
         }
 
-        const _item = {
+        const userActionItem = {
           ...item,
           payload: {
             ...item.payload,
@@ -47,7 +47,7 @@ export function createUserActionLifecycleHandler({
           },
         } as TransportItem;
 
-        transports.execute(_item);
+        transports.execute(userActionItem);
       });
 
       message = undefined;
