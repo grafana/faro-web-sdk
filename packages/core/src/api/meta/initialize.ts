@@ -1,19 +1,28 @@
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas } from '../../metas';
-import type { Transports } from '../../transports';
+import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { isEmpty, isString } from '../../utils/is';
+import type { ItemBuffer } from '../ItemBuffer';
+import type { TracesAPI } from '../traces';
+import type { ApiMessageBusMessages } from '../types';
 
 import type { MetaAPI } from './types';
 
-export function initializeMetaAPI(
-  _unpatchedConsole: UnpatchedConsole,
-  internalLogger: InternalLogger,
-  _config: Config,
-  metas: Metas,
-  _transports: Transports
-): MetaAPI {
+export function initializeMetaAPI({
+  internalLogger,
+  metas,
+}: {
+  unpatchedConsole: UnpatchedConsole;
+  internalLogger: InternalLogger;
+  config: Config;
+  metas: Metas;
+  transports: Transports;
+  tracesApi: TracesAPI;
+  actionBuffer: ItemBuffer<TransportItem>;
+  getMessage: () => ApiMessageBusMessages | undefined;
+}): MetaAPI {
   internalLogger.debug('Initializing meta API');
 
   let metaSession: Partial<Meta> | undefined = undefined;

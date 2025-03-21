@@ -3,6 +3,7 @@ import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { Transports } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
+import { Observable } from '../utils';
 
 import { initializeEventsAPI } from './events';
 import { initializeExceptionsAPI } from './exceptions';
@@ -10,7 +11,10 @@ import { initializeLogsAPI } from './logs';
 import { initializeMeasurementsAPI } from './measurements';
 import { initializeMetaAPI } from './meta';
 import { initializeTracesAPI } from './traces';
-import type { API } from './types';
+import type { API, ApiMessageBusMessages } from './types';
+import { createUserActionLifecycleHandler } from './userActionLifecycleHandler';
+
+export const apiMessageBus = new Observable<ApiMessageBusMessages>();
 
 export function initializeAPI(
   unpatchedConsole: UnpatchedConsole,
@@ -21,14 +25,27 @@ export function initializeAPI(
 ): API {
   internalLogger.debug('Initializing API');
 
+  const { actionBuffer, getMessage } = createUserActionLifecycleHandler({ apiMessageBus, transports, config });
+
   const tracesApi = initializeTracesAPI(unpatchedConsole, internalLogger, config, metas, transports);
+
+  const props = {
+    unpatchedConsole,
+    internalLogger,
+    config,
+    metas,
+    transports,
+    tracesApi,
+    actionBuffer,
+    getMessage,
+  };
 
   return {
     ...tracesApi,
-    ...initializeExceptionsAPI(unpatchedConsole, internalLogger, config, metas, transports, tracesApi),
-    ...initializeMetaAPI(unpatchedConsole, internalLogger, config, metas, transports),
-    ...initializeLogsAPI(unpatchedConsole, internalLogger, config, metas, transports, tracesApi),
-    ...initializeMeasurementsAPI(unpatchedConsole, internalLogger, config, metas, transports, tracesApi),
-    ...initializeEventsAPI(unpatchedConsole, internalLogger, config, metas, transports, tracesApi),
+    ...initializeExceptionsAPI(props),
+    ...initializeMetaAPI(props),
+    ...initializeLogsAPI(props),
+    ...initializeMeasurementsAPI(props),
+    ...initializeEventsAPI(props),
   };
 }

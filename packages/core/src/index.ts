@@ -1,4 +1,12 @@
-export { defaultExceptionType, defaultLogArgsSerializer, defaultErrorArgsSerializer } from './api';
+export {
+  defaultExceptionType,
+  defaultLogArgsSerializer,
+  defaultErrorArgsSerializer,
+  apiMessageBus,
+  USER_ACTION_CANCEL_MESSAGE_TYPE,
+  USER_ACTION_END_MESSAGE_TYPE,
+  USER_ACTION_START_MESSAGE_TYPE,
+} from './api';
 export type {
   API,
   APIEvent,
@@ -26,6 +34,11 @@ export type {
   TraceContext,
   TraceEvent,
   TracesAPI,
+  ApiMessageBusMessages,
+  UserActionStartMessage,
+  UserActionEndMessage,
+  UserActionCancelMessage,
+  UserAction,
 } from './api';
 
 export { BaseExtension } from './extensions';
@@ -129,6 +142,8 @@ export {
   getCircularDependencyReplacer,
   stringifyExternalJson,
   stringifyObjectValues,
+  Observable,
+  merge,
 } from './utils';
 export type {
   BaseObject,
@@ -139,6 +154,7 @@ export type {
   PromiseBuffer,
   PromiseBufferOptions,
   PromiseProducer,
+  Subscription,
 } from './utils';
 
 export { VERSION } from './version';

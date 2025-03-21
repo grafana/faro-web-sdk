@@ -9,11 +9,12 @@ import {
   isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
+import { userActionDataAttribute } from '../instrumentations/userActions/const';
 import { browserMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
@@ -69,6 +70,9 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
     webVitalsInstrumentation,
+    trackUserActions = false,
+    trackUserActionsDataAttributeName = userActionDataAttribute,
+    trackUserActionsExcludeItem,
   }: BrowserConfig = browserConfig;
 
   return {
@@ -79,7 +83,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations,
+    instrumentations: getFilteredInstrumentations(instrumentations, browserConfig),
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -105,7 +109,22 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackWebVitalsAttribution,
     consoleInstrumentation,
     webVitalsInstrumentation,
+    trackUserActions,
+    trackUserActionsDataAttributeName,
+    trackUserActionsExcludeItem,
   };
+}
+
+function getFilteredInstrumentations(
+  instrumentations: Instrumentation[],
+  { trackUserActions }: BrowserConfig
+): Instrumentation[] {
+  return instrumentations.filter((instr) => {
+    if (instr.name === '@grafana/faro-web-sdk:instrumentation-user-action' && !trackUserActions) {
+      return false;
+    }
+    return true;
+  });
 }
 
 function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {

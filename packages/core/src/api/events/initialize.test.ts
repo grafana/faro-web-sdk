@@ -1,7 +1,17 @@
+import type { TransportItem } from '../..';
 import { initializeFaro } from '../../initialize';
-import { mockConfig, MockTransport } from '../../testUtils';
-import type { API } from '../types';
+import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
+import { dateNow } from '../../utils';
+import { mockMetas, mockTracesApi, mockTransports } from '../apiTestHelpers';
+import {
+  USER_ACTION_CANCEL_MESSAGE_TYPE,
+  USER_ACTION_END_MESSAGE_TYPE,
+  USER_ACTION_START_MESSAGE_TYPE,
+} from '../const';
+import { ItemBuffer } from '../ItemBuffer';
+import type { API, APIEvent, ApiMessageBusMessages } from '../types';
 
+import { initializeEventsAPI } from './initialize';
 import type { EventEvent, PushEventOptions } from './types';
 
 describe('api.events', () => {
@@ -150,6 +160,61 @@ describe('api.events', () => {
           i: '[1,2,3]',
         });
       });
+    });
+  });
+
+  describe('User action', () => {
+    it('buffers the error if a user action is in progress', () => {
+      const internalLogger = mockInternalLogger;
+      const config = mockConfig();
+
+      const actionBuffer = new ItemBuffer<TransportItem<APIEvent>>();
+
+      let message: ApiMessageBusMessages | undefined;
+
+      const getMessage = () => message;
+
+      message = {
+        type: USER_ACTION_START_MESSAGE_TYPE,
+        name: 'testAction',
+        startTime: Date.now(),
+        parentId: 'parent-id',
+      };
+      const api = initializeEventsAPI({
+        unpatchedConsole: console,
+        internalLogger,
+        config,
+        metas: mockMetas,
+        transports: mockTransports,
+        tracesApi: mockTracesApi,
+        actionBuffer,
+        getMessage,
+      });
+
+      api.pushEvent('test');
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_END_MESSAGE_TYPE,
+        name: 'testAction',
+        id: 'parent-id',
+        startTime: dateNow(),
+        endTime: dateNow(),
+        duration: 0,
+        eventType: 'click',
+      };
+
+      api.pushEvent('test-2');
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_CANCEL_MESSAGE_TYPE,
+        name: 'testAction',
+        parentId: 'parent-id',
+      };
+
+      api.pushEvent('test-3');
+      expect(actionBuffer.size()).toBe(1);
     });
   });
 });

@@ -2,7 +2,7 @@ import type { APIEvent, LogArgsSerializer, StacktraceParser } from '../api';
 import type { Instrumentation } from '../instrumentations';
 import type { InternalLoggerLevel } from '../internalLogger';
 import type { Meta, MetaApp, MetaItem, MetaPage, MetaSession, MetaUser, MetaView } from '../metas';
-import type { BatchExecutorOptions, BeforeSendHook, Transport } from '../transports';
+import type { BatchExecutorOptions, BeforeSendHook, Transport, TransportItem } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 import type { LogLevel } from '../utils';
 
@@ -233,6 +233,23 @@ export interface Config<P = APIEvent> {
    * privacy requirements.
    */
   trackGeolocation?: boolean;
+
+  /**
+   * This is a preview feature.
+   * We have tested it thoroughly, but it is possible that it might not work as expected in all cases.
+   */
+  trackUserActions?: boolean;
+
+  /**
+   * Configure your own attribute name for tracking user actions. Default is 'data-faro-user-action-name'
+   */
+  trackUserActionsDataAttributeName?: string;
+
+  /**
+   * Predicate function to exclude items from user actions.
+   * If the function returns true, the item will be excluded from user actions.
+   */
+  trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
 }
 
 export type Patterns = Array<string | RegExp>;

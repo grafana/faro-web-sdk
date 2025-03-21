@@ -1,11 +1,11 @@
 export {
+  getItem,
   isLocalStorageAvailable,
   isSessionStorageAvailable,
-  webStorageType,
-  getItem,
   isWebStorageAvailable,
   removeItem,
   setItem,
+  webStorageType,
 } from './webStorage';
 
 export { throttle } from './throttle';
