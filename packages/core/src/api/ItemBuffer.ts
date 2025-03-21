@@ -13,7 +13,7 @@ export class ItemBuffer<T> {
 
   flushBuffer(cb?: (item: T) => void) {
     if (isFunction(cb)) {
-      for (const item of [...this.buffer]) {
+      for (const item of this.buffer) {
         cb(item);
       }
     }
