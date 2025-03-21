@@ -1,4 +1,9 @@
 import { apiMessageBus, dateNow, Faro, genShortID, merge, Observable, Subscription } from '@grafana/faro-core';
+import {
+  USER_ACTION_CANCEL_MESSAGE_TYPE,
+  USER_ACTION_END_MESSAGE_TYPE,
+  USER_ACTION_START_MESSAGE_TYPE,
+} from '@grafana/faro-core/src/api/const';
 
 import { userActionDataAttributeParsed as userActionDataAttribute } from './const';
 import { monitorDomMutations } from './domMutationMonitor';
@@ -37,7 +42,7 @@ export function getUserEventHandler(faro: Faro) {
     const actionId = genShortID();
 
     apiMessageBus.notify({
-      type: 'user-action-start',
+      type: USER_ACTION_START_MESSAGE_TYPE,
       name: userActionName,
       startTime: startTime,
       parentId: actionId,
@@ -56,8 +61,8 @@ export function getUserEventHandler(faro: Faro) {
 
     allMonitorsSub = allMonitorsObserver
       .takeWhile(() => actionRunning)
-      .subscribe((msg) => {
-        // Http request, dom mutation or performance entry happened so we have a follow up activity and start the timeout again
+      .subscribe(() => {
+        // A http request, a DOM mutation or a performance entry happened so we have a follow up activity and start the timeout again
         // If timeout is triggered the user action is done and we send respective messages and events
         timeoutId = startTimeout(timeoutId, () => {
           endTime = dateNow();
@@ -67,7 +72,7 @@ export function getUserEventHandler(faro: Faro) {
 
           // order matters, first emit the user-action-end event and then push the event
           apiMessageBus.notify({
-            type: 'user-action-end',
+            type: USER_ACTION_END_MESSAGE_TYPE,
             name: userActionName,
             id: actionId,
             startTime,
@@ -142,7 +147,7 @@ function startTimeout(timeoutId: number | undefined, cb: () => void) {
 
 function sendUserActionCancelMessage(userActionName: string, actionId: string) {
   apiMessageBus.notify({
-    type: 'user-action-cancel',
+    type: USER_ACTION_CANCEL_MESSAGE_TYPE,
     name: userActionName,
     parentId: actionId,
   });

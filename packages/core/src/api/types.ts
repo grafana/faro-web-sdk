@@ -1,3 +1,4 @@
+import { USER_ACTION_CANCEL_MESSAGE_TYPE, USER_ACTION_END_MESSAGE_TYPE, USER_ACTION_START_MESSAGE_TYPE } from './const';
 import type { EventEvent, EventsAPI } from './events';
 import type { ExceptionEvent, ExceptionsAPI } from './exceptions';
 import type { LogEvent, LogsAPI } from './logs';
@@ -11,8 +12,13 @@ export type API = LogsAPI & ExceptionsAPI & MeasurementsAPI & TracesAPI & MetaAP
 
 export type ApiMessageBusMessages = UserActionStartMessage | UserActionEndMessage | UserActionCancelMessage;
 
+export type UserActionMessageType =
+  | typeof USER_ACTION_START_MESSAGE_TYPE
+  | typeof USER_ACTION_END_MESSAGE_TYPE
+  | typeof USER_ACTION_CANCEL_MESSAGE_TYPE;
+
 export type UserActionStartMessage = {
-  type: 'user-action-start';
+  type: typeof USER_ACTION_START_MESSAGE_TYPE;
   name: string;
   startTime: number;
 
@@ -23,7 +29,7 @@ export type UserActionStartMessage = {
 };
 
 export type UserActionEndMessage = {
-  type: 'user-action-end';
+  type: typeof USER_ACTION_END_MESSAGE_TYPE;
   name: string;
   startTime: number;
   endTime: number;
@@ -37,7 +43,7 @@ export type UserActionEndMessage = {
 };
 
 export type UserActionCancelMessage = {
-  type: 'user-action-cancel';
+  type: typeof USER_ACTION_CANCEL_MESSAGE_TYPE;
   name: string;
 
   /**
