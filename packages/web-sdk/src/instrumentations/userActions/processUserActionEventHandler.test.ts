@@ -1,10 +1,11 @@
-import { apiMessageBus, initializeFaro } from '@grafana/faro-core';
-import type { Config, Faro, UserActionEndMessage } from '@grafana/faro-core';
 import {
+  apiMessageBus,
+  initializeFaro,
   USER_ACTION_CANCEL_MESSAGE_TYPE,
   USER_ACTION_END_MESSAGE_TYPE,
   USER_ACTION_START_MESSAGE_TYPE,
-} from '@grafana/faro-core/src/api/const';
+} from '@grafana/faro-core';
+import type { Config, Faro, UserActionEndMessage } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
