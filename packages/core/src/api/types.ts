@@ -1,4 +1,8 @@
-import { USER_ACTION_CANCEL_MESSAGE_TYPE, USER_ACTION_END_MESSAGE_TYPE, USER_ACTION_START_MESSAGE_TYPE } from './const';
+import type {
+  USER_ACTION_CANCEL_MESSAGE_TYPE,
+  USER_ACTION_END_MESSAGE_TYPE,
+  USER_ACTION_START_MESSAGE_TYPE,
+} from './const';
 import type { EventEvent, EventsAPI } from './events';
 import type { ExceptionEvent, ExceptionsAPI } from './exceptions';
 import type { LogEvent, LogsAPI } from './logs';
