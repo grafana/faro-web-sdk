@@ -50,7 +50,7 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
           spanContext,
           // Convert nanoseconds to milliseconds
           timestampOverwriteMs: Number(span.endTimeUnixNano) / 1_000_000,
-          customPayloadParser: (payload) => {
+          customPayloadTransformer: (payload) => {
             if (
               faroEventAttributes['faro.action.user.name'] != null &&
               faroEventAttributes['faro.action.user.parentId'] != null

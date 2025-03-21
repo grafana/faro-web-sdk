@@ -36,12 +36,12 @@ export function initializeEventsAPI({
     name,
     attributes,
     domain,
-    { skipDedupe, spanContext, timestampOverwriteMs, customPayloadParser = (payload: EventEvent) => payload } = {}
+    { skipDedupe, spanContext, timestampOverwriteMs, customPayloadTransformer = (payload: EventEvent) => payload } = {}
   ) => {
     try {
       const item: TransportItem<EventEvent> = {
         meta: metas.value,
-        payload: customPayloadParser({
+        payload: customPayloadTransformer({
           name,
           domain: domain ?? config.eventDomain,
           attributes: stringifyObjectValues(attributes),

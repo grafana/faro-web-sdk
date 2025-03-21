@@ -93,7 +93,7 @@ export function getUserEventHandler(faro: Faro) {
             undefined,
             {
               timestampOverwriteMs: startTime,
-              customPayloadParser: (payload) => {
+              customPayloadTransformer: (payload) => {
                 payload.action = {
                   id: actionId,
                   name: userActionName,
