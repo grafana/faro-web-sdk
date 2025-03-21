@@ -30,7 +30,6 @@ export function createUserActionLifecycleHandler({
       const { id, name } = msg;
 
       actionBuffer.flushBuffer((item) => {
-        // Exclude web-vitals from user actions
         if (isExcludeFromUserAction(item, trackUserActionsExcludeItem)) {
           transports.execute(item);
           return;
