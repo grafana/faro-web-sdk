@@ -16,6 +16,11 @@ export function ErrorInstrumentation() {
     fetch('http://localhost:64999', {
       method: 'POST',
     });
+
+    setTimeout(() => {
+      faro.api.pushLog(['Fetch error log']);
+      faro.api.pushError(new Error('TEST - This is a fetch error'));
+    }, 80);
   };
 
   const xhrError = () => {
@@ -47,10 +52,10 @@ export function ErrorInstrumentation() {
         <Button data-cy="btn-call-undefined" onClick={callUndefined}>
           Call Undefined Method
         </Button>
-        <Button data-cy="btn-fetch-error" onClick={fetchError}>
+        <Button data-cy="btn-fetch-error" onClick={fetchError} data-faro-user-action-name="fetch-error">
           Fetch Error
         </Button>
-        <Button data-cy="btn-xhr-error" onClick={xhrError}>
+        <Button data-cy="btn-xhr-error" onClick={xhrError} data-faro-user-action-name="xhr-error">
           XHR Error (promise)
         </Button>
         <Button data-cy="btn-promise-reject" onClick={promiseReject}>

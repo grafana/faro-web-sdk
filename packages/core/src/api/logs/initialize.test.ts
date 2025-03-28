@@ -1,8 +1,17 @@
+import type { TransportItem } from '../..';
 import { initializeFaro } from '../../initialize';
-import { mockConfig, MockTransport } from '../../testUtils';
-import { LogLevel } from '../../utils';
-import type { API } from '../types';
+import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
+import { dateNow, LogLevel } from '../../utils';
+import { mockMetas, mockTracesApi, mockTransports } from '../apiTestHelpers';
+import {
+  USER_ACTION_CANCEL_MESSAGE_TYPE,
+  USER_ACTION_END_MESSAGE_TYPE,
+  USER_ACTION_START_MESSAGE_TYPE,
+} from '../const';
+import { ItemBuffer } from '../ItemBuffer';
+import type { API, APIEvent, ApiMessageBusMessages } from '../types';
 
+import { initializeLogsAPI } from './initialize';
 import type { LogArgsSerializer, LogEvent, PushLogOptions } from './types';
 
 describe('api.logs', () => {
@@ -165,6 +174,61 @@ describe('api.logs', () => {
         h: 'undefined',
         i: '[1,2,3]',
       });
+    });
+  });
+
+  describe('User action', () => {
+    it('buffers the item if a user action is in progress', () => {
+      const internalLogger = mockInternalLogger;
+      const config = mockConfig();
+
+      const actionBuffer = new ItemBuffer<TransportItem<APIEvent>>();
+
+      let message: ApiMessageBusMessages | undefined;
+
+      const getMessage = () => message;
+
+      message = {
+        type: USER_ACTION_START_MESSAGE_TYPE,
+        name: 'testAction',
+        startTime: Date.now(),
+        parentId: 'parent-id',
+      };
+      const api = initializeLogsAPI({
+        unpatchedConsole: console,
+        internalLogger,
+        config,
+        metas: mockMetas,
+        transports: mockTransports,
+        tracesApi: mockTracesApi,
+        actionBuffer,
+        getMessage,
+      });
+
+      api.pushLog(['test']);
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_END_MESSAGE_TYPE,
+        name: 'testAction',
+        id: 'parent-id',
+        startTime: dateNow(),
+        endTime: dateNow(),
+        duration: 0,
+        eventType: 'click',
+      };
+
+      api.pushLog(['test-2']);
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_CANCEL_MESSAGE_TYPE,
+        name: 'testAction',
+        parentId: 'parent-id',
+      };
+
+      api.pushLog(['test-3']);
+      expect(actionBuffer.size()).toBe(1);
     });
   });
 });

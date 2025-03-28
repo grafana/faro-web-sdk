@@ -5,6 +5,7 @@ import {
   ErrorsInstrumentation,
   PerformanceInstrumentation,
   SessionInstrumentation,
+  UserActionInstrumentation,
   ViewInstrumentation,
   WebVitalsInstrumentation,
 } from '../instrumentations';
@@ -13,6 +14,7 @@ import type { GetWebInstrumentationsOptions } from './types';
 
 export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {
   const instrumentations: Instrumentation[] = [
+    new UserActionInstrumentation(),
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
     new SessionInstrumentation(),

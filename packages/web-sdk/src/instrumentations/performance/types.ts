@@ -1,5 +1,7 @@
 import type { unknownString } from '@grafana/faro-core';
 
+import type { RESOURCE_ENTRY } from './performanceConstants';
+
 export type FaroNavigationTiming = Readonly<
   {
     duration: string;
@@ -47,3 +49,7 @@ export type FaroResourceItem = {
 } & FaroResourceTiming;
 
 export type CacheType = 'cache' | 'conditionalFetch' | 'fullLoad';
+
+export type ResourceEntryMessage = {
+  type: typeof RESOURCE_ENTRY;
+};
