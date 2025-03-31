@@ -81,7 +81,7 @@
     "redux": "^5.0.1",
     "sass": "^1.57.1",
     "sequelize": "^6.32.1",
-    "serve-static": "^1.15.0",
+    "serve-static": "^2.2.0",
     "winston": "^3.8.2"
   },
   "devDependencies": {
