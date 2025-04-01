@@ -1,9 +1,10 @@
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
-import { TransportItem, TransportItemType, Transports } from '../../transports';
+import { TransportItemType } from '../../transports';
+import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, getCurrentTimestamp, isNull, stringifyObjectValues } from '../../utils';
+import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
@@ -26,12 +27,14 @@ export function initializeEventsAPI(
     { skipDedupe, spanContext, timestampOverwriteMs } = {}
   ) => {
     try {
+      const attrs = stringifyObjectValues(attributes);
+
       const item: TransportItem<EventEvent> = {
         meta: metas.value,
         payload: {
           name,
           domain: domain ?? config.eventDomain,
-          attributes: stringifyObjectValues(attributes),
+          attributes: isEmpty(attrs) ? undefined : attrs,
           timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
           trace: spanContext
             ? {

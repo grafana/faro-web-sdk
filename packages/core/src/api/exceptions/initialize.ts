@@ -8,6 +8,7 @@ import {
   deepEqual,
   getCurrentTimestamp,
   isArray,
+  isEmpty,
   isError,
   isNull,
   isObject,
@@ -55,6 +56,11 @@ export function initializeExceptionsAPI(
       return;
     }
 
+    const ctx = stringifyObjectValues({
+      ...parseCause(error),
+      ...(context ?? {}),
+    });
+
     const item: TransportItem<ExceptionEvent> = {
       meta: metas.value,
       payload: {
@@ -67,10 +73,7 @@ export function initializeExceptionsAPI(
               span_id: spanContext.spanId,
             }
           : tracesApi.getTraceContext(),
-        context: stringifyObjectValues({
-          ...parseCause(error),
-          ...(context ?? {}),
-        }),
+        context: isEmpty(ctx) ? undefined : ctx,
       },
       type: TransportItemType.EXCEPTION,
     };

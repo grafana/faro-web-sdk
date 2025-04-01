@@ -6,7 +6,7 @@ import type { TraceContext } from '../traces';
 export type LogContext = Record<string, string>;
 
 export interface LogEvent {
-  context: LogContext;
+  context: LogContext | undefined;
   level: LogLevel;
   message: string;
   timestamp: string;

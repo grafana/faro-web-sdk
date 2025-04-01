@@ -1,5 +1,6 @@
 import { initializeFaro } from '../../initialize';
 import { mockConfig, MockTransport } from '../../testUtils';
+import type { TransportItem } from '../../transports';
 import { LogLevel } from '../../utils';
 import type { API } from '../types';
 
@@ -165,6 +166,16 @@ describe('api.logs', () => {
         h: 'undefined',
         i: '[1,2,3]',
       });
+    });
+
+    it('does not stringify empty context', () => {
+      api.pushLog(['test']);
+      api.pushLog(['test2'], {
+        context: {},
+      });
+      expect(transport.items).toHaveLength(2);
+      expect((transport.items[0] as TransportItem<LogEvent>).payload.context).toBeUndefined();
+      expect((transport.items[0] as TransportItem<LogEvent>).payload.context).toBeUndefined();
     });
   });
 });

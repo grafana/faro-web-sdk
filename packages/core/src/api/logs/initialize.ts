@@ -1,10 +1,9 @@
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
-import { TransportItem, TransportItemType } from '../../transports';
-import type { Transports } from '../../transports';
+import { TransportItem, TransportItemType, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, defaultLogLevel, getCurrentTimestamp, isNull, stringifyObjectValues } from '../../utils';
+import { deepEqual, defaultLogLevel, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
@@ -30,12 +29,14 @@ export function initializeLogsAPI(
     { context, level, skipDedupe, spanContext, timestampOverwriteMs } = {}
   ) => {
     try {
+      const ctx = stringifyObjectValues(context);
+
       const item: TransportItem<LogEvent> = {
         type: TransportItemType.LOG,
         payload: {
           message: logArgsSerializer(args),
           level: level ?? defaultLogLevel,
-          context: stringifyObjectValues(context),
+          context: isEmpty(ctx) ? undefined : ctx,
           timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
           trace: spanContext
             ? {
