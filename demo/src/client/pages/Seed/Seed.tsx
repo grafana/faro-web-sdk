@@ -33,7 +33,7 @@ export function Seed() {
         instrumentation coming together.
       </p>
 
-      <Button onClick={handleSeed} disabled={seedResult.isLoading} className="mb-3">
+      <Button onClick={handleSeed} disabled={seedResult.isLoading} className="mb-3" data-faro-user-action-name="seed">
         Seed
       </Button>
 

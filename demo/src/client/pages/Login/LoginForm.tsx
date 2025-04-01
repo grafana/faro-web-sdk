@@ -55,7 +55,7 @@ export function LoginForm() {
         <Form.Control type="password" autoComplete="current-password" {...registerField('password')} />
       </Form.Group>
 
-      <Button variant="primary" type="submit">
+      <Button variant="primary" type="submit" data-faro-user-action-name="login">
         Login
       </Button>
     </Form>
