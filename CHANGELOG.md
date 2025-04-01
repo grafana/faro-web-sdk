@@ -2,6 +2,9 @@
 
 ## Next
 
+- Improvement (`@grafana/faro-core`): Avoid sending empty `attributes` or `context` objects
+  when no data is provided (#1089)
+
 ## 1.14.1
 
 - Improvement (`@grafana/faro-web-sdk`): The ignored errors parser now also parses stack traces.
