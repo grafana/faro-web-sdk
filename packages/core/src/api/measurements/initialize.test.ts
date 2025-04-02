@@ -273,7 +273,7 @@ describe('api.measurements', () => {
   });
 
   describe('User action', () => {
-    it('buffers the error if a user action is in progress', () => {
+    it('buffers the measurement if a user action is in progress', () => {
       const internalLogger = mockInternalLogger;
       const config = mockConfig();
 
