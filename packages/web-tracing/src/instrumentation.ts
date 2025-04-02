@@ -19,6 +19,7 @@ import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-web-sdk';
 
 import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
 import { FaroTraceExporter } from './faroTraceExporter';
+import { FaroUserActionSpanProcessor } from './faroUserActionSpanProcessor';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 import { getSamplingDecision } from './sampler';
 import type { TracingInstrumentationOptions } from './types';
@@ -76,12 +77,14 @@ export class TracingInstrumentation extends BaseInstrumentation {
       },
       spanProcessors: [
         options.spanProcessor ??
-          new FaroMetaAttributesSpanProcessor(
-            new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
-              scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
-              maxExportBatchSize: 30,
-            }),
-            this.metas
+          new FaroUserActionSpanProcessor(
+            new FaroMetaAttributesSpanProcessor(
+              new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
+                scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
+                maxExportBatchSize: 30,
+              }),
+              this.metas
+            )
           ),
       ],
     });

@@ -155,4 +155,31 @@ describe('config', () => {
     expect(config?.sessionTracking?.session?.overrides).toBeUndefined();
     expect(config?.sessionTracking?.session).toStrictEqual(sessionMeta);
   });
+
+  // TODO: re-add tests on beta release
+  // it('trackUserActions settings defaults are applied', () => {
+  //   const browserConfig = {
+  //     url: 'http://example.com/my-collector',
+  //     app: {},gca
+  //   };
+  //   const config = makeCoreConfig(browserConfig);
+
+  //   expect(config).toBeTruthy();
+  //   expect(config?.trackUserActions).toBe(false);
+  //   expect(config?.trackUserActionsDataAttributeName).toBe(userActionDataAttribute);
+  // });
+
+  // it('trackUserActions setting are added to the config as provided by the user', () => {
+  //   const browserConfig = {
+  //     url: 'http://example.com/my-collector',
+  //     app: {},
+  //     trackUserActions: true,
+  //     trackUserActionsDataAttributeName: 'data-test-action-name',
+  //   };
+  //   const config = makeCoreConfig(browserConfig);
+
+  //   expect(config).toBeTruthy();
+  //   expect(config?.trackUserActions).toBe(true);
+  //   expect(config?.trackUserActionsDataAttributeName).toBe('data-test-action-name');
+  // });
 });

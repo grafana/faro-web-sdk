@@ -5,19 +5,32 @@ import { TransportItem, TransportItemType, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, defaultLogLevel, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
+import { USER_ACTION_START_MESSAGE_TYPE } from '../const';
+import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
+import type { ApiMessageBusMessages } from '../types';
 
 import { defaultLogArgsSerializer } from './const';
 import type { LogEvent, LogsAPI } from './types';
 
-export function initializeLogsAPI(
-  _unpatchedConsole: UnpatchedConsole,
-  internalLogger: InternalLogger,
-  config: Config,
-  metas: Metas,
-  transports: Transports,
-  tracesApi: TracesAPI
-): LogsAPI {
+export function initializeLogsAPI({
+  internalLogger,
+  config,
+  metas,
+  transports,
+  tracesApi,
+  actionBuffer,
+  getMessage,
+}: {
+  unpatchedConsole: UnpatchedConsole;
+  internalLogger: InternalLogger;
+  config: Config;
+  metas: Metas;
+  transports: Transports;
+  tracesApi: TracesAPI;
+  actionBuffer: ItemBuffer<TransportItem>;
+  getMessage: () => ApiMessageBusMessages | undefined;
+}): LogsAPI {
   internalLogger.debug('Initializing logs API');
 
   let lastPayload: Pick<LogEvent, 'message' | 'level' | 'context'> | null = null;
@@ -64,7 +77,12 @@ export function initializeLogsAPI(
 
       internalLogger.debug('Pushing log\n', item);
 
-      transports.execute(item);
+      const msg = getMessage();
+      if (msg && msg.type === USER_ACTION_START_MESSAGE_TYPE) {
+        actionBuffer.addItem(item);
+      } else {
+        transports.execute(item);
+      }
     } catch (err) {
       internalLogger.error('Error pushing log\n', err);
     }

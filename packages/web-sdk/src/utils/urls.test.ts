@@ -2,7 +2,7 @@ import { BaseTransport, initializeFaro, VERSION } from '@grafana/faro-core';
 import type { Patterns, TransportItem } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
-import { getIgnoreUrls } from './url';
+import { getIgnoreUrls, isUrlIgnored } from './url';
 
 class MockTransport extends BaseTransport {
   readonly name = '@grafana/transport-mock';
@@ -41,5 +41,24 @@ describe('Urls', () => {
     const urls = getIgnoreUrls();
 
     expect(urls).toEqual(['http://foo.com', 'http://example.com', 'http://example2.com/test']);
+  });
+
+  it('isUrlIgnored should return boolean if the url is ignored or not', () => {
+    const transport = new MockTransport(['http://foo.com']);
+
+    initializeFaro(
+      mockConfig({
+        transports: [transport],
+        ignoreUrls: ['http://example.com', 'http://example2.com/test', /.*example3.*/],
+      })
+    );
+
+    expect(isUrlIgnored('http://foo.com')).toBe(true);
+    expect(isUrlIgnored('http://example.com')).toBe(true);
+    expect(isUrlIgnored('http://example2.com/test')).toBe(true);
+    expect(isUrlIgnored('http://example2.com')).toBe(false);
+    expect(isUrlIgnored('http://example3.com/abc')).toBe(true);
+    expect(isUrlIgnored('')).toBe(false);
+    expect(isUrlIgnored(undefined)).toBe(false);
   });
 });

@@ -1,7 +1,23 @@
-import type { MeasurementEvent, PushMeasurementOptions, TransportItem } from '../..';
+import {
+  APIEvent,
+  ApiMessageBusMessages,
+  dateNow,
+  type MeasurementEvent,
+  type PushMeasurementOptions,
+  TransportItem,
+} from '../..';
 import { initializeFaro } from '../../initialize';
-import { mockConfig, MockTransport } from '../../testUtils';
+import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
+import { mockMetas, mockTracesApi, mockTransports } from '../apiTestHelpers';
+import {
+  USER_ACTION_CANCEL_MESSAGE_TYPE,
+  USER_ACTION_END_MESSAGE_TYPE,
+  USER_ACTION_START_MESSAGE_TYPE,
+} from '../const';
+import { ItemBuffer } from '../ItemBuffer';
 import type { API } from '../types';
+
+import { initializeMeasurementsAPI } from './initialize';
 
 describe('api.measurements', () => {
   function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [API, MockTransport] {
@@ -253,6 +269,111 @@ describe('api.measurements', () => {
       expect(transport.items).toHaveLength(2);
       expect((transport.items[0] as TransportItem<MeasurementEvent>).payload.context).toBeUndefined();
       expect((transport.items[0] as TransportItem<MeasurementEvent>).payload.context).toBeUndefined();
+    });
+  });
+
+  describe('User action', () => {
+    it('buffers the measurement if a user action is in progress', () => {
+      const internalLogger = mockInternalLogger;
+      const config = mockConfig();
+
+      const actionBuffer = new ItemBuffer<TransportItem<APIEvent>>();
+
+      let message: ApiMessageBusMessages | undefined;
+
+      const getMessage = () => message;
+
+      message = { type: 'user-action-start', name: 'testAction', startTime: Date.now(), parentId: 'parent-id' };
+      const api = initializeMeasurementsAPI({
+        unpatchedConsole: console,
+        internalLogger,
+        config,
+        metas: mockMetas,
+        transports: mockTransports,
+        tracesApi: mockTracesApi,
+        actionBuffer,
+        getMessage,
+      });
+
+      api.pushMeasurement({ type: 'test', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: 'user-action-end',
+        name: 'testAction',
+        id: 'parent-id',
+        startTime: dateNow(),
+        endTime: dateNow(),
+        duration: 0,
+        eventType: 'click',
+      };
+
+      api.pushMeasurement({ type: 'test-2', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: 'user-action-cancel',
+        name: 'testAction',
+        parentId: 'parent-id',
+      };
+
+      api.pushMeasurement({ type: 'test-3', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
+    });
+  });
+
+  describe('User action', () => {
+    it('buffers the item if a user action is in progress', () => {
+      const internalLogger = mockInternalLogger;
+      const config = mockConfig();
+
+      const actionBuffer = new ItemBuffer<TransportItem<APIEvent>>();
+
+      let message: ApiMessageBusMessages | undefined;
+
+      const getMessage = () => message;
+
+      message = {
+        type: USER_ACTION_START_MESSAGE_TYPE,
+        name: 'testAction',
+        startTime: Date.now(),
+        parentId: 'parent-id',
+      };
+      const api = initializeMeasurementsAPI({
+        unpatchedConsole: console,
+        internalLogger,
+        config,
+        metas: mockMetas,
+        transports: mockTransports,
+        tracesApi: mockTracesApi,
+        actionBuffer,
+        getMessage,
+      });
+
+      api.pushMeasurement({ type: 'test', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_END_MESSAGE_TYPE,
+        name: 'testAction',
+        id: 'parent-id',
+        startTime: dateNow(),
+        endTime: dateNow(),
+        duration: 0,
+        eventType: 'click',
+      };
+
+      api.pushMeasurement({ type: 'test-2', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_CANCEL_MESSAGE_TYPE,
+        name: 'testAction',
+        parentId: 'parent-id',
+      };
+
+      api.pushMeasurement({ type: 'test-3', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
     });
   });
 });

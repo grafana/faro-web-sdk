@@ -24,7 +24,6 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
         };
 
         const faroEventAttributes: FaroEventAttributes = {};
-
         for (const attribute of span.attributes) {
           faroEventAttributes[attribute.key] = String(Object.values(attribute.value)[0]);
         }
@@ -47,7 +46,27 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = []) {
           }
         }
 
-        faro.api.pushEvent(`faro.tracing.${eventName}`, faroEventAttributes, undefined, { spanContext });
+        faro.api.pushEvent(`faro.tracing.${eventName}`, faroEventAttributes, undefined, {
+          spanContext,
+          // Convert nanoseconds to milliseconds
+          timestampOverwriteMs: Number(span.endTimeUnixNano) / 1_000_000,
+          customPayloadTransformer: (payload) => {
+            if (
+              faroEventAttributes['faro.action.user.name'] != null &&
+              faroEventAttributes['faro.action.user.parentId'] != null
+            ) {
+              payload.action = {
+                name: faroEventAttributes['faro.action.user.name'],
+                parentId: faroEventAttributes['faro.action.user.parentId'],
+              };
+
+              delete payload.attributes?.['faro.action.user.name'];
+              delete payload.attributes?.['faro.action.user.parentId'];
+            }
+
+            return payload;
+          },
+        });
       }
     }
   }
