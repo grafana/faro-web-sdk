@@ -16,7 +16,8 @@ import {
   // eslint-disable-next-line import/no-unresolved
 } from '@opentelemetry/semantic-conventions/incubating';
 
-import { BaseInstrumentation, Transport, VERSION } from '@grafana/faro-web-sdk';
+import { BaseInstrumentation, VERSION } from '@grafana/faro-web-sdk';
+import type { Transport } from '@grafana/faro-web-sdk';
 
 import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
 import { FaroTraceExporter } from './faroTraceExporter';
