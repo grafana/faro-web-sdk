@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.14.2
+
 - Improvement (`@grafana/faro-core`): Avoid sending empty `attributes` or `context` objects
   when no data is provided (#1089)
 
