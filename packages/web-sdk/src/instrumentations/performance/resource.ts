@@ -40,7 +40,7 @@ export function observeResourceTimings(
           faroResourceId: genShortID(),
         };
 
-        if (faro.config.trackUserActions) {
+        if (faro.config.trackUserActionsPreview) {
           observable?.notify({
             type: RESOURCE_ENTRY,
           });

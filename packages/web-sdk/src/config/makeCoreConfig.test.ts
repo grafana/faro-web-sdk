@@ -1,6 +1,8 @@
 import { defaultLogArgsSerializer, isFunction } from '@grafana/faro-core';
 import type { LogArgsSerializer } from '@grafana/faro-core';
 
+import { userActionDataAttribute } from '../instrumentations/userActions';
+
 import { makeCoreConfig } from './makeCoreConfig';
 
 describe('defaultMetas', () => {
@@ -156,30 +158,29 @@ describe('config', () => {
     expect(config?.sessionTracking?.session).toStrictEqual(sessionMeta);
   });
 
-  // TODO: re-add tests on beta release
-  // it('trackUserActions settings defaults are applied', () => {
-  //   const browserConfig = {
-  //     url: 'http://example.com/my-collector',
-  //     app: {},gca
-  //   };
-  //   const config = makeCoreConfig(browserConfig);
+  it('trackUserActions settings defaults are applied', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+    };
+    const config = makeCoreConfig(browserConfig);
 
-  //   expect(config).toBeTruthy();
-  //   expect(config?.trackUserActions).toBe(false);
-  //   expect(config?.trackUserActionsDataAttributeName).toBe(userActionDataAttribute);
-  // });
+    expect(config).toBeTruthy();
+    expect(config?.trackUserActionsPreview).toBe(false);
+    expect(config?.trackUserActionsDataAttributeName).toBe(userActionDataAttribute);
+  });
 
-  // it('trackUserActions setting are added to the config as provided by the user', () => {
-  //   const browserConfig = {
-  //     url: 'http://example.com/my-collector',
-  //     app: {},
-  //     trackUserActions: true,
-  //     trackUserActionsDataAttributeName: 'data-test-action-name',
-  //   };
-  //   const config = makeCoreConfig(browserConfig);
+  it('trackUserActions setting are added to the config as provided by the user', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      trackUserActionsPreview: true,
+      trackUserActionsDataAttributeName: 'data-test-action-name',
+    };
+    const config = makeCoreConfig(browserConfig);
 
-  //   expect(config).toBeTruthy();
-  //   expect(config?.trackUserActions).toBe(true);
-  //   expect(config?.trackUserActionsDataAttributeName).toBe('data-test-action-name');
-  // });
+    expect(config).toBeTruthy();
+    expect(config?.trackUserActionsPreview).toBe(true);
+    expect(config?.trackUserActionsDataAttributeName).toBe('data-test-action-name');
+  });
 });
