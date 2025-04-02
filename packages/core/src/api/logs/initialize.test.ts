@@ -1,4 +1,3 @@
-import type { TransportItem } from '../..';
 import { initializeFaro } from '../../initialize';
 import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
 import type { TransportItem } from '../../transports';

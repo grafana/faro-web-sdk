@@ -1,6 +1,6 @@
 import { initializeFaro } from '../../initialize';
 import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
-import { TransportItem, TransportItem, TransportItemType } from '../../transports';
+import { TransportItem, TransportItemType } from '../../transports';
 import { dateNow } from '../../utils';
 import { mockMetas, mockTracesApi, mockTransports } from '../apiTestHelpers';
 import {

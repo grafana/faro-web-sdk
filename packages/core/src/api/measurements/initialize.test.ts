@@ -5,7 +5,6 @@ import {
   type MeasurementEvent,
   type PushMeasurementOptions,
   TransportItem,
-  TransportItem,
 } from '../..';
 import { initializeFaro } from '../../initialize';
 import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
