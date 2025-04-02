@@ -4,6 +4,7 @@
 
 - Improvement (`@grafana/faro-core`): Avoid sending empty `attributes` or `context` objects
   when no data is provided (#1089)
+- Improvement (`@grafana/faro-*`): Upgrade to TypeScript 5.8.2 (#1092)
 
 ## 1.14.1
 
