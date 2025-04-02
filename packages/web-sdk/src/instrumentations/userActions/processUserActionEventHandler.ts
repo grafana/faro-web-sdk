@@ -1,5 +1,3 @@
-import { USER_ACTION_HALT } from 'packages/core/src/api/const';
-
 import {
   apiMessageBus,
   dateNow,
@@ -8,9 +6,10 @@ import {
   merge,
   Observable,
   Subscription,
-  USER_ACTION_CANCELMESSAGE_TYPE,
-  USER_ACTION_ENDMESSAGE_TYPE,
-  USER_ACTION_STARTMESSAGE_TYPE,
+  USER_ACTION_CANCEL,
+  USER_ACTION_END,
+  USER_ACTION_HALT,
+  USER_ACTION_START,
 } from '@grafana/faro-core';
 
 import {
@@ -21,7 +20,7 @@ import {
 import { monitorDomMutations } from './domMutationMonitor';
 import { monitorHttpRequests } from './httpRequestMonitor';
 import { monitorPerformanceEntries } from './performanceEntriesMonitor';
-import { HttpRequestEndMessage, HttpRequestMessagePayload, HttpRequestStartMessage } from './types';
+import type { HttpRequestEndMessage, HttpRequestMessagePayload, HttpRequestStartMessage } from './types';
 import { convertDataAttributeName } from './util';
 
 const maxFollowUpActionTimeRange = 100;
@@ -57,7 +56,7 @@ export function getUserEventHandler(faro: Faro) {
     const actionId = genShortID();
 
     apiMessageBus.notify({
-      type: USER_ACTION_STARTMESSAGE_TYPE,
+      type: USER_ACTION_START,
       name: userActionName,
       startTime: startTime,
       parentId: actionId,
@@ -79,15 +78,17 @@ export function getUserEventHandler(faro: Faro) {
     allMonitorsObserver = merge(httpMonitor, domMutationsMonitor, performanceEntriesMonitor);
 
     const runningRequests = new Map<string, HttpRequestMessagePayload>();
-
-    let isPaused = false;
+    let isHalted = false;
+    let pendingActionTimeoutId: number | undefined;
 
     allMonitorsSub = allMonitorsObserver
       .takeWhile(() => actionRunning)
       .subscribe((msg) => {
         if (isRequestStartMessage(msg)) {
           console.log('request start msg :>> ', msg);
-          runningRequests.set(msg.request.requestId, msg.request);
+          if (!isHalted) {
+            runningRequests.set(msg.request.requestId, msg.request);
+          }
         }
         if (isRequestEndMessage(msg)) {
           console.log('request end msg :>> ', msg);
@@ -110,28 +111,38 @@ export function getUserEventHandler(faro: Faro) {
               event,
             };
 
-            if (runningRequests.size > 0) {
-              isPaused = true;
+            const hasPendingRequests = runningRequests.size > 0;
+            const isAllPendingRequestsResolved = isHalted && !hasPendingRequests;
 
-              // send pause collect message
+            if (isAllPendingRequestsResolved) {
+              clearTimeout(pendingActionTimeoutId);
+            }
+
+            if (hasPendingRequests) {
+              isHalted = true;
+
               apiMessageBus.notify({
                 type: USER_ACTION_HALT,
                 name: userActionName,
                 parentId: actionId,
+                reason: 'pending-requests',
               });
 
-              startTimeout(
+              pendingActionTimeoutId = startTimeout(
                 undefined,
                 () => {
-                  actionRunning = sendEvent(sendEventProps);
+                  allMonitorsSub?.unsubscribe();
+                  allMonitorsObserver?.unsubscribeAll();
+                  sendEvent(sendEventProps);
+                  actionRunning = false;
                 },
                 1000 * 60
               );
             } else {
-              actionRunning = sendEvent(sendEventProps);
-
               allMonitorsSub?.unsubscribe();
               allMonitorsObserver?.unsubscribeAll();
+              sendEvent(sendEventProps);
+              actionRunning = false;
             }
           },
           maxFollowUpActionTimeRange
@@ -164,7 +175,7 @@ function sendEvent({
 
   // order matters, first emit the user-action-end event and afterwards push the parent event
   apiMessageBus.notify({
-    type: USER_ACTION_ENDMESSAGE_TYPE,
+    type: USER_ACTION_END,
     name: userActionName,
     id: actionId,
     startTime,
@@ -195,8 +206,6 @@ function sendEvent({
       },
     }
   );
-
-  return false;
 }
 
 function getUserActionName(element: HTMLElement, dataAttributeName: string): string | undefined {
@@ -227,7 +236,7 @@ function startTimeout(timeoutId: number | undefined, cb: () => void, delay: numb
 
 function sendUserActionCancelMessage(userActionName: string, actionId: string) {
   apiMessageBus.notify({
-    type: USER_ACTION_CANCELMESSAGE_TYPE,
+    type: USER_ACTION_CANCEL,
     name: userActionName,
     parentId: actionId,
   });

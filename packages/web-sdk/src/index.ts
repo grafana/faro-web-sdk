@@ -97,9 +97,9 @@ export {
   apiMessageBus,
   Observable,
   merge,
-  USER_ACTION_CANCELMESSAGE_TYPE,
-  USER_ACTION_ENDMESSAGE_TYPE,
-  USER_ACTION_STARTMESSAGE_TYPE,
+  USER_ACTION_CANCEL,
+  USER_ACTION_END,
+  USER_ACTION_START,
 } from '@grafana/faro-core';
 
 export type {

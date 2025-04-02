@@ -1,4 +1,4 @@
-import type { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from './const';
+import type { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_HALT, USER_ACTION_START } from './const';
 import type { EventEvent, EventsAPI } from './events';
 import type { ExceptionEvent, ExceptionsAPI } from './exceptions';
 import type { LogEvent, LogsAPI } from './logs';
@@ -10,9 +10,17 @@ export type APIEvent = LogEvent | ExceptionEvent | MeasurementEvent | TraceEvent
 
 export type API = LogsAPI & ExceptionsAPI & MeasurementsAPI & TracesAPI & MetaAPI & EventsAPI;
 
-export type ApiMessageBusMessages = UserActionStartMessage | UserActionEndMessage | UserActionCancelMessage;
+export type ApiMessageBusMessages =
+  | UserActionStartMessage
+  | UserActionEndMessage
+  | UserActionCancelMessage
+  | UserActionHaltMessage;
 
-export type UserActionMessageType = typeof USER_ACTION_START | typeof USER_ACTION_END | typeof USER_ACTION_CANCEL;
+export type UserActionMessageType =
+  | typeof USER_ACTION_START
+  | typeof USER_ACTION_END
+  | typeof USER_ACTION_CANCEL
+  | typeof USER_ACTION_HALT;
 
 export type UserActionStartMessage = {
   type: typeof USER_ACTION_START;
@@ -50,8 +58,9 @@ export type UserActionCancelMessage = {
 };
 
 export type UserActionHaltMessage = {
-  type: typeof USER_ACTION_CANCELMESSAGE_HALT_MESSAGE;
+  type: typeof USER_ACTION_HALT;
   name: string;
+  reason: 'pending-requests';
 
   /**
    * Unique identifier of the parent user action to which this action belongs.
