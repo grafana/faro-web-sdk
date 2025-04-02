@@ -19,7 +19,7 @@ import { convertDataAttributeName } from './util';
 export function getUserEventHandler(faro: Faro) {
   const { api, config } = faro;
 
-  const httpMonitor = monitorHttpRequests();
+  const { observable: httpMonitor, resetCounters: resetHttpCounters } = monitorHttpRequests();
   const domMutationsMonitor = monitorDomMutations();
   const performanceEntriesMonitor = monitorPerformanceEntries();
 
@@ -38,6 +38,8 @@ export function getUserEventHandler(faro: Faro) {
     if (actionRunning || userActionName == null) {
       return;
     }
+
+    resetHttpCounters();
 
     actionRunning = true;
 
@@ -66,7 +68,9 @@ export function getUserEventHandler(faro: Faro) {
 
     allMonitorsSub = allMonitorsObserver
       .takeWhile(() => actionRunning)
-      .subscribe(() => {
+      .subscribe((msg) => {
+        console.log('msg', msg);
+
         // A http request, a DOM mutation or a performance entry happened so we have a follow up activity and start the timeout again
         // If timeout is triggered the user action is done and we send respective messages and events
         timeoutId = startTimeout(timeoutId, () => {
