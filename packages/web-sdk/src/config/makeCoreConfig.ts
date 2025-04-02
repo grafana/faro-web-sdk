@@ -70,7 +70,8 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
     webVitalsInstrumentation,
-    trackUserActions = false,
+    // TODO: enable on official preview release
+    // trackUserActions = false,
     trackUserActionsDataAttributeName = userActionDataAttribute,
     trackUserActionsExcludeItem,
   }: BrowserConfig = browserConfig;
@@ -109,7 +110,8 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackWebVitalsAttribution,
     consoleInstrumentation,
     webVitalsInstrumentation,
-    trackUserActions,
+    // TODO: enable on official preview release (remove the "false" value)
+    trackUserActions: false,
     trackUserActionsDataAttributeName,
     trackUserActionsExcludeItem,
   };
