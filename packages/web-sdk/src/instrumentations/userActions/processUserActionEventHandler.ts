@@ -1,3 +1,5 @@
+import { USER_ACTION_HALT } from 'packages/core/src/api/const';
+
 import {
   apiMessageBus,
   dateNow,
@@ -6,21 +8,28 @@ import {
   merge,
   Observable,
   Subscription,
-  USER_ACTION_CANCEL_MESSAGE_TYPE,
-  USER_ACTION_END_MESSAGE_TYPE,
-  USER_ACTION_START_MESSAGE_TYPE,
+  USER_ACTION_CANCELMESSAGE_TYPE,
+  USER_ACTION_ENDMESSAGE_TYPE,
+  USER_ACTION_STARTMESSAGE_TYPE,
 } from '@grafana/faro-core';
 
-import { userActionDataAttributeParsed as userActionDataAttribute } from './const';
+import {
+  MESSAGE_TYPE_HTTP_REQUEST_END,
+  MESSAGE_TYPE_HTTP_REQUEST_START,
+  userActionDataAttributeParsed as userActionDataAttribute,
+} from './const';
 import { monitorDomMutations } from './domMutationMonitor';
 import { monitorHttpRequests } from './httpRequestMonitor';
 import { monitorPerformanceEntries } from './performanceEntriesMonitor';
+import { HttpRequestEndMessage, HttpRequestMessagePayload, HttpRequestStartMessage } from './types';
 import { convertDataAttributeName } from './util';
+
+const maxFollowUpActionTimeRange = 100;
 
 export function getUserEventHandler(faro: Faro) {
   const { api, config } = faro;
 
-  const { observable: httpMonitor, resetCounters: resetHttpCounters } = monitorHttpRequests();
+  const httpMonitor = monitorHttpRequests();
   const domMutationsMonitor = monitorDomMutations();
   const performanceEntriesMonitor = monitorPerformanceEntries();
 
@@ -40,8 +49,6 @@ export function getUserEventHandler(faro: Faro) {
       return;
     }
 
-    resetHttpCounters();
-
     actionRunning = true;
 
     const startTime = dateNow();
@@ -50,81 +57,146 @@ export function getUserEventHandler(faro: Faro) {
     const actionId = genShortID();
 
     apiMessageBus.notify({
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_STARTMESSAGE_TYPE,
       name: userActionName,
       startTime: startTime,
       parentId: actionId,
     });
 
     // Triggers if no initial action happened within the first 100ms
-    timeoutId = startTimeout(timeoutId, () => {
-      endTime = dateNow();
+    timeoutId = startTimeout(
+      timeoutId,
+      () => {
+        endTime = dateNow();
 
-      // Listening for follow up activities stops once action is cancelled (set to false)
-      actionRunning = false;
-      sendUserActionCancelMessage(userActionName, actionId);
-    });
+        // Listening for follow up activities stops once action is cancelled (set to false)
+        actionRunning = false;
+        sendUserActionCancelMessage(userActionName, actionId);
+      },
+      maxFollowUpActionTimeRange
+    );
 
     allMonitorsObserver = merge(httpMonitor, domMutationsMonitor, performanceEntriesMonitor);
+
+    const runningRequests = new Map<string, HttpRequestMessagePayload>();
+
+    let isPaused = false;
 
     allMonitorsSub = allMonitorsObserver
       .takeWhile(() => actionRunning)
       .subscribe((msg) => {
-        console.log('msg', msg);
+        if (isRequestStartMessage(msg)) {
+          console.log('request start msg :>> ', msg);
+          runningRequests.set(msg.request.requestId, msg.request);
+        }
+        if (isRequestEndMessage(msg)) {
+          console.log('request end msg :>> ', msg);
+          runningRequests.delete(msg.request.requestId);
+        }
 
         // A http request, a DOM mutation or a performance entry happened so we have a follow up activity and start the timeout again
         // If timeout is triggered the user action is done and we send respective messages and events
-        timeoutId = startTimeout(timeoutId, () => {
-          endTime = dateNow();
+        timeoutId = startTimeout(
+          timeoutId,
+          () => {
+            endTime = dateNow();
 
-          const duration = endTime - startTime;
-          const eventType = event.type;
+            const sendEventProps = {
+              api,
+              userActionName,
+              startTime,
+              endTime: endTime!,
+              actionId,
+              event,
+            };
 
-          // order matters, first emit the user-action-end event and then push the event
-          apiMessageBus.notify({
-            type: USER_ACTION_END_MESSAGE_TYPE,
-            name: userActionName,
-            id: actionId,
-            startTime,
-            endTime,
-            duration,
-            eventType,
-          });
+            if (runningRequests.size > 0) {
+              isPaused = true;
 
-          // Send the final action parent event
-          api.pushEvent(
-            userActionName,
-            {
-              userActionStartTime: startTime.toString(),
-              userActionEndTime: endTime.toString(),
-              userActionDuration: duration.toString(),
-              userActionEventType: eventType,
-            },
-            undefined,
-            {
-              timestampOverwriteMs: startTime,
-              customPayloadTransformer: (payload) => {
-                payload.action = {
-                  id: actionId,
-                  name: userActionName,
-                };
+              // send pause collect message
+              apiMessageBus.notify({
+                type: USER_ACTION_HALT,
+                name: userActionName,
+                parentId: actionId,
+              });
 
-                return payload;
-              },
+              startTimeout(
+                undefined,
+                () => {
+                  actionRunning = sendEvent(sendEventProps);
+                },
+                1000 * 60
+              );
+            } else {
+              actionRunning = sendEvent(sendEventProps);
+
+              allMonitorsSub?.unsubscribe();
+              allMonitorsObserver?.unsubscribeAll();
             }
-          );
-
-          // Ensure action is blocked until it is fully processed.
-          actionRunning = false;
-          allMonitorsSub?.unsubscribe();
-          allMonitorsObserver?.unsubscribeAll();
-        });
+          },
+          maxFollowUpActionTimeRange
+        );
       });
   }
 
   registerVisibilityChangeHandler(allMonitorsSub, allMonitorsObserver);
 
   return processUserEvent;
+}
+
+function sendEvent({
+  api,
+  userActionName,
+  startTime,
+  endTime,
+  actionId,
+  event,
+}: {
+  api: Faro['api'];
+  userActionName: string;
+  startTime: number;
+  endTime: number;
+  actionId: string;
+  event: PointerEvent | KeyboardEvent;
+}) {
+  const duration = endTime - startTime;
+  const eventType = event.type;
+
+  // order matters, first emit the user-action-end event and afterwards push the parent event
+  apiMessageBus.notify({
+    type: USER_ACTION_ENDMESSAGE_TYPE,
+    name: userActionName,
+    id: actionId,
+    startTime,
+    endTime,
+    duration,
+    eventType,
+  });
+
+  // Send the final action parent event
+  api.pushEvent(
+    userActionName,
+    {
+      userActionStartTime: startTime.toString(),
+      userActionEndTime: endTime.toString(),
+      userActionDuration: duration.toString(),
+      userActionEventType: eventType,
+    },
+    undefined,
+    {
+      timestampOverwriteMs: startTime,
+      customPayloadTransformer: (payload) => {
+        payload.action = {
+          id: actionId,
+          name: userActionName,
+        };
+
+        return payload;
+      },
+    }
+  );
+
+  return false;
 }
 
 function getUserActionName(element: HTMLElement, dataAttributeName: string): string | undefined {
@@ -140,9 +212,7 @@ function getUserActionName(element: HTMLElement, dataAttributeName: string): str
   return undefined;
 }
 
-function startTimeout(timeoutId: number | undefined, cb: () => void) {
-  const maxTimeSpanTillUserActionEnd = 100;
-
+function startTimeout(timeoutId: number | undefined, cb: () => void, delay: number) {
   if (timeoutId) {
     clearTimeout(timeoutId);
   }
@@ -150,14 +220,14 @@ function startTimeout(timeoutId: number | undefined, cb: () => void) {
   //@ts-expect-error for some reason vscode is using the node types
   timeoutId = setTimeout(() => {
     cb();
-  }, maxTimeSpanTillUserActionEnd);
+  }, delay);
 
   return timeoutId;
 }
 
 function sendUserActionCancelMessage(userActionName: string, actionId: string) {
   apiMessageBus.notify({
-    type: USER_ACTION_CANCEL_MESSAGE_TYPE,
+    type: USER_ACTION_CANCELMESSAGE_TYPE,
     name: userActionName,
     parentId: actionId,
   });
@@ -179,4 +249,12 @@ function registerVisibilityChangeHandler(
       allMonitorsObserver = undefined;
     }
   });
+}
+
+function isRequestStartMessage(msg: any): msg is HttpRequestStartMessage {
+  return msg.type === MESSAGE_TYPE_HTTP_REQUEST_START;
+}
+
+function isRequestEndMessage(msg: any): msg is HttpRequestEndMessage {
+  return msg.type === MESSAGE_TYPE_HTTP_REQUEST_END;
 }

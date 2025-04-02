@@ -1,9 +1,9 @@
 import {
   apiMessageBus,
   initializeFaro,
-  USER_ACTION_CANCEL_MESSAGE_TYPE,
-  USER_ACTION_END_MESSAGE_TYPE,
-  USER_ACTION_START_MESSAGE_TYPE,
+  USER_ACTION_CANCELMESSAGE_TYPE,
+  USER_ACTION_ENDMESSAGE_TYPE,
+  USER_ACTION_STARTMESSAGE_TYPE,
 } from '@grafana/faro-core';
 import type { Config, Faro, UserActionEndMessage } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
@@ -66,7 +66,7 @@ describe('UserActionsInstrumentation', () => {
 
     expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(2);
     expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
-      type: USER_ACTION_END_MESSAGE_TYPE,
+      type: USER_ACTION_ENDMESSAGE_TYPE,
       name: 'test-action',
       id: expect.any(String),
       startTime: expect.any(Number),
@@ -130,7 +130,7 @@ describe('UserActionsInstrumentation', () => {
 
     expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(2);
     expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
-      type: USER_ACTION_CANCEL_MESSAGE_TYPE,
+      type: USER_ACTION_CANCELMESSAGE_TYPE,
       name: 'test-action',
       parentId: expect.any(String),
     });
@@ -178,7 +178,7 @@ describe('UserActionsInstrumentation', () => {
       name: 'test-action',
       parentId: expect.any(String),
       startTime: expect.any(Number),
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_STARTMESSAGE_TYPE,
     });
   });
 });

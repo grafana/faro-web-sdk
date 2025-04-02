@@ -2,9 +2,9 @@ import { type Context, SpanKind } from '@opentelemetry/api';
 import type { ReadableSpan, Span, SpanProcessor } from '@opentelemetry/sdk-trace-web';
 
 import {
-  USER_ACTION_CANCEL_MESSAGE_TYPE,
-  USER_ACTION_END_MESSAGE_TYPE,
-  USER_ACTION_START_MESSAGE_TYPE,
+  USER_ACTION_CANCELMESSAGE_TYPE,
+  USER_ACTION_ENDMESSAGE_TYPE,
+  USER_ACTION_STARTMESSAGE_TYPE,
 } from '@grafana/faro-core';
 import { apiMessageBus, type UserActionStartMessage } from '@grafana/faro-web-sdk';
 
@@ -13,12 +13,12 @@ export class FaroUserActionSpanProcessor implements SpanProcessor {
 
   constructor(private processor: SpanProcessor) {
     apiMessageBus.subscribe((msg) => {
-      if (msg.type === USER_ACTION_START_MESSAGE_TYPE) {
+      if (msg.type === USER_ACTION_STARTMESSAGE_TYPE) {
         this.message = msg;
         return;
       }
 
-      if ([USER_ACTION_END_MESSAGE_TYPE, USER_ACTION_CANCEL_MESSAGE_TYPE].includes(msg.type)) {
+      if ([USER_ACTION_ENDMESSAGE_TYPE, USER_ACTION_CANCELMESSAGE_TYPE].includes(msg.type)) {
         this.message = undefined;
       }
     });

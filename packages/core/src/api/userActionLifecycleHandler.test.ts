@@ -12,7 +12,7 @@ import {
 import { Observable } from '../utils/reactive';
 
 import { mockTransports } from './apiTestHelpers';
-import { USER_ACTION_CANCEL_MESSAGE_TYPE, USER_ACTION_END_MESSAGE_TYPE, USER_ACTION_START_MESSAGE_TYPE } from './const';
+import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from './const';
 import { createUserActionLifecycleHandler } from './userActionLifecycleHandler';
 
 describe('userActionLifecycleHandler', () => {
@@ -26,7 +26,7 @@ describe('userActionLifecycleHandler', () => {
     });
 
     const message: UserActionStartMessage = {
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_START,
       name: '',
       startTime: 0,
       parentId: '',
@@ -51,7 +51,7 @@ describe('userActionLifecycleHandler', () => {
     });
 
     const message: UserActionStartMessage = {
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_START,
       name: '',
       startTime: 0,
       parentId: '',
@@ -63,7 +63,7 @@ describe('userActionLifecycleHandler', () => {
     actionBuffer.addItem(item);
 
     const cancelMessage: ApiMessageBusMessages = {
-      type: USER_ACTION_CANCEL_MESSAGE_TYPE,
+      type: USER_ACTION_CANCEL,
       name: 'pointerdown',
     };
 
@@ -89,7 +89,7 @@ describe('userActionLifecycleHandler', () => {
     });
 
     const message: UserActionStartMessage = {
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_START,
       name: 'pointerdown',
       startTime: 0,
       parentId: '123',
@@ -101,7 +101,7 @@ describe('userActionLifecycleHandler', () => {
     actionBuffer.addItem(item);
 
     const endMessage: ApiMessageBusMessages = {
-      type: USER_ACTION_END_MESSAGE_TYPE,
+      type: USER_ACTION_END,
       id: '123',
       name: 'pointerdown',
       startTime: 100,
@@ -143,7 +143,7 @@ describe('userActionLifecycleHandler', () => {
     });
 
     const message: UserActionStartMessage = {
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_START,
       name: 'pointerdown',
       startTime: 0,
       parentId: '123',
@@ -172,7 +172,7 @@ describe('userActionLifecycleHandler', () => {
     actionBuffer.addItem(itemEventExcluded);
 
     const endMessage: ApiMessageBusMessages = {
-      type: USER_ACTION_END_MESSAGE_TYPE,
+      type: USER_ACTION_END,
       id: '123',
       name: 'pointerdown',
       startTime: 100,

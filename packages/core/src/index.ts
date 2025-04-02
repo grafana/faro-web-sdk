@@ -3,9 +3,9 @@ export {
   defaultLogArgsSerializer,
   defaultErrorArgsSerializer,
   apiMessageBus,
-  USER_ACTION_CANCEL_MESSAGE_TYPE,
-  USER_ACTION_END_MESSAGE_TYPE,
-  USER_ACTION_START_MESSAGE_TYPE,
+  USER_ACTION_CANCELMESSAGE_TYPE,
+  USER_ACTION_ENDMESSAGE_TYPE,
+  USER_ACTION_STARTMESSAGE_TYPE,
 } from './api';
 export type {
   API,
