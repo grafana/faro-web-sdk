@@ -28,7 +28,7 @@ describe('UserActionsInstrumentation', () => {
       makeCoreConfig(
         mockConfig({
           trackUserActionsDataAttributeName: userActionDataAttribute,
-          trackUserActions: true,
+          trackUserActionsPreview: true,
         })
       )
     );

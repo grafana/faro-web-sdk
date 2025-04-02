@@ -70,8 +70,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
     webVitalsInstrumentation,
-    // TODO: enable on official preview release
-    // trackUserActions = false,
+    trackUserActionsPreview = false,
     trackUserActionsDataAttributeName = userActionDataAttribute,
     trackUserActionsExcludeItem,
   }: BrowserConfig = browserConfig;
@@ -110,8 +109,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackWebVitalsAttribution,
     consoleInstrumentation,
     webVitalsInstrumentation,
-    // TODO: enable on official preview release (remove the "false" value)
-    trackUserActions: false,
+    trackUserActionsPreview,
     trackUserActionsDataAttributeName,
     trackUserActionsExcludeItem,
   };
@@ -119,10 +117,10 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 
 function getFilteredInstrumentations(
   instrumentations: Instrumentation[],
-  { trackUserActions }: BrowserConfig
+  { trackUserActionsPreview }: BrowserConfig
 ): Instrumentation[] {
   return instrumentations.filter((instr) => {
-    if (instr.name === '@grafana/faro-web-sdk:instrumentation-user-action' && !trackUserActions) {
+    if (instr.name === '@grafana/faro-web-sdk:instrumentation-user-action' && !trackUserActionsPreview) {
       return false;
     }
     return true;

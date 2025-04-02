@@ -238,7 +238,8 @@ export interface Config<P = APIEvent> {
    * This is a preview feature.
    * We have tested it thoroughly, but it is possible that it might not work as expected in all cases.
    */
-  trackUserActions?: boolean;
+  // TODO: remove preview postfix when feature is ga
+  trackUserActionsPreview?: boolean;
 
   /**
    * Configure your own attribute name for tracking user actions. Default is 'data-faro-user-action-name'

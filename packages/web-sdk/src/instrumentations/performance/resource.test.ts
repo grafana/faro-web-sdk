@@ -168,7 +168,7 @@ describe('Resource observer', () => {
     const mockPushEvent = jest.fn();
     jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
-    const trackUserActionsConfig = mockConfig({ trackUserActions: true });
+    const trackUserActionsConfig = mockConfig({ trackUserActionsPreview: true });
     initializeFaro(trackUserActionsConfig);
 
     observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
@@ -181,7 +181,7 @@ describe('Resource observer', () => {
     const mockPushEvent = jest.fn();
     jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
-    const trackUserActionsConfig = mockConfig({ trackUserActions: false });
+    const trackUserActionsConfig = mockConfig({ trackUserActionsPreview: false });
     initializeFaro(trackUserActionsConfig);
 
     observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
