@@ -89,7 +89,6 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
     requestStart,
     responseEnd,
     responseStart,
-    // @ts-expect-error the renderBlockingStatus property is not available in all browsers
     responseStatus,
     secureConnectionStart,
     transferSize,

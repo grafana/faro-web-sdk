@@ -1,5 +1,5 @@
-import { dateNow, deepEqual, EVENT_OVERRIDES_SERVICE_NAME, faro, genShortID, isEmpty, Meta } from '@grafana/faro-core';
-import type { MetaOverrides } from '@grafana/faro-core';
+import { dateNow, deepEqual, EVENT_OVERRIDES_SERVICE_NAME, faro, genShortID, isEmpty } from '@grafana/faro-core';
+import type { Meta, MetaOverrides } from '@grafana/faro-core';
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
 

@@ -89,6 +89,10 @@ exports.getRollupConfigBase = (moduleName) => {
         outputToFilesystem: true,
         sourceMap: false,
         tsconfig: './tsconfig.bundle.json',
+        compilerOptions: {
+          // This is needed for the JS bundle
+          preserveValueImports: false,
+        },
       }),
       terser(),
     ],

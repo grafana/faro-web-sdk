@@ -1,7 +1,8 @@
 import { context, trace } from '@opentelemetry/api';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { Resource, ResourceAttributes } from '@opentelemetry/resources';
+import { Resource } from '@opentelemetry/resources';
+import type { ResourceAttributes } from '@opentelemetry/resources';
 import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import {
   ATTR_SERVICE_NAME,

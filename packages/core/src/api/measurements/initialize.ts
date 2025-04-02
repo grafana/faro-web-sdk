@@ -1,8 +1,8 @@
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
-import { TransportItem, TransportItemType } from '../../transports';
-import type { Transports } from '../../transports';
+import { TransportItemType } from '../../transports';
+import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
