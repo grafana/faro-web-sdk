@@ -7,12 +7,14 @@ import {
   type Meta,
   TransportItem,
   TransportItemType,
+  USER_ACTION_HALT,
   UserActionStartMessage,
 } from '..';
 import { Observable } from '../utils/reactive';
 
 import { mockTransports } from './apiTestHelpers';
-import { USER_ACTION_CANCEL_MESSAGE_TYPE, USER_ACTION_END_MESSAGE_TYPE, USER_ACTION_START_MESSAGE_TYPE } from './const';
+import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from './const';
+import type { UserActionHaltMessage } from './types';
 import { createUserActionLifecycleHandler } from './userActionLifecycleHandler';
 
 describe('userActionLifecycleHandler', () => {
@@ -26,10 +28,32 @@ describe('userActionLifecycleHandler', () => {
     });
 
     const message: UserActionStartMessage = {
-      type: USER_ACTION_START_MESSAGE_TYPE,
-      name: '',
+      type: USER_ACTION_START,
+      name: 'start-test',
       startTime: 0,
-      parentId: '',
+      parentId: '123',
+    };
+
+    apiMessageBus.notify(message);
+
+    expect(getMessage()).toEqual(message);
+  });
+
+  it('assigns the user-action-halt message to the message variable when it receives it', () => {
+    const apiMessageBus = new Observable<ApiMessageBusMessages>();
+
+    const { getMessage } = createUserActionLifecycleHandler({
+      apiMessageBus,
+      transports: mockTransports,
+      config: {} as Config,
+    });
+
+    const message: UserActionHaltMessage = {
+      type: USER_ACTION_HALT,
+      name: 'halt-test',
+      haltTime: 0,
+      reason: 'pending-requests',
+      parentId: '123',
     };
 
     apiMessageBus.notify(message);
@@ -51,7 +75,7 @@ describe('userActionLifecycleHandler', () => {
     });
 
     const message: UserActionStartMessage = {
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_START,
       name: '',
       startTime: 0,
       parentId: '',
@@ -63,7 +87,7 @@ describe('userActionLifecycleHandler', () => {
     actionBuffer.addItem(item);
 
     const cancelMessage: ApiMessageBusMessages = {
-      type: USER_ACTION_CANCEL_MESSAGE_TYPE,
+      type: USER_ACTION_CANCEL,
       name: 'pointerdown',
     };
 
@@ -89,7 +113,7 @@ describe('userActionLifecycleHandler', () => {
     });
 
     const message: UserActionStartMessage = {
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_START,
       name: 'pointerdown',
       startTime: 0,
       parentId: '123',
@@ -101,7 +125,7 @@ describe('userActionLifecycleHandler', () => {
     actionBuffer.addItem(item);
 
     const endMessage: ApiMessageBusMessages = {
-      type: USER_ACTION_END_MESSAGE_TYPE,
+      type: USER_ACTION_END,
       id: '123',
       name: 'pointerdown',
       startTime: 100,
@@ -143,7 +167,7 @@ describe('userActionLifecycleHandler', () => {
     });
 
     const message: UserActionStartMessage = {
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_START,
       name: 'pointerdown',
       startTime: 0,
       parentId: '123',
@@ -172,7 +196,7 @@ describe('userActionLifecycleHandler', () => {
     actionBuffer.addItem(itemEventExcluded);
 
     const endMessage: ApiMessageBusMessages = {
-      type: USER_ACTION_END_MESSAGE_TYPE,
+      type: USER_ACTION_END,
       id: '123',
       name: 'pointerdown',
       startTime: 100,

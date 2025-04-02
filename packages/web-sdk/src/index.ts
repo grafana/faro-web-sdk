@@ -96,10 +96,9 @@ export {
   EVENT_VIEW_CHANGED,
   apiMessageBus,
   Observable,
-  merge,
-  USER_ACTION_CANCEL_MESSAGE_TYPE,
-  USER_ACTION_END_MESSAGE_TYPE,
-  USER_ACTION_START_MESSAGE_TYPE,
+  USER_ACTION_CANCEL,
+  USER_ACTION_END,
+  USER_ACTION_START,
 } from '@grafana/faro-core';
 
 export type {

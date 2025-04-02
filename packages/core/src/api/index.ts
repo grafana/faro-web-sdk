@@ -6,6 +6,7 @@ export type {
   UserActionCancelMessage,
   UserActionEndMessage,
   UserActionStartMessage,
+  UserActionHaltMessage,
   UserAction,
 } from './types';
 
@@ -33,4 +34,4 @@ export type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './traces';
 
 export { apiMessageBus } from './initialize';
 
-export { USER_ACTION_CANCEL_MESSAGE_TYPE, USER_ACTION_END_MESSAGE_TYPE, USER_ACTION_START_MESSAGE_TYPE } from './const';
+export { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START, USER_ACTION_HALT } from './const';

@@ -8,12 +8,21 @@ export type DomMutationMessage = {
   type: typeof MESSAGE_TYPE_DOM_MUTATION;
 };
 
+type RequestApiType = 'xhr' | 'fetch';
+
+export type HttpRequestMessagePayload = {
+  requestId: string;
+  url: string;
+  method: string;
+  apiType: RequestApiType;
+};
+
 export type HttpRequestStartMessage = {
   type: typeof MESSAGE_TYPE_HTTP_REQUEST_START;
-  pending: number;
+  request: HttpRequestMessagePayload;
 };
 
 export type HttpRequestEndMessage = {
   type: typeof MESSAGE_TYPE_HTTP_REQUEST_END;
-  pending: number;
+  request: HttpRequestMessagePayload;
 };

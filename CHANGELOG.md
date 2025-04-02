@@ -2,6 +2,10 @@
 
 ## Next
 
+- Improvement (`@grafana/faro-web-sdk`): User actions improvements (#1101)
+
+- Improvement (`@grafana/faro-web-sdk`): User actions improvements (#1101)
+
 - Fix (`@grafana/faro-web-tracing`): Fixed unexpected behavior in xhr instrumentation when custom
   objects with a `toString` method were used as URLs (#1100).
 

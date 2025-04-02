@@ -52,5 +52,5 @@ export { dateNow } from './date';
 
 export { getCircularDependencyReplacer, stringifyExternalJson, stringifyObjectValues } from './json';
 
-export { Observable, merge } from './reactive';
+export { Observable } from './reactive';
 export type { Subscription } from './reactive';

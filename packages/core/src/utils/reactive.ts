@@ -1,109 +1,103 @@
-export interface Subscription {
+export type Subscription = {
   unsubscribe: () => void;
-}
+};
+
+type Subscriber<T> = (value: T) => void;
 
 export class Observable<T = any> {
-  private subscribers: Array<(data: T) => void>;
+  private subscribers: Array<Subscriber<T>> = [];
 
-  constructor() {
-    this.subscribers = [];
-  }
-
-  /**
-   * Subscribes a callback function to the observable.
-   * @param callback - The function to call when the observable emits a value.
-   * @returns A subscription object with an unsubscribe method to cancel the subscription.
-   */
-  subscribe(callback: (data: T) => void): Subscription {
-    this.subscribers.push(callback);
-
+  subscribe(subscriber: Subscriber<T>): Subscription {
+    this.subscribers.push(subscriber);
     return {
-      unsubscribe: () => this.unsubscribe(callback),
+      unsubscribe: () => this.unsubscribe(subscriber),
     };
   }
 
-  /**
-   * Notifies all subscribers with the given data.
-   * @param data - The data to emit to all subscribers.
-   */
-  notify(data: T): void {
-    this.subscribers.forEach((callback) => callback(data));
+  unsubscribe(subscriber: Subscriber<T>): void {
+    this.subscribers = this.subscribers.filter((sub) => sub !== subscriber);
   }
 
-  /**
-   * Subscribes a callback function to the observable and automatically unsubscribes after the first emission.
-   * @param callback - The function to call when the observable emits a value.
-   * @returns A subscription object with an unsubscribe method to cancel the subscription.
-   */
-  first(callback: (data: T) => void): Subscription {
-    const subscription = this.subscribe((data) => {
-      callback(data);
+  notify(value: T): void {
+    this.subscribers.forEach((subscriber) => subscriber(value));
+  }
+
+  first(): Observable<T> {
+    const result = new Observable<T>();
+
+    const internalSubscriber = (data: T): void => {
+      result.notify(data);
       subscription.unsubscribe();
-    });
-
-    return subscription;
+    };
+    const subscription = this.subscribe(internalSubscriber);
+    const resultUnsubscribeFn = result.unsubscribe.bind(result);
+    return this.withUnsubscribeOverride(result, resultUnsubscribeFn, internalSubscriber);
   }
 
-  /**
-   * Emits values from the source observable until the provided predicate function returns false.
-   * @param predicate - A function that evaluates each value emitted by the source observable.
-   * @returns A new observable that emits values from the source observable while the predicate returns true.
-   */
   takeWhile(predicate: (value: T) => boolean): Observable<T> {
     const result = new Observable<T>();
-    const subscription = this.subscribe((value: T) => {
+    const internalSubscriber = (value: T): void => {
       if (predicate(value)) {
         result.notify(value);
       } else {
-        subscription.unsubscribe();
+        result.unsubscribe(internalSubscriber);
       }
-    });
-
-    return result;
+    };
+    this.subscribe(internalSubscriber);
+    const resultUnsubscribeFn = result.unsubscribe.bind(result);
+    return this.withUnsubscribeOverride(result, resultUnsubscribeFn, internalSubscriber);
   }
 
-  /**
-   * Unsubscribes all subscribers by clearing the subscribers array.
-   *
-   * @remarks
-   * This method sets the `subscribers` array to an empty array, effectively removing all current subscribers.
-   */
-  unsubscribeAll(): void {
+  filter(predicate: (value: T) => boolean): Observable<T> {
+    const result = new Observable<T>();
+
+    const internalSubscriber = (value: T): void => {
+      if (predicate(value)) {
+        result.notify(value);
+      }
+    };
+    this.subscribe(internalSubscriber);
+
+    const resultUnsubscribeFn = result.unsubscribe.bind(result);
+    return this.withUnsubscribeOverride(result, resultUnsubscribeFn, internalSubscriber);
+  }
+
+  merge(...observables: Array<Observable<T>>): Observable<T> {
+    const mergerObservable = new Observable<T>();
+    const subscriptions: Subscription[] = [];
+
+    observables.forEach((observable) => {
+      const subscription = observable.subscribe((value: T) => {
+        mergerObservable.notify(value);
+      });
+
+      subscriptions.push(subscription);
+    });
+
+    const originalUnsubscribeAll = mergerObservable.unsubscribeAll.bind(mergerObservable);
+
+    mergerObservable.unsubscribe = () => {
+      subscriptions.forEach((subscription) => subscription.unsubscribe());
+      originalUnsubscribeAll();
+    };
+
+    return mergerObservable;
+  }
+
+  private withUnsubscribeOverride(
+    observable: Observable<T>,
+    resultUnsubscribeFn: (subscriber: Subscriber<T>) => void,
+    internalSubscriber: Subscriber<T>
+  ) {
+    observable.unsubscribe = (subscriber: Subscriber<T>) => {
+      resultUnsubscribeFn(subscriber);
+      this.unsubscribe(internalSubscriber);
+    };
+
+    return observable;
+  }
+
+  private unsubscribeAll(): void {
     this.subscribers = [];
   }
-
-  private unsubscribe(callback: (data: any) => void): void {
-    this.subscribers = this.subscribers.filter((sub) => sub !== callback);
-  }
-}
-
-/**
- * Merges multiple observables into a single observable.
- *
- * @template T - The type of the values emitted by the observables.
- * @param {...Observable[]} observables - The observables to merge.
- * @returns {Observable} A new observable that emits values from all input observables.
- */
-export function merge<T>(...observables: Array<Observable<T>>): Observable<T> {
-  const mainObservable = new Observable<T>();
-  const subscriptions: Subscription[] = [];
-
-  observables.forEach((observable) => {
-    const subscription = observable.subscribe((value: T) => {
-      mainObservable.notify(value);
-    });
-    subscriptions.push(subscription);
-  });
-
-  return {
-    subscribe: mainObservable.subscribe.bind(mainObservable),
-    takeWhile: mainObservable.takeWhile.bind(mainObservable),
-    first: mainObservable.first.bind(mainObservable),
-    notify: mainObservable.notify.bind(mainObservable),
-    unsubscribeAll: () => {
-      observables.forEach((observable) => {
-        observable.unsubscribeAll();
-      });
-    },
-  } as Observable<T>;
 }

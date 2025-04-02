@@ -3,11 +3,7 @@ import { initializeFaro } from '../../initialize';
 import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
 import { dateNow } from '../../utils';
 import { mockMetas, mockTracesApi, mockTransports } from '../apiTestHelpers';
-import {
-  USER_ACTION_CANCEL_MESSAGE_TYPE,
-  USER_ACTION_END_MESSAGE_TYPE,
-  USER_ACTION_START_MESSAGE_TYPE,
-} from '../const';
+import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from '../const';
 import { ItemBuffer } from '../ItemBuffer';
 import type { API, APIEvent, ApiMessageBusMessages } from '../types';
 
@@ -183,7 +179,7 @@ describe('api.events', () => {
       const getMessage = () => message;
 
       message = {
-        type: USER_ACTION_START_MESSAGE_TYPE,
+        type: USER_ACTION_START,
         name: 'testAction',
         startTime: Date.now(),
         parentId: 'parent-id',
@@ -203,7 +199,7 @@ describe('api.events', () => {
       expect(actionBuffer.size()).toBe(1);
 
       message = {
-        type: USER_ACTION_END_MESSAGE_TYPE,
+        type: USER_ACTION_END,
         name: 'testAction',
         id: 'parent-id',
         startTime: dateNow(),
@@ -216,7 +212,7 @@ describe('api.events', () => {
       expect(actionBuffer.size()).toBe(1);
 
       message = {
-        type: USER_ACTION_CANCEL_MESSAGE_TYPE,
+        type: USER_ACTION_CANCEL,
         name: 'testAction',
         parentId: 'parent-id',
       };
