@@ -1,3 +1,4 @@
+import type { TransportItem } from '../..';
 import { initializeFaro } from '../../initialize';
 import { mockConfig, MockTransport } from '../../testUtils';
 import type { API } from '../types';
@@ -149,6 +150,14 @@ describe('api.events', () => {
           h: 'undefined',
           i: '[1,2,3]',
         });
+      });
+
+      it('does not stringify empty attributes', () => {
+        api.pushEvent('test');
+        api.pushEvent('test2', {});
+        expect(transport.items).toHaveLength(2);
+        expect((transport.items[0] as TransportItem<EventEvent>).payload.attributes).toBeUndefined();
+        expect((transport.items[0] as TransportItem<EventEvent>).payload.attributes).toBeUndefined();
       });
     });
   });

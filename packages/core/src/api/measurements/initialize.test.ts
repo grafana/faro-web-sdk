@@ -1,4 +1,4 @@
-import type { MeasurementEvent, PushMeasurementOptions } from '../..';
+import type { MeasurementEvent, PushMeasurementOptions, TransportItem } from '../..';
 import { initializeFaro } from '../../initialize';
 import { mockConfig, MockTransport } from '../../testUtils';
 import type { API } from '../types';
@@ -234,6 +234,25 @@ describe('api.measurements', () => {
         h: 'undefined',
         i: '[1,2,3]',
       });
+    });
+
+    it('does not stringify empty context', () => {
+      api.pushMeasurement(
+        {
+          type: 'custom',
+          values: {},
+        },
+        {
+          context: {},
+        }
+      );
+      api.pushMeasurement({
+        type: 'custom2',
+        values: {},
+      });
+      expect(transport.items).toHaveLength(2);
+      expect((transport.items[0] as TransportItem<MeasurementEvent>).payload.context).toBeUndefined();
+      expect((transport.items[0] as TransportItem<MeasurementEvent>).payload.context).toBeUndefined();
     });
   });
 });

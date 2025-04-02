@@ -4,7 +4,7 @@ import type { Metas } from '../../metas';
 import { TransportItem, TransportItemType } from '../../transports';
 import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, getCurrentTimestamp, isNull, stringifyObjectValues } from '../../utils';
+import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 
@@ -27,6 +27,8 @@ export function initializeMeasurementsAPI(
     { skipDedupe, context, spanContext, timestampOverwriteMs } = {}
   ) => {
     try {
+      const ctx = stringifyObjectValues(context);
+
       const item: TransportItem<MeasurementEvent> = {
         type: TransportItemType.MEASUREMENT,
         payload: {
@@ -38,7 +40,7 @@ export function initializeMeasurementsAPI(
               }
             : tracesApi.getTraceContext(),
           timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
-          context: stringifyObjectValues(context),
+          context: isEmpty(ctx) ? undefined : ctx,
         },
         meta: metas.value,
       };

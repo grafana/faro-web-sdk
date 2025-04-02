@@ -123,7 +123,7 @@ describe('errors', () => {
     expect((transport.items[0] as TransportItem<LogEvent>).payload.message).toBe(
       'console.error: boo ' + stringifyExternalJson(details)
     );
-    expect((transport.items[0] as TransportItem<LogEvent>).payload.context['value']).toBe(
+    expect((transport.items[0] as TransportItem<LogEvent>).payload?.context?.['value']).toBe(
       'boo ' + stringifyExternalJson(details)
     );
   });

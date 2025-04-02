@@ -1,6 +1,6 @@
 import { initializeFaro } from '../../initialize';
 import { mockConfig, MockTransport } from '../../testUtils';
-import { TransportItemType } from '../../transports';
+import { TransportItem, TransportItemType } from '../../transports';
 import type { API } from '../types';
 
 import type { ExceptionEvent, ExceptionStackFrame, PushErrorOptions } from './types';
@@ -230,9 +230,9 @@ describe('api.exceptions', () => {
         expect((transport.items[1]?.payload as ExceptionEvent)?.context).toEqual({ cause: '[1,3]' });
         expect((transport.items[2]?.payload as ExceptionEvent)?.context).toEqual({ cause: '{"a":"b"}' });
         expect((transport.items[3]?.payload as ExceptionEvent)?.context).toEqual({ cause: 'Error: original error' });
-        expect((transport.items[4]?.payload as ExceptionEvent)?.context).toEqual({});
-        expect((transport.items[5]?.payload as ExceptionEvent)?.context).toEqual({});
-        expect((transport.items[5]?.payload as ExceptionEvent)?.context).toEqual({});
+        expect((transport.items[4]?.payload as ExceptionEvent)?.context).toBeUndefined();
+        expect((transport.items[5]?.payload as ExceptionEvent)?.context).toBeUndefined();
+        expect((transport.items[6]?.payload as ExceptionEvent)?.context).toBeUndefined();
       });
 
       it('stringifies all values added to the context', () => {
@@ -300,6 +300,16 @@ describe('api.exceptions', () => {
         expect(transport.items).toHaveLength(1);
         expect((transport.items[0]?.payload as ExceptionEvent).value).toEqual(typeErrorMsg);
       });
+    });
+
+    it('does not stringify empty context', () => {
+      api.pushError(new Error('test'));
+      api.pushError(new Error('test2'), {
+        context: {},
+      });
+      expect(transport.items).toHaveLength(2);
+      expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.context).toBeUndefined();
+      expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.context).toBeUndefined();
     });
   });
 });
