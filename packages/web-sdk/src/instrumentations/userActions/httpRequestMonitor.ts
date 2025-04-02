@@ -8,7 +8,10 @@ import type { HttpRequestEndMessage, HttpRequestStartMessage } from './types';
 /**
  * Monitors if any http requests are in progress.
  */
-export function monitorHttpRequests(): Observable {
+export function monitorHttpRequests(): {
+  observable: Observable<HttpRequestStartMessage | HttpRequestEndMessage>;
+  resetCounters: () => void;
+} {
   const observable = new Observable<HttpRequestStartMessage | HttpRequestEndMessage>();
 
   let pendingXhrRequests = 0;
@@ -22,32 +25,37 @@ export function monitorHttpRequests(): Observable {
     observable.notify({ type: MESSAGE_TYPE_HTTP_REQUEST_END, pending: pendingXhrRequests + pendingFetchRequests });
   }
 
-  monitorFetch(
-    () => {
+  monitorFetch({
+    onRequestStart: () => {
       pendingFetchRequests++;
       emitStartMessage();
     },
-    () => {
+    onRequestEnd: () => {
       pendingFetchRequests--;
       emitEndMessage();
-    }
-  );
+    },
+  });
 
-  monitorXhr(
-    () => {
+  monitorXhr({
+    onRequestStart: () => {
       pendingXhrRequests++;
       emitStartMessage();
     },
-    () => {
+    onRequestEnd: () => {
       pendingXhrRequests--;
       emitEndMessage();
-    }
-  );
+    },
+  });
 
-  return observable;
+  function resetCounters() {
+    pendingXhrRequests = 0;
+    pendingFetchRequests = 0;
+  }
+
+  return { observable, resetCounters };
 }
 
-function monitorXhr(onRequestStart: () => void, onRequestEnd: () => void) {
+function monitorXhr({ onRequestStart, onRequestEnd }: { onRequestStart: () => void; onRequestEnd: () => void }) {
   const originalOpen = XMLHttpRequest.prototype.open;
   const originalSend = XMLHttpRequest.prototype.send;
 
@@ -55,13 +63,19 @@ function monitorXhr(onRequestStart: () => void, onRequestEnd: () => void) {
     const url = arguments[1];
     const isIgnoredUrl = isUrlIgnored(url);
 
-    this.addEventListener('loadstart', () => {
+    this.addEventListener('load', function () {
       if (!isIgnoredUrl) {
-        onRequestStart();
+        onRequestEnd();
       }
     });
 
-    this.addEventListener('loadend', () => {
+    this.addEventListener('error', function () {
+      if (!isIgnoredUrl) {
+        onRequestEnd();
+      }
+    });
+
+    this.addEventListener('abort', function () {
       if (!isIgnoredUrl) {
         onRequestEnd();
       }
@@ -71,27 +85,44 @@ function monitorXhr(onRequestStart: () => void, onRequestEnd: () => void) {
   };
 
   XMLHttpRequest.prototype.send = function () {
+    const url = getUrlFromResource(arguments[0]);
+
+    console.log('url', url);
+
+    const isIgnoredUrl = isUrlIgnored(url);
+
+    if (!isIgnoredUrl) {
+      onRequestStart();
+    }
+
     originalSend.apply(this, arguments as any);
   };
 }
 
-function monitorFetch(onRequestsStart: () => void, onRequestEnd: () => void) {
+function monitorFetch({ onRequestEnd, onRequestStart }: { onRequestStart: () => void; onRequestEnd: () => void }) {
   const originalFetch = window.fetch;
 
   window.fetch = function () {
     const url = getUrlFromResource(arguments[0]);
     const isIgnoredUrl = isUrlIgnored(url);
 
-    // fetch started
     if (!isIgnoredUrl) {
-      onRequestsStart();
+      onRequestStart();
     }
 
-    return originalFetch.apply(this, arguments as any).finally(() => {
-      // fetch ended
-      if (!isIgnoredUrl) {
-        onRequestEnd();
-      }
-    });
+    return originalFetch
+      .apply(this, arguments as any)
+      .then((response) => {
+        if (!isIgnoredUrl) {
+          onRequestEnd();
+        }
+        return response;
+      })
+      .catch((error) => {
+        if (!isIgnoredUrl) {
+          onRequestEnd();
+        }
+        throw error;
+      });
   };
 }
