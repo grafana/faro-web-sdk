@@ -14,7 +14,7 @@ export async function registerRenderProdRoutes(globalRouter: Router, _app: Expre
     })
   );
 
-  globalRouter.use('*', async (req: Request, res: Response) => {
+  globalRouter.use('*splat', async (req: Request, res: Response) => {
     try {
       const template = readFileSync(toAbsolutePath('dist/client/index.html'), 'utf-8');
 
