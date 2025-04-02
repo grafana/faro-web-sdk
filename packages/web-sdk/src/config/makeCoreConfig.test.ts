@@ -1,8 +1,6 @@
 import { defaultLogArgsSerializer, isFunction } from '@grafana/faro-core';
 import type { LogArgsSerializer } from '@grafana/faro-core';
 
-import { userActionDataAttribute } from '../instrumentations/userActions';
-
 import { makeCoreConfig } from './makeCoreConfig';
 
 describe('defaultMetas', () => {
