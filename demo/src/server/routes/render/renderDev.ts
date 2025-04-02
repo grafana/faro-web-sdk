@@ -24,7 +24,7 @@ export async function registerRenderDevRoutes(globalRouter: Router, _app: Expres
 
   globalRouter.use(vite.middlewares);
 
-  globalRouter.use('*', async (req: Request, res: Response) => {
+  globalRouter.use('*splat', async (req: Request, res: Response) => {
     try {
       const indexHtml = readFileSync(toAbsolutePath('index.html'), 'utf-8');
       const template = await vite.transformIndexHtml(req.originalUrl, indexHtml);
