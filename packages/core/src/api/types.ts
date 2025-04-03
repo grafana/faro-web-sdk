@@ -61,6 +61,7 @@ export type UserActionHaltMessage = {
   type: typeof USER_ACTION_HALT;
   name: string;
   reason: 'pending-requests';
+  haltTime: number;
 
   /**
    * Unique identifier of the parent user action to which this action belongs.

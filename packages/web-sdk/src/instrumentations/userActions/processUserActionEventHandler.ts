@@ -87,8 +87,6 @@ export function getUserEventHandler(faro: Faro) {
         return true;
       })
       .subscribe((msg) => {
-        console.log('msg in subscriber :>> ', msg);
-
         if (isRequestStartMessage(msg)) {
           // console.log('request start msg :>> ', msg);
 
@@ -127,6 +125,7 @@ export function getUserEventHandler(faro: Faro) {
                 name: userActionName,
                 parentId: actionId,
                 reason: 'pending-requests',
+                haltTime: dateNow(),
               });
 
               pendingActionTimeoutId = startTimeout(

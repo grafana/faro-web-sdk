@@ -7,12 +7,14 @@ import {
   type Meta,
   TransportItem,
   TransportItemType,
+  USER_ACTION_HALT,
   UserActionStartMessage,
 } from '..';
 import { Observable } from '../utils/reactive';
 
 import { mockTransports } from './apiTestHelpers';
 import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from './const';
+import { UserActionHaltMessage } from './types';
 import { createUserActionLifecycleHandler } from './userActionLifecycleHandler';
 
 describe('userActionLifecycleHandler', () => {
@@ -27,9 +29,31 @@ describe('userActionLifecycleHandler', () => {
 
     const message: UserActionStartMessage = {
       type: USER_ACTION_START,
-      name: '',
+      name: 'start-test',
       startTime: 0,
-      parentId: '',
+      parentId: '123',
+    };
+
+    apiMessageBus.notify(message);
+
+    expect(getMessage()).toEqual(message);
+  });
+
+  it('assigns the user-action-halt message to the message variable when it receives it', () => {
+    const apiMessageBus = new Observable<ApiMessageBusMessages>();
+
+    const { getMessage } = createUserActionLifecycleHandler({
+      apiMessageBus,
+      transports: mockTransports,
+      config: {} as Config,
+    });
+
+    const message: UserActionHaltMessage = {
+      type: USER_ACTION_HALT,
+      name: 'halt-test',
+      haltTime: 0,
+      reason: 'pending-requests',
+      parentId: '123',
     };
 
     apiMessageBus.notify(message);
