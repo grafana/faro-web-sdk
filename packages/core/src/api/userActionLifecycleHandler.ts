@@ -2,7 +2,7 @@ import type { Config } from '../config';
 import { type TransportItem, TransportItemType, type Transports } from '../transports';
 import type { Observable } from '../utils';
 
-import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from './const';
+import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_HALT, USER_ACTION_START } from './const';
 import { ItemBuffer } from './ItemBuffer';
 import type { MeasurementEvent } from './measurements';
 import type { APIEvent, ApiMessageBusMessages } from './types';
@@ -21,7 +21,7 @@ export function createUserActionLifecycleHandler({
   let message: ApiMessageBusMessages | undefined;
 
   apiMessageBus.subscribe((msg) => {
-    if (msg.type === USER_ACTION_START) {
+    if (USER_ACTION_START === msg.type || USER_ACTION_HALT === msg.type) {
       message = msg;
       return;
     }

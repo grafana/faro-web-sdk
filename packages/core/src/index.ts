@@ -144,7 +144,6 @@ export {
   stringifyExternalJson,
   stringifyObjectValues,
   Observable,
-  merge,
 } from './utils';
 export type {
   BaseObject,

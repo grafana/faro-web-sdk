@@ -3,7 +3,6 @@ import {
   dateNow,
   Faro,
   genShortID,
-  merge,
   Observable,
   Subscription,
   USER_ACTION_CANCEL,
@@ -31,9 +30,6 @@ export function getUserEventHandler(faro: Faro) {
   const httpMonitor = monitorHttpRequests();
   const domMutationsMonitor = monitorDomMutations();
   const performanceEntriesMonitor = monitorPerformanceEntries();
-
-  let allMonitorsSub: Subscription | undefined;
-  let allMonitorsObserver: Observable | undefined;
 
   let timeoutId: number | undefined;
   let actionRunning = false;
@@ -75,23 +71,36 @@ export function getUserEventHandler(faro: Faro) {
       maxFollowUpActionTimeRange
     );
 
-    allMonitorsObserver = merge(httpMonitor, domMutationsMonitor, performanceEntriesMonitor);
-
     const runningRequests = new Map<string, HttpRequestMessagePayload>();
     let isHalted = false;
     let pendingActionTimeoutId: number | undefined;
 
-    allMonitorsSub = allMonitorsObserver
+    const allMonitorsSub = new Observable()
+      .merge(httpMonitor, domMutationsMonitor, performanceEntriesMonitor)
       .takeWhile(() => actionRunning)
+      .filter((msg) => {
+        console.log('msg before filter :>> ', msg);
+        // If the user action is in halt state, we only keep listening to ended http requests
+        if (isHalted && !(isRequestEndMessage(msg) && runningRequests.has(msg.request.requestId))) {
+          return false;
+        }
+
+        return true;
+      })
       .subscribe((msg) => {
+        console.log('msg in subscriber :>> ', msg);
+
         if (isRequestStartMessage(msg)) {
-          console.log('request start msg :>> ', msg);
-          if (!isHalted) {
-            runningRequests.set(msg.request.requestId, msg.request);
-          }
+          // console.log('request start msg :>> ', msg);
+
+          // An action is on halt if it has pending items, like pending HTTP requests.
+          // In this case we start a separate timeout to wait for the requests to finish
+          // If in the halt state, we stop adding Faro signals to the action's buffer (see userActionLifecycleHandler.ts)
+          // But we are still subscribed to
+          runningRequests.set(msg.request.requestId, msg.request);
         }
         if (isRequestEndMessage(msg)) {
-          console.log('request end msg :>> ', msg);
+          // console.log('request end msg :>> ', msg);
           runningRequests.delete(msg.request.requestId);
         }
 
@@ -102,14 +111,7 @@ export function getUserEventHandler(faro: Faro) {
           () => {
             endTime = dateNow();
 
-            const sendEventProps = {
-              api,
-              userActionName,
-              startTime,
-              endTime: endTime!,
-              actionId,
-              event,
-            };
+            const userActionParentEventProps = { api, userActionName, startTime, endTime: endTime!, actionId, event };
 
             const hasPendingRequests = runningRequests.size > 0;
             const isAllPendingRequestsResolved = isHalted && !hasPendingRequests;
@@ -131,17 +133,16 @@ export function getUserEventHandler(faro: Faro) {
               pendingActionTimeoutId = startTimeout(
                 undefined,
                 () => {
-                  allMonitorsSub?.unsubscribe();
-                  allMonitorsObserver?.unsubscribeAll();
-                  sendEvent(sendEventProps);
+                  unsubscribeAllMonitors(allMonitorsSub);
+                  endUserAction(userActionParentEventProps);
                   actionRunning = false;
                 },
-                1000 * 60
+                1000 * 10
               );
             } else {
-              allMonitorsSub?.unsubscribe();
-              allMonitorsObserver?.unsubscribeAll();
-              sendEvent(sendEventProps);
+              console.log('no pending requests, unsubscribing from all monitors');
+              unsubscribeAllMonitors(allMonitorsSub);
+              endUserAction(userActionParentEventProps);
               actionRunning = false;
             }
           },
@@ -150,19 +151,13 @@ export function getUserEventHandler(faro: Faro) {
       });
   }
 
-  registerVisibilityChangeHandler(allMonitorsSub, allMonitorsObserver);
-
   return processUserEvent;
 }
 
-function sendEvent({
-  api,
-  userActionName,
-  startTime,
-  endTime,
-  actionId,
-  event,
-}: {
+/**
+ * User action was successfully completed and we send the final event(s)
+ */
+function endUserAction(props: {
   api: Faro['api'];
   userActionName: string;
   startTime: number;
@@ -170,6 +165,7 @@ function sendEvent({
   actionId: string;
   event: PointerEvent | KeyboardEvent;
 }) {
+  const { api, userActionName, startTime, endTime, actionId, event } = props;
   const duration = endTime - startTime;
   const eventType = event.type;
 
@@ -242,22 +238,9 @@ function sendUserActionCancelMessage(userActionName: string, actionId: string) {
   });
 }
 
-function registerVisibilityChangeHandler(
-  allMonitorsSub: Subscription | undefined,
-  allMonitorsObserver: Observable | undefined
-) {
-  // stop monitoring in background tabs
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-      // Unsubscribe from all monitors when the tab goes into the background to free up resources (merge.unsubscribe() also unsubscribes from all inner observables)
-      // Monitors will be re-subscribed in the processEvent function when the first user action is detected
-      allMonitorsSub?.unsubscribe();
-      allMonitorsSub = undefined;
-
-      allMonitorsObserver?.unsubscribeAll();
-      allMonitorsObserver = undefined;
-    }
-  });
+function unsubscribeAllMonitors(allMonitorsSub: Subscription | undefined) {
+  allMonitorsSub?.unsubscribe();
+  allMonitorsSub = undefined;
 }
 
 function isRequestStartMessage(msg: any): msg is HttpRequestStartMessage {
