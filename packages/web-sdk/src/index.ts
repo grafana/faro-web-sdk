@@ -180,6 +180,6 @@ export {
   STORAGE_KEY,
 } from './instrumentations/session';
 
-export { getIgnoreUrls } from './utils/url';
+export { getIgnoreUrls, getUrlFromResource } from './utils/url';
 
 export { userActionDataAttribute } from './instrumentations/userActions/const';

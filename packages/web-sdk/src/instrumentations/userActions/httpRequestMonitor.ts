@@ -1,6 +1,6 @@
-import { isFunction, isString, Observable } from '@grafana/faro-core';
+import { Observable } from '@grafana/faro-core';
 
-import { isUrlIgnored } from '../../utils/url';
+import { getUrlFromResource, isUrlIgnored } from '../../utils/url';
 
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
 import type { HttpRequestEndMessage, HttpRequestStartMessage } from './types';
@@ -94,15 +94,4 @@ function monitorFetch(onRequestsStart: () => void, onRequestEnd: () => void) {
       }
     });
   };
-}
-
-function getUrlFromResource(resource: any): string | undefined {
-  if (isString(resource)) {
-    return resource;
-  } else if (resource instanceof URL) {
-    return resource.href;
-  } else if (isFunction(resource?.toString)) {
-    return resource.toString();
-  }
-  return undefined;
 }
