@@ -28,7 +28,9 @@ describe('UserActionsInstrumentation', () => {
   });
 
   beforeEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks(); // Clears call counts and instances
+    jest.resetAllMocks(); // Resets mock implementations
+    jest.restoreAllMocks(); // Restores spies to original methods
     jest.clearAllTimers();
 
     mockFaro = initializeFaro(
@@ -39,6 +41,10 @@ describe('UserActionsInstrumentation', () => {
         })
       )
     );
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   afterAll(() => {
@@ -66,12 +72,14 @@ describe('UserActionsInstrumentation', () => {
 
     handler(pointerdownEvent);
 
+    // TODO: need to ensure that we end a request maybe mock teh httpMonitor
     xhr.open('GET', 'https://www.grafana.com');
     xhr.send();
 
     jest.runAllTimers();
 
     expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(2);
+
     expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(1, {
       type: USER_ACTION_START,
       name: 'test-action',
@@ -150,55 +158,9 @@ describe('UserActionsInstrumentation', () => {
     });
   });
 
-  it("Doesn't emit a user-action-start message when a user action starts on an element without a qualifying data- attribute", () => {
-    const handler = getUserEventHandler({
-      ...mockFaro,
-      config: {} as Config,
-    });
-
-    const element = document.createElement('div');
-
-    const mockApiMessageBusNotify = jest.fn();
-    jest.spyOn(apiMessageBus, 'notify').mockImplementationOnce(mockApiMessageBusNotify);
-
-    const pointerdownEvent = {
-      type: 'pointerdown',
-      target: element,
-    } as unknown as PointerEvent;
-
-    handler(pointerdownEvent);
-
-    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(0);
-  });
-
-  it('Emits a user-action-start message when a user action starts', () => {
-    const mockApiMessageBusNotify = jest.fn();
-    jest.spyOn(apiMessageBus, 'notify').mockImplementationOnce(mockApiMessageBusNotify);
-
-    const handler = getUserEventHandler(mockFaro);
-
-    const element = document.createElement('div');
-    element.setAttribute(userActionDataAttribute, 'test-action');
-
-    const pointerdownEvent = {
-      type: 'pointerdown',
-      target: element,
-    } as unknown as PointerEvent;
-
-    handler(pointerdownEvent);
-
-    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(1);
-    expect(mockApiMessageBusNotify).toHaveBeenCalledWith({
-      name: 'test-action',
-      parentId: expect.any(String),
-      startTime: expect.any(Number),
-      type: USER_ACTION_START,
-    });
-  });
-
   it('Emits a user-action-halt message if pending requests are detected', () => {
     const mockApiMessageBusNotify = jest.fn();
-    jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
+    const spy = jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
 
     const mockPushEvent = jest.fn();
     jest.spyOn(mockFaro.api, 'pushEvent').mockImplementation(mockPushEvent);
@@ -222,6 +184,7 @@ describe('UserActionsInstrumentation', () => {
     jest.runAllTimers();
 
     expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(3);
+
     expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(1, {
       type: USER_ACTION_START,
       name: 'test-action',
@@ -260,5 +223,57 @@ describe('UserActionsInstrumentation', () => {
       undefined,
       expect.anything()
     );
+
+    spy.mockReset();
+  });
+
+  it("Doesn't emit a user-action-start message when a user action starts on an element without a qualifying data- attribute", () => {
+    const handler = getUserEventHandler({
+      ...mockFaro,
+      config: {} as Config,
+    });
+
+    const element = document.createElement('div');
+
+    const mockApiMessageBusNotify = jest.fn();
+    const spy = jest.spyOn(apiMessageBus, 'notify').mockImplementationOnce(mockApiMessageBusNotify);
+
+    const pointerdownEvent = {
+      type: 'pointerdown',
+      target: element,
+    } as unknown as PointerEvent;
+
+    handler(pointerdownEvent);
+
+    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(0);
+
+    spy.mockReset();
+  });
+
+  it('Emits a user-action-start message when a user action starts', () => {
+    const mockApiMessageBusNotify = jest.fn();
+    const spy = jest.spyOn(apiMessageBus, 'notify').mockImplementationOnce(mockApiMessageBusNotify);
+
+    const handler = getUserEventHandler(mockFaro);
+
+    const element = document.createElement('div');
+    element.setAttribute(userActionDataAttribute, 'test-action');
+
+    const pointerdownEvent = {
+      type: 'pointerdown',
+      target: element,
+    } as unknown as PointerEvent;
+
+    handler(pointerdownEvent);
+
+    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(1);
+    expect(mockApiMessageBusNotify).toHaveBeenCalledWith({
+      name: 'test-action',
+      parentId: expect.any(String),
+      startTime: expect.any(Number),
+      type: USER_ACTION_START,
+    });
+
+    spy.mockReset();
   });
 });
