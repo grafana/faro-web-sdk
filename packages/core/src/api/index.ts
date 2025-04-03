@@ -6,6 +6,7 @@ export type {
   UserActionCancelMessage,
   UserActionEndMessage,
   UserActionStartMessage,
+  UserActionHaltMessage,
   UserAction,
 } from './types';
 

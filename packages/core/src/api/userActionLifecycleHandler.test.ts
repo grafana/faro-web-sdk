@@ -14,7 +14,7 @@ import { Observable } from '../utils/reactive';
 
 import { mockTransports } from './apiTestHelpers';
 import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from './const';
-import { UserActionHaltMessage } from './types';
+import type { UserActionHaltMessage } from './types';
 import { createUserActionLifecycleHandler } from './userActionLifecycleHandler';
 
 describe('userActionLifecycleHandler', () => {

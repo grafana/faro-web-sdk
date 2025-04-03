@@ -39,6 +39,7 @@ export type {
   UserActionStartMessage,
   UserActionEndMessage,
   UserActionCancelMessage,
+  UserActionHaltMessage,
   UserAction,
 } from './api';
 

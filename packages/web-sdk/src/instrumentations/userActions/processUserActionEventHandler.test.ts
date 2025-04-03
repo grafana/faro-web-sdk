@@ -3,9 +3,10 @@ import {
   initializeFaro,
   USER_ACTION_CANCEL,
   USER_ACTION_END,
+  USER_ACTION_HALT,
   USER_ACTION_START,
 } from '@grafana/faro-core';
-import type { Config, Faro, UserActionEndMessage } from '@grafana/faro-core';
+import type { Config, Faro, UserActionEndMessage, UserActionHaltMessage } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
@@ -180,5 +181,64 @@ describe('UserActionsInstrumentation', () => {
       startTime: expect.any(Number),
       type: USER_ACTION_START,
     });
+  });
+
+  it('Emits a user-action-halt message if pending requests are detected', () => {
+    const mockApiMessageBusNotify = jest.fn();
+    jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
+
+    const mockPushEvent = jest.fn();
+    jest.spyOn(mockFaro.api, 'pushEvent').mockImplementation(mockPushEvent);
+
+    const handler = getUserEventHandler(mockFaro);
+
+    const element = document.createElement('div');
+    element.setAttribute(userActionDataAttribute, 'test-action');
+
+    const pointerdownEvent = {
+      type: 'pointerdown',
+      target: element,
+    } as unknown as PointerEvent;
+    const xhr = new XMLHttpRequest();
+
+    handler(pointerdownEvent);
+
+    xhr.open('GET', 'https://www.grafana.com');
+    xhr.send();
+
+    jest.runAllTimers();
+
+    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(3);
+    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
+      type: USER_ACTION_HALT,
+      name: 'test-action',
+      parentId: expect.any(String),
+      reason: 'pending-requests',
+      haltTime: expect.any(Number),
+    } as UserActionHaltMessage);
+
+    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(3, {
+      type: USER_ACTION_END,
+      name: 'test-action',
+      id: expect.any(String),
+      startTime: expect.any(Number),
+      endTime: expect.any(Number),
+      duration: expect.any(Number),
+      eventType: 'pointerdown',
+    } as UserActionEndMessage);
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
+
+    expect(mockPushEvent).toHaveBeenCalledWith(
+      'test-action',
+      expect.objectContaining({
+        userActionStartTime: expect.any(String),
+        userActionEndTime: expect.any(String),
+        userActionDuration: expect.any(String),
+        userActionEventType: expect.any(String),
+      }),
+      undefined,
+      expect.anything()
+    );
   });
 });
