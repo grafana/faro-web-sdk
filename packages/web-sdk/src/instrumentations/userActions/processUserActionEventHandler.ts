@@ -79,7 +79,6 @@ export function getUserEventHandler(faro: Faro) {
       .merge(httpMonitor, domMutationsMonitor, performanceEntriesMonitor)
       .takeWhile(() => actionRunning)
       .filter((msg) => {
-        console.log('msg before filter :>> ', msg);
         // If the user action is in halt state, we only keep listening to ended http requests
         if (isHalted && !(isRequestEndMessage(msg) && runningRequests.has(msg.request.requestId))) {
           return false;

@@ -33,7 +33,7 @@ export class Observable<T = any> {
       if (predicate(value)) {
         result.notify(value);
       } else {
-        result.unsubscribeAll();
+        result.unsubscribe(subscriber);
       }
     };
     this.subscribe(subscriber);
