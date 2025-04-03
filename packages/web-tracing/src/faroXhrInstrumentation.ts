@@ -3,6 +3,8 @@ import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xm
 import type { XMLHttpRequestInstrumentationConfig } from '@opentelemetry/instrumentation-xml-http-request';
 import type { OpenFunction } from '@opentelemetry/instrumentation-xml-http-request/build/src/types';
 
+import { faro, getUrlFromResource } from '@grafana/faro-web-sdk';
+
 type Parent = {
   _createSpan: (xhr: XMLHttpRequest, url: string, method: string) => Span | undefined;
 };
@@ -22,21 +24,17 @@ export class FaroXhrInstrumentation extends XMLHttpRequestInstrumentation {
     return (original: OpenFunction): OpenFunction => {
       const plugin = this;
       return function patchOpen(this: XMLHttpRequest, ...args): void {
-        const method: string = args[0];
-        let url: string | URL = args[1];
+        try {
+          const method: string = args[0];
+          let url: string | URL = getUrlFromResource(args[1])!;
 
-        if (isInstanceOfURL(url)) {
-          url = url.href;
+          plugin.parentCreateSpan(this, url, method);
+        } catch (error) {
+          faro.internalLogger.error(error);
         }
-
-        plugin.parentCreateSpan(this, url, method);
 
         return original.apply(this, args);
       };
     };
   }
-}
-
-function isInstanceOfURL(item: any): item is URL {
-  return item instanceof URL;
 }

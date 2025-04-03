@@ -1,4 +1,4 @@
-import { faro } from '@grafana/faro-core';
+import { faro, isEmpty, isFunction, isString } from '@grafana/faro-core';
 import type { Patterns, Transport } from '@grafana/faro-core';
 
 /**
@@ -18,4 +18,27 @@ export function getIgnoreUrls(): Patterns {
  */
 export function isUrlIgnored(url = ''): boolean {
   return getIgnoreUrls().some((ignoredUrl) => url && url.match(ignoredUrl) != null);
+}
+
+/**
+ * Extracts a URL string from the given resource.
+ *
+ * @param resource - The input resource which can be a string, a URL object, or an object with a `toString` method.
+ * @returns The URL as a string if the resource is a valid URL-like object, or `undefined` if the resource is not valid.
+ *
+ */
+export function getUrlFromResource(resource: any): string | undefined {
+  if (isString(resource)) {
+    return resource;
+  }
+
+  if (resource instanceof URL) {
+    return resource.href;
+  }
+
+  if (!isEmpty(resource) && isFunction(resource?.toString)) {
+    return resource.toString();
+  }
+
+  return undefined;
 }
