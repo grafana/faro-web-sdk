@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-tracing`): Fixed unexpected behavior in xhr instrumentation when custom
+  objects with a `toString` method were used as URLs (#1100).
+
 ## 1.14.3
 
 - Improvement (`@grafana/faro-core`): Avoid sending empty `attributes` or `context` objects
