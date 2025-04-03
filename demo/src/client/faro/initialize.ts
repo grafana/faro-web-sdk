@@ -9,8 +9,6 @@ import {
 import type { Faro } from '@grafana/faro-react';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
-import { env } from '../utils';
-
 export function initializeFaro(): Faro {
   const faro = coreInit({
     // url: `http://localhost:${env.faro.portAppReceiver}/collect`,
@@ -22,6 +20,20 @@ export function initializeFaro(): Faro {
       version: '1.0.0',
       environment: 'production',
     },
+
+    // url: 'https://faro-collector-ops-eu-south-0.grafana-ops.net/collect/2f2593cc17441b0c0933e1cb185348e9',
+    // app: {
+    //   name: 'Test user actions feature',
+    //   version: '1.0.0',
+    //   environment: 'production',
+    // },
+
+    // url: 'https://faro-collector-dev-us-east-0.grafana-dev.net/collect/7b0ecefe272b66f999b0d815e59a9cbe',
+    // app: {
+    //   name: 'User Actions',
+    //   version: '1.0.0',
+    //   environment: 'production',
+    // },
 
     trackWebVitalsAttribution: true,
     instrumentations: [
@@ -49,6 +61,7 @@ export function initializeFaro(): Faro {
     //   version: env.package.version,
     //   environment: env.mode.name,
     // },
+
     trackResources: true,
 
     batching: {
