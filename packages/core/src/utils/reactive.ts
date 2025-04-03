@@ -23,47 +23,43 @@ export class Observable<T = any> {
   }
 
   first(): Observable<T> {
-    return this.subscribers.at(0) ? this : new Observable<T>();
+    const result = new Observable<T>();
+
+    const internalSubscriber = (data: T): void => {
+      result.notify(data);
+      subscription.unsubscribe();
+    };
+    const subscription = this.subscribe(internalSubscriber);
+    const resultUnsubscribeFn = result.unsubscribe.bind(result);
+    return this.withUnsubscribeOverride(result, resultUnsubscribeFn, internalSubscriber);
   }
 
   takeWhile(predicate: (value: T) => boolean): Observable<T> {
     const result = new Observable<T>();
-
-    const subscriber = (value: T): void => {
+    const internalSubscriber = (value: T): void => {
       if (predicate(value)) {
         result.notify(value);
       } else {
-        result.unsubscribe(subscriber);
+        result.unsubscribe(internalSubscriber);
       }
     };
-    this.subscribe(subscriber);
-
-    const originalUnsubscribe = result.unsubscribe.bind(result);
-    result.unsubscribe = (subscriber: Subscriber<T>) => {
-      originalUnsubscribe(subscriber);
-      this.unsubscribe(subscriber);
-    };
-
-    return result;
+    this.subscribe(internalSubscriber);
+    const resultUnsubscribeFn = result.unsubscribe.bind(result);
+    return this.withUnsubscribeOverride(result, resultUnsubscribeFn, internalSubscriber);
   }
 
   filter(predicate: (value: T) => boolean): Observable<T> {
     const result = new Observable<T>();
 
-    const subscriber = (value: T): void => {
+    const internalSubscriber = (value: T): void => {
       if (predicate(value)) {
         result.notify(value);
       }
     };
-    this.subscribe(subscriber);
+    this.subscribe(internalSubscriber);
 
-    const originalUnsubscribe = result.unsubscribe.bind(result);
-    result.unsubscribe = (subscriber: Subscriber<T>) => {
-      originalUnsubscribe(subscriber);
-      this.unsubscribe(subscriber);
-    };
-
-    return result;
+    const resultUnsubscribeFn = result.unsubscribe.bind(result);
+    return this.withUnsubscribeOverride(result, resultUnsubscribeFn, internalSubscriber);
   }
 
   merge(...observables: Array<Observable<T>>): Observable<T> {
@@ -86,6 +82,19 @@ export class Observable<T = any> {
     };
 
     return mergerObservable;
+  }
+
+  private withUnsubscribeOverride(
+    observable: Observable<T>,
+    resultUnsubscribeFn: (subscriber: Subscriber<T>) => void,
+    internalSubscriber: Subscriber<T>
+  ) {
+    observable.unsubscribe = (subscriber: Subscriber<T>) => {
+      resultUnsubscribeFn(subscriber);
+      this.unsubscribe(internalSubscriber);
+    };
+
+    return observable;
   }
 
   private unsubscribeAll(): void {
