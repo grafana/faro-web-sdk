@@ -1,4 +1,4 @@
-import { faro, isFunction, isString } from '@grafana/faro-core';
+import { faro, isEmpty, isFunction, isString } from '@grafana/faro-core';
 import type { Patterns, Transport } from '@grafana/faro-core';
 
 /**
@@ -30,10 +30,15 @@ export function isUrlIgnored(url = ''): boolean {
 export function getUrlFromResource(resource: any): string | undefined {
   if (isString(resource)) {
     return resource;
-  } else if (resource instanceof URL) {
+  }
+
+  if (resource instanceof URL) {
     return resource.href;
-  } else if (isFunction(resource?.toString)) {
+  }
+
+  if (!isEmpty(resource) && isFunction(resource?.toString)) {
     return resource.toString();
   }
+
   return undefined;
 }
