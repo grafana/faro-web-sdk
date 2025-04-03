@@ -6,7 +6,13 @@ import {
   USER_ACTION_HALT,
   USER_ACTION_START,
 } from '@grafana/faro-core';
-import type { Config, Faro, UserActionEndMessage, UserActionHaltMessage } from '@grafana/faro-core';
+import type {
+  Config,
+  Faro,
+  UserActionEndMessage,
+  UserActionHaltMessage,
+  UserActionStartMessage,
+} from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
@@ -65,8 +71,23 @@ describe('UserActionsInstrumentation', () => {
 
     jest.runAllTimers();
 
-    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(2);
+    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(3);
+    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(1, {
+      type: USER_ACTION_START,
+      name: 'test-action',
+      parentId: expect.any(String),
+      startTime: expect.any(Number),
+    } as UserActionStartMessage);
+
     expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
+      type: USER_ACTION_HALT,
+      name: 'test-action',
+      parentId: expect.any(String),
+      reason: 'pending-requests',
+      haltTime: expect.any(Number),
+    } as UserActionHaltMessage);
+
+    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(4, {
       type: USER_ACTION_END,
       name: 'test-action',
       id: expect.any(String),
@@ -208,7 +229,7 @@ describe('UserActionsInstrumentation', () => {
 
     jest.runAllTimers();
 
-    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(3);
+    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(5);
     expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
       type: USER_ACTION_HALT,
       name: 'test-action',
