@@ -2,7 +2,7 @@ import { BaseTransport, initializeFaro, VERSION } from '@grafana/faro-core';
 import type { Patterns, TransportItem } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
-import { getIgnoreUrls, isUrlIgnored } from './url';
+import { getIgnoreUrls, getUrlFromResource, isUrlIgnored } from './url';
 
 class MockTransport extends BaseTransport {
   readonly name = '@grafana/transport-mock';
@@ -60,5 +60,19 @@ describe('Urls', () => {
     expect(isUrlIgnored('http://example3.com/abc')).toBe(true);
     expect(isUrlIgnored('')).toBe(false);
     expect(isUrlIgnored(undefined)).toBe(false);
+  });
+
+  it('should return the correct url from the resource', () => {
+    const resourceString = 'http://example.com';
+    const resourceUrl = new URL('http://example.com');
+    const resourceObject = {
+      toString: () => 'http://example.com',
+    };
+
+    expect(getUrlFromResource(resourceString)).toBe(resourceString);
+    expect(getUrlFromResource(resourceUrl)).toBe(resourceUrl.href);
+    expect(getUrlFromResource(resourceObject)).toBe(resourceObject.toString());
+    expect(getUrlFromResource({})).toBeUndefined();
+    expect(getUrlFromResource(undefined)).toBeUndefined();
   });
 });

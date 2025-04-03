@@ -48,7 +48,7 @@ export function initializeFaro(): Faro {
       itemLimit: 100,
     },
 
-    trackUserActions: true,
+    trackUserActionsPreview: true,
   });
 
   faro.api.pushLog(['Faro was initialized']);
