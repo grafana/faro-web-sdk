@@ -199,6 +199,7 @@ describe('UserActionsInstrumentation', () => {
 
     handler(pointerdownEvent);
 
+    // Here we didn't mock the request so it doesn't resolve. Means we only get a start message and no end message
     xhr.open('GET', 'https://www.grafana.com');
     xhr.send();
 
