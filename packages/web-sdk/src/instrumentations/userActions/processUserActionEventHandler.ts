@@ -87,10 +87,7 @@ export function getUserEventHandler(faro: Faro) {
         return true;
       })
       .subscribe((msg) => {
-        console.log('msg :>> ', msg);
         if (isRequestStartMessage(msg)) {
-          // console.log('request start msg :>> ', msg);
-
           // An action is on halt if it has pending items, like pending HTTP requests.
           // In this case we start a separate timeout to wait for the requests to finish
           // If in the halt state, we stop adding Faro signals to the action's buffer (see userActionLifecycleHandler.ts)
@@ -114,19 +111,13 @@ export function getUserEventHandler(faro: Faro) {
             const hasPendingRequests = runningRequests.size > 0;
             const isAllPendingRequestsResolved = isHalted && !hasPendingRequests;
 
-            console.log('hasPendingRequests :>> ', hasPendingRequests);
-            console.log('isAllPendingRequestsResolved :>> ', isAllPendingRequestsResolved);
-
             if (isAllPendingRequestsResolved) {
               clearTimeout(pendingActionTimeoutId);
               isHalted = false;
             }
 
-            console.log('isHalted :>> ', isHalted);
-
             if (hasPendingRequests) {
               isHalted = true;
-              console.log('set isHalted :>> ', isHalted);
 
               apiMessageBus.notify({
                 type: USER_ACTION_HALT,
@@ -139,7 +130,6 @@ export function getUserEventHandler(faro: Faro) {
               pendingActionTimeoutId = startTimeout(
                 undefined,
                 () => {
-                  console.log('pendingActionTimeoutId triggered');
                   unsubscribeAllMonitors(allMonitorsSub);
                   endUserAction(userActionParentEventProps);
                   actionRunning = false;
@@ -148,7 +138,6 @@ export function getUserEventHandler(faro: Faro) {
                 1000 * 10
               );
             } else {
-              console.log('no pending requests, unsubscribing from all monitors');
               unsubscribeAllMonitors(allMonitorsSub);
               endUserAction(userActionParentEventProps);
               actionRunning = false;

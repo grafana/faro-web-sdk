@@ -1,24 +1,39 @@
 import {
   apiMessageBus,
+  Config,
   initializeFaro,
   USER_ACTION_CANCEL,
   USER_ACTION_END,
   USER_ACTION_HALT,
   USER_ACTION_START,
 } from '@grafana/faro-core';
-import type {
-  Config,
-  Faro,
-  UserActionEndMessage,
-  UserActionHaltMessage,
-  UserActionStartMessage,
-} from '@grafana/faro-core';
+import type { Faro, UserActionEndMessage, UserActionHaltMessage, UserActionStartMessage } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
 
 import { userActionDataAttribute } from './const';
 import { getUserEventHandler } from './processUserActionEventHandler';
+
+class MockXMLHttpRequest {
+  open() {}
+  send() {
+    this.onload({
+      target: {
+        responseText: JSON.stringify({ message: 'Mocked Response' }),
+      },
+    });
+  }
+  onload(_arg0: { target: { responseText: string } }) {}
+  setRequestHeader() {}
+  addEventListener(event: string, callback: () => void) {
+    if (event === 'load') {
+      callback();
+    }
+  }
+}
+
+const originalXMLHttpRequest = global.XMLHttpRequest;
 
 describe('UserActionsInstrumentation', () => {
   let mockFaro: Faro;
@@ -50,9 +65,12 @@ describe('UserActionsInstrumentation', () => {
   afterAll(() => {
     jest.restoreAllMocks();
     jest.clearAllTimers();
+    global.XMLHttpRequest = originalXMLHttpRequest;
   });
 
   it('Emits a user-action-end message if a user action has follow up activity within 100ms', () => {
+    (global as any).XMLHttpRequest = MockXMLHttpRequest;
+
     const mockApiMessageBusNotify = jest.fn();
     jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
 
@@ -68,11 +86,12 @@ describe('UserActionsInstrumentation', () => {
       type: 'pointerdown',
       target: element,
     } as unknown as PointerEvent;
+
     const xhr = new XMLHttpRequest();
 
     handler(pointerdownEvent);
 
-    // TODO: need to ensure that we end a request maybe mock teh httpMonitor
+    // TODO: need to ensure that we end a request maybe mock teh httpMonitor or resource instrumentation
     xhr.open('GET', 'https://www.grafana.com');
     xhr.send();
 
@@ -87,7 +106,7 @@ describe('UserActionsInstrumentation', () => {
       startTime: expect.any(Number),
     } as UserActionStartMessage);
 
-    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(3, {
+    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
       type: USER_ACTION_END,
       name: 'test-action',
       id: expect.any(String),
@@ -110,6 +129,8 @@ describe('UserActionsInstrumentation', () => {
       undefined,
       expect.anything()
     );
+
+    global.XMLHttpRequest = originalXMLHttpRequest;
   });
 
   it('Emits a user-action-cancel message if a user action has no follow up activity within 100ms', () => {
