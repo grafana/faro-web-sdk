@@ -101,7 +101,7 @@ function monitorFetch({
   window.fetch = function () {
     const url = getUrlFromResource(arguments[0]) ?? '';
     const isIgnoredUrl = isUrlIgnored(url);
-    const method = arguments[1].method;
+    const method = (arguments[1] ?? {}).method;
 
     const requestId = genShortID();
 

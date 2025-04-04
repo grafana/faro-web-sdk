@@ -36,8 +36,24 @@ describe('monitorHttpRequests', () => {
     });
 
     expect(mockSubscribe).toHaveBeenCalledTimes(2);
-    expect(mockSubscribe).toHaveBeenNthCalledWith(1, { type: MESSAGE_TYPE_HTTP_REQUEST_START, pending: 1 });
-    expect(mockSubscribe).toHaveBeenNthCalledWith(2, { type: MESSAGE_TYPE_HTTP_REQUEST_END, pending: 0 });
+    expect(mockSubscribe).toHaveBeenNthCalledWith(1, {
+      type: MESSAGE_TYPE_HTTP_REQUEST_START,
+      request: {
+        apiType: 'xhr',
+        method: 'GET',
+        requestId: expect.any(String),
+        url: 'https://www.grafana.com',
+      },
+    });
+    expect(mockSubscribe).toHaveBeenNthCalledWith(2, {
+      type: MESSAGE_TYPE_HTTP_REQUEST_END,
+      request: {
+        apiType: 'xhr',
+        method: 'GET',
+        requestId: expect.any(String),
+        url: 'https://www.grafana.com',
+      },
+    });
   });
 
   it('Monitors fetch requests and sends a message if request are pending', async () => {
@@ -55,11 +71,29 @@ describe('monitorHttpRequests', () => {
 
     initializeFaro(mockConfig());
 
-    await fetch('https://www.grafana.com');
+    await fetch('https://www.grafana.com', {
+      method: 'GET',
+    });
 
     expect(mockSubscribe).toHaveBeenCalledTimes(2);
-    expect(mockSubscribe).toHaveBeenNthCalledWith(1, { type: MESSAGE_TYPE_HTTP_REQUEST_START, pending: 1 });
-    expect(mockSubscribe).toHaveBeenNthCalledWith(2, { type: MESSAGE_TYPE_HTTP_REQUEST_END, pending: 0 });
+    expect(mockSubscribe).toHaveBeenNthCalledWith(1, {
+      type: MESSAGE_TYPE_HTTP_REQUEST_START,
+      request: {
+        apiType: 'fetch',
+        method: 'GET',
+        requestId: expect.any(String),
+        url: 'https://www.grafana.com',
+      },
+    });
+    expect(mockSubscribe).toHaveBeenNthCalledWith(2, {
+      type: MESSAGE_TYPE_HTTP_REQUEST_END,
+      request: {
+        apiType: 'fetch',
+        method: 'GET',
+        requestId: expect.any(String),
+        url: 'https://www.grafana.com',
+      },
+    });
 
     global.fetch = originalFetch;
   });
