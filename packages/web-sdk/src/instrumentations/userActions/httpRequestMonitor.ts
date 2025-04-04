@@ -1,4 +1,4 @@
-import { genShortID, isFunction, isString, Observable } from '@grafana/faro-core';
+import { genShortID, Observable } from '@grafana/faro-core';
 
 import { getUrlFromResource, isUrlIgnored } from '../../utils/url';
 
