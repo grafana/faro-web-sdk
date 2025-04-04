@@ -1,15 +1,8 @@
-import {
-  BaseTransport,
-  createPromiseBuffer,
-  isArray,
-  noop,
-  PromiseBuffer,
-  TransportItem,
-  VERSION,
-} from '@grafana/faro-core';
-import type { Patterns } from '@grafana/faro-core';
+import { BaseTransport, createPromiseBuffer, isArray, noop, VERSION } from '@grafana/faro-core';
+import type { Patterns, PromiseBuffer, TransportItem } from '@grafana/faro-core';
 
-import { OtelPayload, OtelTransportPayload } from './payload';
+import { OtelPayload } from './payload';
+import type { OtelTransportPayload } from './payload';
 import type { OtlpHttpTransportOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;

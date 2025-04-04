@@ -1,5 +1,5 @@
-import { ExceptionStackFrame, isPrimitive } from '@grafana/faro-core';
-import type { API } from '@grafana/faro-core';
+import { isPrimitive } from '@grafana/faro-core';
+import type { API, ExceptionStackFrame } from '@grafana/faro-core';
 
 import { primitiveUnhandledType, primitiveUnhandledValue } from './const';
 import { getErrorDetails } from './getErrorDetails';

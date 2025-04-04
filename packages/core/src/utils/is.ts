@@ -67,11 +67,11 @@ export const isMapDefined = typeof Map !== 'undefined';
 
 export const isMap = ((value) => isMapDefined && isInstanceOf(value, Map)) as IsFnHelper<Map<any, any>>;
 
-export const isSyntheticEvent = ((value) =>
+export const isSyntheticEvent = ((value: unknown) =>
   isObject(value) &&
   'nativeEvent' in value &&
   'preventDefault' in value &&
-  'stopPropagation' in value) as IsFnHelper<Event>;
+  'stopPropagation' in value) as unknown as IsFnHelper<Event>;
 
 export function isEmpty(value: any): boolean {
   if (value == null) {

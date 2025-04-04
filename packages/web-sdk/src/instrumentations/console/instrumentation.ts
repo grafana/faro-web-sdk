@@ -3,10 +3,10 @@ import {
   BaseInstrumentation,
   defaultErrorArgsSerializer,
   defaultLogArgsSerializer,
-  LogArgsSerializer,
   LogLevel,
   VERSION,
 } from '@grafana/faro-core';
+import type { LogArgsSerializer } from '@grafana/faro-core';
 
 import { getDetailsFromConsoleErrorArgs } from '../errors/getErrorDetails';
 

@@ -1,6 +1,7 @@
 import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
 
-import { faroRumHeader, makeFaroRumHeaderValue, XHREventType, XHRInstrumentationOptions } from './types';
+import { faroRumHeader, makeFaroRumHeaderValue, XHREventType } from './types';
+import type { XHRInstrumentationOptions } from './types';
 import { parseXHREvent, parseXHRHeaders, shouldPropagateRumHeaders } from './utils';
 
 export class XHRInstrumentation extends BaseInstrumentation {

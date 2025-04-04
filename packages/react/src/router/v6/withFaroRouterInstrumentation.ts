@@ -1,7 +1,8 @@
 import { EVENT_ROUTE_CHANGE, globalObject } from '@grafana/faro-web-sdk';
 
 import { api } from '../../dependencies';
-import { NavigationType, ReactRouterLocation } from '../types';
+import { NavigationType } from '../types';
+import type { ReactRouterLocation } from '../types';
 
 import { isInitialized } from './routerDependencies';
 import type { EventRouteTransitionAttributes, RouteObjectV6DataRouter } from './types';
