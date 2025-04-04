@@ -5,7 +5,7 @@ import { TransportItem, TransportItemType, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, defaultLogLevel, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
-import { USER_ACTION_START_MESSAGE_TYPE } from '../const';
+import { USER_ACTION_START } from '../const';
 import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
 import type { ApiMessageBusMessages } from '../types';
@@ -78,7 +78,7 @@ export function initializeLogsAPI({
       internalLogger.debug('Pushing log\n', item);
 
       const msg = getMessage();
-      if (msg && msg.type === USER_ACTION_START_MESSAGE_TYPE) {
+      if (msg && msg.type === USER_ACTION_START) {
         actionBuffer.addItem(item);
       } else {
         transports.execute(item);

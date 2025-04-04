@@ -3,9 +3,10 @@ export {
   defaultLogArgsSerializer,
   defaultErrorArgsSerializer,
   apiMessageBus,
-  USER_ACTION_CANCEL_MESSAGE_TYPE,
-  USER_ACTION_END_MESSAGE_TYPE,
-  USER_ACTION_START_MESSAGE_TYPE,
+  USER_ACTION_CANCEL,
+  USER_ACTION_END,
+  USER_ACTION_START,
+  USER_ACTION_HALT,
 } from './api';
 export type {
   API,
@@ -38,6 +39,7 @@ export type {
   UserActionStartMessage,
   UserActionEndMessage,
   UserActionCancelMessage,
+  UserActionHaltMessage,
   UserAction,
 } from './api';
 
@@ -143,7 +145,6 @@ export {
   stringifyExternalJson,
   stringifyObjectValues,
   Observable,
-  merge,
 } from './utils';
 export type {
   BaseObject,

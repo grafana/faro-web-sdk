@@ -9,7 +9,7 @@ import {
 import type { Faro } from '@grafana/faro-react';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
-import { env } from '../utils';
+import { env } from '../utils/env';
 
 export function initializeFaro(): Faro {
   const faro = coreInit({
@@ -42,6 +42,7 @@ export function initializeFaro(): Faro {
       version: env.package.version,
       environment: env.mode.name,
     },
+
     trackResources: true,
 
     batching: {

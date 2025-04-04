@@ -1,17 +1,39 @@
 import {
   apiMessageBus,
+  Config,
   initializeFaro,
-  USER_ACTION_CANCEL_MESSAGE_TYPE,
-  USER_ACTION_END_MESSAGE_TYPE,
-  USER_ACTION_START_MESSAGE_TYPE,
+  USER_ACTION_CANCEL,
+  USER_ACTION_END,
+  USER_ACTION_HALT,
+  USER_ACTION_START,
 } from '@grafana/faro-core';
-import type { Config, Faro, UserActionEndMessage } from '@grafana/faro-core';
+import type { Faro, UserActionEndMessage, UserActionHaltMessage, UserActionStartMessage } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
 
 import { userActionDataAttribute } from './const';
 import { getUserEventHandler } from './processUserActionEventHandler';
+
+class MockXMLHttpRequest {
+  open() {}
+  send() {
+    this.onload({
+      target: {
+        responseText: JSON.stringify({ message: 'Mocked Response' }),
+      },
+    });
+  }
+  onload(_arg0: { target: { responseText: string } }) {}
+  setRequestHeader() {}
+  addEventListener(event: string, callback: () => void) {
+    if (event === 'load') {
+      callback();
+    }
+  }
+}
+
+const originalXMLHttpRequest = global.XMLHttpRequest;
 
 describe('UserActionsInstrumentation', () => {
   let mockFaro: Faro;
@@ -21,7 +43,9 @@ describe('UserActionsInstrumentation', () => {
   });
 
   beforeEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks(); // Clears call counts and instances
+    jest.resetAllMocks(); // Resets mock implementations
+    jest.restoreAllMocks(); // Restores spies to original methods
     jest.clearAllTimers();
 
     mockFaro = initializeFaro(
@@ -34,12 +58,19 @@ describe('UserActionsInstrumentation', () => {
     );
   });
 
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
   afterAll(() => {
     jest.restoreAllMocks();
     jest.clearAllTimers();
+    global.XMLHttpRequest = originalXMLHttpRequest;
   });
 
   it('Emits a user-action-end message if a user action has follow up activity within 100ms', () => {
+    (global as any).XMLHttpRequest = MockXMLHttpRequest;
+
     const mockApiMessageBusNotify = jest.fn();
     jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
 
@@ -55,18 +86,28 @@ describe('UserActionsInstrumentation', () => {
       type: 'pointerdown',
       target: element,
     } as unknown as PointerEvent;
+
     const xhr = new XMLHttpRequest();
 
     handler(pointerdownEvent);
 
+    // TODO: need to ensure that we end a request maybe mock teh httpMonitor or resource instrumentation
     xhr.open('GET', 'https://www.grafana.com');
     xhr.send();
 
     jest.runAllTimers();
 
     expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(2);
+
+    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(1, {
+      type: USER_ACTION_START,
+      name: 'test-action',
+      parentId: expect.any(String),
+      startTime: expect.any(Number),
+    } as UserActionStartMessage);
+
     expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
-      type: USER_ACTION_END_MESSAGE_TYPE,
+      type: USER_ACTION_END,
       name: 'test-action',
       id: expect.any(String),
       startTime: expect.any(Number),
@@ -88,6 +129,8 @@ describe('UserActionsInstrumentation', () => {
       undefined,
       expect.anything()
     );
+
+    global.XMLHttpRequest = originalXMLHttpRequest;
   });
 
   it('Emits a user-action-cancel message if a user action has no follow up activity within 100ms', () => {
@@ -130,10 +173,80 @@ describe('UserActionsInstrumentation', () => {
 
     expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(2);
     expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
-      type: USER_ACTION_CANCEL_MESSAGE_TYPE,
+      type: USER_ACTION_CANCEL,
       name: 'test-action',
       parentId: expect.any(String),
     });
+  });
+
+  it('Emits a user-action-halt message if pending requests are detected', () => {
+    const mockApiMessageBusNotify = jest.fn();
+    const spy = jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
+
+    const mockPushEvent = jest.fn();
+    jest.spyOn(mockFaro.api, 'pushEvent').mockImplementation(mockPushEvent);
+
+    const handler = getUserEventHandler(mockFaro);
+
+    const element = document.createElement('div');
+    element.setAttribute(userActionDataAttribute, 'test-action');
+
+    const pointerdownEvent = {
+      type: 'pointerdown',
+      target: element,
+    } as unknown as PointerEvent;
+    const xhr = new XMLHttpRequest();
+
+    handler(pointerdownEvent);
+
+    // Here we didn't mock the request so it doesn't resolve. Means we only get a start message and no end message
+    xhr.open('GET', 'https://www.grafana.com');
+    xhr.send();
+
+    jest.runAllTimers();
+
+    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(3);
+
+    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(1, {
+      type: USER_ACTION_START,
+      name: 'test-action',
+      parentId: expect.any(String),
+      startTime: expect.any(Number),
+    } as UserActionStartMessage);
+
+    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
+      type: USER_ACTION_HALT,
+      name: 'test-action',
+      parentId: expect.any(String),
+      reason: 'pending-requests',
+      haltTime: expect.any(Number),
+    } as UserActionHaltMessage);
+
+    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(3, {
+      type: USER_ACTION_END,
+      name: 'test-action',
+      id: expect.any(String),
+      startTime: expect.any(Number),
+      endTime: expect.any(Number),
+      duration: expect.any(Number),
+      eventType: 'pointerdown',
+    } as UserActionEndMessage);
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
+
+    expect(mockPushEvent).toHaveBeenCalledWith(
+      'test-action',
+      expect.objectContaining({
+        userActionStartTime: expect.any(String),
+        userActionEndTime: expect.any(String),
+        userActionDuration: expect.any(String),
+        userActionEventType: expect.any(String),
+      }),
+      undefined,
+      expect.anything()
+    );
+
+    spy.mockReset();
   });
 
   it("Doesn't emit a user-action-start message when a user action starts on an element without a qualifying data- attribute", () => {
@@ -145,7 +258,7 @@ describe('UserActionsInstrumentation', () => {
     const element = document.createElement('div');
 
     const mockApiMessageBusNotify = jest.fn();
-    jest.spyOn(apiMessageBus, 'notify').mockImplementationOnce(mockApiMessageBusNotify);
+    const spy = jest.spyOn(apiMessageBus, 'notify').mockImplementationOnce(mockApiMessageBusNotify);
 
     const pointerdownEvent = {
       type: 'pointerdown',
@@ -155,11 +268,13 @@ describe('UserActionsInstrumentation', () => {
     handler(pointerdownEvent);
 
     expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(0);
+
+    spy.mockReset();
   });
 
   it('Emits a user-action-start message when a user action starts', () => {
     const mockApiMessageBusNotify = jest.fn();
-    jest.spyOn(apiMessageBus, 'notify').mockImplementationOnce(mockApiMessageBusNotify);
+    const spy = jest.spyOn(apiMessageBus, 'notify').mockImplementationOnce(mockApiMessageBusNotify);
 
     const handler = getUserEventHandler(mockFaro);
 
@@ -178,7 +293,9 @@ describe('UserActionsInstrumentation', () => {
       name: 'test-action',
       parentId: expect.any(String),
       startTime: expect.any(Number),
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_START,
     });
+
+    spy.mockReset();
   });
 });

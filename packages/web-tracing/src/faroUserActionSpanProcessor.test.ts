@@ -1,10 +1,6 @@
 import { SpanKind } from '@opentelemetry/api';
 
-import {
-  USER_ACTION_CANCEL_MESSAGE_TYPE,
-  USER_ACTION_END_MESSAGE_TYPE,
-  USER_ACTION_START_MESSAGE_TYPE,
-} from '@grafana/faro-core';
+import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from '@grafana/faro-core';
 import { apiMessageBus } from '@grafana/faro-web-sdk';
 import type { UserActionCancelMessage, UserActionEndMessage, UserActionStartMessage } from '@grafana/faro-web-sdk';
 
@@ -30,7 +26,7 @@ describe('faroUserActionSpanProcessor', () => {
     apiMessageBus.notify({
       name: 'test-action',
       parentId: 'test-parent-id',
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_START,
     } as UserActionStartMessage);
 
     const span = {
@@ -50,7 +46,7 @@ describe('faroUserActionSpanProcessor', () => {
     apiMessageBus.notify({
       name: 'test-action',
       parentId: 'test-parent-id',
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_START,
     } as UserActionStartMessage);
 
     let span = {
@@ -73,7 +69,7 @@ describe('faroUserActionSpanProcessor', () => {
     apiMessageBus.notify({
       name: 'test-action',
       parentId: 'test-parent-id',
-      type: USER_ACTION_END_MESSAGE_TYPE,
+      type: USER_ACTION_END,
       startTime: Date.now(),
       endTime: Date.now(),
       duration: 0,
@@ -88,7 +84,7 @@ describe('faroUserActionSpanProcessor', () => {
     apiMessageBus.notify({
       name: 'test-action',
       parentId: 'test-parent-id',
-      type: USER_ACTION_START_MESSAGE_TYPE,
+      type: USER_ACTION_START,
     } as UserActionStartMessage);
 
     span = {
@@ -110,7 +106,7 @@ describe('faroUserActionSpanProcessor', () => {
 
     apiMessageBus.notify({
       name: 'test-action',
-      type: USER_ACTION_CANCEL_MESSAGE_TYPE,
+      type: USER_ACTION_CANCEL,
       id: 'test-id',
     } as UserActionCancelMessage);
 

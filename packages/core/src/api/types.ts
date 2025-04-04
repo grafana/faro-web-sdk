@@ -1,8 +1,4 @@
-import type {
-  USER_ACTION_CANCEL_MESSAGE_TYPE,
-  USER_ACTION_END_MESSAGE_TYPE,
-  USER_ACTION_START_MESSAGE_TYPE,
-} from './const';
+import type { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_HALT, USER_ACTION_START } from './const';
 import type { EventEvent, EventsAPI } from './events';
 import type { ExceptionEvent, ExceptionsAPI } from './exceptions';
 import type { LogEvent, LogsAPI } from './logs';
@@ -14,15 +10,20 @@ export type APIEvent = LogEvent | ExceptionEvent | MeasurementEvent | TraceEvent
 
 export type API = LogsAPI & ExceptionsAPI & MeasurementsAPI & TracesAPI & MetaAPI & EventsAPI;
 
-export type ApiMessageBusMessages = UserActionStartMessage | UserActionEndMessage | UserActionCancelMessage;
+export type ApiMessageBusMessages =
+  | UserActionStartMessage
+  | UserActionEndMessage
+  | UserActionCancelMessage
+  | UserActionHaltMessage;
 
 export type UserActionMessageType =
-  | typeof USER_ACTION_START_MESSAGE_TYPE
-  | typeof USER_ACTION_END_MESSAGE_TYPE
-  | typeof USER_ACTION_CANCEL_MESSAGE_TYPE;
+  | typeof USER_ACTION_START
+  | typeof USER_ACTION_END
+  | typeof USER_ACTION_CANCEL
+  | typeof USER_ACTION_HALT;
 
 export type UserActionStartMessage = {
-  type: typeof USER_ACTION_START_MESSAGE_TYPE;
+  type: typeof USER_ACTION_START;
   name: string;
   startTime: number;
 
@@ -33,7 +34,7 @@ export type UserActionStartMessage = {
 };
 
 export type UserActionEndMessage = {
-  type: typeof USER_ACTION_END_MESSAGE_TYPE;
+  type: typeof USER_ACTION_END;
   name: string;
   startTime: number;
   endTime: number;
@@ -47,8 +48,20 @@ export type UserActionEndMessage = {
 };
 
 export type UserActionCancelMessage = {
-  type: typeof USER_ACTION_CANCEL_MESSAGE_TYPE;
+  type: typeof USER_ACTION_CANCEL;
   name: string;
+
+  /**
+   * Unique identifier of the parent user action to which this action belongs.
+   */
+  parentId?: string;
+};
+
+export type UserActionHaltMessage = {
+  type: typeof USER_ACTION_HALT;
+  name: string;
+  reason: 'pending-requests';
+  haltTime: number;
 
   /**
    * Unique identifier of the parent user action to which this action belongs.
