@@ -1,8 +1,10 @@
-import { InternalLogger, TraceEvent, TransportItem, TransportItemType } from '@grafana/faro-core';
+import { TransportItemType } from '@grafana/faro-core';
+import type { InternalLogger, TraceEvent, TransportItem } from '@grafana/faro-core';
 
 import type { OtlpHttpTransportOptions } from '../types';
 
-import { getLogTransforms, getTraceTransforms, LogsTransform, TraceTransform } from './transform';
+import { getLogTransforms, getTraceTransforms } from './transform';
+import type { LogsTransform, TraceTransform } from './transform';
 import type { ResourceLogs, ResourceSpans } from './transform/types';
 import type { OtelTransportPayload } from './types';
 

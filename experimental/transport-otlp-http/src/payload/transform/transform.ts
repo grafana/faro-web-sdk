@@ -25,18 +25,17 @@ import {
   // eslint-disable-next-line import/no-unresolved
 } from '@opentelemetry/semantic-conventions/incubating';
 
-import {
+import { LogLevel, TransportItemType, VERSION } from '@grafana/faro-core';
+import type {
   EventEvent,
   ExceptionEvent,
+  InternalLogger,
   LogEvent,
-  LogLevel,
   MeasurementEvent,
   Meta,
+  TraceEvent,
   TransportItem,
-  TransportItemType,
-  VERSION,
 } from '@grafana/faro-core';
-import type { InternalLogger, TraceEvent } from '@grafana/faro-core';
 
 import type { OtlpHttpTransportOptions } from '../../types';
 import { isAttribute, toAttribute, toAttributeValue } from '../attribute';

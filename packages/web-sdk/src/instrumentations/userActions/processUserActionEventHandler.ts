@@ -1,15 +1,14 @@
 import {
   apiMessageBus,
   dateNow,
-  Faro,
   genShortID,
   merge,
   Observable,
-  Subscription,
   USER_ACTION_CANCEL_MESSAGE_TYPE,
   USER_ACTION_END_MESSAGE_TYPE,
   USER_ACTION_START_MESSAGE_TYPE,
 } from '@grafana/faro-core';
+import type { Faro, Subscription } from '@grafana/faro-core';
 
 import { userActionDataAttributeParsed as userActionDataAttribute } from './const';
 import { monitorDomMutations } from './domMutationMonitor';
