@@ -3,12 +3,12 @@ import {
   dateNow,
   genShortID,
   Observable,
-  Subscription,
   USER_ACTION_CANCEL,
   USER_ACTION_END,
   USER_ACTION_HALT,
   USER_ACTION_START,
 } from '@grafana/faro-core';
+import type { Faro, Subscription } from '@grafana/faro-core';
 
 import {
   MESSAGE_TYPE_HTTP_REQUEST_END,
