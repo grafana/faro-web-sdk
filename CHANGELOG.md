@@ -2,10 +2,14 @@
 
 ## Next
 
-- Improvement (`@grafana/faro-web-sdk`): User actions improvements (#1101)
+## 1.15.0
+
+- Feature (`@grafana/faro-web-sdk`): Alpha version of user actions instrumentation (#1101).
+
 - Fix (`@grafana/faro-web-tracing`): Fixed unexpected behavior in xhr instrumentation when custom
   objects with a `toString` method were used as URLs (#1100).
-- Improvement (`@grafana/faro-*`): Upgrade to TypeScript 5.8.2 (#1092)
+
+- Dependencies (`@grafana/faro-*`): Upgrade to TypeScript 5.8.2 (#1092)
 
 ## 1.14.3
 
