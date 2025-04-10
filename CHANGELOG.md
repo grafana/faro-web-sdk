@@ -2,6 +2,8 @@
 
 ## Next
 
+- Improvement (`@grafana/faro-web-sdk`): Provide a function to start a user-action (#1115).
+
 ## 1.15.0
 
 - Feature (`@grafana/faro-web-sdk`): Alpha version of user actions instrumentation (#1101).
