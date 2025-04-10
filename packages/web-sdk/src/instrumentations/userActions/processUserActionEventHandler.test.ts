@@ -10,10 +10,12 @@ import {
 import type { Faro, UserActionEndMessage, UserActionHaltMessage, UserActionStartMessage } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
+import { faro } from '../..';
 import { makeCoreConfig } from '../../config';
 
 import { userActionDataAttribute } from './const';
 import { getUserEventHandler } from './processUserActionEventHandler';
+import { ApiEvent } from './types';
 
 class MockXMLHttpRequest {
   open() {}
@@ -295,6 +297,44 @@ describe('UserActionsInstrumentation', () => {
       startTime: expect.any(Number),
       type: USER_ACTION_START,
     });
+
+    spy.mockReset();
+  });
+
+  it('Creates a users action from an api event', () => {
+    const mockPushEvent = jest.fn();
+    const spy = jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
+
+    const handler = getUserEventHandler(mockFaro);
+
+    const apiEvent: ApiEvent = {
+      type: 'apiEvent',
+      name: 'test-action',
+      attributes: { foo: 'bar' },
+    };
+
+    const xhr = new XMLHttpRequest();
+
+    handler(apiEvent);
+
+    // TODO: need to ensure that we end a request maybe mock teh httpMonitor or resource instrumentation
+    xhr.open('GET', 'https://www.grafana.com');
+    xhr.send();
+
+    jest.runAllTimers();
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
+    expect(mockPushEvent).toHaveBeenCalledWith(
+      'test-action',
+      expect.objectContaining({
+        userActionStartTime: expect.any(String),
+        userActionEndTime: expect.any(String),
+        userActionDuration: expect.any(String),
+        userActionEventType: expect.any(String),
+      }),
+      undefined,
+      expect.anything()
+    );
 
     spy.mockReset();
   });

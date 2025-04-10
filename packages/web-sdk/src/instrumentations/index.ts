@@ -28,4 +28,4 @@ export {
 
 export { PerformanceInstrumentation } from './performance';
 
-export { UserActionInstrumentation, userActionDataAttribute } from './userActions';
+export { UserActionInstrumentation, userActionDataAttribute, startUserAction } from './userActions';

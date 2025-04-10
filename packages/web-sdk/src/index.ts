@@ -181,4 +181,4 @@ export {
 
 export { getIgnoreUrls, getUrlFromResource } from './utils/url';
 
-export { userActionDataAttribute } from './instrumentations/userActions/const';
+export { userActionDataAttribute, startUserAction } from './instrumentations/userActions';
