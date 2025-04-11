@@ -1,4 +1,5 @@
-import { Attributes, context, trace } from '@opentelemetry/api';
+import { context, trace } from '@opentelemetry/api';
+import type { Attributes } from '@opentelemetry/api';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
