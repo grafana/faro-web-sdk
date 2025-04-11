@@ -26,3 +26,9 @@ export type HttpRequestEndMessage = {
   type: typeof MESSAGE_TYPE_HTTP_REQUEST_END;
   request: HttpRequestMessagePayload;
 };
+
+export type ApiEvent = {
+  name: string;
+  attributes?: Record<string, string>;
+  type: 'apiEvent';
+};

@@ -3,6 +3,7 @@ import {
   dateNow,
   genShortID,
   Observable,
+  stringifyObjectValues,
   USER_ACTION_CANCEL,
   USER_ACTION_END,
   USER_ACTION_HALT,
@@ -18,7 +19,7 @@ import {
 import { monitorDomMutations } from './domMutationMonitor';
 import { monitorHttpRequests } from './httpRequestMonitor';
 import { monitorPerformanceEntries } from './performanceEntriesMonitor';
-import type { HttpRequestEndMessage, HttpRequestMessagePayload, HttpRequestStartMessage } from './types';
+import type { ApiEvent, HttpRequestEndMessage, HttpRequestMessagePayload, HttpRequestStartMessage } from './types';
 import { convertDataAttributeName } from './util';
 
 const maxFollowUpActionTimeRange = 100;
@@ -33,11 +34,18 @@ export function getUserEventHandler(faro: Faro) {
   let timeoutId: number | undefined;
   let actionRunning = false;
 
-  function processUserEvent(event: PointerEvent | KeyboardEvent) {
-    const userActionName = getUserActionName(
-      event.target as HTMLElement,
-      config.trackUserActionsDataAttributeName ?? userActionDataAttribute
-    );
+  function processUserEvent(event: PointerEvent | KeyboardEvent | ApiEvent) {
+    let userActionName: string | undefined;
+
+    const isApiEventDetected = isApiEvent(event);
+    if (isApiEventDetected) {
+      userActionName = event.name;
+    } else {
+      userActionName = getUserActionName(
+        event.target as HTMLElement,
+        config.trackUserActionsDataAttributeName ?? userActionDataAttribute
+      );
+    }
 
     if (actionRunning || userActionName == null) {
       return;
@@ -105,7 +113,15 @@ export function getUserEventHandler(faro: Faro) {
           () => {
             endTime = dateNow();
 
-            const userActionParentEventProps = { api, userActionName, startTime, endTime: endTime!, actionId, event };
+            const userActionParentEventProps = {
+              api,
+              userActionName,
+              startTime,
+              endTime: endTime!,
+              actionId,
+              event,
+              ...(isApiEventDetected ? { attributes: event.attributes } : {}),
+            };
 
             const hasPendingRequests = runningRequests.size > 0;
             const isAllPendingRequestsResolved = isHalted && !hasPendingRequests;
@@ -160,9 +176,10 @@ function endUserAction(props: {
   startTime: number;
   endTime: number;
   actionId: string;
-  event: PointerEvent | KeyboardEvent;
+  event: PointerEvent | KeyboardEvent | ApiEvent;
+  attributes?: Record<string, string>;
 }) {
-  const { api, userActionName, startTime, endTime, actionId, event } = props;
+  const { api, userActionName, startTime, endTime, actionId, event, attributes } = props;
   const duration = endTime - startTime;
   const eventType = event.type;
 
@@ -185,6 +202,7 @@ function endUserAction(props: {
       userActionEndTime: endTime.toString(),
       userActionDuration: duration.toString(),
       userActionEventType: eventType,
+      ...stringifyObjectValues(attributes),
     },
     undefined,
     {
@@ -246,4 +264,8 @@ function isRequestStartMessage(msg: any): msg is HttpRequestStartMessage {
 
 function isRequestEndMessage(msg: any): msg is HttpRequestEndMessage {
   return msg.type === MESSAGE_TYPE_HTTP_REQUEST_END;
+}
+
+function isApiEvent(apiEvent: any): apiEvent is { name: string; attributes?: Record<string, string> } {
+  return apiEvent.type === 'apiEvent' && typeof apiEvent.name === 'string';
 }
