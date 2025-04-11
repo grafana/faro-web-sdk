@@ -11,19 +11,6 @@ import {
   ATTR_USER_AGENT_ORIGINAL,
   TELEMETRY_SDK_LANGUAGE_VALUE_WEBJS,
 } from '@opentelemetry/semantic-conventions';
-import {
-  ATTR_BROWSER_BRANDS,
-  ATTR_BROWSER_LANGUAGE,
-  ATTR_BROWSER_MOBILE,
-  ATTR_BROWSER_PLATFORM,
-  ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
-  ATTR_SERVICE_NAMESPACE,
-  ATTR_USER_EMAIL,
-  ATTR_USER_ID,
-  ATTR_USER_NAME,
-  // False positive. Package can be resolved.
-  // eslint-disable-next-line import/no-unresolved
-} from '@opentelemetry/semantic-conventions/incubating';
 
 import { LogLevel, TransportItemType, VERSION } from '@grafana/faro-core';
 import type {
@@ -37,6 +24,22 @@ import type {
   TransportItem,
 } from '@grafana/faro-core';
 
+import {
+  ATTR_BROWSER_BRANDS,
+  ATTR_BROWSER_LANGUAGE,
+  ATTR_BROWSER_MOBILE,
+  ATTR_BROWSER_PLATFORM,
+  ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
+  ATTR_SERVICE_NAMESPACE,
+  ATTR_SESSION_ID,
+  ATTR_USER_ATTRIBUTES,
+  ATTR_USER_EMAIL,
+  ATTR_USER_FULL_NAME,
+  ATTR_USER_HASH,
+  ATTR_USER_ID,
+  ATTR_USER_NAME,
+  ATTR_USER_ROLES,
+} from '../../semconv';
 import type { OtlpHttpTransportOptions } from '../../types';
 import { isAttribute, toAttribute, toAttributeValue } from '../attribute';
 
@@ -198,12 +201,15 @@ export function getLogTransforms(
       toAttribute(ATTR_URL_FULL, page?.url),
       toAttribute('page.id', page?.id),
       toAttribute('page.attributes', page?.attributes),
-      toAttribute('session.id', session?.id),
+      toAttribute(ATTR_SESSION_ID, session?.id),
       toAttribute('session.attributes', session?.attributes),
       toAttribute(ATTR_USER_ID, user?.id),
       toAttribute(ATTR_USER_NAME, user?.username),
       toAttribute(ATTR_USER_EMAIL, user?.email),
-      toAttribute('user.attributes', user?.attributes),
+      toAttribute(ATTR_USER_FULL_NAME, user?.fullName),
+      toAttribute(ATTR_USER_ROLES, user?.roles),
+      toAttribute(ATTR_USER_HASH, user?.hash),
+      toAttribute(ATTR_USER_ATTRIBUTES, user?.attributes),
     ].filter(isAttribute);
   }
 
