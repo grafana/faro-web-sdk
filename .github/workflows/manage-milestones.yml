@@ -19,16 +19,16 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-  
+
             // 1. Try to find 'Next' milestone
             const { data: milestones } = await github.rest.issues.listMilestones({
               owner,
               repo,
               state: 'open'
             });
-  
+
             let nextMilestone = milestones.find(m => m.title.toLowerCase() === 'next');
-  
+
             // 2. If missing, create one with next Friday as due date
             if (!nextMilestone) {
               const now = new Date();
@@ -36,7 +36,7 @@ jobs:
               const daysUntilFriday = (5 - day + 7) % 7 || 7;
               now.setUTCDate(now.getUTCDate() + daysUntilFriday);
               const isoDue = now.toISOString().split('T')[0];
-  
+
               const { data: created } = await github.rest.issues.createMilestone({
                 owner,
                 repo,
@@ -44,11 +44,11 @@ jobs:
                 description: 'Next weekly release',
                 due_on: `${isoDue}T23:59:59Z`
               });
-  
+
               nextMilestone = created;
               console.log(`Created 'Next' milestone due on ${isoDue}`);
             }
-  
+
             // 3. Assign milestone to PR
             await github.rest.issues.update({
               owner,
@@ -56,7 +56,7 @@ jobs:
               issue_number: context.issue.number,
               milestone: nextMilestone.number
             });
-  
+
             console.log(`Assigned PR #${context.issue.number} to milestone 'Next'`);
 
   rotate-milestones:
