@@ -1,0 +1,135 @@
+name: Weekly Milestone Management
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  push:
+    tags:
+      - 'v*' # Adjust this if your tag pattern is different
+
+jobs:
+  assign-next-to-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign PR to 'websdk - Next' milestone (create if missing)
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const milestoneTitle = `${repo} - Next`;
+
+            const { data: milestones } = await github.rest.issues.listMilestones({
+              owner,
+              repo,
+              state: 'open'
+            });
+
+            let nextMilestone = milestones.find(m => m.title === milestoneTitle);
+
+            if (!nextMilestone) {
+              const now = new Date();
+              const day = now.getUTCDay();
+              const daysUntilFriday = (5 - day + 7) % 7 || 7;
+              now.setUTCDate(now.getUTCDate() + daysUntilFriday);
+              const isoDue = now.toISOString().split('T')[0];
+
+              const { data: created } = await github.rest.issues.createMilestone({
+                owner,
+                repo,
+                title: milestoneTitle,
+                description: 'Next weekly release for WebSDK',
+                due_on: `${isoDue}T23:59:59Z`
+              });
+
+              nextMilestone = created;
+              console.log(`Created milestone '${milestoneTitle}' due on ${isoDue}`);
+            }
+
+            await github.rest.issues.update({
+              owner,
+              repo,
+              issue_number: context.issue.number,
+              milestone: nextMilestone.number
+            });
+
+            console.log(`Assigned PR #${context.issue.number} to '${milestoneTitle}'`);
+
+  rotate-milestones:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rotate milestones on release tag
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const tag = context.ref.replace('refs/tags/', '');
+            const milestonePrefix = `${repo} -`;
+            const nextTitle = `${milestonePrefix} Next`;
+            const releaseTitle = `${milestonePrefix} ${tag}`;
+
+            const { data: milestones } = await github.rest.issues.listMilestones({
+              owner,
+              repo,
+              state: 'open'
+            });
+
+            let releasedMilestoneId = null;
+            const nextMilestone = milestones.find(m => m.title === nextTitle);
+
+            if (nextMilestone) {
+              await github.rest.issues.updateMilestone({
+                owner,
+                repo,
+                milestone_number: nextMilestone.number,
+                title: releaseTitle
+              });
+              releasedMilestoneId = nextMilestone.number;
+              console.log(`Renamed milestone '${nextTitle}' → '${releaseTitle}'`);
+            } else {
+              console.log(`No '${nextTitle}' milestone found — skipping rename.`);
+            }
+
+            const now = new Date();
+            const day = now.getUTCDay();
+            const daysUntilFriday = (5 - day + 7) % 7 || 7;
+            now.setUTCDate(now.getUTCDate() + daysUntilFriday);
+            const isoDue = now.toISOString().split('T')[0];
+
+            const { data: createdMilestone } = await github.rest.issues.createMilestone({
+              owner,
+              repo,
+              title: nextTitle,
+              description: 'Next weekly release for WebSDK',
+              due_on: `${isoDue}T23:59:59Z`
+            });
+
+            console.log(`Created new '${nextTitle}' milestone due on ${isoDue}`);
+
+            if (releasedMilestoneId) {
+              const { data: openIssues } = await github.rest.issues.listForRepo({
+                owner,
+                repo,
+                state: 'open',
+                milestone: releasedMilestoneId
+              });
+
+              for (const issue of openIssues) {
+                if (issue.pull_request) {
+                  await github.rest.issues.update({
+                    owner,
+                    repo,
+                    issue_number: issue.number,
+                    milestone: createdMilestone.number
+                  });
+                  console.log(`Moved PR #${issue.number} to '${nextTitle}'`);
+                }
+              }
+            } else {
+              console.log("No milestone to move PRs from — likely a first release.");
+            }
