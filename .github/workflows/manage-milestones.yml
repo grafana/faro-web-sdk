@@ -1,1 +1,127 @@
+name: Weekly Milestone Management
 
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  assign-next-to-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure PR is assigned to 'Next' milestone (create if needed)
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+  
+            // 1. Try to find 'Next' milestone
+            const { data: milestones } = await github.rest.issues.listMilestones({
+              owner,
+              repo,
+              state: 'open'
+            });
+  
+            let nextMilestone = milestones.find(m => m.title.toLowerCase() === 'next');
+  
+            // 2. If missing, create one with next Friday as due date
+            if (!nextMilestone) {
+              const now = new Date();
+              const day = now.getUTCDay(); // Sunday = 0
+              const daysUntilFriday = (5 - day + 7) % 7 || 7;
+              now.setUTCDate(now.getUTCDate() + daysUntilFriday);
+              const isoDue = now.toISOString().split('T')[0];
+  
+              const { data: created } = await github.rest.issues.createMilestone({
+                owner,
+                repo,
+                title: 'Next',
+                description: 'Next weekly release',
+                due_on: `${isoDue}T23:59:59Z`
+              });
+  
+              nextMilestone = created;
+              console.log(`Created 'Next' milestone due on ${isoDue}`);
+            }
+  
+            // 3. Assign milestone to PR
+            await github.rest.issues.update({
+              owner,
+              repo,
+              issue_number: context.issue.number,
+              milestone: nextMilestone.number
+            });
+  
+            console.log(`Assigned PR #${context.issue.number} to milestone 'Next'`);
+
+  rotate-milestones:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rotate milestones on release tag
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const tag = context.ref.replace('refs/tags/', '');
+
+            // Step 1: Find and rename 'Next' milestone
+            const { data: milestones } = await github.rest.issues.listMilestones({ owner, repo, state: 'open' });
+            const nextMilestone = milestones.find(m => m.title.toLowerCase() === 'next');
+            let newNextMilestone;
+
+            if (nextMilestone) {
+              await github.rest.issues.updateMilestone({
+                owner,
+                repo,
+                milestone_number: nextMilestone.number,
+                title: tag
+              });
+              console.log(`Renamed 'Next' milestone to '${tag}'`);
+            }
+
+            // Step 2: Calculate next Friday
+            const now = new Date();
+            const day = now.getUTCDay(); // 0 = Sunday, 5 = Friday
+            const daysUntilFriday = (5 - day + 7) % 7 || 7;
+            now.setUTCDate(now.getUTCDate() + daysUntilFriday);
+            const isoDue = now.toISOString().split('T')[0];
+
+            // Step 3: Create new 'Next' milestone
+            const { data: createdMilestone } = await github.rest.issues.createMilestone({
+              owner,
+              repo,
+              title: 'Next',
+              description: 'Next weekly release',
+              due_on: `${isoDue}T23:59:59Z`
+            });
+
+            console.log(`Created new 'Next' milestone due on ${isoDue}`);
+            newNextMilestone = createdMilestone;
+
+            // Step 4: Move open PRs from old milestone (tag) to new 'Next'
+            const { data: openIssues } = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              milestone: tag
+            });
+
+            for (const issue of openIssues) {
+              if (issue.pull_request) {
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  milestone: newNextMilestone.number
+                });
+                console.log(`Moved PR #${issue.number} to 'Next' milestone`);
+              }
+            }
