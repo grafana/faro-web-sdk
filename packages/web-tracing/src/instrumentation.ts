@@ -1,20 +1,13 @@
-import { context, trace } from '@opentelemetry/api';
+import { Attributes, context, trace } from '@opentelemetry/api';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { Resource } from '@opentelemetry/resources';
-import type { ResourceAttributes } from '@opentelemetry/resources';
+import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
 import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
 } from '@opentelemetry/semantic-conventions';
-import {
-  ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
-  ATTR_SERVICE_NAMESPACE,
-  // False positive. Package can be resolved.
-  // eslint-disable-next-line import/no-unresolved
-} from '@opentelemetry/semantic-conventions/incubating';
 
 import { BaseInstrumentation, VERSION } from '@grafana/faro-web-sdk';
 import type { Transport } from '@grafana/faro-web-sdk';
@@ -24,6 +17,7 @@ import { FaroTraceExporter } from './faroTraceExporter';
 import { FaroUserActionSpanProcessor } from './faroUserActionSpanProcessor';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 import { getSamplingDecision } from './sampler';
+import { ATTR_DEPLOYMENT_ENVIRONMENT_NAME, ATTR_SERVICE_NAMESPACE } from './semconv';
 import type { TracingInstrumentationOptions } from './types';
 
 // the providing of app name here is not great
@@ -42,7 +36,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
   initialize(): void {
     const options = this.options;
-    const attributes: ResourceAttributes = {};
+    const attributes: Attributes = {};
 
     if (this.config.app.name) {
       attributes[ATTR_SERVICE_NAME] = this.config.app.name;
@@ -66,7 +60,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     Object.assign(attributes, options.resourceAttributes);
 
-    const resource = Resource.default().merge(new Resource(attributes));
+    const resource = defaultResource().merge(resourceFromAttributes(attributes));
 
     const provider = new WebTracerProvider({
       resource,

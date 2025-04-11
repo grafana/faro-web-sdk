@@ -1,8 +1,7 @@
-import type { ContextManager, TextMapPropagator } from '@opentelemetry/api';
+import type { Attributes, ContextManager, TextMapPropagator } from '@opentelemetry/api';
 import type { Instrumentation } from '@opentelemetry/instrumentation';
 import type { FetchCustomAttributeFunction } from '@opentelemetry/instrumentation-fetch';
 import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request';
-import type { ResourceAttributes } from '@opentelemetry/resources';
 import type { SpanProcessor } from '@opentelemetry/sdk-trace-web';
 
 import type { Patterns } from '@grafana/faro-core';
@@ -17,7 +16,7 @@ export interface FaroTraceExporterConfig {
 }
 
 export interface TracingInstrumentationOptions {
-  resourceAttributes?: ResourceAttributes;
+  resourceAttributes?: Attributes;
   propagator?: TextMapPropagator;
   contextManager?: ContextManager;
   instrumentations?: InstrumentationOption[];
