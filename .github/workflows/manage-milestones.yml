@@ -5,7 +5,7 @@ on:
     types: [opened, reopened, synchronize]
   push:
     tags:
-      - 'v*'  # Adjust this if your tag pattern is different
+      - 'v*' # Adjust this if your tag pattern is different
 
 jobs:
   assign-next-to-pr:
