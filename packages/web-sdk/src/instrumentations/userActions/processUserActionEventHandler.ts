@@ -37,8 +37,6 @@ export function getUserEventHandler(faro: Faro) {
   function processUserEvent(event: PointerEvent | KeyboardEvent | ApiEvent) {
     let userActionName: string | undefined;
 
-    console.log('userActionName::before :>> ', userActionName);
-
     const isApiEventDetected = isApiEvent(event);
     if (isApiEventDetected) {
       userActionName = event.name;
@@ -48,8 +46,6 @@ export function getUserEventHandler(faro: Faro) {
         config.trackUserActionsDataAttributeName ?? userActionDataAttribute
       );
     }
-
-    console.log('userActionName::after :>> ', userActionName);
 
     if (actionRunning || userActionName == null) {
       return;
@@ -82,8 +78,6 @@ export function getUserEventHandler(faro: Faro) {
       maxFollowUpActionTimeRange
     );
 
-    console.log('actionRunning :>> ', actionRunning);
-
     const runningRequests = new Map<string, HttpRequestMessagePayload>();
     let isHalted = false;
     let pendingActionTimeoutId: number | undefined;
@@ -92,7 +86,6 @@ export function getUserEventHandler(faro: Faro) {
       .merge(httpMonitor, domMutationsMonitor, performanceEntriesMonitor)
       .takeWhile(() => actionRunning)
       .filter((msg) => {
-        console.log('msg :>> ', msg);
         // If the user action is in halt state, we only keep listening to ended http requests
         if (isHalted && !(isRequestEndMessage(msg) && runningRequests.has(msg.request.requestId))) {
           return false;
