@@ -2,10 +2,16 @@ name: Weekly Milestone Management
 
 on:
   pull_request:
+    branches:
+      - main
     types: [opened, reopened, synchronize]
   push:
     tags:
-      - 'v*' # Adjust this if your tag pattern is different
+      - '*' # Adjust this if your tag pattern is different
+
+permissions:
+  issues: write
+  pull-requests: write
 
 jobs:
   assign-next-to-pr:
