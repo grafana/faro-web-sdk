@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.16.0
+
 - Improvement (`@grafana/faro-web-sdk`): Provide a function to start a user-action (#1115).
 - Dependencies (`@grafana/faro-*`): Upgrade OpenTelemetry dependencies to v0.200.\* (#1126).
 
