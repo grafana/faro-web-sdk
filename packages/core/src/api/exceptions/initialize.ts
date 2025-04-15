@@ -86,7 +86,7 @@ export function initializeExceptionsAPI({
                 span_id: spanContext.spanId,
               }
             : tracesApi.getTraceContext(),
-          context: isEmpty(ctx) ? undefined : ctx,
+          ...(isEmpty(ctx) ? {} : { context: ctx }),
           ...(preserveOriginalError ? { originalError: error } : {}),
         },
         type: TransportItemType.EXCEPTION,
