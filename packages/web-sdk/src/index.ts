@@ -116,6 +116,7 @@ export type {
   EventEvent,
   EventsAPI,
   ExceptionEvent,
+  ExceptionEventExtended,
   ExceptionStackFrame,
   ExceptionsAPI,
   ExtendedError,
