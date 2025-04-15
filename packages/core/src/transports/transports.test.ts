@@ -141,6 +141,29 @@ describe('transports', () => {
       transports.execute(makeExceptionTransportItem('Error', 'ResizeObserver loop limit exceeded'));
       expect(mockBeforeSend).toHaveBeenCalledTimes(2);
     });
+
+    it('Sanitizes data before sending', () => {
+      const transport = new MockTransport();
+      const { api } = initializeFaro(
+        mockConfig({
+          isolate: true,
+          instrumentations: [],
+          transports: [transport],
+          batching: {
+            enabled: true,
+            itemLimit: 1,
+          },
+          preserveOriginalError: true,
+        })
+      );
+
+      api.pushError(new Error('Kaboom1'));
+      api.pushError(new Error('Kaboom2'));
+
+      expect(transport.sentItems).toHaveLength(2);
+      expect(transport.sentItems[0]).not.toHaveProperty('originalError');
+      expect(transport.sentItems[1]).not.toHaveProperty('originalError');
+    });
   });
 
   describe('multiple transports of the same type', () => {

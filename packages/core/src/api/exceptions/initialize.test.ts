@@ -8,7 +8,7 @@ import { ItemBuffer } from '../ItemBuffer';
 import type { API, APIEvent, ApiMessageBusMessages } from '../types';
 
 import { initializeExceptionsAPI } from './initialize';
-import type { ExceptionEvent, ExceptionStackFrame, PushErrorOptions } from './types';
+import type { ExceptionEvent, ExceptionEventExtended, ExceptionStackFrame, PushErrorOptions } from './types';
 
 describe('api.exceptions', () => {
   function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [API, MockTransport] {
@@ -100,6 +100,22 @@ describe('api.exceptions', () => {
       expect(transport.items).toHaveLength(2);
       expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.context).toBeUndefined();
       expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.context).toBeUndefined();
+    });
+
+    it('add the original error to the payload', () => {
+      const transport = new MockTransport();
+      const config = mockConfig({
+        transports: [transport],
+        preserveOriginalError: true,
+      });
+
+      const { api } = initializeFaro(config);
+
+      const error = new Error('test');
+      api.pushError(error);
+
+      expect(transport.items).toHaveLength(1);
+      expect((transport.items[0]?.payload as ExceptionEventExtended).originalError).toEqual(error);
     });
 
     describe('Filtering', () => {

@@ -1,12 +1,13 @@
 import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
 
+import { ExceptionEventExtended } from '@grafana/faro-core/src/api';
 import {
   initializeFaro as coreInit,
   getWebInstrumentations,
   ReactIntegration,
   ReactRouterVersion,
 } from '@grafana/faro-react';
-import type { Faro } from '@grafana/faro-react';
+import type { ExceptionEvent, Faro, TransportItem } from '@grafana/faro-react';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
 import { env } from '../utils/env';
@@ -50,6 +51,16 @@ export function initializeFaro(): Faro {
     },
 
     trackUserActionsPreview: true,
+    preserveOriginalError: true,
+
+    beforeSend(item) {
+      if (item.type === 'exception') {
+        const originalError = (item as TransportItem<ExceptionEventExtended>).payload.originalError;
+        console.log('originalError :>> ', originalError);
+      }
+
+      return item;
+    },
   });
 
   faro.api.pushLog(['Faro was initialized']);

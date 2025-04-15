@@ -1,4 +1,5 @@
-import type { TransportItem } from '..';
+import { TransportItemType } from '..';
+import type { APIEvent, ExceptionEvent, TransportItem } from '..';
 import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
@@ -63,7 +64,7 @@ export function initializeTransports(
         return [];
       }
 
-      filteredItems = modified;
+      filteredItems = sanitizeItems(modified, config);
     }
     return filteredItems;
   };
@@ -188,4 +189,16 @@ export function initializeTransports(
     },
     unpause,
   };
+}
+
+function sanitizeItems(filteredItems: Array<TransportItem<APIEvent>>, config: Config<APIEvent>) {
+  if (config.preserveOriginalError) {
+    for (const item of filteredItems) {
+      if (item.type === TransportItemType.EXCEPTION) {
+        delete (item as TransportItem<ExceptionEvent<true>>).payload.originalError;
+      }
+    }
+  }
+
+  return filteredItems;
 }

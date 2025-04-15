@@ -251,6 +251,20 @@ export interface Config<P = APIEvent> {
    * If the function returns true, the item will be excluded from user actions.
    */
   trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
+
+  /**
+   * When enabled, preserves the original Error object in the transport item for use in the beforeSend hook.
+   * The original error is automatically removed before the item is sent to the transport.
+   *
+   * This is useful for error post-processing in (uncontrolled) environments where you need to handle special cases:
+   * - Errors from third-party libraries
+   * - Errors with missing or incomplete data
+   * - Edge cases like `throw undefined` or `throw ''`
+   *
+   * With access to the original error in the beforeSend hook, you can enhance or modify the
+   * Faro exception payload to include additional context or fix missing information.
+   */
+  preserveOriginalError?: boolean;
 }
 
 export type Patterns = Array<string | RegExp>;

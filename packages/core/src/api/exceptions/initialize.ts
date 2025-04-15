@@ -59,7 +59,7 @@ export function initializeExceptionsAPI({
 
   const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => stacktraceParser;
 
-  const { ignoreErrors = [] } = config;
+  const { ignoreErrors = [], preserveOriginalError } = config;
 
   const pushError: ExceptionsAPI['pushError'] = (
     error,
@@ -74,7 +74,7 @@ export function initializeExceptionsAPI({
         ...(context ?? {}),
       });
 
-      const item: TransportItem<ExceptionEvent> = {
+      const item: TransportItem<ExceptionEvent<typeof preserveOriginalError>> = {
         meta: metas.value,
         payload: {
           type: type || error.name || defaultExceptionType,
@@ -87,6 +87,7 @@ export function initializeExceptionsAPI({
               }
             : tracesApi.getTraceContext(),
           context: isEmpty(ctx) ? undefined : ctx,
+          ...(preserveOriginalError ? { originalError: error } : {}),
         },
         type: TransportItemType.EXCEPTION,
       };

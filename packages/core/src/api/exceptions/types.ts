@@ -26,7 +26,7 @@ export interface Stacktrace {
 
 export type ExceptionContext = Record<string, string>;
 
-export interface ExceptionEvent {
+export interface ExceptionEventDefault {
   timestamp: string;
   type: string;
   value: string;
@@ -37,6 +37,19 @@ export interface ExceptionEvent {
 
   action?: UserAction;
 }
+
+/**
+ * The ExceptionEventExtended type is used to represent an exception event with an additional error
+ * property ans is only meant for client side use.The Additional property is removed by Faro before
+ * sending the event to the transport.
+ */
+export type ExceptionEventExtended = ExceptionEventDefault & {
+  originalError?: Error;
+};
+
+export type ExceptionEvent<EXTENDED = ExceptionEventDefault> = EXTENDED extends boolean
+  ? ExceptionEventExtended
+  : ExceptionEventDefault;
 
 export interface PushErrorOptions {
   skipDedupe?: boolean;

@@ -46,17 +46,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   }
 
   const {
-    app,
-    batching,
-    beforeSend,
-    consoleInstrumentation,
-    ignoreErrors,
-    sessionTracking,
-    trackResources,
-    trackWebVitalsAttribution,
-    user,
-    view,
-    trackGeolocation,
     // properties with default values
     dedupe = true,
     eventDomain = defaultEventDomain,
@@ -72,14 +61,17 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     webVitalsInstrumentation,
     trackUserActionsPreview = false,
     trackUserActionsDataAttributeName = userActionDataAttribute,
-    trackUserActionsExcludeItem,
+
+    // Properties without default values or which aren't used to create derived config
+    ...restProperties
   }: BrowserConfig = browserConfig;
 
   return {
-    app,
+    ...restProperties,
+
     batching: {
       ...defaultBatchingConfig,
-      ...batching,
+      ...browserConfig.batching,
     },
     dedupe: dedupe,
     globalObjectKey,
@@ -93,25 +85,20 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     preventGlobalExposure,
     transports,
     unpatchedConsole,
-    beforeSend,
     eventDomain,
-    ignoreErrors,
     // ignore cloud collector urls by default. These are URLs ending with /collect or /collect/ followed by alphanumeric characters.
     ignoreUrls: (browserConfig.ignoreUrls ?? []).concat([/\/collect(?:\/[\w]*)?$/]),
     sessionTracking: {
       ...defaultSessionTrackingConfig,
-      ...sessionTracking,
-      ...crateSessionMeta({ trackGeolocation, sessionTracking }),
+      ...browserConfig.sessionTracking,
+      ...crateSessionMeta({
+        trackGeolocation: browserConfig.trackGeolocation,
+        sessionTracking: browserConfig.sessionTracking,
+      }),
     },
-    user,
-    view,
-    trackResources,
-    trackWebVitalsAttribution,
-    consoleInstrumentation,
     webVitalsInstrumentation,
     trackUserActionsPreview,
     trackUserActionsDataAttributeName,
-    trackUserActionsExcludeItem,
   };
 }
 
