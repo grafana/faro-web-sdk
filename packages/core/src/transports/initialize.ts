@@ -1,12 +1,12 @@
-import { TransportItemType } from '..';
-import type { APIEvent, ExceptionEvent, TransportItem } from '..';
+import type { APIEvent, ExceptionEvent } from '../api';
 import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 
 import { BatchExecutor } from './batchExecutor';
-import type { BeforeSendHook, Transport, Transports } from './types';
+import { TransportItemType } from './const';
+import type { BeforeSendHook, Transport, TransportItem, Transports } from './types';
 
 export function initializeTransports(
   unpatchedConsole: UnpatchedConsole,
