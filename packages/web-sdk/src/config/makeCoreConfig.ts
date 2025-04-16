@@ -58,7 +58,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
-    trackWebVitalsAttribution = true,
     trackUserActionsPreview = false,
     trackUserActionsDataAttributeName = userActionDataAttribute,
 
