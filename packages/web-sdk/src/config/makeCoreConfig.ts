@@ -58,7 +58,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
-    webVitalsInstrumentation,
     trackUserActionsPreview = false,
     trackUserActionsDataAttributeName = userActionDataAttribute,
 
@@ -96,7 +95,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
         sessionTracking: browserConfig.sessionTracking,
       }),
     },
-    webVitalsInstrumentation,
     trackUserActionsPreview,
     trackUserActionsDataAttributeName,
   };

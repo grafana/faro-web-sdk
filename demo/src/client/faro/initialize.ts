@@ -16,7 +16,6 @@ export function initializeFaro(): Faro {
     url: `http://localhost:${env.faro.portAppReceiver}/collect`,
     apiKey: env.faro.apiKey,
 
-    trackWebVitalsAttribution: true,
     instrumentations: [
       ...getWebInstrumentations({
         captureConsole: true,
