@@ -11,4 +11,5 @@ export type {
   Stacktrace,
   StacktraceParser,
   ErrorWithIndexProperties,
+  ExceptionEventExtended,
 } from './types';

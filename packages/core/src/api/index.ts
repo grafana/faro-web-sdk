@@ -21,6 +21,7 @@ export type {
   PushErrorOptions,
   Stacktrace,
   StacktraceParser,
+  ExceptionEventExtended,
 } from './exceptions';
 
 export { defaultLogArgsSerializer } from './logs';

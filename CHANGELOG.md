@@ -2,6 +2,10 @@
 
 ## Next
 
+- Feature (`@grafana/faro-web-sdk`): Add configuration option to preserve the original JavaScript
+  error object, making it accessible within the `beforeSend` function for advanced error handling
+  (#1133).
+
 ## 1.16.0
 
 - Improvement (`@grafana/faro-web-sdk`): Provide a function to start a user-action (#1115).

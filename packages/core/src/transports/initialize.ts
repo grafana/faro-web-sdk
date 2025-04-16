@@ -1,11 +1,12 @@
-import type { TransportItem } from '..';
+import type { APIEvent, ExceptionEvent } from '../api';
 import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 
 import { BatchExecutor } from './batchExecutor';
-import type { BeforeSendHook, Transport, Transports } from './types';
+import { TransportItemType } from './const';
+import type { BeforeSendHook, Transport, TransportItem, Transports } from './types';
 
 export function initializeTransports(
   unpatchedConsole: UnpatchedConsole,
@@ -63,7 +64,7 @@ export function initializeTransports(
         return [];
       }
 
-      filteredItems = modified;
+      filteredItems = sanitizeItems(modified, config);
     }
     return filteredItems;
   };
@@ -188,4 +189,18 @@ export function initializeTransports(
     },
     unpause,
   };
+}
+/**
+ * Removes the `payload.originalError` property from the provided `TransportItem[]` parameter.
+ */
+function sanitizeItems(filteredItems: Array<TransportItem<APIEvent>>, config: Config<APIEvent>) {
+  if (config.preserveOriginalError) {
+    for (const item of filteredItems) {
+      if (item.type === TransportItemType.EXCEPTION) {
+        delete (item as TransportItem<ExceptionEvent<true>>).payload.originalError;
+      }
+    }
+  }
+
+  return filteredItems;
 }
