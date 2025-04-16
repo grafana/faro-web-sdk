@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.17.0
+
 - Feature (`@grafana/faro-web-sdk`): Add option to preserve original JavaScript error objects,
   making them accessible within the `beforeSend` function for advanced error handling (#1133).
 - Improvement (`@grafana/faro-web-sdk`): Enhanced web vitals monitoring by automatically tracking
