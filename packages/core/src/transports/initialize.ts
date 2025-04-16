@@ -190,7 +190,9 @@ export function initializeTransports(
     unpause,
   };
 }
-
+/**
+ * Removes the `payload.originalError` property from the provided `TransportItem[]` parameter.
+ */
 function sanitizeItems(filteredItems: Array<TransportItem<APIEvent>>, config: Config<APIEvent>) {
   if (config.preserveOriginalError) {
     for (const item of filteredItems) {

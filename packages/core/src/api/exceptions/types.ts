@@ -40,7 +40,7 @@ export interface ExceptionEventDefault {
 
 /**
  * The ExceptionEventExtended type is used to represent an exception event with an additional error
- * property ans is only meant for client side use.The Additional property is removed by Faro before
+ * property and is only meant for client side use. The additional property is removed by Faro before
  * sending the event to the transport.
  */
 export type ExceptionEventExtended = ExceptionEventDefault & {
