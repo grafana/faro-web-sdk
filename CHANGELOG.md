@@ -2,11 +2,10 @@
 
 ## Next
 
-- Feature (`@grafana/faro-web-sdk`): Add configuration option to preserve the original JavaScript
-  error object, making it accessible within the `beforeSend` function for advanced error handling
-  (#1133).
-
-- Improvement (`@grafana/faro-web-sdk`): Change `trackWebVitalsAttribution` default value to true (#991)
+- Feature (`@grafana/faro-web-sdk`): Add option to preserve original JavaScript error objects,
+  making them accessible within the `beforeSend` function for advanced error handling (#1133).
+- Improvement (`@grafana/faro-web-sdk`): Enhanced web vitals monitoring by automatically tracking
+  attribution data by default (#991).
 
 ## 1.16.0
 
