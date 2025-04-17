@@ -1,7 +1,7 @@
 import type { IResourceSpans, IScopeSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 
-import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
+import { initializeFaro } from '@grafana/faro-web-sdk';
 
 import { sendFaroEvents } from './faroTraceExporter.utils';
 
