@@ -99,6 +99,7 @@ export {
   USER_ACTION_CANCEL,
   USER_ACTION_END,
   USER_ACTION_START,
+  unknownString,
 } from '@grafana/faro-core';
 
 export type {
