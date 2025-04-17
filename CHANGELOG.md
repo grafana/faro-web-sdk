@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-tracing`): Fixed an issue with HTTP request sidecar events not being
+  transmitted when using the CDN distribution (#1139).
+
 - Fix (`@grafana/faro-react`): Export the `ExceptionEventExtended` type from the package, allowing
   users to import all necessary types from a single source (#1141).
 
