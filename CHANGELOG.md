@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-tracing`): Fixed an issue with HTTP request sidecar events not being
+  transmitted when using the CDN distribution (#1139).
+
 ## 1.17.0
 
 - Feature (`@grafana/faro-web-sdk`): Add option to preserve original JavaScript error objects,

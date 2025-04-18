@@ -1,7 +1,7 @@
 import type { IResourceSpans, IScopeSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 
-import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
+import { initializeFaro } from '@grafana/faro-web-sdk';
 
 import { sendFaroEvents } from './faroTraceExporter.utils';
 
@@ -249,10 +249,10 @@ describe('faroTraceExporter.utils', () => {
         parentId: 'test-parent-id',
       },
       attributes: {
-        duration_ns: 'NaN',
+        duration_ns: expect.any(String),
         // 'faro.action.user.name' and 'faro.action.user.parentId' should be removed from the attributes by the customPayloadTransformer
       },
-      domain: undefined,
+      domain: 'browser',
       name: 'faro.tracing.fetch',
       timestamp: expect.any(String),
       trace: {

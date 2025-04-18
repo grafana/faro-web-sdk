@@ -1,7 +1,6 @@
 import { SpanKind } from '@opentelemetry/api';
 
-import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from '@grafana/faro-core';
-import { apiMessageBus } from '@grafana/faro-web-sdk';
+import { apiMessageBus, USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from '@grafana/faro-web-sdk';
 import type { UserActionCancelMessage, UserActionEndMessage, UserActionStartMessage } from '@grafana/faro-web-sdk';
 
 import { FaroUserActionSpanProcessor } from './faroUserActionSpanProcessor';
