@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-react`): Export the `ExceptionEventExtended` type from the package, allowing
+  users to import all necessary types from a single source (#1141).
+
 ## 1.17.0
 
 - Feature (`@grafana/faro-web-sdk`): Add option to preserve original JavaScript error objects,

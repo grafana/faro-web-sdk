@@ -127,6 +127,7 @@ export {
   VERSION,
   ViewInstrumentation,
   WebVitalsInstrumentation,
+  userActionDataAttribute,
 } from '@grafana/faro-web-sdk';
 
 export type {
@@ -193,4 +194,5 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
+  ExceptionEventExtended,
 } from '@grafana/faro-web-sdk';
