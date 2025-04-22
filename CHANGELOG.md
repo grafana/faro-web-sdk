@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.17.1
+
 - Fix (`@grafana/faro-web-tracing`): Fixed an issue with HTTP request sidecar events not being
   transmitted when using the CDN distribution (#1139).
 
