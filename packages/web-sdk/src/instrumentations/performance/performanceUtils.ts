@@ -188,7 +188,7 @@ function toFaroPerformanceTimingString(v: unknown): string {
   }
 
   if (typeof v === 'number') {
-    return Math.round(v).toString();
+    return Math.round(v > 0 ? v : 0).toString();
   }
 
   return v.toString();
