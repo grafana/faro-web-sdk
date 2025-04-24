@@ -4,8 +4,11 @@
 
 ## 1.17.2
 
-Fix (`@grafana/faro-web-sdk`): Fixed incorrect calculation of TLS negotiation time in
-performance metrics (#1156).
+- Fix (`@grafana/faro-web-sdk`): Fixed incorrect calculation of TLS negotiation time in
+  performance metrics (#1156).
+
+- Improvement (`@grafana/faro-web-sdk`): Prevent negative values in performance timing measurements
+  (#1154).
 
 ## 1.17.1
 
