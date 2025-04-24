@@ -56,7 +56,7 @@ export const performanceResourceEntry = {
   domainLookupEnd: 778,
   connectStart: 778,
   connectEnd: 778,
-  secureConnectionStart: 778,
+  secureConnectionStart: 600,
   requestStart: 789,
   responseStart: 1148,
   responseStatus: '200',

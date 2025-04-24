@@ -58,7 +58,7 @@ describe('performanceUtils', () => {
       duration: '370',
       tcpHandshakeTime: '0',
       dnsLookupTime: '0',
-      tlsNegotiationTime: '11',
+      tlsNegotiationTime: '178',
       redirectTime: '0',
       requestTime: '359',
       responseTime: '0',
