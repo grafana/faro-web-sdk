@@ -201,4 +201,12 @@ describe('performanceUtils', () => {
     const spanContextUndefined = getSpanContextFromServerTiming(undefinedServerTimings);
     expect(spanContextUndefined).toBeUndefined();
   });
+
+  it('Returns 0 if the value is negative', () => {
+    expect(createFaroResourceTiming({ fetchStart: 10, workerStart: 20 } as any).serviceWorkerTime).toBe('0');
+    expect(createFaroResourceTiming({ fetchStart: 10, workerStart: 5 } as any).serviceWorkerTime).toBe('5');
+    expect(createFaroResourceTiming({ initiatorType: 'initiatorType-test' } as any).initiatorType).toBe(
+      'initiatorType-test'
+    );
+  });
 });
