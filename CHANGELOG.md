@@ -2,6 +2,11 @@
 
 ## Next
 
+## 1.17.2
+
+Fix (`@grafana/faro-web-sdk`): Fixed incorrect calculation of TLS negotiation time in
+performance metrics (#1156).
+
 ## 1.17.1
 
 - Fix (`@grafana/faro-web-tracing`): Fixed an issue with HTTP request sidecar events not being
