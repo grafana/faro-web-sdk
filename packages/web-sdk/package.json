@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-web-sdk",
-  "version": "1.17.1",
+  "version": "1.17.2",
   "description": "Faro instrumentations, metas, transports for web.",
   "engines": {
     "node": ">=18.0.0"
@@ -55,7 +55,7 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-core": "^1.17.1",
+    "@grafana/faro-core": "^1.17.2",
     "ua-parser-js": "^1.0.32",
     "web-vitals": "^4.0.1"
   },
