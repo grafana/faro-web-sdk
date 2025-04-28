@@ -58,6 +58,12 @@ export interface PushErrorOptions {
   context?: ExceptionContext;
   spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
   timestampOverwriteMs?: number;
+  /**
+   * Retains the original error object in the payload after parsing.
+   * This is primarily for internal, advanced use cases.
+   * Faro users should not need to use this option.
+   */
+  originalError?: Error;
 }
 
 // ts type is missing the cause property

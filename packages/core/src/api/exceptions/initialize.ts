@@ -63,14 +63,14 @@ export function initializeExceptionsAPI({
 
   const pushError: ExceptionsAPI['pushError'] = (
     error,
-    { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs } = {}
+    { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs, originalError } = {}
   ) => {
-    if (isErrorIgnored(ignoreErrors, error)) {
+    if (isErrorIgnored(ignoreErrors, originalError ?? error)) {
       return;
     }
     try {
       const ctx = stringifyObjectValues({
-        ...parseCause(error),
+        ...parseCause(originalError ?? error),
         ...(context ?? {}),
       });
 
@@ -87,7 +87,7 @@ export function initializeExceptionsAPI({
               }
             : tracesApi.getTraceContext(),
           ...(isEmpty(ctx) ? {} : { context: ctx }),
-          ...(preserveOriginalError ? { originalError: error } : {}),
+          ...(preserveOriginalError ? { originalError } : {}),
         },
         type: TransportItemType.EXCEPTION,
       };

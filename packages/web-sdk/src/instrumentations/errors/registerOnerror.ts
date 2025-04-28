@@ -1,4 +1,4 @@
-import type { API } from '@grafana/faro-core';
+import type { API, PushErrorOptions } from '@grafana/faro-core';
 
 import { getDetailsFromErrorArgs } from './getErrorDetails';
 
@@ -8,9 +8,16 @@ export function registerOnerror(api: API): void {
   window.onerror = (...args) => {
     try {
       const { value, type, stackFrames } = getDetailsFromErrorArgs(args);
+      const originalError = args[4];
 
       if (value) {
-        api.pushError(new Error(value), { type, stackFrames });
+        const options: PushErrorOptions = { type, stackFrames };
+
+        if (originalError != null) {
+          options.originalError = originalError;
+        }
+
+        api.pushError(new Error(value), options);
       }
     } finally {
       oldOnerror?.apply(window, args);
