@@ -2,6 +2,9 @@
 
 ## Next
 
+- Improvement (`@grafana/faro-web-sdk`): Track transfer size for resource requests
+  (#1169).
+
 - Fix (`@grafana/faro-web-sdk`): Fixed the ignored errors matching logic to properly identify
   errors based on stack trace content (#1168).
 
