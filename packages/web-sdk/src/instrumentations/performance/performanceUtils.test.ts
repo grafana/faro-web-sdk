@@ -73,6 +73,7 @@ describe('performanceUtils', () => {
       initiatorType: 'img',
       ttfb: '359',
       visibilityState: 'visible',
+      transferSize: '11459',
     } as FaroResourceTiming);
   });
 
