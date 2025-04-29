@@ -9,9 +9,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -36,6 +40,9 @@ jobs:
         run: yarn quality:test
 
   e2e:
+    permissions:
+      contents: read
+
     runs-on: ubuntu-latest
     container:
       image: cypress/browsers:22.12.0
@@ -58,7 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -80,17 +87,22 @@ jobs:
           DATABASE_USER: postgres
           DATABASE_PASSWORD: postgres
           IS_TEST: 1
+
         with:
           command: yarn quality:e2e:ci
           install: false
 
   publish:
+    permissions:
+      contents: read
+
     runs-on: ubuntu-latest
     needs: [test, e2e]
 
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Setup Node.js
