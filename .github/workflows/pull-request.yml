@@ -9,6 +9,8 @@ concurrency:
 
 jobs:
   test:
+    permissions:
+      contents: read
     name: Testing with Node version (${{ matrix.node }})
     runs-on: ubuntu-latest
     strategy:
@@ -17,6 +19,8 @@ jobs:
         node: [18.x, 20.x, 22.x, 23.x]
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -40,6 +44,9 @@ jobs:
         run: yarn quality:test
 
   e2e:
+    permissions:
+      contents: read
+
     runs-on: ubuntu-latest
     container:
       image: cypress/browsers
@@ -60,6 +67,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -74,7 +83,7 @@ jobs:
         run: yarn build
 
       - name: E2E tests
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@108b8684ae52e735ff7891524cbffbcd4be5b19f
         env:
           DATABASE_HOST: database
           DATABASE_PORT: 5432

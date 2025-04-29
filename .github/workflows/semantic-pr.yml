@@ -6,11 +6,6 @@ on:
       - opened
       - edited
       - synchronize
-  pull_request_target:
-    types:
-      - opened
-      - edited
-      - synchronize
 
 permissions:
   pull-requests: read
@@ -19,7 +14,8 @@ jobs:
   main:
     name: Validate PR title
     runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == github.event.pull_request.head.repo.full_name
     steps:
-      - uses: amannn/action-semantic-pull-request@v5
+      - uses: amannn/action-semantic-pull-request@0723387faaf9b38adef4775cd42cfd5155ed6017
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
