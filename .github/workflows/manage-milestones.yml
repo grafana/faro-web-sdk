@@ -9,16 +9,22 @@ on:
     tags:
       - '*' # Adjust this if your tag pattern is different
 
-permissions:
-  issues: write
-  pull-requests: write
+# permissions:
+#   issues: write
+#   pull-requests: write
+#   contents: read
 
 jobs:
   assign-next-to-pr:
+    permissions:
+      issues: write
+      pull-requests: write
+
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Assign PR to 'websdk - Next' milestone (create if missing)
+
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -64,6 +70,10 @@ jobs:
             console.log(`Assigned PR #${context.issue.number} to '${milestoneTitle}'`);
 
   rotate-milestones:
+    permissions:
+      issues: write
+      pull-requests: write
+
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:

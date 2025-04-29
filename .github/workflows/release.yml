@@ -18,7 +18,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          cache: 'yarn'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
@@ -65,7 +64,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/iron'
-          cache: 'yarn'
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -74,7 +72,7 @@ jobs:
         run: yarn build
 
       - name: E2E tests
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@108b8684ae52e735ff7891524cbffbcd4be5b19f
         env:
           DATABASE_HOST: database
           DATABASE_PORT: 5432
@@ -99,7 +97,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/iron'
-          cache: 'yarn'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
