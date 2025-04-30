@@ -3,22 +3,12 @@ name: 'Validate Semantic Pull Request'
 on:
   pull_request:
     types: [opened, edited, synchronize]
-  merge_group:
-    types: [checks_requested]
-
-# permissions: {}
 
 jobs:
   lint-pr-title:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
       - id: lint-pr-title
         uses: grafana/shared-workflows/actions/lint-pr-title@b48387250d5484d8375a7c1e938915e4b53e04b8
-        with:
-          config-path: '${{ github.workspace }}/.github/linters/commitlint.config.js'
-
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
