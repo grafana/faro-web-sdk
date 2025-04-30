@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-sdk`): Fixed the ignored errors matching logic to properly identify
+  errors based on stack trace content (#1168).
+
 ## 1.17.2
 
 - Fix (`@grafana/faro-web-sdk`): Fixed incorrect calculation of TLS negotiation time in

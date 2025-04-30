@@ -112,7 +112,7 @@ describe('api.exceptions', () => {
       const { api } = initializeFaro(config);
 
       const error = new Error('test');
-      api.pushError(error);
+      api.pushError(error, { originalError: error });
 
       expect(transport.items).toHaveLength(1);
       expect((transport.items[0]?.payload as ExceptionEventExtended).originalError).toEqual(error);
