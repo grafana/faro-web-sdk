@@ -183,7 +183,7 @@ describe('transports', () => {
       );
 
       const myError = new Error('Kaboom');
-      api.pushError(myError);
+      api.pushError(myError, { originalError: myError });
 
       expect(mockBeforeSend).toHaveBeenCalledTimes(1);
       expect(mockBeforeSend.mock.calls[0][0]).toHaveProperty('payload.originalError', myError);
