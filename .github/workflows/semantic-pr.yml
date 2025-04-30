@@ -11,11 +11,10 @@ permissions:
   pull-requests: read
 
 jobs:
-  main:
-    name: Validate PR title
+  lint-pr-title:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == github.event.pull_request.head.repo.full_name
     steps:
-      - uses: amannn/action-semantic-pull-request@0723387faaf9b38adef4775cd42cfd5155ed6017
+      - id: lint-pr-title
+        uses: grafana/shared-workflows/actions/lint-pr-title@b48387250d5484d8375a7c1e938915e4b53e04b8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
