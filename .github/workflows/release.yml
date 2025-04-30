@@ -120,7 +120,7 @@ jobs:
 
       - name: 'Get vault secrets'
         id: vault-secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@main # zizmor: ignore[unpinned-uses]
+        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b
         with:
           repo_secrets: |
             NPM_TOKEN=github-actions:npm-token
