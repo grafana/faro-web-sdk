@@ -48,6 +48,7 @@ describe('performanceUtils', () => {
       renderBlockingStatus: 'unknown',
       protocol: 'h2',
       initiatorType: 'navigation',
+      transferSize: '127601',
     } as FaroNavigationTiming);
   });
 
