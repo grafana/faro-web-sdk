@@ -95,6 +95,7 @@ jobs:
   publish:
     permissions:
       contents: read
+      id-token: write
 
     runs-on: ubuntu-latest
     needs: [test, e2e]
@@ -117,7 +118,14 @@ jobs:
       - name: Build
         run: yarn build
 
+      - name: 'Get vault secrets'
+        id: vault-secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@main # zizmor: ignore[unpinned-uses]
+        with:
+          repo_secrets: |
+            NPM_TOKEN=github-actions:npm-token
+
       - name: Publish
         run: yarn run publish from-git --yes --no-verify-access
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
