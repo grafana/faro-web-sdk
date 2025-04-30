@@ -13,7 +13,6 @@ permissions:
 jobs:
   lint-pr-title:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == github.event.pull_request.head.repo.full_name
     steps:
       - id: lint-pr-title
         uses: grafana/shared-workflows/actions/lint-pr-title@b48387250d5484d8375a7c1e938915e4b53e04b8
