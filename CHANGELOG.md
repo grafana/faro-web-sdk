@@ -7,6 +7,8 @@
 
 - Fix (`@grafana/faro-web-sdk`): Fixed the ignored errors matching logic to properly identify
   errors based on stack trace content (#1168).
+- Chore(deps): Changed Node.js version support by removing Node.js 18 (EOL) and adding support
+  for Node.js 24 (#1180).
 
 ## 1.17.2
 
