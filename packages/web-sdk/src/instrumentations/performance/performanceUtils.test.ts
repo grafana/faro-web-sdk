@@ -48,6 +48,7 @@ describe('performanceUtils', () => {
       renderBlockingStatus: 'unknown',
       protocol: 'h2',
       initiatorType: 'navigation',
+      transferSize: '127601',
     } as FaroNavigationTiming);
   });
 
@@ -73,6 +74,7 @@ describe('performanceUtils', () => {
       initiatorType: 'img',
       ttfb: '359',
       visibilityState: 'visible',
+      transferSize: '11459',
     } as FaroResourceTiming);
   });
 

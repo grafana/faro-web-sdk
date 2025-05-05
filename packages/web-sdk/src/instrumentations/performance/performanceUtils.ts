@@ -115,6 +115,7 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
     initiatorType: initiatorType,
     visibilityState: document.visibilityState,
     ttfb: toFaroPerformanceTimingString(responseStart - requestStart),
+    transferSize: toFaroPerformanceTimingString(transferSize),
 
     // TODO: add in future iteration, ideally after nested objects are supported by the collector.
     // serverTiming: resourceEntryRaw.serverTiming,
