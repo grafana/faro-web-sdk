@@ -2,13 +2,15 @@
 
 ## Next
 
+## 1.18.0
+
 - Improvement (`@grafana/faro-web-sdk`): Track transfer size for resource requests
   (#1169).
 
 - Fix (`@grafana/faro-web-sdk`): Fixed the ignored errors matching logic to properly identify
   errors based on stack trace content (#1168).
-- Chore(deps): Changed Node.js version support by removing Node.js 18 (EOL) and adding support
-  for Node.js 24 (#1180).
+
+- Chore(deps): Changed Node.js version support by removing Node.js 18 because it is EOL (#1180).
 
 ## 1.17.2
 
