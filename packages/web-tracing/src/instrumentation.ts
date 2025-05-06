@@ -77,15 +77,15 @@ export class TracingInstrumentation extends BaseInstrumentation {
       attributes[ATTR_BROWSER_BRANDS] = browserMeta.brands.map((entry) => entry.brand);
     }
 
-    if (browserMeta?.userAgent) {
+    if (browserMeta?.language) {
       attributes[ATTR_BROWSER_LANGUAGE] = browserMeta.language;
     }
 
-    if (browserMeta?.mobile != null) {
+    if (typeof browserMeta?.mobile === 'boolean') {
       attributes[ATTR_BROWSER_MOBILE] = Boolean(browserMeta.mobile);
     }
 
-    if (browserMeta?.os != null) {
+    if (browserMeta?.os) {
       attributes[ATTR_BROWSER_PLATFORM] = browserMeta.os;
     }
 
