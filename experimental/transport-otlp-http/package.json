@@ -3,7 +3,7 @@
   "version": "1.18.0",
   "description": "Faro transport which converts the Faro data model to the Otlp data model.",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=18.0.0"
   },
   "keywords": [
     "observability",

@@ -3,7 +3,7 @@
   "version": "1.18.0",
   "description": "Faro fetch auto-instrumentation package",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=18.0.0"
   },
   "keywords": [
     "observability",

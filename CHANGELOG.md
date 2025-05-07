@@ -2,6 +2,10 @@
 
 ## Next
 
+## 1.18.1
+
+- Chore(deps): Revert "Changed Node.js version support by removing Node.js 18 because it is EOL" (#1195).
+
 ## 1.18.0
 
 - Improvement (`@grafana/faro-web-sdk`): Track transfer size for resource requests
