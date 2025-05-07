@@ -7,10 +7,11 @@ import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
+  ATTR_USER_AGENT_ORIGINAL,
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
 } from '@opentelemetry/semantic-conventions';
 
-import { BaseInstrumentation, VERSION } from '@grafana/faro-web-sdk';
+import { BaseInstrumentation, isArray, VERSION } from '@grafana/faro-web-sdk';
 import type { Transport } from '@grafana/faro-web-sdk';
 
 import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
@@ -18,7 +19,18 @@ import { FaroTraceExporter } from './faroTraceExporter';
 import { FaroUserActionSpanProcessor } from './faroUserActionSpanProcessor';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 import { getSamplingDecision } from './sampler';
-import { ATTR_DEPLOYMENT_ENVIRONMENT_NAME, ATTR_SERVICE_NAMESPACE } from './semconv';
+import {
+  ATTR_BROWSER_BRANDS,
+  ATTR_BROWSER_LANGUAGE,
+  ATTR_BROWSER_MOBILE,
+  ATTR_BROWSER_PLATFORM,
+  ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
+  ATTR_PROCESS_RUNTIME_NAME,
+  ATTR_PROCESS_RUNTIME_VERSION,
+  ATTR_SERVICE_NAMESPACE,
+  ATTR_TELEMETRY_DISTRO_NAME,
+  ATTR_TELEMETRY_DISTRO_VERSION,
+} from './semconv';
 import type { TracingInstrumentationOptions } from './types';
 
 // the providing of app name here is not great
@@ -58,6 +70,34 @@ export class TracingInstrumentation extends BaseInstrumentation {
        */
       attributes[SEMRESATTRS_DEPLOYMENT_ENVIRONMENT] = this.config.app.environment;
     }
+
+    const browserMeta = this.metas.value.browser;
+
+    if (isArray(browserMeta?.brands)) {
+      attributes[ATTR_BROWSER_BRANDS] = browserMeta.brands.map((entry) => entry.brand);
+    }
+
+    if (browserMeta?.language) {
+      attributes[ATTR_BROWSER_LANGUAGE] = browserMeta.language;
+    }
+
+    if (typeof browserMeta?.mobile === 'boolean') {
+      attributes[ATTR_BROWSER_MOBILE] = Boolean(browserMeta.mobile);
+    }
+
+    if (browserMeta?.os) {
+      attributes[ATTR_BROWSER_PLATFORM] = browserMeta.os;
+    }
+
+    if (browserMeta?.userAgent) {
+      attributes[ATTR_USER_AGENT_ORIGINAL] = browserMeta.userAgent;
+    }
+
+    attributes[ATTR_PROCESS_RUNTIME_NAME] = 'browser';
+    attributes[ATTR_PROCESS_RUNTIME_VERSION] = this.metas.value.browser?.userAgent;
+
+    attributes[ATTR_TELEMETRY_DISTRO_NAME] = 'faro-web-sdk';
+    attributes[ATTR_TELEMETRY_DISTRO_VERSION] = VERSION;
 
     Object.assign(attributes, options.resourceAttributes);
 
