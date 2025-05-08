@@ -205,4 +205,30 @@ describe('errors', () => {
     expect((errorDetails as ErrorDetails)?.value).toBe('boo');
     expect(transport.items).toHaveLength(1);
   });
+
+  
+  it('getErrorDetails returns correct values when an ErrorEvent is passed to onerror with special characters in the file path for webkit engine', () => {
+    const transport = new MockTransport();
+    const { api } = initializeFaro(
+      mockConfig({
+        instrumentations: [new ConsoleInstrumentation()],
+        transports: [transport],
+        unpatchedConsole: {
+          error: jest.fn(),
+        } as unknown as Console,
+      })
+    );
+
+    registerOnerror(api);
+    let e = new Error('Oh crap!')
+    e.stack = 'Error: Oh crap!\n    at Object.eval [as refinement] (https://example.com/(main)/[path]/to.js:1:2345)'
+ 
+    console.error(e);
+
+    expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.value).toBe('console.error: Oh crap!');
+    expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.stacktrace?.frames[0]?.filename).toBe('https://example.com/(main)/[path]/to.js');
+    expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.stacktrace?.frames[0]?.colno).toBe(2345);
+    expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.stacktrace?.frames[0]?.lineno).toBe(1);
+    expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.stacktrace?.frames[0]?.function).toBe('Object.eval [as refinement]');
+  });
 });
