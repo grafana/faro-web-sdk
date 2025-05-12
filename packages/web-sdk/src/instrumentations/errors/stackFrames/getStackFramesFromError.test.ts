@@ -1,5 +1,5 @@
-import { getStackFramesFromError } from './getStackFramesFromError';
 import { buildStackFrame } from './buildStackFrame';
+import { getStackFramesFromError } from './getStackFramesFromError';
 
 jest.mock('./buildStackFrame', () => ({
   buildStackFrame: jest.fn((filename, func, lineno, colno) => ({ filename, func, lineno, colno })),
