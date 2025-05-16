@@ -52,7 +52,7 @@
     "@opentelemetry/instrumentation-pg": "^0.52.0",
     "@opentelemetry/instrumentation-winston": "^0.45.0",
     "@opentelemetry/resources": "^2.0.0",
-    "@opentelemetry/sdk-node": "^0.200.0",
+    "@opentelemetry/sdk-node": "^0.201.0",
     "@opentelemetry/sdk-trace-node": "^2.0.0",
     "@opentelemetry/semantic-conventions": "^1.28.0",
     "@reduxjs/toolkit": "^2.3.0",
