@@ -50,7 +50,7 @@
     "@opentelemetry/instrumentation-express": "^0.50.0",
     "@opentelemetry/instrumentation-http": "^0.200.0",
     "@opentelemetry/instrumentation-pg": "^0.53.0",
-    "@opentelemetry/instrumentation-winston": "^0.45.0",
+    "@opentelemetry/instrumentation-winston": "^0.46.0",
     "@opentelemetry/resources": "^2.0.0",
     "@opentelemetry/sdk-node": "^0.201.0",
     "@opentelemetry/sdk-trace-node": "^2.0.0",
