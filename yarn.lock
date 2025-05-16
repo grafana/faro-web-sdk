@@ -1495,7 +1495,7 @@
     "@opentelemetry/resources" "2.0.1"
     "@opentelemetry/sdk-metrics" "2.0.1"
 
-"@opentelemetry/exporter-trace-otlp-grpc@0.201.0":
+"@opentelemetry/exporter-trace-otlp-grpc@0.201.0", "@opentelemetry/exporter-trace-otlp-grpc@^0.201.0":
   version "0.201.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/exporter-trace-otlp-grpc/-/exporter-trace-otlp-grpc-0.201.0.tgz#9e993ef537cf8f120a9c61a059801e2abdea847d"
   integrity sha512-k84i3ck2siDEVWyq5fDimNfD3La70V8HI1lBvGfbvOC59PfZ62XaZ9iNN0YLqBUZZNxTXy6SYlVbkgYsgnIPbg==
@@ -1507,19 +1507,6 @@
     "@opentelemetry/otlp-transformer" "0.201.0"
     "@opentelemetry/resources" "2.0.1"
     "@opentelemetry/sdk-trace-base" "2.0.1"
-
-"@opentelemetry/exporter-trace-otlp-grpc@^0.200.0":
-  version "0.200.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/exporter-trace-otlp-grpc/-/exporter-trace-otlp-grpc-0.200.0.tgz#e259367f324c01342bf3f0175c52d9f4e61a345f"
-  integrity sha512-hmeZrUkFl1YMsgukSuHCFPYeF9df0hHoKeHUthRKFCxiURs+GwF1VuabuHmBMZnjTbsuvNjOB+JSs37Csem/5Q==
-  dependencies:
-    "@grpc/grpc-js" "^1.7.1"
-    "@opentelemetry/core" "2.0.0"
-    "@opentelemetry/otlp-exporter-base" "0.200.0"
-    "@opentelemetry/otlp-grpc-exporter-base" "0.200.0"
-    "@opentelemetry/otlp-transformer" "0.200.0"
-    "@opentelemetry/resources" "2.0.0"
-    "@opentelemetry/sdk-trace-base" "2.0.0"
 
 "@opentelemetry/exporter-trace-otlp-http@0.201.0":
   version "0.201.0"
@@ -1660,16 +1647,6 @@
   dependencies:
     "@opentelemetry/core" "2.0.1"
     "@opentelemetry/otlp-transformer" "0.201.0"
-
-"@opentelemetry/otlp-grpc-exporter-base@0.200.0":
-  version "0.200.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/otlp-grpc-exporter-base/-/otlp-grpc-exporter-base-0.200.0.tgz#cfc6cfd4def7d47f84e43d438d75cb463c67bf0d"
-  integrity sha512-CK2S+bFgOZ66Bsu5hlDeOX6cvW5FVtVjFFbWuaJP0ELxJKBB6HlbLZQ2phqz/uLj1cWap5xJr/PsR3iGoB7Vqw==
-  dependencies:
-    "@grpc/grpc-js" "^1.7.1"
-    "@opentelemetry/core" "2.0.0"
-    "@opentelemetry/otlp-exporter-base" "0.200.0"
-    "@opentelemetry/otlp-transformer" "0.200.0"
 
 "@opentelemetry/otlp-grpc-exporter-base@0.201.0":
   version "0.201.0"
