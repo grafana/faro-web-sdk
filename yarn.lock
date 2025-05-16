@@ -1681,7 +1681,7 @@
     "@opentelemetry/otlp-exporter-base" "0.201.0"
     "@opentelemetry/otlp-transformer" "0.201.0"
 
-"@opentelemetry/otlp-transformer@0.200.0", "@opentelemetry/otlp-transformer@^0.200.0":
+"@opentelemetry/otlp-transformer@0.200.0":
   version "0.200.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/otlp-transformer/-/otlp-transformer-0.200.0.tgz#19afb2274554cb74e2d2b7e32a54a7f7d83c8642"
   integrity sha512-+9YDZbYybOnv7sWzebWOeK6gKyt2XE7iarSyBFkwwnP559pEevKOUD8NyDHhRjCSp13ybh9iVXlMfcj/DwF/yw==
@@ -1694,7 +1694,7 @@
     "@opentelemetry/sdk-trace-base" "2.0.0"
     protobufjs "^7.3.0"
 
-"@opentelemetry/otlp-transformer@0.201.0":
+"@opentelemetry/otlp-transformer@0.201.0", "@opentelemetry/otlp-transformer@^0.201.0":
   version "0.201.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/otlp-transformer/-/otlp-transformer-0.201.0.tgz#a64eb1a3d6f3ac26fd92a7d3fa6f792ea9fb142b"
   integrity sha512-/AWcIXP/JRc8Bgd4xuYFEsIr7HTWIehUOfu3/kzilF060r2MxP09YmTaNCttO3EFdBKa2LjMoqsFnSdmVmZqRg==

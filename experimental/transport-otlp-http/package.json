@@ -59,7 +59,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@opentelemetry/otlp-transformer": "^0.200.0",
+    "@opentelemetry/otlp-transformer": "^0.201.0",
     "@opentelemetry/semantic-conventions": "^1.28.0"
   }
 }
