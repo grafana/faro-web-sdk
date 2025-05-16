@@ -1750,7 +1750,7 @@
     "@opentelemetry/core" "2.0.1"
     "@opentelemetry/sdk-trace-base" "2.0.1"
 
-"@opentelemetry/sdk-trace-web@2.0.0", "@opentelemetry/sdk-trace-web@^2.0.0":
+"@opentelemetry/sdk-trace-web@2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/sdk-trace-web/-/sdk-trace-web-2.0.0.tgz#bedbeb0f3772cf2fb45af20a6647c396950cf7a3"
   integrity sha512-2IeDP1k2fipeCH6OcTSg3HgaSvTTqgUNld5GIPGXWspynZSK85YjUDazEYpSVIyaMeQY6+ZHEaD5cwsRaq3dWA==
@@ -1758,6 +1758,14 @@
     "@opentelemetry/core" "2.0.0"
     "@opentelemetry/sdk-trace-base" "2.0.0"
     "@opentelemetry/semantic-conventions" "^1.29.0"
+
+"@opentelemetry/sdk-trace-web@^2.0.0":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/sdk-trace-web/-/sdk-trace-web-2.0.1.tgz#ad6f590cbc1a1a2e800a3815bd6b1923c8c78a4d"
+  integrity sha512-R4/i0rISvAujG4Zwk3s6ySyrWG+Db3SerZVM4jZ2lEzjrNylF7nRAy1hVvWe8gTbwIxX+6w6ZvZwdtl2C7UQHQ==
+  dependencies:
+    "@opentelemetry/core" "2.0.1"
+    "@opentelemetry/sdk-trace-base" "2.0.1"
 
 "@opentelemetry/semantic-conventions@^1.27.0", "@opentelemetry/semantic-conventions@^1.28.0", "@opentelemetry/semantic-conventions@^1.29.0", "@opentelemetry/semantic-conventions@^1.32.0":
   version "1.33.0"
