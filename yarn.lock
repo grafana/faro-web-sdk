@@ -2718,9 +2718,9 @@
     redux "^4.0.0"
 
 "@types/react-router-bootstrap@^0.26.6":
-  version "0.26.6"
-  resolved "https://registry.yarnpkg.com/@types/react-router-bootstrap/-/react-router-bootstrap-0.26.6.tgz#15095fbc1997dac5423a0586fd3da6499d9cec76"
-  integrity sha512-uqDwCdHp/qkXUPd8iOgZ92HQnTfyjpIwqgvbenW5SejrN3l6bkcObZQ/kkirHk39AQK4MJVpQBvcSu/SE6Crnw==
+  version "0.26.7"
+  resolved "https://registry.yarnpkg.com/@types/react-router-bootstrap/-/react-router-bootstrap-0.26.7.tgz#73dc4e4b600ad56b2e16f9b17a2c496837001cfc"
+  integrity sha512-Ove1omu3tSCwhKq944hmbBdn3Dn+6Ov7ySa8Qef2dF84FYVH56SQGIgBr50mZJn0GaPEok6t2jDW/5SPkZajVA==
   dependencies:
     "@types/react" "*"
 
