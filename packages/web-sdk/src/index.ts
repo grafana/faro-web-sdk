@@ -169,7 +169,7 @@ export type {
   UserActionStartMessage,
   UserActionEndMessage,
   UserActionCancelMessage,
-  UserAction,
+  UserActionHaltMessage,
 } from '@grafana/faro-core';
 
 export {
