@@ -2,9 +2,6 @@
   "name": "@grafana/faro-instrumentation-xhr",
   "version": "1.18.1",
   "description": "Faro XHR auto-instrumentation package",
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "keywords": [
     "observability",
     "apm",

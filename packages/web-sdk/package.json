@@ -2,9 +2,6 @@
   "name": "@grafana/faro-web-sdk",
   "version": "1.18.1",
   "description": "Faro instrumentations, metas, transports for web.",
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "keywords": [
     "observability",
     "apm",
