@@ -1553,12 +1553,12 @@
     "@opentelemetry/semantic-conventions" "^1.29.0"
 
 "@opentelemetry/instrumentation-http@^0.201.0":
-  version "0.201.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-http/-/instrumentation-http-0.201.0.tgz#ed248de24a5655cf49a4c1961ce17321e7f78862"
-  integrity sha512-ENCPm3xX/EB3egCvcAZnbhCG8tWTviPDl/hb5kAUvUHGs4s+lEZgJCZQPvwuFUyeOE2nJVyHIku3jJ8QrTv7PA==
+  version "0.201.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-http/-/instrumentation-http-0.201.1.tgz#f11ca45048a025aa0808f8754ebe525e0703dc47"
+  integrity sha512-xhkL/eOntScSLS8C2/LHKZ9Z9MEyGB9Yil7lF3JV0+YBeLXHQUIw2xPD7T0qw0DnqlrN8c/gi8hb5BEXZcyHRg==
   dependencies:
     "@opentelemetry/core" "2.0.1"
-    "@opentelemetry/instrumentation" "0.201.0"
+    "@opentelemetry/instrumentation" "0.201.1"
     "@opentelemetry/semantic-conventions" "^1.29.0"
     forwarded-parse "2.1.2"
 
