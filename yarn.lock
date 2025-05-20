@@ -1543,12 +1543,12 @@
     "@opentelemetry/semantic-conventions" "^1.27.0"
 
 "@opentelemetry/instrumentation-fetch@^0.201.0":
-  version "0.201.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-fetch/-/instrumentation-fetch-0.201.0.tgz#d4004bfe9358fe61e0bf446a10c3b86ffc75badd"
-  integrity sha512-K1iVJSY6JDSffdcKqv7LzkSoDEfyPuMUeWOIMpmvdIjnLEiMJLXkn66z/66Zr2MOIaiTnOKUYUrx8WgkEJLo4A==
+  version "0.201.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-fetch/-/instrumentation-fetch-0.201.1.tgz#211d1259c4ab24f39e5a8f16f19edfaecb9a5373"
+  integrity sha512-ZZZyQP+OYpMTK/Dm7j8W28GBLbtfe5r7rj+dAuhCQ5ELShJ4TUM0Ykcj2Oq4++2APeOzy8L6KkCukwtERdxzyQ==
   dependencies:
     "@opentelemetry/core" "2.0.1"
-    "@opentelemetry/instrumentation" "0.201.0"
+    "@opentelemetry/instrumentation" "0.201.1"
     "@opentelemetry/sdk-trace-web" "2.0.1"
     "@opentelemetry/semantic-conventions" "^1.29.0"
 
