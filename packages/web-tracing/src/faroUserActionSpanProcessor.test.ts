@@ -1,7 +1,18 @@
 import { SpanKind } from '@opentelemetry/api';
 
-import { apiMessageBus, USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from '@grafana/faro-web-sdk';
-import type { UserActionCancelMessage, UserActionEndMessage, UserActionStartMessage } from '@grafana/faro-web-sdk';
+import {
+  apiMessageBus,
+  USER_ACTION_CANCEL,
+  USER_ACTION_END,
+  USER_ACTION_HALT,
+  USER_ACTION_START,
+} from '@grafana/faro-web-sdk';
+import type {
+  UserActionCancelMessage,
+  UserActionEndMessage,
+  UserActionHaltMessage,
+  UserActionStartMessage,
+} from '@grafana/faro-web-sdk';
 
 import { FaroUserActionSpanProcessor } from './faroUserActionSpanProcessor';
 
@@ -41,7 +52,7 @@ describe('faroUserActionSpanProcessor', () => {
     });
   });
 
-  it('Does not add faro.user.action.* attributes to the span if a "user-action-cancel" or "user-action-end" was received', () => {
+  it('Does not add faro.user.action.* attributes to the span if a "user-action-cancel", "user-action-halt" or "user-action-end" was received', () => {
     apiMessageBus.notify({
       name: 'test-action',
       parentId: 'test-parent-id',
@@ -108,6 +119,41 @@ describe('faroUserActionSpanProcessor', () => {
       type: USER_ACTION_CANCEL,
       id: 'test-id',
     } as UserActionCancelMessage);
+
+    processor.onStart(span as any, {} as any);
+
+    expect(span.attributes).toEqual({});
+
+    apiMessageBus.notify({
+      name: 'test-action',
+      parentId: 'test-parent-id',
+      type: USER_ACTION_START,
+    } as UserActionStartMessage);
+
+    span = {
+      kind: SpanKind.CLIENT,
+      attributes: {},
+    };
+
+    processor.onStart(span as any, {} as any);
+
+    expect(span.attributes).toEqual({
+      'faro.action.user.name': 'test-action',
+      'faro.action.user.parentId': 'test-parent-id',
+    });
+
+    span = {
+      kind: SpanKind.CLIENT,
+      attributes: {},
+    };
+
+    apiMessageBus.notify({
+      name: 'test-action',
+      type: USER_ACTION_HALT,
+      id: 'test-id',
+      reason: 'pending-requests',
+      haltTime: Date.now(),
+    } as UserActionHaltMessage);
 
     processor.onStart(span as any, {} as any);
 

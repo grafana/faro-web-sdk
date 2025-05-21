@@ -98,6 +98,7 @@ export {
   Observable,
   USER_ACTION_CANCEL,
   USER_ACTION_END,
+  USER_ACTION_HALT,
   USER_ACTION_START,
   unknownString,
 } from '@grafana/faro-core';
@@ -168,7 +169,7 @@ export type {
   UserActionStartMessage,
   UserActionEndMessage,
   UserActionCancelMessage,
-  UserAction,
+  UserActionHaltMessage,
 } from '@grafana/faro-core';
 
 export {

@@ -1,10 +1,7 @@
 {
   "name": "@grafana/faro-instrumentation-fetch",
-  "version": "1.18.1",
+  "version": "1.18.2",
   "description": "Faro fetch auto-instrumentation package",
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "keywords": [
     "observability",
     "apm",
@@ -51,7 +48,7 @@
   },
   "homepage": "https://github.com/grafana/faro-web-sdk",
   "dependencies": {
-    "@grafana/faro-core": "^1.18.1"
+    "@grafana/faro-core": "^1.18.2"
   },
   "devDependencies": {
     "@remix-run/web-fetch": "^4.3.4"

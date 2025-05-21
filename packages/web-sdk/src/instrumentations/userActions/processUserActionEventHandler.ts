@@ -102,7 +102,6 @@ export function getUserEventHandler(faro: Faro) {
           runningRequests.set(msg.request.requestId, msg.request);
         }
         if (isRequestEndMessage(msg)) {
-          // console.log('request end msg :>> ', msg);
           runningRequests.delete(msg.request.requestId);
         }
 

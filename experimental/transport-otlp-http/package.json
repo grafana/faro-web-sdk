@@ -1,10 +1,7 @@
 {
   "name": "@grafana/faro-transport-otlp-http",
-  "version": "1.18.1",
+  "version": "1.18.2",
   "description": "Faro transport which converts the Faro data model to the Otlp data model.",
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "keywords": [
     "observability",
     "apm",
@@ -53,13 +50,13 @@
     "quality:circular-deps": "madge --circular ."
   },
   "devDependencies": {
-    "@grafana/faro-core": "^1.18.1"
+    "@grafana/faro-core": "^1.18.2"
   },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@opentelemetry/otlp-transformer": "^0.200.0",
+    "@opentelemetry/otlp-transformer": "^0.201.0",
     "@opentelemetry/semantic-conventions": "^1.28.0"
   }
 }
