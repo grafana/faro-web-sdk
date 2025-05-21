@@ -149,15 +149,6 @@ describe('getStackFramesFromError', () => {
     ]);
   });
 
-  it('should handle Opera 12 traces', () => {
-    const result = getStackFramesFromError(CapturedExceptions.OPERA_12);
-    expect(result).toEqual([
-      buildStackFrame('http://localhost:8000/ExceptionLab.html', '<anonymous function>', 48, undefined),
-      buildStackFrame('http://localhost:8000/ExceptionLab.html', 'dumpException3', 46, undefined),
-      buildStackFrame('http://localhost:8000/ExceptionLab.html', '<anonymous function>', 1, undefined),
-    ]);
-  });
-
   it('should handle Opera 25 traces', () => {
     const result = getStackFramesFromError(CapturedExceptions.OPERA_25);
     expect(result).toEqual([
@@ -170,21 +161,6 @@ describe('getStackFramesFromError', () => {
 
 /* Taken from: https://github.com/stacktracejs/error-stack-parser/blob/master/spec/fixtures/captured-errors.js */
 const CapturedExceptions: any = {};
-
-CapturedExceptions.OPERA_12 = {
-  message: "Cannot convert 'x' to object",
-  stack:
-    '<anonymous function>([arguments not available])@http://localhost:8000/ExceptionLab.html:48\n' +
-    'dumpException3([arguments not available])@http://localhost:8000/ExceptionLab.html:46\n' +
-    '<anonymous function>([arguments not available])@http://localhost:8000/ExceptionLab.html:1',
-  stacktrace:
-    'Error thrown at line 48, column 12 in <anonymous function>(x) in http://localhost:8000/ExceptionLab.html:\n' +
-    '    x.undef();\n' +
-    'called from line 46, column 8 in dumpException3() in http://localhost:8000/ExceptionLab.html:\n' +
-    '    dumpException((function(x) {\n' +
-    'called from line 1, column 0 in <anonymous function>(event) in http://localhost:8000/ExceptionLab.html:\n' +
-    '    dumpException3();',
-};
 
 CapturedExceptions.OPERA_25 = {
   message: "Cannot read property 'undef' of null",
