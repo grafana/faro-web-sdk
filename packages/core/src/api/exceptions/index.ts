@@ -1,4 +1,4 @@
-export { defaultExceptionType } from './const';
+export { defaultExceptionType, defaultErrorArgsSerializer } from './const';
 
 export { initializeExceptionsAPI } from './initialize';
 
@@ -11,4 +11,5 @@ export type {
   Stacktrace,
   StacktraceParser,
   ErrorWithIndexProperties,
+  ExceptionEventExtended,
 } from './types';

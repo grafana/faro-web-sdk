@@ -88,7 +88,7 @@ exports.getRollupConfigBase = (moduleName) => {
         inlineSources: false,
         outputToFilesystem: true,
         sourceMap: false,
-        tsconfig: './tsconfig.esm.json',
+        tsconfig: './tsconfig.bundle.json',
       }),
       terser(),
     ],

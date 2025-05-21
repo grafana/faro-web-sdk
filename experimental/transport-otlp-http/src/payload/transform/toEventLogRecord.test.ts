@@ -41,11 +41,14 @@ const item: TransportItem<EventEvent> = {
       email: 'user@example.com',
       id: 'user-abc123',
       username: 'user-joe',
+      fullName: 'user-full-name',
+      roles: 'user-role-one,user-role-two',
+      hash: 'user-hash',
       attributes: {
         userAttribute1: 'one',
         userAttribute2: 'two',
       },
-    } as const,
+    },
   } as const,
 };
 
@@ -128,6 +131,18 @@ const matchEventLogRecord = {
     {
       key: 'user.email',
       value: { stringValue: 'user@example.com' },
+    },
+    {
+      key: 'user.full_name',
+      value: { stringValue: 'user-full-name' },
+    },
+    {
+      key: 'user.roles',
+      value: { stringValue: 'user-role-one,user-role-two' },
+    },
+    {
+      key: 'user.hash',
+      value: { stringValue: 'user-hash' },
     },
     {
       key: 'user.attributes',

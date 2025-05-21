@@ -1,11 +1,12 @@
 import { SpanStatusCode } from '@opentelemetry/api';
-import Button from 'react-bootstrap/Button';
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import { Button, ButtonGroup } from 'react-bootstrap';
 
 import { faro } from '@grafana/faro-react';
+import { startUserAction } from '@grafana/faro-web-sdk';
 
 export function TracingInstrumentation() {
   const fetchSuccess = () => {
+    startUserAction('fetch-success', { foo: 'bar' });
     fetch('/');
   };
 
@@ -36,10 +37,10 @@ export function TracingInstrumentation() {
         <Button data-cy="btn-fetch-success" onClick={fetchSuccess}>
           Fetch Success
         </Button>
-        <Button data-cy="btn-xhr-success" onClick={xhrSuccess}>
+        <Button data-cy="btn-xhr-success" onClick={xhrSuccess} data-faro-user-action-name="xhr-success">
           XHR Success
         </Button>
-        <Button data-cy="btn-trace-with-log" onClick={traceWithLog}>
+        <Button data-cy="btn-trace-with-log" onClick={traceWithLog} data-faro-user-action-name="trace-with-log">
           Trace with Log
         </Button>
       </ButtonGroup>

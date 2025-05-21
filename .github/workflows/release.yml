@@ -1,0 +1,131 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: Lint
+        run: yarn quality:lint
+
+      - name: Check circular dependencies
+        run: yarn quality:circular-deps
+
+      - name: Unit tests
+        run: yarn quality:test
+
+  e2e:
+    permissions:
+      contents: read
+
+    runs-on: ubuntu-latest
+    container:
+      image: cypress/browsers:22.12.0
+      options: --user 1001
+    needs: test
+
+    services:
+      database:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: demo
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/iron'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: E2E tests
+        uses: cypress-io/github-action@be1bab96b388bbd9ce3887e397d373c8557e15af
+        env:
+          DATABASE_HOST: database
+          DATABASE_PORT: 5432
+          DATABASE_NAME: demo
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres
+          IS_TEST: 1
+
+        with:
+          command: yarn quality:e2e:ci
+          install: false
+
+  publish:
+    permissions:
+      contents: read
+      id-token: write
+
+    runs-on: ubuntu-latest
+    needs: [test, e2e]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/iron'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: 'Get vault secrets'
+        id: vault-secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b
+        with:
+          repo_secrets: |
+            NPM_TOKEN=github-actions:npm-token
+
+      - name: Publish
+        run: yarn run publish from-git --yes --no-verify-access
+        env:
+          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}

@@ -1,8 +1,13 @@
 import { initializeFaro } from '../../initialize';
-import { mockConfig, MockTransport } from '../../testUtils';
-import { LogLevel } from '../../utils';
-import type { API } from '../types';
+import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
+import type { TransportItem } from '../../transports';
+import { dateNow, LogLevel } from '../../utils';
+import { mockMetas, mockTracesApi, mockTransports } from '../apiTestHelpers';
+import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from '../const';
+import { ItemBuffer } from '../ItemBuffer';
+import type { API, APIEvent, ApiMessageBusMessages } from '../types';
 
+import { initializeLogsAPI } from './initialize';
 import type { LogArgsSerializer, LogEvent, PushLogOptions } from './types';
 
 describe('api.logs', () => {
@@ -131,9 +136,155 @@ describe('api.logs', () => {
     });
 
     it('Sets the timestamp to the provided custom timestamp', () => {
-      api.pushEvent('test', undefined, undefined, { timestampOverwriteMs: 123 });
+      api.pushLog(['test'], { timestampOverwriteMs: 123 });
       expect(transport.items).toHaveLength(1);
       expect((transport.items[0]?.payload as LogEvent).timestamp).toBe('1970-01-01T00:00:00.123Z');
+    });
+
+    it('stringifies all values in the context object', () => {
+      api.pushLog(['test'], {
+        context: {
+          // @ts-expect-error
+          a: 1,
+          b: 'foo',
+          // @ts-expect-error
+          c: true,
+          // @ts-expect-error
+          d: { e: 'bar' },
+          // @ts-expect-error
+          g: null,
+          // @ts-expect-error
+          h: undefined,
+          // @ts-expect-error
+          i: [1, 2, 3],
+        },
+      });
+
+      // @ts-expect-error
+      expect(transport.items[0]?.payload.context).toStrictEqual({
+        a: '1',
+        b: 'foo',
+        c: 'true',
+        d: '{"e":"bar"}',
+        g: 'null',
+        h: 'undefined',
+        i: '[1,2,3]',
+      });
+    });
+
+    it('does not stringify empty context', () => {
+      api.pushLog(['test']);
+      api.pushLog(['test2'], {
+        context: {},
+      });
+      expect(transport.items).toHaveLength(2);
+      expect((transport.items[0] as TransportItem<LogEvent>).payload.context).toBeUndefined();
+      expect((transport.items[0] as TransportItem<LogEvent>).payload.context).toBeUndefined();
+    });
+  });
+
+  describe('User action', () => {
+    it('buffers the error if a user action is in progress', () => {
+      const internalLogger = mockInternalLogger;
+      const config = mockConfig();
+
+      const actionBuffer = new ItemBuffer<TransportItem<APIEvent>>();
+
+      let message: ApiMessageBusMessages | undefined;
+
+      const getMessage = () => message;
+
+      message = { type: 'user-action-start', name: 'testAction', startTime: Date.now(), parentId: 'parent-id' };
+      const api = initializeLogsAPI({
+        unpatchedConsole: console,
+        internalLogger,
+        config,
+        metas: mockMetas,
+        transports: mockTransports,
+        tracesApi: mockTracesApi,
+        actionBuffer,
+        getMessage,
+      });
+
+      api.pushLog(['test']);
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: 'user-action-end',
+        name: 'testAction',
+        id: 'parent-id',
+        startTime: dateNow(),
+        endTime: dateNow(),
+        duration: 0,
+        eventType: 'click',
+      };
+
+      api.pushLog(['test-2']);
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: 'user-action-cancel',
+        name: 'testAction',
+        parentId: 'parent-id',
+      };
+
+      api.pushLog(['test-3']);
+      expect(actionBuffer.size()).toBe(1);
+    });
+  });
+
+  describe('User action', () => {
+    it('buffers the item if a user action is in progress', () => {
+      const internalLogger = mockInternalLogger;
+      const config = mockConfig();
+
+      const actionBuffer = new ItemBuffer<TransportItem<APIEvent>>();
+
+      let message: ApiMessageBusMessages | undefined;
+
+      const getMessage = () => message;
+
+      message = {
+        type: USER_ACTION_START,
+        name: 'testAction',
+        startTime: Date.now(),
+        parentId: 'parent-id',
+      };
+      const api = initializeLogsAPI({
+        unpatchedConsole: console,
+        internalLogger,
+        config,
+        metas: mockMetas,
+        transports: mockTransports,
+        tracesApi: mockTracesApi,
+        actionBuffer,
+        getMessage,
+      });
+
+      api.pushLog(['test']);
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_END,
+        name: 'testAction',
+        id: 'parent-id',
+        startTime: dateNow(),
+        endTime: dateNow(),
+        duration: 0,
+        eventType: 'click',
+      };
+
+      api.pushLog(['test-2']);
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_CANCEL,
+        name: 'testAction',
+        parentId: 'parent-id',
+      };
+
+      api.pushLog(['test-3']);
+      expect(actionBuffer.size()).toBe(1);
     });
   });
 });

@@ -2,18 +2,16 @@ import { genShortID, unknownString } from '@grafana/faro-core';
 import type { EventsAPI, PushEventOptions } from '@grafana/faro-core';
 
 import { getItem, setItem, webStorageType } from '../../utils';
+import { isUrlIgnored } from '../../utils/url';
 import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants';
 
 import { NAVIGATION_ENTRY } from './performanceConstants';
-import { createFaroNavigationTiming, entryUrlIsIgnored, getSpanContextFromServerTiming } from './performanceUtils';
+import { createFaroNavigationTiming, getSpanContextFromServerTiming } from './performanceUtils';
 import type { FaroNavigationItem } from './types';
 
 type SpanContext = PushEventOptions['spanContext'];
 
-export function getNavigationTimings(
-  pushEvent: EventsAPI['pushEvent'],
-  ignoredUrls: Array<string | RegExp>
-): Promise<FaroNavigationItem> {
+export function getNavigationTimings(pushEvent: EventsAPI['pushEvent']): Promise<FaroNavigationItem> {
   let faroNavigationEntryResolve: (value: FaroNavigationItem) => void;
   const faroNavigationEntryPromise = new Promise<FaroNavigationItem>((resolve) => {
     faroNavigationEntryResolve = resolve;
@@ -22,7 +20,7 @@ export function getNavigationTimings(
   const observer = new PerformanceObserver((observedEntries) => {
     const [navigationEntryRaw] = observedEntries.getEntries();
 
-    if (navigationEntryRaw == null || entryUrlIsIgnored(ignoredUrls, navigationEntryRaw.name)) {
+    if (navigationEntryRaw == null || isUrlIgnored(navigationEntryRaw.name)) {
       return;
     }
 

@@ -1,9 +1,14 @@
 import { initializeFaro } from '../../initialize';
-import { mockConfig, MockTransport } from '../../testUtils';
-import { TransportItemType } from '../../transports';
-import type { API } from '../types';
+import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
+import { TransportItem, TransportItemType } from '../../transports';
+import { dateNow } from '../../utils';
+import { mockMetas, mockTracesApi, mockTransports } from '../apiTestHelpers';
+import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from '../const';
+import { ItemBuffer } from '../ItemBuffer';
+import type { API, APIEvent, ApiMessageBusMessages } from '../types';
 
-import type { ExceptionEvent, ExceptionStackFrame, PushErrorOptions } from './types';
+import { initializeExceptionsAPI } from './initialize';
+import type { ExceptionEvent, ExceptionEventExtended, ExceptionStackFrame, PushErrorOptions } from './types';
 
 describe('api.exceptions', () => {
   function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [API, MockTransport] {
@@ -85,6 +90,32 @@ describe('api.exceptions', () => {
       expect(stacktrace).toBeTruthy();
       expect(stacktrace?.frames.length).toBeGreaterThan(3);
       expect(stacktrace?.frames[0]?.filename).toEqual('Error: test');
+    });
+
+    it('does not stringify empty context', () => {
+      api.pushError(new Error('test'));
+      api.pushError(new Error('test2'), {
+        context: {},
+      });
+      expect(transport.items).toHaveLength(2);
+      expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.context).toBeUndefined();
+      expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.context).toBeUndefined();
+    });
+
+    it('add the original error to the payload', () => {
+      const transport = new MockTransport();
+      const config = mockConfig({
+        transports: [transport],
+        preserveOriginalError: true,
+      });
+
+      const { api } = initializeFaro(config);
+
+      const error = new Error('test');
+      api.pushError(error, { originalError: error });
+
+      expect(transport.items).toHaveLength(1);
+      expect((transport.items[0]?.payload as ExceptionEventExtended).originalError).toEqual(error);
     });
 
     describe('Filtering', () => {
@@ -230,9 +261,130 @@ describe('api.exceptions', () => {
         expect((transport.items[1]?.payload as ExceptionEvent)?.context).toEqual({ cause: '[1,3]' });
         expect((transport.items[2]?.payload as ExceptionEvent)?.context).toEqual({ cause: '{"a":"b"}' });
         expect((transport.items[3]?.payload as ExceptionEvent)?.context).toEqual({ cause: 'Error: original error' });
-        expect((transport.items[4]?.payload as ExceptionEvent)?.context).toEqual({});
-        expect((transport.items[5]?.payload as ExceptionEvent)?.context).toEqual({});
-        expect((transport.items[5]?.payload as ExceptionEvent)?.context).toEqual({});
+        expect((transport.items[4]?.payload as ExceptionEvent)?.context).toBeUndefined();
+        expect((transport.items[5]?.payload as ExceptionEvent)?.context).toBeUndefined();
+        expect((transport.items[6]?.payload as ExceptionEvent)?.context).toBeUndefined();
+      });
+
+      it('stringifies all values added to the context', () => {
+        api.pushError(new Error('Error with context'), {
+          context: {
+            // @ts-expect-error
+            a: 1,
+            b: 'foo',
+            // @ts-expect-error
+            c: true,
+            // @ts-expect-error
+            d: { e: 'bar' },
+            // @ts-expect-error
+            g: null,
+            // @ts-expect-error
+            h: undefined,
+            // @ts-expect-error
+            i: [1, 2, 3],
+          },
+        });
+
+        const context = (transport.items[0]?.payload as ExceptionEvent)?.context;
+        expect(context).toStrictEqual({
+          a: '1',
+          b: 'foo',
+          c: 'true',
+          d: '{"e":"bar"}',
+          g: 'null',
+          h: 'undefined',
+          i: '[1,2,3]',
+        });
+
+        Object.values(context ?? {}).forEach((value) => {
+          expect(typeof value).toBe('string');
+        });
+      });
+    });
+
+    describe('config.ignoreErrors', () => {
+      it('will filter out errors by string or regex', () => {
+        const transport = new MockTransport();
+
+        const { api } = initializeFaro(
+          mockConfig({
+            transports: [transport],
+            ignoreErrors: ['Error: ResizeObserver', /FetchError[:\s\w\/]*pwc/, 'chrome-extension://mock-extension-id'],
+          })
+        );
+
+        api.pushError(new Error('Error: ResizeObserver loop limit exceeded'));
+        api.pushError(new Error('FetchError: 404 \n  Instantiating https://pwc.grafana.net/public/react-router-dom'));
+        api.pushError(new Error('FetchError: 404 \n  Instantiating https://pwc.grafana.net/public/@emotion/css'));
+
+        const typeErrorMsg = 'TypeError: _.viz is undefined';
+        api.pushError(new Error(typeErrorMsg));
+
+        const mockErrorWithStacktrace = new Error('Mock error for testing');
+        mockErrorWithStacktrace.name = 'MockError';
+        mockErrorWithStacktrace.stack = `MockError: Mock error for testing
+    at mockFunction (chrome-extension://mock-extension-id/mock-file.js:10:15)
+    at anotherFunction (chrome-extension://mock-extension-id/mock-file.js:20:5)
+    at Object.<anonymous> (chrome-extension://mock-extension-id/mock-file.js:30:3)`;
+        api.pushError(mockErrorWithStacktrace);
+
+        expect(transport.items).toHaveLength(1);
+        expect((transport.items[0]?.payload as ExceptionEvent).value).toEqual(typeErrorMsg);
+      });
+    });
+
+    describe('User action', () => {
+      it('buffers the error if a user action is in progress', () => {
+        const internalLogger = mockInternalLogger;
+        const config = mockConfig();
+
+        const actionBuffer = new ItemBuffer<TransportItem<APIEvent>>();
+
+        let message: ApiMessageBusMessages | undefined;
+
+        const getMessage = () => message;
+
+        message = {
+          type: USER_ACTION_START,
+          name: 'testAction',
+          startTime: Date.now(),
+          parentId: 'parent-id',
+        };
+        const api = initializeExceptionsAPI({
+          unpatchedConsole: console,
+          internalLogger,
+          config,
+          metas: mockMetas,
+          transports: mockTransports,
+          tracesApi: mockTracesApi,
+          actionBuffer,
+          getMessage,
+        });
+
+        api.pushError(new Error('test error'));
+        expect(actionBuffer.size()).toBe(1);
+
+        message = {
+          type: USER_ACTION_END,
+          name: 'testAction',
+          id: 'parent-id',
+          startTime: dateNow(),
+          endTime: dateNow(),
+          duration: 0,
+          eventType: 'click',
+        };
+
+        api.pushError(new Error('test error 2'));
+        expect(actionBuffer.size()).toBe(1);
+
+        message = {
+          type: USER_ACTION_CANCEL,
+          name: 'testAction',
+          parentId: 'parent-id',
+        };
+
+        api.pushError(new Error('test error 3'));
+        expect(actionBuffer.size()).toBe(1);
       });
     });
   });

@@ -1,7 +1,13 @@
+import type { TransportItem } from '../..';
 import { initializeFaro } from '../../initialize';
-import { mockConfig, MockTransport } from '../../testUtils';
-import type { API } from '../types';
+import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
+import { dateNow } from '../../utils';
+import { mockMetas, mockTracesApi, mockTransports } from '../apiTestHelpers';
+import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from '../const';
+import { ItemBuffer } from '../ItemBuffer';
+import type { API, APIEvent, ApiMessageBusMessages } from '../types';
 
+import { initializeEventsAPI } from './initialize';
 import type { EventEvent, PushEventOptions } from './types';
 
 describe('api.events', () => {
@@ -121,6 +127,98 @@ describe('api.events', () => {
         expect(transport.items).toHaveLength(1);
         expect((transport.items[0]?.payload as EventEvent).timestamp).toBe('1970-01-01T00:00:00.123Z');
       });
+
+      it('stringifies all values in the attributes object', () => {
+        api.pushEvent('test', {
+          // @ts-expect-error
+          a: 1,
+          b: 'foo',
+          // @ts-expect-error
+          c: true,
+          // @ts-expect-error
+          d: { e: 'bar' },
+          // @ts-expect-error
+          g: null,
+          // @ts-expect-error
+          h: undefined,
+          // @ts-expect-error
+          i: [1, 2, 3],
+        });
+
+        // @ts-expect-error
+        expect(transport.items[0]?.payload.attributes).toStrictEqual({
+          a: '1',
+          b: 'foo',
+          c: 'true',
+          d: '{"e":"bar"}',
+          g: 'null',
+          h: 'undefined',
+          i: '[1,2,3]',
+        });
+      });
+
+      it('does not stringify empty attributes', () => {
+        api.pushEvent('test');
+        api.pushEvent('test2', {});
+        expect(transport.items).toHaveLength(2);
+        expect((transport.items[0] as TransportItem<EventEvent>).payload.attributes).toBeUndefined();
+        expect((transport.items[0] as TransportItem<EventEvent>).payload.attributes).toBeUndefined();
+      });
+    });
+  });
+
+  describe('User action', () => {
+    it('buffers the error if a user action is in progress', () => {
+      const internalLogger = mockInternalLogger;
+      const config = mockConfig();
+
+      const actionBuffer = new ItemBuffer<TransportItem<APIEvent>>();
+
+      let message: ApiMessageBusMessages | undefined;
+
+      const getMessage = () => message;
+
+      message = {
+        type: USER_ACTION_START,
+        name: 'testAction',
+        startTime: Date.now(),
+        parentId: 'parent-id',
+      };
+      const api = initializeEventsAPI({
+        unpatchedConsole: console,
+        internalLogger,
+        config,
+        metas: mockMetas,
+        transports: mockTransports,
+        tracesApi: mockTracesApi,
+        actionBuffer,
+        getMessage,
+      });
+
+      api.pushEvent('test');
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_END,
+        name: 'testAction',
+        id: 'parent-id',
+        startTime: dateNow(),
+        endTime: dateNow(),
+        duration: 0,
+        eventType: 'click',
+      };
+
+      api.pushEvent('test-2');
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_CANCEL,
+        name: 'testAction',
+        parentId: 'parent-id',
+      };
+
+      api.pushEvent('test-3');
+      expect(actionBuffer.size()).toBe(1);
     });
   });
 });

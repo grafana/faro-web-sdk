@@ -1,26 +1,50 @@
-import type { Config } from '../../config';
+import type { Config, Patterns } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, getCurrentTimestamp, isArray, isError, isNull, isObject } from '../../utils';
+import {
+  deepEqual,
+  getCurrentTimestamp,
+  isArray,
+  isEmpty,
+  isError,
+  isNull,
+  isObject,
+  stringifyExternalJson,
+  stringifyObjectValues,
+} from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
+import { USER_ACTION_START } from '../const';
+import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
+import type { ApiMessageBusMessages } from '../types';
+import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
 import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
 
 let stacktraceParser: StacktraceParser | undefined;
 
-export function initializeExceptionsAPI(
-  _unpatchedConsole: UnpatchedConsole,
-  internalLogger: InternalLogger,
-  config: Config,
-  metas: Metas,
-  transports: Transports,
-  tracesApi: TracesAPI
-): ExceptionsAPI {
+export function initializeExceptionsAPI({
+  internalLogger,
+  config,
+  metas,
+  transports,
+  tracesApi,
+  actionBuffer,
+  getMessage,
+}: {
+  unpatchedConsole: UnpatchedConsole;
+  internalLogger: InternalLogger;
+  config: Config;
+  metas: Metas;
+  transports: Transports;
+  tracesApi: TracesAPI;
+  actionBuffer: ItemBuffer<TransportItem>;
+  getMessage: () => ApiMessageBusMessages | undefined;
+}): ExceptionsAPI {
   internalLogger.debug('Initializing exceptions API');
 
   let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace' | 'context'> | null = null;
@@ -35,58 +59,73 @@ export function initializeExceptionsAPI(
 
   const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => stacktraceParser;
 
+  const { ignoreErrors = [], preserveOriginalError } = config;
+
   const pushError: ExceptionsAPI['pushError'] = (
     error,
-    { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs } = {}
+    { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs, originalError } = {}
   ) => {
-    type = type || error.name || defaultExceptionType;
-
-    const item: TransportItem<ExceptionEvent> = {
-      meta: metas.value,
-      payload: {
-        type,
-        value: error.message,
-        timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
-        trace: spanContext
-          ? {
-              trace_id: spanContext.traceId,
-              span_id: spanContext.spanId,
-            }
-          : tracesApi.getTraceContext(),
-        context: {
-          ...parseCause(error),
-          ...(context ?? {}),
-        },
-      },
-      type: TransportItemType.EXCEPTION,
-    };
-
-    stackFrames = stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
-
-    if (stackFrames?.length) {
-      item.payload.stacktrace = {
-        frames: stackFrames,
-      };
-    }
-
-    const testingPayload = {
-      type: item.payload.type,
-      value: item.payload.value,
-      stackTrace: item.payload.stacktrace,
-      context: item.payload.context,
-    };
-
-    if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
-      internalLogger.debug('Skipping error push because it is the same as the last one\n', item.payload);
-
+    if (isErrorIgnored(ignoreErrors, originalError ?? error)) {
       return;
     }
+    try {
+      const ctx = stringifyObjectValues({
+        ...parseCause(originalError ?? error),
+        ...(context ?? {}),
+      });
 
-    lastPayload = testingPayload;
+      const item: TransportItem<ExceptionEvent<typeof preserveOriginalError>> = {
+        meta: metas.value,
+        payload: {
+          type: type || error.name || defaultExceptionType,
+          value: error.message,
+          timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
+          trace: spanContext
+            ? {
+                trace_id: spanContext.traceId,
+                span_id: spanContext.spanId,
+              }
+            : tracesApi.getTraceContext(),
+          ...(isEmpty(ctx) ? {} : { context: ctx }),
+          ...(preserveOriginalError ? { originalError } : {}),
+        },
+        type: TransportItemType.EXCEPTION,
+      };
 
-    internalLogger.debug('Pushing exception\n', item);
+      stackFrames = stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
 
-    transports.execute(item);
+      if (stackFrames?.length) {
+        item.payload.stacktrace = {
+          frames: stackFrames,
+        };
+      }
+
+      const testingPayload = {
+        type: item.payload.type,
+        value: item.payload.value,
+        stackTrace: item.payload.stacktrace,
+        context: item.payload.context,
+      };
+
+      if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
+        internalLogger.debug('Skipping error push because it is the same as the last one\n', item.payload);
+
+        return;
+      }
+
+      lastPayload = testingPayload;
+
+      internalLogger.debug('Pushing exception\n', item);
+
+      const msg = getMessage();
+      if (msg && msg.type === USER_ACTION_START) {
+        actionBuffer.addItem(item);
+      } else {
+        transports.execute(item);
+      }
+    } catch (err) {
+      internalLogger.error('Error pushing event', err);
+    }
   };
 
   changeStacktraceParser(config.parseStacktrace);
@@ -97,6 +136,7 @@ export function initializeExceptionsAPI(
     pushError,
   };
 }
+
 function parseCause(error: ErrorWithIndexProperties): {} | { cause: string } {
   let cause = error.cause;
 
@@ -105,10 +145,15 @@ function parseCause(error: ErrorWithIndexProperties): {} | { cause: string } {
     // typeof operator on null returns "object". This is a well-known quirk in JavaScript and is considered a bug that cannot be fixed due to backward compatibility issues.
     // MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof#typeof_null
   } else if (cause !== null && (isObject(error.cause) || isArray(error.cause))) {
-    cause = JSON.stringify(error.cause);
+    cause = stringifyExternalJson(error.cause);
   } else if (cause != null) {
     cause = error.cause.toString();
   }
 
   return cause == null ? {} : { cause };
+}
+
+function isErrorIgnored(ignoreErrors: Patterns, error: ErrorWithIndexProperties): boolean {
+  const { message, name, stack } = error;
+  return shouldIgnoreEvent(ignoreErrors, message + ' ' + name + ' ' + stack);
 }

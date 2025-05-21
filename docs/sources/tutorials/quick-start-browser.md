@@ -181,8 +181,8 @@ const faro = initializeFaro({
 Due to it's large size, [OpenTelemetry][opentelemetry-js] tracing support is provided in a separate
 `@grafana/faro-web-tracing` package.
 
-The provided default OTel setup includes tracing instrumentations for user interaction, fetch and document load, and W3C
-trace context propagation via `fetch` and `xhr`.
+The provided default OTel setup includes tracing instrumentations for fetch and xhr requests as well
+as W3C trace context propagation via `fetch` and `xhr`.
 
 ```ts
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
@@ -284,7 +284,13 @@ const resource = Resource.default().merge(
 
 const provider = new WebTracerProvider({ resource });
 
-provider.addSpanProcessor(new FaroSessionSpanProcessor(new BatchSpanProcessor(new FaroTraceExporter({ ...faro }))));
+provider.addSpanProcessor(
+  new FaroUserActionSpanProcessor(
+    new FaroMetaAttributesSpanProcessor(
+      new FaroSessionSpanProcessor(new BatchSpanProcessor(new FaroTraceExporter({ ...faro })))
+    )
+  )
+);
 
 provider.register({
   propagator: new W3CTraceContextPropagator(),

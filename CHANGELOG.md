@@ -2,6 +2,143 @@
 
 ## Next
 
+## 1.18.2
+
+- fix(user actions): don't attach user action context to http request when in halt mode (#1249)
+
+- chore(deps): Updated Node.js version support by removing Node.js 18 (EOL) and adding Node.js 24
+  LTS (#1259).
+
+## 1.18.1
+
+- Chore(deps): Revert "Changed Node.js version support by removing Node.js 18 because it is EOL" (#1195).
+
+## 1.18.0
+
+- Improvement (`@grafana/faro-web-sdk`): Track transfer size for resource requests
+  (#1169).
+
+- Fix (`@grafana/faro-web-sdk`): Fixed the ignored errors matching logic to properly identify
+  errors based on stack trace content (#1168).
+
+- Chore(deps): Changed Node.js version support by removing Node.js 18 because it is EOL (#1180).
+
+## 1.17.2
+
+- Fix (`@grafana/faro-web-sdk`): Fixed incorrect calculation of TLS negotiation time in
+  performance metrics (#1156).
+
+- Improvement (`@grafana/faro-web-sdk`): Prevent negative values in performance timing measurements
+  (#1154).
+
+## 1.17.1
+
+- Fix (`@grafana/faro-web-tracing`): Fixed an issue with HTTP request sidecar events not being
+  transmitted when using the CDN distribution (#1139).
+
+- Fix (`@grafana/faro-react`): Export the `ExceptionEventExtended` type from the package, allowing
+  users to import all necessary types from a single source (#1141).
+
+## 1.17.0
+
+- Feature (`@grafana/faro-web-sdk`): Add option to preserve original JavaScript error objects,
+  making them accessible within the `beforeSend` function for advanced error handling (#1133).
+- Improvement (`@grafana/faro-web-sdk`): Enhanced web vitals monitoring by automatically tracking
+  attribution data by default (#991).
+
+## 1.16.0
+
+- Improvement (`@grafana/faro-web-sdk`): Provide a function to start a user-action (#1115).
+- Dependencies (`@grafana/faro-*`): Upgrade OpenTelemetry dependencies to v0.200.\* (#1126).
+
+## 1.15.0
+
+- Feature (`@grafana/faro-web-sdk`): Alpha version of user actions instrumentation (#1101).
+
+- Fix (`@grafana/faro-web-tracing`): Fixed unexpected behavior in xhr instrumentation when custom
+  objects with a `toString` method were used as URLs (#1100).
+
+- Dependencies (`@grafana/faro-*`): Upgrade to TypeScript 5.8.2 (#1092)
+
+## 1.14.3
+
+- Improvement (`@grafana/faro-core`): Avoid sending empty `attributes` or `context` objects
+  when no data is provided (#1089)
+
+## 1.14.1
+
+- Improvement (`@grafana/faro-web-sdk`): The ignored errors parser now also parses stack traces.
+  This is helpful, for example, to exclude all errors thrown by extensions (#1000).
+
+## 1.14.0
+
+- Feature (`@grafana/faro-web-sdk`): Provide a `webVitalsInstrumentation.reportAllChanges` option to report
+  all changes for web vitals (#981)
+- Feature (`@grafana/faro-web-sdk`): Enhance user meta properties to align with OTEL semantic
+  conventions for user attributes (#990)
+- Feature (`@grafana/faro-web-tracing`): Add user attributes to spans (#990)
+
+### Breaking
+
+- Improvement (`@grafana/faro-web-tracing`): Removed `@opentelemetry/context-zone` as it is not
+  required for the default instrumentations.
+
+  Users who need `ZoneContextManager` for additional OTEL instrumentations can inject it via the
+  web-tracing configuration.
+
+  ```ts
+  initializeFaro({
+    // ...
+    instrumentations: [
+      // ...
+      new TracingInstrumentation({
+        contextManager: new ZoneContextManager(),
+        instrumentations: [
+          /* custom instruments */
+        ],
+      }),
+    ],
+    // ...
+  });
+  ```
+
+## 1.13.3
+
+- Chore (`@grafana/faro-web-sdk`): Ensure all properties in `attributes` and `context` objects are
+  stringified when sending custom signals (#952)
+
+## 1.13.2
+
+- Fix (`@grafana/faro-web-sdk`): The optional context object in the `pushError` API now correctly
+  stringifies all provided values (#944)
+
+## 1.13.1
+
+- Fix (`@grafana/faro-web-sdk`): Corrected the `setPage()` API to update the `page.id` properly and
+  correctly merge with the active page metadata (#933)
+
+## 1.13.0
+
+- Feature (`@grafana/faro-web-sdk`): Provide APIs to send `service.name` override instructions to the
+  receiver (#893)
+- Feature (`@grafana/faro-web-sdk`): Introduced `setPage(meta)` API to overwrite page metadata and
+  added an option to inject a custom `pageId` parser for generating custom `pageId`s continuously
+  (#923)
+- Feature (`@grafana/faro-web-sdk`): Enables support to provide a custom serializer for console
+  error properties (#901)
+
+- Improvement (`@grafana/faro-web-sdk`): Send an event for `service.name` overrides (#903)
+- Improvement (`@grafana/faro-*`) Add required Node engines to package.json (#913)
+
+- Fix (`faro demo`): Add missing json files to Docker image (#925).
+
+## 1.12.3
+
+- Feat (`@grafana/faro-web-tracing`): add duration to events from traces (#861)
+- Fix (`@grafana/faro-transport-otlp-http [experimental]`): Prevent sending requests when the
+  endpoint URL is not configured (#827).
+- Dependencies (`@grafana/faro-web-tracing`): upgrade otel deps (#763)
+
 ## 1.12.2
 
 - Fix (`@grafana/faro-web-sdk`): Update Faro log parsing in console instrumentation to use Faro's

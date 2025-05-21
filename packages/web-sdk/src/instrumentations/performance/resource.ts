@@ -1,13 +1,11 @@
 import { faro, genShortID } from '@grafana/faro-core';
-import type { EventsAPI, PushEventOptions } from '@grafana/faro-core';
+import type { EventsAPI, Observable, PushEventOptions } from '@grafana/faro-core';
+
+import { isUrlIgnored } from '../../utils/url';
 
 import { RESOURCE_ENTRY } from './performanceConstants';
-import {
-  createFaroResourceTiming,
-  entryUrlIsIgnored,
-  getSpanContextFromServerTiming,
-  includePerformanceEntry,
-} from './performanceUtils';
+import { createFaroResourceTiming, getSpanContextFromServerTiming, includePerformanceEntry } from './performanceUtils';
+import type { ResourceEntryMessage } from './types';
 
 type SpanContext = PushEventOptions['spanContext'];
 
@@ -16,7 +14,7 @@ const DEFAULT_TRACK_RESOURCES = { initiatorType: ['xmlhttprequest', 'fetch'] };
 export function observeResourceTimings(
   faroNavigationId: string,
   pushEvent: EventsAPI['pushEvent'],
-  ignoredUrls: Array<string | RegExp>
+  observable: Observable<ResourceEntryMessage>
 ) {
   const trackResources = faro.config.trackResources;
 
@@ -24,7 +22,7 @@ export function observeResourceTimings(
     const entries = observedEntries.getEntries();
 
     for (const resourceEntryRaw of entries) {
-      if (entryUrlIsIgnored(ignoredUrls, resourceEntryRaw.name)) {
+      if (isUrlIgnored(resourceEntryRaw.name)) {
         return;
       }
 
@@ -41,6 +39,12 @@ export function observeResourceTimings(
           faroNavigationId,
           faroResourceId: genShortID(),
         };
+
+        if (faro.config.trackUserActionsPreview) {
+          observable?.notify({
+            type: RESOURCE_ENTRY,
+          });
+        }
 
         pushEvent('faro.performance.resource', faroResourceEntry, undefined, {
           spanContext,

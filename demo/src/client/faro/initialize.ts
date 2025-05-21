@@ -9,32 +9,19 @@ import {
 import type { Faro } from '@grafana/faro-react';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
-import { env } from '../utils';
+import { env } from '../utils/env';
 
 export function initializeFaro(): Faro {
   const faro = coreInit({
     url: `http://localhost:${env.faro.portAppReceiver}/collect`,
     apiKey: env.faro.apiKey,
-    trackWebVitalsAttribution: true,
+
     instrumentations: [
       ...getWebInstrumentations({
         captureConsole: true,
       }),
 
-      new TracingInstrumentation({
-        instrumentationOptions: {
-          fetchInstrumentationOptions: {
-            applyCustomAttributesOnSpan: () => {
-              console.log('fetchInstrumentationOptions: applyCustomAttributesOnSpan');
-            },
-          },
-          xhrInstrumentationOptions: {
-            applyCustomAttributesOnSpan: () => {
-              console.log('xhrInstrumentationOptions: applyCustomAttributesOnSpan');
-            },
-          },
-        },
-      }),
+      new TracingInstrumentation(),
       new ReactIntegration({
         router: {
           version: ReactRouterVersion.V6,
@@ -54,6 +41,14 @@ export function initializeFaro(): Faro {
       version: env.package.version,
       environment: env.mode.name,
     },
+
+    trackResources: true,
+
+    batching: {
+      itemLimit: 100,
+    },
+
+    trackUserActionsPreview: true,
   });
 
   faro.api.pushLog(['Faro was initialized']);

@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-web-sdk",
-  "version": "1.12.2",
+  "version": "1.18.2",
   "description": "Faro instrumentations, metas, transports for web.",
   "keywords": [
     "observability",
@@ -52,11 +52,12 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-core": "^1.12.2",
+    "@grafana/faro-core": "^1.18.2",
     "ua-parser-js": "^1.0.32",
     "web-vitals": "^4.0.1"
   },
   "devDependencies": {
+    "@types/node": "^22.10.2",
     "@types/ua-parser-js": "^0.7.36",
     "user-agent-data-types": "^0.4.2"
   },

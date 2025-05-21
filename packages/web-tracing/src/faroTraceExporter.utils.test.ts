@@ -1,5 +1,7 @@
-import { initializeFaro } from '@grafana/faro-core';
-import { mockConfig } from '@grafana/faro-core/src/testUtils';
+import type { IResourceSpans, IScopeSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
+
+import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
+import { initializeFaro } from '@grafana/faro-web-sdk';
 
 import { sendFaroEvents } from './faroTraceExporter.utils';
 
@@ -15,16 +17,14 @@ describe('faroTraceExporter.utils', () => {
     jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
 
     // remove scopeSpan which contains client span
-    const data = {
-      ...testData[0],
-      scopeSpans: testData[0]?.scopeSpans.map((s) => ({ ...s })),
+    const data: IResourceSpans = {
+      resource: { attributes: [], droppedAttributesCount: 0 },
+      scopeSpans: testData[0]?.scopeSpans?.slice(0, -1) ?? [],
     };
 
-    data.scopeSpans!.pop();
+    sendFaroEvents([data]);
 
-    sendFaroEvents([data as any]);
-
-    expect(mockPushEvent).toBeCalledTimes(0);
+    expect(mockPushEvent).toHaveBeenCalledTimes(0);
   });
 
   it('Creates a Faro event for client spans only', () => {
@@ -35,7 +35,7 @@ describe('faroTraceExporter.utils', () => {
 
     sendFaroEvents(testData);
 
-    expect(mockPushEvent).toBeCalledTimes(1);
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent.mock.lastCall[0]).toBe('faro.tracing.fetch');
     expect(mockPushEvent.mock.lastCall[1]).toStrictEqual({
       component: 'fetch',
@@ -48,6 +48,7 @@ describe('faroTraceExporter.utils', () => {
       'http.status_text': 'Unauthorized',
       'http.url': 'http://foo/bar',
       'http.user_agent': 'my-user-agent',
+      duration_ns: '15000064',
     });
   });
 
@@ -58,45 +59,212 @@ describe('faroTraceExporter.utils', () => {
     jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
 
     // add scope name without "-"
-    const data = {
-      ...testData[0],
-      scopeSpans: testData[0]?.scopeSpans.map((s) => ({ ...s })),
+    const scopeSpans = testData[0]?.scopeSpans?.map((s) => ({ ...s })) ?? [];
+    const data: IResourceSpans = {
+      resource: { attributes: [], droppedAttributesCount: 0 },
+      scopeSpans,
     };
-    data.scopeSpans!.at(-1)!.scope.name = '@foo/coolName';
 
-    sendFaroEvents([data as any]);
+    if (scopeSpans.length === 0) {
+      throw new Error('Test data is invalid - scopeSpans should not be empty');
+    }
+    const lastScopeSpan = scopeSpans[scopeSpans.length - 1] as IScopeSpans & { scope: { name: string } };
+    lastScopeSpan.scope.name = '@foo/coolName';
 
-    expect(mockPushEvent).toBeCalledTimes(1);
+    sendFaroEvents([data]);
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent.mock.lastCall[0]).toBe('faro.tracing.coolName');
   });
 
-  it('Call Faro event API with traceID and spanID of contained in teh span', () => {
+  it('Call Faro event API with traceID and spanID of contained in the span', () => {
     const faro = initializeFaro(mockConfig());
 
     const mockPushEvent = jest.fn();
     jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
 
     // add scope name without "-"
-    const data = {
-      ...testData[0],
-      scopeSpans: testData[0]?.scopeSpans.map((s) => ({ ...s })),
+    const scopeSpans = testData[0]?.scopeSpans?.map((s) => ({ ...s })) ?? [];
+    const data: IResourceSpans = {
+      resource: { attributes: [], droppedAttributesCount: 0 },
+      scopeSpans,
     };
-    data.scopeSpans!.at(-1)!.scope.name = '@foo/coolName';
 
-    sendFaroEvents([data as any]);
+    if (scopeSpans.length === 0) {
+      throw new Error('Test data is invalid - scopeSpans should not be empty');
+    }
+    const lastScopeSpan = scopeSpans[scopeSpans.length - 1] as IScopeSpans & { scope: { name: string } };
+    lastScopeSpan.scope.name = '@foo/coolName';
 
-    expect(mockPushEvent).toBeCalledTimes(1);
-    expect(mockPushEvent.mock.lastCall[3]).toStrictEqual({
+    sendFaroEvents([data]);
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
+    expect(mockPushEvent.mock.lastCall[3]).toMatchObject({
       spanContext: {
         spanId: '4c47d5f85e4b2aec',
         traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
+      },
+      timestampOverwriteMs: expect.any(Number),
+    });
+  });
+
+  it('Does not include duration when timestamps are missing', () => {
+    const faro = initializeFaro(mockConfig());
+    const mockPushEvent = jest.fn();
+    jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
+
+    const data: IResourceSpans = {
+      resource: { attributes: [], droppedAttributesCount: 0 },
+      scopeSpans: [
+        {
+          scope: {
+            name: '@opentelemetry/instrumentation-fetch',
+            version: '0.45.1',
+          },
+          spans: [
+            {
+              traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
+              spanId: '4c47d5f85e4b2aec',
+              parentSpanId: 'da5a27b83e0f2871',
+              name: 'HTTP GET',
+              kind: 3,
+              startTimeUnixNano: '',
+              endTimeUnixNano: '',
+              attributes: [],
+              droppedAttributesCount: 0,
+              events: [],
+              droppedEventsCount: 0,
+              status: { code: 0 },
+              links: [],
+              droppedLinksCount: 0,
+            },
+          ],
+        },
+      ],
+    };
+
+    sendFaroEvents([data]);
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
+    expect(mockPushEvent.mock.lastCall[0]).not.toHaveProperty('duration_ns');
+  });
+
+  it('Does not include duration when timestamps are invalid', () => {
+    const faro = initializeFaro(mockConfig());
+    const mockPushEvent = jest.fn();
+    jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
+
+    const data: IResourceSpans = {
+      resource: { attributes: [], droppedAttributesCount: 0 },
+      scopeSpans: [
+        {
+          scope: {
+            name: '@opentelemetry/instrumentation-fetch',
+            version: '0.45.1',
+          },
+          spans: [
+            {
+              traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
+              spanId: '4c47d5f85e4b2aec',
+              parentSpanId: 'da5a27b83e0f2871',
+              name: 'HTTP GET',
+              kind: 3,
+              startTimeUnixNano: 'invalid',
+              endTimeUnixNano: 'invalid',
+              attributes: [],
+              droppedAttributesCount: 0,
+              events: [],
+              droppedEventsCount: 0,
+              status: { code: 0 },
+              links: [],
+              droppedLinksCount: 0,
+            },
+          ],
+        },
+      ],
+    };
+
+    sendFaroEvents([data]);
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
+    expect(mockPushEvent.mock.lastCall[0]).not.toHaveProperty('duration_ns');
+  });
+
+  it('Adds action name and parentId to the payload if "faro.action.user.name" and "faro.action.user.parentId" attributes are present', () => {
+    const transport = new MockTransport();
+    initializeFaro(mockConfig({ transports: [transport] }));
+
+    // const mockPushEvent = jest.fn();
+    // jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
+
+    const data: IResourceSpans = {
+      resource: { attributes: [], droppedAttributesCount: 0 },
+      scopeSpans: [
+        {
+          scope: {
+            name: '@opentelemetry/instrumentation-fetch',
+            version: '0.45.1',
+          },
+          spans: [
+            {
+              traceId: '7fb8581e3db5ebc6be4e36a7a8817cfe',
+              spanId: '4c47d5f85e4b2aec',
+              parentSpanId: 'da5a27b83e0f2871',
+              name: 'HTTP GET',
+              kind: 3,
+              startTimeUnixNano: 'invalid',
+              endTimeUnixNano: 'invalid',
+              attributes: [
+                {
+                  key: 'faro.action.user.name',
+                  value: {
+                    stringValue: 'test-action',
+                  },
+                },
+                {
+                  key: 'faro.action.user.parentId',
+                  value: {
+                    stringValue: 'test-parent-id',
+                  },
+                },
+              ],
+              droppedAttributesCount: 0,
+              events: [],
+              droppedEventsCount: 0,
+              status: { code: 0 },
+              links: [],
+              droppedLinksCount: 0,
+            },
+          ],
+        },
+      ],
+    };
+
+    sendFaroEvents([data]);
+
+    expect(transport.items).toHaveLength(1);
+    expect(transport.items[0]?.payload).toStrictEqual({
+      action: {
+        name: 'test-action',
+        parentId: 'test-parent-id',
+      },
+      attributes: {
+        duration_ns: expect.any(String),
+        // 'faro.action.user.name' and 'faro.action.user.parentId' should be removed from the attributes by the customPayloadTransformer
+      },
+      domain: 'browser',
+      name: 'faro.tracing.fetch',
+      timestamp: expect.any(String),
+      trace: {
+        span_id: '4c47d5f85e4b2aec',
+        trace_id: '7fb8581e3db5ebc6be4e36a7a8817cfe',
       },
     });
   });
 });
 
 // some unnecessary parts are removed to shorten the object a bit.
-const testData = [
+const testData: IResourceSpans[] = [
   {
     resource: {
       attributes: [],

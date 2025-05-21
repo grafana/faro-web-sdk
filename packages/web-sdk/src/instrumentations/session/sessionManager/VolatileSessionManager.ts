@@ -1,13 +1,10 @@
-import { faro } from '@grafana/faro-core';
-import type { Meta } from '@grafana/faro-core';
+import { faro, stringifyExternalJson } from '@grafana/faro-core';
 
 import { throttle } from '../../../utils';
-import { stringifyExternalJson } from '../../../utils/json';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
-import { isSampled } from './sampling';
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
-import { addSessionMetadataToNextSession, createUserSessionObject, getUserSessionUpdater } from './sessionManagerUtils';
+import { getSessionMetaUpdateHandler, getUserSessionUpdater } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
 export class VolatileSessionsManager {
@@ -51,19 +48,11 @@ export class VolatileSessionsManager {
     });
 
     // Users can call the setSession() method, so we need to sync this with the local storage session
-    faro.metas.addListener(function syncSessionIfChangedExternally(meta: Meta) {
-      const session = meta.session;
-      const sessionFromSessionStorage = VolatileSessionsManager.fetchUserSession();
-
-      if (session && session.id !== sessionFromSessionStorage?.sessionId) {
-        const userSession = addSessionMetadataToNextSession(
-          createUserSessionObject({ sessionId: session.id, isSampled: isSampled() }),
-          sessionFromSessionStorage
-        );
-
-        VolatileSessionsManager.storeUserSession(userSession);
-        faro.api.setSession(userSession.sessionMeta);
-      }
-    });
+    faro.metas.addListener(
+      getSessionMetaUpdateHandler({
+        fetchUserSession: VolatileSessionsManager.fetchUserSession,
+        storeUserSession: VolatileSessionsManager.storeUserSession,
+      })
+    );
   }
 }

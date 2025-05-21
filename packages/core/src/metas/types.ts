@@ -35,15 +35,40 @@ export interface MetaApp {
 }
 
 export interface MetaUser {
+  /**
+   * User email address.
+   */
   email?: string;
+  /**
+   * Unique identifier
+   */
   id?: string;
+  /**
+   * Short name or login/username of the user.
+   */
   username?: string;
+  /**
+   * User’s full name
+   */
+  fullName?: string;
+  /**
+   * comma separated list of user roles. "admin",editor" etc.
+   */
+  roles?: string;
+  /**
+   * Unique user hash to correlate information for a user in anonymized form.
+   */
+  hash?: string;
+  /**
+   * arbitrary user attributes, must be of type string.
+   */
   attributes?: MetaAttributes;
 }
 
 export interface MetaSession {
   id?: string;
   attributes?: MetaAttributes;
+  overrides?: MetaOverrides;
 }
 
 export interface MetaPage {
@@ -88,3 +113,22 @@ export interface Meta {
   view?: MetaView;
   k6?: MetaK6;
 }
+
+/**
+ * MetaOverrides are instructions that allow the receiver to override certain properties (Grafana Cloud only).
+ */
+export type MetaOverrides = {
+  /**
+   * New service name (Grafana Cloud only)
+   */
+  serviceName?: string;
+
+  /**
+   * Enable or disable geolocation tracking (Grafana Cloud only).
+   * Geolocation tracking must be enabled in the Grafana Cloud settings first.
+   * It cannot be enabled solely on the client side.
+   * This option allows control over tracking on the client side to comply with user
+   * privacy requirements.
+   */
+  geoLocationTrackingEnabled?: boolean;
+};

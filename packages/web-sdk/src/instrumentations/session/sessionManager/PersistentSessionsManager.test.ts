@@ -1,5 +1,5 @@
 import * as faroCore from '@grafana/faro-core';
-import { faro, initializeFaro } from '@grafana/faro-core';
+import { dateNow, faro, initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { PersistentSessionsManager } from './PersistentSessionsManager';
@@ -233,5 +233,92 @@ describe('Persistent Sessions Manager.', () => {
     expect(() => {
       PersistentSessionsManager.storeUserSession(storedSession);
     }).not.toThrow();
+  });
+
+  describe('setSession().', () => {
+    it('Creates a new Faro user session if new sessionId is set.', () => {
+      const mockIsSampled = jest.fn();
+      jest.spyOn(samplingModule, 'isSampled').mockImplementationOnce(mockIsSampled);
+
+      const storedSession: FaroUserSession = {
+        sessionId: mockInitialSessionId,
+        isSampled: true,
+        lastActivity: dateNow(),
+        started: dateNow(),
+      };
+
+      mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
+
+      new PersistentSessionsManager();
+
+      const initialSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
+      expect(initialSession.sessionId).toBe(mockInitialSessionId);
+
+      const manualSetSessionId = 'xyz';
+      faro.api.setSession({ id: manualSetSessionId });
+      expect(mockIsSampled).toHaveBeenCalledTimes(1);
+
+      const newSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
+      expect(newSession.sessionId).toBe(manualSetSessionId);
+    });
+
+    it('Does not update Faro user session if "sessionId" and "attributes" in the meta session object and stored session meta are identical.', () => {
+      const storedSession: FaroUserSession = {
+        sessionId: mockInitialSessionId,
+        isSampled: true,
+        lastActivity: dateNow(),
+        started: dateNow(),
+        sessionMeta: {
+          id: mockInitialSessionId,
+          attributes: {
+            previousSession: 'none',
+            isSampled: 'true',
+          },
+        },
+      };
+
+      mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
+      new PersistentSessionsManager();
+
+      faro.api.setSession(storedSession.sessionMeta);
+
+      expect(setItemSpy).not.toHaveBeenCalled();
+      expect(mockOnNewSessionCreated).not.toHaveBeenCalled();
+      expect(JSON.parse(mockStorage[STORAGE_KEY]!)).toStrictEqual(storedSession);
+    });
+
+    it('Creates a new Faro user session if new meta attributes are added.', () => {
+      const storedSession: FaroUserSession = {
+        sessionId: mockInitialSessionId,
+        isSampled: true,
+        lastActivity: dateNow(),
+        started: dateNow(),
+        sessionMeta: {
+          id: mockInitialSessionId,
+          attributes: {
+            isSampled: 'true',
+          },
+        },
+      };
+
+      mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
+      new PersistentSessionsManager();
+
+      const newMetaAttributes = {
+        id: mockInitialSessionId,
+        attributes: {
+          previousSession: mockInitialSessionId,
+          isSampled: 'true',
+          newAttribute: 'newValue',
+        },
+      };
+
+      faro.api.setSession(newMetaAttributes);
+
+      expect(setItemSpy).toHaveBeenCalledTimes(1);
+
+      const updatedSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
+      expect(updatedSession.sessionMeta).toStrictEqual(newMetaAttributes);
+    });
   });
 });

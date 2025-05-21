@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-core",
-  "version": "1.12.2",
+  "version": "1.18.2",
   "description": "Core package of Faro.",
   "keywords": [
     "observability",
@@ -52,7 +52,10 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/otlp-transformer": "^0.53.0"
+    "@opentelemetry/otlp-transformer": "^0.201.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2"
   },
   "publishConfig": {
     "access": "public"

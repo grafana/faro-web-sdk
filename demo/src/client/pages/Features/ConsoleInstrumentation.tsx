@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import Button from 'react-bootstrap/Button';
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import Form from 'react-bootstrap/Form';
+import { Button, ButtonGroup, Form } from 'react-bootstrap';
 
 import { faro, LogLevel } from '@grafana/faro-react';
 

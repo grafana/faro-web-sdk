@@ -33,6 +33,7 @@ export {
   isToString,
   isTypeof,
   isUndefined,
+  isEmpty,
 } from './is';
 export type { IsFnHelper } from './is';
 
@@ -48,3 +49,8 @@ export { genShortID } from './shortId';
 export { getBundleId } from './sourceMaps';
 
 export { dateNow } from './date';
+
+export { getCircularDependencyReplacer, stringifyExternalJson, stringifyObjectValues } from './json';
+
+export { Observable } from './reactive';
+export type { Subscription } from './reactive';

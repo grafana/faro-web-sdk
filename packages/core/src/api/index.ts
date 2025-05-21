@@ -1,9 +1,18 @@
 export { initializeAPI } from './initialize';
-export type { API, APIEvent } from './types';
+export type {
+  API,
+  APIEvent,
+  ApiMessageBusMessages,
+  UserActionCancelMessage,
+  UserActionEndMessage,
+  UserActionStartMessage,
+  UserActionHaltMessage,
+  UserAction,
+} from './types';
 
 export type { EventAttributes, EventEvent, EventsAPI, PushEventOptions } from './events';
 
-export { defaultExceptionType } from './exceptions';
+export { defaultExceptionType, defaultErrorArgsSerializer } from './exceptions';
 export type {
   ExceptionEvent,
   ExceptionStackFrame,
@@ -12,6 +21,7 @@ export type {
   PushErrorOptions,
   Stacktrace,
   StacktraceParser,
+  ExceptionEventExtended,
 } from './exceptions';
 
 export { defaultLogArgsSerializer } from './logs';
@@ -22,3 +32,7 @@ export type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '
 export type { MetaAPI } from './meta';
 
 export type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './traces';
+
+export { apiMessageBus } from './initialize';
+
+export { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START, USER_ACTION_HALT } from './const';

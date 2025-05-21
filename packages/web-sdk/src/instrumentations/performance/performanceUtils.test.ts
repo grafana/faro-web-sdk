@@ -48,6 +48,7 @@ describe('performanceUtils', () => {
       renderBlockingStatus: 'unknown',
       protocol: 'h2',
       initiatorType: 'navigation',
+      transferSize: '127601',
     } as FaroNavigationTiming);
   });
 
@@ -58,7 +59,7 @@ describe('performanceUtils', () => {
       duration: '370',
       tcpHandshakeTime: '0',
       dnsLookupTime: '0',
-      tlsNegotiationTime: '11',
+      tlsNegotiationTime: '178',
       redirectTime: '0',
       requestTime: '359',
       responseTime: '0',
@@ -73,6 +74,7 @@ describe('performanceUtils', () => {
       initiatorType: 'img',
       ttfb: '359',
       visibilityState: 'visible',
+      transferSize: '11459',
     } as FaroResourceTiming);
   });
 
@@ -200,5 +202,13 @@ describe('performanceUtils', () => {
     const undefinedServerTimings = undefined;
     const spanContextUndefined = getSpanContextFromServerTiming(undefinedServerTimings);
     expect(spanContextUndefined).toBeUndefined();
+  });
+
+  it('Returns 0 if the value is negative', () => {
+    expect(createFaroResourceTiming({ fetchStart: 10, workerStart: 20 } as any).serviceWorkerTime).toBe('0');
+    expect(createFaroResourceTiming({ fetchStart: 10, workerStart: 5 } as any).serviceWorkerTime).toBe('5');
+    expect(createFaroResourceTiming({ initiatorType: 'initiatorType-test' } as any).initiatorType).toBe(
+      'initiatorType-test'
+    );
   });
 });

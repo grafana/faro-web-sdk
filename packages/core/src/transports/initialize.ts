@@ -1,35 +1,12 @@
-import type { TransportItem } from '..';
-import type { ExceptionEvent } from '../api';
-import type { Config, Patterns } from '../config';
+import type { APIEvent, ExceptionEvent } from '../api';
+import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { UnpatchedConsole } from '../unpatchedConsole';
-import { isString } from '../utils';
 
 import { BatchExecutor } from './batchExecutor';
 import { TransportItemType } from './const';
-import type { BeforeSendHook, Transport, Transports } from './types';
-
-export function shouldIgnoreEvent(patterns: Patterns, msg: string): boolean {
-  return patterns.some((pattern) => {
-    return isString(pattern) ? msg.includes(pattern) : !!msg.match(pattern);
-  });
-}
-
-export function createBeforeSendHookFromIgnorePatterns(patterns: Patterns): BeforeSendHook {
-  return (item: TransportItem) => {
-    if (item.type === TransportItemType.EXCEPTION && item.payload) {
-      const evt = item.payload as ExceptionEvent;
-      const msg = `${evt.type}: ${evt.value}`;
-
-      if (shouldIgnoreEvent(patterns, msg)) {
-        return null;
-      }
-    }
-
-    return item;
-  };
-}
+import type { BeforeSendHook, Transport, TransportItem, Transports } from './types';
 
 export function initializeTransports(
   unpatchedConsole: UnpatchedConsole,
@@ -78,16 +55,6 @@ export function initializeTransports(
     });
   };
 
-  const addIgnoreErrorsPatterns: Transports['addIgnoreErrorsPatterns'] = (...ignoreErrorsPatterns) => {
-    internalLogger.debug('Adding ignoreErrorsPatterns\n', ignoreErrorsPatterns);
-
-    ignoreErrorsPatterns.forEach((ignoreErrorsPattern) => {
-      if (ignoreErrorsPattern) {
-        beforeSendHooks.push(createBeforeSendHookFromIgnorePatterns(ignoreErrorsPattern));
-      }
-    });
-  };
-
   const applyBeforeSendHooks = (items: TransportItem[]): TransportItem[] => {
     let filteredItems = items;
     for (const hook of beforeSendHooks) {
@@ -97,7 +64,7 @@ export function initializeTransports(
         return [];
       }
 
-      filteredItems = modified;
+      filteredItems = sanitizeItems(modified, config);
     }
     return filteredItems;
   };
@@ -211,7 +178,6 @@ export function initializeTransports(
   return {
     add,
     addBeforeSendHooks,
-    addIgnoreErrorsPatterns,
     getBeforeSendHooks,
     execute,
     isPaused,
@@ -223,4 +189,18 @@ export function initializeTransports(
     },
     unpause,
   };
+}
+/**
+ * Removes the `payload.originalError` property from the provided `TransportItem[]` parameter.
+ */
+function sanitizeItems(filteredItems: Array<TransportItem<APIEvent>>, config: Config<APIEvent>) {
+  if (config.preserveOriginalError) {
+    for (const item of filteredItems) {
+      if (item.type === TransportItemType.EXCEPTION) {
+        delete (item as TransportItem<ExceptionEvent<true>>).payload.originalError;
+      }
+    }
+  }
+
+  return filteredItems;
 }

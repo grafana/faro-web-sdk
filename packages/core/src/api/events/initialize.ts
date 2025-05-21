@@ -1,37 +1,53 @@
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
-import { TransportItem, TransportItemType, Transports } from '../../transports';
+import { TransportItemType } from '../../transports';
+import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
+import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
+import { USER_ACTION_START } from '../const';
+import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
+import type { ApiMessageBusMessages } from '../types';
 
 import type { EventEvent, EventsAPI } from './types';
 
-export function initializeEventsAPI(
-  _unpatchedConsole: UnpatchedConsole,
-  internalLogger: InternalLogger,
-  config: Config,
-  metas: Metas,
-  transports: Transports,
-  tracesApi: TracesAPI
-): EventsAPI {
+export function initializeEventsAPI({
+  internalLogger,
+  config,
+  metas,
+  transports,
+  tracesApi,
+  actionBuffer,
+  getMessage,
+}: {
+  unpatchedConsole: UnpatchedConsole;
+  internalLogger: InternalLogger;
+  config: Config;
+  metas: Metas;
+  transports: Transports;
+  tracesApi: TracesAPI;
+  actionBuffer: ItemBuffer<TransportItem>;
+  getMessage: () => ApiMessageBusMessages | undefined;
+}): EventsAPI {
   let lastPayload: Pick<EventEvent, 'name' | 'domain' | 'attributes'> | null = null;
 
   const pushEvent: EventsAPI['pushEvent'] = (
     name,
     attributes,
     domain,
-    { skipDedupe, spanContext, timestampOverwriteMs } = {}
+    { skipDedupe, spanContext, timestampOverwriteMs, customPayloadTransformer = (payload: EventEvent) => payload } = {}
   ) => {
     try {
+      const attrs = stringifyObjectValues(attributes);
+
       const item: TransportItem<EventEvent> = {
         meta: metas.value,
-        payload: {
+        payload: customPayloadTransformer({
           name,
           domain: domain ?? config.eventDomain,
-          attributes,
+          attributes: isEmpty(attrs) ? undefined : attrs,
           timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
           trace: spanContext
             ? {
@@ -39,7 +55,7 @@ export function initializeEventsAPI(
                 span_id: spanContext.spanId,
               }
             : tracesApi.getTraceContext(),
-        },
+        }),
         type: TransportItemType.EVENT,
       };
 
@@ -59,7 +75,12 @@ export function initializeEventsAPI(
 
       internalLogger.debug('Pushing event\n', item);
 
-      transports.execute(item);
+      const msg = getMessage();
+      if (msg && msg.type === USER_ACTION_START) {
+        actionBuffer.addItem(item);
+      } else {
+        transports.execute(item);
+      }
     } catch (err) {
       internalLogger.error('Error pushing event', err);
     }

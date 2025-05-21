@@ -75,7 +75,6 @@ export {
   defaultGlobalObjectKey,
   defaultInternalLoggerLevel,
   defaultLogLevel,
-  defaultMetas,
   ErrorsInstrumentation,
   FetchTransport,
   genShortID,
@@ -121,7 +120,6 @@ export {
   LogLevel,
   makeCoreConfig,
   noop,
-  pageMeta,
   parseStacktrace,
   setInternalFaroOnGlobalObject,
   TransportItemType,
@@ -129,6 +127,7 @@ export {
   VERSION,
   ViewInstrumentation,
   WebVitalsInstrumentation,
+  userActionDataAttribute,
 } from '@grafana/faro-web-sdk';
 
 export type {
@@ -195,4 +194,5 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
+  ExceptionEventExtended,
 } from '@grafana/faro-web-sdk';

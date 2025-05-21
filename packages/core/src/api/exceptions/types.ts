@@ -1,6 +1,7 @@
 import type { SpanContext } from '@opentelemetry/api';
 
 import type { TraceContext } from '../traces';
+import type { UserAction } from '../types';
 
 export type StacktraceParser = (err: ExtendedError) => Stacktrace;
 
@@ -25,7 +26,7 @@ export interface Stacktrace {
 
 export type ExceptionContext = Record<string, string>;
 
-export interface ExceptionEvent {
+export interface ExceptionEventDefault {
   timestamp: string;
   type: string;
   value: string;
@@ -33,7 +34,22 @@ export interface ExceptionEvent {
   stacktrace?: Stacktrace;
   trace?: TraceContext;
   context?: ExceptionContext;
+
+  action?: UserAction;
 }
+
+/**
+ * The ExceptionEventExtended type is used to represent an exception event with an additional error
+ * property and is only meant for client side use. The additional property is removed by Faro before
+ * sending the event to the transport.
+ */
+export type ExceptionEventExtended = ExceptionEventDefault & {
+  originalError?: Error;
+};
+
+export type ExceptionEvent<EXTENDED = ExceptionEventDefault> = EXTENDED extends boolean
+  ? ExceptionEventExtended
+  : ExceptionEventDefault;
 
 export interface PushErrorOptions {
   skipDedupe?: boolean;
@@ -42,6 +58,12 @@ export interface PushErrorOptions {
   context?: ExceptionContext;
   spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
   timestampOverwriteMs?: number;
+  /**
+   * Retains the original error object in the payload after parsing.
+   * This is primarily for internal, advanced use cases.
+   * Faro users should not need to use this option.
+   */
+  originalError?: Error;
 }
 
 // ts type is missing the cause property

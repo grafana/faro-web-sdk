@@ -5,21 +5,25 @@ import {
   defaultInternalLoggerLevel,
   defaultLogArgsSerializer,
   defaultUnpatchedConsole,
+  isBoolean,
+  isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, MetaItem, Transport } from '@grafana/faro-core';
+import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
-import { defaultMetas } from '../metas';
+import { userActionDataAttribute } from '../instrumentations/userActions/const';
+import { browserMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
+import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
 
-export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined {
+export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   const transports: Transport[] = [];
 
   const internalLogger = createInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
@@ -41,58 +45,108 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config | undefined
     internalLogger.error('either "url" or "transports" must be defined');
   }
 
-  function createMetas(): MetaItem[] {
-    const initialMetas = defaultMetas;
+  const {
+    // properties with default values
+    dedupe = true,
+    eventDomain = defaultEventDomain,
+    globalObjectKey = defaultGlobalObjectKey,
+    instrumentations = getWebInstrumentations(),
+    internalLoggerLevel = defaultInternalLoggerLevel,
+    isolate = false,
+    logArgsSerializer = defaultLogArgsSerializer,
+    metas = createDefaultMetas(browserConfig),
+    paused = false,
+    preventGlobalExposure = false,
+    unpatchedConsole = defaultUnpatchedConsole,
+    trackUserActionsPreview = false,
+    trackUserActionsDataAttributeName = userActionDataAttribute,
 
-    if (browserConfig.metas) {
-      initialMetas.push(...browserConfig.metas);
-    }
+    // Properties without default values or which aren't used to create derived config
+    ...restProperties
+  }: BrowserConfig = browserConfig;
 
-    const isK6BrowserSession = isObject((window as any).k6);
+  return {
+    ...restProperties,
 
-    if (isK6BrowserSession) {
-      return [...initialMetas, k6Meta];
-    }
-
-    return initialMetas;
-  }
-
-  const config: Config = {
-    app: browserConfig.app,
     batching: {
       ...defaultBatchingConfig,
       ...browserConfig.batching,
     },
-    dedupe: browserConfig.dedupe ?? true,
-    globalObjectKey: browserConfig.globalObjectKey || defaultGlobalObjectKey,
-    instrumentations: browserConfig.instrumentations ?? getWebInstrumentations(),
-    internalLoggerLevel: browserConfig.internalLoggerLevel ?? defaultInternalLoggerLevel,
-    isolate: browserConfig.isolate ?? false,
-    logArgsSerializer: browserConfig.logArgsSerializer ?? defaultLogArgsSerializer,
-    metas: createMetas(),
+    dedupe: dedupe,
+    globalObjectKey,
+    instrumentations: getFilteredInstrumentations(instrumentations, browserConfig),
+    internalLoggerLevel,
+    isolate,
+    logArgsSerializer,
+    metas,
     parseStacktrace,
-    paused: browserConfig.paused ?? false,
-    preventGlobalExposure: browserConfig.preventGlobalExposure ?? false,
+    paused,
+    preventGlobalExposure,
     transports,
-    unpatchedConsole: browserConfig.unpatchedConsole ?? defaultUnpatchedConsole,
-
-    beforeSend: browserConfig.beforeSend,
-    eventDomain: browserConfig.eventDomain ?? defaultEventDomain,
-    ignoreErrors: browserConfig.ignoreErrors,
+    unpatchedConsole,
+    eventDomain,
     // ignore cloud collector urls by default. These are URLs ending with /collect or /collect/ followed by alphanumeric characters.
     ignoreUrls: (browserConfig.ignoreUrls ?? []).concat([/\/collect(?:\/[\w]*)?$/]),
-
     sessionTracking: {
       ...defaultSessionTrackingConfig,
       ...browserConfig.sessionTracking,
+      ...crateSessionMeta({
+        trackGeolocation: browserConfig.trackGeolocation,
+        sessionTracking: browserConfig.sessionTracking,
+      }),
     },
-
-    user: browserConfig.user,
-    view: browserConfig.view,
-    trackResources: browserConfig.trackResources,
-    trackWebVitalsAttribution: browserConfig.trackWebVitalsAttribution,
-    consoleInstrumentation: browserConfig.consoleInstrumentation,
+    trackUserActionsPreview,
+    trackUserActionsDataAttributeName,
   };
+}
 
-  return config;
+function getFilteredInstrumentations(
+  instrumentations: Instrumentation[],
+  { trackUserActionsPreview }: BrowserConfig
+): Instrumentation[] {
+  return instrumentations.filter((instr) => {
+    if (instr.name === '@grafana/faro-web-sdk:instrumentation-user-action' && !trackUserActionsPreview) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
+  const { page, generatePageId } = browserConfig?.pageTracking ?? {};
+
+  const initialMetas: MetaItem[] = [
+    browserMeta,
+    createPageMeta({ generatePageId, initialPageMeta: page }),
+    ...(browserConfig.metas ?? []),
+  ];
+
+  const isK6BrowserSession = isObject((window as any).k6);
+  if (isK6BrowserSession) {
+    return [...initialMetas, k6Meta];
+  }
+
+  return initialMetas;
+}
+
+function crateSessionMeta({
+  trackGeolocation,
+  sessionTracking,
+}: Pick<BrowserConfig, 'trackGeolocation' | 'sessionTracking'>): { session: MetaSession } | {} {
+  const overrides: MetaSession['overrides'] = {};
+
+  if (isBoolean(trackGeolocation)) {
+    overrides.geoLocationTrackingEnabled = trackGeolocation;
+  }
+
+  if (isEmpty(overrides)) {
+    return {};
+  }
+
+  return {
+    session: {
+      ...(sessionTracking?.session ?? {}),
+      overrides,
+    },
+  };
 }

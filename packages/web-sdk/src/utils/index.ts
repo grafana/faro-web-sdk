@@ -1,15 +1,13 @@
 export {
+  getItem,
   isLocalStorageAvailable,
   isSessionStorageAvailable,
-  webStorageType,
-  getItem,
   isWebStorageAvailable,
   removeItem,
   setItem,
+  webStorageType,
 } from './webStorage';
 
 export { throttle } from './throttle';
 
-export { getCircularDependencyReplacer, stringifyExternalJson } from './json';
-
-export { getIgnoreUrls } from './url';
+export { getIgnoreUrls, getUrlFromResource } from './url';

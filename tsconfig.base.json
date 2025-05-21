@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "importsNotUsedAsValues": "error",
+    "verbatimModuleSyntax": true,
     "incremental": true,
     "inlineSources": true,
     "isolatedModules": true,
@@ -28,7 +28,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "types": ["jest"]
+    "types": ["jest", "node"]
   },
   "ts-node": {
     "esm": true

@@ -1,8 +1,8 @@
 import type { APIEvent, LogArgsSerializer, StacktraceParser } from '../api';
 import type { Instrumentation } from '../instrumentations';
 import type { InternalLoggerLevel } from '../internalLogger';
-import type { Meta, MetaApp, MetaItem, MetaSession, MetaUser, MetaView } from '../metas';
-import type { BatchExecutorOptions, BeforeSendHook, Transport } from '../transports';
+import type { Meta, MetaApp, MetaItem, MetaPage, MetaSession, MetaUser, MetaView } from '../metas';
+import type { BatchExecutorOptions, BeforeSendHook, Transport, TransportItem } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 import type { LogLevel } from '../utils';
 
@@ -159,16 +159,40 @@ export interface Config<P = APIEvent> {
   trackResources?: boolean;
 
   /**
-   * Track web vitals attribution data (default: false)
+   * Track web vitals attribution data (default: true)
    */
   trackWebVitalsAttribution?: boolean;
+
+  /**
+   * Configuration for the web vitals instrumentation
+   */
+  webVitalsInstrumentation?: {
+    /**
+     * Report all changes for web vitals (default: false)
+     *
+     * In most cases, you only want the callback function to be called when the metric is ready to be reported.
+     * However, it is possible to report every change (e.g. each larger layout shift as it happens)
+     * by setting reportAllChanges to true.
+     *
+     * This can be useful when debugging, but in general using reportAllChanges is not needed (or recommended)
+     * for measuring these metrics in production.
+     */
+    reportAllChanges?: boolean;
+
+    /**
+     * Track web vitals attribution data (default: true)
+     *
+     * Functionally the same as setting `trackWebVitalsAttribution` to true.
+     */
+    trackAttribution?: boolean;
+  };
 
   /**
    * Configuration for the console instrumentation
    */
   consoleInstrumentation?: {
     /**
-     * Configure what console levels should be captured by Faro. By default the follwoing levels
+     * Configure what console levels should be captured by Faro. By default the following levels
      * are disabled: console.debug, console.trace, console.log
      *
      * If you want to collect all levels set captureConsoleDisabledLevels: [];
@@ -179,7 +203,75 @@ export interface Config<P = APIEvent> {
      * By default, Faro sends an error for console.error calls. If you want to send a log instead, set this to true.
      */
     consoleErrorAsLog?: boolean;
+
+    /**
+     * If true, use the default Faro error serializer for console.error calls. If false, simply call toString() on the error arguments.
+     * If enabled, payloads containing serialized errors may become very large. If left disabled, some error details may be lost.
+     * (default: false)
+     */
+    serializeErrors?: boolean;
+
+    /**
+     * Custom function to serialize Error arguments
+     */
+    errorSerializer?: LogArgsSerializer;
   };
+
+  /**
+   * Configuration for the page tracking
+   */
+  pageTracking?: {
+    /**
+     * The page meta for initial page settings
+     */
+    page?: MetaPage;
+
+    /**
+     * Allows to provide a template for the page id
+     */
+    generatePageId?: (location: Location) => string;
+  };
+
+  /**
+   * Enable or disable geolocation tracking.
+   * Geolocation tracking must be enabled in the Grafana Cloud settings first.
+   * It cannot be enabled solely on the client side.
+   * This option allows control over tracking on the client side to comply with user
+   * privacy requirements.
+   */
+  trackGeolocation?: boolean;
+
+  /**
+   * This is a preview feature.
+   * We have tested it thoroughly, but it is possible that it might not work as expected in all cases.
+   */
+  // TODO: remove preview postfix when feature is ga
+  trackUserActionsPreview?: boolean;
+
+  /**
+   * Configure your own attribute name for tracking user actions. Default is 'data-faro-user-action-name'
+   */
+  trackUserActionsDataAttributeName?: string;
+
+  /**
+   * Predicate function to exclude items from user actions.
+   * If the function returns true, the item will be excluded from user actions.
+   */
+  trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
+
+  /**
+   * When enabled, preserves the original Error object in the transport item for use in the beforeSend hook.
+   * The original error is automatically removed before the item is sent to the transport.
+   *
+   * This is useful for error post-processing in (uncontrolled) environments where you need to handle special cases:
+   * - Errors from third-party libraries
+   * - Errors with missing or incomplete data
+   * - Edge cases like `throw undefined` or `throw ''`
+   *
+   * With access to the original error in the beforeSend hook, you can enhance or modify the
+   * Faro exception payload to include additional context or fix missing information.
+   */
+  preserveOriginalError?: boolean;
 }
 
 export type Patterns = Array<string | RegExp>;

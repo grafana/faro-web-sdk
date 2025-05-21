@@ -4,11 +4,9 @@ import {
   EVENT_SESSION_EXTEND,
   EVENT_SESSION_RESUME,
   EVENT_SESSION_START,
-  Meta,
-  MetaSession,
   VERSION,
 } from '@grafana/faro-core';
-import type { Config } from '@grafana/faro-core';
+import type { Config, Meta, MetaSession } from '@grafana/faro-core';
 
 import type { TransportItem } from '../..';
 import { createSession } from '../../metas';
@@ -52,38 +50,47 @@ export class SessionInstrumentation extends BaseInstrumentation {
     initialSession: FaroUserSession;
     lifecycleType: LifecycleType;
   } {
-    let userSession: FaroUserSession | null = SessionManager.fetchUserSession();
+    let storedUserSession: FaroUserSession | null = SessionManager.fetchUserSession();
 
-    if (sessionsConfig.persistent && sessionsConfig.maxSessionPersistenceTime && userSession) {
+    if (sessionsConfig.persistent && sessionsConfig.maxSessionPersistenceTime && storedUserSession) {
       const now = dateNow();
-      const shouldClearPersistentSession = userSession.lastActivity < now - sessionsConfig.maxSessionPersistenceTime;
+      const shouldClearPersistentSession =
+        storedUserSession.lastActivity < now - sessionsConfig.maxSessionPersistenceTime;
 
       if (shouldClearPersistentSession) {
         PersistentSessionsManager.removeUserSession();
-        userSession = null;
+        storedUserSession = null;
       }
     }
 
     let lifecycleType: LifecycleType;
     let initialSession: FaroUserSession;
 
-    if (isUserSessionValid(userSession)) {
-      const sessionId = userSession?.sessionId;
+    if (isUserSessionValid(storedUserSession)) {
+      const sessionId = storedUserSession?.sessionId;
 
       initialSession = createUserSessionObject({
         sessionId,
-        isSampled: userSession!.isSampled || false,
-        started: userSession?.started,
+        isSampled: storedUserSession!.isSampled || false,
+        started: storedUserSession?.started,
       });
 
+      const storedUserSessionMeta = storedUserSession?.sessionMeta;
+
+      // For resumed sessions we want to merge the previous overrides with the configured ones.
+      // If the same key is present in both, the new one will override the old one.
+      const overrides = { ...sessionsConfig.session?.overrides, ...storedUserSessionMeta?.overrides };
+
       initialSession.sessionMeta = {
+        ...sessionsConfig.session,
         id: sessionId,
         attributes: {
           ...sessionsConfig.session?.attributes,
-          ...userSession?.sessionMeta?.attributes,
+          ...storedUserSessionMeta?.attributes,
           // For valid resumed sessions we do not want to recalculate the sampling decision on each init phase.
           isSampled: initialSession.isSampled.toString(),
         },
+        overrides,
       };
 
       lifecycleType = EVENT_SESSION_RESUME;
@@ -95,12 +102,16 @@ export class SessionInstrumentation extends BaseInstrumentation {
         isSampled: isSampled(),
       });
 
+      const overrides = sessionsConfig.session?.overrides;
+
       initialSession.sessionMeta = {
         id: sessionId,
         attributes: {
           isSampled: initialSession.isSampled.toString(),
           ...sessionsConfig.session?.attributes,
         },
+        // new session we don't care about previous overrides
+        ...(overrides ? { overrides } : {}),
       };
 
       lifecycleType = EVENT_SESSION_START;

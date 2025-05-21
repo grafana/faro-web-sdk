@@ -1,7 +1,7 @@
 import { defaultLogArgsSerializer, isFunction } from '@grafana/faro-core';
 import type { LogArgsSerializer } from '@grafana/faro-core';
 
-import { defaultMetas } from '../metas/const';
+import { userActionDataAttribute } from '../instrumentations/userActions';
 
 import { makeCoreConfig } from './makeCoreConfig';
 
@@ -29,7 +29,7 @@ describe('defaultMetas', () => {
     delete (global as any).k6;
   });
 
-  it('does not include K6 Object properties if not set', () => {
+  it('does not include K6Meta in defaultMetas for non-k6 (field) sessions', () => {
     (global as any).k6 = {};
 
     const browserConfig = {
@@ -45,13 +45,6 @@ describe('defaultMetas', () => {
     });
 
     delete (global as any).k6;
-  });
-
-  it('does not include K6Meta in defaultMetas for non-k6 (field) sessions', () => {
-    expect(defaultMetas).toHaveLength(2);
-    expect(defaultMetas.map((item) => (isFunction(item) ? item() : item))).not.toContainEqual({
-      k6: { isK6Browser: true },
-    });
   });
 });
 
@@ -92,6 +85,38 @@ describe('config', () => {
     expect(config?.ignoreUrls).toEqual([/\/collect(?:\/[\w]*)?$/]);
   });
 
+  it('enables web vitals feature when trackWebVitalsAttribution is true', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      trackWebVitalsAttribution: true,
+      webVitalsInstrumentation: {
+        reportAllChanges: true,
+      },
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.trackWebVitalsAttribution).toBe(true);
+    expect(config?.webVitalsInstrumentation?.reportAllChanges).toBe(true);
+  });
+
+  it('enables web vitals feature when webVitalsInstrumentation.trackAttribution is true', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      webVitalsInstrumentation: {
+        reportAllChanges: true,
+        trackAttribution: true,
+      },
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.webVitalsInstrumentation?.reportAllChanges).toBe(true);
+    expect(config?.webVitalsInstrumentation?.trackAttribution).toBe(true);
+  });
+
   it('merges configured urls with default URLs into ignoreUrls list', () => {
     const browserConfig = {
       url: 'http://example.com/my-collector',
@@ -116,4 +141,62 @@ describe('config', () => {
       expect(config.ignoreUrls[0].test(url)).toBe(true);
     }
   );
+
+  it('updates the overrides object in the session config with the geoLocationTracking.enabled value', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      sessionTracking: {
+        session: { id: 'my-session' },
+      },
+    };
+
+    let config = makeCoreConfig({ ...browserConfig, trackGeolocation: true });
+    expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geoLocationTrackingEnabled');
+    expect(config?.sessionTracking?.session?.overrides?.geoLocationTrackingEnabled).toBe(true);
+
+    config = makeCoreConfig({ ...browserConfig, trackGeolocation: false });
+    expect(config?.sessionTracking?.session?.overrides).toHaveProperty('geoLocationTrackingEnabled');
+    expect(config?.sessionTracking?.session?.overrides?.geoLocationTrackingEnabled).toBe(false);
+
+    // Also test that the session object is not created or mutated if geoLocationTracking is not enabled
+    config = makeCoreConfig(browserConfig);
+    expect(config?.sessionTracking?.session).toBeDefined();
+
+    const sessionMeta = { id: 'test', attributes: { foo: 'bar' } };
+    config = makeCoreConfig({
+      ...browserConfig,
+      sessionTracking: { session: sessionMeta },
+    });
+
+    expect(config?.sessionTracking?.session).toBeDefined();
+    expect(config?.sessionTracking?.session?.overrides).toBeUndefined();
+    expect(config?.sessionTracking?.session).toStrictEqual(sessionMeta);
+  });
+
+  it('trackUserActions settings defaults are applied', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.trackUserActionsPreview).toBe(false);
+    expect(config?.trackUserActionsDataAttributeName).toBe(userActionDataAttribute);
+  });
+
+  it('trackUserActions setting are added to the config as provided by the user', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      trackUserActionsPreview: true,
+      trackUserActionsDataAttributeName: 'data-test-action-name',
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.trackUserActionsPreview).toBe(true);
+    expect(config?.trackUserActionsDataAttributeName).toBe('data-test-action-name');
+  });
 });

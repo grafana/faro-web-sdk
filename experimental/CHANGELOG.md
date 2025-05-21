@@ -2,14 +2,23 @@
 
 ## Next
 
+## 1.13.0
+
+- Improvement (`@grafana/faro-*`) Add required Node engines to package.json ()
+
+## 1.12.3
+
+- Fix (`@grafana/faro-transport-otlp-http`): Prevent sending requests when the
+  endpoint URL is not configured (#827).
+
 ## 1.10.1
 
-- Fix (`@grafana/faro-transport-otlp-http [experimental]`): add `service.namespace` attribute if set
+- Fix (`@grafana/faro-transport-otlp-http`): add `service.namespace` attribute if set
   (#684).
 
 ### Breaking
 
-- Change (`@grafana/faro-transport-otlp-http [experimental]`): update semantic attributes
+- Change (`@grafana/faro-transport-otlp-http`): update semantic attributes
   for browser (#687).
   - `browser.user_agent` is replaced by `user_agent.original`
   - `browser.os` is replaced by `browser.platform`

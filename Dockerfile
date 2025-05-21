@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:24-alpine
 
 ARG DEMO_DEMO_PATH
 ARG DEMO_PACKAGES_CORE_PATH
@@ -56,6 +56,7 @@ RUN touch index.scss ${DEMO_DEMO_PATH}/src/client
 # Packages - Core
 COPY ${DEMO_PACKAGES_CORE_PATH}/package.json \
      ${DEMO_PACKAGES_CORE_PATH}/rollup.config.js \
+     ${DEMO_PACKAGES_CORE_PATH}/tsconfig.bundle.json \
      ${DEMO_PACKAGES_CORE_PATH}/tsconfig.cjs.json \
      ${DEMO_PACKAGES_CORE_PATH}/tsconfig.esm.json \
      ${DEMO_PACKAGES_CORE_PATH}/tsconfig.spec.json \
@@ -71,6 +72,7 @@ RUN cp index.ts ${DEMO_PACKAGES_CORE_PATH}/src
 # Packages - React
 COPY ${DEMO_PACKAGES_REACT_PATH}/package.json \
      ${DEMO_PACKAGES_REACT_PATH}/rollup.config.js \
+     ${DEMO_PACKAGES_REACT_PATH}/tsconfig.bundle.json \
      ${DEMO_PACKAGES_REACT_PATH}/tsconfig.cjs.json \
      ${DEMO_PACKAGES_REACT_PATH}/tsconfig.esm.json \
      ${DEMO_PACKAGES_REACT_PATH}/tsconfig.spec.json \
@@ -83,6 +85,7 @@ RUN cp index.ts ${DEMO_PACKAGES_REACT_PATH}/src
 # Packages - Web Sdk
 COPY ${DEMO_PACKAGES_WEB_SDK_PATH}/package.json \
      ${DEMO_PACKAGES_WEB_SDK_PATH}/rollup.config.js \
+     ${DEMO_PACKAGES_WEB_SDK_PATH}/tsconfig.bundle.json \
      ${DEMO_PACKAGES_WEB_SDK_PATH}/tsconfig.cjs.json \
      ${DEMO_PACKAGES_WEB_SDK_PATH}/tsconfig.esm.json \
      ${DEMO_PACKAGES_WEB_SDK_PATH}/tsconfig.spec.json \
@@ -95,6 +98,7 @@ RUN cp index.ts ${DEMO_PACKAGES_WEB_SDK_PATH}/src
 # Packages - Web Tracing
 COPY ${DEMO_PACKAGES_WEB_TRACING_PATH}/package.json \
      ${DEMO_PACKAGES_WEB_TRACING_PATH}/rollup.config.js \
+     ${DEMO_PACKAGES_WEB_TRACING_PATH}/tsconfig.bundle.json \
      ${DEMO_PACKAGES_WEB_TRACING_PATH}/tsconfig.cjs.json \
      ${DEMO_PACKAGES_WEB_TRACING_PATH}/tsconfig.esm.json \
      ${DEMO_PACKAGES_WEB_TRACING_PATH}/tsconfig.spec.json \
@@ -107,6 +111,7 @@ RUN cp index.ts ${DEMO_PACKAGES_WEB_TRACING_PATH}/src
 # Packages - Experimental Fetch Instrumentation
 COPY ${DEMO_PACKAGES_FETCH_INSTRUMENTATION_PATH}/package.json \
      ${DEMO_PACKAGES_FETCH_INSTRUMENTATION_PATH}/rollup.config.js \
+     ${DEMO_PACKAGES_FETCH_INSTRUMENTATION_PATH}/tsconfig.bundle.json \
      ${DEMO_PACKAGES_FETCH_INSTRUMENTATION_PATH}/tsconfig.cjs.json \
      ${DEMO_PACKAGES_FETCH_INSTRUMENTATION_PATH}/tsconfig.esm.json \
      ${DEMO_PACKAGES_FETCH_INSTRUMENTATION_PATH}/tsconfig.spec.json \
@@ -119,6 +124,7 @@ RUN cp index.ts ${DEMO_PACKAGES_FETCH_INSTRUMENTATION_PATH}/src
 # Packages - Experimental XHR Instrumentation
 COPY ${DEMO_PACKAGES_XHR_INSTRUMENTATION_PATH}/package.json \
      ${DEMO_PACKAGES_XHR_INSTRUMENTATION_PATH}/rollup.config.js \
+     ${DEMO_PACKAGES_XHR_INSTRUMENTATION_PATH}/tsconfig.bundle.json \
      ${DEMO_PACKAGES_XHR_INSTRUMENTATION_PATH}/tsconfig.cjs.json \
      ${DEMO_PACKAGES_XHR_INSTRUMENTATION_PATH}/tsconfig.esm.json \
      ${DEMO_PACKAGES_XHR_INSTRUMENTATION_PATH}/tsconfig.spec.json \

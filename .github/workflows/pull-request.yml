@@ -1,0 +1,96 @@
+name: Pull Request
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    permissions:
+      contents: read
+    name: Testing with Node version (${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20.x, 22.x, 23.x, 24.x]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: Lint
+        run: yarn quality:lint
+
+      - name: Check circular dependencies
+        run: yarn quality:circular-deps
+
+      - name: Unit tests
+        run: yarn quality:test
+
+  e2e:
+    permissions:
+      contents: read
+
+    runs-on: ubuntu-latest
+    container:
+      image: cypress/browsers
+      options: --user 1001
+
+    services:
+      database:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: demo
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/iron'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: E2E tests
+        uses: cypress-io/github-action@be1bab96b388bbd9ce3887e397d373c8557e15af
+        env:
+          DATABASE_HOST: database
+          DATABASE_PORT: 5432
+          DATABASE_NAME: demo
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres
+          IS_TEST: 1
+        with:
+          command: yarn quality:e2e:ci
+          install: false

@@ -10,7 +10,8 @@
     "tsBuildInfoFile": "../../.cache/tsc/demo.tsbuildinfo",
     "types": ["vite/client"],
     "useDefineForClassFields": true,
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "verbatimModuleSyntax": false
   },
   "include": ["./src", "./vite.config.ts"],
   "exclude": ["**/*.test.ts"],

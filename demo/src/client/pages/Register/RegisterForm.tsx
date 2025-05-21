@@ -1,7 +1,5 @@
 import { useEffect } from 'react';
-import Alert from 'react-bootstrap/Alert';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
+import { Alert, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
@@ -63,7 +61,7 @@ export function RegisterForm() {
         <Form.Control type="password" autoComplete="current-password" {...registerField('password')} />
       </Form.Group>
 
-      <Button variant="primary" type="submit">
+      <Button variant="primary" type="submit" data-faro-user-action-name="register">
         Register
       </Button>
     </Form>

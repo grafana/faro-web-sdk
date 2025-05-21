@@ -1,11 +1,14 @@
 import type { Context } from '@opentelemetry/api';
 import type { ReadableSpan, Span, SpanProcessor } from '@opentelemetry/sdk-trace-web';
-// False positive. Package can be resolved.
-// eslint-disable-next-line import/no-unresolved
-import { ATTR_SESSION_ID } from '@opentelemetry/semantic-conventions/incubating';
 
 import type { Metas } from '@grafana/faro-web-sdk';
 
+import { ATTR_SESSION_ID } from './semconv';
+
+/**
+ * @deprecated
+ * please use FaroMetaAttributesSpanProcessor instead
+ */
 export class FaroSessionSpanProcessor implements SpanProcessor {
   constructor(
     private processor: SpanProcessor,

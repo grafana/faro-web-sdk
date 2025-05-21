@@ -1,4 +1,4 @@
-import { BaseInstrumentation, faro, globalObject, isString, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, faro, isString, VERSION } from '@grafana/faro-core';
 import type { Patterns } from '@grafana/faro-core';
 
 import {
@@ -22,7 +22,7 @@ function isRequest(input: any): input is Request {
 export class FetchInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-fetch';
   readonly version = VERSION;
-  readonly originalFetch: WindowFetch = window.fetch.bind(globalObject);
+  readonly originalFetch: WindowFetch = window.fetch.bind(window);
   private ignoredUrls: FetchInstrumentationOptions['ignoredUrls'];
 
   constructor(private options?: FetchInstrumentationOptions) {
@@ -30,13 +30,13 @@ export class FetchInstrumentation extends BaseInstrumentation {
   }
 
   /**
-   * Initialize fetch instrumentation - globalObject.fetch becomes instrumented fetch, assign original fetch to globalObject.originalFetch
+   * Initialize fetch instrumentation - window.fetch becomes instrumented fetch, assign original fetch to window.originalFetch
    */
   initialize(): void {
     this.internalLogger.info('Initializing fetch instrumentation');
     this.ignoredUrls = [...(this.options?.ignoredUrls ?? []), ...(this.getTransportIgnoreUrls() ?? [])];
 
-    Object.defineProperty(globalObject, fetchGlobalObjectKey, {
+    Object.defineProperty(window, fetchGlobalObjectKey, {
       configurable: true,
       writable: this.options?.testing ? true : false, // necessary for testing, instrumented fetch should not be writeable by default
       value: this.instrumentFetch().bind(this),

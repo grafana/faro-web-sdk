@@ -1,7 +1,19 @@
-import type { MeasurementEvent, PushMeasurementOptions } from '../..';
+import {
+  APIEvent,
+  ApiMessageBusMessages,
+  dateNow,
+  type MeasurementEvent,
+  type PushMeasurementOptions,
+  TransportItem,
+} from '../..';
 import { initializeFaro } from '../../initialize';
-import { mockConfig, MockTransport } from '../../testUtils';
+import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
+import { mockMetas, mockTracesApi, mockTransports } from '../apiTestHelpers';
+import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from '../const';
+import { ItemBuffer } from '../ItemBuffer';
 import type { API } from '../types';
+
+import { initializeMeasurementsAPI } from './initialize';
 
 describe('api.measurements', () => {
   function createAPI({ dedupe }: { dedupe: boolean } = { dedupe: true }): [API, MockTransport] {
@@ -194,9 +206,170 @@ describe('api.measurements', () => {
     });
 
     it('Sets the timestamp to the provided custom timestamp', () => {
-      api.pushEvent('test', undefined, undefined, { timestampOverwriteMs: 123 });
+      api.pushMeasurement(
+        {
+          type: 'custom',
+          values: {
+            a: 1,
+          },
+        },
+        { timestampOverwriteMs: 123 }
+      );
       expect(transport.items).toHaveLength(1);
       expect((transport.items[0]?.payload as MeasurementEvent).timestamp).toBe('1970-01-01T00:00:00.123Z');
+    });
+
+    it('stringifies all values in the attributes object', () => {
+      api.pushEvent('test', {
+        // @ts-expect-error
+        a: 1,
+        b: 'foo',
+        // @ts-expect-error
+        c: true,
+        // @ts-expect-error
+        d: { e: 'bar' },
+        // @ts-expect-error
+        g: null,
+        // @ts-expect-error
+        h: undefined,
+        // @ts-expect-error
+        i: [1, 2, 3],
+      });
+
+      // @ts-expect-error
+      expect(transport.items[0]?.payload.attributes).toStrictEqual({
+        a: '1',
+        b: 'foo',
+        c: 'true',
+        d: '{"e":"bar"}',
+        g: 'null',
+        h: 'undefined',
+        i: '[1,2,3]',
+      });
+    });
+
+    it('does not stringify empty context', () => {
+      api.pushMeasurement(
+        {
+          type: 'custom',
+          values: {},
+        },
+        {
+          context: {},
+        }
+      );
+      api.pushMeasurement({
+        type: 'custom2',
+        values: {},
+      });
+      expect(transport.items).toHaveLength(2);
+      expect((transport.items[0] as TransportItem<MeasurementEvent>).payload.context).toBeUndefined();
+      expect((transport.items[0] as TransportItem<MeasurementEvent>).payload.context).toBeUndefined();
+    });
+  });
+
+  describe('User action', () => {
+    it('buffers the measurement if a user action is in progress', () => {
+      const internalLogger = mockInternalLogger;
+      const config = mockConfig();
+
+      const actionBuffer = new ItemBuffer<TransportItem<APIEvent>>();
+
+      let message: ApiMessageBusMessages | undefined;
+
+      const getMessage = () => message;
+
+      message = { type: 'user-action-start', name: 'testAction', startTime: Date.now(), parentId: 'parent-id' };
+      const api = initializeMeasurementsAPI({
+        unpatchedConsole: console,
+        internalLogger,
+        config,
+        metas: mockMetas,
+        transports: mockTransports,
+        tracesApi: mockTracesApi,
+        actionBuffer,
+        getMessage,
+      });
+
+      api.pushMeasurement({ type: 'test', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: 'user-action-end',
+        name: 'testAction',
+        id: 'parent-id',
+        startTime: dateNow(),
+        endTime: dateNow(),
+        duration: 0,
+        eventType: 'click',
+      };
+
+      api.pushMeasurement({ type: 'test-2', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: 'user-action-cancel',
+        name: 'testAction',
+        parentId: 'parent-id',
+      };
+
+      api.pushMeasurement({ type: 'test-3', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
+    });
+  });
+
+  describe('User action', () => {
+    it('buffers the item if a user action is in progress', () => {
+      const internalLogger = mockInternalLogger;
+      const config = mockConfig();
+
+      const actionBuffer = new ItemBuffer<TransportItem<APIEvent>>();
+
+      let message: ApiMessageBusMessages | undefined;
+
+      const getMessage = () => message;
+
+      message = {
+        type: USER_ACTION_START,
+        name: 'testAction',
+        startTime: Date.now(),
+        parentId: 'parent-id',
+      };
+      const api = initializeMeasurementsAPI({
+        unpatchedConsole: console,
+        internalLogger,
+        config,
+        metas: mockMetas,
+        transports: mockTransports,
+        tracesApi: mockTracesApi,
+        actionBuffer,
+        getMessage,
+      });
+
+      api.pushMeasurement({ type: 'test', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_END,
+        name: 'testAction',
+        id: 'parent-id',
+        startTime: dateNow(),
+        endTime: dateNow(),
+        duration: 0,
+        eventType: 'click',
+      };
+
+      api.pushMeasurement({ type: 'test-2', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
+
+      message = {
+        type: USER_ACTION_CANCEL,
+        name: 'testAction',
+        parentId: 'parent-id',
+      };
+
+      api.pushMeasurement({ type: 'test-3', values: { a: 1 } });
+      expect(actionBuffer.size()).toBe(1);
     });
   });
 });

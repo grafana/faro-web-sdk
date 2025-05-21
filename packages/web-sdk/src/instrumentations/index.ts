@@ -27,3 +27,5 @@ export {
 } from './session';
 
 export { PerformanceInstrumentation } from './performance';
+
+export { UserActionInstrumentation, userActionDataAttribute, startUserAction } from './userActions';

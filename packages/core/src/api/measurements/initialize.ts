@@ -1,23 +1,36 @@
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Metas } from '../../metas';
-import { TransportItem, TransportItemType } from '../../transports';
-import type { Transports } from '../../transports';
+import { TransportItemType } from '../../transports';
+import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
-import { deepEqual, getCurrentTimestamp, isNull } from '../../utils';
+import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
+import { USER_ACTION_START } from '../const';
+import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
+import type { ApiMessageBusMessages } from '../types';
 
 import type { MeasurementEvent, MeasurementsAPI } from './types';
 
-export function initializeMeasurementsAPI(
-  _unpatchedConsole: UnpatchedConsole,
-  internalLogger: InternalLogger,
-  config: Config,
-  metas: Metas,
-  transports: Transports,
-  tracesApi: TracesAPI
-): MeasurementsAPI {
+export function initializeMeasurementsAPI({
+  internalLogger,
+  config,
+  metas,
+  transports,
+  tracesApi,
+  actionBuffer,
+  getMessage,
+}: {
+  unpatchedConsole: UnpatchedConsole;
+  internalLogger: InternalLogger;
+  config: Config;
+  metas: Metas;
+  transports: Transports;
+  tracesApi: TracesAPI;
+  actionBuffer: ItemBuffer<TransportItem>;
+  getMessage: () => ApiMessageBusMessages | undefined;
+}): MeasurementsAPI {
   internalLogger.debug('Initializing measurements API');
 
   let lastPayload: Pick<MeasurementEvent, 'type' | 'values' | 'context'> | null = null;
@@ -27,6 +40,8 @@ export function initializeMeasurementsAPI(
     { skipDedupe, context, spanContext, timestampOverwriteMs } = {}
   ) => {
     try {
+      const ctx = stringifyObjectValues(context);
+
       const item: TransportItem<MeasurementEvent> = {
         type: TransportItemType.MEASUREMENT,
         payload: {
@@ -38,7 +53,7 @@ export function initializeMeasurementsAPI(
               }
             : tracesApi.getTraceContext(),
           timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
-          context: context ?? {},
+          context: isEmpty(ctx) ? undefined : ctx,
         },
         meta: metas.value,
       };
@@ -59,7 +74,12 @@ export function initializeMeasurementsAPI(
 
       internalLogger.debug('Pushing measurement\n', item);
 
-      transports.execute(item);
+      const msg = getMessage();
+      if (msg && msg.type === USER_ACTION_START) {
+        actionBuffer.addItem(item);
+      } else {
+        transports.execute(item);
+      }
     } catch (err) {
       internalLogger.error('Error pushing measurement\n', err);
     }

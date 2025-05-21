@@ -16,10 +16,11 @@ export {
   WebVitalsInstrumentation,
   SessionInstrumentation,
   PerformanceInstrumentation,
+  UserActionInstrumentation,
 } from './instrumentations';
 export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
-export { browserMeta, createSession, defaultMetas, pageMeta, sdkMeta } from './metas';
+export { browserMeta, createSession, sdkMeta } from './metas';
 
 export { ConsoleTransport, FetchTransport } from './transports';
 export type {
@@ -78,6 +79,7 @@ export {
   isToString,
   isTypeof,
   isUndefined,
+  isEmpty,
   InternalLoggerLevel,
   LogLevel,
   noop,
@@ -92,6 +94,13 @@ export {
   EVENT_SESSION_RESUME,
   EVENT_SESSION_START,
   EVENT_VIEW_CHANGED,
+  apiMessageBus,
+  Observable,
+  USER_ACTION_CANCEL,
+  USER_ACTION_END,
+  USER_ACTION_HALT,
+  USER_ACTION_START,
+  unknownString,
 } from '@grafana/faro-core';
 
 export type {
@@ -109,6 +118,7 @@ export type {
   EventEvent,
   EventsAPI,
   ExceptionEvent,
+  ExceptionEventExtended,
   ExceptionStackFrame,
   ExceptionsAPI,
   ExtendedError,
@@ -155,6 +165,11 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
+  ApiMessageBusMessages,
+  UserActionStartMessage,
+  UserActionEndMessage,
+  UserActionCancelMessage,
+  UserActionHaltMessage,
 } from '@grafana/faro-core';
 
 export {
@@ -167,4 +182,6 @@ export {
   STORAGE_KEY,
 } from './instrumentations/session';
 
-export { getIgnoreUrls } from './utils/url';
+export { getIgnoreUrls, getUrlFromResource } from './utils/url';
+
+export { userActionDataAttribute, startUserAction } from './instrumentations/userActions';

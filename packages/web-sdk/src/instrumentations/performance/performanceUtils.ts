@@ -30,10 +30,6 @@ export function performanceObserverSupported(): boolean {
   return 'PerformanceObserver' in window;
 }
 
-export function entryUrlIsIgnored(ignoredUrls: Array<string | RegExp> = [], entryName: string): boolean {
-  return ignoredUrls.some((url) => url && entryName.match(url) != null);
-}
-
 export function onDocumentReady(handleReady: () => void) {
   if (document.readyState === 'complete') {
     handleReady();
@@ -93,7 +89,6 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
     requestStart,
     responseEnd,
     responseStart,
-    // @ts-expect-error the renderBlockingStatus property is not available in all browsers
     responseStatus,
     secureConnectionStart,
     transferSize,
@@ -105,7 +100,7 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
     duration: toFaroPerformanceTimingString(duration),
     tcpHandshakeTime: toFaroPerformanceTimingString(connectEnd - connectStart),
     dnsLookupTime: toFaroPerformanceTimingString(domainLookupEnd - domainLookupStart),
-    tlsNegotiationTime: toFaroPerformanceTimingString(requestStart - secureConnectionStart),
+    tlsNegotiationTime: toFaroPerformanceTimingString(connectEnd - secureConnectionStart),
     responseStatus: toFaroPerformanceTimingString(responseStatus),
     redirectTime: toFaroPerformanceTimingString(redirectEnd - redirectStart),
     requestTime: toFaroPerformanceTimingString(responseStart - requestStart),
@@ -120,6 +115,7 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
     initiatorType: initiatorType,
     visibilityState: document.visibilityState,
     ttfb: toFaroPerformanceTimingString(responseStart - requestStart),
+    transferSize: toFaroPerformanceTimingString(transferSize),
 
     // TODO: add in future iteration, ideally after nested objects are supported by the collector.
     // serverTiming: resourceEntryRaw.serverTiming,
@@ -193,7 +189,7 @@ function toFaroPerformanceTimingString(v: unknown): string {
   }
 
   if (typeof v === 'number') {
-    return Math.round(v).toString();
+    return Math.round(v > 0 ? v : 0).toString();
   }
 
   return v.toString();
