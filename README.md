@@ -69,3 +69,9 @@ Faro releases follow the [Semantic Versioning](https://semver.org/) naming schem
   > NOTE: Our goal is to provide regular releases that are as stable as possible,
   > and we take backwards-compatibility seriously. As with any software, always read the release notes
   > and the upgrade guide whenever choosing a new version of Faro to install.
+
+## Supported Node versions
+
+Faro supports all active LTS (Long Term Support) and current Node versions. When Node.js versions
+reach end-of-life, we remove them from our test matrix and add new versions as they are released.
+You can find a [release schedule on nodejs.org](https://nodejs.org/en/about/previous-releases#looking-for-the-latest-release-of-a-version-branch)
