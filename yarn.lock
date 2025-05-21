@@ -6122,7 +6122,7 @@ glob-parent@^5.1.2, glob-parent@~5.1.2:
   dependencies:
     is-glob "^4.0.1"
 
-glob@^10.2.2, glob@^10.3.10, glob@^10.3.7, glob@~10.4.5:
+glob@^10.2.2, glob@^10.3.10, glob@^10.3.7:
   version "10.4.5"
   resolved "https://registry.yarnpkg.com/glob/-/glob-10.4.5.tgz#f4d9f0b90ffdbab09c9d77f5f29b4262517b0956"
   integrity sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==
@@ -6155,6 +6155,18 @@ glob@^9.2.0:
     minimatch "^8.0.2"
     minipass "^4.2.4"
     path-scurry "^1.6.1"
+
+glob@~11.0.2:
+  version "11.0.2"
+  resolved "https://registry.yarnpkg.com/glob/-/glob-11.0.2.tgz#3261e3897bbc603030b041fd77ba636022d51ce0"
+  integrity sha512-YT7U7Vye+t5fZ/QMkBFrTJ7ZQxInIUjwyAjVj84CYXqgBdv30MFUPGnBR6sQaVq6Is15wYJUsnzTuWaGRBhBAQ==
+  dependencies:
+    foreground-child "^3.1.0"
+    jackspeak "^4.0.1"
+    minimatch "^10.0.0"
+    minipass "^7.1.2"
+    package-json-from-dist "^1.0.0"
+    path-scurry "^2.0.0"
 
 global-dirs@^3.0.0:
   version "3.0.1"
@@ -6463,10 +6475,10 @@ ignore@^5.0.4, ignore@^5.2.0:
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.3.2.tgz#3cd40e729f3643fd87cb04e50bf0eb722bc596f5"
   integrity sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==
 
-ignore@~7.0.3:
-  version "7.0.3"
-  resolved "https://registry.yarnpkg.com/ignore/-/ignore-7.0.3.tgz#397ef9315dfe0595671eefe8b633fec6943ab733"
-  integrity sha512-bAH5jbK/F3T3Jls4I0SO1hmPR0dKU0a7+SY6n1yzRtG54FLO8d6w/nxLFX2Nb7dBu6cCWXPaAME6cYqFUMmuCA==
+ignore@~7.0.4:
+  version "7.0.4"
+  resolved "https://registry.yarnpkg.com/ignore/-/ignore-7.0.4.tgz#a12c70d0f2607c5bf508fb65a40c75f037d7a078"
+  integrity sha512-gJzzk+PQNznz8ysRrC0aOkBNVRBDtE1n53IqyqEf3PXrYwomFs5q4pGMizBMJF+ykh03insJ27hB8gSrD2Hn8A==
 
 immer@^10.0.3:
   version "10.1.1"
@@ -7195,6 +7207,13 @@ jackspeak@^3.1.2:
     "@isaacs/cliui" "^8.0.2"
   optionalDependencies:
     "@pkgjs/parseargs" "^0.11.0"
+
+jackspeak@^4.0.1:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/jackspeak/-/jackspeak-4.1.0.tgz#c489c079f2b636dc4cbe9b0312a13ff1282e561b"
+  integrity sha512-9DDdhb5j6cpeitCbvLO7n7J4IxnbM6hoF6O1g4HQ5TfhvvKN8ywDM7668ZhMHRqVmxqhps/F6syWK2KcPxYlkw==
+  dependencies:
+    "@isaacs/cliui" "^8.0.2"
 
 jake@^10.8.5:
   version "10.8.5"
@@ -8183,6 +8202,11 @@ lru-cache@^10.0.1, lru-cache@^10.2.0, lru-cache@^10.2.2:
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-10.4.3.tgz#410fc8a17b70e598013df257c2446b7f3383f119"
   integrity sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==
 
+lru-cache@^11.0.0:
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-11.1.0.tgz#afafb060607108132dbc1cf8ae661afb69486117"
+  integrity sha512-QIXZUBJUx+2zHUdQujWejBkcD9+cs94tLn0+YL8UrCh+D5sCXZ4c7LaEH48pNwRY3MLDgqUFyhlCyjJPf1WP0A==
+
 lru-cache@^5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-5.1.1.tgz#1da27e6710271947695daf6848e847f01d84b920"
@@ -8289,7 +8313,7 @@ map-stream@~0.1.0:
   resolved "https://registry.yarnpkg.com/map-stream/-/map-stream-0.1.0.tgz#e56aa94c4c8055a16404a0674b78f215f7c8e194"
   integrity sha512-CkYQrPYZfWnu/DAmVCpTSX/xHpKZ80eKh2lAkyA6AJTef6bW+6JpbQZN5rofum7da+SyN1bi5ctTm+lTfcCW3g==
 
-markdown-it@14.1.0:
+markdown-it@14.1.0, markdown-it@~14.1.0:
   version "14.1.0"
   resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-14.1.0.tgz#3c3c5992883c633db4714ccb4d7b5935d98b7d45"
   integrity sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==
@@ -8301,23 +8325,24 @@ markdown-it@14.1.0:
     punycode.js "^2.3.1"
     uc.micro "^2.1.0"
 
-markdownlint-cli@^0.44.0:
-  version "0.44.0"
-  resolved "https://registry.yarnpkg.com/markdownlint-cli/-/markdownlint-cli-0.44.0.tgz#02b24c8a20972c50d124a6cafdeca3beb085a1ce"
-  integrity sha512-ZJTAONlvF9NkrIBltCdW15DxN9UTbPiKMEqAh2EU2gwIFlrCMavyCEPPO121cqfYOrLUJWW8/XKWongstmmTeQ==
+markdownlint-cli@^0.45.0:
+  version "0.45.0"
+  resolved "https://registry.yarnpkg.com/markdownlint-cli/-/markdownlint-cli-0.45.0.tgz#2f7455d5ed328f62269d0ebee09d7e9631e266e2"
+  integrity sha512-GiWr7GfJLVfcopL3t3pLumXCYs8sgWppjIA1F/Cc3zIMgD3tmkpyZ1xkm1Tej8mw53B93JsDjgA3KOftuYcfOw==
   dependencies:
     commander "~13.1.0"
-    glob "~10.4.5"
-    ignore "~7.0.3"
+    glob "~11.0.2"
+    ignore "~7.0.4"
     js-yaml "~4.1.0"
     jsonc-parser "~3.3.1"
     jsonpointer "~5.0.1"
-    markdownlint "~0.37.4"
-    minimatch "~9.0.5"
+    markdown-it "~14.1.0"
+    markdownlint "~0.38.0"
+    minimatch "~10.0.1"
     run-con "~1.3.2"
-    smol-toml "~1.3.1"
+    smol-toml "~1.3.4"
 
-markdownlint@^0.37.3, markdownlint@~0.37.4:
+markdownlint@^0.37.3:
   version "0.37.4"
   resolved "https://registry.npmjs.org/markdownlint/-/markdownlint-0.37.4.tgz#dd58c4a13b798d4702438e5f7fd587a219f753f6"
   integrity sha512-u00joA/syf3VhWh6/ybVFkib5Zpj2e5KB/cfCei8fkSRuums6nyisTWGqjTWIOFoFwuXoTBQQiqlB4qFKp8ncQ==
@@ -8331,6 +8356,20 @@ markdownlint@^0.37.3, markdownlint@~0.37.4:
     micromark-extension-gfm-table "2.1.0"
     micromark-extension-math "3.1.0"
     micromark-util-types "2.0.1"
+
+markdownlint@~0.38.0:
+  version "0.38.0"
+  resolved "https://registry.yarnpkg.com/markdownlint/-/markdownlint-0.38.0.tgz#862ca9d08f3a28f4149bd388ac369bb95865534e"
+  integrity sha512-xaSxkaU7wY/0852zGApM8LdlIfGCW8ETZ0Rr62IQtAnUMlMuifsg09vWJcNYeL4f0anvr8Vo4ZQar8jGpV0btQ==
+  dependencies:
+    micromark "4.0.2"
+    micromark-core-commonmark "2.0.3"
+    micromark-extension-directive "4.0.0"
+    micromark-extension-gfm-autolink-literal "2.1.0"
+    micromark-extension-gfm-footnote "2.1.0"
+    micromark-extension-gfm-table "2.1.1"
+    micromark-extension-math "3.1.0"
+    micromark-util-types "2.0.2"
 
 math-intrinsics@^1.1.0:
   version "1.1.0"
@@ -8406,7 +8445,7 @@ micromark-core-commonmark@2.0.2:
     micromark-util-symbol "^2.0.0"
     micromark-util-types "^2.0.0"
 
-micromark-core-commonmark@^2.0.0:
+micromark-core-commonmark@2.0.3, micromark-core-commonmark@^2.0.0:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/micromark-core-commonmark/-/micromark-core-commonmark-2.0.3.tgz#c691630e485021a68cf28dbc2b2ca27ebf678cd4"
   integrity sha512-RDBrHEMSxVFLg6xvnXmb1Ayr2WzLAWjeSATAoxwKYJV94TeNavgoIdA0a9ytzDSVzBy2YKFK+emCPOEibLeCrg==
@@ -8432,6 +8471,19 @@ micromark-extension-directive@3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/micromark-extension-directive/-/micromark-extension-directive-3.0.2.tgz#2eb61985d1995a7c1ff7621676a4f32af29409e8"
   integrity sha512-wjcXHgk+PPdmvR58Le9d7zQYWy+vKEU9Se44p2CrCDPiLr2FMyiT4Fyb5UFKFC66wGB3kPlgD7q3TnoqPS7SZA==
+  dependencies:
+    devlop "^1.0.0"
+    micromark-factory-space "^2.0.0"
+    micromark-factory-whitespace "^2.0.0"
+    micromark-util-character "^2.0.0"
+    micromark-util-symbol "^2.0.0"
+    micromark-util-types "^2.0.0"
+    parse-entities "^4.0.0"
+
+micromark-extension-directive@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/micromark-extension-directive/-/micromark-extension-directive-4.0.0.tgz#af389e33fe0654c15f8466b73a0f5af598d00368"
+  integrity sha512-/C2nqVmXXmiseSSuCdItCMho7ybwwop6RrrRPk0KbOHW21JKoCldC+8rFOaundDoRBUWBnJJcxeA/Kvi34WQXg==
   dependencies:
     devlop "^1.0.0"
     micromark-factory-space "^2.0.0"
@@ -8469,6 +8521,17 @@ micromark-extension-gfm-table@2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/micromark-extension-gfm-table/-/micromark-extension-gfm-table-2.1.0.tgz#5cadedfbb29fca7abf752447967003dc3b6583c9"
   integrity sha512-Ub2ncQv+fwD70/l4ou27b4YzfNaCJOvyX4HxXU15m7mpYY+rjuWzsLIPZHJL253Z643RpbcP1oeIJlQ/SKW67g==
+  dependencies:
+    devlop "^1.0.0"
+    micromark-factory-space "^2.0.0"
+    micromark-util-character "^2.0.0"
+    micromark-util-symbol "^2.0.0"
+    micromark-util-types "^2.0.0"
+
+micromark-extension-gfm-table@2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/micromark-extension-gfm-table/-/micromark-extension-gfm-table-2.1.1.tgz#fac70bcbf51fe65f5f44033118d39be8a9b5940b"
+  integrity sha512-t2OU/dXXioARrC6yWfJ4hqB7rct14e8f7m0cbI5hUmDyyIlwv5vEtooptH8INkbLzOatzKuVbQmAYcbWoyz6Dg==
   dependencies:
     devlop "^1.0.0"
     micromark-factory-space "^2.0.0"
@@ -8628,7 +8691,7 @@ micromark-util-types@2.0.1:
   resolved "https://registry.yarnpkg.com/micromark-util-types/-/micromark-util-types-2.0.1.tgz#a3edfda3022c6c6b55bfb049ef5b75d70af50709"
   integrity sha512-534m2WhVTddrcKVepwmVEVnUAmtrx9bfIjNoQHRqfnvdaHQiFytEhJoTgpWJvDEXCO5gLTQh3wYC1PgOJA4NSQ==
 
-micromark-util-types@^2.0.0:
+micromark-util-types@2.0.2, micromark-util-types@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/micromark-util-types/-/micromark-util-types-2.0.2.tgz#f00225f5f5a0ebc3254f96c36b6605c4b393908e"
   integrity sha512-Yw0ECSpJoViF1qTU4DC6NwtC4aWGt1EkzaQB8KPPyCRR8z9TWeV0HbEFGTO+ZY1wB22zmxnJqhPyTpOVCpeHTA==
@@ -8637,6 +8700,29 @@ micromark@4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/micromark/-/micromark-4.0.1.tgz#294c2f12364759e5f9e925a767ae3dfde72223ff"
   integrity sha512-eBPdkcoCNvYcxQOAKAlceo5SNdzZWfF+FcSupREAzdAh9rRmE239CEQAiTwIgblwnoM8zzj35sZ5ZwvSEOF6Kw==
+  dependencies:
+    "@types/debug" "^4.0.0"
+    debug "^4.0.0"
+    decode-named-character-reference "^1.0.0"
+    devlop "^1.0.0"
+    micromark-core-commonmark "^2.0.0"
+    micromark-factory-space "^2.0.0"
+    micromark-util-character "^2.0.0"
+    micromark-util-chunked "^2.0.0"
+    micromark-util-combine-extensions "^2.0.0"
+    micromark-util-decode-numeric-character-reference "^2.0.0"
+    micromark-util-encode "^2.0.0"
+    micromark-util-normalize-identifier "^2.0.0"
+    micromark-util-resolve-all "^2.0.0"
+    micromark-util-sanitize-uri "^2.0.0"
+    micromark-util-subtokenize "^2.0.0"
+    micromark-util-symbol "^2.0.0"
+    micromark-util-types "^2.0.0"
+
+micromark@4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/micromark/-/micromark-4.0.2.tgz#91395a3e1884a198e62116e33c9c568e39936fdb"
+  integrity sha512-zpe98Q6kvavpCr1NPVSCMebCKfD7CA2NqZ+rykeNhONIJBpc1tFKt9hucLGwha3jNTNI8lHpctWJWoimVF4PfA==
   dependencies:
     "@types/debug" "^4.0.0"
     debug "^4.0.0"
@@ -8722,6 +8808,13 @@ minimatch@9.0.3:
   dependencies:
     brace-expansion "^2.0.1"
 
+minimatch@^10.0.0, minimatch@~10.0.1:
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-10.0.1.tgz#ce0521856b453c86e25f2c4c0d03e6ff7ddc440b"
+  integrity sha512-ethXTt3SGGR+95gudmqJ1eNhRO7eGEGIgYA9vnPatK4/etz2MEVDno5GMCibdMTuBMyElzIlgxMna3K94XDIDQ==
+  dependencies:
+    brace-expansion "^2.0.1"
+
 minimatch@^3.0.4, minimatch@^3.0.5, minimatch@^3.1.1, minimatch@^3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.2.tgz#19cd194bfd3e428f049a70817c038d89ab4be35b"
@@ -8743,7 +8836,7 @@ minimatch@^8.0.2:
   dependencies:
     brace-expansion "^2.0.1"
 
-minimatch@^9.0.0, minimatch@^9.0.4, minimatch@~9.0.5:
+minimatch@^9.0.0, minimatch@^9.0.4:
   version "9.0.5"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-9.0.5.tgz#d74f9dd6b57d83d8e98cfb82133b03978bc929e5"
   integrity sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==
@@ -9696,6 +9789,14 @@ path-scurry@^1.11.1, path-scurry@^1.6.1:
   dependencies:
     lru-cache "^10.2.0"
     minipass "^5.0.0 || ^6.0.2 || ^7.0.0"
+
+path-scurry@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/path-scurry/-/path-scurry-2.0.0.tgz#9f052289f23ad8bf9397a2a0425e7b8615c58580"
+  integrity sha512-ypGJsmGtdXUOeM5u93TyeIEfEhM6s+ljAhrk5vAvSx8uyY/02OvrZnA0YNGUrPXfpJMgI1ODd3nwz8Npx4O4cg==
+  dependencies:
+    lru-cache "^11.0.0"
+    minipass "^7.1.2"
 
 path-to-regexp@^8.0.0, path-to-regexp@^8.2.0:
   version "8.2.0"
@@ -11105,10 +11206,10 @@ smob@^1.0.0:
   resolved "https://registry.yarnpkg.com/smob/-/smob-1.5.0.tgz#85d79a1403abf128d24d3ebc1cdc5e1a9548d3ab"
   integrity sha512-g6T+p7QO8npa+/hNx9ohv1E5pVCmWrVCUzUXJyLdMmftX6ER0oiWY/w9knEonLpnOp6b6FenKnMfR8gqwWdwig==
 
-smol-toml@~1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/smol-toml/-/smol-toml-1.3.1.tgz#d9084a9e212142e3cab27ef4e2b8e8ba620bfe15"
-  integrity sha512-tEYNll18pPKHroYSmLLrksq233j021G0giwW7P3D24jC54pQ5W5BXMsQ/Mvw1OJCmEYDgY+lrzT+3nNUtoNfXQ==
+smol-toml@~1.3.4:
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/smol-toml/-/smol-toml-1.3.4.tgz#4ec76e0e709f586bc50ba30eb79024173c2b2221"
+  integrity sha512-UOPtVuYkzYGee0Bd2Szz8d2G3RfMfJ2t3qVdZUAozZyAk+a0Sxa+QKix0YCwjL/A1RR0ar44nCxaoN9FxdJGwA==
 
 socks-proxy-agent@^8.0.3:
   version "8.0.4"
