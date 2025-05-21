@@ -2,6 +2,13 @@
 
 ## Next
 
+## 1.18.2
+
+- fix(user actions): don't attach user action context to http request when in halt mode (#1249)
+
+- chore(deps): Updated Node.js version support by removing Node.js 18 (EOL) and adding Node.js 24
+  LTS (#1259).
+
 ## 1.18.1
 
 - Chore(deps): Revert "Changed Node.js version support by removing Node.js 18 because it is EOL" (#1195).
