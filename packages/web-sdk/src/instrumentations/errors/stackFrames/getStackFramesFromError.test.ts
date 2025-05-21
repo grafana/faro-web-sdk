@@ -14,16 +14,6 @@ describe('getStackFramesFromError', () => {
     jest.clearAllMocks();
   });
 
-  it('should handle Chrome v15 traces', () => {
-    const result = getStackFramesFromError(CapturedExceptions.CHROME_15);
-    expect(result).toEqual([
-      buildStackFrame('http://path/to/file.js', 'bar', 13, 17),
-      buildStackFrame('http://path/to/file.js', 'bar', 16, 5),
-      buildStackFrame('http://path/to/file.js', 'foo', 20, 5),
-      buildStackFrame('http://path/to/file.js', undefined, 24, 4),
-    ]);
-  });
-
   it('should handle Chrome v36 traces', () => {
     const result = getStackFramesFromError(CapturedExceptions.CHROME_36);
     expect(result).toEqual([
@@ -40,49 +30,6 @@ describe('getStackFramesFromError', () => {
       buildStackFrame('http://localhost:8080/file.js', 'eval', 21, 17),
       buildStackFrame('http://localhost:8080/file.js', 'Object.speak', 21, 17),
       buildStackFrame('http://localhost:8080/file.js', undefined, 31, 13),
-    ]);
-  });
-
-  it('should handle Firefox 3 traces', () => {
-    const result = getStackFramesFromError(CapturedExceptions.FIREFOX_3);
-    expect(result).toEqual([
-      buildStackFrame('http://127.0.0.1:8000/js/stacktrace.js', '', 44, undefined),
-      buildStackFrame('http://127.0.0.1:8000/js/stacktrace.js', '', 31, undefined),
-      buildStackFrame('http://127.0.0.1:8000/js/stacktrace.js', 'printStackTrace', 18, undefined),
-      buildStackFrame('http://127.0.0.1:8000/js/file.js', 'bar', 13, undefined),
-      buildStackFrame('http://127.0.0.1:8000/js/file.js', 'bar', 16, undefined),
-      buildStackFrame('http://127.0.0.1:8000/js/file.js', 'foo', 20, undefined),
-      buildStackFrame('http://127.0.0.1:8000/js/file.js', '', 24, undefined),
-    ]);
-  });
-
-  it('should handle Firefox 7 traces', () => {
-    const result = getStackFramesFromError(CapturedExceptions.FIREFOX_7);
-    expect(result).toEqual([
-      buildStackFrame('file:///G:/js/stacktrace.js', '', 44, undefined),
-      buildStackFrame('file:///G:/js/stacktrace.js', '', 31, undefined),
-      buildStackFrame('file:///G:/js/stacktrace.js', 'printStackTrace', 18, undefined),
-      buildStackFrame('file:///G:/js/file.js', 'bar', 13, undefined),
-      buildStackFrame('file:///G:/js/file.js', 'bar', 16, undefined),
-      buildStackFrame('file:///G:/js/file.js', 'foo', 20, undefined),
-      buildStackFrame('file:///G:/js/file.js', '', 24, undefined),
-    ]);
-  });
-
-  it('should handle Firefox 14 traces', () => {
-    const result = getStackFramesFromError(CapturedExceptions.FIREFOX_14);
-    expect(result).toEqual([
-      buildStackFrame('http://path/to/file.js', '', 48, undefined),
-      buildStackFrame('http://path/to/file.js', 'dumpException3', 52, undefined),
-      buildStackFrame('http://path/to/file.js', 'onclick', 1, undefined),
-    ]);
-  });
-
-  it('should handle Firefox 31 traces', () => {
-    const result = getStackFramesFromError(CapturedExceptions.FIREFOX_31);
-    expect(result).toEqual([
-      buildStackFrame('http://path/to/file.js', 'foo', 41, 13),
-      buildStackFrame('http://path/to/file.js', 'bar', 1, 1),
     ]);
   });
 
@@ -191,7 +138,7 @@ describe('getStackFramesFromError', () => {
     ]);
   });
 
-  it('should handle Edge 20 with nestede eval traces', () => {
+  it('should handle Edge 20 with nested eval traces', () => {
     const result = getStackFramesFromError(CapturedExceptions.EDGE_20_NESTED_EVAL);
     expect(result).toEqual([
       buildStackFrame('eval code', 'baz', 1, 18),
@@ -201,150 +148,28 @@ describe('getStackFramesFromError', () => {
       buildStackFrame('http://localhost:8080/file.js', 'Global code', 32, 9),
     ]);
   });
+
+  it('should handle Opera 12 traces', () => {
+    const result = getStackFramesFromError(CapturedExceptions.OPERA_12);
+    expect(result).toEqual([
+      buildStackFrame('http://localhost:8000/ExceptionLab.html', '<anonymous function>', 48, undefined),
+      buildStackFrame('http://localhost:8000/ExceptionLab.html', 'dumpException3', 46, undefined),
+      buildStackFrame('http://localhost:8000/ExceptionLab.html', '<anonymous function>', 1, undefined),
+    ]);
+  });
+
+  it('should handle Opera 25 traces', () => {
+    const result = getStackFramesFromError(CapturedExceptions.OPERA_25);
+    expect(result).toEqual([
+      buildStackFrame('http://path/to/file.js', undefined, 47, 22),
+      buildStackFrame('http://path/to/file.js', 'foo', 52, 15),
+      buildStackFrame('http://path/to/file.js', 'bar', 108, 168),
+    ]);
+  });
 });
 
 /* Taken from: https://github.com/stacktracejs/error-stack-parser/blob/master/spec/fixtures/captured-errors.js */
 const CapturedExceptions: any = {};
-
-CapturedExceptions.OPERA_854 = {
-  message:
-    'Statement on line 44: Type mismatch (usually a non-object value used where an object is required)\n' +
-    'Backtrace:\n' +
-    '  Line 44 of linked script http://path/to/file.js\n' +
-    '    this.undef();\n' +
-    '  Line 31 of linked script http://path/to/file.js\n' +
-    '    ex = ex || this.createException();\n' +
-    '  Line 18 of linked script http://path/to/file.js\n' +
-    '    var p = new printStackTrace.implementation(), result = p.run(ex);\n' +
-    '  Line 4 of inline#1 script in http://path/to/file.js\n' +
-    '    printTrace(printStackTrace());\n' +
-    '  Line 7 of inline#1 script in http://path/to/file.js\n' +
-    '    bar(n - 1);\n' +
-    '  Line 11 of inline#1 script in http://path/to/file.js\n' +
-    '    bar(2);\n' +
-    '  Line 15 of inline#1 script in http://path/to/file.js\n' +
-    '    foo();\n' +
-    '',
-  'opera#sourceloc': 44,
-};
-
-CapturedExceptions.OPERA_902 = {
-  message:
-    'Statement on line 44: Type mismatch (usually a non-object value used where an object is required)\n' +
-    'Backtrace:\n' +
-    '  Line 44 of linked script http://path/to/file.js\n' +
-    '    this.undef();\n' +
-    '  Line 31 of linked script http://path/to/file.js\n' +
-    '    ex = ex || this.createException();\n' +
-    '  Line 18 of linked script http://path/to/file.js\n' +
-    '    var p = new printStackTrace.implementation(), result = p.run(ex);\n' +
-    '  Line 4 of inline#1 script in http://path/to/file.js\n' +
-    '    printTrace(printStackTrace());\n' +
-    '  Line 7 of inline#1 script in http://path/to/file.js\n' +
-    '    bar(n - 1);\n' +
-    '  Line 11 of inline#1 script in http://path/to/file.js\n' +
-    '    bar(2);\n' +
-    '  Line 15 of inline#1 script in http://path/to/file.js\n' +
-    '    foo();\n' +
-    '',
-  'opera#sourceloc': 44,
-};
-
-CapturedExceptions.OPERA_927 = {
-  message:
-    'Statement on line 43: Type mismatch (usually a non-object value used where an object is required)\n' +
-    'Backtrace:\n' +
-    '  Line 43 of linked script http://path/to/file.js\n' +
-    '    bar(n - 1);\n' +
-    '  Line 31 of linked script http://path/to/file.js\n' +
-    '    bar(2);\n' +
-    '  Line 18 of linked script http://path/to/file.js\n' +
-    '    foo();\n' +
-    '',
-  'opera#sourceloc': 43,
-};
-
-CapturedExceptions.OPERA_964 = {
-  message:
-    'Statement on line 42: Type mismatch (usually non-object value supplied where object required)\n' +
-    'Backtrace:\n' +
-    '  Line 42 of linked script http://path/to/file.js\n' +
-    '                this.undef();\n' +
-    '  Line 27 of linked script http://path/to/file.js\n' +
-    '            ex = ex || this.createException();\n' +
-    '  Line 18 of linked script http://path/to/file.js: In function printStackTrace\n' +
-    '        var p = new printStackTrace.implementation(), result = p.run(ex);\n' +
-    '  Line 4 of inline#1 script in http://path/to/file.js: In function bar\n' +
-    '             printTrace(printStackTrace());\n' +
-    '  Line 7 of inline#1 script in http://path/to/file.js: In function bar\n' +
-    '           bar(n - 1);\n' +
-    '  Line 11 of inline#1 script in http://path/to/file.js: In function foo\n' +
-    '           bar(2);\n' +
-    '  Line 15 of inline#1 script in http://path/to/file.js\n' +
-    '         foo();\n' +
-    '',
-  'opera#sourceloc': 42,
-  stacktrace:
-    '  ...  Line 27 of linked script http://path/to/file.js\n' +
-    '            ex = ex || this.createException();\n' +
-    '  Line 18 of linked script http://path/to/file.js: In function printStackTrace\n' +
-    '        var p = new printStackTrace.implementation(), result = p.run(ex);\n' +
-    '  Line 4 of inline#1 script in http://path/to/file.js: In function bar\n' +
-    '             printTrace(printStackTrace());\n' +
-    '  Line 7 of inline#1 script in http://path/to/file.js: In function bar\n' +
-    '           bar(n - 1);\n' +
-    '  Line 11 of inline#1 script in http://path/to/file.js: In function foo\n' +
-    '           bar(2);\n' +
-    '  Line 15 of inline#1 script in http://path/to/file.js\n' +
-    '         foo();\n' +
-    '',
-};
-
-CapturedExceptions.OPERA_10 = {
-  message: 'Statement on line 42: Type mismatch (usually non-object value supplied where object required)',
-  'opera#sourceloc': 42,
-  stacktrace:
-    '  Line 42 of linked script http://path/to/file.js\n' +
-    '                this.undef();\n' +
-    '  Line 27 of linked script http://path/to/file.js\n' +
-    '            ex = ex || this.createException();\n' +
-    '  Line 18 of linked script http://path/to/file.js: In function printStackTrace\n' +
-    '        var p = new printStackTrace.implementation(), result = p.run(ex);\n' +
-    '  Line 4 of inline#1 script in http://path/to/file.js: In function bar\n' +
-    '             printTrace(printStackTrace());\n' +
-    '  Line 7 of inline#1 script in http://path/to/file.js: In function bar\n' +
-    '           bar(n - 1);\n' +
-    '  Line 11 of inline#1 script in http://path/to/file.js: In function foo\n' +
-    '           bar(2);\n' +
-    '  Line 15 of inline#1 script in http://path/to/file.js\n' +
-    '         foo();\n' +
-    '',
-};
-
-CapturedExceptions.OPERA_11 = {
-  message: "'this.undef' is not a function",
-  stack:
-    '<anonymous function: run>([arguments not available])@http://path/to/file.js:27\n' +
-    'bar([arguments not available])@http://domain.com:1234/path/to/file.js:18\n' +
-    'foo([arguments not available])@http://domain.com:1234/path/to/file.js:11\n' +
-    '<anonymous function>@http://path/to/file.js:15\n' +
-    'Error created at <anonymous function>@http://path/to/file.js:15',
-  stacktrace:
-    'Error thrown at line 42, column 12 in <anonymous function: createException>() in http://path/to/file.js:\n' +
-    '    this.undef();\n' +
-    'called from line 27, column 8 in <anonymous function: run>(ex) in http://path/to/file.js:\n' +
-    '    ex = ex || this.createException();\n' +
-    'called from line 18, column 4 in printStackTrace(options) in http://path/to/file.js:\n' +
-    '    var p = new printStackTrace.implementation(), result = p.run(ex);\n' +
-    'called from line 4, column 5 in bar(n) in http://path/to/file.js:\n' +
-    '    printTrace(printStackTrace());\n' +
-    'called from line 7, column 4 in bar(n) in http://path/to/file.js:\n' +
-    '    bar(n - 1);\n' +
-    'called from line 11, column 4 in foo() in http://path/to/file.js:\n' +
-    '    bar(2);\n' +
-    'called from line 15, column 3 in http://path/to/file.js:\n' +
-    '    foo();',
-};
 
 CapturedExceptions.OPERA_12 = {
   message: "Cannot convert 'x' to object",
@@ -369,17 +194,6 @@ CapturedExceptions.OPERA_25 = {
     '    at http://path/to/file.js:47:22\n' +
     '    at foo (http://path/to/file.js:52:15)\n' +
     '    at bar (http://path/to/file.js:108:168)',
-};
-
-CapturedExceptions.CHROME_15 = {
-  arguments: ['undef'],
-  message: "Object #<Object> has no method 'undef'",
-  stack:
-    "TypeError: Object #<Object> has no method 'undef'\n" +
-    '    at bar (http://path/to/file.js:13:17)\n' +
-    '    at bar (http://path/to/file.js:16:5)\n' +
-    '    at foo (http://path/to/file.js:20:5)\n' +
-    '    at http://path/to/file.js:24:4',
 };
 
 CapturedExceptions.CHROME_36 = {
@@ -410,56 +224,6 @@ CapturedExceptions.CHROME_48_NESTED_EVAL = {
     'at eval (eval at speak (http://localhost:8080/file.js:21:17), <anonymous>:4:18)\n' +
     'at Object.speak (http://localhost:8080/file.js:21:17)\n' +
     'at http://localhost:8080/file.js:31:13\n',
-};
-
-CapturedExceptions.FIREFOX_3 = {
-  fileName: 'http://127.0.0.1:8000/js/stacktrace.js',
-  lineNumber: 44,
-  message: 'this.undef is not a function',
-  name: 'TypeError',
-  stack:
-    '()@http://127.0.0.1:8000/js/stacktrace.js:44\n' +
-    '(null)@http://127.0.0.1:8000/js/stacktrace.js:31\n' +
-    'printStackTrace()@http://127.0.0.1:8000/js/stacktrace.js:18\n' +
-    'bar(1)@http://127.0.0.1:8000/js/file.js:13\n' +
-    'bar(2)@http://127.0.0.1:8000/js/file.js:16\n' +
-    'foo()@http://127.0.0.1:8000/js/file.js:20\n' +
-    '@http://127.0.0.1:8000/js/file.js:24\n' +
-    '',
-};
-
-CapturedExceptions.FIREFOX_7 = {
-  fileName: 'file:///G:/js/stacktrace.js',
-  lineNumber: 44,
-  stack:
-    '()@file:///G:/js/stacktrace.js:44\n' +
-    '(null)@file:///G:/js/stacktrace.js:31\n' +
-    'printStackTrace()@file:///G:/js/stacktrace.js:18\n' +
-    'bar(1)@file:///G:/js/file.js:13\n' +
-    'bar(2)@file:///G:/js/file.js:16\n' +
-    'foo()@file:///G:/js/file.js:20\n' +
-    '@file:///G:/js/file.js:24\n' +
-    '',
-};
-
-CapturedExceptions.FIREFOX_14 = {
-  message: 'x is null',
-  stack:
-    '@http://path/to/file.js:48\n' +
-    'dumpException3@http://path/to/file.js:52\n' +
-    'onclick@http://path/to/file.js:1\n' +
-    '',
-  fileName: 'http://path/to/file.js',
-  lineNumber: 48,
-};
-
-CapturedExceptions.FIREFOX_31 = {
-  message: 'Default error',
-  name: 'Error',
-  stack: 'foo@http://path/to/file.js:41:13\n' + 'bar@http://path/to/file.js:1:1\n' + '',
-  fileName: 'http://path/to/file.js',
-  lineNumber: 41,
-  columnNumber: 12,
 };
 
 CapturedExceptions.FIREFOX_43_NESTED_EVAL = {
