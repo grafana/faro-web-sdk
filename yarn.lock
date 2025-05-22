@@ -2369,11 +2369,12 @@
     "@types/node" "*"
 
 "@types/compression@^1.7.2":
-  version "1.7.5"
-  resolved "https://registry.yarnpkg.com/@types/compression/-/compression-1.7.5.tgz#0f80efef6eb031be57b12221c4ba6bc3577808f7"
-  integrity sha512-AAQvK5pxMpaT+nDvhHrsBhLSYG5yQdtkaJE1WYieSNY2mVFKAgmU4ks65rkZD5oqnGCFLyQpUr1CqI4DmUMyDg==
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@types/compression/-/compression-1.8.0.tgz#d082c31f71f964809d2b532cbb8deb28ca83ff80"
+  integrity sha512-g4vmPIwbTii9dX1HVioHbOolubEaf4re4vDxuzpKrzz9uI7uarBExi9begX0cXyIB85jXZ5X2A/v8rsHZxSAPw==
   dependencies:
     "@types/express" "*"
+    "@types/node" "*"
 
 "@types/connect@*":
   version "3.4.36"
