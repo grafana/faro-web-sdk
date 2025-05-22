@@ -1,4 +1,7 @@
+import type { Span } from '@opentelemetry/api';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
+
+import { performanceEntriesSubscription } from '@grafana/faro-web-sdk';
 
 import { FaroXhrInstrumentation } from './faroXhrInstrumentation';
 import {
@@ -28,6 +31,16 @@ function createFetchInstrumentationOptions(
     applyCustomAttributesOnSpan: fetchCustomAttributeFunctionWithDefaults(
       fetchInstrumentationOptions?.applyCustomAttributesOnSpan
     ),
+
+    requestHook: (span: Span, _request: Request | RequestInit) => {
+      performanceEntriesSubscription.first().subscribe((msg) => {
+        const { faroNavigationId, faroResourceId } = msg.entry ?? {};
+        if (faroNavigationId && faroResourceId) {
+          span.setAttribute('faro.performance.navigation.id', faroNavigationId);
+          span.setAttribute('faro.performance.resource.id', faroResourceId);
+        }
+      });
+    },
   };
 }
 

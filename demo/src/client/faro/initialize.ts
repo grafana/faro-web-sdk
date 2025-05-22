@@ -13,8 +13,12 @@ import { env } from '../utils/env';
 
 export function initializeFaro(): Faro {
   const faro = coreInit({
-    url: `http://localhost:${env.faro.portAppReceiver}/collect`,
-    apiKey: env.faro.apiKey,
+    url: 'https://faro-collector-prod-us-central-0.grafana.net/collect/66d2a3caa8a930dbcace054b646d00bb',
+    app: {
+      name: 'User Actions',
+      version: '1.0.0',
+      environment: 'production',
+    },
 
     instrumentations: [
       ...getWebInstrumentations({
@@ -35,12 +39,12 @@ export function initializeFaro(): Faro {
         },
       }),
     ],
-    app: {
-      name: env.client.packageName,
-      namespace: env.client.packageNamespace,
-      version: env.package.version,
-      environment: env.mode.name,
-    },
+    // app: {
+    //   name: env.client.packageName,
+    //   namespace: env.client.packageNamespace,
+    //   version: env.package.version,
+    //   environment: env.mode.name,
+    // },
 
     trackResources: true,
 

@@ -10,6 +10,7 @@ type SpanContext = PushEventOptions['spanContext'];
 export function getSpanContextFromServerTiming(serverTimings: PerformanceServerTiming[] = []): SpanContext | undefined {
   for (const serverEntry of serverTimings) {
     if (serverEntry.name === 'traceparent') {
+      console.log('serverEntry.description', serverEntry.description);
       if (!w3cTraceparentFormat.test(serverEntry.description)) {
         continue;
       }
