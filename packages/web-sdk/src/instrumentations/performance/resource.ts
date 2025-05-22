@@ -41,6 +41,7 @@ export function observeResourceTimings(
         };
 
         if (faro.config.trackUserActionsPreview) {
+          console.log('faro.config.trackUserActionsPreview', faroResourceEntry);
           observable?.notify({
             type: RESOURCE_ENTRY,
             entry: faroResourceEntry,

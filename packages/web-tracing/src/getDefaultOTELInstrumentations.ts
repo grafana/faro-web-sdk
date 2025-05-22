@@ -6,6 +6,7 @@ import { performanceEntriesSubscription } from '@grafana/faro-web-sdk';
 import { FaroXhrInstrumentation } from './faroXhrInstrumentation';
 import {
   fetchCustomAttributeFunctionWithDefaults,
+  type FetchError,
   xhrCustomAttributeFunctionWithDefaults,
 } from './instrumentationUtils';
 import type { DefaultInstrumentationsOptions, InstrumentationOption } from './types';
@@ -29,18 +30,11 @@ function createFetchInstrumentationOptions(
     ...fetchInstrumentationOptions,
     // always keep this function
     applyCustomAttributesOnSpan: fetchCustomAttributeFunctionWithDefaults(
-      fetchInstrumentationOptions?.applyCustomAttributesOnSpan
+      (span: Span, _request: Request | RequestInit, _result: Response | FetchError) => {
+        fetchInstrumentationOptions?.applyCustomAttributesOnSpan?.(span, _request, _result);
+        mapHttpRequestToPerformanceEntry(span);
+      }
     ),
-
-    requestHook: (span: Span, _request: Request | RequestInit) => {
-      performanceEntriesSubscription.first().subscribe((msg) => {
-        const { faroNavigationId, faroResourceId } = msg.entry ?? {};
-        if (faroNavigationId && faroResourceId) {
-          span.setAttribute('faro.performance.navigation.id', faroNavigationId);
-          span.setAttribute('faro.performance.resource.id', faroResourceId);
-        }
-      });
-    },
   };
 }
 
@@ -54,8 +48,21 @@ function createXhrInstrumentationOptions(
     // keep this here to overwrite the defaults above if provided by the users
     ...xhrInstrumentationOptions,
     // always keep this function
-    applyCustomAttributesOnSpan: xhrCustomAttributeFunctionWithDefaults(
-      xhrInstrumentationOptions?.applyCustomAttributesOnSpan
-    ),
+    applyCustomAttributesOnSpan: xhrCustomAttributeFunctionWithDefaults((span: Span, xhr: XMLHttpRequest) => {
+      xhrInstrumentationOptions?.applyCustomAttributesOnSpan?.(span, xhr);
+      mapHttpRequestToPerformanceEntry(span);
+    }),
   };
+}
+
+export function mapHttpRequestToPerformanceEntry(span: Span) {
+  performanceEntriesSubscription.first().subscribe((msg) => {
+    const { faroNavigationId, faroResourceId } = msg.entry ?? {};
+    if (faroNavigationId) {
+      span.setAttribute('faro.performance.navigation.id', faroNavigationId);
+    }
+    if (faroResourceId) {
+      span.setAttribute('faro.performance.resource.id', faroResourceId);
+    }
+  });
 }
