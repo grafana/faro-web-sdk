@@ -2,6 +2,9 @@
 
 ## Next
 
+feat(web-tracing): Add mapping between HTTP requests and their corresponding resource entries to track
+detailed performance metrics for each request (#1268)
+
 ## 1.18.2
 
 - fix(user actions): don't attach user action context to http request when in halt mode (#1249)
