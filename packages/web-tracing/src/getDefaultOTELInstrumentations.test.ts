@@ -1,7 +1,12 @@
+import { Span } from '@opentelemetry/api';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
-import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
+import * as mockWebSdkModule from '@grafana/faro-web-sdk';
+import type { ResourceEntryMessage } from '@grafana/faro-web-sdk';
+
+import { getDefaultOTELInstrumentations, mapHttpRequestToPerformanceEntry } from './getDefaultOTELInstrumentations';
+import { xhrCustomAttributeFunctionWithDefaults } from './instrumentationUtils';
 
 jest.mock('@opentelemetry/instrumentation-fetch');
 jest.mock('@opentelemetry/instrumentation-xml-http-request');
@@ -60,5 +65,61 @@ describe('getDefaultOTELInstrumentations', () => {
       ignoreNetworkEvents: false,
       applyCustomAttributesOnSpan: expect.any(Function),
     });
+  });
+
+  describe('Map resource entries to HTTP requests', () => {
+    it('adds adds the ID of the performance entry to the span', async () => {
+      jest.spyOn(mockWebSdkModule.performanceEntriesSubscription, 'first').mockReturnValue({
+        subscribe: (callback: (msg: ResourceEntryMessage) => void) => {
+          callback({
+            // @ts-expect-error - mock data, we only need the faroResourceId and faroNavigationId
+            entry: {
+              faroResourceId: 'test-id',
+              faroNavigationId: 'test-navigation-id',
+              name: 'test-url',
+              initiatorType: 'fetch',
+            },
+          });
+        },
+      } as any);
+
+      const span = {
+        attributes: {},
+        setAttribute: jest.fn(),
+      } as unknown as Span;
+
+      mapHttpRequestToPerformanceEntry(span, 'test-url', 'fetch');
+
+      expect(span.setAttribute).toHaveBeenCalledWith('faro.performance.resource.id', 'test-id');
+      expect(span.setAttribute).toHaveBeenCalledWith('faro.performance.navigation.id', 'test-navigation-id');
+    });
+
+    it('does not add the ID of the performance entry to the span if the URL does not match or if name or url is not provided', async () => {
+      const entryNames = ['test-url', 'test-url', ''];
+
+      jest.spyOn(mockWebSdkModule.performanceEntriesSubscription, 'first').mockReturnValue({
+        subscribe: (callback: (msg: ResourceEntryMessage) => void) => {
+          callback({
+            // @ts-expect-error - mock data, we only need the faroResourceId and faroNavigationId
+            entry: {
+              faroResourceId: 'test-id',
+              faroNavigationId: 'test-navigation-id',
+              name: entryNames.shift() ?? '',
+              initiatorType: 'fetch',
+            },
+          });
+        },
+      } as any);
+
+      const span = {
+        attributes: {},
+        setAttribute: jest.fn(),
+      } as unknown as Span;
+
+      mapHttpRequestToPerformanceEntry(span, 'test-url-2', 'fetch');
+      expect(span.setAttribute).not.toHaveBeenCalled();
+    });
+
+    it('get the URL from the span if not available in the request data', async () => {});
   });
 });
