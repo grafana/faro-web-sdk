@@ -53,5 +53,5 @@ export type CacheType = 'cache' | 'conditionalFetch' | 'fullLoad';
 
 export type ResourceEntryMessage = {
   type: typeof RESOURCE_ENTRY;
-  entry?: FaroResourceItem;
+  entry: FaroResourceItem;
 };

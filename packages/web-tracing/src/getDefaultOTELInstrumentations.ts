@@ -70,9 +70,10 @@ function createXhrInstrumentationOptions(
  */
 export function mapHttpRequestToPerformanceEntry(span: Span, url: string) {
   performanceEntriesSubscription.first().subscribe((msg) => {
-    const { faroNavigationId = unknownString, faroResourceId = unknownString, name } = msg.entry ?? {};
+    const { faroNavigationId, faroResourceId, initiatorType, name } = msg.entry;
+    const isHttpRequestEntry = ['xmlhttprequest', 'fetch'].includes(initiatorType);
 
-    if (!name || !url || name !== url) {
+    if (!isHttpRequestEntry || !name || !url || name !== url) {
       return;
     }
 
