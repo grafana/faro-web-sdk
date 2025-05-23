@@ -1,7 +1,7 @@
 import type { Span } from '@opentelemetry/api';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 
-import { isEmpty, performanceEntriesSubscription } from '@grafana/faro-web-sdk';
+import { isEmpty, performanceEntriesSubscription, unknownString } from '@grafana/faro-web-sdk';
 
 import { FaroXhrInstrumentation } from './faroXhrInstrumentation';
 import {
@@ -70,16 +70,13 @@ function createXhrInstrumentationOptions(
  */
 export function mapHttpRequestToPerformanceEntry(span: Span, url: string) {
   performanceEntriesSubscription.first().subscribe((msg) => {
-    const { faroNavigationId, faroResourceId, name } = msg.entry ?? {};
-    if (name == null || url == null || name !== url) {
+    const { faroNavigationId = unknownString, faroResourceId = unknownString, name } = msg.entry ?? {};
+
+    if (!name || !url || name !== url) {
       return;
     }
 
-    if (faroNavigationId) {
-      span.setAttribute('faro.performance.navigation.id', faroNavigationId);
-    }
-    if (faroResourceId) {
-      span.setAttribute('faro.performance.resource.id', faroResourceId);
-    }
+    span.setAttribute('faro.performance.navigation.id', faroNavigationId);
+    span.setAttribute('faro.performance.resource.id', faroResourceId);
   });
 }
