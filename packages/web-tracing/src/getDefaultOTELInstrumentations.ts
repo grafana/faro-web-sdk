@@ -1,7 +1,7 @@
 import type { Span } from '@opentelemetry/api';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 
-import { isEmpty, performanceEntriesSubscription, unknownString } from '@grafana/faro-web-sdk';
+import { performanceEntriesSubscription, unknownString } from '@grafana/faro-web-sdk';
 
 import { FaroXhrInstrumentation } from './faroXhrInstrumentation';
 import {
