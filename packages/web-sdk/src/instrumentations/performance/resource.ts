@@ -40,12 +40,10 @@ export function observeResourceTimings(
           faroResourceId: genShortID(),
         };
 
-        if (faro.config.trackUserActionsPreview) {
-          observable?.notify({
-            type: RESOURCE_ENTRY,
-            entry: faroResourceEntry,
-          });
-        }
+        observable?.notify({
+          type: RESOURCE_ENTRY,
+          entry: faroResourceEntry,
+        });
 
         pushEvent('faro.performance.resource', faroResourceEntry, undefined, {
           spanContext,
