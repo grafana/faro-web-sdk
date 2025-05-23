@@ -1,7 +1,8 @@
 import type { Span } from '@opentelemetry/api';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 
-import { performanceEntriesSubscription, unknownString } from '@grafana/faro-web-sdk';
+import { stringifyExternalJson, unknownString } from '@grafana/faro-core';
+import { performanceEntriesSubscription } from '@grafana/faro-web-sdk';
 
 import { FaroXhrInstrumentation } from './faroXhrInstrumentation';
 import {
@@ -15,6 +16,9 @@ import type { DefaultInstrumentationsOptions, InstrumentationOption } from './ty
 type WithURL = {
   url: string;
 };
+
+const xhrInitiatorType = 'xmlhttprequest';
+const fetchInitiatorType = 'fetch';
 
 export function getDefaultOTELInstrumentations(options: DefaultInstrumentationsOptions = {}): InstrumentationOption[] {
   const { fetchInstrumentationOptions, xhrInstrumentationOptions, ...sharedOptions } = options;
@@ -36,8 +40,10 @@ function createFetchInstrumentationOptions(
     // always keep this function
     applyCustomAttributesOnSpan: fetchCustomAttributeFunctionWithDefaults(
       (span: Span, request: Request | RequestInit, result: Response | FetchError) => {
+        const url = (result as WithURL).url || (request as WithURL).url || getUrlFromSpan(span);
+        mapHttpRequestToPerformanceEntry(span, url, fetchInitiatorType);
+
         fetchInstrumentationOptions?.applyCustomAttributesOnSpan?.(span, request, result);
-        mapHttpRequestToPerformanceEntry(span, (result as typeof result & WithURL).url);
       }
     ),
   };
@@ -54,8 +60,10 @@ function createXhrInstrumentationOptions(
     ...xhrInstrumentationOptions,
     // always keep this function
     applyCustomAttributesOnSpan: xhrCustomAttributeFunctionWithDefaults((span: Span, xhr: XMLHttpRequest) => {
+      const url = xhr.responseURL || getUrlFromSpan(span);
+      mapHttpRequestToPerformanceEntry(span, url, xhrInitiatorType);
+
       xhrInstrumentationOptions?.applyCustomAttributesOnSpan?.(span, xhr);
-      mapHttpRequestToPerformanceEntry(span, xhr.responseURL);
     }),
   };
 }
@@ -68,16 +76,28 @@ function createXhrInstrumentationOptions(
  *
  * @param span - The span to map the request to
  */
-export function mapHttpRequestToPerformanceEntry(span: Span, url: string) {
+export function mapHttpRequestToPerformanceEntry(span: Span, url: string, requestType: string) {
   performanceEntriesSubscription.first().subscribe((msg) => {
     const { faroNavigationId, faroResourceId, initiatorType, name } = msg.entry;
-    const isHttpRequestEntry = ['xmlhttprequest', 'fetch'].includes(initiatorType);
+    const isHttpRequestEntry = [xhrInitiatorType, fetchInitiatorType].includes(initiatorType);
 
-    if (!isHttpRequestEntry || !name || !url || name !== url) {
+    if (!isHttpRequestEntry || name !== url || requestType !== initiatorType) {
       return;
     }
 
     span.setAttribute('faro.performance.navigation.id', faroNavigationId);
     span.setAttribute('faro.performance.resource.id', faroResourceId);
   });
+}
+
+// Fallback to get the url from the span if not available in the request data.
+// This is a workaround until we have a better solution.
+// Maybe we should implement our own FetchInstrumentation and XhrInstrumentation where can hook into the request and response data.
+function getUrlFromSpan(span: Span) {
+  try {
+    const parsedSpan = JSON.parse(stringifyExternalJson({ ...span }));
+    return parsedSpan.attributes['http.url'];
+  } catch (e) {
+    return unknownString;
+  }
 }

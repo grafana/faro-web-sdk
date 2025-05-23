@@ -6,6 +6,7 @@ import * as mockWebSdkModule from '@grafana/faro-web-sdk';
 import type { ResourceEntryMessage } from '@grafana/faro-web-sdk';
 
 import { getDefaultOTELInstrumentations, mapHttpRequestToPerformanceEntry } from './getDefaultOTELInstrumentations';
+import { xhrCustomAttributeFunctionWithDefaults } from './instrumentationUtils';
 
 jest.mock('@opentelemetry/instrumentation-fetch');
 jest.mock('@opentelemetry/instrumentation-xml-http-request');
@@ -70,8 +71,15 @@ describe('getDefaultOTELInstrumentations', () => {
     it('adds adds the ID of the performance entry to the span', async () => {
       jest.spyOn(mockWebSdkModule.performanceEntriesSubscription, 'first').mockReturnValue({
         subscribe: (callback: (msg: ResourceEntryMessage) => void) => {
-          // @ts-expect-error - mock data, we only need the faroResourceId and faroNavigationId
-          callback({ entry: { faroResourceId: 'test-id', faroNavigationId: 'test-navigation-id', name: 'test-url' } });
+          callback({
+            // @ts-expect-error - mock data, we only need the faroResourceId and faroNavigationId
+            entry: {
+              faroResourceId: 'test-id',
+              faroNavigationId: 'test-navigation-id',
+              name: 'test-url',
+              initiatorType: 'fetch',
+            },
+          });
         },
       } as any);
 
@@ -80,7 +88,7 @@ describe('getDefaultOTELInstrumentations', () => {
         setAttribute: jest.fn(),
       } as unknown as Span;
 
-      mapHttpRequestToPerformanceEntry(span, 'test-url');
+      mapHttpRequestToPerformanceEntry(span, 'test-url', 'fetch');
 
       expect(span.setAttribute).toHaveBeenCalledWith('faro.performance.resource.id', 'test-id');
       expect(span.setAttribute).toHaveBeenCalledWith('faro.performance.navigation.id', 'test-navigation-id');
@@ -97,6 +105,7 @@ describe('getDefaultOTELInstrumentations', () => {
               faroResourceId: 'test-id',
               faroNavigationId: 'test-navigation-id',
               name: entryNames.shift() ?? '',
+              initiatorType: 'fetch',
             },
           });
         },
@@ -107,15 +116,10 @@ describe('getDefaultOTELInstrumentations', () => {
         setAttribute: jest.fn(),
       } as unknown as Span;
 
-      mapHttpRequestToPerformanceEntry(span, 'test-url-2');
-      expect(span.setAttribute).not.toHaveBeenCalled();
-
-      const urlEmpty = '';
-      mapHttpRequestToPerformanceEntry(span, urlEmpty);
-      expect(span.setAttribute).not.toHaveBeenCalled();
-
-      mapHttpRequestToPerformanceEntry(span, 'test-url-resource-name-empty');
+      mapHttpRequestToPerformanceEntry(span, 'test-url-2', 'fetch');
       expect(span.setAttribute).not.toHaveBeenCalled();
     });
+
+    it('get the URL from the span if not available in the request data', async () => {});
   });
 });

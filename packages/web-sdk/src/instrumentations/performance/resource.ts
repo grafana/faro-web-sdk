@@ -1,5 +1,5 @@
-import { faro, genShortID } from '@grafana/faro-core';
 import type { EventsAPI, Observable, PushEventOptions } from '@grafana/faro-core';
+import { faro, genShortID } from '@grafana/faro-core';
 
 import { isUrlIgnored } from '../../utils/url';
 
