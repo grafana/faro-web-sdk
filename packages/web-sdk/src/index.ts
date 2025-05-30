@@ -185,3 +185,6 @@ export {
 export { getIgnoreUrls, getUrlFromResource } from './utils/url';
 
 export { userActionDataAttribute, startUserAction } from './instrumentations/userActions';
+
+export { performanceEntriesSubscription } from './instrumentations/performance';
+export type { ResourceEntryMessage } from './instrumentations/performance';

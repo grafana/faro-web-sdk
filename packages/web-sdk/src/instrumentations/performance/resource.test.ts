@@ -165,27 +165,31 @@ describe('Resource observer', () => {
   });
 
   it('Emits a RESOURCE_ENTRY message when a resource is observed and trackUserActions is enabled', () => {
+    const mockObservable = {
+      notify: jest.fn(),
+    } as unknown as Observable<ResourceEntryMessage>;
+
+    const mockResourceId = 'abc';
+    jest.spyOn(faroCoreModule, 'genShortID').mockReturnValue(mockResourceId);
+
     const mockPushEvent = jest.fn();
     jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
-    const trackUserActionsConfig = mockConfig({ trackUserActionsPreview: true });
+    const trackUserActionsConfig = mockConfig();
     initializeFaro(trackUserActionsConfig);
 
     observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
 
     expect(mockObservable.notify).toHaveBeenCalledTimes(2);
-    expect(mockObservable.notify).toHaveBeenCalledWith({ type: 'resource' });
-  });
-
-  it('Does not emit a RESOURCE_ENTRY message when a resource is observed and trackUserActions is disabled', () => {
-    const mockPushEvent = jest.fn();
-    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
-
-    const trackUserActionsConfig = mockConfig({ trackUserActionsPreview: false });
-    initializeFaro(trackUserActionsConfig);
-
-    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
-
-    expect(mockObservable.notify).not.toHaveBeenCalled();
+    expect(mockObservable.notify).toHaveBeenLastCalledWith({
+      type: 'resource',
+      entry: {
+        ...createFaroResourceTiming(performanceResourceEntry),
+        faroNavigationId: mockNavigationId,
+        faroResourceId: mockResourceId,
+        initiatorType: 'xmlhttprequest',
+        name: 'resource_xmlhttprequest',
+      },
+    });
   });
 });
