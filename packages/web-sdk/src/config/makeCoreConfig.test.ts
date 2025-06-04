@@ -82,7 +82,7 @@ describe('config', () => {
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.ignoreUrls).toEqual([/\/collect(?:\/[\w]*)?$/]);
+    expect(config?.ignoreUrls).toEqual([browserConfig.url, /\/collect(?:\/[\w]*)?$/]);
   });
 
   it('enables web vitals feature when trackWebVitalsAttribution is true', () => {
@@ -126,7 +126,7 @@ describe('config', () => {
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.ignoreUrls).toEqual([browserConfig.ignoreUrls[0], /\/collect(?:\/[\w]*)?$/]);
+    expect(config?.ignoreUrls).toEqual([browserConfig.ignoreUrls[0], browserConfig.url, /\/collect(?:\/[\w]*)?$/]);
   });
 
   it.each(['http://example.com/collect', 'http://example.com/collect/874jdhalkfh7a9'])(
