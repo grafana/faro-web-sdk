@@ -126,7 +126,7 @@ describe('UserActionsInstrumentation', () => {
         userActionStartTime: expect.any(String),
         userActionEndTime: expect.any(String),
         userActionDuration: expect.any(String),
-        userActionEventTrigger: expect.any(String),
+        userActionTrigger: expect.any(String),
       }),
       undefined,
       expect.anything()
@@ -242,7 +242,7 @@ describe('UserActionsInstrumentation', () => {
         userActionStartTime: expect.any(String),
         userActionEndTime: expect.any(String),
         userActionDuration: expect.any(String),
-        userActionEventTrigger: expect.any(String),
+        userActionTrigger: expect.any(String),
       }),
       undefined,
       expect.anything()
@@ -308,7 +308,7 @@ describe('UserActionsInstrumentation', () => {
     const handler = getUserEventHandler(mockFaro);
 
     const apiEvent: ApiEvent = {
-      type: 'apiEvent',
+      type: 'faroApiCall',
       name: 'test-action',
       attributes: { foo: 'bar' },
     };
@@ -330,7 +330,7 @@ describe('UserActionsInstrumentation', () => {
         userActionStartTime: expect.any(String),
         userActionEndTime: expect.any(String),
         userActionDuration: expect.any(String),
-        userActionEventTrigger: expect.any(String),
+        userActionTrigger: expect.any(String),
       }),
       undefined,
       expect.anything()

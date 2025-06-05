@@ -24,6 +24,6 @@ function createUserActionApiEvent(name: string, attributes?: Record<string, stri
   return {
     name,
     attributes,
-    type: 'apiEvent',
+    type: 'faroApiCall',
   };
 }

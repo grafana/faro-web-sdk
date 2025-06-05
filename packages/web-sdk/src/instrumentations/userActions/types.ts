@@ -30,5 +30,5 @@ export type HttpRequestEndMessage = {
 export type ApiEvent = {
   name: string;
   attributes?: Record<string, string>;
-  type: 'apiEvent';
+  type: 'faroApiCall';
 };
