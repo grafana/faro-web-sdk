@@ -200,7 +200,7 @@ function endUserAction(props: {
       userActionStartTime: startTime.toString(),
       userActionEndTime: endTime.toString(),
       userActionDuration: duration.toString(),
-      userActionEventType: eventType,
+      userActionEventTrigger: eventType,
       ...stringifyObjectValues(attributes),
     },
     undefined,
