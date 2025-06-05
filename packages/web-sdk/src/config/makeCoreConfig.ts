@@ -60,7 +60,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     unpatchedConsole = defaultUnpatchedConsole,
     trackUserActionsPreview = false,
     trackUserActionsDataAttributeName = userActionDataAttribute,
-
+    url: browserConfigUrl,
     // Properties without default values or which aren't used to create derived config
     ...restProperties
   }: BrowserConfig = browserConfig;
@@ -85,8 +85,13 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     transports,
     unpatchedConsole,
     eventDomain,
-    // ignore cloud collector urls by default. These are URLs ending with /collect or /collect/ followed by alphanumeric characters.
-    ignoreUrls: (browserConfig.ignoreUrls ?? []).concat([/\/collect(?:\/[\w]*)?$/]),
+    ignoreUrls: [
+      ...(browserConfig.ignoreUrls ?? []),
+      // ignore configured cloud collector url by default
+      ...(browserConfigUrl ? [browserConfigUrl] : []),
+      // Try our best to exclude collector URLs form other Faro instances. By default these are URLs ending with /collect or /collect/ followed by alphanumeric characters.
+      /\/collect(?:\/[\w]*)?$/,
+    ],
     sessionTracking: {
       ...defaultSessionTrackingConfig,
       ...browserConfig.sessionTracking,

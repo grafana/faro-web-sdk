@@ -2,6 +2,9 @@
 
 ## Next
 
+- chore(ignored URLs): Prevent tracking of custom collector URLs that don't match the Faro collector
+  URL structure (#1297)
+
 ## 1.18.2
 
 - fix(user actions): don't attach user action context to http request when in halt mode (#1249)
