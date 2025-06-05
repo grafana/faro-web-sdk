@@ -126,7 +126,7 @@ describe('UserActionsInstrumentation', () => {
         userActionStartTime: expect.any(String),
         userActionEndTime: expect.any(String),
         userActionDuration: expect.any(String),
-        userActionEventType: expect.any(String),
+        userActionEventTrigger: expect.any(String),
       }),
       undefined,
       expect.anything()
@@ -242,7 +242,7 @@ describe('UserActionsInstrumentation', () => {
         userActionStartTime: expect.any(String),
         userActionEndTime: expect.any(String),
         userActionDuration: expect.any(String),
-        userActionEventType: expect.any(String),
+        userActionEventTrigger: expect.any(String),
       }),
       undefined,
       expect.anything()
@@ -330,7 +330,7 @@ describe('UserActionsInstrumentation', () => {
         userActionStartTime: expect.any(String),
         userActionEndTime: expect.any(String),
         userActionDuration: expect.any(String),
-        userActionEventType: expect.any(String),
+        userActionEventTrigger: expect.any(String),
       }),
       undefined,
       expect.anything()
