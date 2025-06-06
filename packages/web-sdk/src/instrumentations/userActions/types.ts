@@ -2,6 +2,7 @@ import type {
   MESSAGE_TYPE_DOM_MUTATION,
   MESSAGE_TYPE_HTTP_REQUEST_END,
   MESSAGE_TYPE_HTTP_REQUEST_START,
+  userActionStartByApiCallEventName,
 } from './const';
 
 export type DomMutationMessage = {
@@ -30,5 +31,5 @@ export type HttpRequestEndMessage = {
 export type ApiEvent = {
   name: string;
   attributes?: Record<string, string>;
-  type: 'apiEvent';
+  type: typeof userActionStartByApiCallEventName;
 };

@@ -13,7 +13,7 @@ import { mockConfig } from '@grafana/faro-core/src/testUtils';
 import { faro } from '../..';
 import { makeCoreConfig } from '../../config';
 
-import { userActionDataAttribute } from './const';
+import { userActionDataAttribute, userActionStartByApiCallEventName } from './const';
 import { getUserEventHandler } from './processUserActionEventHandler';
 import { ApiEvent } from './types';
 
@@ -126,7 +126,7 @@ describe('UserActionsInstrumentation', () => {
         userActionStartTime: expect.any(String),
         userActionEndTime: expect.any(String),
         userActionDuration: expect.any(String),
-        userActionEventTrigger: expect.any(String),
+        userActionTrigger: expect.any(String),
       }),
       undefined,
       expect.anything()
@@ -242,7 +242,7 @@ describe('UserActionsInstrumentation', () => {
         userActionStartTime: expect.any(String),
         userActionEndTime: expect.any(String),
         userActionDuration: expect.any(String),
-        userActionEventTrigger: expect.any(String),
+        userActionTrigger: expect.any(String),
       }),
       undefined,
       expect.anything()
@@ -308,7 +308,7 @@ describe('UserActionsInstrumentation', () => {
     const handler = getUserEventHandler(mockFaro);
 
     const apiEvent: ApiEvent = {
-      type: 'apiEvent',
+      type: userActionStartByApiCallEventName,
       name: 'test-action',
       attributes: { foo: 'bar' },
     };
@@ -330,7 +330,7 @@ describe('UserActionsInstrumentation', () => {
         userActionStartTime: expect.any(String),
         userActionEndTime: expect.any(String),
         userActionDuration: expect.any(String),
-        userActionEventTrigger: expect.any(String),
+        userActionTrigger: expect.any(String),
       }),
       undefined,
       expect.anything()

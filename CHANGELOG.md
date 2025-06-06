@@ -4,6 +4,7 @@
 
 - chore(ignored URLs): Prevent tracking of custom collector URLs that don't match the Faro collector
   URL structure (#1297)
+- chore(user actions): Rename `userActionEventType` to `userActionTrigger` for improved clarity (#1298)
 
 ## 1.18.2
 

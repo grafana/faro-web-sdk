@@ -1,3 +1,4 @@
+import { userActionStartByApiCallEventName } from './const';
 import { startUserAction, UserActionInstrumentation } from './instrumentation';
 
 const mockProcessUserEvent = jest.fn();
@@ -32,7 +33,7 @@ describe('UserActionsInstrumentation', () => {
     expect(mockProcessUserEvent).toHaveBeenCalledWith({
       name: 'test-action',
       attributes: { test: 'test-property' },
-      type: 'apiEvent',
+      type: userActionStartByApiCallEventName,
     });
   });
 });
