@@ -15,6 +15,7 @@ import {
   MESSAGE_TYPE_HTTP_REQUEST_END,
   MESSAGE_TYPE_HTTP_REQUEST_START,
   userActionDataAttributeParsed as userActionDataAttribute,
+  userActionStartByApiCallEventName,
 } from './const';
 import { monitorDomMutations } from './domMutationMonitor';
 import { monitorHttpRequests } from './httpRequestMonitor';
@@ -266,5 +267,5 @@ function isRequestEndMessage(msg: any): msg is HttpRequestEndMessage {
 }
 
 function isApiEvent(apiEvent: any): apiEvent is { name: string; attributes?: Record<string, string> } {
-  return apiEvent.type === 'apiEvent' && typeof apiEvent.name === 'string';
+  return apiEvent.type === userActionStartByApiCallEventName && typeof apiEvent.name === 'string';
 }

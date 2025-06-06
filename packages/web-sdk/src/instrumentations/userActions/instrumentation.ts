@@ -1,5 +1,6 @@
 import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
 
+import { userActionStartByApiCallEventName } from './const';
 import { getUserEventHandler } from './processUserActionEventHandler';
 import type { ApiEvent } from './types';
 
@@ -24,6 +25,6 @@ function createUserActionApiEvent(name: string, attributes?: Record<string, stri
   return {
     name,
     attributes,
-    type: 'faroApiCall',
+    type: userActionStartByApiCallEventName,
   };
 }

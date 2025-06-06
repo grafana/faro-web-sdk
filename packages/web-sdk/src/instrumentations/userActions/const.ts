@@ -5,3 +5,5 @@ export const MESSAGE_TYPE_DOM_MUTATION = 'dom-mutation';
 
 export const userActionDataAttributeParsed = 'faroUserActionName';
 export const userActionDataAttribute = 'data-faro-user-action-name';
+
+export const userActionStartByApiCallEventName = 'faroApiCall';

@@ -13,7 +13,7 @@ import { mockConfig } from '@grafana/faro-core/src/testUtils';
 import { faro } from '../..';
 import { makeCoreConfig } from '../../config';
 
-import { userActionDataAttribute } from './const';
+import { userActionDataAttribute, userActionStartByApiCallEventName } from './const';
 import { getUserEventHandler } from './processUserActionEventHandler';
 import { ApiEvent } from './types';
 
@@ -308,7 +308,7 @@ describe('UserActionsInstrumentation', () => {
     const handler = getUserEventHandler(mockFaro);
 
     const apiEvent: ApiEvent = {
-      type: 'faroApiCall',
+      type: userActionStartByApiCallEventName,
       name: 'test-action',
       attributes: { foo: 'bar' },
     };
