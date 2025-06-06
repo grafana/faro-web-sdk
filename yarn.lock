@@ -1487,7 +1487,7 @@
     "@opentelemetry/resources" "2.0.1"
     "@opentelemetry/sdk-metrics" "2.0.1"
 
-"@opentelemetry/exporter-trace-otlp-grpc@0.201.1", "@opentelemetry/exporter-trace-otlp-grpc@^0.201.0":
+"@opentelemetry/exporter-trace-otlp-grpc@0.201.1":
   version "0.201.1"
   resolved "https://registry.yarnpkg.com/@opentelemetry/exporter-trace-otlp-grpc/-/exporter-trace-otlp-grpc-0.201.1.tgz#bb7a6f6b5c983cbde1d4d204c1c80dd7f91cf729"
   integrity sha512-0ZM5CBoZbufXckxi/SWwP5B++CjPWS6N1i+K7f+GhRxYWVGt/yh4eiV3jklZKWw/DUyMkUvUOo0GW1RxoiLoZQ==
@@ -1497,6 +1497,19 @@
     "@opentelemetry/otlp-exporter-base" "0.201.1"
     "@opentelemetry/otlp-grpc-exporter-base" "0.201.1"
     "@opentelemetry/otlp-transformer" "0.201.1"
+    "@opentelemetry/resources" "2.0.1"
+    "@opentelemetry/sdk-trace-base" "2.0.1"
+
+"@opentelemetry/exporter-trace-otlp-grpc@^0.202.0":
+  version "0.202.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/exporter-trace-otlp-grpc/-/exporter-trace-otlp-grpc-0.202.0.tgz#b34aee12bc1af9c538dc7e18429c8b9bc42dc899"
+  integrity sha512-d5wLdbNA3ahpSeD0I34vbDFMTh4vPsXemH0bKDXLeCVULCAjOJXuZmEiuRammiDgVvvX7CAb/IGLDz8d2QHvoA==
+  dependencies:
+    "@grpc/grpc-js" "^1.7.1"
+    "@opentelemetry/core" "2.0.1"
+    "@opentelemetry/otlp-exporter-base" "0.202.0"
+    "@opentelemetry/otlp-grpc-exporter-base" "0.202.0"
+    "@opentelemetry/otlp-transformer" "0.202.0"
     "@opentelemetry/resources" "2.0.1"
     "@opentelemetry/sdk-trace-base" "2.0.1"
 
@@ -1647,6 +1660,16 @@
     "@opentelemetry/core" "2.0.1"
     "@opentelemetry/otlp-exporter-base" "0.201.1"
     "@opentelemetry/otlp-transformer" "0.201.1"
+
+"@opentelemetry/otlp-grpc-exporter-base@0.202.0":
+  version "0.202.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/otlp-grpc-exporter-base/-/otlp-grpc-exporter-base-0.202.0.tgz#dbb38442745a8e20d39159d6f4692dcc01308b3d"
+  integrity sha512-yIEHVxFA5dmYif7lZbbB66qulLLhrklj6mI2X3cuGW5hYPyUErztEmbroM+6teu/XobBi9bLHid2VT4NIaRuGg==
+  dependencies:
+    "@grpc/grpc-js" "^1.7.1"
+    "@opentelemetry/core" "2.0.1"
+    "@opentelemetry/otlp-exporter-base" "0.202.0"
+    "@opentelemetry/otlp-transformer" "0.202.0"
 
 "@opentelemetry/otlp-transformer@0.201.1", "@opentelemetry/otlp-transformer@^0.201.0":
   version "0.201.1"
