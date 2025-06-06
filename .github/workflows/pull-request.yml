@@ -83,7 +83,7 @@ jobs:
         run: yarn build
 
       - name: E2E tests
-        uses: cypress-io/github-action@be1bab96b388bbd9ce3887e397d373c8557e15af
+        uses: cypress-io/github-action@615dcf65299b63c35268d795f4dfb79532388f64
         env:
           DATABASE_HOST: database
           DATABASE_PORT: 5432
