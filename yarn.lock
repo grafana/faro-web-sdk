@@ -1593,13 +1593,13 @@
     "@opentelemetry/api-logs" "^0.201.0"
     "@opentelemetry/instrumentation" "^0.201.0"
 
-"@opentelemetry/instrumentation-xml-http-request@^0.201.0":
-  version "0.201.1"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-xml-http-request/-/instrumentation-xml-http-request-0.201.1.tgz#ab986afe14e0e66798db57b0d0d894a63648ff83"
-  integrity sha512-jh6KmoflVJo0SGK4fZupIbhIdw8lzfgiMLwUEetVMCJTkUStcZ1asWoZwV4r/SINnNE1oQntm+3LnO1jnUq6uw==
+"@opentelemetry/instrumentation-xml-http-request@^0.202.0":
+  version "0.202.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-xml-http-request/-/instrumentation-xml-http-request-0.202.0.tgz#c62b68af06576ece939450a919ef545aedac678a"
+  integrity sha512-N0wZyWpdUviscnhNKbRr2mEEfTtVi0ki7v6Lr9ZsK5mUtg12e9Mf/LsT2Msl7tvyGDGGi8Tmm8ssFrfLOADqDw==
   dependencies:
     "@opentelemetry/core" "2.0.1"
-    "@opentelemetry/instrumentation" "0.201.1"
+    "@opentelemetry/instrumentation" "0.202.0"
     "@opentelemetry/sdk-trace-web" "2.0.1"
     "@opentelemetry/semantic-conventions" "^1.29.0"
 
@@ -1614,7 +1614,7 @@
     require-in-the-middle "^7.1.1"
     shimmer "^1.2.1"
 
-"@opentelemetry/instrumentation@^0.202.0":
+"@opentelemetry/instrumentation@0.202.0", "@opentelemetry/instrumentation@^0.202.0":
   version "0.202.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation/-/instrumentation-0.202.0.tgz#9468829b23039e1d675635c63f18c8676dce3079"
   integrity sha512-Uz3BxZWPgDwgHM2+vCKEQRh0R8WKrd/q6Tus1vThRClhlPO39Dyz7mDrOr6KuqGXAlBQ1e5Tnymzri4RMZNaWA==
