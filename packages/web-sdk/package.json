@@ -57,7 +57,7 @@
     "web-vitals": "^4.0.1"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
+    "@types/node": "^24.0.0",
     "@types/ua-parser-js": "^0.7.36",
     "user-agent-data-types": "^0.4.2"
   },
