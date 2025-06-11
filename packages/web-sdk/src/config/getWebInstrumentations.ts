@@ -2,6 +2,7 @@ import type { Instrumentation } from '@grafana/faro-core';
 
 import {
   ConsoleInstrumentation,
+  CSPInstrumentation,
   ErrorsInstrumentation,
   PerformanceInstrumentation,
   SessionInstrumentation,
@@ -24,6 +25,10 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
   if (options.enablePerformanceInstrumentation !== false) {
     // unshift to ensure that initialization starts before the other instrumentations
     instrumentations.unshift(new PerformanceInstrumentation());
+  }
+
+  if (options.enableContentSecurityPolicyInstrumentation !== false) {
+    instrumentations.push(new CSPInstrumentation());
   }
 
   if (options.captureConsole !== false) {

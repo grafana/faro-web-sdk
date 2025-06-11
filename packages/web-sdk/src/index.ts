@@ -16,6 +16,7 @@ export {
   WebVitalsInstrumentation,
   SessionInstrumentation,
   PerformanceInstrumentation,
+  CSPInstrumentation,
   UserActionInstrumentation,
 } from './instrumentations';
 export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
