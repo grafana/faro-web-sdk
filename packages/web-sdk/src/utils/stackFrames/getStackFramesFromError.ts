@@ -1,7 +1,6 @@
 import { isNumber } from '@grafana/faro-core';
 import type { ExceptionStackFrame, ExtendedError } from '@grafana/faro-core';
 
-
 import { buildStackFrame } from './buildStackFrame';
 import {
   evalString,
