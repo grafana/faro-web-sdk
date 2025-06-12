@@ -1,8 +1,8 @@
 import type { ExtendedError, Stacktrace, StacktraceParser } from '@grafana/faro-core';
 
+import { getStackFramesFromError } from './getStackFramesFromError';
 import type { StackframeParserOptions } from './types';
 
-import { getStackFramesFromError } from './getStackFramesFromError';
 
 export function parseStacktrace(error: ExtendedError): Stacktrace {
   return {

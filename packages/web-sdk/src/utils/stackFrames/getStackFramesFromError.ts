@@ -1,6 +1,6 @@
 import { isNumber } from '@grafana/faro-core';
 import type { ExceptionStackFrame, ExtendedError } from '@grafana/faro-core';
-import type { StackframeParserOptions } from './types';
+
 
 import { buildStackFrame } from './buildStackFrame';
 import {
@@ -17,6 +17,7 @@ import {
   webkitLineRegex,
 } from './const';
 import { getDataFromSafariExtensions } from './getDataFromSafariExtensions';
+import type { StackframeParserOptions } from './types';
 
 export function getStackFramesFromError(
   error: ExtendedError,

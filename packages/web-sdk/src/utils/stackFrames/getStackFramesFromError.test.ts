@@ -1,6 +1,7 @@
+import { hrtime } from 'node:process';
+
 import { buildStackFrame } from './buildStackFrame';
 import { getStackFramesFromError } from './getStackFramesFromError';
-import { hrtime } from 'node:process';
 
 jest.mock('./buildStackFrame', () => ({
   buildStackFrame: jest.fn((filename, func, lineno, colno) => ({ filename, func, lineno, colno })),
@@ -160,7 +161,7 @@ describe('getStackFramesFromError', () => {
   });
 
   it('should correctly skip long lines if configured to', () => {
-    var start = hrtime();
+    let start = hrtime();
     const result = getStackFramesFromError(CapturedExceptions.SUPER_LONG_LINE, { maximumLineLength: 256 });
     const elapsed = hrtime(start)[1] / 1000000;
     expect(elapsed).toBeLessThan(0.5);

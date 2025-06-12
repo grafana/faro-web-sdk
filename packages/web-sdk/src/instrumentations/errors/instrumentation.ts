@@ -2,7 +2,6 @@ import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
 import { registerOnerror } from './registerOnerror';
 import { registerOnunhandledrejection } from './registerOnunhandledrejection';
-
 import type { ErrorInstrumentationOptions } from './types';
 
 export class ErrorsInstrumentation extends BaseInstrumentation {

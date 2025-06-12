@@ -1,9 +1,10 @@
 import { isDomError, isDomException, isError, isErrorEvent, isEvent, isObject, isString } from '@grafana/faro-core';
 import type { ExceptionStackFrame, LogArgsSerializer } from '@grafana/faro-core';
 
+import { buildStackFrame, getStackFramesFromError } from '../../utils/stackFrames';
+
 import { domErrorType, domExceptionType, objectEventValue, unknownSymbolString } from './const';
 import { getValueAndTypeFromMessage } from './getValueAndTypeFromMessage';
-import { buildStackFrame, getStackFramesFromError } from '../../utils/stackFrames';
 import type { ErrorEvent, ErrorInstrumentationOptions } from './types';
 
 export function getErrorDetails(
