@@ -1,4 +1,4 @@
-import type { StackframeParserOptions } from "../../utils/stackFrames/types";
+import type { StackframeParserOptions } from '../../utils/stackFrames/types';
 
 export interface ExtendedPromiseRejectionEvent extends PromiseRejectionEvent {
   detail?: {
@@ -11,5 +11,5 @@ export type ErrorEvent = (Error | Event) & {
 };
 
 export type ErrorInstrumentationOptions = {
-  stackframeParserOptions?: StackframeParserOptions
-}
+  stackframeParserOptions?: StackframeParserOptions;
+};

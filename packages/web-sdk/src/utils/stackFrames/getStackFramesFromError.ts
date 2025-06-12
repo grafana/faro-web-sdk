@@ -18,7 +18,10 @@ import {
 } from './const';
 import { getDataFromSafariExtensions } from './getDataFromSafariExtensions';
 
-export function getStackFramesFromError(error: ExtendedError, options: StackframeParserOptions = {}): ExceptionStackFrame[] {
+export function getStackFramesFromError(
+  error: ExtendedError,
+  options: StackframeParserOptions = {}
+): ExceptionStackFrame[] {
   let lines: string[] = [];
 
   if (error.stacktrace) {
@@ -35,8 +38,8 @@ export function getStackFramesFromError(error: ExtendedError, options: Stackfram
     let colno: string | undefined;
 
     // skip attempting to parse stack frames over the limit, if it is set and above 0
-    if(options.maximumLineLength !== undefined && options.maximumLineLength > 0) {
-      if(line.length > options.maximumLineLength) {
+    if (options.maximumLineLength !== undefined && options.maximumLineLength > 0) {
+      if (line.length > options.maximumLineLength) {
         return acc;
       }
     }

@@ -10,5 +10,5 @@ export interface GetWebInstrumentationsOptions {
   captureConsole?: boolean;
   captureConsoleDisabledLevels?: LogLevel[];
   enablePerformanceInstrumentation?: boolean;
-  errorInstrumentationOptions?: ErrorInstrumentationOptions
+  errorInstrumentationOptions?: ErrorInstrumentationOptions;
 }

@@ -1,6 +1,6 @@
 import { buildStackFrame } from './buildStackFrame';
 import { getStackFramesFromError } from './getStackFramesFromError';
-import {hrtime} from 'node:process';
+import { hrtime } from 'node:process';
 
 jest.mock('./buildStackFrame', () => ({
   buildStackFrame: jest.fn((filename, func, lineno, colno) => ({ filename, func, lineno, colno })),
@@ -159,17 +159,32 @@ describe('getStackFramesFromError', () => {
     ]);
   });
 
-  it('should correctly skip long lines if configured to', ()=> {
+  it('should correctly skip long lines if configured to', () => {
     var start = hrtime();
-    const result = getStackFramesFromError(CapturedExceptions.SUPER_LONG_LINE, {maximumLineLength: 256});
-    const elapsed = hrtime(start)[1] / 1000000
+    const result = getStackFramesFromError(CapturedExceptions.SUPER_LONG_LINE, { maximumLineLength: 256 });
+    const elapsed = hrtime(start)[1] / 1000000;
     expect(elapsed).toBeLessThan(0.5);
     expect(result).toEqual([
-      buildStackFrame('http://localhost:5173/node_modules/.vite/deps/chunk-RH76XVE4.js?v=3214fecf', 'getTransactionError',  1619, 10),
-      buildStackFrame('http://localhost:5173/node_modules/.vite/deps/chunk-RH76XVE4.js?v=3214fecf', 'sendTransaction', 1750, 11),
-      buildStackFrame('http://localhost:5173/src/app/hooks/useSwapRouter.tsx?t=1737523345399', 'async Object.executeTxn', 450, 24),
+      buildStackFrame(
+        'http://localhost:5173/node_modules/.vite/deps/chunk-RH76XVE4.js?v=3214fecf',
+        'getTransactionError',
+        1619,
+        10
+      ),
+      buildStackFrame(
+        'http://localhost:5173/node_modules/.vite/deps/chunk-RH76XVE4.js?v=3214fecf',
+        'sendTransaction',
+        1750,
+        11
+      ),
+      buildStackFrame(
+        'http://localhost:5173/src/app/hooks/useSwapRouter.tsx?t=1737523345399',
+        'async Object.executeTxn',
+        450,
+        24
+      ),
     ]);
-  })
+  });
 });
 
 /* Taken from: https://github.com/stacktracejs/error-stack-parser/blob/master/spec/fixtures/captured-errors.js */
@@ -373,10 +388,10 @@ CapturedExceptions.NODE_WITH_SPACES = {
 };
 
 CapturedExceptions.SUPER_LONG_LINE = {
-  description: "message string",
+  description: 'message string',
   message: 'message string',
   name: 'Error',
-  stack:`TransactionExecutionError: User rejected the request.
+  stack: `TransactionExecutionError: User rejected the request.
 
 Request Arguments:
   from:   0xB770B86b1544eDf51BBf82Dd01e8e867607Dba51
@@ -389,7 +404,5 @@ Details: MetaMask Tx Signature: User denied transaction signature.
 Version: viem@2.22.11
     at getTransactionError (http://localhost:5173/node_modules/.vite/deps/chunk-RH76XVE4.js?v=3214fecf:1619:10)
     at sendTransaction (http://localhost:5173/node_modules/.vite/deps/chunk-RH76XVE4.js?v=3214fecf:1750:11)
-    at async Object.executeTxn (http://localhost:5173/src/app/hooks/useSwapRouter.tsx?t=1737523345399:450:24)`
+    at async Object.executeTxn (http://localhost:5173/src/app/hooks/useSwapRouter.tsx?t=1737523345399:450:24)`,
 };
-
-

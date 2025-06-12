@@ -4,7 +4,6 @@ import type { StackframeParserOptions } from './types';
 
 import { getStackFramesFromError } from './getStackFramesFromError';
 
-
 export function parseStacktrace(error: ExtendedError): Stacktrace {
   return {
     frames: getStackFramesFromError(error),
@@ -12,9 +11,9 @@ export function parseStacktrace(error: ExtendedError): Stacktrace {
 }
 
 export function newStackTraceParser(options?: StackframeParserOptions): StacktraceParser {
-  return (error: ExtendedError)=>{
+  return (error: ExtendedError) => {
     return {
       frames: getStackFramesFromError(error, options),
-    }
-  }
+    };
+  };
 }

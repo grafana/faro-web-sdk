@@ -6,7 +6,10 @@ import { getValueAndTypeFromMessage } from './getValueAndTypeFromMessage';
 import { buildStackFrame, getStackFramesFromError } from '../../utils/stackFrames';
 import type { ErrorEvent, ErrorInstrumentationOptions } from './types';
 
-export function getErrorDetails(evt: ErrorEvent, options: ErrorInstrumentationOptions = {}): [string | undefined, string | undefined, ExceptionStackFrame[]] {
+export function getErrorDetails(
+  evt: ErrorEvent,
+  options: ErrorInstrumentationOptions = {}
+): [string | undefined, string | undefined, ExceptionStackFrame[]] {
   let value: string | undefined;
   let type: string | undefined;
   let stackFrames: ExceptionStackFrame[] = [];
