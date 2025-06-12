@@ -1,0 +1,8 @@
+export const NAVIGATION_EVENT_TYPE = 'navigation';
+export const NAVIGATION_PUSH_STATE = 'faro.navigation.pushState';
+export const NAVIGATION_REPLACE_STATE = 'faro.navigation.replaceState';
+export const NAVIGATION_FORWARD = 'faro.navigation.forward';
+export const NAVIGATION_BACK = 'faro.navigation.back';
+export const NAVIGATION_GO = 'faro.navigation.go';
+export const NAVIGATION_POPSTATE = 'faro.navigation.popstate';
+export const NAVIGATION_HASHCHANGE = 'faro.navigation.hashchange';

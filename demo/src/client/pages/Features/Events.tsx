@@ -24,6 +24,12 @@ export function Events() {
     faro.api.setView({ name: `randomly-changed-view-${Math.random()}` });
   };
 
+  const softNavigation = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('value', Math.floor(Math.random() * 10).toString());
+    window.history.pushState(null, '', url.toString());
+  };
+
   return (
     <>
       <h3>Events</h3>
@@ -42,6 +48,9 @@ export function Events() {
         </Button>
         <Button data-cy="btn-change-view" onClick={changeView}>
           Change view
+        </Button>
+        <Button data-cy="btn-soft-navigation" onClick={softNavigation}>
+          Soft navigation
         </Button>
       </ButtonGroup>
     </>
