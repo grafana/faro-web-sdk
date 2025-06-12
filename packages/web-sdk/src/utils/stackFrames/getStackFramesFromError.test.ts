@@ -186,6 +186,14 @@ describe('getStackFramesFromError', () => {
       ),
     ]);
   });
+
+  it('should correctly skip short lines if configured to', () => {
+    let start = hrtime();
+    const result = getStackFramesFromError(CapturedExceptions.SUPER_LONG_LINE, { maximumLineLength: 1 });
+    const elapsed = hrtime(start)[1] / 1000000;
+    expect(elapsed).toBeLessThan(0.5);
+    expect(result).toEqual([]);
+  });
 });
 
 /* Taken from: https://github.com/stacktracejs/error-stack-parser/blob/master/spec/fixtures/captured-errors.js */
