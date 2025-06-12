@@ -6,6 +6,10 @@
   URL structure (#1297)
 - chore(user actions): Rename `userActionEventType` to `userActionTrigger` for improved clarity (#1298)
 
+- chore(`@grafana/faro web-sdk`): Move the stackFrames from the errors instrumentation package to the utils package (#1316)
+- improvement (`@grafana/faro-web-sdk`): Allow users to configure the stack frame tracer in the ErrorsInstrumentation and the stackTraceParser in the BrowserConfig (#1316)
+
+
 ## 1.18.2
 
 - fix(user actions): don't attach user action context to http request when in halt mode (#1249)
