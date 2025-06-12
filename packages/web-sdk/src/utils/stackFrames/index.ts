@@ -4,4 +4,6 @@ export { getDataFromSafariExtensions } from './getDataFromSafariExtensions';
 
 export { getStackFramesFromError } from './getStackFramesFromError';
 
-export { parseStacktrace } from './parseStacktrace';
+export { parseStacktrace, newStackTraceParser} from './parseStacktrace';
+
+

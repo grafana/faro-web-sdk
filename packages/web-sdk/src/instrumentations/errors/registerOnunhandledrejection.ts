@@ -3,9 +3,9 @@ import type { API, ExceptionStackFrame } from '@grafana/faro-core';
 
 import { primitiveUnhandledType, primitiveUnhandledValue } from './const';
 import { getErrorDetails } from './getErrorDetails';
-import type { ExtendedPromiseRejectionEvent } from './types';
+import type { ErrorInstrumentationOptions, ExtendedPromiseRejectionEvent } from './types';
 
-export function registerOnunhandledrejection(api: API): void {
+export function registerOnunhandledrejection(api: API, options: ErrorInstrumentationOptions = {}): void {
   window.addEventListener('unhandledrejection', (evt: ExtendedPromiseRejectionEvent) => {
     let error = evt;
 
@@ -22,7 +22,7 @@ export function registerOnunhandledrejection(api: API): void {
       value = `${primitiveUnhandledValue} ${String(error)}`;
       type = primitiveUnhandledType;
     } else {
-      [value, type, stackFrames] = getErrorDetails(error);
+      [value, type, stackFrames] = getErrorDetails(error, options);
     }
 
     if (value) {

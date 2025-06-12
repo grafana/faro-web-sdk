@@ -3,10 +3,10 @@ import type { ExceptionStackFrame, LogArgsSerializer } from '@grafana/faro-core'
 
 import { domErrorType, domExceptionType, objectEventValue, unknownSymbolString } from './const';
 import { getValueAndTypeFromMessage } from './getValueAndTypeFromMessage';
-import { buildStackFrame, getStackFramesFromError } from './stackFrames';
-import type { ErrorEvent } from './types';
+import { buildStackFrame, getStackFramesFromError } from '../../utils/stackFrames';
+import type { ErrorEvent, ErrorInstrumentationOptions } from './types';
 
-export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | undefined, ExceptionStackFrame[]] {
+export function getErrorDetails(evt: ErrorEvent, options: ErrorInstrumentationOptions = {}): [string | undefined, string | undefined, ExceptionStackFrame[]] {
   let value: string | undefined;
   let type: string | undefined;
   let stackFrames: ExceptionStackFrame[] = [];
@@ -16,7 +16,7 @@ export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | 
   if (isErrorEvent(evt) && evt.error) {
     value = evt.error.message;
     type = evt.error.name;
-    stackFrames = getStackFramesFromError(evt.error);
+    stackFrames = getStackFramesFromError(evt.error, options.stackframeParserOptions);
   } else if ((isDomErrorRes = isDomError(evt)) || isDomException(evt)) {
     const { name, message } = evt;
 
@@ -24,7 +24,7 @@ export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | 
     value = message ? `${type}: ${message}` : type;
   } else if (isError(evt)) {
     value = evt.message;
-    stackFrames = getStackFramesFromError(evt);
+    stackFrames = getStackFramesFromError(evt, options.stackframeParserOptions);
   } else if (isObject(evt) || (isEventRes = isEvent(evt))) {
     type = isEventRes ? evt.constructor.name : undefined;
     value = `${objectEventValue} ${Object.keys(evt)}`;

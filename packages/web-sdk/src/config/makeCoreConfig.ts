@@ -12,7 +12,7 @@ import {
 import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
-import { parseStacktrace } from '../instrumentations';
+import { parseStacktrace } from '../utils';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
 import { userActionDataAttribute } from '../instrumentations/userActions/const';
 import { browserMeta } from '../metas';
