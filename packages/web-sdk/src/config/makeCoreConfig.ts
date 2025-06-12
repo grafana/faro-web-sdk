@@ -65,6 +65,8 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     ...restProperties
   }: BrowserConfig = browserConfig;
 
+  const stackTraceParser = browserConfig.parseStacktrace ?? parseStacktrace;
+
   return {
     ...restProperties,
 
@@ -79,7 +81,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     isolate,
     logArgsSerializer,
     metas,
-    parseStacktrace,
+    parseStacktrace: stackTraceParser,
     paused,
     preventGlobalExposure,
     transports,
