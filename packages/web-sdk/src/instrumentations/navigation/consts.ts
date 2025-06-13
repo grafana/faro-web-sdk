@@ -6,3 +6,4 @@ export const NAVIGATION_BACK = 'faro.navigation.back';
 export const NAVIGATION_GO = 'faro.navigation.go';
 export const NAVIGATION_POPSTATE = 'faro.navigation.popstate';
 export const NAVIGATION_HASHCHANGE = 'faro.navigation.hashchange';
+export const NAVIGATION_NAVIGATE = 'faro.navigation';
