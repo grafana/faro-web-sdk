@@ -1,15 +1,15 @@
-import { NavigationInstrumentation } from './instrumentation';
 import {
-  NAVIGATION_PUSH_STATE,
-  NAVIGATION_REPLACE_STATE,
-  NAVIGATION_FORWARD,
   NAVIGATION_BACK,
+  NAVIGATION_EVENT_TYPE,
+  NAVIGATION_FORWARD,
   NAVIGATION_GO,
-  NAVIGATION_POPSTATE,
   NAVIGATION_HASHCHANGE,
   NAVIGATION_NAVIGATE,
-  NAVIGATION_EVENT_TYPE,
+  NAVIGATION_POPSTATE,
+  NAVIGATION_PUSH_STATE,
+  NAVIGATION_REPLACE_STATE,
 } from './consts';
+import { NavigationInstrumentation } from './instrumentation';
 
 describe('NavigationInstrumentation', () => {
   let originalHistory: History;
