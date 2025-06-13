@@ -15,7 +15,7 @@ import type { GetWebInstrumentationsOptions } from './types';
 export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {
   const instrumentations: Instrumentation[] = [
     new UserActionInstrumentation(),
-    new ErrorsInstrumentation(),
+    new ErrorsInstrumentation(options.errorInstrumentationOptions),
     new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
     new ViewInstrumentation(),
