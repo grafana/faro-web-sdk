@@ -50,60 +50,78 @@ describe('NavigationInstrumentation', () => {
     it('should push event on pushState', () => {
       instrumentation.initialize();
       window.history.pushState({ foo: 'bar' }, 'title', '/new-url');
-      expect(pushEvent).toHaveBeenCalledWith(NAVIGATION_PUSH_STATE, expect.objectContaining({
-        type: NAVIGATION_EVENT_TYPE,
-        state: { foo: 'bar' },
-        title: 'title',
-        fromUrl: expect.any(String),
-        toUrl: '/new-url',
-      }));
+      expect(pushEvent).toHaveBeenCalledWith(
+        NAVIGATION_PUSH_STATE,
+        expect.objectContaining({
+          type: NAVIGATION_EVENT_TYPE,
+          state: { foo: 'bar' },
+          title: 'title',
+          fromUrl: expect.any(String),
+          toUrl: '/new-url',
+        })
+      );
     });
 
     it('should push event on replaceState', () => {
       instrumentation.initialize();
       window.history.replaceState({ foo: 'baz' }, 'title2', '/replace-url');
-      expect(pushEvent).toHaveBeenCalledWith(NAVIGATION_REPLACE_STATE, expect.objectContaining({
-        type: NAVIGATION_EVENT_TYPE,
-        state: { foo: 'baz' },
-        title: 'title2',
-        fromUrl: expect.any(String),
-        toUrl: '/replace-url',
-      }));
+      expect(pushEvent).toHaveBeenCalledWith(
+        NAVIGATION_REPLACE_STATE,
+        expect.objectContaining({
+          type: NAVIGATION_EVENT_TYPE,
+          state: { foo: 'baz' },
+          title: 'title2',
+          fromUrl: expect.any(String),
+          toUrl: '/replace-url',
+        })
+      );
     });
 
     it('should push event on forward', () => {
       instrumentation.initialize();
       window.history.forward();
-      expect(pushEvent).toHaveBeenCalledWith(NAVIGATION_FORWARD, expect.objectContaining({
-        type: NAVIGATION_EVENT_TYPE,
-      }));
+      expect(pushEvent).toHaveBeenCalledWith(
+        NAVIGATION_FORWARD,
+        expect.objectContaining({
+          type: NAVIGATION_EVENT_TYPE,
+        })
+      );
     });
 
     it('should push event on back', () => {
       instrumentation.initialize();
       window.history.back();
-      expect(pushEvent).toHaveBeenCalledWith(NAVIGATION_BACK, expect.objectContaining({
-        type: NAVIGATION_EVENT_TYPE,
-      }));
+      expect(pushEvent).toHaveBeenCalledWith(
+        NAVIGATION_BACK,
+        expect.objectContaining({
+          type: NAVIGATION_EVENT_TYPE,
+        })
+      );
     });
 
     it('should push event on go', () => {
       instrumentation.initialize();
       window.history.go(2);
-      expect(pushEvent).toHaveBeenCalledWith(NAVIGATION_GO, expect.objectContaining({
-        type: NAVIGATION_EVENT_TYPE,
-        delta: '2',
-      }));
+      expect(pushEvent).toHaveBeenCalledWith(
+        NAVIGATION_GO,
+        expect.objectContaining({
+          type: NAVIGATION_EVENT_TYPE,
+          delta: '2',
+        })
+      );
     });
 
     it('should push event on popstate', () => {
       instrumentation.initialize();
       window.dispatchEvent(new PopStateEvent('popstate'));
-      expect(pushEvent).toHaveBeenCalledWith(NAVIGATION_POPSTATE, expect.objectContaining({
-        type: NAVIGATION_EVENT_TYPE,
-        fromUrl: expect.any(String),
-        toUrl: expect.any(String),
-      }));
+      expect(pushEvent).toHaveBeenCalledWith(
+        NAVIGATION_POPSTATE,
+        expect.objectContaining({
+          type: NAVIGATION_EVENT_TYPE,
+          fromUrl: expect.any(String),
+          toUrl: expect.any(String),
+        })
+      );
     });
 
     it('should push event on hashchange', () => {
@@ -113,13 +131,16 @@ describe('NavigationInstrumentation', () => {
         newURL: 'http://localhost/#new',
       });
       window.dispatchEvent(event);
-      expect(pushEvent).toHaveBeenCalledWith(NAVIGATION_HASHCHANGE, expect.objectContaining({
-        type: NAVIGATION_EVENT_TYPE,
-        fromUrl: 'http://localhost/#old',
-        toUrl: 'http://localhost/#new',
-        fromHash: '',
-        toHash: '#new',
-      }));
+      expect(pushEvent).toHaveBeenCalledWith(
+        NAVIGATION_HASHCHANGE,
+        expect.objectContaining({
+          type: NAVIGATION_EVENT_TYPE,
+          fromUrl: 'http://localhost/#old',
+          toUrl: 'http://localhost/#new',
+          fromHash: '',
+          toHash: '#new',
+        })
+      );
     });
   });
 

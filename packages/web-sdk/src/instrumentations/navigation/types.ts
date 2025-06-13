@@ -46,10 +46,10 @@ export interface NavigationUpdateCurrentEntryOptions {
 }
 
 export interface NavigationEventMap {
-  'currententrychange': NavigationCurrentEntryChangeEvent;
-  'navigate': NavigateEvent;
-  'navigateerror': NavigationErrorEvent;
-  'navigatesuccess': NavigationSuccessEvent;
+  currententrychange: NavigationCurrentEntryChangeEvent;
+  navigate: NavigateEvent;
+  navigateerror: NavigationErrorEvent;
+  navigatesuccess: NavigationSuccessEvent;
 }
 
 export interface NavigationCurrentEntryChangeEvent extends Event {

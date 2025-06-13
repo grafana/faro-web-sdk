@@ -1,6 +1,16 @@
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
-import { NAVIGATION_BACK, NAVIGATION_EVENT_TYPE, NAVIGATION_FORWARD, NAVIGATION_GO, NAVIGATION_HASHCHANGE, NAVIGATION_NAVIGATE, NAVIGATION_POPSTATE, NAVIGATION_PUSH_STATE, NAVIGATION_REPLACE_STATE } from './consts';
+import {
+  NAVIGATION_BACK,
+  NAVIGATION_EVENT_TYPE,
+  NAVIGATION_FORWARD,
+  NAVIGATION_GO,
+  NAVIGATION_HASHCHANGE,
+  NAVIGATION_NAVIGATE,
+  NAVIGATION_POPSTATE,
+  NAVIGATION_PUSH_STATE,
+  NAVIGATION_REPLACE_STATE,
+} from './consts';
 import type { Navigation } from './types';
 
 export class NavigationInstrumentation extends BaseInstrumentation {
@@ -147,6 +157,6 @@ export class NavigationInstrumentation extends BaseInstrumentation {
   }
 
   private getSignalDetails(signal: AbortSignal) {
-    return `aborted: ${signal.aborted.toString()}, reason: ${signal.reason?.toString() ?? 'N/A'}`
+    return `aborted: ${signal.aborted.toString()}, reason: ${signal.reason?.toString() ?? 'N/A'}`;
   }
 }
