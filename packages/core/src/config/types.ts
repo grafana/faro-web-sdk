@@ -199,6 +199,7 @@ export interface Config<P = APIEvent> {
      * If you want to disable only some levels set captureConsoleDisabledLevels: [LogLevel.DEBUG, LogLevel.TRACE];
      */
     disabledLevels?: LogLevel[];
+
     /*
      * By default, Faro sends an error for console.error calls. If you want to send a log instead, set this to true.
      */
@@ -215,6 +216,22 @@ export interface Config<P = APIEvent> {
      * Custom function to serialize Error arguments
      */
     errorSerializer?: LogArgsSerializer;
+  };
+
+  /**
+   * Configuration for the navigation instrumentation
+   */
+  navigationInstrumentation?: {
+    /**
+     * Report all URL changes, not just user initiated ones (default: false)
+     */
+    reportAllChanges?: boolean;
+
+    /**
+     * Use history API rather than the experimental navigation API (even when available)
+     * for navigation tracking (default: false)
+     */
+    useHistoryApi?: boolean;
   };
 
   /**
