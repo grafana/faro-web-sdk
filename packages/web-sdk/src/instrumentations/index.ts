@@ -29,3 +29,5 @@ export {
 export { PerformanceInstrumentation } from './performance';
 
 export { UserActionInstrumentation, userActionDataAttribute, startUserAction } from './userActions';
+
+export { NavigationInstrumentation } from './navigation';
