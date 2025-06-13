@@ -65,7 +65,7 @@ export function initializeInstrumentations(
         null
       );
 
-      if (!existingInstrumentationIndex) {
+      if (existingInstrumentationIndex === null) {
         internalLogger.warn(`Instrumentation "${instrumentationToRemove.name}" is not added`);
 
         return;
