@@ -1,0 +1,1 @@
+export { CSPInstrumentation } from './instrumentation';

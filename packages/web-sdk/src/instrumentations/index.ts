@@ -24,3 +24,5 @@ export {
 export { PerformanceInstrumentation } from './performance';
 
 export { UserActionInstrumentation, userActionDataAttribute, startUserAction } from './userActions';
+
+export { CSPInstrumentation } from './csp';

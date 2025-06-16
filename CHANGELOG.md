@@ -2,6 +2,8 @@
 
 ## Next
 
+- fix(core): Ensure first instrumentation gets properly removed (#1312)
+- feat(web-sdk): Add CSP instrumentation (#1312)
 - chore(ignored URLs): Prevent tracking of custom collector URLs that don't match the Faro collector
   URL structure (#1297)
 - chore(user actions): Rename `userActionEventType` to `userActionTrigger` for improved clarity (#1298)
