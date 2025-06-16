@@ -2,21 +2,20 @@ import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
 import { registerOnerror } from './registerOnerror';
 import { registerOnunhandledrejection } from './registerOnunhandledrejection';
-import type { ErrorInstrumentationOptions } from './types';
 
 export class ErrorsInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-errors';
   readonly version = VERSION;
 
-  constructor(private readonly options: ErrorInstrumentationOptions = {}) {
+  constructor() {
     super();
   }
 
   initialize(): void {
     this.logDebug('Initializing');
 
-    registerOnerror(this.api);
+    registerOnerror(this.api, this.config);
 
-    registerOnunhandledrejection(this.api, this.options);
+    registerOnunhandledrejection(this.api, this.config);
   }
 }

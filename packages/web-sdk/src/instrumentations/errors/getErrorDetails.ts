@@ -1,15 +1,15 @@
 import { isDomError, isDomException, isError, isErrorEvent, isEvent, isObject, isString } from '@grafana/faro-core';
-import type { ExceptionStackFrame, LogArgsSerializer } from '@grafana/faro-core';
+import type { ExceptionStackFrame, LogArgsSerializer, StacktraceParser } from '@grafana/faro-core';
 
-import { buildStackFrame, getStackFramesFromError } from '../../utils/stackFrames';
+import { buildStackFrame, newStackTraceParser } from '../../utils/stackFrames';
 
 import { domErrorType, domExceptionType, objectEventValue, unknownSymbolString } from './const';
 import { getValueAndTypeFromMessage } from './getValueAndTypeFromMessage';
-import type { ErrorEvent, ErrorInstrumentationOptions } from './types';
+import type { ErrorEvent } from './types';
 
 export function getErrorDetails(
   evt: ErrorEvent,
-  options: ErrorInstrumentationOptions = {}
+  stacktraceParser: StacktraceParser = newStackTraceParser()
 ): [string | undefined, string | undefined, ExceptionStackFrame[]] {
   let value: string | undefined;
   let type: string | undefined;
@@ -20,15 +20,16 @@ export function getErrorDetails(
   if (isErrorEvent(evt) && evt.error) {
     value = evt.error.message;
     type = evt.error.name;
-    stackFrames = getStackFramesFromError(evt.error, options.stackframeParserOptions);
+    const { frames } = stacktraceParser(evt.error);
+    stackFrames = frames;
   } else if ((isDomErrorRes = isDomError(evt)) || isDomException(evt)) {
     const { name, message } = evt;
-
     type = name ?? (isDomErrorRes ? domErrorType : domExceptionType);
     value = message ? `${type}: ${message}` : type;
   } else if (isError(evt)) {
     value = evt.message;
-    stackFrames = getStackFramesFromError(evt, options.stackframeParserOptions);
+    const { frames } = stacktraceParser(evt);
+    stackFrames = frames;
   } else if (isObject(evt) || (isEventRes = isEvent(evt))) {
     type = isEventRes ? evt.constructor.name : undefined;
     value = `${objectEventValue} ${Object.keys(evt)}`;
@@ -43,7 +44,10 @@ export interface ErrorDetails {
   stackFrames?: ExceptionStackFrame[];
 }
 
-export function getDetailsFromErrorArgs(args: [any?, ...any[]]): ErrorDetails {
+export function getDetailsFromErrorArgs(
+  args: [any?, ...any[]],
+  stacktraceParser: StacktraceParser = newStackTraceParser()
+): ErrorDetails {
   const [evt, source, lineno, colno, error] = args;
 
   let value: string | undefined;
@@ -53,7 +57,7 @@ export function getDetailsFromErrorArgs(args: [any?, ...any[]]): ErrorDetails {
   const initialStackFrame = buildStackFrame(source, unknownSymbolString, lineno, colno);
 
   if (error || !eventIsString) {
-    [value, type, stackFrames] = getErrorDetails((error ?? evt) as Error | Event);
+    [value, type, stackFrames] = getErrorDetails((error ?? evt) as Error | Event, stacktraceParser);
 
     if (stackFrames.length === 0) {
       stackFrames = [initialStackFrame];
