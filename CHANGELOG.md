@@ -7,7 +7,7 @@
 - chore(ignored URLs): Prevent tracking of custom collector URLs that don't match the Faro collector
   URL structure (#1297)
 - chore(user actions): Rename `userActionEventType` to `userActionTrigger` for improved clarity (#1298)
-- chore(ci): Remove Node.js 23 from build and test matrix as it's EoL (#)
+- chore(ci): Remove Node.js 23 from build and test matrix as it's EoL (#1343)
 
 ## 1.18.2
 
