@@ -409,7 +409,7 @@ describe('SessionInstrumentation', () => {
 
     const { metas } = initializeFaro(config!);
 
-    expect(removeItemSpy).toBeCalledTimes(0);
+    expect(removeItemSpy).toHaveBeenCalledTimes(0);
     expect(metas.value.session?.id).not.toBe(mockUserSession.sessionId);
 
     const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]);
@@ -440,7 +440,7 @@ describe('SessionInstrumentation', () => {
 
     const { metas } = initializeFaro(config!);
 
-    expect(removeItemSpy).toBeCalledTimes(1);
+    expect(removeItemSpy).toHaveBeenCalledTimes(1);
     expect(metas.value.session?.id).not.toBe(mockUserSession.sessionId);
   });
 

@@ -72,7 +72,7 @@ describe('Volatile Sessions Manager.', () => {
 
     updateSession();
 
-    expect(setItemSpy).toBeCalledTimes(1); // called on time in the init function and the in the onActivity func
+    expect(setItemSpy).toHaveBeenCalledTimes(1); // called on time in the init function and the in the onActivity func
     expect(mockStorage[STORAGE_KEY]).toBe(
       JSON.stringify({
         sessionId: mockInitialSessionId,
