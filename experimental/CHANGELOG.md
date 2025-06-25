@@ -85,7 +85,6 @@
 
 - [❗️Breaking❗️]: Events are now namespaced and have been renamed to prevent collisions with user
   defined events. Event names changed from:
-
   - `Resolved fetch` to `faro.fetch.resolved`
   - `Rejected fetch` to `faro.fetch.rejected`
 
