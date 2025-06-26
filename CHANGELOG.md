@@ -8,6 +8,7 @@
   URL structure (#1297)
 - chore(user actions): Rename `userActionEventType` to `userActionTrigger` for improved clarity (#1298)
 - chore(ci): Remove Node.js 23 from build and test matrix as it's EoL (#1343)
+- chore(deps): upgrade to yarn 4
 
 ## 1.18.2
 
