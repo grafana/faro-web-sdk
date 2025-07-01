@@ -25,7 +25,7 @@
     "build": "lerna run build",
     "prepublish": "yarn build",
     "cypress": "cypress open",
-    "clean": "run-s clean:*",
+    "clean": "run-s 'clean:*'",
     "clean:packages": "lerna run --parallel clean",
     "clean:root": "rimraf .cache yarn-error.log",
     "quality": "run-p quality:circular-deps quality:test quality:lint quality:e2e",
