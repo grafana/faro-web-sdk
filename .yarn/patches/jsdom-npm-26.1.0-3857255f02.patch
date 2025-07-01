@@ -1,0 +1,709 @@
+diff --git a/lib/jsdom/browser/Window.js b/lib/jsdom/browser/Window.js
+index 52d011cae61c3688ec64baa5cec411d55edbda9d..9a8928eff0a3cf1a3af323a4886da2d91a6cee7b 100644
+--- a/lib/jsdom/browser/Window.js
++++ b/lib/jsdom/browser/Window.js
+@@ -12,11 +12,14 @@ const EventHandlerNonNull = require("../living/generated/EventHandlerNonNull");
+ const IDLFunction = require("../living/generated/Function");
+ const OnBeforeUnloadEventHandlerNonNull = require("../living/generated/OnBeforeUnloadEventHandlerNonNull");
+ const OnErrorEventHandlerNonNull = require("../living/generated/OnErrorEventHandlerNonNull");
+-const { fireAPageTransitionEvent } = require("../living/helpers/page-transition-event");
++const {
++  fireAPageTransitionEvent,
++} = require("../living/helpers/page-transition-event");
+ const namedPropertiesWindow = require("../living/named-properties-window");
+ const DOMException = require("../living/generated/DOMException");
+ const idlUtils = require("../living/generated/utils");
+-const WebSocketImpl = require("../living/websockets/WebSocket-impl").implementation;
++const WebSocketImpl =
++  require("../living/websockets/WebSocket-impl").implementation;
+ const BarProp = require("../living/generated/BarProp");
+ const documents = require("../living/documents.js");
+ const External = require("../living/generated/External");
+@@ -27,50 +30,89 @@ const Crypto = require("../living/generated/Crypto");
+ const Storage = require("../living/generated/Storage");
+ const Selection = require("../living/generated/Selection");
+ const reportException = require("../living/helpers/runtime-script-errors");
+-const { getCurrentEventHandlerValue } = require("../living/helpers/create-event-accessor.js");
++const {
++  getCurrentEventHandlerValue,
++} = require("../living/helpers/create-event-accessor.js");
+ const { fireAnEvent } = require("../living/helpers/events");
+ const SessionHistory = require("../living/window/SessionHistory");
+-const { getDeclarationForElement, getResolvedValue, propertiesWithResolvedValueImplemented,
+-  SHADOW_DOM_PSEUDO_REGEXP } = require("../living/helpers/style-rules.js");
++const {
++  getDeclarationForElement,
++  getResolvedValue,
++  propertiesWithResolvedValueImplemented,
++  SHADOW_DOM_PSEUDO_REGEXP,
++} = require("../living/helpers/style-rules.js");
+ const CustomElementRegistry = require("../living/generated/CustomElementRegistry");
+ const MessageEvent = require("../living/generated/MessageEvent");
+ const jsGlobals = require("./js-globals.json");
+ 
+-const GlobalEventHandlersImpl = require("../living/nodes/GlobalEventHandlers-impl").implementation;
+-const WindowEventHandlersImpl = require("../living/nodes/WindowEventHandlers-impl").implementation;
++const GlobalEventHandlersImpl =
++  require("../living/nodes/GlobalEventHandlers-impl").implementation;
++const WindowEventHandlersImpl =
++  require("../living/nodes/WindowEventHandlers-impl").implementation;
+ 
+ const events = new Set([
+   // GlobalEventHandlers
+-  "abort", "autocomplete",
+-  "autocompleteerror", "blur",
+-  "cancel", "canplay", "canplaythrough",
+-  "change", "click",
+-  "close", "contextmenu",
+-  "cuechange", "dblclick",
+-  "drag", "dragend",
++  "abort",
++  "autocomplete",
++  "autocompleteerror",
++  "blur",
++  "cancel",
++  "canplay",
++  "canplaythrough",
++  "change",
++  "click",
++  "close",
++  "contextmenu",
++  "cuechange",
++  "dblclick",
++  "drag",
++  "dragend",
+   "dragenter",
+-  "dragleave", "dragover",
+-  "dragstart", "drop",
+-  "durationchange", "emptied",
+-  "ended", "focus",
+-  "input", "invalid",
+-  "keydown", "keypress",
+-  "keyup", "load", "loadeddata",
+-  "loadedmetadata", "loadstart",
+-  "mousedown", "mouseenter",
+-  "mouseleave", "mousemove",
+-  "mouseout", "mouseover",
+-  "mouseup", "wheel",
+-  "pause", "play",
+-  "playing", "progress",
+-  "ratechange", "reset",
+-  "resize", "scroll",
++  "dragleave",
++  "dragover",
++  "dragstart",
++  "drop",
++  "durationchange",
++  "emptied",
++  "ended",
++  "focus",
++  "input",
++  "invalid",
++  "keydown",
++  "keypress",
++  "keyup",
++  "load",
++  "loadeddata",
++  "loadedmetadata",
++  "loadstart",
++  "mousedown",
++  "mouseenter",
++  "mouseleave",
++  "mousemove",
++  "mouseout",
++  "mouseover",
++  "mouseup",
++  "wheel",
++  "pause",
++  "play",
++  "playing",
++  "progress",
++  "ratechange",
++  "reset",
++  "resize",
++  "scroll",
+   "securitypolicyviolation",
+-  "seeked", "seeking",
+-  "select", "sort", "stalled",
+-  "submit", "suspend",
+-  "timeupdate", "toggle",
+-  "volumechange", "waiting",
++  "seeked",
++  "seeking",
++  "select",
++  "sort",
++  "stalled",
++  "submit",
++  "suspend",
++  "timeupdate",
++  "toggle",
++  "volumechange",
++  "waiting",
+ 
+   // WindowEventHandlers
+   "afterprint",
+@@ -87,15 +129,19 @@ const events = new Set([
+   "rejectionhandled",
+   "storage",
+   "unhandledrejection",
+-  "unload"
++  "unload",
+ 
+   // "error" and "beforeunload" are added separately
+ ]);
+ 
+-const jsGlobalEntriesToInstall = Object.entries(jsGlobals).filter(([name]) => name in global);
++const jsGlobalEntriesToInstall = Object.entries(jsGlobals).filter(
++  ([name]) => name in global
++);
+ 
+-exports.createWindow = options => {
+-  const makeVMContext = options.runScripts === "outside-only" || options.runScripts === "dangerously";
++exports.createWindow = (options) => {
++  const makeVMContext =
++    options.runScripts === "outside-only" ||
++    options.runScripts === "dangerously";
+ 
+   // Bootstrap with an empty object from the Node.js realm. We'll muck with its prototype chain shortly.
+   const window = {};
+@@ -114,7 +160,10 @@ exports.createWindow = options => {
+     // Without this, these globals will only appear to scripts running inside the context using vm.runScript; they will
+     // not appear to scripts running from the outside, including to JSDOM implementation code.
+     for (const [globalName, globalPropDesc] of jsGlobalEntriesToInstall) {
+-      const propDesc = { ...globalPropDesc, value: vm.runInContext(globalName, window) };
++      const propDesc = {
++        ...globalPropDesc,
++        value: vm.runInContext(globalName, window),
++      };
+       Object.defineProperty(window, globalName, propDesc);
+     }
+   } else {
+@@ -142,7 +191,7 @@ exports.createWindow = options => {
+   Object.defineProperty(window, "Window", {
+     configurable: true,
+     writable: true,
+-    value: WindowConstructor
++    value: WindowConstructor,
+   });
+ 
+   // TODO: do an actual WindowProperties object. See https://github.com/jsdom/jsdom/pull/3765 for an attempt.
+@@ -150,8 +199,8 @@ exports.createWindow = options => {
+   Object.defineProperties(windowPropertiesObject, {
+     [Symbol.toStringTag]: {
+       value: "WindowProperties",
+-      configurable: true
+-    }
++      configurable: true,
++    },
+   });
+   namedPropertiesWindow.initializeWindow(window, window._globalProxy);
+ 
+@@ -160,19 +209,22 @@ exports.createWindow = options => {
+     constructor: {
+       value: WindowConstructor,
+       writable: true,
+-      configurable: true
++      configurable: true,
+     },
+     [Symbol.toStringTag]: {
+       value: "Window",
+-      configurable: true
+-    }
++      configurable: true,
++    },
+   });
+ 
+   WindowConstructor.prototype = windowPrototype;
+   Object.setPrototypeOf(window, windowPrototype);
+   if (makeVMContext) {
+     Object.setPrototypeOf(window._globalProxy, windowPrototype);
+-    Object.setPrototypeOf(window.EventTarget.prototype, window.Object.prototype);
++    Object.setPrototypeOf(
++      window.EventTarget.prototype,
++      window.Object.prototype
++    );
+   }
+ 
+   // Now that the prototype chain is fully set up, call the superclass setup.
+@@ -183,7 +235,11 @@ exports.createWindow = options => {
+   installOwnProperties(window, options);
+ 
+   // Not sure why this is necessary... TODO figure it out.
+-  Object.defineProperty(idlUtils.implForWrapper(window), idlUtils.wrapperSymbol, { get: () => window._globalProxy });
++  Object.defineProperty(
++    idlUtils.implForWrapper(window),
++    idlUtils.wrapperSymbol,
++    { get: () => window._globalProxy }
++  );
+ 
+   // Fire or prepare to fire load and pageshow events.
+   process.nextTick(() => {
+@@ -221,36 +277,42 @@ function installEventHandlers(window) {
+     configurable: true,
+     enumerable: true,
+     get() {
+-      return idlUtils.tryWrapperForImpl(getCurrentEventHandlerValue(window, "beforeunload"));
++      return idlUtils.tryWrapperForImpl(
++        getCurrentEventHandlerValue(window, "beforeunload")
++      );
+     },
+     set(V) {
+       if (!idlUtils.isObject(V)) {
+         V = null;
+       } else {
+         V = OnBeforeUnloadEventHandlerNonNull.convert(window, V, {
+-          context: "Failed to set the 'onbeforeunload' property on 'Window': The provided value"
++          context:
++            "Failed to set the 'onbeforeunload' property on 'Window': The provided value",
+         });
+       }
+       window._setEventHandlerFor("beforeunload", V);
+-    }
++    },
+   });
+ 
+   Object.defineProperty(window, "onerror", {
+     configurable: true,
+     enumerable: true,
+     get() {
+-      return idlUtils.tryWrapperForImpl(getCurrentEventHandlerValue(window, "error"));
++      return idlUtils.tryWrapperForImpl(
++        getCurrentEventHandlerValue(window, "error")
++      );
+     },
+     set(V) {
+       if (!idlUtils.isObject(V)) {
+         V = null;
+       } else {
+         V = OnErrorEventHandlerNonNull.convert(window, V, {
+-          context: "Failed to set the 'onerror' property on 'Window': The provided value"
++          context:
++            "Failed to set the 'onerror' property on 'Window': The provided value",
+         });
+       }
+       window._setEventHandlerFor("error", V);
+-    }
++    },
+   });
+ 
+   for (const event of events) {
+@@ -258,18 +320,20 @@ function installEventHandlers(window) {
+       configurable: true,
+       enumerable: true,
+       get() {
+-        return idlUtils.tryWrapperForImpl(getCurrentEventHandlerValue(window, event));
++        return idlUtils.tryWrapperForImpl(
++          getCurrentEventHandlerValue(window, event)
++        );
+       },
+       set(V) {
+         if (!idlUtils.isObject(V)) {
+           V = null;
+         } else {
+           V = EventHandlerNonNull.convert(window, V, {
+-            context: `Failed to set the 'on${event}' property on 'Window': The provided value`
++            context: `Failed to set the 'on${event}' property on 'Window': The provided value`,
+           });
+         }
+         window._setEventHandlerFor(event, V);
+-      }
++      },
+     });
+   }
+ }
+@@ -282,29 +346,36 @@ function installOwnProperties(window, options) {
+   window._resourceLoader = options.resourceLoader;
+ 
+   // List options explicitly to be clear which are passed through
+-  window._document = documents.createWrapper(window, {
+-    parsingMode: options.parsingMode,
+-    contentType: options.contentType,
+-    encoding: options.encoding,
+-    cookieJar: options.cookieJar,
+-    url: options.url,
+-    lastModified: options.lastModified,
+-    referrer: options.referrer,
+-    parseOptions: options.parseOptions,
+-    defaultView: window._globalProxy,
+-    global: window,
+-    parentOrigin: options.parentOrigin
+-  }, { alwaysUseDocumentClass: true });
++  window._document = documents.createWrapper(
++    window,
++    {
++      parsingMode: options.parsingMode,
++      contentType: options.contentType,
++      encoding: options.encoding,
++      cookieJar: options.cookieJar,
++      url: options.url,
++      lastModified: options.lastModified,
++      referrer: options.referrer,
++      parseOptions: options.parseOptions,
++      defaultView: window._globalProxy,
++      global: window,
++      parentOrigin: options.parentOrigin,
++    },
++    { alwaysUseDocumentClass: true }
++  );
+ 
+   const documentOrigin = idlUtils.implForWrapper(window._document)._origin;
+   window._origin = documentOrigin;
+ 
+   // https://html.spec.whatwg.org/#session-history
+-  window._sessionHistory = new SessionHistory({
+-    document: idlUtils.implForWrapper(window._document),
+-    url: idlUtils.implForWrapper(window._document)._URL,
+-    stateObject: null
+-  }, window);
++  window._sessionHistory = new SessionHistory(
++    {
++      document: idlUtils.implForWrapper(window._document),
++      url: idlUtils.implForWrapper(window._document)._URL,
++      stateObject: null,
++    },
++    window
++  );
+ 
+   window._virtualConsole = options.virtualConsole;
+ 
+@@ -336,8 +407,8 @@ function installOwnProperties(window, options) {
+       [documentOrigin]: {
+         localStorageArea: new Map(),
+         sessionStorageArea: new Map(),
+-        windowsInSameOrigin: [window]
+-      }
++        windowsInSameOrigin: [window],
++      },
+     };
+   }
+ 
+@@ -350,14 +421,14 @@ function installOwnProperties(window, options) {
+     storageArea: window._currentOriginData.localStorageArea,
+     type: "localStorage",
+     url: window._document.documentURI,
+-    storageQuota: window._storageQuota
++    storageQuota: window._storageQuota,
+   });
+   window._sessionStorage = Storage.create(window, [], {
+     associatedWindow: window,
+     storageArea: window._currentOriginData.sessionStorageArea,
+     type: "sessionStorage",
+     url: window._document.documentURI,
+-    storageQuota: window._storageQuota
++    storageQuota: window._storageQuota,
+   });
+ 
+   // ### SELECTION
+@@ -379,10 +450,12 @@ function installOwnProperties(window, options) {
+   const statusbar = BarProp.create(window);
+   const toolbar = BarProp.create(window);
+   const external = External.create(window);
+-  const navigator = Navigator.create(window, [], { userAgent: window._resourceLoader._userAgent });
++  const navigator = Navigator.create(window, [], {
++    userAgent: window._resourceLoader._userAgent,
++  });
+   const performanceImpl = Performance.create(window, [], {
+     timeOrigin: performance.timeOrigin + windowInitialized,
+-    nowAtTimeOrigin: windowInitialized
++    nowAtTimeOrigin: windowInitialized,
+   });
+   const screen = Screen.create(window);
+   const crypto = Crypto.create(window);
+@@ -417,14 +490,18 @@ function installOwnProperties(window, options) {
+       return external;
+     },
+     get location() {
+-      return idlUtils.wrapperForImpl(idlUtils.implForWrapper(window._document)._location);
++      return idlUtils.wrapperForImpl(
++        idlUtils.implForWrapper(window._document)._location
++      );
+     },
+     // [PutForwards=href]:
+     set location(value) {
+       Reflect.set(window.location, "href", value);
+     },
+     get history() {
+-      return idlUtils.wrapperForImpl(idlUtils.implForWrapper(window._document)._history);
++      return idlUtils.wrapperForImpl(
++        idlUtils.implForWrapper(window._document)._history
++      );
+     },
+     get navigator() {
+       return navigator;
+@@ -463,7 +540,7 @@ function installOwnProperties(window, options) {
+       if (idlUtils.implForWrapper(window._document)._origin === "null") {
+         throw DOMException.create(window, [
+           "localStorage is not available for opaque origins",
+-          "SecurityError"
++          "SecurityError",
+         ]);
+       }
+ 
+@@ -473,7 +550,7 @@ function installOwnProperties(window, options) {
+       if (idlUtils.implForWrapper(window._document)._origin === "null") {
+         throw DOMException.create(window, [
+           "sessionStorage is not available for opaque origins",
+-          "SecurityError"
++          "SecurityError",
+         ]);
+       }
+ 
+@@ -483,8 +560,10 @@ function installOwnProperties(window, options) {
+       return window._customElementRegistry;
+     },
+     get event() {
+-      return window._currentEvent ? idlUtils.wrapperForImpl(window._currentEvent) : undefined;
+-    }
++      return window._currentEvent
++        ? idlUtils.wrapperForImpl(window._currentEvent)
++        : undefined;
++    },
+   });
+ 
+   Object.defineProperties(window, {
+@@ -505,13 +584,12 @@ function installOwnProperties(window, options) {
+     event: makeReplaceablePropertyDescriptor("event", window),
+ 
+     // [LegacyUnforgeable]:
+-    window: { configurable: false },
++    window: { configurable: true },
+     document: { configurable: false },
+-    location: { configurable: false },
+-    top: { configurable: false }
++    location: { configurable: true },
++    top: { configurable: false },
+   });
+ 
+-
+   // ### METHODS
+ 
+   // https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timers
+@@ -527,7 +605,10 @@ function installOwnProperties(window, options) {
+     }
+     timeout = webIDLConversions.long(timeout);
+ 
+-    return timerInitializationSteps(handler, timeout, args, { methodContext: window, repeat: false });
++    return timerInitializationSteps(handler, timeout, args, {
++      methodContext: window,
++      repeat: false,
++    });
+   };
+   window.setInterval = function (handler, timeout = 0, ...args) {
+     if (typeof handler !== "function") {
+@@ -535,7 +616,10 @@ function installOwnProperties(window, options) {
+     }
+     timeout = webIDLConversions.long(timeout);
+ 
+-    return timerInitializationSteps(handler, timeout, args, { methodContext: window, repeat: true });
++    return timerInitializationSteps(handler, timeout, args, {
++      methodContext: window,
++      repeat: true,
++    });
+   };
+ 
+   window.clearTimeout = function (handle = 0) {
+@@ -558,7 +642,12 @@ function installOwnProperties(window, options) {
+     }
+   };
+ 
+-  function timerInitializationSteps(handler, timeout, args, { methodContext, repeat, previousHandle }) {
++  function timerInitializationSteps(
++    handler,
++    timeout,
++    args,
++    { methodContext, repeat, previousHandle }
++  ) {
+     // This appears to be unspecced, but matches browser behavior for close()ed windows.
+     if (!methodContext._document) {
+       return 0;
+@@ -567,7 +656,8 @@ function installOwnProperties(window, options) {
+     // TODO: implement timer nesting level behavior.
+ 
+     const methodContextProxy = methodContext._globalProxy;
+-    const handle = previousHandle !== undefined ? previousHandle : ++latestTimerId;
++    const handle =
++      previousHandle !== undefined ? previousHandle : ++latestTimerId;
+ 
+     function task() {
+       if (!listOfActiveTimers.has(handle)) {
+@@ -578,7 +668,10 @@ function installOwnProperties(window, options) {
+         if (typeof handler === "function") {
+           handler.apply(methodContextProxy, args);
+         } else if (window._runScripts === "dangerously") {
+-          vm.runInContext(handler, window, { filename: window.location.href, displayErrors: false });
++          vm.runInContext(handler, window, {
++            filename: window.location.href,
++            displayErrors: false,
++          });
+         }
+       } catch (e) {
+         reportException(window, e, window.location.href);
+@@ -586,7 +679,11 @@ function installOwnProperties(window, options) {
+ 
+       if (listOfActiveTimers.has(handle)) {
+         if (repeat) {
+-          timerInitializationSteps(handler, timeout, args, { methodContext, repeat: true, previousHandle: handle });
++          timerInitializationSteps(handler, timeout, args, {
++            methodContext,
++            repeat: true,
++            previousHandle: handle,
++          });
+         } else {
+           listOfActiveTimers.delete(handle);
+         }
+@@ -721,13 +818,13 @@ function installOwnProperties(window, options) {
+     value: window.HTMLOptionElement.prototype,
+     configurable: false,
+     enumerable: false,
+-    writable: false
++    writable: false,
+   });
+   Object.defineProperty(window, "Option", {
+     value: Option,
+     configurable: true,
+     enumerable: false,
+-    writable: true
++    writable: true,
+   });
+ 
+   function Image(...args) {
+@@ -747,13 +844,13 @@ function installOwnProperties(window, options) {
+     value: window.HTMLImageElement.prototype,
+     configurable: false,
+     enumerable: false,
+-    writable: false
++    writable: false,
+   });
+   Object.defineProperty(window, "Image", {
+     value: Image,
+     configurable: true,
+     enumerable: false,
+-    writable: true
++    writable: true,
+   });
+ 
+   function Audio(src) {
+@@ -771,18 +868,20 @@ function installOwnProperties(window, options) {
+     value: window.HTMLAudioElement.prototype,
+     configurable: false,
+     enumerable: false,
+-    writable: false
++    writable: false,
+   });
+   Object.defineProperty(window, "Audio", {
+     value: Audio,
+     configurable: true,
+     enumerable: false,
+-    writable: true
++    writable: true,
+   });
+ 
+   window.postMessage = function (message, targetOrigin) {
+     if (arguments.length < 2) {
+-      throw new TypeError("'postMessage' requires 2 arguments: 'message' and 'targetOrigin'");
++      throw new TypeError(
++        "'postMessage' requires 2 arguments: 'message' and 'targetOrigin'"
++      );
+     }
+ 
+     targetOrigin = webIDLConversions.DOMString(targetOrigin);
+@@ -796,8 +895,10 @@ function installOwnProperties(window, options) {
+       if (parsedURL === null) {
+         throw DOMException.create(window, [
+           "Failed to execute 'postMessage' on 'Window': " +
+-          "Invalid target origin '" + targetOrigin + "' in a call to 'postMessage'.",
+-          "SyntaxError"
++            "Invalid target origin '" +
++            targetOrigin +
++            "' in a call to 'postMessage'.",
++          "SyntaxError",
+         ]);
+       }
+       targetOrigin = whatwgURL.serializeURLOrigin(parsedURL);
+@@ -824,7 +925,7 @@ function installOwnProperties(window, options) {
+       // Convert Node.js DOMException to one from our global.
+       throw DOMException.create(window, [
+         "The string to be decoded contains invalid characters.",
+-        "InvalidCharacterError"
++        "InvalidCharacterError",
+       ]);
+     }
+   };
+@@ -836,7 +937,7 @@ function installOwnProperties(window, options) {
+       // Convert Node.js DOMException to one from our global.
+       throw DOMException.create(window, [
+         "The string to be encoded contains invalid characters.",
+-        "InvalidCharacterError"
++        "InvalidCharacterError",
+       ]);
+     }
+   };
+@@ -865,7 +966,8 @@ function installOwnProperties(window, options) {
+       if (window._document.close) {
+         // It's especially important to clear out the listeners here because document.close() causes a "load" event to
+         // fire.
+-        idlUtils.implForWrapper(window._document)._eventListeners = Object.create(null);
++        idlUtils.implForWrapper(window._document)._eventListeners =
++          Object.create(null);
+         window._document.close();
+       }
+       const doc = idlUtils.implForWrapper(window._document);
+@@ -889,7 +991,9 @@ function installOwnProperties(window, options) {
+       // TODO: Parse pseudoElt
+ 
+       if (SHADOW_DOM_PSEUDO_REGEXP.test(pseudoElt)) {
+-        throw new TypeError("Tried to get the computed style of a Shadow DOM pseudo-element.");
++        throw new TypeError(
++          "Tried to get the computed style of a Shadow DOM pseudo-element."
++        );
+       }
+ 
+       notImplemented("window.getComputedStyle(elt, pseudoElt)", window);
+@@ -899,7 +1003,7 @@ function installOwnProperties(window, options) {
+     const { forEach } = Array.prototype;
+ 
+     const elementDeclaration = getDeclarationForElement(elt);
+-    forEach.call(elementDeclaration, property => {
++    forEach.call(elementDeclaration, (property) => {
+       declaration.setProperty(
+         property,
+         elementDeclaration.getPropertyValue(property),
+@@ -909,7 +1013,7 @@ function installOwnProperties(window, options) {
+ 
+     // https://drafts.csswg.org/cssom/#dom-window-getcomputedstyle
+     const declarations = Object.keys(propertiesWithResolvedValueImplemented);
+-    forEach.call(declarations, property => {
++    forEach.call(declarations, (property) => {
+       declaration.setProperty(property, getResolvedValue(elt, property));
+     });
+ 
+@@ -952,7 +1056,7 @@ function installOwnProperties(window, options) {
+     timeLog: wrapConsoleMethod("timeLog"),
+     timeEnd: wrapConsoleMethod("timeEnd"),
+     trace: wrapConsoleMethod("trace"),
+-    warn: wrapConsoleMethod("warn")
++    warn: wrapConsoleMethod("warn"),
+   };
+ 
+   function notImplementedMethod(name) {
+@@ -991,7 +1095,7 @@ function installOwnProperties(window, options) {
+     resizeTo: notImplementedMethod("window.resizeTo"),
+     scroll: notImplementedMethod("window.scroll"),
+     scrollBy: notImplementedMethod("window.scrollBy"),
+-    scrollTo: notImplementedMethod("window.scrollTo")
++    scrollTo: notImplementedMethod("window.scrollTo"),
+   });
+ }
+ 
+@@ -1002,9 +1106,9 @@ function makeReplaceablePropertyDescriptor(property, window) {
+         configurable: true,
+         enumerable: true,
+         writable: true,
+-        value
++        value,
+       });
+-    }
++    },
+   };
+ 
+   Object.defineProperty(desc.set, "name", { value: `set ${property}` });
