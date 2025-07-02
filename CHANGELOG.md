@@ -2,24 +2,26 @@
 
 ## Next
 
-- fix(core): Ensure first instrumentation gets properly removed (#1312)
-- feat(web-sdk): Add CSP instrumentation (#1312)
-- chore(ignored URLs): Prevent tracking of custom collector URLs that don't match the Faro collector
+- Feature (`@grafana/faro-web-sdk`): Add CSP instrumentation (#1312)
+
+- Improvement (`@grafana/faro-*`): Rename `userActionEventType` to `userActionTrigger` for improved clarity (#1298)
+
+- Chore (`@grafana/faro-web-sdk`): Prevent tracking of custom collector URLs that don't match the Faro collector
   URL structure (#1297)
-- chore(user actions): Rename `userActionEventType` to `userActionTrigger` for improved clarity (#1298)
-- chore(ci): Remove Node.js 23 from build and test matrix as it's EoL (#1343)
-- chore(deps): upgrade to yarn 4
+- Chore (`@grafana/faro-core`): Ensure first instrumentation gets properly removed (#1312)
+- Chore (`@grafana/faro-*`): Remove Node.js 23 from build and test matrix as it's EoL (#1343)
+- Chore (`@grafana/faro-*`): upgrade to yarn 4
 
 ## 1.18.2
 
-- fix(user actions): don't attach user action context to http request when in halt mode (#1249)
+- Improvement (`@grafana/faro-web-sdk`): don't attach user action context to http request when in halt mode (#1249)
 
-- chore(deps): Updated Node.js version support by removing Node.js 18 (EOL) and adding Node.js 24
+- Chore (`@grafana/faro-*`): Updated Node.js version support by removing Node.js 18 (EOL) and adding Node.js 24
   LTS (#1259).
 
 ## 1.18.1
 
-- Chore(deps): Revert "Changed Node.js version support by removing Node.js 18 because it is EOL" (#1195).
+- Chore (`@grafana/faro-*`): Revert "Changed Node.js version support by removing Node.js 18 because it is EOL" (#1195).
 
 ## 1.18.0
 
