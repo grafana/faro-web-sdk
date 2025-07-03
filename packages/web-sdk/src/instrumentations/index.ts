@@ -28,6 +28,6 @@ export {
 
 export { PerformanceInstrumentation } from './performance';
 
-export { UserActionInstrumentation, userActionDataAttribute, startUserAction } from './userActions';
+export { UserActionInstrumentation, userActionDataAttribute } from './userActions';
 
 export { CSPInstrumentation } from './csp';
