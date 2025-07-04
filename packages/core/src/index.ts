@@ -1,13 +1,4 @@
-export {
-  defaultExceptionType,
-  defaultLogArgsSerializer,
-  defaultErrorArgsSerializer,
-  apiMessageBus,
-  USER_ACTION_CANCEL,
-  USER_ACTION_END,
-  USER_ACTION_START,
-  USER_ACTION_HALT,
-} from './api';
+export { defaultExceptionType, defaultLogArgsSerializer, defaultErrorArgsSerializer, UserActionState } from './api';
 export type {
   API,
   APIEvent,
@@ -36,11 +27,6 @@ export type {
   TraceContext,
   TraceEvent,
   TracesAPI,
-  ApiMessageBusMessages,
-  UserActionStartMessage,
-  UserActionEndMessage,
-  UserActionCancelMessage,
-  UserActionHaltMessage,
   UserAction,
 } from './api';
 

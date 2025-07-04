@@ -1,5 +1,6 @@
-import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
+
+import { initializeFaro } from '../../initialize';
 
 const originalWindow = window;
 

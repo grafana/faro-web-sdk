@@ -1,12 +1,10 @@
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas } from '../../metas';
-import type { TransportItem, Transports } from '../../transports';
+import type { Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { isEmpty, isString } from '../../utils/is';
-import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
-import type { ApiMessageBusMessages } from '../types';
 
 import type { MetaAPI } from './types';
 
@@ -20,8 +18,6 @@ export function initializeMetaAPI({
   metas: Metas;
   transports: Transports;
   tracesApi: TracesAPI;
-  actionBuffer: ItemBuffer<TransportItem>;
-  getMessage: () => ApiMessageBusMessages | undefined;
 }): MetaAPI {
   internalLogger.debug('Initializing meta API');
 

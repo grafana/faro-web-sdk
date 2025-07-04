@@ -5,7 +5,7 @@ export type Subscription = {
 type Subscriber<T> = (value: T) => void;
 
 export class Observable<T = any> {
-  private subscribers: Array<Subscriber<T>> = [];
+  subscribers: Array<Subscriber<T>> = [];
 
   subscribe(subscriber: Subscriber<T>): Subscription {
     this.subscribers.push(subscriber);
@@ -84,7 +84,7 @@ export class Observable<T = any> {
     return mergerObservable;
   }
 
-  private withUnsubscribeOverride(
+  withUnsubscribeOverride(
     observable: Observable<T>,
     resultUnsubscribeFn: (subscriber: Subscriber<T>) => void,
     internalSubscriber: Subscriber<T>
@@ -97,7 +97,7 @@ export class Observable<T = any> {
     return observable;
   }
 
-  private unsubscribeAll(): void {
+  unsubscribeAll(): void {
     this.subscribers = [];
   }
 }
