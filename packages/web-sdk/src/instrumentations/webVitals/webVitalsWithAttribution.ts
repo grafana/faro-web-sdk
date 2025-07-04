@@ -1,4 +1,4 @@
-import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB } from 'web-vitals/attribution';
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals/attribution';
 import type { Metric } from 'web-vitals/attribution';
 
 import { unknownString } from '@grafana/faro-core';
@@ -24,7 +24,6 @@ export class WebVitalsWithAttribution {
   initialize(): void {
     this.measureCLS();
     this.measureFCP();
-    this.measureFID();
     this.measureINP();
     this.measureLCP();
     this.measureTTFB();
@@ -59,25 +58,6 @@ export class WebVitalsWithAttribution {
         this.addIfPresent(values, timeToFirstByteKey, timeToFirstByte);
 
         const context = this.buildInitialContext(metric);
-        this.addIfPresent(context, loadStateKey, loadState);
-
-        this.pushMeasurement(values, context);
-      },
-      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
-    );
-  }
-
-  private measureFID(): void {
-    onFID(
-      (metric) => {
-        const { eventTime, eventTarget, eventType, loadState } = metric.attribution;
-
-        const values = this.buildInitialValues(metric);
-        this.addIfPresent(values, 'event_time', eventTime);
-
-        const context = this.buildInitialContext(metric);
-        this.addIfPresent(context, 'event_target', eventTarget);
-        this.addIfPresent(context, 'event_type', eventType);
         this.addIfPresent(context, loadStateKey, loadState);
 
         this.pushMeasurement(values, context);
@@ -121,7 +101,7 @@ export class WebVitalsWithAttribution {
   private measureLCP(): void {
     onLCP(
       (metric) => {
-        const { elementRenderDelay, resourceLoadDelay, resourceLoadDuration, timeToFirstByte, element } =
+        const { elementRenderDelay, resourceLoadDelay, resourceLoadDuration, timeToFirstByte, target } =
           metric.attribution;
 
         const values = this.buildInitialValues(metric);
@@ -131,7 +111,7 @@ export class WebVitalsWithAttribution {
         this.addIfPresent(values, timeToFirstByteKey, timeToFirstByte);
 
         const context = this.buildInitialContext(metric);
-        this.addIfPresent(context, 'element', element);
+        this.addIfPresent(context, 'element', target);
 
         this.pushMeasurement(values, context);
       },

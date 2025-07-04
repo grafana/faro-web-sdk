@@ -39,16 +39,6 @@ jest.mock('web-vitals/attribution', () => {
         })
       );
     },
-    onFID: (cb: (metric: MetricWithAttribution) => void) => {
-      cb(
-        createMetric('FID', {
-          eventTime: 0.1,
-          eventTarget: 'target',
-          eventType: 'type',
-          loadState: 'loading',
-        })
-      );
-    },
     onLCP: (cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('LCP', {
@@ -56,7 +46,7 @@ jest.mock('web-vitals/attribution', () => {
           resourceLoadDelay: 0.1,
           resourceLoadDuration: 0.1,
           timeToFirstByte: 0.1,
-          element: 'element',
+          target: 'element',
         })
       );
     },
@@ -74,7 +64,6 @@ jest.mock('web-vitals/attribution', () => {
     onINP: (cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('INP', {
-          eventTime: 0.1,
           interactionTarget: 'target',
           interactionType: 'pointer',
           loadState: 'loading',
@@ -131,35 +120,6 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
       navigation_entry_id: 'unknown',
       navigation_type: 'navigate',
       rating: 'good',
-      load_state: 'loading',
-    };
-
-    expect(pushMeasurement).toHaveBeenCalledWith(
-      {
-        type: 'web-vitals',
-        values,
-      },
-      { context }
-    );
-  });
-
-  it('send fid metrics correctly', () => {
-    const pushMeasurement = jest.fn();
-    new WebVitalsWithAttribution(pushMeasurement).initialize();
-
-    const values = {
-      fid: 0.1,
-      delta: 0.1,
-      event_time: 0.1,
-    };
-
-    const context = {
-      id: 'id',
-      navigation_entry_id: 'unknown',
-      navigation_type: 'navigate',
-      rating: 'good',
-      event_target: 'target',
-      event_type: 'type',
       load_state: 'loading',
     };
 
