@@ -1317,18 +1317,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jest/environment@npm:30.0.2":
-  version: 30.0.2
-  resolution: "@jest/environment@npm:30.0.2"
-  dependencies:
-    "@jest/fake-timers": "npm:30.0.2"
-    "@jest/types": "npm:30.0.1"
-    "@types/node": "npm:*"
-    jest-mock: "npm:30.0.2"
-  checksum: 10c0/b16683337bd61f4c1134035c9221f92b958b79965be16d4105a5008169a22705edb004ef06cb10f42cbc23464b69bbc0eb5746d60931f764b2cbf2455477b430
-  languageName: node
-  linkType: hard
-
 "@jest/environment@npm:30.0.4":
   version: 30.0.4
   resolution: "@jest/environment@npm:30.0.4"
@@ -1366,20 +1354,6 @@ __metadata:
     expect: "npm:30.0.4"
     jest-snapshot: "npm:30.0.4"
   checksum: 10c0/87d0a39cc1aa46d812ed8be3d36c10e9f2536ed92382eeadb418df6eb7161515b3a4698c0b710c60ca9808347e3db16ef99432b9ed25f2eab8c5a70e31985679
-  languageName: node
-  linkType: hard
-
-"@jest/fake-timers@npm:30.0.2":
-  version: 30.0.2
-  resolution: "@jest/fake-timers@npm:30.0.2"
-  dependencies:
-    "@jest/types": "npm:30.0.1"
-    "@sinonjs/fake-timers": "npm:^13.0.0"
-    "@types/node": "npm:*"
-    jest-message-util: "npm:30.0.2"
-    jest-mock: "npm:30.0.2"
-    jest-util: "npm:30.0.2"
-  checksum: 10c0/896e727a1146948780998d62e7807214f9e2b0a724e283f19baca4dfe326fb8fb885244eee6d201bc5e1385336c176c093179f080e0fae03b20ec25c02604352
   languageName: node
   linkType: hard
 
@@ -17443,8 +17417,8 @@ __metadata:
   linkType: hard
 
 "vite@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "vite@npm:7.0.0"
+  version: 7.0.1
+  resolution: "vite@npm:7.0.1"
   dependencies:
     esbuild: "npm:^0.25.0"
     fdir: "npm:^6.4.6"
@@ -17493,7 +17467,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10c0/860838d223f877dd8e04bd2b8f33cf67a38706643bdf07e3153e2857d7c0d33c3ee94cea7e86e60937cc91b3793272912cc7af14565641476f814bd61b3a1374
+  checksum: 10c0/2bfa3c5505b9d5b393b3b0f22e57c3e2f7a5d50460595277082488e38b70c838e261f35b09cbdaa0698081f3038ce3450633f6fc0d88dfc9f000880c3ed05217
   languageName: node
   linkType: hard
 
