@@ -12,13 +12,13 @@ import {
 import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
-import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
 import { userActionDataAttribute } from '../instrumentations/userActions/const';
 import { browserMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
+import { parseStacktrace } from '../utils';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
@@ -65,6 +65,8 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     ...restProperties
   }: BrowserConfig = browserConfig;
 
+  const stackTraceParser = browserConfig.parseStacktrace ?? parseStacktrace;
+
   return {
     ...restProperties,
 
@@ -79,7 +81,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     isolate,
     logArgsSerializer,
     metas,
-    parseStacktrace,
+    parseStacktrace: stackTraceParser,
     paused,
     preventGlobalExposure,
     transports,

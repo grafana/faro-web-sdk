@@ -10,6 +10,9 @@
 - chore(ci): Remove Node.js 23 from build and test matrix as it's EoL (#1343)
 - chore(deps): upgrade to yarn 4
 
+- chore(`@grafana/faro web-sdk`): Move the stackFrames from the errors instrumentation package to the utils package (#1316)
+- improvement (`@grafana/faro-web-sdk`): Allow users to configure the stackTraceParser in the BrowserConfig (#1316)
+
 ## 1.18.2
 
 - fix(user actions): don't attach user action context to http request when in halt mode (#1249)
