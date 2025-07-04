@@ -57,8 +57,13 @@
     "body-parser": "^2.2.0",
     "bootstrap": "^5.2.3",
     "compression": "^1.7.4",
+<<<<<<< Updated upstream
     "cookie-parser": "^1.4.6",
     "dotenv": "^17.0.0",
+=======
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.0.3",
+>>>>>>> Stashed changes
     "express": "^5.1.0",
     "isomorphic-fetch": "^3.0.0",
     "jsonwebtoken": "^9.0.0",
