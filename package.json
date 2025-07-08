@@ -60,7 +60,7 @@
     "@rollup/plugin-typescript": "^12.1.2",
     "@stylistic/eslint-plugin-ts": "^4.4.1",
     "@types/jest": "^30.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "@typescript-eslint/eslint-plugin": "^8.36.0",
     "@typescript-eslint/parser": "^5.48.2",
     "cypress": "^14.0.0",
     "eslint": "^8.32.0",
