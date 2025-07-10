@@ -2,6 +2,8 @@
 
 ## Next
 
+## 1.19.0
+
 - Feature (`@grafana/faro-web-sdk`): Add CSP instrumentation (#1312)
 
 - Improvement (`@grafana/faro-*`): Rename `userActionEventType` to `userActionTrigger` for improved clarity (#1298)
