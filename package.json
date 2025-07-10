@@ -61,7 +61,7 @@
     "@stylistic/eslint-plugin-ts": "^4.4.1",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^5.48.2",
-    "@typescript-eslint/parser": "^5.48.2",
+    "@typescript-eslint/parser": "^7.18.0",
     "cypress": "^14.0.0",
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^10.0.1",
