@@ -1103,7 +1103,7 @@ __metadata:
     "@opentelemetry/core": "npm:^2.0.0"
     "@opentelemetry/exporter-trace-otlp-http": "npm:^0.202.0"
     "@opentelemetry/instrumentation": "npm:^0.202.0"
-    "@opentelemetry/instrumentation-fetch": "npm:^0.202.0"
+    "@opentelemetry/instrumentation-fetch": "npm:^0.203.0"
     "@opentelemetry/instrumentation-xml-http-request": "npm:^0.202.0"
     "@opentelemetry/otlp-transformer": "npm:^0.203.0"
     "@opentelemetry/resources": "npm:^2.0.0"
@@ -2449,17 +2449,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation-fetch@npm:^0.202.0":
-  version: 0.202.0
-  resolution: "@opentelemetry/instrumentation-fetch@npm:0.202.0"
+"@opentelemetry/instrumentation-fetch@npm:^0.203.0":
+  version: 0.203.0
+  resolution: "@opentelemetry/instrumentation-fetch@npm:0.203.0"
   dependencies:
     "@opentelemetry/core": "npm:2.0.1"
-    "@opentelemetry/instrumentation": "npm:0.202.0"
+    "@opentelemetry/instrumentation": "npm:0.203.0"
     "@opentelemetry/sdk-trace-web": "npm:2.0.1"
     "@opentelemetry/semantic-conventions": "npm:^1.29.0"
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 10c0/80b862fe7d9d859f664ec27ce685885dc9688ea6cb55d67b75505b4123e8856701bae3638db55cb5f804ee9ddfd2ea2cb9fa0f63437534df835b3d2800c5cddd
+  checksum: 10c0/dd79bf9d789bd7a660a6adc3ab4785404da7ddb4105bcd766531b7bcaacfab5c1a896a83cde45a5853c559f38589e92927afc51e55a4bb61156be126c08461f4
   languageName: node
   linkType: hard
 
