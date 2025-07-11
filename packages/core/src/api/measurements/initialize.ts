@@ -6,10 +6,8 @@ import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
-import { USER_ACTION_START } from '../const';
-import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
-import type { ApiMessageBusMessages } from '../types';
+import type { UserActionsAPI } from '../userActions';
 
 import type { MeasurementEvent, MeasurementsAPI } from './types';
 
@@ -19,8 +17,7 @@ export function initializeMeasurementsAPI({
   metas,
   transports,
   tracesApi,
-  actionBuffer,
-  getMessage,
+  userActionsApi,
 }: {
   unpatchedConsole: UnpatchedConsole;
   internalLogger: InternalLogger;
@@ -28,8 +25,7 @@ export function initializeMeasurementsAPI({
   metas: Metas;
   transports: Transports;
   tracesApi: TracesAPI;
-  actionBuffer: ItemBuffer<TransportItem>;
-  getMessage: () => ApiMessageBusMessages | undefined;
+  userActionsApi: UserActionsAPI;
 }): MeasurementsAPI {
   internalLogger.debug('Initializing measurements API');
 
@@ -74,9 +70,9 @@ export function initializeMeasurementsAPI({
 
       internalLogger.debug('Pushing measurement\n', item);
 
-      const msg = getMessage();
-      if (msg && msg.type === USER_ACTION_START) {
-        actionBuffer.addItem(item);
+      const activeUserAction = userActionsApi.getActiveUserAction();
+      if (activeUserAction) {
+        activeUserAction.addItem(item);
       } else {
         transports.execute(item);
       }

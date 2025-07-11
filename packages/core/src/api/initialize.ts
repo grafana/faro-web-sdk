@@ -3,7 +3,6 @@ import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import type { Transports } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
-import { Observable } from '../utils';
 
 import { initializeEventsAPI } from './events';
 import { initializeExceptionsAPI } from './exceptions';
@@ -11,10 +10,8 @@ import { initializeLogsAPI } from './logs';
 import { initializeMeasurementsAPI } from './measurements';
 import { initializeMetaAPI } from './meta';
 import { initializeTracesAPI } from './traces';
-import type { API, ApiMessageBusMessages } from './types';
-import { createUserActionLifecycleHandler } from './userActionLifecycleHandler';
-
-export const apiMessageBus = new Observable<ApiMessageBusMessages>();
+import type { API } from './types';
+import { initializeUserActionsAPI } from './userActions';
 
 export function initializeAPI(
   unpatchedConsole: UnpatchedConsole,
@@ -25,19 +22,22 @@ export function initializeAPI(
 ): API {
   internalLogger.debug('Initializing API');
 
-  const { actionBuffer, getMessage } = createUserActionLifecycleHandler({ apiMessageBus, transports, config });
+  const userActionsApi = initializeUserActionsAPI({
+    transports,
+    config,
+    internalLogger,
+  });
 
   const tracesApi = initializeTracesAPI(unpatchedConsole, internalLogger, config, metas, transports);
 
   const props = {
     unpatchedConsole,
     internalLogger,
+    userActionsApi,
     config,
     metas,
     transports,
     tracesApi,
-    actionBuffer,
-    getMessage,
   };
 
   return {
@@ -47,5 +47,6 @@ export function initializeAPI(
     ...initializeLogsAPI(props),
     ...initializeMeasurementsAPI(props),
     ...initializeEventsAPI(props),
+    ...userActionsApi,
   };
 }

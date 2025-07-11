@@ -24,6 +24,7 @@ describe('getDefaultOTELInstrumentations', () => {
     expect(FetchInstrumentation).toHaveBeenCalledWith({
       ignoreNetworkEvents: true,
       applyCustomAttributesOnSpan: expect.any(Function),
+      requestHook: expect.any(Function),
     });
 
     expect(XMLHttpRequestInstrumentation).toHaveBeenCalledWith({
@@ -52,6 +53,7 @@ describe('getDefaultOTELInstrumentations', () => {
       propagateTraceHeaderCorsUrls,
       ignoreNetworkEvents: false,
       applyCustomAttributesOnSpan: expect.any(Function),
+      requestHook: expect.any(Function),
     });
 
     expect(XMLHttpRequestInstrumentation).toHaveBeenCalledWith({

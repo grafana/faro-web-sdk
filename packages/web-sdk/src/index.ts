@@ -95,12 +95,7 @@ export {
   EVENT_SESSION_RESUME,
   EVENT_SESSION_START,
   EVENT_VIEW_CHANGED,
-  apiMessageBus,
   Observable,
-  USER_ACTION_CANCEL,
-  USER_ACTION_END,
-  USER_ACTION_HALT,
-  USER_ACTION_START,
   unknownString,
 } from '@grafana/faro-core';
 
@@ -166,11 +161,6 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
-  ApiMessageBusMessages,
-  UserActionStartMessage,
-  UserActionEndMessage,
-  UserActionCancelMessage,
-  UserActionHaltMessage,
 } from '@grafana/faro-core';
 
 export {
@@ -185,4 +175,4 @@ export {
 
 export { getIgnoreUrls, getUrlFromResource } from './utils/url';
 
-export { userActionDataAttribute, startUserAction } from './instrumentations/userActions';
+export { userActionDataAttribute } from './instrumentations/userActions';

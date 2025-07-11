@@ -2,15 +2,16 @@ import { SpanStatusCode } from '@opentelemetry/api';
 import { Button, ButtonGroup } from 'react-bootstrap';
 
 import { faro } from '@grafana/faro-react';
-import { startUserAction } from '@grafana/faro-web-sdk';
 
 export function TracingInstrumentation() {
-  const fetchSuccess = () => {
-    startUserAction('fetch-success', { foo: 'bar' });
+  const fetchSuccess = (ev) => {
+    // Override the user action creation
+    faro.api.startUserAction('fetch-success');
     fetch('/');
   };
 
   const xhrSuccess = () => {
+    faro.api.startUserAction('xhr-success');
     const xhr = new XMLHttpRequest();
     xhr.open('GET', '/');
     xhr.send();
@@ -37,7 +38,7 @@ export function TracingInstrumentation() {
         <Button data-cy="btn-fetch-success" onClick={fetchSuccess}>
           Fetch Success
         </Button>
-        <Button data-cy="btn-xhr-success" onClick={xhrSuccess} data-faro-user-action-name="xhr-success">
+        <Button data-cy="btn-xhr-success" onClick={xhrSuccess}>
           XHR Success
         </Button>
         <Button data-cy="btn-trace-with-log" onClick={traceWithLog} data-faro-user-action-name="trace-with-log">

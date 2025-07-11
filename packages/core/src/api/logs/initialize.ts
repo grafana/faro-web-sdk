@@ -6,10 +6,8 @@ import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, defaultLogLevel, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
-import { USER_ACTION_START } from '../const';
-import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
-import type { ApiMessageBusMessages } from '../types';
+import type { UserActionsAPI } from '../userActions';
 
 import { defaultLogArgsSerializer } from './const';
 import type { LogEvent, LogsAPI } from './types';
@@ -20,8 +18,7 @@ export function initializeLogsAPI({
   metas,
   transports,
   tracesApi,
-  actionBuffer,
-  getMessage,
+  userActionsApi,
 }: {
   unpatchedConsole: UnpatchedConsole;
   internalLogger: InternalLogger;
@@ -29,8 +26,7 @@ export function initializeLogsAPI({
   metas: Metas;
   transports: Transports;
   tracesApi: TracesAPI;
-  actionBuffer: ItemBuffer<TransportItem>;
-  getMessage: () => ApiMessageBusMessages | undefined;
+  userActionsApi: UserActionsAPI;
 }): LogsAPI {
   internalLogger.debug('Initializing logs API');
 
@@ -78,9 +74,9 @@ export function initializeLogsAPI({
 
       internalLogger.debug('Pushing log\n', item);
 
-      const msg = getMessage();
-      if (msg && msg.type === USER_ACTION_START) {
-        actionBuffer.addItem(item);
+      const activeUserAction = userActionsApi.getActiveUserAction();
+      if (activeUserAction) {
+        activeUserAction.addItem(item);
       } else {
         transports.execute(item);
       }

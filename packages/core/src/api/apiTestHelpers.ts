@@ -1,6 +1,7 @@
 import type { Transports } from '../transports';
 
 import type { TracesAPI } from './traces/types';
+import type { UserActionsAPI } from './userActions/types';
 
 export const mockMetas = {
   add: jest.fn(),
@@ -35,4 +36,9 @@ export const mockTracesApi: TracesAPI = {
   initOTEL: jest.fn(),
   isOTELInitialized: jest.fn(),
   pushTraces: jest.fn(),
+};
+
+export const mockUserActionsApi: UserActionsAPI = {
+  startUserAction: jest.fn(),
+  getActiveUserAction: jest.fn(),
 };

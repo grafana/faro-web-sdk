@@ -1,4 +1,4 @@
-export { UserActionInstrumentation, startUserAction } from './instrumentation';
+export { UserActionInstrumentation } from './instrumentation';
 
 export type {
   DomMutationMessage,
