@@ -22,6 +22,12 @@ const modules = {
     globalName: 'GrafanaFaroWebSdk',
     externals: [],
   },
+  webSessionRecording: {
+    name: '@grafana/faro-web-session-recording',
+    bundleName: 'faro-web-session-recording',
+    globalName: 'GrafanaFaroWebSessionRecording',
+    externals: [],
+  },
   webTracing: {
     name: '@grafana/faro-web-tracing',
     bundleName: 'faro-web-tracing',
