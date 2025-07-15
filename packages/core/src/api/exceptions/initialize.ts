@@ -16,10 +16,8 @@ import {
   stringifyObjectValues,
 } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
-import { USER_ACTION_START } from '../const';
-import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
-import type { ApiMessageBusMessages } from '../types';
+import type { UserActionsAPI } from '../userActions';
 import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
@@ -33,8 +31,7 @@ export function initializeExceptionsAPI({
   metas,
   transports,
   tracesApi,
-  actionBuffer,
-  getMessage,
+  userActionsApi,
 }: {
   unpatchedConsole: UnpatchedConsole;
   internalLogger: InternalLogger;
@@ -42,8 +39,7 @@ export function initializeExceptionsAPI({
   metas: Metas;
   transports: Transports;
   tracesApi: TracesAPI;
-  actionBuffer: ItemBuffer<TransportItem>;
-  getMessage: () => ApiMessageBusMessages | undefined;
+  userActionsApi: UserActionsAPI;
 }): ExceptionsAPI {
   internalLogger.debug('Initializing exceptions API');
 
@@ -117,9 +113,9 @@ export function initializeExceptionsAPI({
 
       internalLogger.debug('Pushing exception\n', item);
 
-      const msg = getMessage();
-      if (msg && msg.type === USER_ACTION_START) {
-        actionBuffer.addItem(item);
+      const activeUserAction = userActionsApi.getActiveUserAction();
+      if (activeUserAction) {
+        activeUserAction.addItem(item);
       } else {
         transports.execute(item);
       }
