@@ -1,7 +1,7 @@
 import type { eventWithTime } from '@rrweb/types';
-import { record, recordOptions } from 'rrweb';
+import { record, type recordOptions } from 'rrweb';
 
-import { BaseInstrumentation, LogLevel, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
 import type { SessionRecordingInstrumentationOptions } from './types';
 
