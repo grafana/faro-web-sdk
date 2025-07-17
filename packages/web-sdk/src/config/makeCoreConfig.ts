@@ -65,6 +65,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     ...restProperties
   }: BrowserConfig = browserConfig;
 
+  // use the default stacktrace parser (parseStacktrace) if no custom stacktrace parser is provided
   const stackTraceParser = browserConfig.parseStacktrace ?? parseStacktrace;
 
   return {

@@ -23,9 +23,7 @@ import type { ApiMessageBusMessages } from '../types';
 import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
-import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
-
-let stacktraceParser: StacktraceParser | undefined;
+import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI } from './types';
 
 export function initializeExceptionsAPI({
   internalLogger,
@@ -49,9 +47,7 @@ export function initializeExceptionsAPI({
 
   let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace' | 'context'> | null = null;
 
-  stacktraceParser = config.parseStacktrace;
-
-  const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => stacktraceParser;
+  const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => config.parseStacktrace;
 
   const { ignoreErrors = [], preserveOriginalError } = config;
 
@@ -85,7 +81,7 @@ export function initializeExceptionsAPI({
         },
         type: TransportItemType.EXCEPTION,
       };
-
+      const stacktraceParser = getStacktraceParser()
       stackFrames = stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
 
       if (stackFrames?.length) {
