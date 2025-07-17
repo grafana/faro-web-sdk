@@ -57,7 +57,7 @@ export interface Config<P = APIEvent> {
   metas: MetaItem[];
 
   /**
-   * Custom function used to parse stack traces
+   * The stacktrace parser to use for parsing stack traces.
    */
   parseStacktrace: StacktraceParser;
 
