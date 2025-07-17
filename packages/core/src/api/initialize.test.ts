@@ -17,7 +17,6 @@ describe('initialize', () => {
     expect(api).toHaveProperty('pushMeasurement');
     expect(api).toHaveProperty('pushTraces');
     expect(api).toHaveProperty('pushEvent');
-    expect(api).toHaveProperty('changeStacktraceParser');
     expect(api).toHaveProperty('getOTEL');
     expect(api).toHaveProperty('getPage');
     expect(api).toHaveProperty('getSession');

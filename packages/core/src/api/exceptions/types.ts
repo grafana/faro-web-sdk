@@ -72,7 +72,6 @@ export type ErrorWithIndexProperties = Error & {
 };
 
 export interface ExceptionsAPI {
-  changeStacktraceParser: (stacktraceParser: StacktraceParser) => void;
   getStacktraceParser: () => StacktraceParser | undefined;
   pushError: (value: ErrorWithIndexProperties, options?: PushErrorOptions) => void;
 }

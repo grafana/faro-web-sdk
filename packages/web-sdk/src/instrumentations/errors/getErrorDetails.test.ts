@@ -16,7 +16,7 @@ import { registerOnerror } from './registerOnerror';
 describe('errors', () => {
   it('parses an Error passed to console.error', () => {
     const transport = new MockTransport();
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         instrumentations: [new ConsoleInstrumentation()],
         transports: [transport],
@@ -26,7 +26,7 @@ describe('errors', () => {
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
 
     console.error(new Error('boo'));
     expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.value).toBe('console.error: boo');
@@ -34,7 +34,7 @@ describe('errors', () => {
 
   it('parses text values passed to console.error', () => {
     const transport = new MockTransport();
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         instrumentations: [new ConsoleInstrumentation()],
         transports: [transport],
@@ -44,7 +44,7 @@ describe('errors', () => {
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
 
     console.error('boo', 'other', 'details');
     expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.value).toBe(
@@ -54,7 +54,7 @@ describe('errors', () => {
 
   it('parses text values and an object passed to console.error', () => {
     const transport = new MockTransport();
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         instrumentations: [new ConsoleInstrumentation()],
         transports: [transport],
@@ -67,7 +67,7 @@ describe('errors', () => {
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
 
     const details = { other: 'details' };
     console.error('boo', details);
@@ -78,7 +78,7 @@ describe('errors', () => {
 
   it('parses text values and an object passed to console.error with custom serializer', () => {
     const transport = new MockTransport();
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         instrumentations: [new ConsoleInstrumentation()],
         transports: [transport],
@@ -91,7 +91,7 @@ describe('errors', () => {
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
 
     const details = { other: 'details' };
     console.error('boo', details);
@@ -102,7 +102,7 @@ describe('errors', () => {
 
   it('parses text values and an object passed to console.error and returns it as a log', () => {
     const transport = new MockTransport();
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         instrumentations: [new ConsoleInstrumentation()],
         transports: [transport],
@@ -116,7 +116,7 @@ describe('errors', () => {
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
 
     const details = { other: 'details' };
     console.error('boo', details);
@@ -135,7 +135,7 @@ describe('errors', () => {
     };
 
     const transport = new MockTransport();
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         instrumentations: [new ConsoleInstrumentation()],
         transports: [transport],
@@ -145,7 +145,7 @@ describe('errors', () => {
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
 
     window.onerror('boo', 'some file', 10, 10);
 
@@ -163,7 +163,7 @@ describe('errors', () => {
     };
 
     const transport = new MockTransport();
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         instrumentations: [new ConsoleInstrumentation()],
         transports: [transport],
@@ -173,7 +173,7 @@ describe('errors', () => {
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
 
     window.onerror('not boo', 'some file', 10, 10, new Error('boo'));
 
@@ -188,7 +188,7 @@ describe('errors', () => {
     };
 
     const transport = new MockTransport();
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         instrumentations: [new ConsoleInstrumentation()],
         transports: [transport],
@@ -198,7 +198,7 @@ describe('errors', () => {
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
 
     window.onerror(new Error('boo') as unknown as Event);
 
@@ -208,7 +208,7 @@ describe('errors', () => {
 
   it('getErrorDetails returns correct values when an ErrorEvent is passed to onerror with special characters in the file path for webkit engine', () => {
     const transport = new MockTransport();
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         instrumentations: [new ConsoleInstrumentation()],
         transports: [transport],
@@ -218,7 +218,7 @@ describe('errors', () => {
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
     let e = new Error('Oh crap!');
     e.stack = 'Error: Oh crap!\n    at Object.eval [as refinement] (https://example.com/(main)/[path]/to.js:1:2345)';
 

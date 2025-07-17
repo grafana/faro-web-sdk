@@ -14,13 +14,13 @@ describe('registerOnerror', () => {
     };
 
     const transport = new MockTransport();
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         transports: [transport],
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
 
     window.onerror('boo', 'some file', 10, 10, new Error('boo'));
     expect(called).toBe(true);
@@ -30,14 +30,14 @@ describe('registerOnerror', () => {
   it('In case of an error, the original error is not lost', () => {
     const originalError = new Error('original error');
     const transport = new MockTransport();
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         transports: [transport],
         preserveOriginalError: true,
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
 
     window.onerror?.('boo', 'some file', 10, 10, originalError);
     expect(transport.items).toHaveLength(1);
@@ -50,7 +50,7 @@ describe('registerOnerror', () => {
   it('will filter out errors by string or regex', () => {
     const transport = new MockTransport();
 
-    const { api, config } = initializeFaro(
+    const { api } = initializeFaro(
       mockConfig({
         transports: [transport],
         ignoreErrors: ['chrome-extension'],
@@ -58,7 +58,7 @@ describe('registerOnerror', () => {
       })
     );
 
-    registerOnerror(api, config);
+    registerOnerror(api);
 
     window.onerror?.('boo', 'some file', 10, 10, new Error('Tracked error'));
 

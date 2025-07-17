@@ -1,13 +1,13 @@
-import type { API, Config, PushErrorOptions } from '@grafana/faro-core';
+import type { API, PushErrorOptions } from '@grafana/faro-core';
 
 import { getDetailsFromErrorArgs } from './getErrorDetails';
 
-export function registerOnerror(api: API, config: Config): void {
+export function registerOnerror(api: API): void {
   const oldOnerror = window.onerror;
 
   window.onerror = (...args) => {
     try {
-      const { value, type, stackFrames } = getDetailsFromErrorArgs(args, config.parseStacktrace);
+      const { value, type, stackFrames } = getDetailsFromErrorArgs(args, api.getStacktraceParser());
       const originalError = args[4];
 
       if (value) {

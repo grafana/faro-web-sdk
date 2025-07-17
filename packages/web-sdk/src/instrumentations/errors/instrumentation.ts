@@ -14,8 +14,8 @@ export class ErrorsInstrumentation extends BaseInstrumentation {
   initialize(): void {
     this.logDebug('Initializing');
 
-    registerOnerror(this.api, this.config);
+    registerOnerror(this.api);
 
-    registerOnunhandledrejection(this.api, this.config);
+    registerOnunhandledrejection(this.api);
   }
 }

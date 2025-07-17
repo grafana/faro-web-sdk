@@ -49,13 +49,7 @@ export function initializeExceptionsAPI({
 
   let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace' | 'context'> | null = null;
 
-  stacktraceParser = config.parseStacktrace ?? stacktraceParser;
-
-  const changeStacktraceParser: ExceptionsAPI['changeStacktraceParser'] = (newStacktraceParser) => {
-    internalLogger.debug('Changing stacktrace parser');
-
-    stacktraceParser = newStacktraceParser ?? stacktraceParser;
-  };
+  stacktraceParser = config.parseStacktrace;
 
   const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => stacktraceParser;
 
@@ -128,10 +122,7 @@ export function initializeExceptionsAPI({
     }
   };
 
-  changeStacktraceParser(config.parseStacktrace);
-
   return {
-    changeStacktraceParser,
     getStacktraceParser,
     pushError,
   };
