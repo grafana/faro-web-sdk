@@ -42,12 +42,6 @@ export interface SessionRecordingInstrumentationOptions {
   maskAllInputs?: boolean;
 
   /**
-   * Whether to mask all text
-   * @default false
-   */
-  maskAllText?: boolean;
-
-  /**
    * Custom CSS selector to mask elements
    */
   maskSelector?: string;
@@ -87,12 +81,6 @@ export interface SessionRecordingInstrumentationOptions {
    * @default false
    */
   recordCanvas?: boolean;
-
-  /**
-   * Whether to record logs
-   * @default false
-   */
-  recordLogs?: boolean;
 
   /**
    * Custom hook to filter events before they are recorded

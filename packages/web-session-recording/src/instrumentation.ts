@@ -26,12 +26,10 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
       recordCrossOriginIframes: false,
       maskTextInputs: true,
       maskAllInputs: false,
-      maskAllText: false,
       collectFonts: false,
       inlineImages: false,
       inlineStylesheet: false,
       recordCanvas: false,
-      recordLogs: false,
       ...options,
     };
   }
@@ -52,7 +50,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
 
   private startRecording(): void {
     try {
-      const opts: recordOptions = {
+      const opts: recordOptions<eventWithTime> = {
         emit: (event: eventWithTime) => {
           this.handleEvent(event);
         },
@@ -60,7 +58,6 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         checkoutEveryNms: 300000, // 5 minutes
         recordCrossOriginIframes: this.options.recordCrossOriginIframes,
         maskAllInputs: this.options.maskAllInputs,
-        maskAllText: this.options.maskAllText,
         maskInputOptions: {
           password: true,
           text: this.options.maskTextInputs,
@@ -73,7 +70,6 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         collectFonts: this.options.collectFonts,
         inlineImages: this.options.inlineImages,
         inlineStylesheet: this.options.inlineStylesheet,
-        recordLogs: this.options.recordLogs,
       };
 
       if (this.options.maskSelector) {
