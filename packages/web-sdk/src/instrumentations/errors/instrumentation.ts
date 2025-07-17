@@ -7,10 +7,6 @@ export class ErrorsInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-errors';
   readonly version = VERSION;
 
-  constructor() {
-    super();
-  }
-
   initialize(): void {
     this.logDebug('Initializing');
 
