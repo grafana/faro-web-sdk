@@ -81,7 +81,7 @@ export function initializeExceptionsAPI({
         },
         type: TransportItemType.EXCEPTION,
       };
-      const stacktraceParser = getStacktraceParser()
+      const stacktraceParser = getStacktraceParser();
       stackFrames = stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
 
       if (stackFrames?.length) {
