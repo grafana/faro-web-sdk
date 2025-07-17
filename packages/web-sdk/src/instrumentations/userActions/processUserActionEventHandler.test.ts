@@ -1,341 +1,240 @@
+import { jest } from '@jest/globals';
+
+import { Observable, UserActionState } from '@grafana/faro-core';
+import type { Faro, Subscription } from '@grafana/faro-core';
+
 import {
-  apiMessageBus,
-  Config,
-  initializeFaro,
-  USER_ACTION_CANCEL,
-  USER_ACTION_END,
-  USER_ACTION_HALT,
-  USER_ACTION_START,
-} from '@grafana/faro-core';
-import type { Faro, UserActionEndMessage, UserActionHaltMessage, UserActionStartMessage } from '@grafana/faro-core';
-import { mockConfig } from '@grafana/faro-core/src/testUtils';
+  userActionDataAttributeParsed as defaultDataAttribute,
+  MESSAGE_TYPE_HTTP_REQUEST_END,
+  MESSAGE_TYPE_HTTP_REQUEST_START,
+} from './const';
+import {
+  getUserActionNameFromElement,
+  getUserEventHandler,
+  isRequestEndMessage,
+  isRequestStartMessage,
+  unsubscribeAllMonitors,
+} from './processUserActionEventHandler';
 
-import { faro } from '../..';
-import { makeCoreConfig } from '../../config';
-
-import { userActionDataAttribute, userActionStartByApiCallEventName } from './const';
-import { getUserEventHandler } from './processUserActionEventHandler';
-import { ApiEvent } from './types';
-
-class MockXMLHttpRequest {
-  open() {}
-  send() {
-    this.onload({
-      target: {
-        responseText: JSON.stringify({ message: 'Mocked Response' }),
-      },
-    });
+// Stub dummy Observable for monitors
+class DummyObservable {
+  merge(..._sources: any[]): this {
+    return this;
   }
-  onload(_arg0: { target: { responseText: string } }) {}
-  setRequestHeader() {}
-  addEventListener(event: string, callback: () => void) {
-    if (event === 'load') {
-      callback();
-    }
+  takeWhile(_pred: any): this {
+    return this;
+  }
+  filter(_fn: any): this {
+    return this;
+  }
+  notify(_: any): this {
+    return this;
+  }
+  subscribe(_handler: any): Subscription {
+    return { unsubscribe: jest.fn() };
   }
 }
 
-const originalXMLHttpRequest = global.XMLHttpRequest;
+let httpObservable = new Observable();
+jest.mock('./httpRequestMonitor', () => ({ monitorHttpRequests: () => httpObservable }));
+jest.mock('./domMutationMonitor', () => ({ monitorDomMutations: () => new Observable() }));
+jest.mock('./performanceEntriesMonitor', () => ({ monitorPerformanceEntries: () => new Observable() }));
 
-describe('UserActionsInstrumentation', () => {
-  let mockFaro: Faro;
+describe('Utility functions', () => {
+  it('getUserActionNameFromElement returns matching dataset value', () => {
+    const element = document.createElement('div');
+    const customAttr = 'data-foo-bar';
+    element.dataset['fooBar'] = 'baz';
 
-  beforeAll(() => {
-    jest.useFakeTimers();
+    const result = getUserActionNameFromElement(element, customAttr);
+    expect(result).toBe('baz');
   });
 
-  beforeEach(() => {
-    jest.clearAllMocks(); // Clears call counts and instances
-    jest.resetAllMocks(); // Resets mock implementations
-    jest.restoreAllMocks(); // Restores spies to original methods
-    jest.clearAllTimers();
+  it('getUserActionNameFromElement returns undefined if no match', () => {
+    const element = document.createElement('div');
+    element.dataset['other'] = 'value';
 
-    mockFaro = initializeFaro(
-      makeCoreConfig(
-        mockConfig({
-          trackUserActionsDataAttributeName: userActionDataAttribute,
-          trackUserActionsPreview: true,
-        })
-      )
-    );
+    const result = getUserActionNameFromElement(element, defaultDataAttribute);
+    expect(result).toBeUndefined();
+  });
+
+  it('isRequestStartMessage type guard', () => {
+    const msg = { type: MESSAGE_TYPE_HTTP_REQUEST_START };
+    expect(isRequestStartMessage(msg)).toBe(true);
+    expect(isRequestEndMessage(msg)).toBe(false);
+  });
+
+  it('isRequestEndMessage type guard', () => {
+    const msg = { type: MESSAGE_TYPE_HTTP_REQUEST_END };
+    expect(isRequestEndMessage(msg)).toBe(true);
+    expect(isRequestStartMessage(msg)).toBe(false);
+  });
+
+  it('unsubscribeAllMonitors calls unsubscribe on subscription', () => {
+    const sub: Subscription = { unsubscribe: jest.fn() };
+    unsubscribeAllMonitors(sub);
+    expect(sub.unsubscribe).toHaveBeenCalled();
+  });
+});
+
+describe('getUserEventHandler', () => {
+  let faro: Partial<Faro>;
+  let startSpy: jest.Mock;
+  let getCurrentSpy: jest.Mock;
+  let fakeAction: any;
+
+  beforeEach(() => {
+    // Mock monitors to use DummyObservable
+    jest.mock('./domMutationMonitor', () => ({ monitorDomMutations: () => new DummyObservable() }));
+    jest.mock('./performanceEntriesMonitor', () => ({ monitorPerformanceEntries: () => new DummyObservable() }));
+
+    startSpy = jest.fn();
+    getCurrentSpy = jest.fn();
+
+    fakeAction = {
+      extend: jest.fn(),
+      end: jest.fn(),
+      getState: jest.fn().mockReturnValue(UserActionState.Started),
+      filter: jest.fn().mockReturnValue({ first: jest.fn().mockReturnValue({ subscribe: jest.fn() }) }),
+    };
+
+    faro = {
+      api: {
+        startUserAction: startSpy.mockReturnValue(fakeAction),
+        getActiveUserAction: getCurrentSpy,
+      } as any,
+      config: {
+        trackUserActionsDataAttributeName: 'data-foo-bar',
+      } as any,
+    };
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    jest.resetModules();
+    jest.clearAllMocks();
   });
 
-  afterAll(() => {
-    jest.restoreAllMocks();
-    jest.clearAllTimers();
-    global.XMLHttpRequest = originalXMLHttpRequest;
-  });
-
-  it('Emits a user-action-end message if a user action has follow up activity within 100ms', () => {
-    (global as any).XMLHttpRequest = MockXMLHttpRequest;
-
-    const mockApiMessageBusNotify = jest.fn();
-    jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
-
-    const mockPushEvent = jest.fn();
-    jest.spyOn(mockFaro.api, 'pushEvent').mockImplementation(mockPushEvent);
-
-    const handler = getUserEventHandler(mockFaro);
+  it('starts a new user action when none exists', () => {
+    getCurrentSpy.mockReturnValue(undefined);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
     const element = document.createElement('div');
-    element.setAttribute(userActionDataAttribute, 'test-action');
+    element.dataset['fooBar'] = 'my-action';
+    const event = { type: 'click', target: element } as unknown as PointerEvent;
 
-    const pointerdownEvent = {
-      type: 'pointerdown',
-      target: element,
-    } as unknown as PointerEvent;
+    processUserEvent(event);
 
-    const xhr = new XMLHttpRequest();
-
-    handler(pointerdownEvent);
-
-    // TODO: need to ensure that we end a request maybe mock teh httpMonitor or resource instrumentation
-    xhr.open('GET', 'https://www.grafana.com');
-    xhr.send();
-
-    jest.runAllTimers();
-
-    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(2);
-
-    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(1, {
-      type: USER_ACTION_START,
-      name: 'test-action',
-      parentId: expect.any(String),
-      startTime: expect.any(Number),
-    } as UserActionStartMessage);
-
-    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
-      type: USER_ACTION_END,
-      name: 'test-action',
-      id: expect.any(String),
-      startTime: expect.any(Number),
-      endTime: expect.any(Number),
-      duration: expect.any(Number),
-      eventType: 'pointerdown',
-    } as UserActionEndMessage);
-
-    expect(mockPushEvent).toHaveBeenCalledTimes(1);
-
-    expect(mockPushEvent).toHaveBeenCalledWith(
-      'test-action',
-      expect.objectContaining({
-        userActionStartTime: expect.any(String),
-        userActionEndTime: expect.any(String),
-        userActionDuration: expect.any(String),
-        userActionTrigger: expect.any(String),
-      }),
-      undefined,
-      expect.anything()
-    );
-
-    global.XMLHttpRequest = originalXMLHttpRequest;
+    expect(startSpy).toHaveBeenCalledWith('my-action', {}, { triggerName: 'click' });
   });
 
-  it('Emits a user-action-cancel message if a user action has no follow up activity within 100ms', () => {
-    const mockApiMessageBusNotify = jest.fn();
-    jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
+  it('does not start a new action if one already exists', () => {
+    getCurrentSpy.mockReturnValue(fakeAction);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
-    jest.mock('./httpRequestMonitor', () => ({
-      monitorHttpRequests: jest.fn().mockReturnValue({
-        subscribe: jest.fn(),
-      }),
-    }));
+    const event = { type: 'keydown', target: document.createElement('div') } as unknown as KeyboardEvent;
+    processUserEvent(event);
 
-    jest.mock('./domMutationMonitor', () => ({
-      monitorDomMutations: jest.fn().mockReturnValue({
-        subscribe: jest.fn(),
-      }),
-    }));
+    expect(startSpy).not.toHaveBeenCalled();
+  });
 
-    jest.mock('./performanceEntriesMonitor', () => ({
-      monitorPerformanceEntries: jest.fn().mockReturnValue({
-        subscribe: jest.fn(),
-      }),
-    }));
-
-    const handler = getUserEventHandler(mockFaro);
+  it('does not process an event if the current user action is in Started/Halted state', () => {
+    fakeAction.getState.mockReturnValueOnce(UserActionState.Cancelled);
+    getCurrentSpy.mockReturnValue(fakeAction);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
     const element = document.createElement('div');
-    element.setAttribute(userActionDataAttribute, 'test-action');
-
-    const pointerdownEvent = {
-      type: 'pointerdown',
-      target: element,
-    } as unknown as PointerEvent;
-
-    // no action happens so we do cancel the action
-
-    handler(pointerdownEvent);
-
-    jest.runAllTimers();
-
-    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(2);
-    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
-      type: USER_ACTION_CANCEL,
-      name: 'test-action',
-      parentId: expect.any(String),
-    });
+    element.setAttribute('data-faro-user-action-name', 'foo');
+    const event = { type: 'keydown', target: element } as unknown as KeyboardEvent;
+    processUserEvent(event);
+    expect(fakeAction.extend).not.toHaveBeenCalled();
   });
 
-  it('Emits a user-action-halt message if pending requests are detected', () => {
-    const mockApiMessageBusNotify = jest.fn();
-    const spy = jest.spyOn(apiMessageBus, 'notify').mockImplementation(mockApiMessageBusNotify);
-
-    const mockPushEvent = jest.fn();
-    jest.spyOn(mockFaro.api, 'pushEvent').mockImplementation(mockPushEvent);
-
-    const handler = getUserEventHandler(mockFaro);
+  it('allows processing if there are running requests', () => {
+    getCurrentSpy.mockReturnValue(fakeAction);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
     const element = document.createElement('div');
-    element.setAttribute(userActionDataAttribute, 'test-action');
+    element.dataset['fooBar'] = 'foo';
+    const event = { type: 'keydown', target: element } as unknown as KeyboardEvent;
+    processUserEvent(event);
 
-    const pointerdownEvent = {
-      type: 'pointerdown',
-      target: element,
-    } as unknown as PointerEvent;
-    const xhr = new XMLHttpRequest();
-
-    handler(pointerdownEvent);
-
-    // Here we didn't mock the request so it doesn't resolve. Means we only get a start message and no end message
-    xhr.open('GET', 'https://www.grafana.com');
-    xhr.send();
-
-    jest.runAllTimers();
-
-    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(3);
-
-    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(1, {
-      type: USER_ACTION_START,
-      name: 'test-action',
-      parentId: expect.any(String),
-      startTime: expect.any(Number),
-    } as UserActionStartMessage);
-
-    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(2, {
-      type: USER_ACTION_HALT,
-      name: 'test-action',
-      parentId: expect.any(String),
-      reason: 'pending-requests',
-      haltTime: expect.any(Number),
-    } as UserActionHaltMessage);
-
-    expect(mockApiMessageBusNotify).toHaveBeenNthCalledWith(3, {
-      type: USER_ACTION_END,
-      name: 'test-action',
-      id: expect.any(String),
-      startTime: expect.any(Number),
-      endTime: expect.any(Number),
-      duration: expect.any(Number),
-      eventType: 'pointerdown',
-    } as UserActionEndMessage);
-
-    expect(mockPushEvent).toHaveBeenCalledTimes(1);
-
-    expect(mockPushEvent).toHaveBeenCalledWith(
-      'test-action',
-      expect.objectContaining({
-        userActionStartTime: expect.any(String),
-        userActionEndTime: expect.any(String),
-        userActionDuration: expect.any(String),
-        userActionTrigger: expect.any(String),
-      }),
-      undefined,
-      expect.anything()
-    );
-
-    spy.mockReset();
-  });
-
-  it("Doesn't emit a user-action-start message when a user action starts on an element without a qualifying data- attribute", () => {
-    const handler = getUserEventHandler({
-      ...mockFaro,
-      config: {} as Config,
+    httpObservable.notify({
+      type: MESSAGE_TYPE_HTTP_REQUEST_START,
+      request: {
+        requestId: 'foo',
+        url: '/bar',
+        method: 'POST',
+        apiType: 'xhr',
+      },
     });
 
-    const element = document.createElement('div');
+    expect(fakeAction.extend).toHaveBeenCalled();
+    fakeAction.getState.mockReturnValue(UserActionState.Halted);
 
-    const mockApiMessageBusNotify = jest.fn();
-    const spy = jest.spyOn(apiMessageBus, 'notify').mockImplementationOnce(mockApiMessageBusNotify);
-
-    const pointerdownEvent = {
-      type: 'pointerdown',
-      target: element,
-    } as unknown as PointerEvent;
-
-    handler(pointerdownEvent);
-
-    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(0);
-
-    spy.mockReset();
+    httpObservable.notify({
+      type: MESSAGE_TYPE_HTTP_REQUEST_END,
+      request: {
+        requestId: 'foo',
+        url: '/bar',
+        method: 'POST',
+        apiType: 'xhr',
+      },
+    });
+    expect(fakeAction.extend).toHaveBeenCalled();
   });
 
-  it('Emits a user-action-start message when a user action starts', () => {
-    const mockApiMessageBusNotify = jest.fn();
-    const spy = jest.spyOn(apiMessageBus, 'notify').mockImplementationOnce(mockApiMessageBusNotify);
+  it('does not allow processing if there are no running requests', () => {
+    getCurrentSpy.mockReturnValue(fakeAction);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
-    const handler = getUserEventHandler(mockFaro);
+    const event = { type: 'keydown', target: document.createElement('div') } as unknown as KeyboardEvent;
+    processUserEvent(event);
+    fakeAction.getState.mockReturnValue(UserActionState.Halted);
+
+    httpObservable.notify({
+      type: MESSAGE_TYPE_HTTP_REQUEST_START,
+      request: {
+        requestId: 'foo',
+        url: '/bar',
+        method: 'POST',
+        apiType: 'xhr',
+      },
+    });
+    expect(fakeAction.extend).not.toHaveBeenCalled();
+  });
+
+  it('does not allow processing if there are running requests but the request id is not pending', () => {
+    getCurrentSpy.mockReturnValue(fakeAction);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
     const element = document.createElement('div');
-    element.setAttribute(userActionDataAttribute, 'test-action');
+    element.dataset['fooBar'] = 'baz';
+    const event = { type: 'keydown', target: element } as unknown as KeyboardEvent;
+    processUserEvent(event);
 
-    const pointerdownEvent = {
-      type: 'pointerdown',
-      target: element,
-    } as unknown as PointerEvent;
-
-    handler(pointerdownEvent);
-
-    expect(mockApiMessageBusNotify).toHaveBeenCalledTimes(1);
-    expect(mockApiMessageBusNotify).toHaveBeenCalledWith({
-      name: 'test-action',
-      parentId: expect.any(String),
-      startTime: expect.any(Number),
-      type: USER_ACTION_START,
+    httpObservable.notify({
+      type: MESSAGE_TYPE_HTTP_REQUEST_START,
+      request: {
+        requestId: 'foo', // request id 1
+        url: '/bar',
+        method: 'POST',
+        apiType: 'xhr',
+      },
     });
 
-    spy.mockReset();
-  });
+    expect(fakeAction.extend).toHaveBeenCalled();
+    (fakeAction.extend as jest.Mock).mockReset();
+    fakeAction.getState.mockReturnValue(UserActionState.Halted);
 
-  it('Creates a users action from an api event', () => {
-    const mockPushEvent = jest.fn();
-    const spy = jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
-
-    const handler = getUserEventHandler(mockFaro);
-
-    const apiEvent: ApiEvent = {
-      type: userActionStartByApiCallEventName,
-      name: 'test-action',
-      attributes: { foo: 'bar' },
-    };
-
-    const xhr = new XMLHttpRequest();
-
-    handler(apiEvent);
-
-    // TODO: need to ensure that we end a request maybe mock teh httpMonitor or resource instrumentation
-    xhr.open('GET', 'https://www.grafana.com');
-    xhr.send();
-
-    jest.runAllTimers();
-
-    expect(mockPushEvent).toHaveBeenCalledTimes(1);
-    expect(mockPushEvent).toHaveBeenCalledWith(
-      'test-action',
-      expect.objectContaining({
-        userActionStartTime: expect.any(String),
-        userActionEndTime: expect.any(String),
-        userActionDuration: expect.any(String),
-        userActionTrigger: expect.any(String),
-      }),
-      undefined,
-      expect.anything()
-    );
-
-    spy.mockReset();
+    httpObservable.notify({
+      type: MESSAGE_TYPE_HTTP_REQUEST_END,
+      request: {
+        requestId: 'bar', // request id 2
+        url: '/bar',
+        method: 'POST',
+        apiType: 'xhr',
+      },
+    });
+    expect(fakeAction.extend).not.toHaveBeenCalled();
   });
 });

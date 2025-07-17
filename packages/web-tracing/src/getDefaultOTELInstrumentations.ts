@@ -1,4 +1,7 @@
+import type { Span } from '@opentelemetry/api';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
+
+import { faro, UserActionState } from '@grafana/faro-core';
 
 import { FaroXhrInstrumentation } from './faroXhrInstrumentation';
 import {
@@ -28,6 +31,13 @@ function createFetchInstrumentationOptions(
     applyCustomAttributesOnSpan: fetchCustomAttributeFunctionWithDefaults(
       fetchInstrumentationOptions?.applyCustomAttributesOnSpan
     ),
+    requestHook: (span: Span, _: Request | RequestInit) => {
+      const currentAction = faro.api.getActiveUserAction();
+      if (currentAction && currentAction.getState() === UserActionState.Started) {
+        span.setAttribute('faro.action.user.name', currentAction.name);
+        span.setAttribute('faro.action.user.parentId', currentAction.parentId);
+      }
+    },
   };
 }
 

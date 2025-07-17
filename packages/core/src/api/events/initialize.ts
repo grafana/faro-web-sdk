@@ -6,10 +6,8 @@ import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
-import { USER_ACTION_START } from '../const';
-import type { ItemBuffer } from '../ItemBuffer';
 import type { TracesAPI } from '../traces';
-import type { ApiMessageBusMessages } from '../types';
+import type { UserActionsAPI } from '../userActions';
 
 import type { EventEvent, EventsAPI } from './types';
 
@@ -19,8 +17,7 @@ export function initializeEventsAPI({
   metas,
   transports,
   tracesApi,
-  actionBuffer,
-  getMessage,
+  userActionsApi,
 }: {
   unpatchedConsole: UnpatchedConsole;
   internalLogger: InternalLogger;
@@ -28,8 +25,7 @@ export function initializeEventsAPI({
   metas: Metas;
   transports: Transports;
   tracesApi: TracesAPI;
-  actionBuffer: ItemBuffer<TransportItem>;
-  getMessage: () => ApiMessageBusMessages | undefined;
+  userActionsApi: UserActionsAPI;
 }): EventsAPI {
   let lastPayload: Pick<EventEvent, 'name' | 'domain' | 'attributes'> | null = null;
 
@@ -75,9 +71,9 @@ export function initializeEventsAPI({
 
       internalLogger.debug('Pushing event\n', item);
 
-      const msg = getMessage();
-      if (msg && msg.type === USER_ACTION_START) {
-        actionBuffer.addItem(item);
+      const currentUserAction = userActionsApi.getActiveUserAction();
+      if (currentUserAction) {
+        currentUserAction.addItem(item);
       } else {
         transports.execute(item);
       }
