@@ -22,6 +22,12 @@ export type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '
 
 export type { MetaAPI } from './meta';
 
-export { type UserActionsAPI, UserActionState, userActionsMessageBus, type UserActionInterface } from './userActions';
+export {
+  UserActionSeverity,
+  UserActionState,
+  type UserActionInterface,
+  type UserActionsAPI,
+  userActionsMessageBus,
+} from './userActions';
 
 export type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './traces';
