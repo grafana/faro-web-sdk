@@ -141,7 +141,6 @@ export type {
   BeforeSendHook,
   BrowserConfig,
   Config,
-  ConsoleInstrumentationOptions,
   ConsoleTransportOptions,
   ErrorEvent,
   EventAttributes,

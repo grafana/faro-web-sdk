@@ -19,7 +19,7 @@ export {
   CSPInstrumentation,
   UserActionInstrumentation,
 } from './instrumentations';
-export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
+export type { ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
 export { browserMeta, createSession, sdkMeta } from './metas';
 
@@ -37,7 +37,6 @@ export {
   BaseExtension,
   BaseInstrumentation,
   BaseTransport,
-  Conventions,
   createInternalLogger,
   createPromiseBuffer,
   deepEqual,

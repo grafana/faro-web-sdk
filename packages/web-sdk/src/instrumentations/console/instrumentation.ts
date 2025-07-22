@@ -10,8 +10,6 @@ import type { LogArgsSerializer } from '@grafana/faro-core';
 
 import { getDetailsFromConsoleErrorArgs } from '../errors/getErrorDetails';
 
-import type { ConsoleInstrumentationOptions } from './types';
-
 export class ConsoleInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-console';
   readonly version = VERSION;
@@ -20,27 +18,24 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
   static consoleErrorPrefix = 'console.error: ';
   private errorSerializer: LogArgsSerializer = defaultLogArgsSerializer;
 
-  constructor(private options: ConsoleInstrumentationOptions = {}) {
-    super();
-  }
-
   initialize() {
-    this.options = { ...this.options, ...this.config.consoleInstrumentation };
+    const instrumentationOptions = this.config.consoleInstrumentation;
 
-    const serializeErrors = this.options?.serializeErrors || !!this.options?.errorSerializer;
+    const serializeErrors = instrumentationOptions?.serializeErrors || !!instrumentationOptions?.errorSerializer;
     this.errorSerializer = serializeErrors
-      ? (this.options?.errorSerializer ?? defaultErrorArgsSerializer)
+      ? (instrumentationOptions?.errorSerializer ?? defaultErrorArgsSerializer)
       : defaultLogArgsSerializer;
 
     allLogLevels
       .filter(
-        (level) => !(this.options?.disabledLevels ?? ConsoleInstrumentation.defaultDisabledLevels).includes(level)
+        (level) =>
+          !(instrumentationOptions?.disabledLevels ?? ConsoleInstrumentation.defaultDisabledLevels).includes(level)
       )
       .forEach((level) => {
         /* eslint-disable-next-line no-console */
         console[level] = (...args) => {
           try {
-            if (level === LogLevel.ERROR && !this.options?.consoleErrorAsLog) {
+            if (level === LogLevel.ERROR && !instrumentationOptions?.consoleErrorAsLog) {
               const { value, type, stackFrames } = getDetailsFromConsoleErrorArgs(args, this.errorSerializer);
 
               if (value && !type && !stackFrames) {
@@ -49,7 +44,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
               }
 
               this.api.pushError(new Error(ConsoleInstrumentation.consoleErrorPrefix + value), { type, stackFrames });
-            } else if (level === LogLevel.ERROR && this.options?.consoleErrorAsLog) {
+            } else if (level === LogLevel.ERROR && instrumentationOptions?.consoleErrorAsLog) {
               const { value, type, stackFrames } = getDetailsFromConsoleErrorArgs(args, this.errorSerializer);
 
               this.api.pushLog(value ? [ConsoleInstrumentation.consoleErrorPrefix + value] : args, {

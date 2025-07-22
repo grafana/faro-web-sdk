@@ -1,7 +1,6 @@
 export { SessionInstrumentation } from './session';
 
 export { ConsoleInstrumentation } from './console';
-export type { ConsoleInstrumentationOptions } from './console';
 
 export {
   buildStackFrame,
