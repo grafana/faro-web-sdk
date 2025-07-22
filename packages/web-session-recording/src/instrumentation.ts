@@ -55,7 +55,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
           this.handleEvent(event);
         },
         checkoutEveryNth: 100,
-        checkoutEveryNms: 300000, // 5 minutes
+        checkoutEveryNms: 10000, // 10 seconds
         recordCrossOriginIframes: this.options.recordCrossOriginIframes,
         maskAllInputs: this.options.maskAllInputs,
         maskInputOptions: {
@@ -85,7 +85,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
       this.stopFn = record(opts);
 
       this.isRecording = true;
-      this.logDebug('Session recording started');
+      this.logInfo('Session recording started');
     } catch (err) {
       this.logWarn('Failed to start session recording', err);
     }
@@ -125,6 +125,11 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
 
   private sendBatch(): void {
     if (this.eventBuffer.length === 0) {
+      // Clear timeout
+      if (this.batchTimeout) {
+        clearTimeout(this.batchTimeout);
+        this.batchTimeout = null;
+      }
       return;
     }
 
