@@ -65,7 +65,6 @@ export {
   buildStackFrame,
   ConsoleInstrumentation,
   ConsoleTransport,
-  Conventions,
   createInternalLogger,
   createPromiseBuffer,
   createSession,
