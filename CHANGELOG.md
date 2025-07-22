@@ -10,7 +10,6 @@ Breaking changes coming with Faro version 2
   - Removed the deprecated `FaroSessionSpanProcessor`. While it wasn't used internally, it was kept
     for users importing it for manual Faro + OTel instrumentation.
   - Removed the deprecated `session_id` attribute in favor of `session.id`.
-  - Replaced the deprecated `deployment.environment` attribute with `deployment.environment.name`.
 
 - **`@grafana/faro-web-sdk`**
   - Removed deprecated console instrumentation config options. Configure the instrumentation through
