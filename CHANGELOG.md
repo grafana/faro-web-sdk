@@ -2,6 +2,11 @@
 
 ## Next
 
+### Breaking
+
+- `@grafana/faro-web-tracing`:
+  - Remove deprecated FaroSessionSpanProcessor
+
 ## 1.19.0
 
 - Feature (`@grafana/faro-web-sdk`): Add CSP instrumentation (#1312)
