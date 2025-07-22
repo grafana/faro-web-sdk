@@ -31,6 +31,11 @@ export default async function () {
           // Set the source of the script tag to the CDN
           script.src = 'https://unpkg.com/@grafana/faro-web-sdk@^1.0.0-beta/dist/bundle/faro-web-sdk.iife.js';
 
+          // Dispatch event when Faro SDK is loaded
+          script.onload = function() {
+            window.dispatchEvent(new Event('faroSdkLoaded'));
+          };
+
           // Append the script tag to the head of the HTML document
           document.head.appendChild(script);
         }
@@ -44,36 +49,42 @@ export default async function () {
    `);
   await context.addInitScript(faroWebSessionRecordingMinified);
   await context.addInitScript(`
-    (async function() {
-      // TODO: This is a hack, we should send an event after faro is attached and only then run this bit.
-      // TODO: What happens if there's Faro instance already initialised or the web app will try to initialise
-      //       it after we do it ourselves. Can we run two Faro instances? Should this be handled by the SDK or
-      //       k6 that injects it?
-      console.log("Waiting for Faro to load. ");
-      await new Promise(r => setTimeout(r, 2000));
-      console.log("Okay, faro should be here");
+    (function() {
+      function initializeFaro() {
+        console.log("Faro SDK loaded, initializing...");
+        
+        window.GrafanaFaroWebSdk.initializeFaro({
+          app: {
+            name: 'QuickPizza',
+            version: '1.0.0',
+            environment: 'production'
+          },
+          transports: [
+            new window.GrafanaFaroWebSdk.ConsoleTransport({
+              level: window.GrafanaFaroWebSdk.LogLevel.INFO,
+            }),
+          ],
+          instrumentations: [
+            new window.GrafanaFaroWebSessionRecording.SessionRecordingInstrumentation()
+          ]
+        });
 
-      window.GrafanaFaroWebSdk.initializeFaro({
-            app: {
-              name: 'QuickPizza',
-              version: '1.0.0',
-              environment: 'production'
-            },
-            transports: [
-              new window.GrafanaFaroWebSdk.ConsoleTransport({
-                    level: window.GrafanaFaroWebSdk.LogLevel.DEBUG,
-                  }),
-            ],
-            instrumentations: [
-              new window.GrafanaFaroWebSessionRecording.SessionRecordingInstrumentation()
-            ]
-          });
-      })();
+        console.log("Faro SDK initialized");
+      }
+
+      // Listen for the Faro SDK loaded event
+      window.addEventListener('faroSdkLoaded', initializeFaro);
+      
+      // Fallback in case the event was already fired
+      if (window.GrafanaFaroWebSdk) {
+        initializeFaro();
+      }
+    })();
     `);
   const page = await context.newPage();
 
   await page.goto('http://localhost:3333');
-  sleep(360);
+  sleep(2);
 
   await page.locator('.align-items-center > [data-dropdown="products"]').click();
   sleep(2);
@@ -96,5 +107,5 @@ export default async function () {
 
   await page.locator('.table-modal').click();
 
-  sleep(10);
+  sleep(60);
 }
