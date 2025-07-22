@@ -7,8 +7,9 @@
 Breaking changes coming with Faro version 2
 
 - **`@grafana/faro-web-tracing`**
-  - Removed the deprecated `FaroSessionSpanProcessor`. While it wasn't used internally, it was kept
-    for users importing it for manual Faro + OTel instrumentation.
+  - Removed the deprecated `FaroSessionSpanProcessor` which is replaced by the
+    `FaroMetaAttributesSpanProcessor`. While `FaroSessionSpanProcessor` wasn't used anymore,
+    it was kept for users using it in manual Faro + OTel setups.
   - Removed the deprecated `session_id` attribute in favor of `session.id`.
 
 - **`@grafana/faro-web-sdk`**
