@@ -4,8 +4,17 @@
 
 ### Breaking
 
-- `@grafana/faro-web-tracing`:
-  - Remove deprecated FaroSessionSpanProcessor
+- `@grafana/faro-web-tracing`
+  - Remove the deprecated FaroSessionSpanProcessor. It wasn't used internally anymore but kept around
+    for users importing it for manual Faro + OTel instrumentation.
+  - Removed the deprecated `session_id` attribute. It's successor is `session.id`.
+    Remove the deprecated SEMRESATTRS_DEPLOYMENT_ENVIRONMENT ... UPADTE TEXT
+    web-sdk package:
+
+Remove deprecated config options from the console instrumentation. The Instrumentation is configured through the global Faro options as outlined in the docs (How to use the console instrumentation).
+Removed the internal deprecated Faro conventions names object. Just in case users used the export for somne reasons, the names are available through single contant exports.
+Experimental packages:
+Removed the instrumentation-fetch, instrumentation-xhr and instrumentation-performance-timeline because they are unmaintained for a long time now. We keep them around in NPM for a while and flag them as deprecated there.
 
 ## 1.19.0
 
