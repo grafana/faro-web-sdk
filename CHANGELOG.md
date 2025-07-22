@@ -13,9 +13,7 @@ Breaking changes coming with Faro version 2
 
 - **`@grafana/faro-web-sdk`**
   - Removed deprecated console instrumentation config options. Configure the instrumentation through
-    global Faro options as documented in [How to use the console instrumentation](https://grafana.com
-    /docs/grafana-cloud/monitor-applications/frontend-observability/instrument/
-    console-instrumentation/#how-to-use-the-console-instrumentation).
+    global Faro options as documented in [How to use the console instrumentation](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/instrument/console-instrumentation/#how-to-use-the-console-instrumentation).
   - Removed the internal deprecated Faro conventions names object. If you were using this export,
     the names are now available through individual constant exports.
   - **Experimental packages**:
