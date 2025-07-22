@@ -64,10 +64,6 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     if (this.config.app.environment) {
       attributes[ATTR_DEPLOYMENT_ENVIRONMENT_NAME] = this.config.app.environment;
-      /**
-       * @deprecated will be removed in the future and has been replaced by ATTR_DEPLOYMENT_ENVIRONMENT_NAME (deployment.environment.name)
-       */
-      attributes[SEMRESATTRS_DEPLOYMENT_ENVIRONMENT] = this.config.app.environment;
     }
 
     const browserMeta = this.metas.value.browser;
