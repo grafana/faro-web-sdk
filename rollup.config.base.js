@@ -22,12 +22,6 @@ const modules = {
     globalName: 'GrafanaFaroWebSdk',
     externals: [],
   },
-  webSessionRecording: {
-    name: '@grafana/faro-web-session-recording',
-    bundleName: 'faro-web-session-recording',
-    globalName: 'GrafanaFaroWebSessionRecording',
-    externals: [],
-  },
   webTracing: {
     name: '@grafana/faro-web-tracing',
     bundleName: 'faro-web-tracing',
@@ -50,6 +44,12 @@ const modules = {
     name: '@grafana/faro-instrumentation-fetch',
     bundleName: 'faro-instrumentation-fetch',
     globalName: 'GrafanaFaroInstrumentationFetch',
+    externals: [],
+  },
+  instrumentationSessionRecording: {
+    name: '@grafana/faro-instrumentation-session-recording',
+    bundleName: 'faro-instrumentation-session-recording',
+    globalName: 'GrafanaFaroInstrumentationSessionRecording',
     externals: [],
   },
   instrumentationXHR: {

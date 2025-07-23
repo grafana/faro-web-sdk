@@ -51,8 +51,8 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
   private startRecording(): void {
     try {
       const opts: recordOptions<eventWithTime> = {
-        emit: (event: eventWithTime) => {
-          this.handleEvent(event);
+        emit: (event: eventWithTime, isCheckout?: boolean): void => {
+          this.handleEvent(event, isCheckout);
         },
         checkoutEveryNth: 100,
         checkoutEveryNms: 10000, // 10 seconds
@@ -91,7 +91,13 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private handleEvent(event: eventWithTime): void {
+  private handleEvent(event: eventWithTime, isCheckout?: boolean): void {
+    if (isCheckout) {
+      console.log('THIS IS CHECKOUT');
+    } else {
+      console.log('THIS IS NOT CHECKOUT');
+    }
+
     try {
       // Apply beforedecord filter if provided
       if (this.options.beforeRecord && !this.options.beforeRecord(event)) {
@@ -144,7 +150,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
     try {
       this.api.pushEvent('session_recording_batch', {
         events: JSON.stringify(
-          events.map((event) => ({
+          events.map((event: eventWithTime) => ({
             timestamp: event.timestamp,
             delay: event.delay,
             type: event.type,
@@ -152,7 +158,6 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
           }))
         ),
         batchSize: events.length.toString(),
-        sessionId: this.api.getSession()?.id || '',
       });
     } catch (err) {
       this.logWarn('Error sending session recording batch', err);

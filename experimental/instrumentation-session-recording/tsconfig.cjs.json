@@ -4,9 +4,9 @@
     "declarationDir": "./dist/types",
     "outDir": "./dist/cjs",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.cache/tsc/webSessionRecording.cjs.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/instrumentationSessionRecording.cjs.tsbuildinfo"
   },
   "include": ["./src"],
   "exclude": ["**/*.test.ts"],
-  "references": [{ "path": "../core/tsconfig.cjs.json" }]
+  "references": [{ "path": "../../packages/core/tsconfig.spec.json" }]
 }

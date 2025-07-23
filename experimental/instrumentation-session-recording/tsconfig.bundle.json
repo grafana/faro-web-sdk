@@ -4,7 +4,7 @@
     "declarationDir": "./dist/bundle/types",
     "outDir": "./dist/bundle",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.cache/tsc/webSessionRecording.bundle.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/instrumentationSessionRecording.bundle.tsbuildinfo"
   },
   "include": ["./src"],
   "exclude": ["./**/*.test.ts"]

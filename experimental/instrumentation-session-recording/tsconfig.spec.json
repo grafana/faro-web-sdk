@@ -4,8 +4,8 @@
     "declarationDir": "./dist/types",
     "outDir": "./dist/spec",
     "rootDir": "../../",
-    "tsBuildInfoFile": "../../.cache/tsc/webSessionRecording.spec.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/instrumentationSessionRecording.spec.tsbuildinfo"
   },
   "include": ["./src"],
-  "references": [{ "path": "../core/tsconfig.spec.json" }]
+  "references": [{ "path": "../../packages/core/tsconfig.spec.json" }]
 }

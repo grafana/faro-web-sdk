@@ -17,7 +17,7 @@ export const options = {
   },
 };
 
-const faroWebSessionRecordingMinified = open('../dist/bundle/faro-web-session-recording.iife.js');
+const faroWebSessionRecordingMinified = open('../dist/bundle/faro-instrumentation-session-recording.iife.js');
 
 export default async function () {
   const context = await browser.newContext();
@@ -59,14 +59,23 @@ export default async function () {
             version: '1.0.0',
             environment: 'production'
           },
+          batching: {
+            enabled: false
+          },
           transports: [
             new window.GrafanaFaroWebSdk.ConsoleTransport({
               level: window.GrafanaFaroWebSdk.LogLevel.INFO,
             }),
           ],
           instrumentations: [
-            new window.GrafanaFaroWebSessionRecording.SessionRecordingInstrumentation()
-          ]
+            new window.GrafanaFaroWebSdk.SessionInstrumentation(),
+            new window.GrafanaFaroInstrumentationSessionRecording.SessionRecordingInstrumentation(
+              {
+                batchSize: 1
+              }
+            )
+          ],
+          internalLoggerLevel: window.GrafanaFaroWebSdk.InternalLoggerLevel.VERBOSE,
         });
 
         console.log("Faro SDK initialized");
@@ -86,26 +95,6 @@ export default async function () {
   await page.goto('http://localhost:3333');
   sleep(2);
 
-  await page.locator('.align-items-center > [data-dropdown="products"]').click();
-  sleep(2);
-
-  await page.locator('div:nth-of-type(4) a:nth-of-type(1) > div .copy').click();
-  sleep(2);
-
-  await page.locator('div:nth-of-type(5) .flex-direction-column > div').click();
-  sleep(2);
-
-  await page
-    .locator(
-      'html > body:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > ul:nth-of-type(1) > li:nth-of-type(1) > a:nth-of-type(1)'
-    )
-    .click();
-  sleep(2);
-
-  await page.locator('section:nth-of-type(1) .expand-table-btn').click();
-  sleep(2);
-
-  await page.locator('.table-modal').click();
-
+  await page.locator('//button[. = "Pizza, Please!"]').click();
   sleep(60);
 }
