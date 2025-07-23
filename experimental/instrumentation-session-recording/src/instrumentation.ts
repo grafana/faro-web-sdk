@@ -5,6 +5,8 @@ import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
 import type { SessionRecordingInstrumentationOptions } from './types';
 
+const faroSessionRecordingEventsBatch = 'faro.session_recording.events_batch';
+
 export class SessionRecordingInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-session-recording';
   readonly version = VERSION;
@@ -148,7 +150,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
     }
 
     try {
-      this.api.pushEvent('session_recording_batch', {
+      this.api.pushEvent(faroSessionRecordingEventsBatch, {
         events: JSON.stringify(
           events.map((event: eventWithTime) => ({
             timestamp: event.timestamp,
