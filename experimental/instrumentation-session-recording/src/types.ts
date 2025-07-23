@@ -1,60 +1,31 @@
 export interface SessionRecordingInstrumentationOptions {
   /**
-   * Maximum number of events to batch before sending
-   * @default 100
-   */
-  batchSize?: number;
-
-  /**
-   * Maximum time to wait before sending a batch (in milliseconds)
-   * @default 10000
-   */
-  batchTimeout?: number;
-
-  /**
-   * Whether to enable sampling for session recording
-   * @default false
-   */
-  sampling?: boolean;
-
-  /**
-   * Sampling rate (0-1) when sampling is enabled
-   * @default 0.1
-   */
-  samplingRate?: number;
-
-  /**
-   * Whether to record cross-origin iframes
-   * @default false
-   */
-  recordCrossOriginIframes?: boolean;
-
-  /**
-   * Whether to mask text inputs
-   * @default true
-   */
-  maskTextInputs?: boolean;
-
-  /**
    * Whether to mask all inputs
    * @default false
    */
   maskAllInputs?: boolean;
 
   /**
+   * Whether to mask text inputs
+   * @default { password: true }
+   */
+  maskInputOptions?: MaskInputOptions;
+
+  /**
    * Custom CSS selector to mask elements
+   * @default undefined
    */
   maskSelector?: string;
 
   /**
    * Whether to block specified CSS selectors
-   * @default false
+   * @default undefined
    */
   blockSelector?: string;
 
   /**
    * Whether to ignore specified CSS selectors
-   * @default false
+   * @default undefined
    */
   ignoreSelector?: string;
 
@@ -83,12 +54,32 @@ export interface SessionRecordingInstrumentationOptions {
   recordCanvas?: boolean;
 
   /**
-   * Custom hook to filter events before they are recorded
+   * Whether to record cross-origin iframes
+   * @default false
    */
-  beforeRecord?: (event: any) => boolean;
+  recordCrossOriginIframes?: boolean;
 
   /**
    * Custom hook to transform events before they are sent
    */
   beforeSend?: (event: any) => any;
 }
+
+export type MaskInputOptions = Partial<{
+  color: boolean;
+  date: boolean;
+  'datetime-local': boolean;
+  email: boolean;
+  month: boolean;
+  number: boolean;
+  range: boolean;
+  search: boolean;
+  tel: boolean;
+  text: boolean;
+  time: boolean;
+  url: boolean;
+  week: boolean;
+  textarea: boolean;
+  select: boolean;
+  password: boolean;
+}>;

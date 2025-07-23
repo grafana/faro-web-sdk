@@ -12,8 +12,6 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   private stopFn: any = null;
-  private eventBuffer: eventWithTime[] = [];
-  private batchTimeout: ReturnType<typeof setTimeout> | null = null;
   private isRecording = false;
   private options: SessionRecordingInstrumentationOptions;
 
@@ -21,29 +19,12 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
     super();
 
     this.options = {
-      batchSize: 100,
-      batchTimeout: 10000,
-      sampling: false,
-      samplingRate: 0.1,
-      recordCrossOriginIframes: false,
-      maskTextInputs: true,
-      maskAllInputs: false,
-      collectFonts: false,
-      inlineImages: false,
-      inlineStylesheet: false,
-      recordCanvas: false,
       ...options,
     };
   }
 
   initialize(): void {
     if (this.isRecording) {
-      return;
-    }
-
-    // Check if sampling is enabled and if we should record this session
-    if (this.options.sampling && Math.random() > (this.options.samplingRate || 0.1)) {
-      this.logDebug('Session recording skipped due to sampling');
       return;
     }
 
@@ -60,10 +41,10 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         checkoutEveryNms: 10000, // 10 seconds
         recordCrossOriginIframes: this.options.recordCrossOriginIframes,
         maskAllInputs: this.options.maskAllInputs,
-        maskInputOptions: {
-          password: true,
-          text: this.options.maskTextInputs,
-        },
+        maskInputOptions: this.options.maskInputOptions,
+        maskTextSelector: this.options.maskSelector,
+        blockSelector: this.options.blockSelector,
+        ignoreSelector: this.options.ignoreSelector,
         slimDOMOptions: {
           script: true,
           comment: true,
@@ -72,40 +53,22 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         collectFonts: this.options.collectFonts,
         inlineImages: this.options.inlineImages,
         inlineStylesheet: this.options.inlineStylesheet,
+        errorHandler: (err) => {
+          this.logError('Error ocurred during session recording', err);
+        },
       };
-
-      if (this.options.maskSelector) {
-        opts.maskTextSelector = this.options.maskSelector;
-      }
-      if (this.options.blockSelector) {
-        opts.blockSelector = this.options.blockSelector;
-      }
-      if (this.options.ignoreSelector) {
-        opts.ignoreSelector = this.options.ignoreSelector;
-      }
 
       this.stopFn = record(opts);
 
       this.isRecording = true;
-      this.logInfo('Session recording started');
+      this.logDebug('Session recording started');
     } catch (err) {
       this.logWarn('Failed to start session recording', err);
     }
   }
 
-  private handleEvent(event: eventWithTime, isCheckout?: boolean): void {
-    if (isCheckout) {
-      console.log('THIS IS CHECKOUT');
-    } else {
-      console.log('THIS IS NOT CHECKOUT');
-    }
-
+  private handleEvent(event: eventWithTime, _?: boolean): void {
     try {
-      // Apply beforedecord filter if provided
-      if (this.options.beforeRecord && !this.options.beforeRecord(event)) {
-        return;
-      }
-
       // Apply beforeSend transformation if provided
       let processedEvent = event;
       if (this.options.beforeSend) {
@@ -115,54 +78,11 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         }
       }
 
-      this.eventBuffer.push(processedEvent);
-
-      // Check if we should send the batch
-      if (this.eventBuffer.length >= (this.options.batchSize || 100)) {
-        this.sendBatch();
-      } else if (!this.batchTimeout) {
-        // Set timeout for next batch
-        this.batchTimeout = setTimeout(() => {
-          this.sendBatch();
-        }, this.options.batchTimeout || 10000);
-      }
-    } catch (err) {
-      this.logWarn('Error processing session recording event', err);
-    }
-  }
-
-  private sendBatch(): void {
-    if (this.eventBuffer.length === 0) {
-      // Clear timeout
-      if (this.batchTimeout) {
-        clearTimeout(this.batchTimeout);
-        this.batchTimeout = null;
-      }
-      return;
-    }
-
-    const events = this.eventBuffer.splice(0);
-
-    // Clear timeout
-    if (this.batchTimeout) {
-      clearTimeout(this.batchTimeout);
-      this.batchTimeout = null;
-    }
-
-    try {
       this.api.pushEvent(faroSessionRecordingEventsBatch, {
-        events: JSON.stringify(
-          events.map((event: eventWithTime) => ({
-            timestamp: event.timestamp,
-            delay: event.delay,
-            type: event.type,
-            data: event.data,
-          }))
-        ),
-        batchSize: events.length.toString(),
+        event: JSON.stringify(event),
       });
     } catch (err) {
-      this.logWarn('Error sending session recording batch', err);
+      this.logWarn(`Failed to push ${faroSessionRecordingEventsBatch} event`, err);
     }
   }
 
@@ -170,16 +90,6 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
     if (this.stopFn) {
       this.stopFn();
       this.stopFn = null;
-    }
-
-    if (this.batchTimeout) {
-      clearTimeout(this.batchTimeout);
-      this.batchTimeout = null;
-    }
-
-    // Send any remaining events
-    if (this.eventBuffer.length > 0) {
-      this.sendBatch();
     }
 
     this.isRecording = false;
