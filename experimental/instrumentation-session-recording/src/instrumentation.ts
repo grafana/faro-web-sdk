@@ -4,6 +4,7 @@ import { record, type recordOptions } from 'rrweb';
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
 import type { SessionRecordingInstrumentationOptions } from './types';
+import { defaultSessionRecordingInstrumentationOptions } from './const';
 
 const faroSessionRecordingEventsBatch = 'faro.session_recording.events_batch';
 
@@ -19,6 +20,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
     super();
 
     this.options = {
+      ...defaultSessionRecordingInstrumentationOptions,
       ...options,
     };
   }
