@@ -6,7 +6,7 @@ import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 import type { SessionRecordingInstrumentationOptions } from './types';
 import { defaultSessionRecordingInstrumentationOptions } from './const';
 
-const faroSessionRecordingEventsBatch = 'faro.session_recording.events_batch';
+const faroSessionRecordingEventName = 'faro.session_recording.event';
 
 export class SessionRecordingInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-session-recording';
@@ -79,11 +79,11 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         }
       }
 
-      this.api.pushEvent(faroSessionRecordingEventsBatch, {
+      this.api.pushEvent(faroSessionRecordingEventName, {
         event: JSON.stringify(processedEvent),
       });
     } catch (err) {
-      this.logWarn(`Failed to push ${faroSessionRecordingEventsBatch} event`, err);
+      this.logWarn(`Failed to push ${faroSessionRecordingEventName} event`, err);
     }
   }
 
