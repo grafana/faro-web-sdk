@@ -12,15 +12,14 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-session-recording';
   readonly version = VERSION;
 
-  private stopFn: any = null;
-  private isRecording = false;
-  private options: SessionRecordingInstrumentationOptions;
+  private stopFn: { (): void } | null = () => {};
+  private isRecording: boolean = false;
+  private options: SessionRecordingInstrumentationOptions = defaultSessionRecordingInstrumentationOptions;
 
   constructor(options: SessionRecordingInstrumentationOptions = {}) {
     super();
 
     this.options = {
-      ...defaultSessionRecordingInstrumentationOptions,
       ...options,
     };
   }
@@ -59,7 +58,10 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         },
       };
 
-      this.stopFn = record(opts);
+      const stop = record(opts);
+      if (stop) {
+        this.stopFn = stop;
+      }
 
       this.isRecording = true;
       this.logDebug('Session recording started');

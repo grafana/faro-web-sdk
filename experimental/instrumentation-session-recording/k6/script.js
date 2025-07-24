@@ -71,7 +71,8 @@ export default async function () {
             new window.GrafanaFaroWebSdk.SessionInstrumentation(),
             new window.GrafanaFaroInstrumentationSessionRecording.SessionRecordingInstrumentation(
               {
-                batchSize: 1
+                inlineImages: true,
+                inlineStylesheet: true
               }
             )
           ],
