@@ -80,7 +80,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
       }
 
       this.api.pushEvent(faroSessionRecordingEventsBatch, {
-        event: JSON.stringify(event),
+        event: JSON.stringify(processedEvent),
       });
     } catch (err) {
       this.logWarn(`Failed to push ${faroSessionRecordingEventsBatch} event`, err);
