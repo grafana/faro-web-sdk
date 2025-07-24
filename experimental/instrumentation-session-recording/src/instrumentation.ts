@@ -25,6 +25,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
 
   initialize(): void {
     if (this.isRecording) {
+      this.logWarn('Session recording is already running');
       return;
     }
 
@@ -37,8 +38,6 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         emit: (event: eventWithTime, isCheckout?: boolean): void => {
           this.handleEvent(event, isCheckout);
         },
-        checkoutEveryNth: 100,
-        checkoutEveryNms: 10000, // 10 seconds
         recordCrossOriginIframes: this.options.recordCrossOriginIframes,
         maskAllInputs: this.options.maskAllInputs,
         maskInputOptions: this.options.maskInputOptions,
