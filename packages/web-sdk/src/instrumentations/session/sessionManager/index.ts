@@ -3,7 +3,6 @@ export { VolatileSessionsManager } from './VolatileSessionManager';
 
 export {
   MAX_SESSION_PERSISTENCE_TIME,
-  MAX_SESSION_PERSISTENCE_TIME_BUFFER,
   SESSION_EXPIRATION_TIME,
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,

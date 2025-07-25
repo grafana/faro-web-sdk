@@ -1,7 +1,6 @@
 export { SessionInstrumentation } from './session';
 
 export { ConsoleInstrumentation } from './console';
-export type { ConsoleInstrumentationOptions } from './console';
 
 export {
   buildStackFrame,
@@ -20,7 +19,6 @@ export {
   PersistentSessionsManager,
   VolatileSessionsManager,
   MAX_SESSION_PERSISTENCE_TIME,
-  MAX_SESSION_PERSISTENCE_TIME_BUFFER,
   SESSION_EXPIRATION_TIME,
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,

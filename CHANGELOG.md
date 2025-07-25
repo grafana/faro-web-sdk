@@ -2,6 +2,25 @@
 
 ## Next
 
+### Breaking
+
+Breaking changes coming with Faro version 2
+
+- **`@grafana/faro-web-tracing`**
+  - Removed the deprecated `FaroSessionSpanProcessor` which is replaced by the
+    `FaroMetaAttributesSpanProcessor`. While `FaroSessionSpanProcessor` wasn't used anymore,
+    it was kept for users using it in manual Faro + OTel setups.
+  - Removed the deprecated `session_id` attribute in favor of `session.id`.
+
+- **`@grafana/faro-web-sdk`**
+  - Removed deprecated console instrumentation config options. Configure the instrumentation through
+    global Faro options as documented in [How to use the console instrumentation](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/instrument/console-instrumentation/#how-to-use-the-console-instrumentation).
+  - Removed the internal deprecated Faro conventions names object. If you were using this export,
+    the names are now available through individual constant exports.
+  - **Experimental packages**:
+    Removed the `instrumentation-fetch`, `instrumentation-xhr`, and `instrumentation-performance-timeline`
+    packages due to lack of maintenance. These packages remain available on NPM but are flagged as deprecated.
+
 ## 1.19.0
 
 - Feature (`@grafana/faro-web-sdk`): Add CSP instrumentation (#1312)

@@ -38,7 +38,6 @@ describe('faroMetaAttributesSpanProcessor', () => {
 
     expect(span.attributes).toStrictEqual({
       'session.id': 'session-id',
-      session_id: 'session-id',
       'user.email': 'email',
       'user.id': 'id',
       'user.full_name': 'user-full-name',
