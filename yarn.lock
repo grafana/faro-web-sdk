@@ -650,9 +650,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cypress/request@npm:^3.0.8":
-  version: 3.0.8
-  resolution: "@cypress/request@npm:3.0.8"
+"@cypress/request@npm:^3.0.9":
+  version: 3.0.9
+  resolution: "@cypress/request@npm:3.0.9"
   dependencies:
     aws-sign2: "npm:~0.7.0"
     aws4: "npm:^1.8.0"
@@ -660,7 +660,7 @@ __metadata:
     combined-stream: "npm:~1.0.6"
     extend: "npm:~3.0.2"
     forever-agent: "npm:~0.6.1"
-    form-data: "npm:~4.0.0"
+    form-data: "npm:~4.0.4"
     http-signature: "npm:~1.4.0"
     is-typedarray: "npm:~1.0.0"
     isstream: "npm:~0.1.2"
@@ -672,7 +672,7 @@ __metadata:
     tough-cookie: "npm:^5.0.0"
     tunnel-agent: "npm:^0.6.0"
     uuid: "npm:^8.3.2"
-  checksum: 10c0/76cabf6ad64df224bab9b66869f71c4fb63315f9775ef1769da9da6c8d6d470899bee7f5b800379020efb6c7f37fd16a4a8e25c61319e14cd720bd3f606a38fd
+  checksum: 10c0/9ebcd3f3d49706e730671bcb0bb86488fe23a2079f12d44b6c762777118fc0286b5ce5c73fb6cacf0ae291fa89a7562ca8a2b43a2486e26906fd84a386ed6967
   languageName: node
   linkType: hard
 
@@ -6491,10 +6491,10 @@ __metadata:
   linkType: hard
 
 "cypress@npm:^14.0.0":
-  version: 14.5.2
-  resolution: "cypress@npm:14.5.2"
+  version: 14.5.3
+  resolution: "cypress@npm:14.5.3"
   dependencies:
-    "@cypress/request": "npm:^3.0.8"
+    "@cypress/request": "npm:^3.0.9"
     "@cypress/xvfb": "npm:^1.2.4"
     "@types/sinonjs__fake-timers": "npm:8.1.1"
     "@types/sizzle": "npm:^2.3.2"
@@ -6540,7 +6540,7 @@ __metadata:
     yauzl: "npm:^2.10.0"
   bin:
     cypress: bin/cypress
-  checksum: 10c0/55d1ba4773dc7d22769e6566bbdd5a78fd16dde4a4806d474de18a2713ed313db3d0734486f774fe11b3078c66d6b03703dfac05c26746ee3d704317734ebc0e
+  checksum: 10c0/64f56b00ac16696c3627546a35d6e71c9b1c74d9c780e0dcc00b05e4f954a10714ba33884d1b0b49d2296670d156fbfa2999671671133abcf8dacdf44b70315b
   languageName: node
   linkType: hard
 
@@ -8563,7 +8563,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.0, form-data@npm:~4.0.0":
+"form-data@npm:^4.0.0":
   version: 4.0.1
   resolution: "form-data@npm:4.0.1"
   dependencies:
@@ -8571,6 +8571,19 @@ __metadata:
     combined-stream: "npm:^1.0.8"
     mime-types: "npm:^2.1.12"
   checksum: 10c0/bb102d570be8592c23f4ea72d7df9daa50c7792eb0cf1c5d7e506c1706e7426a4e4ae48a35b109e91c85f1c0ec63774a21ae252b66f4eb981cb8efef7d0463c8
+  languageName: node
+  linkType: hard
+
+"form-data@npm:~4.0.4":
+  version: 4.0.4
+  resolution: "form-data@npm:4.0.4"
+  dependencies:
+    asynckit: "npm:^0.4.0"
+    combined-stream: "npm:^1.0.8"
+    es-set-tostringtag: "npm:^2.1.0"
+    hasown: "npm:^2.0.2"
+    mime-types: "npm:^2.1.12"
+  checksum: 10c0/373525a9a034b9d57073e55eab79e501a714ffac02e7a9b01be1c820780652b16e4101819785e1e18f8d98f0aee866cc654d660a435c378e16a72f2e7cac9695
   languageName: node
   linkType: hard
 
