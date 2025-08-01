@@ -1,0 +1,1 @@
+export { pageMeta } from './meta';

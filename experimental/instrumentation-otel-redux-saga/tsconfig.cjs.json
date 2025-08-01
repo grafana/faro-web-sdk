@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.cjs.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/cjs",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.cache/tsc/instrumentationOtelReduxSaga.cjs.tsbuildinfo"
+  },
+  "include": ["./src"],
+  "exclude": ["**/*.test.ts"],
+  "references": [{ "path": "../../packages/core/tsconfig.spec.json" }]
+}

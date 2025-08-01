@@ -1,0 +1,73 @@
+{
+  "name": "@grafana/react-native-sdk",
+  "version": "1.12.2",
+  "description": "Faro instrumentations, metas, transports for rn.",
+  "keywords": [
+    "observability",
+    "apm",
+    "rum",
+    "logs",
+    "traces",
+    "metrics",
+    "browser"
+  ],
+  "license": "Apache-2.0",
+  "author": "Grafana Labs",
+  "homepage": "https://github.com/grafana/faro-web-sdk",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/faro-web-sdk.git",
+    "directory": "packages/web-sdk"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    ".browserslistrc",
+    "dist",
+    "globals.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "yarn watch",
+    "build": "run-s build:*",
+    "build:compile": "run-p build:compile:*",
+    "build:compile:cjs": "tsc --build tsconfig.cjs.json",
+    "build:compile:esm": "tsc --build tsconfig.esm.json",
+    "build:compile:bundle": "run-s build:compile:bundle:*",
+    "build:compile:bundle:create": "rollup -c ./rollup.config.js",
+    "build:compile:bundle:remove-extras": "rimraf dist/bundle/dist",
+    "watch": "run-s watch:compile",
+    "watch:compile": "yarn build:compile:cjs -w",
+    "clean": "rimraf dist/ yarn-error.log",
+    "quality": "run-s quality:*",
+    "quality:test": "jest",
+    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/webSdk --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint": "run-s quality:lint:*",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/webSdk --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/webSdk --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:md": "markdownlint README.md",
+    "quality:circular-deps": "madge --circular ."
+  },
+  "dependencies": {
+    "@grafana/faro-core": "^1.12.2",
+    "react-native-device-info": "^14.0.2",
+    "ua-parser-js": "^1.0.32",
+    "web-vitals": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/ua-parser-js": "^0.7.36",
+    "react-native": "0.72.6",
+    "@react-native-async-storage/async-storage": "1.15.5",
+    "user-agent-data-types": "^0.4.2"
+  },
+  "peerDependencies": {
+    "react-native": ">=0.70.0",
+    "@react-native-async-storage/async-storage": ">= 1.15.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
