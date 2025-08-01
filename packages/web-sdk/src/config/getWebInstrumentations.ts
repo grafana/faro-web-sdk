@@ -32,11 +32,7 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
   }
 
   if (options.captureConsole !== false) {
-    instrumentations.push(
-      new ConsoleInstrumentation({
-        disabledLevels: options.captureConsoleDisabledLevels,
-      })
-    );
+    instrumentations.push(new ConsoleInstrumentation());
   }
 
   return instrumentations;

@@ -20,10 +20,6 @@ export class FaroMetaAttributesSpanProcessor implements SpanProcessor {
 
     if (session?.id) {
       span.attributes[ATTR_SESSION_ID] = session.id;
-      /**
-       * @deprecated will be removed in the future and has been replaced by ATTR_SESSION_ID (session.id)
-       */
-      span.attributes['session_id'] = session.id;
     }
 
     const user = this.metas.value.user ?? {};

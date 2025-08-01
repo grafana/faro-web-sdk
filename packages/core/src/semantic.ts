@@ -1,18 +1,3 @@
-/**
- * @deprecated The conventions object will be removed in a future version
- */
-export const Conventions = {
-  /**
-   * @deprecated The event names object will be removed in a future version
-   */
-  EventNames: {
-    CLICK: 'click',
-    NAVIGATION: 'navigation',
-    SESSION_START: 'session_start',
-    VIEW_CHANGED: 'view_changed',
-  },
-} as const;
-
 export const EVENT_CLICK = 'click';
 export const EVENT_NAVIGATION = 'navigation';
 export const EVENT_VIEW_CHANGED = 'view_changed';
