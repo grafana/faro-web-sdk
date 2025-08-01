@@ -1,0 +1,66 @@
+{
+  "name": "@grafana/faro-instrumentation-otel-axios",
+  "version": "1.12.2",
+  "description": "Faro axios open telemetry auto-instrumentation package",
+  "keywords": [
+    "observability",
+    "apm",
+    "rum",
+    "logs",
+    "traces",
+    "metrics",
+    "fetch"
+  ],
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "scripts": {
+    "test": "jest",
+    "start": "yarn watch",
+    "build": "run-s build:*",
+    "build:compile": "run-p build:compile:*",
+    "build:compile:cjs": "tsc --build tsconfig.cjs.json",
+    "build:compile:esm": "tsc --build tsconfig.esm.json",
+    "build:compile:bundle": "run-s build:compile:bundle:*",
+    "build:compile:bundle:create": "rollup -c ./rollup.config.js",
+    "build:compile:bundle:remove-extras": "rimraf dist/bundle/dist",
+    "watch": "run-s watch:compile",
+    "watch:compile": "yarn build:compile:cjs -w",
+    "clean": "rimraf dist/ yarn-error.log",
+    "quality": "run-s quality:*",
+    "quality:test": "jest",
+    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/instrumentationOtelAxios --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint": "run-s quality:lint:*",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/instrumentationOtelAxios --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/instrumentationOtelAxios --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:md": "markdownlint README.md",
+    "quality:circular-deps": "madge --circular ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grafana/faro-web-sdk.git",
+    "directory": "experimental/instrumentation-fetch"
+  },
+  "author": "Grafana Labs",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/grafana/faro-web-sdk/issues"
+  },
+  "homepage": "https://github.com/grafana/faro-web-sdk",
+  "dependencies": {
+    "@grafana/faro-core": "^1.12.2",
+    "@opentelemetry/api": "^1.9.0"
+  },
+  "peerDependencies": {
+    "axios": "*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    ".browserslistrc",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}
