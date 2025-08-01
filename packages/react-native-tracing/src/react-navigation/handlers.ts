@@ -1,9 +1,15 @@
-import { SpanStatusCode, Tracer } from '@opentelemetry/api';
+import { SpanStatusCode, type Tracer } from '@opentelemetry/api';
 
 import { EVENT_ROUTE_CHANGE } from '@grafana/faro-core';
 
 import { api, internalLogger } from './dependencies';
-import { NavigationContainer, NavigationState, ROUTE_CHANGE_TIMEOUT_MS, SPAN_ATTRIBUTES, SPAN_NAME } from './types';
+import {
+  type NavigationContainer,
+  type NavigationState,
+  ROUTE_CHANGE_TIMEOUT_MS,
+  SPAN_ATTRIBUTES,
+  SPAN_NAME,
+} from './types';
 
 /**
  * Cleans up the navigation state and marks the span as failed.

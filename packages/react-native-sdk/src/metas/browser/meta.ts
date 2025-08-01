@@ -2,7 +2,7 @@
 import { Dimensions, Platform } from 'react-native';
 import { getBrand, getModel, getSystemVersion } from 'react-native-device-info';
 
-import { Meta, MetaItem } from '@grafana/faro-core';
+import type { Meta, MetaItem } from '@grafana/faro-core';
 
 const { width, height } = Dimensions.get('window');
 
