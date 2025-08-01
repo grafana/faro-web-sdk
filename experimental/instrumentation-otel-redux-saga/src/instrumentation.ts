@@ -1,16 +1,15 @@
 import * as api from '@opentelemetry/api';
-import {Span, SpanStatusCode} from '@opentelemetry/api';
-import {InstrumentationBase} from '@opentelemetry/instrumentation';
-import type {InstrumentationConfig} from '@opentelemetry/instrumentation';
-import type {SagaMonitor} from 'redux-saga';
-import type {PutEffect} from 'redux-saga/effects';
-
+import { type Span, SpanStatusCode } from '@opentelemetry/api';
+import { InstrumentationBase } from '@opentelemetry/instrumentation';
+import type { InstrumentationConfig } from '@opentelemetry/instrumentation';
+import type { SagaMonitor } from 'redux-saga';
+import type { PutEffect } from 'redux-saga/effects';
 
 export interface ReduxSagaInstrumentationConfig extends InstrumentationConfig {
   // Add any custom config fields you'd like here.
   // For example, you might ignore certain effect types, or customize naming, etc.
   shouldPropagateTraceContextPut?: (effect: PutEffect) => boolean;
-  propagateContextToCall?: boolean
+  propagateContextToCall?: boolean;
 }
 
 /**
@@ -45,11 +44,11 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
             const parentContext = api.propagation.extract(api.context.active(), payload);
             const spanName = instrumentation._getEffectName(effect);
             const span = instrumentation.tracer.startSpan(
-                spanName,
-                {
-                  kind: api.SpanKind.CLIENT
-                },
-                parentContext
+              spanName,
+              {
+                kind: api.SpanKind.CLIENT,
+              },
+              parentContext
             );
             instrumentation._spans.set(effectId, span);
 
@@ -65,9 +64,9 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
 
             // Use the parent span's context to create a child span
             const childSpan = instrumentation.tracer.startSpan(
-                spanName,
-                { kind: api.SpanKind.CLIENT},
-                api.trace.setSpan(api.context.active(), parentSpan)
+              spanName,
+              { kind: api.SpanKind.CLIENT },
+              api.trace.setSpan(api.context.active(), parentSpan)
             );
 
             if (effect.type === 'PUT' && instrumentation._config.shouldPropagateTraceContextPut?.(effect)) {
@@ -82,14 +81,11 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
             }
 
             instrumentation._spans.set(effectId, childSpan);
-          } else if (traceable){
+          } else if (traceable) {
             const spanName = instrumentation._getEffectName(effect);
-            const span =  instrumentation.tracer.startSpan(
-                spanName,
-                {
-                  kind: api.SpanKind.CLIENT
-                }
-            );
+            const span = instrumentation.tracer.startSpan(spanName, {
+              kind: api.SpanKind.CLIENT,
+            });
             instrumentation._spans.set(effectId, span);
           }
         } catch (e) {
@@ -101,7 +97,9 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
         try {
           // Called when an effect has completed successfully
           const span = instrumentation._spans.get(effectId);
-          if (!span) {return;}
+          if (!span) {
+            return;
+          }
 
           if (result?.toPromise) {
             result.toPromise().then((res: any) => {
@@ -125,7 +123,9 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
         try {
           // Called when an effect has failed
           const span = instrumentation._spans.get(effectId);
-          if (!span) {return;}
+          if (!span) {
+            return;
+          }
 
           span.setStatus({ code: SpanStatusCode.ERROR, message: error?.message });
           span.recordException(error);
@@ -140,7 +140,9 @@ export class ReduxSagaInstrumentation extends InstrumentationBase<ReduxSagaInstr
         try {
           // Called when an effect has been cancelled
           const span = instrumentation._spans.get(effectId);
-          if (!span) {return;}
+          if (!span) {
+            return;
+          }
 
           // You might mark it as a cancellation, or success, or custom
           span.setAttribute('redux-saga.cancelled', true);
