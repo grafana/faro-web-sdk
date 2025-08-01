@@ -33,7 +33,6 @@ export {
   BaseExtension,
   BaseInstrumentation,
   BaseTransport,
-  Conventions,
   createInternalLogger,
   createPromiseBuffer,
   deepEqual,
