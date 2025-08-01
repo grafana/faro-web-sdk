@@ -10,7 +10,7 @@ import {
   SEMATTRS_HTTP_URL,
   SEMATTRS_HTTP_USER_AGENT,
 } from '@opentelemetry/semantic-conventions';
-import { Axios, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { Axios, type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
 
 import { AttributeNames } from './constants';
 import type { AxiosInstrumentationOptions } from './types';

@@ -1,4 +1,11 @@
-import { BaseInstrumentation, EVENT_VIEW_CHANGED, Meta, MetaView, unknownString, VERSION } from '@grafana/faro-core';
+import {
+  BaseInstrumentation,
+  EVENT_VIEW_CHANGED,
+  type Meta,
+  type MetaView,
+  unknownString,
+  VERSION,
+} from '@grafana/faro-core';
 
 // all this does is send VIEW_CHANGED event
 export class ViewInstrumentation extends BaseInstrumentation {

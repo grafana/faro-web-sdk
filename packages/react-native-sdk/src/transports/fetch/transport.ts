@@ -1,13 +1,15 @@
 import {
   BaseExtension,
   BaseTransport,
+  type Config,
   createPromiseBuffer,
   getTransportBody,
   noop,
-  PromiseBuffer,
+  type Patterns,
+  type PromiseBuffer,
+  type TransportItem,
   VERSION,
 } from '@grafana/faro-core';
-import type { Config, Patterns, TransportItem } from '@grafana/faro-core';
 
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
 import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';

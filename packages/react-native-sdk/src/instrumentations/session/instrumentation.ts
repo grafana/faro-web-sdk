@@ -1,14 +1,14 @@
 import {
   BaseInstrumentation,
+  type Config,
   dateNow,
   EVENT_SESSION_EXTEND,
   EVENT_SESSION_RESUME,
   EVENT_SESSION_START,
-  Meta,
-  MetaSession,
+  type Meta,
+  type MetaSession,
   VERSION,
 } from '@grafana/faro-core';
-import type { Config } from '@grafana/faro-core';
 
 import type { TransportItem } from '../..';
 import { createSession } from '../../metas';

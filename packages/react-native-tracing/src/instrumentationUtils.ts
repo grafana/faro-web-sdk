@@ -1,4 +1,4 @@
-import { Span, SpanStatusCode } from '@opentelemetry/api';
+import { type Span, SpanStatusCode } from '@opentelemetry/api';
 import type { FetchCustomAttributeFunction } from '@opentelemetry/instrumentation-fetch';
 import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request';
 

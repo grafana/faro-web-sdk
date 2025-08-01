@@ -1,18 +1,17 @@
-import {context, trace} from '@opentelemetry/api';
-import {W3CTraceContextPropagator} from '@opentelemetry/core';
-import {registerInstrumentations} from '@opentelemetry/instrumentation';
-import {Resource, ResourceAttributes} from '@opentelemetry/resources';
-import {BatchSpanProcessor,  WebTracerProvider} from '@opentelemetry/sdk-trace-web';
-import {ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION,} from '@opentelemetry/semantic-conventions';
+import { context, trace } from '@opentelemetry/api';
+import { W3CTraceContextPropagator } from '@opentelemetry/core';
+import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import { Resource, type ResourceAttributes } from '@opentelemetry/resources';
+import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
+import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 
+import { BaseInstrumentation, type Transport, VERSION } from '@grafana/react-native-sdk';
 
-import {BaseInstrumentation, Transport, VERSION} from '@grafana/react-native-sdk';
-
-import {FaroTraceExporter} from './faroTraceExporter';
-import {getDefaultOTELInstrumentations} from './getDefaultOTELInstrumentations';
-import {getSamplingDecision} from './sampler';
-import {FaroSessionSpanProcessor} from './sessionSpanProcessor';
-import type {TracingInstrumentationOptions} from './types';
+import { FaroTraceExporter } from './faroTraceExporter';
+import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
+import { getSamplingDecision } from './sampler';
+import { FaroSessionSpanProcessor } from './sessionSpanProcessor';
+import type { TracingInstrumentationOptions } from './types';
 
 // the providing of app name here is not great
 // should delay initialization and provide the full Faro config,
@@ -36,7 +35,6 @@ export class TracingInstrumentation extends BaseInstrumentation {
       attributes[ATTR_SERVICE_NAME] = this.config.app.name;
     }
 
-
     if (this.config.app.version) {
       attributes[ATTR_SERVICE_VERSION] = this.config.app.version;
     }
@@ -57,13 +55,13 @@ export class TracingInstrumentation extends BaseInstrumentation {
     });
 
     provider.addSpanProcessor(
-        options.spanProcessor ??
+      options.spanProcessor ??
         new FaroSessionSpanProcessor(
-            new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
-              scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
-              maxExportBatchSize: 30,
-            }),
-            this.metas
+          new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
+            scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
+            maxExportBatchSize: 30,
+          }),
+          this.metas
         )
     );
 
@@ -73,17 +71,17 @@ export class TracingInstrumentation extends BaseInstrumentation {
     });
 
     const { propagateTraceHeaderCorsUrls, fetchInstrumentationOptions, xhrInstrumentationOptions } =
-    this.options.instrumentationOptions ?? {};
+      this.options.instrumentationOptions ?? {};
 
     registerInstrumentations({
       instrumentations:
-          options.instrumentations ??
-          getDefaultOTELInstrumentations({
-            ignoreUrls: this.getIgnoreUrls(),
-            propagateTraceHeaderCorsUrls,
-            fetchInstrumentationOptions,
-            xhrInstrumentationOptions,
-          }),
+        options.instrumentations ??
+        getDefaultOTELInstrumentations({
+          ignoreUrls: this.getIgnoreUrls(),
+          propagateTraceHeaderCorsUrls,
+          fetchInstrumentationOptions,
+          xhrInstrumentationOptions,
+        }),
     });
     this.api.initOTEL(trace, context);
   }
