@@ -1,8 +1,4 @@
-export {
-  getItem,
-  removeItem,
-  setItem,
-} from './asyncStorage';
+export { getItem, removeItem, setItem } from './asyncStorage';
 
 export { throttle } from './throttle';
 

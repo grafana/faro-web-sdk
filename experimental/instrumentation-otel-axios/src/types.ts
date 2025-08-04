@@ -1,6 +1,6 @@
-import type {Span} from "@opentelemetry/api";
-import type {InstrumentationConfig} from "@opentelemetry/instrumentation";
-import type {AxiosResponse} from "axios";
+import type { Span } from '@opentelemetry/api';
+import type { InstrumentationConfig } from '@opentelemetry/instrumentation';
+import type { AxiosResponse } from 'axios';
 
 export interface AxiosInstrumentationOptions extends InstrumentationConfig {
   clearTimingResources?: boolean;

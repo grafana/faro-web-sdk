@@ -13,5 +13,3 @@ export {
 export type { ErrorEvent, ExtendedPromiseRejectionEvent } from './errors';
 
 export { ViewInstrumentation } from './view';
-
-

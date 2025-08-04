@@ -17,7 +17,7 @@ export class FaroSessionSpanProcessor implements SpanProcessor {
     const session = this.metas.value.session;
 
     if (session?.id) {
-      span.attributes["session.id"] = session.id;
+      span.attributes['session.id'] = session.id;
       /**
        * @deprecated will be removed in the future and has been replaced by ATTR_SESSION_ID (session.id)
        */

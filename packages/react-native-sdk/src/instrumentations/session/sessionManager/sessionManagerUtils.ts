@@ -51,7 +51,7 @@ export function isUserSessionValid(session: FaroUserSession | null): boolean {
 
 type GetUserSessionUpdaterParams = {
   storeUserSession: (session: FaroUserSession) => Promise<void>;
-  fetchUserSession: () => Promise<FaroUserSession|null>;
+  fetchUserSession: () => Promise<FaroUserSession | null>;
 };
 
 type UpdateSessionParams = { forceSessionExtend: boolean };

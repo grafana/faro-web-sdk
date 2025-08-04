@@ -1,17 +1,17 @@
-import {faro} from '@grafana/faro-core';
-import type {Meta} from '@grafana/faro-core';
+import { faro } from '@grafana/faro-core';
+import type { Meta } from '@grafana/faro-core';
 
-import {throttle} from '../../../utils';
-import {stringifyExternalJson} from '../../../utils/json';
+import { throttle } from '../../../utils';
+import { stringifyExternalJson } from '../../../utils/json';
 
-import {isSampled} from './sampling';
-import {STORAGE_UPDATE_DELAY} from './sessionConstants';
-import {addSessionMetadataToNextSession, createUserSessionObject, getUserSessionUpdater} from './sessionManagerUtils';
-import type {FaroUserSession} from './types';
+import { isSampled } from './sampling';
+import { STORAGE_UPDATE_DELAY } from './sessionConstants';
+import { addSessionMetadataToNextSession, createUserSessionObject, getUserSessionUpdater } from './sessionManagerUtils';
+import type { FaroUserSession } from './types';
 
 export class VolatileSessionsManager {
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
-  private static storedSession: string|null = null;
+  private static storedSession: string | null = null;
   constructor() {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
@@ -26,7 +26,7 @@ export class VolatileSessionsManager {
   }
 
   static async storeUserSession(session: FaroUserSession): Promise<void> {
-    this.storedSession = stringifyExternalJson(session)
+    this.storedSession = stringifyExternalJson(session);
   }
 
   static async fetchUserSession(): Promise<FaroUserSession | null> {
