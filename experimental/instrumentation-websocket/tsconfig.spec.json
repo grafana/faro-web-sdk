@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.spec.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/spec",
+    "rootDir": "../../",
+    "tsBuildInfoFile": "../../.cache/tsc/instrumentationWebSocket.spec.tsbuildinfo"
+  },
+  "include": ["./src"],
+  "references": [{ "path": "../../packages/core/tsconfig.spec.json" }]
+}

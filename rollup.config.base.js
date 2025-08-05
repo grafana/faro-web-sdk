@@ -28,6 +28,18 @@ const modules = {
     globalName: 'GrafanaFaroWebTracing',
     externals: ['webSdk'],
   },
+  rnSdk: {
+    name: '@grafana/react-native-sdk',
+    bundleName: 'react-native-sdk',
+    globalName: 'GrafanaFaroReactNativeSdk',
+    externals: [],
+  },
+  rnTracing: {
+    name: '@grafana/react-native-tracing',
+    bundleName: 'react-native-tracing',
+    globalName: 'GrafanaFaroReactNativeTracing',
+    externals: ['rnSdk'],
+  },
   transportOtlpHttp: {
     name: '@grafana/faro-transport-otlp-http',
     bundleName: 'faro-transport-otlp-http',
@@ -58,31 +70,63 @@ const modules = {
     globalName: 'GrafanaFaroInstrumentationK6Browser',
     externals: [],
   },
+  instrumentationWebSocket: {
+    name: '@grafana/faro-instrumentation-websocket',
+    bundleName: 'faro-instrumentation-websocket',
+    globalName: 'GrafanaFaroInstrumentationWebSocket',
+    externals: [],
+  },
+  instrumentationOtelAxios: {
+    name: '@grafana/faro-instrumentation-otel-axios',
+    bundleName: 'faro-instrumentation-otel-axios',
+    globalName: 'GrafanaFaroInstrumentationOtelAxios',
+    externals: [],
+  },
+  instrumentationOtelReduxSaga: {
+    name: '@grafana/faro-instrumentation-otel-redux-saga',
+    bundleName: 'faro-instrumentation-otel-redux-saga',
+    globalName: 'GrafanaFaroInstrumentationOtelReduxSaga',
+    externals: [],
+  },
 };
 
 exports.getRollupConfigBase = (moduleName) => {
   const module = modules[moduleName];
 
-  return {
+  const isReactNative = moduleName.startsWith('rn');
+
+  const baseConfig = {
     input: './src/index.ts',
     output: {
       file: `./dist/bundle/${module.bundleName}.iife.js`,
       format: 'iife',
-      globals: module.externals.reduce(
-        (acc, external) => ({
-          ...acc,
-          [modules[external].name]: modules[external].globalName,
-        }),
-        {}
-      ),
+      globals: {
+        'react-native': 'ReactNative',
+        react: 'React',
+        ...module.externals.reduce(
+          (acc, external) => ({
+            ...acc,
+            [modules[external].name]: modules[external].globalName,
+          }),
+          {}
+        ),
+      },
       name: module.globalName,
     },
-    external: module.externals.map((external) => modules[external].name),
+    external: ['react-native', 'react', ...module.externals.map((external) => modules[external].name)],
     plugins: [
       resolve({
         browser: true,
+        preferBuiltins: false,
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+        moduleDirectories: ['node_modules'],
       }),
-      commonjs(),
+      commonjs({
+        ignore: isReactNative ? ['react-native'] : [],
+        requireReturnsDefault: 'auto',
+        transformMixedEsModules: true,
+        exclude: isReactNative ? ['node_modules/react-native/**'] : [],
+      }),
       typescript({
         cacheDir: '../../.cache/rollup',
         inlineSources: false,
@@ -93,4 +137,21 @@ exports.getRollupConfigBase = (moduleName) => {
       terser(),
     ],
   };
+
+  if (isReactNative) {
+    baseConfig.onwarn = (warning, warn) => {
+      // Suppress certain warnings for React Native
+      if (warning.code === 'CIRCULAR_DEPENDENCY') {
+        return;
+      }
+
+      if (warning.code === 'THIS_IS_UNDEFINED') {
+        return;
+      }
+
+      warn(warning);
+    };
+  }
+
+  return baseConfig;
 };
