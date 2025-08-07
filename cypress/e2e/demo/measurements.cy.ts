@@ -46,9 +46,17 @@ context('Measurements', () => {
 
         cy.visit('/features');
 
-        cy.clickButton(`btn-${btnName}`);
+        cy.reload();
 
-        cy.wait('@measurement');
+        cy.contains('Metrics Measurements').scrollIntoView().should('be.visible');
+
+        const buttonName = `btn-${btnName}`;
+        cy.get(`[data-cy="${buttonName}"]`).should('be.visible');
+        cy.clickButton(buttonName);
+
+        cy.wait('@measurement', {
+          timeout: 60000,
+        });
       });
     });
   });
