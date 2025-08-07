@@ -25,8 +25,8 @@ describe('getStackFramesFromError', () => {
   it('should handle Chrome v36 traces with parentheses in URL', () => {
     const result = getStackFramesFromError(CapturedExceptions.CHROME_36_PARENTHESES_URL);
     expect(result).toEqual([
-      buildStackFrame('http://localhost:8080/[brackets]/(paranthesis)/file.js', 'dumpExceptionError', 41, 27),
-      buildStackFrame('http://localhost:8080/[brackets]/(paranthesis)/file.js', 'HTMLButtonElement.onclick', 107, 146),
+      buildStackFrame('http://localhost:8080/[brackets]/(parentheses)/file.js', 'dumpExceptionError', 41, 27),
+      buildStackFrame('http://localhost:8080/[brackets]/(parentheses)/file.js', 'HTMLButtonElement.onclick', 107, 146),
     ]);
   });
 
@@ -41,17 +41,8 @@ describe('getStackFramesFromError', () => {
   it('should handle Chrome v36 traces when no function name is resolved and parentheses in URL', () => {
     const result = getStackFramesFromError(CapturedExceptions.CHROME_36_NO_FUNCTION_NAME_PARENTHESES_URL);
     expect(result).toEqual([
-      /*     This wrongly givees:
-       {
-          "colno": 27,
-    -     "filename": "http://localhost:8080/[brackets]/(paranthesis)/file.js",
-    -     "func": undefined,
-    +     "filename": "paranthesis)/file.js",
-    +     "func": "http://localhost:8080/[brackets]/",
-          "lineno": 41,
-        }, */
-      buildStackFrame('http://localhost:8080/[brackets]/(paranthesis)/file.js', undefined, 41, 27),
-      buildStackFrame('http://localhost:8080/[brackets]/(paranthesis)/file.js', 'HTMLButtonElement.onclick', 107, 146),
+      buildStackFrame('http://localhost:8080/[brackets]/(parentheses)/file.js', undefined, 41, 27),
+      buildStackFrame('http://localhost:8080/[brackets]/(parentheses)/file.js', 'HTMLButtonElement.onclick', 107, 146),
     ]);
   });
 
@@ -219,8 +210,8 @@ CapturedExceptions.CHROME_36_PARENTHESES_URL = {
   name: 'Error',
   stack:
     'Error: Default error\n' +
-    '    at dumpExceptionError (http://localhost:8080/[brackets]/(paranthesis)/file.js:41:27)\n' +
-    '    at HTMLButtonElement.onclick (http://localhost:8080/[brackets]/(paranthesis)/file.js:107:146)',
+    '    at dumpExceptionError (http://localhost:8080/[brackets]/(parentheses)/file.js:41:27)\n' +
+    '    at HTMLButtonElement.onclick (http://localhost:8080/[brackets]/(parentheses)/file.js:107:146)',
 };
 
 CapturedExceptions.CHROME_36_NO_FUNCTION_NAME = {
@@ -237,8 +228,8 @@ CapturedExceptions.CHROME_36_NO_FUNCTION_NAME_PARENTHESES_URL = {
   name: 'Error',
   stack:
     'Error: Default error\n' +
-    '    at http://localhost:8080/[brackets]/(paranthesis)/file.js:41:27\n' +
-    '    at HTMLButtonElement.onclick (http://localhost:8080/[brackets]/(paranthesis)/file.js:107:146)',
+    '    at http://localhost:8080/[brackets]/(parentheses)/file.js:41:27\n' +
+    '    at HTMLButtonElement.onclick (http://localhost:8080/[brackets]/(parentheses)/file.js:107:146)',
 };
 
 CapturedExceptions.CHROME_46 = {
@@ -248,15 +239,6 @@ CapturedExceptions.CHROME_46 = {
     'Error: Default error\n' +
     '    at new CustomError (http://localhost:8080/file.js:41:27)\n' +
     '    at HTMLButtonElement.onclick (http://localhost:8080/file.js:107:146)',
-};
-
-CapturedExceptions.CHROME_46_BRACKETS_PARANTHESIS = {
-  message: 'Default error',
-  name: 'Error',
-  stack:
-    'Error: Default error\n' +
-    '    at new CustomError (http://localhost:8080/[brackets]/(paranthesis)/file.js:41:27)\n' +
-    '    at HTMLButtonElement.onclick (http://localhost:8080/[brackets]/(paranthesis)/file.js:107:146)',
 };
 
 CapturedExceptions.CHROME_48_NESTED_EVAL = {
