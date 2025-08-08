@@ -4,7 +4,7 @@ export const unknownSymbolString = '?';
 export const atString = '@';
 
 export const webkitLineRegex =
-  /^\s*at (?:(.*?) ?\((?:address at )?)?((?:file|https?|blob|chrome-extension|address|native|eval|webpack|<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
+  /^\s*at (?:(?![a-z]+:\/\/)([^(]+?) ?\((?:address at )?)?((?:file|https?|blob|chrome-extension|address|native|eval|webpack|<anonymous>|[-a-z]+:|.*bundle|\/)?.*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 export const webkitEvalRegex = /\((\S*)(?::(\d+))(?::(\d+))\)/;
 export const webkitEvalString = 'eval';
 export const webkitAddressAtString = 'address at ';
