@@ -45,13 +45,14 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         maskTextSelector: this.options.maskSelector,
         blockSelector: this.options.blockSelector,
         ignoreSelector: this.options.ignoreSelector,
-        slimDOMOptions: {
-          script: true,
-          comment: true,
-        },
+        // slimDOMOptions: {
+        //   // script: true,
+        //   comment: true,
+        // },
         recordCanvas: this.options.recordCanvas,
         collectFonts: this.options.collectFonts,
         inlineImages: this.options.inlineImages,
+        recordDOM: true,
         inlineStylesheet: this.options.inlineStylesheet,
         errorHandler: (err) => {
           this.logError('Error ocurred during session recording', err);

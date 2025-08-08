@@ -54,17 +54,21 @@ export default async function () {
         console.log("Faro SDK loaded, initializing...");
         
         window.GrafanaFaroWebSdk.initializeFaro({
+         isolate: true,
           app: {
             name: 'QuickPizza',
             version: '1.0.0',
             environment: 'production'
           },
           batching: {
-            enabled: false
+            enabled: true
           },
           transports: [
-            new window.GrafanaFaroWebSdk.ConsoleTransport({
-              level: window.GrafanaFaroWebSdk.LogLevel.INFO,
+            // new window.GrafanaFaroWebSdk.ConsoleTransport({
+            //   level: window.GrafanaFaroWebSdk.LogLevel.INFO,
+            // }),
+            new window.GrafanaFaroWebSdk.FetchTransport({
+              url: "http://localhost:8080/events" 
             }),
           ],
           instrumentations: [
@@ -72,7 +76,10 @@ export default async function () {
             new window.GrafanaFaroInstrumentationSessionRecording.SessionRecordingInstrumentation(
               {
                 inlineImages: true,
-                inlineStylesheet: true
+                inlineStylesheet: true,
+                collectFonts: true,
+                recordCanvas: true,
+                recordCrossOriginIframes: true
               }
             )
           ],
@@ -93,9 +100,13 @@ export default async function () {
     `);
   const page = await context.newPage();
 
-  await page.goto('http://localhost:3333');
-  sleep(2);
+  // https://leetcode.com
+  // https://grafana.com
+  // https://amazon.com
+  // https://allegro.pl
+  // https://olx.pl
+  await page.goto('https://grafana.com');
+  sleep(5 * 60);
 
-  await page.locator('//button[. = "Pizza, Please!"]').click();
-  sleep(60);
+  await page.close();
 }
