@@ -2,6 +2,8 @@
 
 ## Next
 
+- Chore (`@grafana/faro-*`): set default node version to lts/jod
+
 ### Breaking
 
 Breaking changes coming with Faro version 2
