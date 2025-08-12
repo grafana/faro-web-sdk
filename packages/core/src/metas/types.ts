@@ -1,4 +1,4 @@
-export type MetaGetter<P = Partial<Meta>> = () => P;
+export type MetaGetter<P = Partial<Meta>> = () => P | ((version: string) => P);
 
 export type MetaItem<P = Partial<Meta>> = P | MetaGetter<P>;
 
