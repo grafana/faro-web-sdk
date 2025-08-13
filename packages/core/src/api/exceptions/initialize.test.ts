@@ -231,17 +231,11 @@ describe('api.exceptions', () => {
       });
 
       it('Adds error cause to error context', () => {
-        // @ts-expect-error cause is missing in TS type Error
         const error = new Error('test', { cause: 'foo' });
-        // @ts-expect-error cause is missing in TS type Error
         const error2 = new Error('test2', { cause: [1, 3] });
-        // @ts-expect-error cause is missing in TS type Error
         const error3 = new Error('test3', { cause: { a: 'b' } });
-        // @ts-expect-error cause is missing in TS type Error
         const error4 = new Error('test4', { cause: new Error('original error') });
-        // @ts-expect-error cause is missing in TS type Error
         const error5 = new Error('test5', { cause: null });
-        // @ts-expect-error cause is missing in TS type Error
         const error6 = new Error('test6', { cause: undefined });
         const error7 = new Error('test6');
 
