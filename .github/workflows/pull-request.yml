@@ -49,12 +49,12 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: cypress/browsers
+      image: cypress/browsers:22.12.0
       options: --user 1001
 
     services:
       database:
-        image: postgres:latest
+        image: postgres:17.5
         env:
           POSTGRES_DB: demo
           POSTGRES_PASSWORD: postgres

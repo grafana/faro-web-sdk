@@ -51,7 +51,7 @@ jobs:
 
     services:
       database:
-        image: postgres:latest
+        image: postgres:17.5
         env:
           POSTGRES_DB: demo
           POSTGRES_PASSWORD: postgres
