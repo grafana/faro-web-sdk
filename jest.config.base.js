@@ -1,10 +1,11 @@
 exports.jestBaseConfig = {
   verbose: true,
+  preset: 'ts-jest',
   moduleNameMapper: {
     '@grafana/faro-core/src/(.*)': '<rootDir>/packages/core/src/$1',
   },
-  rootDir: '../../',
-  testEnvironment: 'node',
+  rootDir: '.',
+  testEnvironment: 'jsdom',
   transform: {
     '^.+\\.ts?$': [
       'ts-jest',
@@ -13,5 +14,4 @@ exports.jestBaseConfig = {
       },
     ],
   },
-  testEnvironment: 'jsdom',
 };

@@ -8170,7 +8170,7 @@ __metadata:
     eslint-plugin-react: "npm:^7.32.1"
     eslint-plugin-react-hooks: "npm:^5.1.0"
     husky: "npm:^9.0.7"
-    jest: "npm:^30.0.2"
+    jest: "npm:^30.0.5"
     jest-environment-jsdom: "npm:^30.0.2"
     lerna: "npm:^8.1.9"
     lint-staged: "npm:^16.0.0"
@@ -10861,7 +10861,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest@npm:^30.0.2":
+"jest@npm:^30.0.5":
   version: 30.0.5
   resolution: "jest@npm:30.0.5"
   dependencies:
