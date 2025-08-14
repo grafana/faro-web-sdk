@@ -47,7 +47,7 @@ export interface Config<P = APIEvent> {
   isolate: boolean;
 
   /** enable or disable semantic version validation for the SDK metadata.
-   * 
+   *
    */
   validateSdkMeta?: boolean;
 

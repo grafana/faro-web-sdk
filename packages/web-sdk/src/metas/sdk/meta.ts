@@ -6,10 +6,7 @@ const fullSemverRegex =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|[0-9A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|[0-9A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
 
 export const sdkMeta: MetaItem<Pick<Meta, 'sdk'>> = (currentVersion?: string) => {
-  if (
-    faro.config.validateSdkMeta &&
-    (typeof currentVersion !== 'string' || !fullSemverRegex.test(currentVersion))
-  ) {
+  if (faro.config.validateSdkMeta && (typeof currentVersion !== 'string' || !fullSemverRegex.test(currentVersion))) {
     faro.internalLogger.warn(
       `Invalid SDK version "${currentVersion}". Expected a valid semver (e.g., "1.2.3", "1.2.3-beta.1").`
     );
