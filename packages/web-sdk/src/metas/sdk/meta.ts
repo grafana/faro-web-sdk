@@ -5,20 +5,17 @@ import type { Meta, MetaItem } from '@grafana/faro-core';
 const fullSemverRegex =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|[0-9A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|[0-9A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
 
-export const sdkMeta: MetaItem<Pick<Meta, 'sdk'>> = (currentVersion?: string) => {
-  if (
-    faro.config.validateSdkMeta &&
-    (typeof currentVersion !== 'string' || !fullSemverRegex.test(currentVersion))
-  ) {
+export const sdkMeta: MetaItem<Pick<Meta, 'sdk'>> = (sdkVersion?: string) => {
+  if (faro.config.validateSdkMeta && (typeof sdkVersion !== 'string' || !fullSemverRegex.test(sdkVersion))) {
     faro.internalLogger.warn(
-      `Invalid SDK version "${currentVersion}". Expected a valid semver (e.g., "1.2.3", "1.2.3-beta.1").`
+      `Invalid SDK version "${sdkVersion}". Expected a valid semver (e.g., "1.2.3", "1.2.3-beta.1").`
     );
   }
 
   return {
     sdk: {
       name: '@grafana/faro-core',
-      version: currentVersion,
+      version: sdkVersion,
       integrations: faro.config.instrumentations.map(({ name, version }) => ({ name, version })),
     },
   };

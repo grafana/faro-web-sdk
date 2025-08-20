@@ -8,7 +8,8 @@ import type { Meta, MetaItem, Metas, MetasListener } from './types';
 export function initializeMetas(
   _unpatchedConsole: UnpatchedConsole,
   internalLogger: InternalLogger,
-  _config: Config
+  _config: Config,
+  sdkVersion: string,
 ): Metas {
   let items: MetaItem[] = [];
   let listeners: MetasListener[] = [];
@@ -51,11 +52,24 @@ export function initializeMetas(
     listeners = listeners.filter((currentListener) => currentListener !== listener);
   };
 
+  
+  const sdkMeta = ( ) => {
+    return {
+      sdk: {
+        version: sdkVersion ,
+      },
+    };
+  };
+
+  
+
   return {
     add,
     remove,
     addListener,
     removeListener,
+    sdkMeta,
+
     get value() {
       return getValue();
     },

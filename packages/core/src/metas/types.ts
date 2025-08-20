@@ -10,6 +10,7 @@ export interface Metas {
   addListener: (listener: MetasListener) => void;
   removeListener: (listener: MetasListener) => void;
   value: Meta;
+  sdkMeta: (sdkVersion: string) => Meta;
 }
 
 export type MetaAttributes = Record<string, string>;

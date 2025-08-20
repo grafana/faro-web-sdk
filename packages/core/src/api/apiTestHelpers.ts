@@ -9,6 +9,7 @@ export const mockMetas = {
   addListener: jest.fn(),
   removeListener: jest.fn(),
   value: {},
+  sdkMeta: jest.fn(),
 };
 
 export const mockTransports: Transports = {

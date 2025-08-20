@@ -3,5 +3,15 @@
     { "path": "./tsconfig.cjs.json" },
     { "path": "./tsconfig.esm.json" },
     { "path": "./tsconfig.spec.json" }
-  ]
+  ],
+  
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
+    "outDir": "./dist"
+  
 }
+
+}
+
