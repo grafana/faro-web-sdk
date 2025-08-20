@@ -30,7 +30,7 @@
     "clean:root": "rimraf .cache yarn-error.log",
     "quality": "run-p quality:circular-deps quality:test quality:lint quality:e2e",
     "quality:packages": "lerna run --parallel quality",
-    "qualkity:test": "lerna run --parallel quality:test",
+    "quality:test": "lerna run --parallel quality:test",
     "quality:e2e": "cypress run --headless --browser chrome",
     "quality:e2e:ci": "run-s 'quality:e2e:ci:*'",
     "quality:e2e:ci:install": "cypress install",
