@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-core",
-  "version": "1.19.0",
+  "version": "2.0.0-beta",
   "description": "Core package of Faro.",
   "keywords": [
     "observability",
