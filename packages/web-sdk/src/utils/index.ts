@@ -17,4 +17,5 @@ export {
   getDataFromSafariExtensions,
   getStackFramesFromError,
   parseStacktrace,
+  createStacktraceParser,
 } from './stackFrames';

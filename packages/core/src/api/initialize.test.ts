@@ -17,7 +17,7 @@ describe('initialize', () => {
     expect(api).toHaveProperty('getOTEL');
     expect(api).toHaveProperty('getPage');
     expect(api).toHaveProperty('getSession');
-    expect(api).toHaveProperty('getStacktraceParser');
+    expect(api).toHaveProperty('parseStacktrace');
     expect(api).toHaveProperty('getTraceContext');
     expect(api).toHaveProperty('getView');
     expect(api).toHaveProperty('initOTEL');

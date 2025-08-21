@@ -18,7 +18,7 @@ import { browserMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
-import { parseStacktrace } from '../utils';
+import { createStacktraceParser } from '../utils';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
@@ -65,8 +65,8 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     ...restProperties
   }: BrowserConfig = browserConfig;
 
-  // use the default stacktrace parser (parseStacktrace) if no custom stacktrace parser is provided
-  const stackTraceParser = browserConfig.parseStacktrace ?? parseStacktrace;
+  // use the default stacktrace parser if no custom stacktrace parser is provided
+  const stackTraceParser = browserConfig.parseStacktrace ?? createStacktraceParser();
 
   return {
     ...restProperties,

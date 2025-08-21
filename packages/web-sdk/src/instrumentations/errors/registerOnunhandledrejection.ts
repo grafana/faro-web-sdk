@@ -22,7 +22,7 @@ export function registerOnunhandledrejection(api: API): void {
       value = `${primitiveUnhandledValue} ${String(error)}`;
       type = primitiveUnhandledType;
     } else {
-      [value, type, stackFrames] = getErrorDetails(error, api.getStacktraceParser());
+      [value, type, stackFrames] = getErrorDetails(error, api.parseStacktrace);
     }
 
     if (value) {

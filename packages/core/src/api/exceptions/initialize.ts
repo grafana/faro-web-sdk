@@ -43,7 +43,7 @@ export function initializeExceptionsAPI({
 
   let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace' | 'context'> | null = null;
 
-  const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => config.parseStacktrace;
+  const parseStacktrace = config.parseStacktrace;
 
   const { ignoreErrors = [], preserveOriginalError } = config;
 
@@ -77,8 +77,7 @@ export function initializeExceptionsAPI({
         },
         type: TransportItemType.EXCEPTION,
       };
-      const stacktraceParser = getStacktraceParser();
-      stackFrames = stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
+      stackFrames = stackFrames ?? (error.stack ? parseStacktrace?.(error).frames : undefined);
 
       if (stackFrames?.length) {
         item.payload.stacktrace = {
@@ -115,7 +114,7 @@ export function initializeExceptionsAPI({
   };
 
   return {
-    getStacktraceParser,
+    parseStacktrace,
     pushError,
   };
 }
