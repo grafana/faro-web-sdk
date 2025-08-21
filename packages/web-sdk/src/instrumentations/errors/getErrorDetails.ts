@@ -1,7 +1,7 @@
 import { isDomError, isDomException, isError, isErrorEvent, isEvent, isObject, isString } from '@grafana/faro-core';
-import type { ExceptionStackFrame, LogArgsSerializer, StacktraceParser } from '@grafana/faro-core';
+import type { ExceptionStackFrame, ExtendedError, LogArgsSerializer, Stacktrace } from '@grafana/faro-core';
 
-import { buildStackFrame, newStackTraceParser } from '../../utils/stackFrames';
+import { buildStackFrame, parseStacktrace } from '../../utils/stackFrames';
 
 import { domErrorType, domExceptionType, objectEventValue, unknownSymbolString } from './const';
 import { getValueAndTypeFromMessage } from './getValueAndTypeFromMessage';
@@ -9,7 +9,7 @@ import type { ErrorEvent } from './types';
 
 export function getErrorDetails(
   evt: ErrorEvent,
-  stacktraceParser: StacktraceParser = newStackTraceParser()
+  stacktraceParser: (error: ExtendedError) => Stacktrace = parseStacktrace
 ): [string | undefined, string | undefined, ExceptionStackFrame[]] {
   let value: string | undefined;
   let type: string | undefined;
@@ -46,7 +46,7 @@ export interface ErrorDetails {
 
 export function getDetailsFromErrorArgs(
   args: [any?, ...any[]],
-  stacktraceParser: StacktraceParser = newStackTraceParser()
+  stacktraceParser: (error: ExtendedError) => Stacktrace = parseStacktrace
 ): ErrorDetails {
   const [evt, source, lineno, colno, error] = args;
 

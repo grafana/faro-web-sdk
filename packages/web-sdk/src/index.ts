@@ -5,7 +5,7 @@ export { defaultEventDomain } from './consts';
 
 export { initializeFaro } from './initialize';
 
-export { getDataFromSafariExtensions, getStackFramesFromError, parseStacktrace, newStackTraceParser, buildStackFrame } from './utils';
+export { getDataFromSafariExtensions, getStackFramesFromError, parseStacktrace, buildStackFrame } from './utils';
 
 export {
   ConsoleInstrumentation,
@@ -154,7 +154,6 @@ export type {
   PushLogOptions,
   PushMeasurementOptions,
   Stacktrace,
-  StacktraceParser,
   TraceContext,
   TraceEvent,
   TracesAPI,

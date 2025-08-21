@@ -9,7 +9,6 @@ export type {
   ExtendedError,
   PushErrorOptions,
   Stacktrace,
-  StacktraceParser,
   ErrorWithIndexProperties,
   ExceptionEventExtended,
 } from './types';

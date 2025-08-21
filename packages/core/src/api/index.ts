@@ -20,7 +20,6 @@ export type {
   ExtendedError,
   PushErrorOptions,
   Stacktrace,
-  StacktraceParser,
   ExceptionEventExtended,
 } from './exceptions';
 
