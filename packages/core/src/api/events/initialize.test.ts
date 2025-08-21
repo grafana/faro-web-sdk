@@ -1,11 +1,9 @@
 import type { TransportItem } from '../..';
 import { initializeFaro } from '../../initialize';
 import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
-import { dateNow } from '../../utils';
-import { mockMetas, mockTracesApi, mockTransports } from '../apiTestHelpers';
-import { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START } from '../const';
-import { ItemBuffer } from '../ItemBuffer';
-import type { API, APIEvent, ApiMessageBusMessages } from '../types';
+import { mockMetas, mockTracesApi, mockTransports, mockUserActionsApi } from '../apiTestHelpers';
+import type { API } from '../types';
+import UserAction from '../userActions/userAction';
 
 import { initializeEventsAPI } from './initialize';
 import type { EventEvent, PushEventOptions } from './types';
@@ -172,18 +170,6 @@ describe('api.events', () => {
       const internalLogger = mockInternalLogger;
       const config = mockConfig();
 
-      const actionBuffer = new ItemBuffer<TransportItem<APIEvent>>();
-
-      let message: ApiMessageBusMessages | undefined;
-
-      const getMessage = () => message;
-
-      message = {
-        type: USER_ACTION_START,
-        name: 'testAction',
-        startTime: Date.now(),
-        parentId: 'parent-id',
-      };
       const api = initializeEventsAPI({
         unpatchedConsole: console,
         internalLogger,
@@ -191,34 +177,18 @@ describe('api.events', () => {
         metas: mockMetas,
         transports: mockTransports,
         tracesApi: mockTracesApi,
-        actionBuffer,
-        getMessage,
+        userActionsApi: mockUserActionsApi,
       });
 
+      (mockUserActionsApi.getActiveUserAction as jest.Mock).mockReturnValueOnce(
+        new UserAction({
+          name: 'test',
+          trigger: 'foo',
+          transports: mockTransports,
+        })
+      );
       api.pushEvent('test');
-      expect(actionBuffer.size()).toBe(1);
-
-      message = {
-        type: USER_ACTION_END,
-        name: 'testAction',
-        id: 'parent-id',
-        startTime: dateNow(),
-        endTime: dateNow(),
-        duration: 0,
-        eventType: 'click',
-      };
-
-      api.pushEvent('test-2');
-      expect(actionBuffer.size()).toBe(1);
-
-      message = {
-        type: USER_ACTION_CANCEL,
-        name: 'testAction',
-        parentId: 'parent-id',
-      };
-
-      api.pushEvent('test-3');
-      expect(actionBuffer.size()).toBe(1);
+      expect(mockTransports.execute).not.toHaveBeenCalled();
     });
   });
 });

@@ -2,11 +2,9 @@ export {
   defaultExceptionType,
   defaultLogArgsSerializer,
   defaultErrorArgsSerializer,
-  apiMessageBus,
-  USER_ACTION_CANCEL,
-  USER_ACTION_END,
-  USER_ACTION_START,
-  USER_ACTION_HALT,
+  UserActionSeverity,
+  UserActionState,
+  userActionsMessageBus,
 } from './api';
 export type {
   API,
@@ -35,12 +33,8 @@ export type {
   TraceContext,
   TraceEvent,
   TracesAPI,
-  ApiMessageBusMessages,
-  UserActionStartMessage,
-  UserActionEndMessage,
-  UserActionCancelMessage,
-  UserActionHaltMessage,
   UserAction,
+  UserActionInterface,
 } from './api';
 
 export { BaseExtension } from './extensions';

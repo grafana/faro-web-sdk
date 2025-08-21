@@ -258,7 +258,7 @@ import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 
 import { initializeFaro } from '@grafana/faro-web-sdk';
-import { FaroSessionSpanProcessor, FaroTraceExporter } from '@grafana/faro-web-tracing';
+import { FaroMetaAttributesSpanProcessor, FaroTraceExporter } from '@grafana/faro-web-tracing';
 
 const VERSION = '1.0.0';
 const NAME = 'frontend';
@@ -286,9 +286,7 @@ const provider = new WebTracerProvider({ resource });
 
 provider.addSpanProcessor(
   new FaroUserActionSpanProcessor(
-    new FaroMetaAttributesSpanProcessor(
-      new FaroSessionSpanProcessor(new BatchSpanProcessor(new FaroTraceExporter({ ...faro })))
-    )
+    new FaroMetaAttributesSpanProcessor(new BatchSpanProcessor(new FaroTraceExporter({ ...faro })))
   )
 );
 

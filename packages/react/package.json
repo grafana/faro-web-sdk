@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-react",
-  "version": "1.18.2",
+  "version": "1.19.0",
   "description": "Faro package that enables easier integration in projects built with React.",
   "keywords": [
     "observability",
@@ -32,28 +32,28 @@
   ],
   "scripts": {
     "start": "yarn watch",
-    "build": "run-s build:*",
-    "build:compile": "run-p build:compile:*",
+    "build": "run-s 'build:*'",
+    "build:compile": "run-p 'build:compile:*'",
     "build:compile:cjs": "tsc --build tsconfig.cjs.json",
     "build:compile:esm": "tsc --build tsconfig.esm.json",
-    "build:compile:bundle": "run-s build:compile:bundle:*",
+    "build:compile:bundle": "run-s 'build:compile:bundle:*'",
     "build:compile:bundle:create": "rollup -c ./rollup.config.js",
     "build:compile:bundle:remove-extras": "rimraf dist/bundle/dist",
     "watch": "run-s watch:compile",
     "watch:compile": "yarn build:compile:cjs -w",
     "clean": "rimraf dist/ yarn-error.log",
-    "quality": "run-s quality:*",
+    "quality": "run-s 'quality:*'",
     "quality:test": "exit 0",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
-    "quality:lint": "run-s quality:lint:*",
+    "quality:lint": "run-s 'quality:lint:*'",
     "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/react --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
     "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "^1.18.2",
-    "@grafana/faro-web-tracing": "^1.18.2",
+    "@grafana/faro-web-sdk": "^1.19.0",
+    "@grafana/faro-web-tracing": "^1.19.0",
     "hoist-non-react-statics": "^3.3.2"
   },
   "devDependencies": {

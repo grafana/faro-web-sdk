@@ -1,30 +1,30 @@
-import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, faro, type Subscription, userActionsMessageBus, VERSION } from '@grafana/faro-core';
 
-import { userActionStartByApiCallEventName } from './const';
 import { getUserEventHandler } from './processUserActionEventHandler';
-import type { ApiEvent } from './types';
-
-let processUserEventHandler: ReturnType<typeof getUserEventHandler> | undefined;
 
 export class UserActionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-user-action';
   readonly version = VERSION;
 
+  private _userActionSub?: Subscription;
+
   initialize(): void {
-    processUserEventHandler = getUserEventHandler(faro);
-    window.addEventListener('pointerdown', processUserEventHandler);
-    window.addEventListener('keydown', processUserEventHandler);
+    const { processUserEvent, proceessUserActionStarted } = getUserEventHandler(faro);
+    window.addEventListener('pointerdown', processUserEvent);
+    window.addEventListener('keydown', (ev: KeyboardEvent) => {
+      if ([' ', 'Enter'].includes(ev.key)) {
+        processUserEvent(ev);
+      }
+    });
+
+    this._userActionSub = userActionsMessageBus.subscribe(({ type, userAction }) => {
+      if (type === 'user_action_start') {
+        proceessUserActionStarted(userAction);
+      }
+    });
   }
-}
 
-export function startUserAction(name: string, attributes?: Record<string, string>) {
-  processUserEventHandler?.(createUserActionApiEvent(name, attributes));
-}
-
-function createUserActionApiEvent(name: string, attributes?: Record<string, string>): ApiEvent {
-  return {
-    name,
-    attributes,
-    type: userActionStartByApiCallEventName,
-  };
+  destroy() {
+    this._userActionSub?.unsubscribe();
+  }
 }

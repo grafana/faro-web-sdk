@@ -1,7 +1,6 @@
 export { SessionInstrumentation } from './session';
 
 export { ConsoleInstrumentation } from './console';
-export type { ConsoleInstrumentationOptions } from './console';
 
 export { ErrorsInstrumentation } from './errors';
 
@@ -15,7 +14,6 @@ export {
   PersistentSessionsManager,
   VolatileSessionsManager,
   MAX_SESSION_PERSISTENCE_TIME,
-  MAX_SESSION_PERSISTENCE_TIME_BUFFER,
   SESSION_EXPIRATION_TIME,
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,
@@ -23,6 +21,6 @@ export {
 
 export { PerformanceInstrumentation } from './performance';
 
-export { UserActionInstrumentation, userActionDataAttribute, startUserAction } from './userActions';
+export { UserActionInstrumentation, userActionDataAttribute } from './userActions';
 
 export { CSPInstrumentation } from './csp';

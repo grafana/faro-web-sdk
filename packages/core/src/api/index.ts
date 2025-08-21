@@ -1,14 +1,5 @@
 export { initializeAPI } from './initialize';
-export type {
-  API,
-  APIEvent,
-  ApiMessageBusMessages,
-  UserActionCancelMessage,
-  UserActionEndMessage,
-  UserActionStartMessage,
-  UserActionHaltMessage,
-  UserAction,
-} from './types';
+export type { API, APIEvent, UserAction } from './types';
 
 export type { EventAttributes, EventEvent, EventsAPI, PushEventOptions } from './events';
 
@@ -30,8 +21,12 @@ export type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '
 
 export type { MetaAPI } from './meta';
 
+export {
+  UserActionSeverity,
+  UserActionState,
+  type UserActionInterface,
+  type UserActionsAPI,
+  userActionsMessageBus,
+} from './userActions';
+
 export type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './traces';
-
-export { apiMessageBus } from './initialize';
-
-export { USER_ACTION_CANCEL, USER_ACTION_END, USER_ACTION_START, USER_ACTION_HALT } from './const';

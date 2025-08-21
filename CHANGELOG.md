@@ -2,11 +2,40 @@
 
 ## Next
 
-- fix(core): Ensure first instrumentation gets properly removed (#1312)
-- feat(web-sdk): Add CSP instrumentation (#1312)
-- chore(ignored URLs): Prevent tracking of custom collector URLs that don't match the Faro collector
+- Chore (`@grafana/faro-*`): set default node version to lts/jod
+- Fix (`@grafana/faro-web-sdk`): Update `webkitLineRegex` to prevent the
+  function name capture group from matching URLs
+
+### Breaking
+
+Breaking changes coming with Faro version 2
+
+- **`@grafana/faro-web-tracing`**
+  - Removed the deprecated `FaroSessionSpanProcessor` which is replaced by the
+    `FaroMetaAttributesSpanProcessor`. While `FaroSessionSpanProcessor` wasn't used anymore,
+    it was kept for users using it in manual Faro + OTel setups.
+  - Removed the deprecated `session_id` attribute in favor of `session.id`.
+
+- **`@grafana/faro-web-sdk`**
+  - Removed deprecated console instrumentation config options. Configure the instrumentation through
+    global Faro options as documented in [How to use the console instrumentation](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/instrument/console-instrumentation/#how-to-use-the-console-instrumentation).
+  - Removed the internal deprecated Faro conventions names object. If you were using this export,
+    the names are now available through individual constant exports.
+  - **Experimental packages**:
+    Removed the `instrumentation-fetch`, `instrumentation-xhr`, and `instrumentation-performance-timeline`
+    packages due to lack of maintenance. These packages remain available on NPM but are flagged as deprecated.
+
+## 1.19.0
+
+- Feature (`@grafana/faro-web-sdk`): Add CSP instrumentation (#1312)
+
+- Improvement (`@grafana/faro-*`): Rename `userActionEventType` to `userActionTrigger` for improved clarity (#1298)
+
+- Chore (`@grafana/faro-web-sdk`): Prevent tracking of custom collector URLs that don't match the Faro collector
   URL structure (#1297)
-- chore(user actions): Rename `userActionEventType` to `userActionTrigger` for improved clarity (#1298)
+- Chore (`@grafana/faro-core`): Ensure first instrumentation gets properly removed (#1312)
+- Chore (`@grafana/faro-*`): Remove Node.js 23 from build and test matrix as it's EoL (#1343)
+- Chore (`@grafana/faro-*`): upgrade to yarn 4
 
 - chore(`@grafana/faro web-sdk`): Move the stackFrames from the errors instrumentation package to the utils package (#1316)
 - improvement (`@grafana/faro-web-sdk`): Allow users to configure the stackTraceParser in the BrowserConfig (#1316)
@@ -15,14 +44,14 @@
 
 ## 1.18.2
 
-- fix(user actions): don't attach user action context to http request when in halt mode (#1249)
+- Improvement (`@grafana/faro-web-sdk`): don't attach user action context to http request when in halt mode (#1249)
 
-- chore(deps): Updated Node.js version support by removing Node.js 18 (EOL) and adding Node.js 24
+- Chore (`@grafana/faro-*`): Updated Node.js version support by removing Node.js 18 (EOL) and adding Node.js 24
   LTS (#1259).
 
 ## 1.18.1
 
-- Chore(deps): Revert "Changed Node.js version support by removing Node.js 18 because it is EOL" (#1195).
+- Chore (`@grafana/faro-*`): Revert "Changed Node.js version support by removing Node.js 18 because it is EOL" (#1195).
 
 ## 1.18.0
 
@@ -218,7 +247,6 @@
 ### Breaking
 
 - Dependencies (`@grafana/faro-transport-otlp-http [experimental]`): upgrade otel deps (#670)
-
   - Note: some attributes have been changed due to otel semantic attributes spec:
     - `enduser.id` is replaced by `user.id`
     - `enduser.name` is replaced by `user.username`,

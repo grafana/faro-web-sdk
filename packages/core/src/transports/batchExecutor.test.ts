@@ -45,10 +45,10 @@ describe('BatchExecutor', () => {
       });
 
       be.addItem(item);
-      expect(mockSendFunction).not.toBeCalled();
+      expect(mockSendFunction).not.toHaveBeenCalled();
 
       be.addItem(item);
-      expect(mockSendFunction).toBeCalledTimes(1);
+      expect(mockSendFunction).toHaveBeenCalledTimes(1);
     });
 
     it('tests send with empty buffer', () => {
@@ -58,7 +58,7 @@ describe('BatchExecutor', () => {
       });
 
       jest.advanceTimersByTime(2);
-      expect(mockSendFunction).not.toBeCalled();
+      expect(mockSendFunction).not.toHaveBeenCalled();
     });
 
     it('tests send when "visibilitychange" event is emitted and visibilityState changes', () => {
@@ -76,7 +76,7 @@ describe('BatchExecutor', () => {
         },
       });
       document.dispatchEvent(new Event('visibilitychange'));
-      expect(mockSendFunction).toBeCalledTimes(1);
+      expect(mockSendFunction).toHaveBeenCalledTimes(1);
     });
 
     it('tests send when "visibilitychange" event is emitted and visibilityState changes to visible', () => {
@@ -94,7 +94,7 @@ describe('BatchExecutor', () => {
         },
       });
       document.dispatchEvent(new Event('visibilitychange'));
-      expect(mockSendFunction).toBeCalledTimes(0);
+      expect(mockSendFunction).toHaveBeenCalledTimes(0);
     });
 
     it('tests send when starting paused', () => {
@@ -108,7 +108,7 @@ describe('BatchExecutor', () => {
       be.addItem(item);
       jest.advanceTimersByTime(2);
 
-      expect(mockSendFunction).not.toBeCalled();
+      expect(mockSendFunction).not.toHaveBeenCalled();
     });
 
     it('tests send when paused', () => {
@@ -122,7 +122,7 @@ describe('BatchExecutor', () => {
       be.pause();
       jest.advanceTimersByTime(2);
 
-      expect(mockSendFunction).not.toBeCalled();
+      expect(mockSendFunction).not.toHaveBeenCalled();
     });
 
     it('tests send when unpaused', () => {
@@ -137,9 +137,9 @@ describe('BatchExecutor', () => {
       jest.advanceTimersByTime(2);
       be.start();
 
-      expect(mockSendFunction).not.toBeCalled();
+      expect(mockSendFunction).not.toHaveBeenCalled();
       jest.advanceTimersByTime(2);
-      expect(mockSendFunction).toBeCalledTimes(1);
+      expect(mockSendFunction).toHaveBeenCalledTimes(1);
     });
 
     it('tests groupItems', () => {
@@ -187,7 +187,7 @@ describe('BatchExecutor', () => {
       });
 
       jest.advanceTimersByTime(2);
-      expect(mockSendFunction).toBeCalledTimes(2);
+      expect(mockSendFunction).toHaveBeenCalledTimes(2);
     });
   });
 });

@@ -20,7 +20,6 @@ jest.mock('web-vitals', () => {
   return {
     onCLS: (cb: (metric: Metric) => void) => cb(createMetric('CLS')),
     onFCP: (cb: (metric: Metric) => void) => cb(createMetric('FCP')),
-    onFID: (cb: (metric: Metric) => void) => cb(createMetric('FID')),
     onLCP: (cb: (metric: Metric) => void) => cb(createMetric('LCP')),
     onTTFB: (cb: (metric: Metric) => void) => cb(createMetric('TTFB')),
     onINP: (cb: (metric: Metric) => void) => cb(createMetric('INP')),
@@ -28,7 +27,7 @@ jest.mock('web-vitals', () => {
 });
 
 describe('WebVitalsBasicInstrumentation', () => {
-  it.each(['cls', 'fcp', 'fid', 'inp', 'lcp', 'ttfb'])('send %p metrics correctly', (metric) => {
+  it.each(['cls', 'fcp', 'inp', 'lcp', 'ttfb'])('send %p metrics correctly', (metric) => {
     const pushMeasurement = jest.fn();
     new WebVitalsBasic(pushMeasurement).initialize();
 

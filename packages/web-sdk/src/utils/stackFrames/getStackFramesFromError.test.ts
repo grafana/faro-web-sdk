@@ -22,6 +22,30 @@ describe('getStackFramesFromError', () => {
     ]);
   });
 
+  it('should handle Chrome v36 traces with parentheses in URL', () => {
+    const result = getStackFramesFromError(CapturedExceptions.CHROME_36_PARENTHESES_URL);
+    expect(result).toEqual([
+      buildStackFrame('http://localhost:8080/[brackets]/(parentheses)/file.js', 'dumpExceptionError', 41, 27),
+      buildStackFrame('http://localhost:8080/[brackets]/(parentheses)/file.js', 'HTMLButtonElement.onclick', 107, 146),
+    ]);
+  });
+
+  it('should handle Chrome v36 traces when no function name is resolved', () => {
+    const result = getStackFramesFromError(CapturedExceptions.CHROME_36_NO_FUNCTION_NAME);
+    expect(result).toEqual([
+      buildStackFrame('http://localhost:8080/file.js', undefined, 41, 27),
+      buildStackFrame('http://localhost:8080/file.js', 'HTMLButtonElement.onclick', 107, 146),
+    ]);
+  });
+
+  it('should handle Chrome v36 traces when no function name is resolved and parentheses in URL', () => {
+    const result = getStackFramesFromError(CapturedExceptions.CHROME_36_NO_FUNCTION_NAME_PARENTHESES_URL);
+    expect(result).toEqual([
+      buildStackFrame('http://localhost:8080/[brackets]/(parentheses)/file.js', undefined, 41, 27),
+      buildStackFrame('http://localhost:8080/[brackets]/(parentheses)/file.js', 'HTMLButtonElement.onclick', 107, 146),
+    ]);
+  });
+
   it('should handle Chrome v48 traces', () => {
     const result = getStackFramesFromError(CapturedExceptions.CHROME_48_NESTED_EVAL);
     expect(result).toEqual([
@@ -184,6 +208,33 @@ CapturedExceptions.CHROME_36 = {
     'Error: Default error\n' +
     '    at dumpExceptionError (http://localhost:8080/file.js:41:27)\n' +
     '    at HTMLButtonElement.onclick (http://localhost:8080/file.js:107:146)',
+};
+
+CapturedExceptions.CHROME_36_PARENTHESES_URL = {
+  message: 'Default error',
+  name: 'Error',
+  stack:
+    'Error: Default error\n' +
+    '    at dumpExceptionError (http://localhost:8080/[brackets]/(parentheses)/file.js:41:27)\n' +
+    '    at HTMLButtonElement.onclick (http://localhost:8080/[brackets]/(parentheses)/file.js:107:146)',
+};
+
+CapturedExceptions.CHROME_36_NO_FUNCTION_NAME = {
+  message: 'Default error',
+  name: 'Error',
+  stack:
+    'Error: Default error\n' +
+    '    at http://localhost:8080/file.js:41:27\n' +
+    '    at HTMLButtonElement.onclick (http://localhost:8080/file.js:107:146)',
+};
+
+CapturedExceptions.CHROME_36_NO_FUNCTION_NAME_PARENTHESES_URL = {
+  message: 'Default error',
+  name: 'Error',
+  stack:
+    'Error: Default error\n' +
+    '    at http://localhost:8080/[brackets]/(parentheses)/file.js:41:27\n' +
+    '    at HTMLButtonElement.onclick (http://localhost:8080/[brackets]/(parentheses)/file.js:107:146)',
 };
 
 CapturedExceptions.CHROME_46 = {

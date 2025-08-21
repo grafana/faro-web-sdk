@@ -77,7 +77,6 @@ The `api` property on the Faro instance contains all the necessary methods to pu
 
 - `pushError` - is a method to push an error/exception to the Faro instance. It accepts a mandatory `message` parameter
   and an optional one where you can set:
-
   - `skipDedupe` - a flag for enforcing error push even if the error is identical to the previous one.
   - `stackFrames` - an array of stack frames. Defaults to parsing `error.stack` if present.
   - `type` - the type of exception. Default value: `error.name` or `"error"`.
@@ -119,7 +118,6 @@ The `api` property on the Faro instance contains all the necessary methods to pu
   The second optional parameter is called `domain` and it is a string that's used to group events together.
 
   The third optional parameter is an optional `options` object where you can set:
-
   - `skipDedupe` - a flag for enforcing event push even if the event is identical to the previous one.
 
   ```ts
@@ -136,7 +134,6 @@ The `api` property on the Faro instance contains all the necessary methods to pu
 
 - `pushLog` - is a method to register a log event. The method accepts a mandatory `args` parameter which is an array of
   arguments that will be stringified and sent to the transports and an optional one where you can set:
-
   - `skipDedupe` - a flag for enforcing log push even if the log is identical to the previous one.
   - `logLevel` - the type of message that we register.
   - `context` - a plain object containing primitive values that will be recorded along with the message.
@@ -159,7 +156,6 @@ The `api` property on the Faro instance contains all the necessary methods to pu
 
 - `pushMeasurement` - is a method for registering metrics. The method accepts a mandatory `payload` parameter and an
   optional parameter for passing additional options:
-
   - `skipDedupe` - a flag for enforcing measurement push even if the measurement is identical to the previous one.
 
   ```ts

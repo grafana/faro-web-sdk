@@ -15,7 +15,7 @@ describe('faroTraceExporter.utils', () => {
 
     setSpanStatusOnFetchError(span, request, response);
 
-    expect(span.setStatus).toBeCalledWith({ code: SpanStatusCode.ERROR });
+    expect(span.setStatus).toHaveBeenCalledWith({ code: SpanStatusCode.ERROR });
   });
 
   test.each([200, 300, 399])('does not set span status on fetch success', (result) => {
@@ -25,7 +25,7 @@ describe('faroTraceExporter.utils', () => {
 
     setSpanStatusOnFetchError(span, request, response);
 
-    expect(span.setStatus).not.toBeCalled();
+    expect(span.setStatus).not.toHaveBeenCalled();
   });
 
   it('calls custom setSpanStatusOnFetchError from fetchInstrumentationOptions and callback if provided', () => {
@@ -39,8 +39,8 @@ describe('faroTraceExporter.utils', () => {
 
     fetchCustomAttributeFunctionWithDefaults(callback)(span, request, response);
 
-    expect(span.setStatus).toBeCalledWith({ code: SpanStatusCode.ERROR });
-    expect(callback).toBeCalledWith(span, request, response);
+    expect(span.setStatus).toHaveBeenCalledWith({ code: SpanStatusCode.ERROR });
+    expect(callback).toHaveBeenCalledWith(span, request, response);
   });
 
   test.each([500, 599, 400, 499])('set span status on XMLHttpRequest error', (result) => {
@@ -49,7 +49,7 @@ describe('faroTraceExporter.utils', () => {
 
     instrumentationUtilsMock.setSpanStatusOnXMLHttpRequestError(span, xhr);
 
-    expect(span.setStatus).toBeCalledWith({ code: SpanStatusCode.ERROR });
+    expect(span.setStatus).toHaveBeenCalledWith({ code: SpanStatusCode.ERROR });
   });
 
   test.each([200, 300, 399])('does not set span status on XMLHttpRequest success', (result) => {
@@ -58,7 +58,7 @@ describe('faroTraceExporter.utils', () => {
 
     instrumentationUtilsMock.setSpanStatusOnXMLHttpRequestError(span, xhr);
 
-    expect(span.setStatus).not.toBeCalled();
+    expect(span.setStatus).not.toHaveBeenCalled();
   });
 
   it('calls custom setSpanStatusOnFetchError from xhrInstrumentationOptions and callback if provided', () => {
@@ -71,7 +71,7 @@ describe('faroTraceExporter.utils', () => {
 
     instrumentationUtilsMock.xhrCustomAttributeFunctionWithDefaults(callback)(span, xhr);
 
-    expect(span.setStatus).toBeCalledWith({ code: SpanStatusCode.ERROR });
-    expect(callback).toBeCalledWith(span, xhr);
+    expect(span.setStatus).toHaveBeenCalledWith({ code: SpanStatusCode.ERROR });
+    expect(callback).toHaveBeenCalledWith(span, xhr);
   });
 });

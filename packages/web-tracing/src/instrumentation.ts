@@ -16,7 +16,6 @@ import type { Transport } from '@grafana/faro-web-sdk';
 
 import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
 import { FaroTraceExporter } from './faroTraceExporter';
-import { FaroUserActionSpanProcessor } from './faroUserActionSpanProcessor';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 import { getSamplingDecision } from './sampler';
 import {
@@ -65,8 +64,10 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     if (this.config.app.environment) {
       attributes[ATTR_DEPLOYMENT_ENVIRONMENT_NAME] = this.config.app.environment;
+
       /**
        * @deprecated will be removed in the future and has been replaced by ATTR_DEPLOYMENT_ENVIRONMENT_NAME (deployment.environment.name)
+       * We need to keep this for compatibility with some internal services for now.
        */
       attributes[SEMRESATTRS_DEPLOYMENT_ENVIRONMENT] = this.config.app.environment;
     }
@@ -114,14 +115,12 @@ export class TracingInstrumentation extends BaseInstrumentation {
       },
       spanProcessors: [
         options.spanProcessor ??
-          new FaroUserActionSpanProcessor(
-            new FaroMetaAttributesSpanProcessor(
-              new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
-                scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
-                maxExportBatchSize: 30,
-              }),
-              this.metas
-            )
+          new FaroMetaAttributesSpanProcessor(
+            new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
+              scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
+              maxExportBatchSize: 30,
+            }),
+            this.metas
           ),
       ],
     });

@@ -19,8 +19,6 @@
     { "path": "../packages/core/tsconfig.esm.json" },
     { "path": "../packages/react/tsconfig.esm.json" },
     { "path": "../packages/web-sdk/tsconfig.esm.json" },
-    { "path": "../packages/web-tracing/tsconfig.esm.json" },
-    { "path": "../experimental/instrumentation-fetch/tsconfig.esm.json" },
-    { "path": "../experimental/instrumentation-xhr/tsconfig.esm.json" }
+    { "path": "../packages/web-tracing/tsconfig.esm.json" }
   ]
 }
