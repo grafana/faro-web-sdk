@@ -2,6 +2,8 @@
 
 ## Next
 
+## 2.0.0.beta
+
 - Chore (`@grafana/faro-*`): set default node version to lts/jod
 - Fix (`@grafana/faro-web-sdk`): Update `webkitLineRegex` to prevent the
   function name capture group from matching URLs
