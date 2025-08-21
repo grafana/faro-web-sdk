@@ -6164,9 +6164,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cypress@npm:^14.0.0":
-  version: 14.5.4
-  resolution: "cypress@npm:14.5.4"
+"cypress@npm:^15.0.0":
+  version: 15.0.0
+  resolution: "cypress@npm:15.0.0"
   dependencies:
     "@cypress/request": "npm:^3.0.9"
     "@cypress/xvfb": "npm:^1.2.4"
@@ -6208,13 +6208,13 @@ __metadata:
     request-progress: "npm:^3.0.0"
     semver: "npm:^7.7.1"
     supports-color: "npm:^8.1.1"
-    tmp: "npm:~0.2.3"
+    tmp: "npm:~0.2.4"
     tree-kill: "npm:1.2.2"
     untildify: "npm:^4.0.0"
     yauzl: "npm:^2.10.0"
   bin:
     cypress: bin/cypress
-  checksum: 10c0/e4ded8f0ae8a6c56ac9ee615fc62d4b5c6543634035edaa5d5cbd67d6cd45457eef02a67ac90d0aa6f4fbfe25663513f782a6351f9305fd572e89a3ef587d3ab
+  checksum: 10c0/601d16909fe013c383ad49f6f736183bcbe64e7b774ba696842d06d865e013f1d64b3fe176e89ce0c127004a97d1d1035ec2f4bf71b00faedbf1b8761cc969b6
   languageName: node
   linkType: hard
 
@@ -7728,7 +7728,7 @@ __metadata:
     "@types/jest": "npm:^30.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^5.48.2"
     "@typescript-eslint/parser": "npm:^7.18.0"
-    cypress: "npm:^14.0.0"
+    cypress: "npm:^15.0.0"
     eslint: "npm:^8.32.0"
     eslint-config-prettier: "npm:^10.0.1"
     eslint-plugin-import: "npm:^2.27.5"
@@ -15588,7 +15588,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tmp@npm:~0.2.1, tmp@npm:~0.2.3":
+"tmp@npm:~0.2.1, tmp@npm:~0.2.4":
   version: 0.2.5
   resolution: "tmp@npm:0.2.5"
   checksum: 10c0/cee5bb7d674bb4ba3ab3f3841c2ca7e46daeb2109eec395c1ec7329a91d52fcb21032b79ac25161a37b2565c4858fefab927af9735926a113ef7bac9091a6e0e
