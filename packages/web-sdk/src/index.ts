@@ -5,7 +5,13 @@ export { defaultEventDomain } from './consts';
 
 export { initializeFaro } from './initialize';
 
-export { getDataFromSafariExtensions, getStackFramesFromError, parseStacktrace, createStacktraceParser, buildStackFrame } from './utils';
+export {
+  getDataFromSafariExtensions,
+  getStackFramesFromError,
+  parseStacktrace,
+  createStacktraceParser,
+  buildStackFrame,
+} from './utils';
 
 export {
   ConsoleInstrumentation,

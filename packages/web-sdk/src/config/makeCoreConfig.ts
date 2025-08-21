@@ -65,7 +65,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     ...restProperties
   }: BrowserConfig = browserConfig;
 
-
   return {
     ...restProperties,
 

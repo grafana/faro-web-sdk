@@ -3,7 +3,6 @@ import type { SpanContext } from '@opentelemetry/api';
 import type { TraceContext } from '../traces';
 import type { UserAction } from '../types';
 
-
 export interface ExceptionStackFrame {
   filename: string;
   function: string;
