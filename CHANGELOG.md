@@ -11,6 +11,7 @@
 - chore(`@grafana/faro web-sdk`): Move the stackFrames from the errors instrumentation package to the utils package (#1316)
 - improvement (`@grafana/faro-web-sdk`): Allow users to configure the stackTraceParser in the BrowserConfig (#1316)
 - chore(`@grafana/faro-web-sdk`): remove the setStackTraceParser function (#1316)
+- **BREAKING**: Remove `newStackTraceParser` function and `StacktraceParser` interface. Use `parseStacktrace` function directly instead (#1316)
 
 ## 1.18.2
 
