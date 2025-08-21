@@ -18,7 +18,7 @@ import { browserMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
-import { createStacktraceParser } from '../utils';
+import { parseStacktrace } from '../utils';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
@@ -80,8 +80,8 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     isolate,
     logArgsSerializer,
     metas,
-    // Use browser-provided parser or create default web-sdk parser
-    parseStacktrace: browserConfig.parseStacktrace ?? createStacktraceParser(),
+    // Use browser-provided parser or use parseStacktrace as default
+    parseStacktrace: browserConfig.parseStacktrace ?? parseStacktrace,
     paused,
     preventGlobalExposure,
     transports,
