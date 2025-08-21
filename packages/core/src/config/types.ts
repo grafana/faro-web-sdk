@@ -59,7 +59,7 @@ export interface Config<P = APIEvent> {
   /**
    * The stacktrace parser to use for parsing stack traces.
    */
-  parseStacktrace: (err: ExtendedError) => Stacktrace;
+  parseStacktrace?: (err: ExtendedError) => Stacktrace;
 
   /**
    * Pause sending data (default: false)

@@ -65,8 +65,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     ...restProperties
   }: BrowserConfig = browserConfig;
 
-  // use the default stacktrace parser if no custom stacktrace parser is provided
-  const stackTraceParser = browserConfig.parseStacktrace ?? createStacktraceParser();
 
   return {
     ...restProperties,
@@ -82,7 +80,8 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     isolate,
     logArgsSerializer,
     metas,
-    parseStacktrace: stackTraceParser,
+    // Use browser-provided parser or create default web-sdk parser
+    parseStacktrace: browserConfig.parseStacktrace ?? createStacktraceParser(),
     paused,
     preventGlobalExposure,
     transports,

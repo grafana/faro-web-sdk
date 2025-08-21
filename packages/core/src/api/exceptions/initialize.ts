@@ -21,6 +21,7 @@ import type { UserActionsAPI } from '../userActions';
 import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
+import { defaultStacktraceParser } from './defaultStacktraceParser';
 import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI } from './types';
 
 export function initializeExceptionsAPI({
@@ -43,7 +44,8 @@ export function initializeExceptionsAPI({
 
   let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace' | 'context'> | null = null;
 
-  const parseStacktrace = config.parseStacktrace;
+  // Use provided parser or fall back to simple default parser
+  const parseStacktrace = config.parseStacktrace ?? defaultStacktraceParser;
 
   const { ignoreErrors = [], preserveOriginalError } = config;
 
