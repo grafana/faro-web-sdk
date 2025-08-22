@@ -230,7 +230,7 @@ describe('api.exceptions', () => {
         expect((transport.items[0]?.payload as ExceptionEvent).timestamp).toBe('1970-01-01T00:00:00.123Z');
       });
 
-      it('Adds error cause to error context', 
+      it('Adds error cause to error context', () => { 
       
         const error = new Error('test', { cause: 'foo' });
         const error2 = new Error('test2', { cause: [1, 3] });
