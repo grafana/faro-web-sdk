@@ -230,18 +230,13 @@ describe('api.exceptions', () => {
         expect((transport.items[0]?.payload as ExceptionEvent).timestamp).toBe('1970-01-01T00:00:00.123Z');
       });
 
-      it('Adds error cause to error context', () => {
-        
+      it('Adds error cause to error context', 
+      
         const error = new Error('test', { cause: 'foo' });
-        
         const error2 = new Error('test2', { cause: [1, 3] });
-        
         const error3 = new Error('test3', { cause: { a: 'b' } });
-        
         const error4 = new Error('test4', { cause: new Error('original error') });
-        
         const error5 = new Error('test5', { cause: null });
-        
         const error6 = new Error('test6', { cause: undefined });
         const error7 = new Error('test6');
 

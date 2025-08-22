@@ -4,7 +4,7 @@
     "experimental/*",
     "demo"
   ],
-  "version": "1.19.0",
+  "version": "2.0.0-beta",
   "npmClient": "yarn",
   "$schema": "node_modules/lerna/schemas/lerna-schema.json"
 }
