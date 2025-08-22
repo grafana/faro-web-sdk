@@ -75,3 +75,37 @@ Faro releases follow the [Semantic Versioning](https://semver.org/) naming schem
 Faro supports all active LTS (Long Term Support) and current Node versions. When Node.js versions
 reach end-of-life, we remove them from our test matrix and add new versions as they are released.
 You can find a [release schedule on nodejs.org](https://nodejs.org/en/about/previous-releases#looking-for-the-latest-release-of-a-version-branch)
+
+---
+
+### 📢 Faro v2 Pre-release is Live! 🎉
+
+We’re excited to announce that Faro v2 is now available in pre-release.
+This version modernizes Faro, simplifies setup, and removes legacy code, to give users a cleaner and better performing experience.
+
+#### ✨ What’s New
+
+- Web Vitals v5 – Upgraded to v5 of Web Vitals library to remove FID metric and for improved performance.
+
+- Cleaner Tracing APIs – Removed redundant/deprecated attributes.
+
+- Simplified Setup – Simplified the console instrumentation configuration.
+
+- Leaner Core – Deprecated packages and legacy internals were removed for improved stability.
+
+#### ⚠️ Pre-release Note
+
+- Please install using the explicit version tag **@2.0.0-beta**
+- 👉 **@latest** will continue to point to **v1.19.0** until v2 reaches GA.
+
+##### Follow the upgrade guides for more information
+
+[Upgrading Guide](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/instrument/upgrading/upgrade-guide/)
+[v2 Upgrade Guide](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/instrument/upgrading/upgrade-v2/)
+
+#### 🚀 Get Involved
+
+- Contribute on [GitHub](https://github.com/grafana/faro-web-sdk)
+- Share feedback: Grafana's Community Slack - [#faro](https://grafana.slack.com/archives/C048UH68BM5)
+
+Thanks to all contributors and early adopters for helping us shape Faro v2! 💙
