@@ -80,7 +80,7 @@ You can find a [release schedule on nodejs.org](https://nodejs.org/en/about/prev
 
 ### 📢 Faro v2 Pre-release is Live! 🎉
 
-We’re excited to announce that Faro v2 is now available in pre-release. 
+We’re excited to announce that Faro v2 is now available in pre-release.
 This version modernizes Faro, simplifies setup, and removes legacy code, to give users a cleaner and better performing experience.
 
 #### ✨ What’s New
@@ -98,7 +98,7 @@ This version modernizes Faro, simplifies setup, and removes legacy code, to give
 - Please install using the explicit version tag **@2.0.0-beta**
 - 👉 **@latest** will continue to point to **v1.19.0** until v2 reaches GA.
 
-##### Follow the upgrade guides for more information:
+##### Follow the upgrade guides for more information
 
 [Upgrading Guide](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/instrument/upgrading/upgrade-guide/)
 [v2 Upgrade Guide](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/instrument/upgrading/upgrade-v2/)
