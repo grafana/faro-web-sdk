@@ -2,7 +2,7 @@ import type { Span } from '@opentelemetry/api';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 
 import { UserActionState } from '@grafana/faro-core';
-import { faro } from '@grafana/faro-web-sdk'
+import { faro } from '@grafana/faro-web-sdk';
 
 import { FaroXhrInstrumentation } from './faroXhrInstrumentation';
 import {
