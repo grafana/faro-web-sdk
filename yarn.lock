@@ -803,8 +803,8 @@ __metadata:
   linkType: hard
 
 "@grafana/eslint-config@npm:^8.0.0":
-  version: 8.1.0
-  resolution: "@grafana/eslint-config@npm:8.1.0"
+  version: 8.2.0
+  resolution: "@grafana/eslint-config@npm:8.2.0"
   peerDependencies:
     "@stylistic/eslint-plugin-ts": ">=2.9.0"
     "@typescript-eslint/eslint-plugin": ">=6.18.0"
@@ -815,7 +815,7 @@ __metadata:
     eslint-plugin-react: ">=7.33.0"
     eslint-plugin-react-hooks: ">=4.6.0"
     typescript: ">=5.2.0"
-  checksum: 10c0/7bebebce0f7900217e827959841ceead9d3829296ff0869ccd11278f3fd6cc3d3df262ad98c3df0af8e10c5b485271a8f7ef7759b0b8123d7b8fc0b93f402d39
+  checksum: 10c0/d8a234a6b83460e1eee6f8aa5312521c20d7871004600d0e5ff507f8094bb7da211ea1c19a29d15579a002b0ab624bacde38f5b6ab78a4b77c72ba09b211a7be
   languageName: node
   linkType: hard
 
