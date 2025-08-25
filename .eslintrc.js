@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   extends: ['@grafana/eslint-config', 'plugin:import/errors', 'plugin:import/warnings', 'plugin:import/typescript'],
   plugins: ['eslint-plugin-no-only-tests'],
   settings: {

@@ -8,6 +8,7 @@
 # App-specifics
 .cache
 .eslintcache
+**/.eslintrc.js
 .husky
 coverage
 cypress/videos
