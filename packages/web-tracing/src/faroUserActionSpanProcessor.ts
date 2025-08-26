@@ -1,8 +1,7 @@
 import { type Context, SpanKind } from '@opentelemetry/api';
 import type { ReadableSpan, Span, SpanProcessor } from '@opentelemetry/sdk-trace-web';
 
-import { UserActionState } from '@grafana/faro-core';
-import { faro } from '@grafana/faro-web-sdk';
+import { faro, UserActionState } from '@grafana/faro-web-sdk';
 
 // There is very rare race condition that would result in span being attached to different user action. As shown in the diagram below.
 // The scenario is the following
