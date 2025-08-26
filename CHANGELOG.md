@@ -2,7 +2,15 @@
 
 ## Next
 
+## 2.0.0.beta-2
+
+- Fix (`@grafana/faro-web-tracing`): fixed error with the web-tracing CDN bundle related to incorrect dependency import of the getActiveUserAction API (#1500)
+
 ## 2.0.0.beta
+
+- Feature (`@grafana/faro-web-sdk`): Updated the web-vitals library to v5 (#1386)
+- Feature (`@grafana/faro-web-sdk`): Added user actions to the API (#1384)
+- Feature (`@grafana/faro-web-sdk`): Added user actions severity (#1418)
 
 - Chore (`@grafana/faro-*`): set default node version to lts/jod
 - Fix (`@grafana/faro-web-sdk`): Update `webkitLineRegex` to prevent the
