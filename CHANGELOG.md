@@ -4,7 +4,8 @@
 
 ## 2.0.0.beta-2
 
-- Fix (`@grafana/faro-web-tracing`): fixed error with the web-tracing CDN bundle related to incorrect dependency import of the getActiveUserAction API (#1500)
+- Fix (`@grafana/faro-web-tracing`): fixed error with the web-tracing CDN bundle related to
+  incorrect dependency import of the getActiveUserAction API (#1500)
 
 ## 2.0.0.beta
 
