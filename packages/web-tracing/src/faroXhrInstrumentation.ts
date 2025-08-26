@@ -3,8 +3,7 @@ import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xm
 import type { XMLHttpRequestInstrumentationConfig } from '@opentelemetry/instrumentation-xml-http-request';
 import type { OpenFunction } from '@opentelemetry/instrumentation-xml-http-request/build/src/types';
 
-import { UserActionState } from '@grafana/faro-core';
-import { faro, getUrlFromResource } from '@grafana/faro-web-sdk';
+import { faro, getUrlFromResource, UserActionState } from '@grafana/faro-web-sdk';
 
 type Parent = {
   _createSpan: (xhr: XMLHttpRequest, url: string, method: string) => Span | undefined;
