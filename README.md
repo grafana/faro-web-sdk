@@ -95,7 +95,7 @@ This version modernizes Faro, simplifies setup, and removes legacy code, to give
 
 #### ⚠️ Pre-release Note
 
-- Please install using the explicit version tag **@2.0.0-beta**
+- Please install using this version range **@^2.0.0-beta**
 - 👉 **@latest** will continue to point to **v1.19.0** until v2 reaches GA.
 
 ##### Follow the upgrade guides for more information
