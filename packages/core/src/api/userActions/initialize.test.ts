@@ -1,3 +1,4 @@
+import { faro, UserActionSeverity } from '../..';
 import { mockConfig, mockInternalLogger } from '../../testUtils';
 import { mockTransports } from '../apiTestHelpers';
 
@@ -37,6 +38,27 @@ describe('initializeUserActionsAPI', () => {
     const action = api.startUserAction('first');
     expect(action).toBeInstanceOf(UserAction);
     expect(api.getActiveUserAction()).toBe(action);
+  });
+
+  it('startUserAction has custom severity and trigger set', () => {
+    const action = api.startUserAction('first', undefined, {
+      severity: UserActionSeverity.Critical,
+      triggerName: 'foo',
+    });
+    expect(action).toBeInstanceOf(UserAction);
+
+    const activeAction = api.getActiveUserAction();
+    expect(activeAction).toBe(action);
+
+    activeAction?.end();
+
+    expect(faro.api.pushEvent).toHaveBeenCalledTimes(1);
+    expect(faro.api.pushEvent).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ userActionSeverity: 'critical', userActionTrigger: 'foo' }),
+      undefined,
+      expect.any(Object)
+    );
   });
 
   it('subsequent startUserAction calls will return undefined as long as there is an action running', () => {
