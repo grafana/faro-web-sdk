@@ -824,7 +824,7 @@ __metadata:
   resolution: "@grafana/faro-core@workspace:packages/core"
   dependencies:
     "@opentelemetry/api": "npm:^1.9.0"
-    "@opentelemetry/otlp-transformer": "npm:^0.203.0"
+    "@opentelemetry/otlp-transformer": "npm:^0.204.0"
     "@types/node": "npm:^24.0.1"
   languageName: unknown
   linkType: soft
@@ -927,7 +927,7 @@ __metadata:
   resolution: "@grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http"
   dependencies:
     "@grafana/faro-core": "npm:^2.0.0-beta-2"
-    "@opentelemetry/otlp-transformer": "npm:^0.203.0"
+    "@opentelemetry/otlp-transformer": "npm:^0.204.0"
     "@opentelemetry/semantic-conventions": "npm:^1.28.0"
   languageName: unknown
   linkType: soft
@@ -956,7 +956,7 @@ __metadata:
     "@opentelemetry/instrumentation": "npm:^0.203.0"
     "@opentelemetry/instrumentation-fetch": "npm:^0.203.0"
     "@opentelemetry/instrumentation-xml-http-request": "npm:^0.204.0"
-    "@opentelemetry/otlp-transformer": "npm:^0.203.0"
+    "@opentelemetry/otlp-transformer": "npm:^0.204.0"
     "@opentelemetry/resources": "npm:^2.0.0"
     "@opentelemetry/sdk-trace-web": "npm:^2.0.0"
     "@opentelemetry/semantic-conventions": "npm:^1.32.0"
@@ -2507,7 +2507,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/otlp-transformer@npm:0.203.0, @opentelemetry/otlp-transformer@npm:^0.203.0":
+"@opentelemetry/otlp-transformer@npm:0.203.0":
   version: 0.203.0
   resolution: "@opentelemetry/otlp-transformer@npm:0.203.0"
   dependencies:
@@ -2524,7 +2524,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/otlp-transformer@npm:0.204.0":
+"@opentelemetry/otlp-transformer@npm:0.204.0, @opentelemetry/otlp-transformer@npm:^0.204.0":
   version: 0.204.0
   resolution: "@opentelemetry/otlp-transformer@npm:0.204.0"
   dependencies:
