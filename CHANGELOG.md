@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-sdk`): Fixed an issue where custom severity and custom trigger properties
+  were not being included in user action attributes (#1551)
+
 ## 2.0.0.beta-2
 
 - Fix (`@grafana/faro-web-tracing`): fixed error with the web-tracing CDN bundle related to
