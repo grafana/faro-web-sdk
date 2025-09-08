@@ -840,7 +840,7 @@ __metadata:
     "@grpc/grpc-js": "npm:^1.9.0"
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/core": "npm:^2.0.0"
-    "@opentelemetry/exporter-trace-otlp-grpc": "npm:^0.203.0"
+    "@opentelemetry/exporter-trace-otlp-grpc": "npm:^0.204.0"
     "@opentelemetry/instrumentation": "npm:^0.204.0"
     "@opentelemetry/instrumentation-express": "npm:^0.52.0"
     "@opentelemetry/instrumentation-http": "npm:^0.203.0"
@@ -2253,7 +2253,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-trace-otlp-grpc@npm:0.204.0":
+"@opentelemetry/exporter-trace-otlp-grpc@npm:0.204.0, @opentelemetry/exporter-trace-otlp-grpc@npm:^0.204.0":
   version: 0.204.0
   resolution: "@opentelemetry/exporter-trace-otlp-grpc@npm:0.204.0"
   dependencies:
@@ -2267,23 +2267,6 @@ __metadata:
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
   checksum: 10c0/7c556be8b07dfede6ae3f1d453a3d1d0483f7a5efa51f420da2670e234ae5de0ebfeb767d9bc3772025985cfb12c79ac1e5267962dc8a269fc8317b1e705525d
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/exporter-trace-otlp-grpc@npm:^0.203.0":
-  version: 0.203.0
-  resolution: "@opentelemetry/exporter-trace-otlp-grpc@npm:0.203.0"
-  dependencies:
-    "@grpc/grpc-js": "npm:^1.7.1"
-    "@opentelemetry/core": "npm:2.0.1"
-    "@opentelemetry/otlp-exporter-base": "npm:0.203.0"
-    "@opentelemetry/otlp-grpc-exporter-base": "npm:0.203.0"
-    "@opentelemetry/otlp-transformer": "npm:0.203.0"
-    "@opentelemetry/resources": "npm:2.0.1"
-    "@opentelemetry/sdk-trace-base": "npm:2.0.1"
-  peerDependencies:
-    "@opentelemetry/api": ^1.3.0
-  checksum: 10c0/67f6c63c2fcb38a63db9708cd0a420c1090717f5945767fa779a7c324adbc610f3aec44259eb7b76fbf98ee684049a42a492a54df5d37db31c4d7e460596623e
   languageName: node
   linkType: hard
 
@@ -2476,20 +2459,6 @@ __metadata:
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
   checksum: 10c0/7b0331a70a11c96cffc0e2f8822dc99893630b1f661f431484e25f78c4c822129d1d3ddff1ccdce3be3a21587ed94644bc8145bdd9d4143be742ddeb723c54af
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/otlp-grpc-exporter-base@npm:0.203.0":
-  version: 0.203.0
-  resolution: "@opentelemetry/otlp-grpc-exporter-base@npm:0.203.0"
-  dependencies:
-    "@grpc/grpc-js": "npm:^1.7.1"
-    "@opentelemetry/core": "npm:2.0.1"
-    "@opentelemetry/otlp-exporter-base": "npm:0.203.0"
-    "@opentelemetry/otlp-transformer": "npm:0.203.0"
-  peerDependencies:
-    "@opentelemetry/api": ^1.3.0
-  checksum: 10c0/8e0936a7bc5359fe2f15d6302e7ba2cafe93e3dc95c0d316a95b78d8638822939612f07cb27c60544eefbabae2c8ed9b83d246695e92af30b0896a7c3888db32
   languageName: node
   linkType: hard
 
