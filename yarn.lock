@@ -841,7 +841,7 @@ __metadata:
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/core": "npm:^2.0.0"
     "@opentelemetry/exporter-trace-otlp-grpc": "npm:^0.203.0"
-    "@opentelemetry/instrumentation": "npm:^0.203.0"
+    "@opentelemetry/instrumentation": "npm:^0.204.0"
     "@opentelemetry/instrumentation-express": "npm:^0.52.0"
     "@opentelemetry/instrumentation-http": "npm:^0.203.0"
     "@opentelemetry/instrumentation-pg": "npm:^0.56.0"
@@ -953,7 +953,7 @@ __metadata:
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/core": "npm:^2.0.0"
     "@opentelemetry/exporter-trace-otlp-http": "npm:^0.203.0"
-    "@opentelemetry/instrumentation": "npm:^0.203.0"
+    "@opentelemetry/instrumentation": "npm:^0.204.0"
     "@opentelemetry/instrumentation-fetch": "npm:^0.203.0"
     "@opentelemetry/instrumentation-xml-http-request": "npm:^0.204.0"
     "@opentelemetry/otlp-transformer": "npm:^0.203.0"
@@ -2442,7 +2442,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation@npm:0.204.0":
+"@opentelemetry/instrumentation@npm:0.204.0, @opentelemetry/instrumentation@npm:^0.204.0":
   version: 0.204.0
   resolution: "@opentelemetry/instrumentation@npm:0.204.0"
   dependencies:
