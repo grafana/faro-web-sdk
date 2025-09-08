@@ -2563,7 +2563,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/resources@npm:2.0.1, @opentelemetry/resources@npm:^2.0.0":
+"@opentelemetry/resources@npm:2.0.1":
   version: 2.0.1
   resolution: "@opentelemetry/resources@npm:2.0.1"
   dependencies:
@@ -2575,7 +2575,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/resources@npm:2.1.0":
+"@opentelemetry/resources@npm:2.1.0, @opentelemetry/resources@npm:^2.0.0":
   version: 2.1.0
   resolution: "@opentelemetry/resources@npm:2.1.0"
   dependencies:
