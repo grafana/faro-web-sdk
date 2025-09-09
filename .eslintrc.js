@@ -43,4 +43,25 @@ module.exports = {
     project: 'tsconfig.base.json',
     tsconfigRootDir: __dirname,
   },
+  overrides: [
+    {
+      files: ['packages/web-tracing/**/*.ts'],
+      excludedFiles: ['packages/web-tracing/**/*.test.ts'],
+      rules: {
+        // Disallow importing core from web tracing
+        'no-restricted-imports': [
+          'error',
+          {
+            paths: [
+              {
+                name: '@grafana/faro-core',
+                message: 'Import from @grafana/faro-web-sdk instead of @grafana/faro-core.',
+              },
+            ],
+            patterns: ['@grafana/faro-core/*'],
+          },
+        ],
+      },
+    },
+  ],
 };

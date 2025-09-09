@@ -19,7 +19,7 @@ export {
   CSPInstrumentation,
   UserActionInstrumentation,
 } from './instrumentations';
-export type { ConsoleInstrumentationOptions, ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
+export type { ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
 export { browserMeta, createSession, sdkMeta } from './metas';
 
@@ -37,7 +37,6 @@ export {
   BaseExtension,
   BaseInstrumentation,
   BaseTransport,
-  Conventions,
   createInternalLogger,
   createPromiseBuffer,
   deepEqual,
@@ -97,6 +96,7 @@ export {
   EVENT_VIEW_CHANGED,
   Observable,
   unknownString,
+  UserActionState,
 } from '@grafana/faro-core';
 
 export type {
@@ -161,13 +161,13 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
+  UserActionSeverity,
 } from '@grafana/faro-core';
 
 export {
   PersistentSessionsManager,
   VolatileSessionsManager,
   MAX_SESSION_PERSISTENCE_TIME,
-  MAX_SESSION_PERSISTENCE_TIME_BUFFER,
   SESSION_EXPIRATION_TIME,
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,

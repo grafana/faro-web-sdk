@@ -65,7 +65,6 @@ export {
   buildStackFrame,
   ConsoleInstrumentation,
   ConsoleTransport,
-  Conventions,
   createInternalLogger,
   createPromiseBuffer,
   createSession,
@@ -141,7 +140,6 @@ export type {
   BeforeSendHook,
   BrowserConfig,
   Config,
-  ConsoleInstrumentationOptions,
   ConsoleTransportOptions,
   ErrorEvent,
   EventAttributes,
@@ -195,4 +193,5 @@ export type {
   Transports,
   UnpatchedConsole,
   ExceptionEventExtended,
+  UserActionSeverity,
 } from '@grafana/faro-web-sdk';

@@ -18,12 +18,12 @@ jobs:
       matrix:
         node: [20.x, 22.x, 24.x]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node }}
           cache: 'yarn'
@@ -49,12 +49,12 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: cypress/browsers
+      image: cypress/browsers:22.12.0
       options: --user 1001
 
     services:
       database:
-        image: postgres:latest
+        image: postgres:17.5
         env:
           POSTGRES_DB: demo
           POSTGRES_PASSWORD: postgres
@@ -66,12 +66,12 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 'lts/iron'
           cache: 'yarn'
@@ -83,7 +83,7 @@ jobs:
         run: yarn build
 
       - name: E2E tests
-        uses: cypress-io/github-action@6c143abc292aa835d827652c2ea025d098311070
+        uses: cypress-io/github-action@b8ba51a856ba5f4c15cf39007636d4ab04f23e3c
         env:
           DATABASE_HOST: database
           DATABASE_PORT: 5432

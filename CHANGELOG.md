@@ -2,6 +2,43 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-sdk`): Fixed an issue where custom severity and custom trigger properties
+  were not being included in user action attributes (#1551)
+
+## 2.0.0.beta-2
+
+- Fix (`@grafana/faro-web-tracing`): fixed error with the web-tracing CDN bundle related to
+  incorrect dependency import of the getActiveUserAction API (#1500)
+
+## 2.0.0.beta
+
+- Feature (`@grafana/faro-web-sdk`): Updated the web-vitals library to v5 (#1386)
+- Feature (`@grafana/faro-web-sdk`): Added user actions to the API (#1384)
+- Feature (`@grafana/faro-web-sdk`): Added user actions severity (#1418)
+
+- Chore (`@grafana/faro-*`): set default node version to lts/jod
+- Fix (`@grafana/faro-web-sdk`): Update `webkitLineRegex` to prevent the
+  function name capture group from matching URLs
+
+### Breaking
+
+Breaking changes coming with Faro version 2
+
+- **`@grafana/faro-web-tracing`**
+  - Removed the deprecated `FaroSessionSpanProcessor` which is replaced by the
+    `FaroMetaAttributesSpanProcessor`. While `FaroSessionSpanProcessor` wasn't used anymore,
+    it was kept for users using it in manual Faro + OTel setups.
+  - Removed the deprecated `session_id` attribute in favor of `session.id`.
+
+- **`@grafana/faro-web-sdk`**
+  - Removed deprecated console instrumentation config options. Configure the instrumentation through
+    global Faro options as documented in [How to use the console instrumentation](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/instrument/console-instrumentation/#how-to-use-the-console-instrumentation).
+  - Removed the internal deprecated Faro conventions names object. If you were using this export,
+    the names are now available through individual constant exports.
+  - **Experimental packages**:
+    Removed the `instrumentation-fetch`, `instrumentation-xhr`, and `instrumentation-performance-timeline`
+    packages due to lack of maintenance. These packages remain available on NPM but are flagged as deprecated.
+
 ## 1.19.0
 
 - Feature (`@grafana/faro-web-sdk`): Add CSP instrumentation (#1312)

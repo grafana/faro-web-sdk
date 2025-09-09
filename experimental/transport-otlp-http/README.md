@@ -1,4 +1,4 @@
-# @grafana/transport-otlp-http
+# @grafana/faro-transport-otlp-http
 
 Faro transport which converts the Faro model to the Open Telemetry model.
 

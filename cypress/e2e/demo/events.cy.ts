@@ -6,7 +6,7 @@ context('Events', () => {
       title: 'an event',
       btnName: 'event-with-attrs',
       aliasGenerator: (body: TransportBody) => {
-        const item = body.events.find((e: EventEvent) => e.name === 'click_button_with_attributes');
+        const item = body.events?.find?.((e: EventEvent) => e.name === 'click_button_with_attributes');
 
         return item?.attributes?.['foo'] === 'bar' && item?.attributes?.['baz'] === 'bad' ? 'event' : undefined;
       },
