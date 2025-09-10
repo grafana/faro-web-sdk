@@ -7356,9 +7356,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^54.0.0":
-  version: 54.5.0
-  resolution: "eslint-plugin-jsdoc@npm:54.5.0"
+"eslint-plugin-jsdoc@npm:^55.1.2":
+  version: 55.1.2
+  resolution: "eslint-plugin-jsdoc@npm:55.1.2"
   dependencies:
     "@es-joy/jsdoccomment": "npm:~0.56.0"
     are-docs-informative: "npm:^0.0.2"
@@ -7367,12 +7367,13 @@ __metadata:
     escape-string-regexp: "npm:^4.0.0"
     espree: "npm:^10.4.0"
     esquery: "npm:^1.6.0"
+    object-deep-merge: "npm:^1.0.5"
     parse-imports-exports: "npm:^0.2.4"
     semver: "npm:^7.7.2"
     spdx-expression-parse: "npm:^4.0.0"
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
-  checksum: 10c0/ea3a2a362a68ca69510eb877f677f888a0323a31adc70da686a0843e036a41dd0bfd4f7ca9774edbde146252282c7794346f8a472454343f48e595f7ce1ea778
+  checksum: 10c0/3b9c90ccb7f2bd44978655371f8b1928d17c702c2eb966069326f919bcacae11185f23e5971dba01367a8161cabd7d70f049e085ac82c1a02f1bf5765668b902
   languageName: node
   linkType: hard
 
@@ -7835,7 +7836,7 @@ __metadata:
     eslint: "npm:^8.32.0"
     eslint-config-prettier: "npm:^10.0.1"
     eslint-plugin-import: "npm:^2.27.5"
-    eslint-plugin-jsdoc: "npm:^54.0.0"
+    eslint-plugin-jsdoc: "npm:^55.1.2"
     eslint-plugin-no-only-tests: "npm:^3.1.0"
     eslint-plugin-prettier: "npm:^5.0.1"
     eslint-plugin-react: "npm:^7.32.1"
@@ -12592,6 +12593,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"object-deep-merge@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "object-deep-merge@npm:1.0.5"
+  dependencies:
+    type-fest: "npm:4.2.0"
+  checksum: 10c0/6664ecb43a2519c9b101f1c3b130dfc73e108d86ec06fbe7261505e1522cf8b69b10dd53b8cbb4cde35cca9d44d349667e2404f06fff85cf9f50b825bb6d1839
+  languageName: node
+  linkType: hard
+
 "object-inspect@npm:^1.13.3, object-inspect@npm:^1.13.4":
   version: 1.13.4
   resolution: "object-inspect@npm:1.13.4"
@@ -16046,6 +16056,13 @@ __metadata:
   version: 4.0.8
   resolution: "type-detect@npm:4.0.8"
   checksum: 10c0/8fb9a51d3f365a7de84ab7f73b653534b61b622aa6800aecdb0f1095a4a646d3f5eb295322127b6573db7982afcd40ab492d038cf825a42093a58b1e1353e0bd
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:4.2.0":
+  version: 4.2.0
+  resolution: "type-fest@npm:4.2.0"
+  checksum: 10c0/75e0c112ae91d3b68c75da9b7563cf393f91ebdfca5d53d0b3f0405690217eadca318f9ddb89d58ee6ed67b8e32d23a4eae2aabc4e351e5ae184d610247bf772
   languageName: node
   linkType: hard
 
