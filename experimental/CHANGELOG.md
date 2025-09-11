@@ -2,6 +2,8 @@
 
 ## Next
 
+- Added support for `SessionRecordingInstrumentation`.
+
 ## 1.13.0
 
 - Improvement (`@grafana/faro-*`) Add required Node engines to package.json ()
