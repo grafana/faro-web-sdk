@@ -9,6 +9,8 @@ updates:
     directory: '/'
     schedule:
       interval: 'daily'
+    cooldown:
+      default-days: 3
     target-branch: 'main'
     open-pull-requests-limit: 30
     commit-message:
