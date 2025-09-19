@@ -46,12 +46,6 @@ export function observeResourceTimings(
           faroResourceId: genShortID(),
         };
 
-        // if (faro.config.trackUserActionsPreview) {
-        //   observable?.notify({
-        //     type: RESOURCE_ENTRY,
-        //   });
-        // }
-
         pushEvent('faro.performance.resource', faroResourceEntry, undefined, {
           spanContext,
           timestampOverwriteMs: performance.timeOrigin + resourceEntryJson.startTime,
