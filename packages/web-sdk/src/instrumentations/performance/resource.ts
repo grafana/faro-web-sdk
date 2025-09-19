@@ -29,7 +29,7 @@ export function observeResourceTimings(
       }
 
       if (isUrlIgnored(resourceEntryRaw.name)) {
-        return;
+        continue;
       }
 
       const resourceEntryJson = resourceEntryRaw.toJSON();
