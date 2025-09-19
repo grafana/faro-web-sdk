@@ -86,17 +86,47 @@ describe('Resource observer', () => {
   it('Ignores entries where name matches ignoredUrls entry', () => {
     const mockPushEvent = jest.fn();
 
-    const mockEntryUrlIsIgnored = jest.fn(() => true);
-    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockImplementationOnce(mockEntryUrlIsIgnored);
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockImplementation((url) => {
+      return url === 'resource_fetch' || url === 'resource_xmlhttprequest';
+    });
 
     initializeFaro(mockConfig({ trackResources: true }));
 
-    observeResourceTimings('123', mockPushEvent, mockObservable);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
 
-    expect(mockEntryUrlIsIgnored).toHaveBeenCalledTimes(1);
-    expect(mockEntryUrlIsIgnored).toHaveBeenCalledWith(performanceResourceEntry.name);
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
+    expect(mockPushEvent).toHaveBeenCalledWith(
+      'faro.performance.resource',
+      expect.objectContaining({
+        faroNavigationId: mockNavigationId,
+      }),
+      undefined,
+      expect.any(Object)
+    );
+  });
+
+  it('Ignores all entries when all URLs are ignored', () => {
+    const mockPushEvent = jest.fn();
+
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValue(true);
+
+    initializeFaro(mockConfig({ trackResources: true }));
+
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
 
     expect(mockPushEvent).not.toHaveBeenCalled();
+  });
+
+  it('Processes entries when no URLs are ignored', () => {
+    const mockPushEvent = jest.fn();
+
+    jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValue(false);
+
+    initializeFaro(mockConfig({ trackResources: true }));
+
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
+
+    expect(mockPushEvent).toHaveBeenCalledTimes(3);
   });
 
   it('Builds entry for first resource', () => {
