@@ -123,4 +123,4 @@ jobs:
         run: npm install -g npm@latest
 
       - name: Publish package to NPM
-        run: npm publish --access public
+        run: npm publish --access public --provenance
