@@ -108,6 +108,7 @@ RUN cp index.ts ${DEMO_PACKAGES_WEB_TRACING_PATH}/src
 
 RUN corepack enable
 RUN corepack prepare yarn@4.9.2 --activate
+COPY .yarn .yarn
 
 RUN rm index.ts
 
