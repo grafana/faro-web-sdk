@@ -22,18 +22,17 @@ export function observeResourceTimings(
     const entries = observedEntries.getEntries();
 
     for (const resourceEntryRaw of entries) {
+      if (isUrlIgnored(resourceEntryRaw.name)) {
+        continue;
+      }
+
       if (faro.config.trackUserActionsPreview) {
         observable?.notify({
           type: RESOURCE_ENTRY,
         });
       }
 
-      if (isUrlIgnored(resourceEntryRaw.name)) {
-        continue;
-      }
-
       const resourceEntryJson = resourceEntryRaw.toJSON();
-
       let spanContext: SpanContext = getSpanContextFromServerTiming(resourceEntryJson?.serverTiming);
 
       if (
