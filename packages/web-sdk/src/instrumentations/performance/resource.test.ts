@@ -173,7 +173,7 @@ describe('Resource observer', () => {
 
     observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
 
-    expect(mockObservable.notify).toHaveBeenCalledTimes(2);
+    expect(mockObservable.notify).toHaveBeenCalledTimes(3);
     expect(mockObservable.notify).toHaveBeenCalledWith({ type: 'resource' });
   });
 
