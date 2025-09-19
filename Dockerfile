@@ -106,13 +106,15 @@ COPY ${DEMO_PACKAGES_WEB_TRACING_PATH}/package.json \
 RUN mkdir ${DEMO_PACKAGES_WEB_TRACING_PATH}/src
 RUN cp index.ts ${DEMO_PACKAGES_WEB_TRACING_PATH}/src
 
+RUN corepack enable
+RUN corepack prepare yarn@4.9.2 --activate
 
 RUN rm index.ts
 
 # Install external dependencies
 # In order to save some time, we install the external dependencies first
 # And later we rebuild everything
-RUN SKIP_GEN_VERSION=1 yarn install --pure-lockfile
+RUN SKIP_GEN_VERSION=1 yarn install --immutable
 
 # Add the rest of the files necessary for internal dependencies
 # Demo
