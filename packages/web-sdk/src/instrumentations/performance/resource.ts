@@ -22,6 +22,12 @@ export function observeResourceTimings(
     const entries = observedEntries.getEntries();
 
     for (const resourceEntryRaw of entries) {
+      if (faro.config.trackUserActionsPreview) {
+        observable?.notify({
+          type: RESOURCE_ENTRY,
+        });
+      }
+
       if (isUrlIgnored(resourceEntryRaw.name)) {
         return;
       }
@@ -40,11 +46,11 @@ export function observeResourceTimings(
           faroResourceId: genShortID(),
         };
 
-        if (faro.config.trackUserActionsPreview) {
-          observable?.notify({
-            type: RESOURCE_ENTRY,
-          });
-        }
+        // if (faro.config.trackUserActionsPreview) {
+        //   observable?.notify({
+        //     type: RESOURCE_ENTRY,
+        //   });
+        // }
 
         pushEvent('faro.performance.resource', faroResourceEntry, undefined, {
           spanContext,
