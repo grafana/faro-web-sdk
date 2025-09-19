@@ -110,7 +110,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 'lts/*'
-          scope: '@grafana'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
