@@ -88,6 +88,7 @@
     "start-server-and-test": "^2.0.1",
     "ts-jest": "^29.0.5",
     "ts-node": "^10.9.1",
+    "tslib": "^2.8.1",
     "typescript": "^5.8.2"
   },
   "packageManager": "yarn@4.9.2",
