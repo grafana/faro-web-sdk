@@ -8,7 +8,7 @@ export class UserEventsInstrumentation extends BaseInstrumentation {
     this.setupEventListeners();
   }
 
-  private logInteraction = (event: Event) => {
+  private logUserInteraction = (event: Event) => {
     if (event.target) {
       const eventType = event.type;
       const targetElement = event.target as HTMLButtonElement;
@@ -29,14 +29,14 @@ export class UserEventsInstrumentation extends BaseInstrumentation {
   };
 
   private setupEventListeners(): void {
-    document.addEventListener('click', this.logInteraction, true);
-    document.addEventListener('change', this.logInteraction, true);
-    document.addEventListener('submit', this.logInteraction, true);
+    document.addEventListener('click', this.logUserInteraction, true);
+    document.addEventListener('change', this.logUserInteraction, true);
+    document.addEventListener('submit', this.logUserInteraction, true);
   }
 
   destroy() {
-    document.removeEventListener('click', this.logInteraction, true);
-    document.removeEventListener('change', this.logInteraction, true);
-    document.removeEventListener('submit', this.logInteraction, true);
+    document.removeEventListener('click', this.logUserInteraction, true);
+    document.removeEventListener('change', this.logUserInteraction, true);
+    document.removeEventListener('submit', this.logUserInteraction, true);
   }
 }
