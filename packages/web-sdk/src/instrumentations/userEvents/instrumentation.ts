@@ -16,7 +16,7 @@ export class UserEventsInstrumentation extends BaseInstrumentation {
       const elementIdentifier = targetElement.innerText || targetElement.id || targetElement.className;
 
       faro.api.pushEvent(
-        `faro.user.interaction-${eventType}`,
+        `faro.user.interaction.${eventType}`,
         {
           event: eventType,
           element: elementType,
