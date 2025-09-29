@@ -19,6 +19,7 @@ export function initializeFaro(): Faro {
     instrumentations: [
       ...getWebInstrumentations({
         captureConsole: true,
+        enableUserEventsInstrumentation: true,
       }),
 
       new TracingInstrumentation(),
