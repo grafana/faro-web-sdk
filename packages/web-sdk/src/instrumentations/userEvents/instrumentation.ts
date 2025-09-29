@@ -1,51 +1,42 @@
-import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
 
 export class UserEventsInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:user-events';
   readonly version = VERSION;
 
   initialize(): void {
-    // TODO: we might miss clicks bc complete is a bit later then dom content loaded but waiting for complete has less impact on load time and we can ensure to instrument elements loaded later
-    // onDocumentReady(() => this.setupEventListeners());
-
     this.setupEventListeners();
   }
 
   private logInteraction = (event: Event) => {
     if (event.target) {
-      console.log(
-        `Event: ${event.type}, Element: ${(event.target as HTMLElement).tagName}, ID: ${(event.target as HTMLElement).id}`
+      const eventType = event.type;
+      const targetElement = event.target as HTMLButtonElement;
+      const elementType = targetElement.tagName.toLowerCase();
+      const elementIdentifier = targetElement.innerText || targetElement.id || targetElement.className;
+
+      faro.api.pushEvent(
+        `userInteraction-${eventType}`,
+        {
+          event: eventType,
+          element: elementType,
+          identifier: elementIdentifier,
+        },
+        undefined,
+        { skipDedupe: true }
       );
     }
   };
 
   private setupEventListeners(): void {
-    // Function to log interactions
-
-    document.querySelectorAll('button, a').forEach((element) => {
-      element.addEventListener('click', this.logInteraction);
-    });
-
-    document.querySelectorAll('input, select, textarea').forEach((element) => {
-      element.addEventListener('change', this.logInteraction);
-    });
-
-    document.querySelectorAll('form').forEach((form) => {
-      form.addEventListener('submit', this.logInteraction);
-    });
+    document.addEventListener('click', this.logInteraction, true);
+    document.addEventListener('change', this.logInteraction, true);
+    document.addEventListener('submit', this.logInteraction, true);
   }
 
   destroy() {
-    document.querySelectorAll('button, a').forEach((element) => {
-      element.removeEventListener('click', this.logInteraction);
-    });
-
-    document.querySelectorAll('input, select, textarea').forEach((element) => {
-      element.removeEventListener('change', this.logInteraction);
-    });
-
-    document.querySelectorAll('form').forEach((form) => {
-      form.removeEventListener('submit', this.logInteraction);
-    });
+    document.removeEventListener('click', this.logInteraction, true);
+    document.removeEventListener('change', this.logInteraction, true);
+    document.removeEventListener('submit', this.logInteraction, true);
   }
 }
