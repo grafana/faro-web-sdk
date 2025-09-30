@@ -30,27 +30,24 @@ export function RegisterForm() {
 
   useEffect(() => {
     if (!registerResult.isUninitialized && !registerResult.isLoading) {
+      UserEventsInstrumentation.stopJourney('user_registration');
       if (registerResult.isError) {
         faro.api.pushEvent('registerFailed');
       } else {
         faro.api.pushEvent('registerSuccessfully');
 
         navigate('/articles');
-        UserEventsInstrumentation.stopSubJourney('user_registration');
       }
     }
   }, [registerResult, navigate]);
 
-  useEffect(() => {
-    UserEventsInstrumentation.startSubJourney('user_registration');
-
-    return () => {
-      UserEventsInstrumentation.stopSubJourney('user_registration');
-    };
-  }, []);
-
   return (
-    <Form onSubmit={onSubmit}>
+    <Form
+      onSubmit={onSubmit}
+      onChangeCapture={() => {
+        UserEventsInstrumentation.startJourney('user_registration');
+      }}
+    >
       {registerResult.isError && !registerResult.isLoading ? (
         <Alert variant="danger">{(registerResult.error as any).data.data.message}</Alert>
       ) : null}

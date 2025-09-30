@@ -2,7 +2,7 @@ import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
 
 import * as webStorage from '../../utils/webStorage';
 
-import { FARO_JOURNEY_KEY, FARO_SUB_JOURNEYS_KEY } from './const';
+import { FARO_JOURNEY_KEY } from './const';
 
 export class UserEventsInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:user-events';
@@ -47,55 +47,26 @@ export class UserEventsInstrumentation extends BaseInstrumentation {
     document.removeEventListener('submit', this.logUserInteraction, true);
   }
 
-  // TODO: this needs to be provided by core sdk for MFE support
   static startJourney(name: string) {
     console.info('Starting journey', name);
+    faro.api.pushEvent('faro.journey.start', { journey: name });
     webStorage.setItem(FARO_JOURNEY_KEY, name, 'localStorage');
     updateUserMeta({ journey: name });
   }
 
-  // TODO: this needs to be provided by core sdk for MFE support
-  static stopJourney() {
-    console.info('Stopping journey');
+  static stopJourney(name: string) {
+    console.info('Stopping journey', name);
+    faro.api.pushEvent('faro.journey.stop', {
+      journey: name,
+    });
+
     webStorage.removeItem(FARO_JOURNEY_KEY, 'localStorage');
-
-    updateUserMeta({ journey: undefined, subJourneys: undefined });
-  }
-
-  static startSubJourney(name: string) {
-    if (!webStorage.getItem(FARO_JOURNEY_KEY, 'localStorage')?.trim()) {
-      console.warn('No active journey found. Please start a journey first.');
-      return;
-    }
-
-    console.info('Starting sub-journey', name);
-    const subJourneys = JSON.parse(webStorage.getItem(FARO_SUB_JOURNEYS_KEY, 'localStorage') ?? '[]') as string[];
-    const updatedSubJourneys = [...subJourneys, name];
-    webStorage.setItem(FARO_SUB_JOURNEYS_KEY, JSON.stringify(updatedSubJourneys), 'localStorage');
-
-    updateUserMeta({ subJourneys: updatedSubJourneys });
-  }
-
-  // TODO: this needs to be provided by core sdk for MFE support
-  static stopSubJourney(name: string) {
-    console.info('Stopping sub-journey', name);
-    const subJourneys = JSON.parse(webStorage.getItem(FARO_SUB_JOURNEYS_KEY, 'localStorage') ?? '[]') as string[];
-
-    if (subJourneys.includes(name)) {
-      webStorage.setItem(
-        FARO_SUB_JOURNEYS_KEY,
-        JSON.stringify(subJourneys.splice(subJourneys.indexOf(name), 1)),
-        'localStorage'
-      );
-
-      updateUserMeta({ subJourneys });
-    }
+    updateUserMeta({ journey: undefined });
   }
 
   static getActiveJourneys() {
     return {
       journey: webStorage.getItem(FARO_JOURNEY_KEY, 'localStorage'),
-      subJourneys: (JSON.parse(webStorage.getItem(FARO_SUB_JOURNEYS_KEY, 'localStorage') ?? '[]') as string[])[0],
     };
   }
 }

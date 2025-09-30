@@ -32,7 +32,7 @@ export function Seed() {
     UserEventsInstrumentation.startJourney('seed_data');
 
     return () => {
-      UserEventsInstrumentation.stopJourney();
+      UserEventsInstrumentation.stopJourney('seed_data');
     };
   }, []);
 

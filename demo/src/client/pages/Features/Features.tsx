@@ -17,7 +17,7 @@ export function Features() {
     UserEventsInstrumentation.startJourney('testing_features_page');
 
     return () => {
-      UserEventsInstrumentation.stopJourney();
+      UserEventsInstrumentation.stopJourney('testing_features_page');
     };
   }, []);
 

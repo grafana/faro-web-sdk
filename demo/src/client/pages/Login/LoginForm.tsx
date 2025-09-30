@@ -28,15 +28,9 @@ export function LoginForm() {
   });
 
   useEffect(() => {
-    UserEventsInstrumentation.startSubJourney('user_authentication');
-
-    return () => {
-      UserEventsInstrumentation.stopSubJourney('user_authentication');
-    };
-  }, []);
-
-  useEffect(() => {
     if (!loginResult.isUninitialized && !loginResult.isLoading) {
+      UserEventsInstrumentation.stopJourney('user_authentication');
+
       if (loginResult.isError) {
         faro.api.pushEvent('loginFailed');
       } else {
