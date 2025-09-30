@@ -52,7 +52,7 @@ describe('UserEventsInstrumentation', () => {
       button.click();
 
       expect(mockPushEvent).toHaveBeenCalledWith(
-        'userInteraction-click',
+        'user.interaction.click',
         {
           event: 'click',
           element: 'button',
@@ -71,7 +71,7 @@ describe('UserEventsInstrumentation', () => {
       div.click();
 
       expect(mockPushEvent).toHaveBeenCalledWith(
-        'userInteraction-click',
+        'user.interaction.click',
         {
           event: 'click',
           element: 'div',
@@ -90,7 +90,7 @@ describe('UserEventsInstrumentation', () => {
       span.click();
 
       expect(mockPushEvent).toHaveBeenCalledWith(
-        'userInteraction-click',
+        'user.interaction.click',
         {
           event: 'click',
           element: 'span',
@@ -109,7 +109,7 @@ describe('UserEventsInstrumentation', () => {
       input.dispatchEvent(new Event('change', { bubbles: true }));
 
       expect(mockPushEvent).toHaveBeenCalledWith(
-        'userInteraction-change',
+        'user.interaction.change',
         {
           event: 'change',
           element: 'input',
@@ -128,7 +128,7 @@ describe('UserEventsInstrumentation', () => {
       form.dispatchEvent(new Event('submit', { bubbles: true }));
 
       expect(mockPushEvent).toHaveBeenCalledWith(
-        'userInteraction-submit',
+        'user.interaction.submit',
         {
           event: 'submit',
           element: 'form',
