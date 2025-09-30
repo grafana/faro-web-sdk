@@ -161,7 +161,7 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
-  UserActionSeverity,
+  UserActionImportance,
 } from '@grafana/faro-core';
 
 export {

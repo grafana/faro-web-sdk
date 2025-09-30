@@ -6,7 +6,7 @@ import { ItemBuffer } from '../ItemBuffer';
 import { type MeasurementEvent } from '../measurements';
 import { type APIEvent } from '../types';
 
-import { UserActionSeverity } from './const';
+import { UserActionImportance } from './const';
 import { type HaltPredicate, type UserActionInterface, UserActionState } from './types';
 
 const defaultFollowUpActionTimeRange = 100;
@@ -18,7 +18,11 @@ export default class UserAction extends Observable implements UserActionInterfac
   attributes?: Record<string, string>;
   parentId: string;
   trigger: string;
-  severity: UserActionSeverity;
+  importance: UserActionImportance;
+  /**
+   * @deprecated Use importance instead
+   */
+  severity?: UserActionImportance;
   startTime?: number;
   trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
   cancelTimeout: number;
@@ -39,7 +43,8 @@ export default class UserAction extends Observable implements UserActionInterfac
     transports,
     attributes,
     trackUserActionsExcludeItem,
-    severity = UserActionSeverity.Normal,
+    importance = UserActionImportance.Normal,
+    severity = UserActionImportance.Normal,
   }: {
     name: string;
     transports: Transports;
@@ -48,7 +53,11 @@ export default class UserAction extends Observable implements UserActionInterfac
     attributes?: Record<string, string>;
     haltTimeout?: number;
     trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
-    severity?: UserActionSeverity;
+    importance?: UserActionImportance;
+    /**
+     * @deprecated Use importance instead
+     */
+    severity?: UserActionImportance;
   }) {
     super();
     this.name = name;
@@ -59,7 +68,8 @@ export default class UserAction extends Observable implements UserActionInterfac
     this.haltTimeout = haltTimeout ?? defaultHaltTimeout;
     this.parentId = parentId ?? this.id;
     this.trackUserActionsExcludeItem = trackUserActionsExcludeItem;
-    this.severity = severity;
+    this.importance = importance || severity;
+    this.severity = this.importance;
 
     this._itemBuffer = new ItemBuffer<TransportItem>();
     this._transports = transports;
@@ -170,7 +180,7 @@ export default class UserAction extends Observable implements UserActionInterfac
         userActionEndTime: endTime.toString(),
         userActionDuration: duration.toString(),
         userActionTrigger: this.trigger!,
-        userActionSeverity: this.severity,
+        userActionImportance: this.importance,
         ...stringifyObjectValues(this.attributes),
       },
       undefined,

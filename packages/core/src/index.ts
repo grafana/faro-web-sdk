@@ -2,7 +2,11 @@ export {
   defaultExceptionType,
   defaultLogArgsSerializer,
   defaultErrorArgsSerializer,
-  UserActionSeverity,
+  UserActionImportance,
+  /**
+   * @deprecated Use UserActionImportance instead
+   */
+  UserActionImportance as UserActionSeverity,
   UserActionState,
   userActionsMessageBus,
 } from './api';
