@@ -25,15 +25,13 @@ export function Seed() {
 
         span.end();
       });
+
+      UserEventsInstrumentation.stopJourney('seed_data');
     }
   };
 
   useEffect(() => {
     UserEventsInstrumentation.startJourney('seed_data');
-
-    return () => {
-      UserEventsInstrumentation.stopJourney('seed_data');
-    };
   }, []);
 
   return (
