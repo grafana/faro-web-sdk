@@ -71,6 +71,7 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 'lts/*'
+          cache: 'none'
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
