@@ -52,7 +52,7 @@ describe('UserEventsInstrumentation', () => {
       button.click();
 
       expect(mockPushEvent).toHaveBeenCalledWith(
-        'user.interaction',
+        'user.interaction.click',
         {
           event: 'click',
           element: 'button',
@@ -71,7 +71,7 @@ describe('UserEventsInstrumentation', () => {
       div.click();
 
       expect(mockPushEvent).toHaveBeenCalledWith(
-        'user.interaction',
+        'user.interaction.click',
         {
           event: 'click',
           element: 'div',
@@ -90,7 +90,7 @@ describe('UserEventsInstrumentation', () => {
       span.click();
 
       expect(mockPushEvent).toHaveBeenCalledWith(
-        'user.interaction',
+        'user.interaction.click',
         {
           event: 'click',
           element: 'span',

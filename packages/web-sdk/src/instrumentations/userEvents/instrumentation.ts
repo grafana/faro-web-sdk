@@ -22,7 +22,7 @@ export class UserEventsInstrumentation extends BaseInstrumentation {
       const currentJourney = localStorage.getItem(FARO_JOURNEY_KEY);
 
       faro.api.pushEvent(
-        'faro.user.interaction',
+        `faro.user.interaction.${eventType}`,
         {
           event: eventType,
           element: elementType,
