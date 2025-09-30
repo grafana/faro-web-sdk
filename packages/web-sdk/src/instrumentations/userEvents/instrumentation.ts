@@ -1,4 +1,6 @@
-import { BaseInstrumentation, faro, VERSION } from '@grafana/faro-core';
+import { time } from 'console';
+
+import { BaseInstrumentation, dateNow, faro, VERSION } from '@grafana/faro-core';
 
 import * as webStorage from '../../utils/webStorage';
 
@@ -49,7 +51,9 @@ export class UserEventsInstrumentation extends BaseInstrumentation {
 
   static startJourney(name: string) {
     console.info('Starting journey', name);
-    faro.api.pushEvent('faro.journey.start', { journey: name });
+
+    const timestamp = dateNow().toString();
+    faro.api.pushEvent('faro.journey.start', { journey: name, timestamp });
     webStorage.setItem(FARO_JOURNEY_KEY, name, 'localStorage');
     updateUserMeta({ journey: name });
   }
@@ -71,7 +75,7 @@ export class UserEventsInstrumentation extends BaseInstrumentation {
   }
 }
 
-function updateUserMeta({ journey, subJourneys }: { journey?: string; subJourneys?: string[] }) {
+function updateUserMeta({ journey }: { journey?: string }) {
   const currentUserMeta = faro.metas.value.user;
 
   if (!currentUserMeta) {
@@ -85,7 +89,6 @@ function updateUserMeta({ journey, subJourneys }: { journey?: string; subJourney
     attributes: {
       ...currentAttributes,
       ...(journey ? { journey } : {}),
-      ...(subJourneys ? { subJourney: subJourneys.at(-1) } : {}),
     },
   });
 }
