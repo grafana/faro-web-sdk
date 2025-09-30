@@ -3,7 +3,8 @@ import { Alert, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { faro } from '@grafana/faro-react';
+import { faro, UserActionSeverity } from '@grafana/faro-react';
+import { UserEventsInstrumentation } from '@grafana/faro-web-sdk/src/instrumentations/userEvents/instrumentation';
 
 import type { AuthRegisterPayload } from '../../../common';
 import { usePostRegisterMutation } from '../../api';
@@ -35,9 +36,18 @@ export function RegisterForm() {
         faro.api.pushEvent('registerSuccessfully');
 
         navigate('/articles');
+        UserEventsInstrumentation.stopSubJourney('user_registration');
       }
     }
   }, [registerResult, navigate]);
+
+  useEffect(() => {
+    UserEventsInstrumentation.startSubJourney('user_registration');
+
+    return () => {
+      UserEventsInstrumentation.stopSubJourney('user_registration');
+    };
+  }, []);
 
   return (
     <Form onSubmit={onSubmit}>
@@ -61,7 +71,13 @@ export function RegisterForm() {
         <Form.Control type="password" autoComplete="current-password" {...registerField('password')} />
       </Form.Group>
 
-      <Button variant="primary" type="submit" data-faro-user-action-name="register">
+      <Button
+        variant="primary"
+        type="submit"
+        onClick={() => {
+          faro.api.startUserAction('register', undefined, { severity: UserActionSeverity.Critical });
+        }}
+      >
         Register
       </Button>
     </Form>

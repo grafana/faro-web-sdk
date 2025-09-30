@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { Alert, Button } from 'react-bootstrap';
 
 import { faro } from '@grafana/faro-react';
+import { UserEventsInstrumentation } from '@grafana/faro-web-sdk/src/instrumentations/userEvents/instrumentation';
 
 import { useLazyGetSeedQuery } from '../../api';
 import { Page } from '../../components';
@@ -25,6 +27,14 @@ export function Seed() {
       });
     }
   };
+
+  useEffect(() => {
+    UserEventsInstrumentation.startJourney('seed_data');
+
+    return () => {
+      UserEventsInstrumentation.stopJourney();
+    };
+  }, []);
 
   return (
     <Page title="Seed" view="system">

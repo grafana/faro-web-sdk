@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
 import { Container } from 'react-bootstrap';
+
+import { UserEventsInstrumentation } from '@grafana/faro-web-sdk/src/instrumentations/userEvents/instrumentation';
 
 import { Page } from '../../components';
 
@@ -10,6 +13,14 @@ import { ReactInstrumentation } from './ReactInstrumentation';
 import { TracingInstrumentation } from './TracingInstrumentation';
 
 export function Features() {
+  useEffect(() => {
+    UserEventsInstrumentation.startJourney('testing_features_page');
+
+    return () => {
+      UserEventsInstrumentation.stopJourney();
+    };
+  }, []);
+
   return (
     <Page title="Features" view="features">
       <Container as="article" className="pb-4 mb-4 border-bottom">

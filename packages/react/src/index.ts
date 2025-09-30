@@ -127,6 +127,7 @@ export {
   ViewInstrumentation,
   WebVitalsInstrumentation,
   userActionDataAttribute,
+  UserActionSeverity,
 } from '@grafana/faro-web-sdk';
 
 export type {
@@ -193,5 +194,4 @@ export type {
   Transports,
   UnpatchedConsole,
   ExceptionEventExtended,
-  UserActionSeverity,
 } from '@grafana/faro-web-sdk';
