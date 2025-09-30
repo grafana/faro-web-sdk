@@ -23,6 +23,7 @@ jobs:
         with:
           node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'none'
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -70,6 +71,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
+          cache: 'none'
           node-version: 'lts/*'
 
       - name: Install dependencies
@@ -111,6 +113,7 @@ jobs:
         with:
           node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'none'
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
