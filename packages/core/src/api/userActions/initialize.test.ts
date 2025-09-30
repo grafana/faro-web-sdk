@@ -28,6 +28,7 @@ describe('initializeUserActionsAPI', () => {
     });
     internalLogger = mockInternalLogger;
     api = initializeUserActionsAPI({ transports, config, internalLogger });
+    jest.resetAllMocks();
   });
 
   it('getActiveUserAction returns undefined before any action is created', () => {
@@ -62,7 +63,7 @@ describe('initializeUserActionsAPI', () => {
   });
 
   it('startUserAction has custom severity (converts to importance) and trigger set', () => {
-    const action = api.startUserAction('first', undefined, {
+    const action = api.startUserAction('second', undefined, {
       severity: UserActionImportance.Critical,
       triggerName: 'foo',
     });
