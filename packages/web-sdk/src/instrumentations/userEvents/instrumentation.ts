@@ -1,5 +1,3 @@
-import { time } from 'console';
-
 import { BaseInstrumentation, dateNow, faro, VERSION } from '@grafana/faro-core';
 
 import * as webStorage from '../../utils/webStorage';
@@ -53,14 +51,14 @@ export class UserEventsInstrumentation extends BaseInstrumentation {
     console.info('Starting journey', name);
 
     const timestamp = dateNow().toString();
-    faro.api.pushEvent('faro.journey.start', { journey: name, timestamp });
+    faro.api.pushEvent('faro.user.journey.start', { journey: name, timestamp });
     webStorage.setItem(FARO_JOURNEY_KEY, name, 'localStorage');
     updateUserMeta({ journey: name });
   }
 
   static stopJourney(name: string) {
     console.info('Stopping journey', name);
-    faro.api.pushEvent('faro.journey.stop', {
+    faro.api.pushEvent('faro.user.journey.stop', {
       journey: name,
     });
 
