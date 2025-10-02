@@ -11,19 +11,29 @@ import { FARO_JOURNEY_KEY } from '@grafana/faro-web-sdk';
 import * as webStorageUtil from '@grafana/faro-web-sdk/src/utils';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
-import { env } from '../utils/env';
-
 export function initializeFaro(): Faro {
   const currentUserJourney = webStorageUtil.getItem(FARO_JOURNEY_KEY, 'localStorage');
   console.log('currentUserJourney :>> ', currentUserJourney);
 
   const faro = coreInit({
-    url: `http://localhost:${env.faro.portAppReceiver}/collect`,
-    apiKey: env.faro.apiKey,
+    // url: `http://localhost:${env.faro.portAppReceiver}/collect`,
+    // apiKey: env.faro.apiKey,
+
+    url: 'https://faro-collector-prod-us-central-0.grafana.net/collect/f897a26a72dc1f6618c98e970b985154',
+    app: {
+      name: 'hackathon-pathfinders-test',
+      version: '1.0.0',
+      environment: 'production',
+    },
+
+    user: {
+      username: 'marco',
+      ...(currentUserJourney ? { attributes: { journey: currentUserJourney } } : {}),
+    },
 
     instrumentations: [
       ...getWebInstrumentations({
-        captureConsole: true,
+        captureConsole: false,
         enableUserEventsInstrumentation: true,
       }),
 
@@ -41,12 +51,12 @@ export function initializeFaro(): Faro {
         },
       }),
     ],
-    app: {
-      name: env.client.packageName,
-      namespace: env.client.packageNamespace,
-      version: env.package.version,
-      environment: env.mode.name,
-    },
+    // app: {
+    //   name: env.client.packageName,
+    //   namespace: env.client.packageNamespace,
+    //   version: env.package.version,
+    //   environment: env.mode.name,
+    // },
 
     trackResources: true,
 
