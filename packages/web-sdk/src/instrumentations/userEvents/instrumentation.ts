@@ -51,9 +51,9 @@ export class UserEventsInstrumentation extends BaseInstrumentation {
     console.info('Starting journey', name);
 
     const timestamp = dateNow().toString();
-    faro.api.pushEvent('faro.user.journey.start', { journey: name, timestamp });
     webStorage.setItem(FARO_JOURNEY_KEY, name, 'localStorage');
     updateUserMeta({ journey: name });
+    faro.api.pushEvent('faro.user.journey.start', { journey: name, timestamp });
   }
 
   static stopJourney(name: string) {

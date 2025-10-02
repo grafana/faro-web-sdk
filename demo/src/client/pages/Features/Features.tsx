@@ -16,9 +16,9 @@ export function Features() {
   useEffect(() => {
     UserEventsInstrumentation.startJourney('testing_features_page');
 
-    return () => {
-      UserEventsInstrumentation.stopJourney('testing_features_page');
-    };
+    // return () => {
+    //   UserEventsInstrumentation.stopJourney('testing_features_page');
+    // };
   }, []);
 
   return (
