@@ -2611,14 +2611,14 @@ __metadata:
   linkType: hard
 
 "@opentelemetry/instrumentation-winston@npm:^0.50.0":
-  version: 0.50.0
-  resolution: "@opentelemetry/instrumentation-winston@npm:0.50.0"
+  version: 0.50.2
+  resolution: "@opentelemetry/instrumentation-winston@npm:0.50.2"
   dependencies:
     "@opentelemetry/api-logs": "npm:^0.205.0"
     "@opentelemetry/instrumentation": "npm:^0.205.0"
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
-  checksum: 10c0/b569214d58e99339f57137c3f8e6e53023c662078d33cf0e6ee6817e9f5b82ff41eec604a2591fce4928d79e7eb480d9c31eff41a007861a42f74f001b5f579d
+  checksum: 10c0/0ac447f57944b0d3bc6542d95111f7a316b8dafd7e7c83aef67ff9c41a688a53a569fb4ad0112a546056c8b5a601d938386826041093e61855e31b099d72fa30
   languageName: node
   linkType: hard
 
