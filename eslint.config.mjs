@@ -213,6 +213,8 @@ export default [
     rules: {
       // Allow only tests in test files for debugging purposes
       'no-only-tests/no-only-tests': 'warn',
+      // Allow modifying global objects in tests for mocking purposes
+      'no-global-assign': 'off',
     },
   },
 
