@@ -8,7 +8,8 @@ export function ErrorInstrumentation() {
   };
 
   const callUndefined = () => {
-    // @ts-ignore
+    // @ts-expect-error - Intentionally calling undefined function to test error handlingx
+    // eslint-disable-next-line no-undef
     test();
   };
 
