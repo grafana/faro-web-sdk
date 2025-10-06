@@ -11,9 +11,43 @@ import { dirname } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default [
+  // Global ignores
+  {
+    ignores: [
+      // Git
+      '.git/**',
+      // IDEs
+      '.idea/**',
+      '.vscode/**',
+      // App-specifics
+      '.cache/**',
+      '.eslintcache/**',
+      '.husky/**',
+      'coverage/**',
+      'cypress/videos/**',
+      'cypress/screenshots/**',
+      'demo/logs/**',
+      'demo/stats.html',
+      'demo/vite.config.ts.timestamp-*.mjs',
+      '**/dist/**',
+      '**/node_modules/**',
+      // Logs
+      '*.log',
+      'lerna-debug.log*',
+      'npm-debug.log*',
+      'yarn-debug.log*',
+      'yarn-error.log*',
+      // Misc
+      '.DS_Store',
+      // App plugin
+      'infra/grafana/plugins/**',
+      'infra/grafana/plugins-provisioning/*.yaml',
+    ],
+  },
+
   // Base JavaScript configuration
   js.configs.recommended,
-  
+
   // Main configuration for all files
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
@@ -80,7 +114,7 @@ export default [
       ],
       'import/no-unresolved': 'off', // Disabled due to TypeScript resolver issues
       'import/named': 'off',
-      'import/default': 'off', 
+      'import/default': 'off',
       'import/namespace': 'off',
       'import/export': 'off',
 
