@@ -215,6 +215,8 @@ export default [
       'no-only-tests/no-only-tests': 'warn',
       // Allow modifying global objects in tests for mocking purposes
       'no-global-assign': 'off',
+      // Allow escape characters in tests for testing edge cases
+      'no-useless-escape': 'off',
     },
   },
 
