@@ -125,6 +125,19 @@ export default [
       // Testing rules
       'no-only-tests/no-only-tests': 'error',
 
+      // TypeScript rules for unused variables
+      'no-unused-vars': 'off', // Disable base rule for TypeScript files
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+          args: 'after-used',
+        },
+      ],
+
       // React rules
       'react/prop-types': 'off',
       'react/react-in-jsx-scope': 'off',
