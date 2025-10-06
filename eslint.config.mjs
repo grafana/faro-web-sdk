@@ -189,7 +189,14 @@ export default [
 
   // Configuration for test files
   {
-    files: ['**/*.test.{js,jsx,ts,tsx}', '**/*.spec.{js,jsx,ts,tsx}'],
+    files: [
+      '**/*.test.{js,jsx,ts,tsx}',
+      '**/*.spec.{js,jsx,ts,tsx}',
+      '**/*TestHelpers.{js,jsx,ts,tsx}',
+      '**/*testHelpers.{js,jsx,ts,tsx}',
+      '**/testUtils/**/*.{js,jsx,ts,tsx}',
+      '**/test-utils/**/*.{js,jsx,ts,tsx}',
+    ],
     languageOptions: {
       globals: {
         jest: 'readonly',
