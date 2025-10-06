@@ -164,13 +164,14 @@ export default class UserAction extends Observable implements UserActionInterfac
     this.notify(this._state);
 
     faro.api.pushEvent(
-      this.name,
+      'faro.user.action',
       {
         userActionStartTime: this.startTime!.toString(),
         userActionEndTime: endTime.toString(),
         userActionDuration: duration.toString(),
         userActionTrigger: this.trigger!,
         userActionSeverity: this.severity,
+        userActionName: this.name,
         ...stringifyObjectValues(this.attributes),
       },
       undefined,

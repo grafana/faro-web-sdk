@@ -86,4 +86,26 @@ describe('initializeUserActionsAPI', () => {
     action?.cancel();
     expect(api.getActiveUserAction()).toBeUndefined();
   });
+
+  it('user action has proper event name and contains all necessary attributes', () => {
+    const action = api.startUserAction('test-action', { foo: 'bar' });
+    action?.end();
+
+    expect(faro.api.pushEvent).toHaveBeenLastCalledWith(
+      'faro.userAction',
+      expect.objectContaining({
+        userActionName: 'test-action',
+        userActionDuration: expect.any(Number),
+        userActionSeverity: 'info',
+        userActionStartTime: expect.any(Number),
+        userActionEndTime: expect.any(Number),
+        userActionTrigger: 'foo',
+        attributes: {
+          foo: 'bar',
+        },
+      }),
+      undefined,
+      expect.any(Object)
+    );
+  });
 });
