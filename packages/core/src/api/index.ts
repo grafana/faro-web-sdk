@@ -23,7 +23,7 @@ export type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '
 export type { MetaAPI } from './meta';
 
 export {
-  UserActionSeverity,
+  UserActionImportance,
   UserActionState,
   type UserActionInterface,
   type UserActionsAPI,
