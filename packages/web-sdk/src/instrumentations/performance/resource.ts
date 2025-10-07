@@ -23,11 +23,16 @@ export function observeResourceTimings(
 
     for (const resourceEntryRaw of entries) {
       if (isUrlIgnored(resourceEntryRaw.name)) {
-        return;
+        continue;
+      }
+
+      if (faro.config.trackUserActionsPreview) {
+        observable?.notify({
+          type: RESOURCE_ENTRY,
+        });
       }
 
       const resourceEntryJson = resourceEntryRaw.toJSON();
-
       let spanContext: SpanContext = getSpanContextFromServerTiming(resourceEntryJson?.serverTiming);
 
       if (
@@ -39,12 +44,6 @@ export function observeResourceTimings(
           faroNavigationId,
           faroResourceId: genShortID(),
         };
-
-        if (faro.config.trackUserActionsPreview) {
-          observable?.notify({
-            type: RESOURCE_ENTRY,
-          });
-        }
 
         pushEvent('faro.performance.resource', faroResourceEntry, undefined, {
           spanContext,

@@ -1,4 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
+import type React from 'react';
 
 import type { ReactRouterLocation } from '../types';
 

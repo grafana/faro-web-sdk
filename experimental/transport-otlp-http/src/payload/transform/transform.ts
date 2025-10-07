@@ -257,7 +257,7 @@ function toResource(transportItem: TransportItem): Readonly<Resource> {
 
       toAttribute(ATTR_TELEMETRY_SDK_NAME, sdk?.name),
       toAttribute(ATTR_TELEMETRY_SDK_VERSION, sdk?.version),
-      Boolean(sdk) ? toAttribute(ATTR_TELEMETRY_SDK_LANGUAGE, TELEMETRY_SDK_LANGUAGE_VALUE_WEBJS) : undefined,
+      sdk ? toAttribute(ATTR_TELEMETRY_SDK_LANGUAGE, TELEMETRY_SDK_LANGUAGE_VALUE_WEBJS) : undefined,
 
       toAttribute(ATTR_SERVICE_NAME, app?.name),
       toAttribute(ATTR_SERVICE_VERSION, app?.version),

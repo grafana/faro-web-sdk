@@ -19,10 +19,11 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -68,9 +69,10 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 'lts/iron'
+          node-version: 'lts/*'
+          package-manager-cache: false
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -107,10 +109,11 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 'lts/iron'
+          node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -118,14 +121,8 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: 'Get vault secrets'
-        id: vault-secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b
-        with:
-          repo_secrets: |
-            NPM_TOKEN=github-actions:npm-token
+      - name: Install npm latest version #needed for Trusted Publishing
+        run: npm install -g npm@latest
 
-      - name: Publish
-        run: yarn run publish from-git --yes --no-verify-access
-        env:
-          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
+      - name: Publish package to NPM
+        run: npm publish --access public --provenance

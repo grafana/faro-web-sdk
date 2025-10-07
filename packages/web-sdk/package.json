@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-web-sdk",
-  "version": "1.19.0",
+  "version": "2.0.0-beta-2",
   "description": "Faro instrumentations, metas, transports for web.",
   "keywords": [
     "observability",
@@ -46,13 +46,13 @@
     "quality:test": "jest",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/webSdk --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s 'quality:lint:*'",
-    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/webSdk --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/webSdk \"./**/*.{js,jsx,ts,tsx}\"",
     "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/webSdk --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-core": "^1.19.0",
+    "@grafana/faro-core": "^2.0.0-beta-2",
     "ua-parser-js": "^1.0.32",
     "web-vitals": "^5.0.3"
   },

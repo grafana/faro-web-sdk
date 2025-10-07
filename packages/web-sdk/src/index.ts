@@ -100,6 +100,7 @@ export {
   EVENT_VIEW_CHANGED,
   Observable,
   unknownString,
+  UserActionState,
 } from '@grafana/faro-core';
 
 export type {
@@ -163,6 +164,7 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
+  UserActionSeverity,
 } from '@grafana/faro-core';
 
 export {

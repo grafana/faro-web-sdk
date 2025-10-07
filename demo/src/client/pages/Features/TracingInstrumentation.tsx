@@ -5,7 +5,7 @@ import { UserActionSeverity } from '@grafana/faro-core';
 import { faro } from '@grafana/faro-react';
 
 export function TracingInstrumentation() {
-  const fetchSuccess = (ev) => {
+  const fetchSuccess = () => {
     // Override the user action creation
     faro.api.startUserAction(
       'fetch-success',
@@ -18,7 +18,7 @@ export function TracingInstrumentation() {
   };
 
   const xhrSuccess = () => {
-    faro.api.startUserAction('xhr-success');
+    faro.api.startUserAction('xhr-success', undefined, { severity: UserActionSeverity.Critical, triggerName: 'foo' });
     const xhr = new XMLHttpRequest();
     xhr.open('GET', '/');
     xhr.send();
