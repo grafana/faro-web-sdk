@@ -41,6 +41,7 @@ export type EndUserActionProps = {
 export type StartUserActionOptions = {
   triggerName?: string;
   severity?: UserActionSeverity;
+  cancelTimeout?: number;
 };
 
 export interface UserActionsAPI {
