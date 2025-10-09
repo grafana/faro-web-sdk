@@ -2,6 +2,7 @@ import { faro, UserActionSeverity } from '../..';
 import { mockConfig, mockInternalLogger } from '../../testUtils';
 import { mockTransports } from '../apiTestHelpers';
 
+import { userActionEventName } from './const';
 import { initializeUserActionsAPI } from './initialize';
 import { UserActionsAPI } from './types';
 import UserAction from './userAction';
@@ -92,7 +93,7 @@ describe('initializeUserActionsAPI', () => {
     action?.end();
 
     expect(faro.api.pushEvent).toHaveBeenLastCalledWith(
-      'faro.userAction',
+      userActionEventName,
       expect.objectContaining({
         userActionName: 'test-action',
         userActionDuration: expect.any(Number),

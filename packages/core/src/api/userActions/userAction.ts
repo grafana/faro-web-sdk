@@ -6,7 +6,7 @@ import { ItemBuffer } from '../ItemBuffer';
 import { type MeasurementEvent } from '../measurements';
 import { type APIEvent } from '../types';
 
-import { UserActionSeverity } from './const';
+import { userActionEventName, UserActionSeverity } from './const';
 import { type HaltPredicate, type UserActionInterface, UserActionState } from './types';
 
 const defaultFollowUpActionTimeRange = 100;
@@ -164,14 +164,14 @@ export default class UserAction extends Observable implements UserActionInterfac
     this.notify(this._state);
 
     faro.api.pushEvent(
-      'faro.user.action',
+      userActionEventName,
       {
+        userActionName: this.name,
         userActionStartTime: this.startTime!.toString(),
         userActionEndTime: endTime.toString(),
         userActionDuration: duration.toString(),
         userActionTrigger: this.trigger!,
         userActionSeverity: this.severity,
-        userActionName: this.name,
         ...stringifyObjectValues(this.attributes),
       },
       undefined,
