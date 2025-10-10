@@ -29,7 +29,9 @@ describe('initializeUserActionsAPI', () => {
     });
     internalLogger = mockInternalLogger;
     api = initializeUserActionsAPI({ transports, config, internalLogger });
+  });
 
+  afterEach(() => {
     jest.resetAllMocks();
   });
 
