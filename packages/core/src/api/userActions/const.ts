@@ -6,3 +6,5 @@ export enum UserActionSeverity {
   Normal = 'normal',
   Critical = 'critical',
 }
+
+export const userActionEventName = 'faro.user.action';

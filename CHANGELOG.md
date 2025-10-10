@@ -2,6 +2,13 @@
 
 ## Next
 
+- Breaking (`@grafana/faro-web-sdk`) [beta]: User action events now have a standardized event name
+  (`faro.user.action`), with the specific user action name moved to a parameter for improved
+  consistency and filtering capabilities.
+  **Migration note:** If you previously filtered user action events by event name, update your
+  queries to use the new event name (`faro.user.action`) and filter by the `userActionName`
+  attribute for the specific action.
+
 - Fix (`@grafana/faro-web-sdk`): Fixed an issue where custom severity and custom trigger properties
   were not being included in user action attributes (#1551)
 
