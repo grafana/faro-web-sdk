@@ -29,6 +29,8 @@ describe('initializeUserActionsAPI', () => {
     });
     internalLogger = mockInternalLogger;
     api = initializeUserActionsAPI({ transports, config, internalLogger });
+
+    jest.resetAllMocks();
   });
 
   it('getActiveUserAction returns undefined before any action is created', () => {
@@ -89,21 +91,23 @@ describe('initializeUserActionsAPI', () => {
   });
 
   it('user action has proper event name and contains all necessary attributes', () => {
-    const action = api.startUserAction('test-action', { foo: 'bar' });
+    const action = api.startUserAction(
+      'test-action',
+      { foo: 'bar' },
+      { severity: UserActionSeverity.Critical, triggerName: 'foo' }
+    );
     action?.end();
 
-    expect(faro.api.pushEvent).toHaveBeenLastCalledWith(
+    expect(faro.api.pushEvent).toHaveBeenCalledWith(
       userActionEventName,
       expect.objectContaining({
         userActionName: 'test-action',
-        userActionDuration: expect.any(Number),
-        userActionSeverity: 'info',
-        userActionStartTime: expect.any(Number),
-        userActionEndTime: expect.any(Number),
+        userActionDuration: expect.any(String),
+        userActionSeverity: 'critical',
+        userActionStartTime: expect.any(String),
+        userActionEndTime: expect.any(String),
         userActionTrigger: 'foo',
-        attributes: {
-          foo: 'bar',
-        },
+        foo: 'bar',
       }),
       undefined,
       expect.any(Object)
