@@ -3,7 +3,8 @@ import { Alert, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { faro } from '@grafana/faro-react';
+import { faro, UserActionSeverity } from '@grafana/faro-react';
+import { UserEventsInstrumentation } from '@grafana/faro-web-sdk/src/instrumentations/userEvents/instrumentation';
 
 import type { AuthRegisterPayload } from '../../../common';
 import { usePostRegisterMutation } from '../../api';
@@ -29,6 +30,7 @@ export function RegisterForm() {
 
   useEffect(() => {
     if (!registerResult.isUninitialized && !registerResult.isLoading) {
+      UserEventsInstrumentation.stopJourney('user_registration');
       if (registerResult.isError) {
         faro.api.pushEvent('registerFailed');
       } else {
@@ -40,7 +42,12 @@ export function RegisterForm() {
   }, [registerResult, navigate]);
 
   return (
-    <Form onSubmit={onSubmit}>
+    <Form
+      onSubmit={onSubmit}
+      onChangeCapture={() => {
+        UserEventsInstrumentation.startJourney('user_registration');
+      }}
+    >
       {registerResult.isError && !registerResult.isLoading ? (
         <Alert variant="danger">{(registerResult.error as any).data.data.message}</Alert>
       ) : null}
@@ -61,7 +68,13 @@ export function RegisterForm() {
         <Form.Control type="password" autoComplete="current-password" {...registerField('password')} />
       </Form.Group>
 
-      <Button variant="primary" type="submit" data-faro-user-action-name="register">
+      <Button
+        variant="primary"
+        type="submit"
+        onClick={() => {
+          faro.api.startUserAction('register', undefined, { severity: UserActionSeverity.Critical });
+        }}
+      >
         Register
       </Button>
     </Form>

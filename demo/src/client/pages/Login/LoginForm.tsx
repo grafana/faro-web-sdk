@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import { faro } from '@grafana/faro-react';
+import { UserEventsInstrumentation } from '@grafana/faro-web-sdk/src/instrumentations/userEvents/instrumentation';
 
 import type { AuthLoginPayload } from '../../../common';
 import { usePostLoginMutation } from '../../api';
@@ -28,11 +29,12 @@ export function LoginForm() {
 
   useEffect(() => {
     if (!loginResult.isUninitialized && !loginResult.isLoading) {
+      UserEventsInstrumentation.stopJourney('user_authentication');
+
       if (loginResult.isError) {
         faro.api.pushEvent('loginFailed');
       } else {
         faro.api.pushEvent('loginSuccessfully');
-
         navigate('/articles');
       }
     }

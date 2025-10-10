@@ -1,6 +1,7 @@
 import { Route } from 'react-router-dom';
 
 import { FaroRoutes } from '@grafana/faro-react';
+import { UserEventsInstrumentation } from '@grafana/faro-web-sdk/src/instrumentations/userEvents/instrumentation';
 
 import { GeneralLayout } from '../layouts';
 import { About, ArticleAdd, Articles, ArticleView, Features, Home, Login, Register, Seed } from '../pages';
