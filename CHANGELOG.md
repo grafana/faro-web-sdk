@@ -2,7 +2,7 @@
 
 ## Next
 
-- Chore (`@grafana/faro-web-sdk`): User actions events now have a standardized event name, with the
+- Chore (`@grafana/faro-web-sdk`): User actions events now have a standardized event name (`faro.user.action`), with the
   specific user action name moved to a parameter for improved consistency and filtering
   capabilities.
 
