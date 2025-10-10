@@ -16,6 +16,8 @@ describe('monitorHttpRequests', () => {
   });
 
   it('Monitors xhr requests and sends a message if request are pending', async () => {
+    const url = 'https://www.httpbin.org/get';
+    
     const observable = monitorHttpRequests();
     const mockSubscribe = jest.fn();
     observable.subscribe(mockSubscribe);
@@ -24,7 +26,7 @@ describe('monitorHttpRequests', () => {
 
     const xhr = new XMLHttpRequest();
 
-    xhr.open('GET', 'https://www.grafana.com');
+    xhr.open('GET', url);
 
     await new Promise((resolve) => {
       xhr.onreadystatechange = function () {
@@ -42,7 +44,7 @@ describe('monitorHttpRequests', () => {
         apiType: 'xhr',
         method: 'GET',
         requestId: expect.any(String),
-        url: 'https://www.grafana.com',
+        url,
       },
     });
     expect(mockSubscribe).toHaveBeenNthCalledWith(2, {
@@ -51,7 +53,7 @@ describe('monitorHttpRequests', () => {
         apiType: 'xhr',
         method: 'GET',
         requestId: expect.any(String),
-        url: 'https://www.grafana.com',
+        url,
       },
     });
   });
