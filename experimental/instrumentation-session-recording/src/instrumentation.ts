@@ -12,9 +12,10 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-session-recording';
   readonly version = VERSION;
 
-  private stopFn: { (): void } | null = () => {};
+  private stopFn: { (): void } | null = () => { };
   private isRecording: boolean = false;
   private options: SessionRecordingInstrumentationOptions = defaultSessionRecordingInstrumentationOptions;
+  private eventSeq: number = 1;
 
   constructor(options: SessionRecordingInstrumentationOptions = {}) {
     super();
@@ -39,6 +40,8 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         emit: (event: eventWithTime, isCheckout?: boolean): void => {
           this.handleEvent(event, isCheckout);
         },
+        checkoutEveryNms: 30000, // 30 seconds
+        checkoutEveryNth: 500,
         recordCrossOriginIframes: this.options.recordCrossOriginIframes,
         maskAllInputs: this.options.maskAllInputs,
         maskInputOptions: this.options.maskInputOptions,
@@ -64,6 +67,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         this.stopFn = stop;
       }
 
+      this.eventSeq = 1;
       this.isRecording = true;
       this.logDebug('Session recording started');
     } catch (err) {
@@ -71,7 +75,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private handleEvent(event: eventWithTime, _?: boolean): void {
+  private handleEvent(event: eventWithTime, isCheckout?: boolean): void {
     try {
       // Apply beforeSend transformation if provided
       let processedEvent = event;
@@ -84,6 +88,8 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
 
       this.api.pushEvent(faroSessionRecordingEventName, {
         event: JSON.stringify(processedEvent),
+        is_checkout: !!isCheckout ? "true" : "false",
+        seq: String(this.eventSeq++),
       });
     } catch (err) {
       this.logWarn(`Failed to push ${faroSessionRecordingEventName} event`, err);
