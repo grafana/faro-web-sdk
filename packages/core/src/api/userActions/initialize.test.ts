@@ -2,6 +2,7 @@ import { faro, UserActionSeverity } from '../..';
 import { mockConfig, mockInternalLogger } from '../../testUtils';
 import { mockTransports } from '../apiTestHelpers';
 
+import { userActionEventName } from './const';
 import { initializeUserActionsAPI } from './initialize';
 import { UserActionsAPI } from './types';
 import UserAction from './userAction';
@@ -28,6 +29,10 @@ describe('initializeUserActionsAPI', () => {
     });
     internalLogger = mockInternalLogger;
     api = initializeUserActionsAPI({ transports, config, internalLogger });
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   it('getActiveUserAction returns undefined before any action is created', () => {
@@ -85,5 +90,29 @@ describe('initializeUserActionsAPI', () => {
     const action = api.startUserAction('first');
     action?.cancel();
     expect(api.getActiveUserAction()).toBeUndefined();
+  });
+
+  it('user action has proper event name and contains all necessary attributes', () => {
+    const action = api.startUserAction(
+      'test-action',
+      { foo: 'bar' },
+      { severity: UserActionSeverity.Critical, triggerName: 'foo' }
+    );
+    action?.end();
+
+    expect(faro.api.pushEvent).toHaveBeenCalledWith(
+      userActionEventName,
+      expect.objectContaining({
+        userActionName: 'test-action',
+        userActionDuration: expect.any(String),
+        userActionSeverity: 'critical',
+        userActionStartTime: expect.any(String),
+        userActionEndTime: expect.any(String),
+        userActionTrigger: 'foo',
+        foo: 'bar',
+      }),
+      undefined,
+      expect.any(Object)
+    );
   });
 });
