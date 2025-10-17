@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM node:25-alpine
 
 ARG DEMO_DEMO_PATH
 ARG DEMO_PACKAGES_CORE_PATH
