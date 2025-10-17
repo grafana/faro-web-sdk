@@ -9,4 +9,5 @@ export interface GetWebInstrumentationsOptions {
   captureConsole?: boolean;
   enablePerformanceInstrumentation?: boolean;
   enableContentSecurityPolicyInstrumentation?: boolean;
+  enableUserEventsInstrumentation?: boolean;
 }

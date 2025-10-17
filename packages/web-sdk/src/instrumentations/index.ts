@@ -29,3 +29,5 @@ export { PerformanceInstrumentation } from './performance';
 export { UserActionInstrumentation, userActionDataAttribute } from './userActions';
 
 export { CSPInstrumentation } from './csp';
+
+export { FARO_JOURNEY_KEY } from './userEvents';
