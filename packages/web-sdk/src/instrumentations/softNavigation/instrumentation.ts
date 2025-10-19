@@ -21,14 +21,17 @@ export class SoftNavigationInstrumentation extends BaseInstrumentation {
 
     tracker
       .filter((msg) => {
-        console.log(msg)
         return msg.message == 'tracking-ended';
       })  
       .subscribe((msg) => {
         if (msg.events?.some((e: any) => e.type === 'url-change') && msg.events?.some((e: any) => e.type === 'dom-mutation'))
         {
-          // generate soft-navigation event
-          console.log('*** generating soft navigation event');
+          faro.api.pushEvent('soft-navigation', {
+            from: msg.events?.find((e: any) => e.type === 'url-change')?.from,
+            to: msg.events?.find((e: any) => e.type === 'url-change')?.to,
+            trigger: msg.events?.find((e: any) => e.type === 'url-change')?.trigger,
+            duration: msg.duration
+          });
         }
       });
   }
