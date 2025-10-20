@@ -116,7 +116,7 @@ describe('getUserEventHandler', () => {
 
   it('starts a new user action when none exists', () => {
     getCurrentSpy.mockReturnValue(undefined);
-    const processUserEvent = getUserEventHandler(faro as Faro);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
     const element = document.createElement('div');
     element.dataset['fooBar'] = 'my-action';
@@ -129,7 +129,7 @@ describe('getUserEventHandler', () => {
 
   it('does not start a new action if one already exists', () => {
     getCurrentSpy.mockReturnValue(fakeAction);
-    const processUserEvent = getUserEventHandler(faro as Faro);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
     const event = { type: 'keydown', target: document.createElement('div') } as unknown as KeyboardEvent;
     processUserEvent(event);
@@ -140,7 +140,7 @@ describe('getUserEventHandler', () => {
   it('does not process an event if the current user action is in Started/Halted state', () => {
     fakeAction.getState.mockReturnValueOnce(UserActionState.Cancelled);
     getCurrentSpy.mockReturnValue(fakeAction);
-    const processUserEvent = getUserEventHandler(faro as Faro);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
     const element = document.createElement('div');
     element.setAttribute('data-faro-user-action-name', 'foo');
@@ -151,7 +151,7 @@ describe('getUserEventHandler', () => {
 
   it('allows processing if there are running requests', () => {
     getCurrentSpy.mockReturnValue(fakeAction);
-    const processUserEvent = getUserEventHandler(faro as Faro);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
     const element = document.createElement('div');
     element.dataset['fooBar'] = 'foo';
@@ -185,7 +185,7 @@ describe('getUserEventHandler', () => {
 
   it('does not allow processing if there are no running requests', () => {
     getCurrentSpy.mockReturnValue(fakeAction);
-    const processUserEvent = getUserEventHandler(faro as Faro);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
     const event = { type: 'keydown', target: document.createElement('div') } as unknown as KeyboardEvent;
     processUserEvent(event);
@@ -205,7 +205,7 @@ describe('getUserEventHandler', () => {
 
   it('does not allow processing if there are running requests but the request id is not pending', () => {
     getCurrentSpy.mockReturnValue(fakeAction);
-    const processUserEvent = getUserEventHandler(faro as Faro);
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
 
     const element = document.createElement('div');
     element.dataset['fooBar'] = 'baz';

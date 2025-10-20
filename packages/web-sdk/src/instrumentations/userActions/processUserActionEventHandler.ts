@@ -1,4 +1,4 @@
-import type { Faro, Subscription } from '@grafana/faro-core';
+import type { Faro, Subscription, UserActionInterface } from '@grafana/faro-core';
 
 import {
   MESSAGE_TYPE_HTTP_REQUEST_END,
@@ -7,11 +7,12 @@ import {
 } from './const';
 import type { HttpRequestEndMessage, HttpRequestStartMessage } from './types';
 import { convertDataAttributeName } from './util';
+import { UserActionController } from './userActionController';
 
 export function getUserEventHandler(faro: Faro) {
   const { api, config } = faro;
 
-  return function processUserEvent(event: PointerEvent | KeyboardEvent) {
+  function processUserEvent(event: PointerEvent | KeyboardEvent) {
     const userActionName = getUserActionNameFromElement(
       event.target as HTMLElement,
       config.trackUserActionsDataAttributeName ?? userActionDataAttribute
@@ -22,8 +23,17 @@ export function getUserEventHandler(faro: Faro) {
       return;
     }
 
-    api.startUserAction(userActionName, {}, { triggerName: event.type });
+    const userAction = api.startUserAction(userActionName, {}, { triggerName: event.type });
+    if (userAction) {
+      processUserActionStarted(userAction);
+    }
   }
+
+  function processUserActionStarted(userAction: UserActionInterface) {
+    new UserActionController(userAction).attach();
+  }
+
+  return { processUserEvent, processUserActionStarted };
 }
 
 export function getUserActionNameFromElement(element: HTMLElement, dataAttributeName: string): string | undefined {
