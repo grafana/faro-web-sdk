@@ -10,3 +10,16 @@ export function convertDataAttributeName(userActionDataAttribute: string) {
   const withUpperCase = withoutData?.replace(/-(.)/g, (_, char) => char.toUpperCase());
   return withUpperCase?.replace(/-/g, '');
 }
+
+export function startTimeout(timeoutId: number | undefined, cb: () => void, delay: number) {
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+  }
+
+  //@ts-expect-error for some reason vscode is using the node types
+  timeoutId = setTimeout(() => {
+    cb();
+  }, delay);
+
+  return timeoutId;
+}
