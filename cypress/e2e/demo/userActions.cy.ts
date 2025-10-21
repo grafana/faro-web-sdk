@@ -16,5 +16,3 @@ context('User Actions', () => {
     cy.wait('@ua-no-action');
   });
 });
-
-
