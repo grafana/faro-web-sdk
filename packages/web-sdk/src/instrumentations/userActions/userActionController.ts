@@ -22,6 +22,7 @@ export class UserActionController {
   private haltTid?: number;
 
   private isValid = false;
+  private isHalted = false;
   private runningRequests = new Map<string, HttpRequestMessagePayload>();
 
   constructor(private ua: UserActionInterface) {}
@@ -53,15 +54,15 @@ export class UserActionController {
 
         if (isRequestEndMessage(msg)) {
           this.runningRequests.delete(msg.request.requestId);
+        }
 
-          if (this.ua.getState() === UserActionState.Halted && this.runningRequests.size === 0) {
-            this.ua.end();
-          }
-        } else {
+        if (!isRequestEndMessage(msg)) {
           if (!this.isValid) {
             this.isValid = true;
           }
           this.scheduleFollowUp();
+        } else if (this.isHalted && this.runningRequests.size === 0) {
+          this.endAction();
         }
       });
 
@@ -99,6 +100,7 @@ export class UserActionController {
     if (this.ua.getState() !== UserActionState.Started) {
       return;
     }
+    this.isHalted = true;
     this.startHaltTimeout();
   }
 
