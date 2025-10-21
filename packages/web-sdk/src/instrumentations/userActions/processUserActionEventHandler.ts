@@ -1,8 +1,6 @@
 import type { Faro, Subscription, UserActionInterface } from '@grafana/faro-core';
 
-import {
-  userActionDataAttributeParsed as userActionDataAttribute,
-} from './const';
+import { userActionDataAttributeParsed as userActionDataAttribute } from './const';
 import { UserActionController } from './userActionController';
 import { convertDataAttributeName } from './util';
 

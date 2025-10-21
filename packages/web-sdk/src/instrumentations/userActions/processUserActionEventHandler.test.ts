@@ -3,10 +3,7 @@ import { jest } from '@jest/globals';
 import { Observable, UserActionState } from '@grafana/faro-core';
 import type { Faro, Subscription } from '@grafana/faro-core';
 
-import {
-  userActionDataAttributeParsed as defaultDataAttribute,
-  MESSAGE_TYPE_HTTP_REQUEST_START,
-} from './const';
+import { userActionDataAttributeParsed as defaultDataAttribute, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
 import {
   getUserActionNameFromElement,
   getUserEventHandler,

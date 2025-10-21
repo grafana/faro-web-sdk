@@ -106,5 +106,3 @@ describe('UserActionController', () => {
     expect(fakeAction.cancel).not.toHaveBeenCalled();
   });
 });
-
-
