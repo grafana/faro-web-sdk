@@ -58,6 +58,9 @@ export class UserActionController {
             this.ua.end();
           }
         } else {
+          if (!this.isValid) {
+            this.isValid = true;
+          }
           this.scheduleFollowUp();
         }
       });
