@@ -1,11 +1,7 @@
 import { initializeFaro, Observable } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
-import {
-  MESSAGE_TYPE_DOM_MUTATION,
-  MESSAGE_TYPE_HTTP_REQUEST_END,
-  MESSAGE_TYPE_HTTP_REQUEST_START,
-} from './const';
+import { MESSAGE_TYPE_DOM_MUTATION, MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
 
 let http$: Observable<any>;
 let dom$: Observable<any>;

@@ -107,12 +107,16 @@ export class UserActionController {
 
   private startHaltTimeout() {
     this.clearTimer(this.haltTid);
-    this.haltTid = startTimeout(this.haltTid, () => {
-      // If still halted after timeout, end
-      if (this.ua.getState() === UserActionState.Halted) {
-        this.endAction();
-      }
-    }, defaultHaltTimeout) as any;
+    this.haltTid = startTimeout(
+      this.haltTid,
+      () => {
+        // If still halted after timeout, end
+        if (this.ua.getState() === UserActionState.Halted) {
+          this.endAction();
+        }
+      },
+      defaultHaltTimeout
+    ) as any;
   }
 
   private endAction() {
