@@ -6,8 +6,8 @@ import {
   userActionDataAttributeParsed as userActionDataAttribute,
 } from './const';
 import type { HttpRequestEndMessage, HttpRequestStartMessage } from './types';
-import { convertDataAttributeName } from './util';
 import { UserActionController } from './userActionController';
+import { convertDataAttributeName } from './util';
 
 export function getUserEventHandler(faro: Faro) {
   const { api, config } = faro;

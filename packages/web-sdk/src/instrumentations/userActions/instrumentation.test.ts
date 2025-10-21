@@ -1,5 +1,4 @@
-import { initializeFaro } from '@grafana/faro-core';
-import { Observable } from '@grafana/faro-core';
+import { initializeFaro, Observable } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import {
