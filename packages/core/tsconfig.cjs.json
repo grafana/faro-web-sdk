@@ -4,8 +4,12 @@
     "declarationDir": "./dist/types",
     "outDir": "./dist/cjs",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.cache/tsc/core.cjs.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/core.cjs.tsbuildinfo",
+    "types": ["node"]
   },
   "include": ["./src"],
-  "exclude": ["./**/*.test.ts"]
+  "exclude": [
+    "./**/*.test.ts",
+    "./**/apiTestHelpers.ts"
+  ]
 }

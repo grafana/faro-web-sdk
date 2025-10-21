@@ -4,8 +4,12 @@
     "declarationDir": "./dist/bundle/types",
     "outDir": "./dist/bundle",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.cache/tsc/core.esm.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/core.esm.tsbuildinfo",
+    "types": ["node"]
   },
   "include": ["./src"],
-  "exclude": ["./**/*.test.ts"]
+  "exclude": [
+    "./**/*.test.ts",
+    "./**/apiTestHelpers.ts"
+  ]
 }
