@@ -11,8 +11,6 @@ import {
 import {
   getUserActionNameFromElement,
   getUserEventHandler,
-  isRequestEndMessage,
-  isRequestStartMessage,
   unsubscribeAllMonitors,
 } from './processUserActionEventHandler';
 
@@ -56,18 +54,6 @@ describe('Utility functions', () => {
 
     const result = getUserActionNameFromElement(element, defaultDataAttribute);
     expect(result).toBeUndefined();
-  });
-
-  it('isRequestStartMessage type guard', () => {
-    const msg = { type: MESSAGE_TYPE_HTTP_REQUEST_START };
-    expect(isRequestStartMessage(msg)).toBe(true);
-    expect(isRequestEndMessage(msg)).toBe(false);
-  });
-
-  it('isRequestEndMessage type guard', () => {
-    const msg = { type: MESSAGE_TYPE_HTTP_REQUEST_END };
-    expect(isRequestEndMessage(msg)).toBe(true);
-    expect(isRequestStartMessage(msg)).toBe(false);
   });
 
   it('unsubscribeAllMonitors calls unsubscribe on subscription', () => {

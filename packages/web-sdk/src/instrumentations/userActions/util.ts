@@ -1,3 +1,6 @@
+import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from "./const";
+import { HttpRequestEndMessage, HttpRequestStartMessage } from "./types";
+
 /**
  * Parses the action attribute name by removing the 'data-' prefix and converting
  * the remaining string to camelCase.
@@ -22,4 +25,12 @@ export function startTimeout(timeoutId: number | undefined, cb: () => void, dela
   }, delay);
 
   return timeoutId;
+}
+
+export function isRequestStartMessage(msg: any): msg is HttpRequestStartMessage {
+  return msg.type === MESSAGE_TYPE_HTTP_REQUEST_START;
+}
+
+export function isRequestEndMessage(msg: any): msg is HttpRequestEndMessage {
+  return msg.type === MESSAGE_TYPE_HTTP_REQUEST_END;
 }

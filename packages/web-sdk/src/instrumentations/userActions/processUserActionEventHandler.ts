@@ -1,11 +1,8 @@
 import type { Faro, Subscription, UserActionInterface } from '@grafana/faro-core';
 
 import {
-  MESSAGE_TYPE_HTTP_REQUEST_END,
-  MESSAGE_TYPE_HTTP_REQUEST_START,
   userActionDataAttributeParsed as userActionDataAttribute,
 } from './const';
-import type { HttpRequestEndMessage, HttpRequestStartMessage } from './types';
 import { UserActionController } from './userActionController';
 import { convertDataAttributeName } from './util';
 
@@ -52,12 +49,4 @@ export function getUserActionNameFromElement(element: HTMLElement, dataAttribute
 export function unsubscribeAllMonitors(allMonitorsSub: Subscription | undefined) {
   allMonitorsSub?.unsubscribe();
   allMonitorsSub = undefined;
-}
-
-export function isRequestStartMessage(msg: any): msg is HttpRequestStartMessage {
-  return msg.type === MESSAGE_TYPE_HTTP_REQUEST_START;
-}
-
-export function isRequestEndMessage(msg: any): msg is HttpRequestEndMessage {
-  return msg.type === MESSAGE_TYPE_HTTP_REQUEST_END;
 }
