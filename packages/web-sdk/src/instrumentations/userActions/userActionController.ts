@@ -6,7 +6,7 @@ import { monitorDomMutations } from './domMutationMonitor';
 import { monitorHttpRequests } from './httpRequestMonitor';
 import { monitorPerformanceEntries } from './performanceEntriesMonitor';
 import { isRequestEndMessage, isRequestStartMessage } from './util';
-import ActivityWindowTracker from '../../utils/eventsTracker';
+import ActivityWindowTracker from '../_internal/activityWindowTracker';
 
 const defaultFollowUpActionTimeRange = 100;
 const defaultHaltTimeout = 10 * 1000;
