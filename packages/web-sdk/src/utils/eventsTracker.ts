@@ -1,29 +1,39 @@
 import { Observable } from '@grafana/faro-core';
 
-import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from '../instrumentations/userActions/const';
-import type {
-  HttpRequestEndMessage,
-  HttpRequestMessagePayload,
-  HttpRequestStartMessage,
-} from '../instrumentations/userActions/types';
+type BlockingKey = string;
 
-export default class EventsTracker extends Observable {
+export interface ActivityWindowTrackerOptions<TMsg = any> {
+  followUpMs?: number;
+  haltMs?: number;
+  isBlockingStart?: (msg: TMsg) => BlockingKey | undefined;
+  isBlockingEnd?: (msg: TMsg) => BlockingKey | undefined;
+}
+
+export default class ActivityWindowTracker extends Observable {
   eventsObservable: Observable;
 
   private _tracking: boolean = false;
-  private _timeoutId?: number;
-  private _currentEvents?: Array<string>;
-  private _runningRequests?: Map<string, HttpRequestMessagePayload>;
+  private _followUpTid?: number;
+  private _haltTid?: number;
+  private _currentEvents?: Array<any>;
+  private _runningBlocking?: Map<BlockingKey, true>;
   private _startTime?: number;
   private _lastEventTime?: number;
+  private _options: Required<ActivityWindowTrackerOptions>;
 
-  constructor(eventsObservable: Observable) {
+  constructor(eventsObservable: Observable, options?: ActivityWindowTrackerOptions) {
     super();
     this.eventsObservable = eventsObservable;
+    this._options = {
+      followUpMs: options?.followUpMs ?? 100,
+      haltMs: options?.haltMs ?? 10 * 1000,
+      isBlockingStart: options?.isBlockingStart ?? (() => undefined),
+      isBlockingEnd: options?.isBlockingEnd ?? (() => undefined),
+    } as Required<ActivityWindowTrackerOptions>;
     this._initialize();
   }
 
-  _initialize() {
+  private _initialize() {
     this.eventsObservable
       .filter(() => {
         return this._tracking;
@@ -32,16 +42,20 @@ export default class EventsTracker extends Observable {
         this._lastEventTime = Date.now();
         this._currentEvents?.push(event);
 
-        if (isRequestStartMessage(event)) {
-          this._runningRequests?.set(event.request.requestId, event.request);
+        const startKey = this._options.isBlockingStart(event as any);
+        if (startKey) {
+          this._runningBlocking?.set(startKey, true);
         }
 
-        if (isRequestEndMessage(event)) {
-          this._runningRequests?.delete(event.request.requestId);
+        const endKey = this._options.isBlockingEnd(event as any);
+        if (endKey) {
+          this._runningBlocking?.delete(endKey);
         }
 
-        if (!this.hasRunningRequests()) {
-          this._waitForEvents();
+        if (!endKey) {
+          this._scheduleFollowUp();
+        } else if (!this.hasBlockingWork()) {
+          this.stopTracking();
         }
       });
   }
@@ -61,12 +75,14 @@ export default class EventsTracker extends Observable {
     });
 
     this._currentEvents = [];
-    this._runningRequests = new Map<string, HttpRequestMessagePayload>();
-    this._waitForEvents();
+    this._runningBlocking = new Map<BlockingKey, true>();
+    this._scheduleFollowUp();
   }
 
   stopTracking() {
     this._tracking = false;
+    this._clearTimer(this._followUpTid);
+    this._clearTimer(this._haltTid);
 
     this.notify({
       message: 'tracking-ended',
@@ -75,29 +91,39 @@ export default class EventsTracker extends Observable {
     });
   }
 
-  _waitForEvents() {
-    this._timeoutId = startTimeout(
-      this._timeoutId,
+  private _scheduleFollowUp() {
+    this._followUpTid = startTimeout(
+      this._followUpTid,
       () => {
-        if (!this.hasRunningRequests()) {
+        if (this.hasBlockingWork()) {
+          this._startHaltTimeout();
+        } else {
           this.stopTracking();
         }
       },
-      100
+      this._options.followUpMs
     );
   }
 
-  hasRunningRequests() {
-    return this._runningRequests && this._runningRequests?.size > 0;
+  private _startHaltTimeout() {
+    this._haltTid = startTimeout(
+      this._haltTid,
+      () => {
+        this.stopTracking();
+      },
+      this._options.haltMs
+    );
   }
-}
 
-export function isRequestStartMessage(msg: any): msg is HttpRequestStartMessage {
-  return msg.type === MESSAGE_TYPE_HTTP_REQUEST_START;
-}
+  private hasBlockingWork(): boolean {
+    return !!this._runningBlocking && this._runningBlocking.size > 0;
+  }
 
-export function isRequestEndMessage(msg: any): msg is HttpRequestEndMessage {
-  return msg.type === MESSAGE_TYPE_HTTP_REQUEST_END;
+  private _clearTimer(id?: number) {
+    if (id) {
+      clearTimeout(id);
+    }
+  }
 }
 
 function startTimeout(timeoutId: number | undefined, cb: () => void, delay: number) {
