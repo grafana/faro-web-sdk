@@ -114,9 +114,7 @@ export function initializeExceptionsAPI({
       internalLogger.debug('Pushing exception\n', item);
 
       const activeUserAction = userActionsApi.getActiveUserAction();
-      if (activeUserAction) {
-        activeUserAction.addItem(item);
-      } else {
+      if (!activeUserAction || !activeUserAction.addItem(item)) {
         transports.execute(item);
       }
     } catch (err) {
