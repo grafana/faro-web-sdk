@@ -21,9 +21,7 @@ import type { UserActionsAPI } from '../userActions';
 import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
-import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
-
-let stacktraceParser: StacktraceParser | undefined;
+import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI } from './types';
 
 export function initializeExceptionsAPI({
   internalLogger,
@@ -45,15 +43,7 @@ export function initializeExceptionsAPI({
 
   let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace' | 'context'> | null = null;
 
-  stacktraceParser = config.parseStacktrace ?? stacktraceParser;
-
-  const changeStacktraceParser: ExceptionsAPI['changeStacktraceParser'] = (newStacktraceParser) => {
-    internalLogger.debug('Changing stacktrace parser');
-
-    stacktraceParser = newStacktraceParser ?? stacktraceParser;
-  };
-
-  const getStacktraceParser: ExceptionsAPI['getStacktraceParser'] = () => stacktraceParser;
+  const parseStacktrace = config.parseStacktrace;
 
   const { ignoreErrors = [], preserveOriginalError } = config;
 
@@ -87,8 +77,7 @@ export function initializeExceptionsAPI({
         },
         type: TransportItemType.EXCEPTION,
       };
-
-      stackFrames = stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
+      stackFrames = stackFrames ?? (error.stack ? parseStacktrace?.(error).frames : undefined);
 
       if (stackFrames?.length) {
         item.payload.stacktrace = {
@@ -122,11 +111,8 @@ export function initializeExceptionsAPI({
     }
   };
 
-  changeStacktraceParser(config.parseStacktrace);
-
   return {
-    changeStacktraceParser,
-    getStacktraceParser,
+    parseStacktrace,
     pushError,
   };
 }
