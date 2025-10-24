@@ -8,7 +8,7 @@ import {
 } from './const';
 import { monitorDomMutations } from './domMutationMonitor';
 import { monitorHttpRequests } from './httpRequestMonitor';
-import { monitorPerformanceEntries } from './performanceEntriesMonitor';
+import { monitorPerformanceEntries } from '../_internal/monitors/performanceEntriesMonitor';
 import type { HttpRequestEndMessage, HttpRequestMessagePayload, HttpRequestStartMessage } from './types';
 import { convertDataAttributeName } from './util';
 

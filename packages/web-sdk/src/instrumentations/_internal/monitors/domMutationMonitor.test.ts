@@ -1,7 +1,7 @@
 import { JSDOM } from 'jsdom';
 
 import { MESSAGE_TYPE_DOM_MUTATION } from './const';
-import { monitorDomMutations } from './domMutationMonitor';
+import { monitorDomMutations } from '../domMutationMonitor';
 
 describe('DOM Mutation Monitor', () => {
   it('MutationObserver takeRecords method', () => {

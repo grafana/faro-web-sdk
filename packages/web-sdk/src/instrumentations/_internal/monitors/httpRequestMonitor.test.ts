@@ -2,7 +2,7 @@ import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
-import { monitorHttpRequests } from './httpRequestMonitor';
+import { monitorHttpRequests } from '../httpRequestMonitor';
 
 describe('monitorHttpRequests', () => {
   beforeEach(() => {});

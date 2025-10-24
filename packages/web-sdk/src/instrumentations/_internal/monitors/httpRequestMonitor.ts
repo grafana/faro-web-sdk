@@ -1,6 +1,6 @@
 import { genShortID, Observable } from '@grafana/faro-core';
 
-import { getUrlFromResource, isUrlIgnored } from '../../utils/url';
+import { getUrlFromResource, isUrlIgnored } from '../../../utils/url';
 
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
 import type { HttpRequestEndMessage, HttpRequestMessagePayload, HttpRequestStartMessage } from './types';
