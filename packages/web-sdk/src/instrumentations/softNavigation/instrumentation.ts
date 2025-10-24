@@ -4,8 +4,7 @@ import { monitorHttpRequests } from '../_internal/monitors/httpRequestMonitor';
 import { monitorDomMutations } from '../_internal/monitors/domMutationMonitor';
 import { monitorUrlChanges } from '../_internal/monitors/urlChangeMonitor';
 import { monitorInteractions } from '../_internal/monitors/interactionMonitor';
-import { isRequestStartMessage } from '../_internal/activityWindowTracker';
-import { isRequestEndMessage } from './eventsTracker';
+import { isRequestStartMessage, isRequestEndMessage } from '../_internal/activityWindowTracker';
 
 export class SoftNavigationInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-navigation';
