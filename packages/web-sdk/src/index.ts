@@ -97,6 +97,7 @@ export {
   Observable,
   unknownString,
   UserActionState,
+  UserActionSeverity,
 } from '@grafana/faro-core';
 
 export type {
@@ -161,7 +162,6 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
-  UserActionSeverity,
 } from '@grafana/faro-core';
 
 export {
@@ -176,3 +176,4 @@ export {
 export { getIgnoreUrls, getUrlFromResource } from './utils/url';
 
 export { userActionDataAttribute } from './instrumentations/userActions';
+export { FARO_JOURNEY_KEY } from './instrumentations/userEvents';

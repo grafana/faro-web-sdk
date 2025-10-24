@@ -10,6 +10,7 @@ import {
   ViewInstrumentation,
   WebVitalsInstrumentation,
 } from '../instrumentations';
+import { UserEventsInstrumentation } from '../instrumentations/userEvents/instrumentation';
 
 import type { GetWebInstrumentationsOptions } from './types';
 
@@ -33,6 +34,10 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
 
   if (options.captureConsole !== false) {
     instrumentations.push(new ConsoleInstrumentation());
+  }
+
+  if (options.enableUserEventsInstrumentation === true) {
+    instrumentations.push(new UserEventsInstrumentation());
   }
 
   return instrumentations;
