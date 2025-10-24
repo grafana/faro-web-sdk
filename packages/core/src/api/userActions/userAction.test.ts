@@ -81,4 +81,37 @@ describe('UserAction', () => {
     expect(ua.getState()).toBe(UserActionState.Ended);
     expect(transports.execute).not.toHaveBeenCalledWith('koko');
   });
+
+  it('addItem returns true and buffers when state is Started', () => {
+    const userAction = new UserAction({ name: 'foo', transports, trigger: 'foo' });
+    const item: TransportItem = { type: TransportItemType.EVENT, payload: {}, meta: {} };
+    const result = userAction.addItem(item);
+    expect(result).toBe(true);
+  });
+
+  it('addItem returns false when state is Halted', () => {
+    const userAction = new UserAction({ name: 'foo', transports, trigger: 'foo' });
+    userAction.extend(() => true);
+    jest.advanceTimersByTime(userAction.cancelTimeout);
+    expect(userAction.getState()).toBe(UserActionState.Halted);
+    const item: TransportItem = { type: TransportItemType.EVENT, payload: {}, meta: {} };
+    const result = userAction.addItem(item);
+    expect(result).toBe(false);
+  });
+
+  it('addItem returns false when state is Cancelled', () => {
+    const userAction = new UserAction({ name: 'foo', transports, trigger: 'foo' });
+    userAction.cancel();
+    const item: TransportItem = { type: TransportItemType.EVENT, payload: {}, meta: {} };
+    const result = userAction.addItem(item);
+    expect(result).toBe(false);
+  });
+
+  it('addItem returns false when state is Ended', () => {
+    const userAction = new UserAction({ name: 'foo', transports, trigger: 'foo' });
+    userAction.end();
+    const item: TransportItem = { type: TransportItemType.EVENT, payload: {}, meta: {} };
+    const result = userAction.addItem(item);
+    expect(result).toBe(false);
+  });
 });

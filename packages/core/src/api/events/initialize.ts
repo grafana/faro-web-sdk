@@ -72,9 +72,7 @@ export function initializeEventsAPI({
       internalLogger.debug('Pushing event\n', item);
 
       const currentUserAction = userActionsApi.getActiveUserAction();
-      if (currentUserAction) {
-        currentUserAction.addItem(item);
-      } else {
+      if (!currentUserAction || !currentUserAction.addItem(item)) {
         transports.execute(item);
       }
     } catch (err) {
