@@ -9,7 +9,7 @@ export class UserActionInstrumentation extends BaseInstrumentation {
   private _userActionSub?: Subscription;
 
   initialize(): void {
-    const { processUserEvent, proceessUserActionStarted } = getUserEventHandler(faro);
+    const { processUserEvent, processUserActionStarted } = getUserEventHandler(faro);
     window.addEventListener('pointerdown', processUserEvent);
     window.addEventListener('keydown', (ev: KeyboardEvent) => {
       if ([' ', 'Enter'].includes(ev.key)) {
@@ -19,7 +19,7 @@ export class UserActionInstrumentation extends BaseInstrumentation {
 
     this._userActionSub = userActionsMessageBus.subscribe(({ type, userAction }) => {
       if (type === 'user_action_start') {
-        proceessUserActionStarted(userAction);
+        processUserActionStarted(userAction);
       }
     });
   }
