@@ -1,1 +1,0 @@
-export { SoftNavigationInstrumentation } from './instrumentation';

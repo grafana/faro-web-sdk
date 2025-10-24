@@ -30,4 +30,4 @@ export { UserActionInstrumentation, userActionDataAttribute } from './userAction
 
 export { CSPInstrumentation } from './csp';
 
-export { SoftNavigationInstrumentation } from './softNavigation';
+export { NavigationInstrumentation } from './navigation';

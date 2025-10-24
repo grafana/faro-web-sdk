@@ -6,7 +6,7 @@ import { monitorUrlChanges } from '../_internal/monitors/urlChangeMonitor';
 import { monitorInteractions } from '../_internal/monitors/interactionMonitor';
 import { isRequestStartMessage, isRequestEndMessage } from '../_internal/activityWindowTracker';
 
-export class SoftNavigationInstrumentation extends BaseInstrumentation {
+export class NavigationInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-navigation';
   readonly version = VERSION;
 

@@ -18,7 +18,7 @@ export {
   PerformanceInstrumentation,
   CSPInstrumentation,
   UserActionInstrumentation,
-  SoftNavigationInstrumentation,
+  NavigationInstrumentation,
 } from './instrumentations';
 export type { ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
