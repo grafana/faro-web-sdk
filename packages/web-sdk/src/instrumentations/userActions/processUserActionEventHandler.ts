@@ -4,12 +4,12 @@ import type { Faro, Subscription, UserActionInterface } from '@grafana/faro-core
 import {
   MESSAGE_TYPE_HTTP_REQUEST_END,
   MESSAGE_TYPE_HTTP_REQUEST_START,
-} from '../_internal/monitors/const';
+} from './const';
 import { userActionDataAttribute } from './const';
-import { monitorDomMutations } from '../_internal/monitors/domMutationMonitor';
-import { monitorHttpRequests } from '../_internal/monitors/httpRequestMonitor';
-import { monitorPerformanceEntries } from '../_internal/monitors/performanceEntriesMonitor';
-import type { HttpRequestEndMessage, HttpRequestMessagePayload, HttpRequestStartMessage } from '../_internal/monitors/types';
+import { monitorDomMutations } from './index';
+import { monitorHttpRequests } from './index';
+import { monitorPerformanceEntries } from './index';
+import type { HttpRequestEndMessage, HttpRequestMessagePayload, HttpRequestStartMessage } from './index';
 import { convertDataAttributeName } from './util';
 
 export function getUserEventHandler(faro: Faro) {

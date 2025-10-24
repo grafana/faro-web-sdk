@@ -26,16 +26,21 @@ export class NavigationInstrumentation extends BaseInstrumentation {
       }
     );
 
-    activityWindowTracker.subscribe((msg) => {
-      if (msg.message == 'tracking-ended') {
-        faro.api.pushEvent('navigation', {
-          from: msg.events?.find((e: any) => e.type === 'url-change')?.from,
-          to: msg.events?.find((e: any) => e.type === 'url-change')?.to,
-          trigger: msg.events?.find((e: any) => e.type === 'url-change')?.trigger,
-          duration: msg.duration
-        });
-      }
-    });
+    activityWindowTracker
+      .filter((msg) => {
+        return msg.message == 'tracking-ended';
+      })  
+      .subscribe((msg) => {
+        if (msg.events?.some((e: any) => e.type === 'url-change') && msg.events?.some((e: any) => e.type === 'dom-mutation'))
+        {
+          faro.api.pushEvent('navigation', {
+            from: msg.events?.find((e: any) => e.type === 'url-change')?.from,
+            to: msg.events?.find((e: any) => e.type === 'url-change')?.to,
+            trigger: msg.events?.find((e: any) => e.type === 'url-change')?.trigger,
+            duration: msg.duration
+          });
+        }
+      });
 
     interactionMonitor.subscribe(() => {
       activityWindowTracker.startTracking();
