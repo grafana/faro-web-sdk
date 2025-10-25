@@ -14,7 +14,7 @@ export function monitorInteractions(eventNames: string[]): Observable {
     window.addEventListener(eventName, () => {
       observable.notify({ type: MESSAGE_TYPE_INTERACTION, name: eventName });
     });
-  })
+  });
 
   return observable;
 }

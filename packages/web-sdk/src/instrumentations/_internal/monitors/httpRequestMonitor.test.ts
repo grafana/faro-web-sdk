@@ -17,7 +17,7 @@ describe('monitorHttpRequests', () => {
 
   it('Monitors xhr requests and sends a message if request are pending', async () => {
     const url = 'https://www.httpbin.org/get';
-    
+
     const observable = monitorHttpRequests();
     const mockSubscribe = jest.fn();
     observable.subscribe(mockSubscribe);

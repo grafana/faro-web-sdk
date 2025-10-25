@@ -1,10 +1,6 @@
 import { Observable } from '@grafana/faro-core';
 
-import {
-  ActivityWindowTracker,
-  isRequestEndMessage,
-  isRequestStartMessage,
-} from './activityWindowTracker';
+import { ActivityWindowTracker, isRequestEndMessage, isRequestStartMessage } from './activityWindowTracker';
 import {
   MESSAGE_TYPE_DOM_MUTATION,
   MESSAGE_TYPE_HTTP_REQUEST_END,
@@ -205,5 +201,3 @@ describe('ActivityWindowTracker', () => {
     expect(isRequestEndMessage(other)).toBe(false);
   });
 });
-
-

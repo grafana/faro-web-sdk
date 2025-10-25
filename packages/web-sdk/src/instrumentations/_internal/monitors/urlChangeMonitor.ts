@@ -40,5 +40,3 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
 
   return observable;
 }
-
-
