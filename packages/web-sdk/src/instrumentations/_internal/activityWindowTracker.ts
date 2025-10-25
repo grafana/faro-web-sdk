@@ -67,11 +67,7 @@ export class ActivityWindowTracker extends Observable {
           this._activeOperations?.delete(endKey);
         }
 
-        if (!endKey) {
-          this._scheduleInactivityCheck();
-        } else if (!this.hasActiveOperations()) {
-          this.stopTracking();
-        }
+        this._scheduleInactivityCheck();
       });
   }
 
@@ -98,10 +94,17 @@ export class ActivityWindowTracker extends Observable {
     this._clearTimer(this._inactivityTid);
     this._clearTimer(this._drainTid);
 
+    let duration = 0;
+    if (this.hasActiveOperations()) {
+      duration = Date.now() - this._startTime!;
+    } else {
+      duration = this._lastEventTime ? this._lastEventTime - this._startTime! : 0;
+    }
+
     this.notify({
       message: 'tracking-ended',
       events: this._currentEvents,
-      duration: this._lastEventTime ? this._lastEventTime - this._startTime! : 0,
+      duration: duration,
     });
   }
 
