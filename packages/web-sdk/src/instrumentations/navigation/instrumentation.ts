@@ -19,10 +19,10 @@ export class NavigationInstrumentation extends BaseInstrumentation {
     const activityWindowTracker = new ActivityWindowTracker(
       new Observable().merge(httpMonitor, domMutationsMonitor, urlMonitor),
       {
-        followUpMs: 100,
-        haltMs: 10 * 1000,
-        isBlockingStart: (msg) => (isRequestStartMessage(msg) ? msg.request.requestId : undefined),
-        isBlockingEnd: (msg) => (isRequestEndMessage(msg) ? msg.request.requestId : undefined),
+        inactivityMs: 100,
+        drainTimeoutMs: 10 * 1000,
+        isOperationStart: (msg) => (isRequestStartMessage(msg) ? msg.request.requestId : undefined),
+        isOperationEnd: (msg) => (isRequestEndMessage(msg) ? msg.request.requestId : undefined),
       }
     );
 

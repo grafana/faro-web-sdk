@@ -2,7 +2,7 @@ import { Observable } from '@grafana/faro-core';
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './monitors/const';
 import type { HttpRequestStartMessage, HttpRequestEndMessage } from './monitors/types';
 
-type BlockingKey = string;
+type OperationKey = string;
 
 export function isRequestStartMessage(msg: any): msg is HttpRequestStartMessage {
   return msg.type === MESSAGE_TYPE_HTTP_REQUEST_START;
@@ -13,20 +13,25 @@ export function isRequestEndMessage(msg: any): msg is HttpRequestEndMessage {
 }
 
 export interface ActivityWindowTrackerOptions<TMsg = any> {
-  followUpMs?: number;
-  haltMs?: number;
-  isBlockingStart?: (msg: TMsg) => BlockingKey | undefined;
-  isBlockingEnd?: (msg: TMsg) => BlockingKey | undefined;
+  inactivityMs?: number;
+  drainTimeoutMs?: number;
+  isOperationStart?: (msg: TMsg) => OperationKey | undefined;
+  isOperationEnd?: (msg: TMsg) => OperationKey | undefined;
 }
 
+/**
+ * Tracks events in a time‑boxed activity window. When the window goes quiet for `inactivityMs`,
+ * it enters a draining phase: new short events are ignored; only active operations are awaited
+ * until they end or `drainTimeoutMs` elapses.
+ */
 export class ActivityWindowTracker extends Observable {
   eventsObservable: Observable;
 
   private _tracking: boolean = false;
-  private _followUpTid?: number;
-  private _haltTid?: number;
+  private _inactivityTid?: number;
+  private _drainTid?: number;
   private _currentEvents?: Array<any>;
-  private _runningBlocking?: Map<BlockingKey, true>;
+  private _activeOperations?: Map<OperationKey, true>;
   private _startTime?: number;
   private _lastEventTime?: number;
   private _options: Required<ActivityWindowTrackerOptions>;
@@ -35,10 +40,10 @@ export class ActivityWindowTracker extends Observable {
     super();
     this.eventsObservable = eventsObservable;
     this._options = {
-      followUpMs: options?.followUpMs ?? 100,
-      haltMs: options?.haltMs ?? 10 * 1000,
-      isBlockingStart: options?.isBlockingStart ?? (() => undefined),
-      isBlockingEnd: options?.isBlockingEnd ?? (() => undefined),
+      inactivityMs: options?.inactivityMs ?? 100,
+      drainTimeoutMs: options?.drainTimeoutMs ?? 10 * 1000,
+      isOperationStart: options?.isOperationStart ?? (() => undefined),
+      isOperationEnd: options?.isOperationEnd ?? (() => undefined),
     } as Required<ActivityWindowTrackerOptions>;
     this._initialize();
   }
@@ -52,19 +57,19 @@ export class ActivityWindowTracker extends Observable {
         this._lastEventTime = Date.now();
         this._currentEvents?.push(event);
 
-        const startKey = this._options.isBlockingStart(event as any);
+        const startKey = this._options.isOperationStart(event as any);
         if (startKey) {
-          this._runningBlocking?.set(startKey, true);
+          this._activeOperations?.set(startKey, true);
         }
 
-        const endKey = this._options.isBlockingEnd(event as any);
+        const endKey = this._options.isOperationEnd(event as any);
         if (endKey) {
-          this._runningBlocking?.delete(endKey);
+          this._activeOperations?.delete(endKey);
         }
 
         if (!endKey) {
-          this._scheduleFollowUp();
-        } else if (!this.hasBlockingWork()) {
+          this._scheduleInactivityCheck();
+        } else if (!this.hasActiveOperations()) {
           this.stopTracking();
         }
       });
@@ -84,14 +89,14 @@ export class ActivityWindowTracker extends Observable {
     });
 
     this._currentEvents = [];
-    this._runningBlocking = new Map<BlockingKey, true>();
-    this._scheduleFollowUp();
+    this._activeOperations = new Map<OperationKey, true>();
+    this._scheduleInactivityCheck();
   }
 
   stopTracking() {
     this._tracking = false;
-    this._clearTimer(this._followUpTid);
-    this._clearTimer(this._haltTid);
+    this._clearTimer(this._inactivityTid);
+    this._clearTimer(this._drainTid);
 
     this.notify({
       message: 'tracking-ended',
@@ -100,32 +105,32 @@ export class ActivityWindowTracker extends Observable {
     });
   }
 
-  private _scheduleFollowUp() {
-    this._followUpTid = startTimeout(
-      this._followUpTid,
+  private _scheduleInactivityCheck() {
+    this._inactivityTid = startTimeout(
+      this._inactivityTid,
       () => {
-        if (this.hasBlockingWork()) {
-          this._startHaltTimeout();
+        if (this.hasActiveOperations()) {
+          this._startDrainTimeout();
         } else {
           this.stopTracking();
         }
       },
-      this._options.followUpMs
+      this._options.inactivityMs
     );
   }
 
-  private _startHaltTimeout() {
-    this._haltTid = startTimeout(
-      this._haltTid,
+  private _startDrainTimeout() {
+    this._drainTid = startTimeout(
+      this._drainTid,
       () => {
         this.stopTracking();
       },
-      this._options.haltMs
+      this._options.drainTimeoutMs
     );
   }
 
-  private hasBlockingWork(): boolean {
-    return !!this._runningBlocking && this._runningBlocking.size > 0;
+  private hasActiveOperations(): boolean {
+    return !!this._activeOperations && this._activeOperations.size > 0;
   }
 
   private _clearTimer(id?: number) {
