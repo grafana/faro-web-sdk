@@ -47,6 +47,11 @@ export function initializeUserActionsAPI({
         severity: options?.severity || UserActionSeverity.Normal,
         trackUserActionsExcludeItem,
       });
+
+      if (options?.cancelTimeout) {
+        userAction.cancelTimeout = options.cancelTimeout;
+      }
+
       userAction
         .filter((v) => [UserActionState.Ended, UserActionState.Cancelled].includes(v))
         .first()

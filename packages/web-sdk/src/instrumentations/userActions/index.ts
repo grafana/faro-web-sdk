@@ -5,11 +5,16 @@ export type {
   HttpRequestEndMessage,
   HttpRequestStartMessage,
   HttpRequestMessagePayload,
-} from './types';
+} from '../_internal/monitors/types';
 
 export {
   MESSAGE_TYPE_DOM_MUTATION,
   MESSAGE_TYPE_HTTP_REQUEST_END,
   MESSAGE_TYPE_HTTP_REQUEST_START,
-  userActionDataAttribute,
-} from './const';
+} from '../_internal/monitors/const';
+
+export { monitorDomMutations } from '../_internal/monitors/domMutationMonitor';
+export { monitorHttpRequests } from '../_internal/monitors/httpRequestMonitor';
+export { monitorPerformanceEntries } from '../_internal/monitors/performanceEntriesMonitor';
+
+export { userActionDataAttribute } from './const';

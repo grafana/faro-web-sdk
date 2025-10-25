@@ -96,7 +96,7 @@ export default class UserAction extends Observable implements UserActionInterfac
           this.cancel();
         }
       },
-      defaultFollowUpActionTimeRange
+      this.cancelTimeout
     );
   }
 
