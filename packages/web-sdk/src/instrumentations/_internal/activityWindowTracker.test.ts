@@ -1,13 +1,14 @@
 import { Observable } from '@grafana/faro-core';
+
 import {
   ActivityWindowTracker,
-  isRequestStartMessage,
   isRequestEndMessage,
+  isRequestStartMessage,
 } from './activityWindowTracker';
 import {
-  MESSAGE_TYPE_HTTP_REQUEST_START,
-  MESSAGE_TYPE_HTTP_REQUEST_END,
   MESSAGE_TYPE_DOM_MUTATION,
+  MESSAGE_TYPE_HTTP_REQUEST_END,
+  MESSAGE_TYPE_HTTP_REQUEST_START,
 } from './monitors/const';
 
 describe('ActivityWindowTracker', () => {

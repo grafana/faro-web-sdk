@@ -1,10 +1,10 @@
-import { BaseInstrumentation, VERSION, faro, Observable } from '@grafana/faro-core';
-import { ActivityWindowTracker } from '../_internal/activityWindowTracker';
-import { monitorHttpRequests } from '../_internal/monitors/httpRequestMonitor';
+import { BaseInstrumentation, faro, Observable, VERSION } from '@grafana/faro-core';
+
+import { ActivityWindowTracker , isRequestEndMessage, isRequestStartMessage } from '../_internal/activityWindowTracker';
 import { monitorDomMutations } from '../_internal/monitors/domMutationMonitor';
-import { monitorUrlChanges } from '../_internal/monitors/urlChangeMonitor';
+import { monitorHttpRequests } from '../_internal/monitors/httpRequestMonitor';
 import { monitorInteractions } from '../_internal/monitors/interactionMonitor';
-import { isRequestStartMessage, isRequestEndMessage } from '../_internal/activityWindowTracker';
+import { monitorUrlChanges } from '../_internal/monitors/urlChangeMonitor';
 
 export class NavigationInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-navigation';
@@ -28,7 +28,7 @@ export class NavigationInstrumentation extends BaseInstrumentation {
 
     activityWindowTracker
       .filter((msg) => {
-        return msg.message == 'tracking-ended';
+        return msg.message === 'tracking-ended';
       })  
       .subscribe((msg) => {
         if (msg.events?.some((e: any) => e.type === 'url-change') && msg.events?.some((e: any) => e.type === 'dom-mutation'))

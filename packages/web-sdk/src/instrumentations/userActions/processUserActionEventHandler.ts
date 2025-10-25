@@ -4,11 +4,8 @@ import type { Faro, Subscription, UserActionInterface } from '@grafana/faro-core
 import {
   MESSAGE_TYPE_HTTP_REQUEST_END,
   MESSAGE_TYPE_HTTP_REQUEST_START,
-} from './const';
-import { userActionDataAttribute } from './const';
-import { monitorDomMutations } from './index';
-import { monitorHttpRequests } from './index';
-import { monitorPerformanceEntries } from './index';
+ userActionDataAttribute } from './const';
+import { monitorDomMutations , monitorHttpRequests , monitorPerformanceEntries } from './index';
 import type { HttpRequestEndMessage, HttpRequestMessagePayload, HttpRequestStartMessage } from './index';
 import { convertDataAttributeName } from './util';
 

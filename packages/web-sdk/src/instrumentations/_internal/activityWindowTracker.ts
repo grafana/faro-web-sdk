@@ -1,6 +1,7 @@
 import { Observable } from '@grafana/faro-core';
+
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './monitors/const';
-import type { HttpRequestStartMessage, HttpRequestEndMessage } from './monitors/types';
+import type { HttpRequestEndMessage, HttpRequestStartMessage } from './monitors/types';
 
 type OperationKey = string;
 
@@ -27,10 +28,10 @@ export interface ActivityWindowTrackerOptions<TMsg = any> {
 export class ActivityWindowTracker extends Observable {
   eventsObservable: Observable;
 
-  private _tracking: boolean = false;
+  private _tracking = false;
   private _inactivityTid?: number;
   private _drainTid?: number;
-  private _currentEvents?: Array<any>;
+  private _currentEvents?: any[];
   private _activeOperations?: Map<OperationKey, true>;
   private _startTime?: number;
   private _lastEventTime?: number;

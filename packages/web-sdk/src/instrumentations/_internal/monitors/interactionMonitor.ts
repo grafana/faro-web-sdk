@@ -7,7 +7,7 @@ export type InteractionMessage = {
   name: string;
 };
 
-export function monitorInteractions(eventNames: Array<string>): Observable {
+export function monitorInteractions(eventNames: string[]): Observable {
   const observable = new Observable<InteractionMessage>();
 
   eventNames.forEach((eventName) => {
