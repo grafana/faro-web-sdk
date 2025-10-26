@@ -1,4 +1,4 @@
-import { MESSAGE_TYPE_URL_CHANGE, monitorUrlChanges, __resetUrlChangeMonitorForTests } from './urlChangeMonitor';
+import { __resetUrlChangeMonitorForTests, MESSAGE_TYPE_URL_CHANGE, monitorUrlChanges } from './urlChangeMonitor';
 
 describe('monitorUrlChanges', () => {
   afterEach(() => {
@@ -68,5 +68,3 @@ describe('monitorUrlChanges', () => {
     replaceStateSpy.mockRestore();
   });
 });
-
-

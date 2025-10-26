@@ -1,8 +1,8 @@
-import { MESSAGE_TYPE_RESOURCE_ENTRY } from './const';
-import { monitorPerformanceEntries, __resetPerformanceEntriesMonitorForTests } from './performanceEntriesMonitor';
-
 import { performanceEntriesSubscription } from '../../performance/instrumentation';
 import { RESOURCE_ENTRY } from '../../performance/performanceConstants';
+
+import { MESSAGE_TYPE_RESOURCE_ENTRY } from './const';
+import { __resetPerformanceEntriesMonitorForTests, monitorPerformanceEntries } from './performanceEntriesMonitor';
 
 describe('monitorPerformanceEntries', () => {
   afterEach(() => {
@@ -33,5 +33,3 @@ describe('monitorPerformanceEntries', () => {
     subscribeSpy.mockRestore();
   });
 });
-
-

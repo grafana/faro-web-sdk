@@ -1,4 +1,4 @@
-import { MESSAGE_TYPE_INTERACTION, monitorInteractions, __resetInteractionMonitorForTests } from './interactionMonitor';
+import { __resetInteractionMonitorForTests, MESSAGE_TYPE_INTERACTION, monitorInteractions } from './interactionMonitor';
 
 describe('monitorInteractions', () => {
   afterEach(() => {
@@ -70,5 +70,3 @@ describe('monitorInteractions', () => {
     addEventListenerSpy.mockRestore();
   });
 });
-
-

@@ -13,9 +13,7 @@ const apiTypeXhr = 'xhr';
 /**
  * Monitors if any http requests are in progress.
  */
-let httpRequestObservable:
-  | Observable<HttpRequestStartMessage | HttpRequestEndMessage>
-  | undefined;
+let httpRequestObservable: Observable<HttpRequestStartMessage | HttpRequestEndMessage> | undefined;
 let isInstrumented = false;
 let originalXhrOpen: typeof XMLHttpRequest.prototype.open | undefined;
 let originalFetchFn: typeof window.fetch | undefined;
