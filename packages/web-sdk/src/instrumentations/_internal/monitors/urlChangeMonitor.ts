@@ -35,20 +35,20 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
     if (!originalPushState) {
       originalPushState = window.history.pushState;
     }
-    window.history.pushState = function (...args: Parameters<typeof history.pushState>) {
+    window.history.pushState = function (...args: Parameters<typeof window.history.pushState>) {
       const result = originalPushState!.apply(window.history, args as any);
       emit('pushState');
       return result;
-    } as typeof history.pushState;
+    } as typeof window.history.pushState;
 
     if (!originalReplaceState) {
       originalReplaceState = window.history.replaceState;
     }
-    window.history.replaceState = function (...args: Parameters<typeof history.replaceState>) {
+    window.history.replaceState = function (...args: Parameters<typeof window.history.replaceState>) {
       const result = originalReplaceState!.apply(window.history, args as any);
       emit('replaceState');
       return result;
-    } as typeof history.replaceState;
+    } as typeof window.history.replaceState;
 
     onPopStateHandler = () => emit('popstate');
     onHashChangeHandler = () => emit('hashchange');
