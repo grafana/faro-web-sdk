@@ -3,19 +3,35 @@ import { Observable } from '@grafana/faro-core';
 import { MESSAGE_TYPE_DOM_MUTATION } from './const';
 import type { DomMutationMessage } from './types';
 
-export function monitorDomMutations(): Observable {
-  const observable = new Observable<DomMutationMessage>();
+let domMutationObservable: Observable<DomMutationMessage> | undefined;
+let domMutationObserver: MutationObserver | undefined;
 
-  const observer = new MutationObserver((_mutationsList, _observer) => {
-    observable.notify({ type: MESSAGE_TYPE_DOM_MUTATION });
-  });
+export function monitorDomMutations(): Observable<DomMutationMessage> {
+  if (!domMutationObservable) {
+    domMutationObservable = new Observable<DomMutationMessage>();
+  }
 
-  observer.observe(document, {
-    attributes: true,
-    childList: true,
-    subtree: true,
-    characterData: true,
-  });
+  if (!domMutationObserver) {
+    domMutationObserver = new MutationObserver((_mutationsList, _observer) => {
+      domMutationObservable!.notify({ type: MESSAGE_TYPE_DOM_MUTATION });
+    });
 
-  return observable;
+    domMutationObserver.observe(document, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+  }
+
+  return domMutationObservable;
+}
+
+// Test-only utility to reset state between tests
+export function __resetDomMutationMonitorForTests() {
+  if (domMutationObserver) {
+    domMutationObserver.disconnect();
+  }
+  domMutationObserver = undefined;
+  domMutationObservable = undefined;
 }

@@ -1,18 +1,9 @@
-import { MESSAGE_TYPE_URL_CHANGE, monitorUrlChanges } from './urlChangeMonitor';
+import { MESSAGE_TYPE_URL_CHANGE, monitorUrlChanges, __resetUrlChangeMonitorForTests } from './urlChangeMonitor';
 
 describe('monitorUrlChanges', () => {
-  const originalPushState = window.history.pushState;
-  const originalReplaceState = window.history.replaceState;
-
   afterEach(() => {
+    __resetUrlChangeMonitorForTests();
     jest.resetAllMocks();
-  });
-
-  afterAll(() => {
-    // Restore original history methods to avoid bleeding state into other tests
-    window.history.pushState = originalPushState;
-    window.history.replaceState = originalReplaceState;
-    jest.restoreAllMocks();
   });
 
   it('notifies when history.pushState changes the URL', () => {
@@ -48,6 +39,33 @@ describe('monitorUrlChanges', () => {
       to: window.location.href,
       trigger: 'hashchange',
     });
+  });
+
+  it('returns the same observable on subsequent calls and instruments once', () => {
+    const addEventListenerSpy = jest.spyOn(window, 'addEventListener');
+    const pushStateSpy = jest.spyOn(window.history, 'pushState');
+    const replaceStateSpy = jest.spyOn(window.history, 'replaceState');
+
+    const first = monitorUrlChanges();
+    const second = monitorUrlChanges();
+
+    expect(second).toBe(first);
+
+    // Ensure addEventListener only called once for popstate and hashchange
+    const popstateCalls = addEventListenerSpy.mock.calls.filter((c) => c[0] === 'popstate');
+    const hashchangeCalls = addEventListenerSpy.mock.calls.filter((c) => c[0] === 'hashchange');
+    expect(popstateCalls.length).toBe(1);
+    expect(hashchangeCalls.length).toBe(1);
+
+    // Ensure pushState/replaceState were redefined once (spies see wrapper calls after redefinition)
+    window.history.pushState({}, '', '/x');
+    window.history.replaceState({}, '', '/y');
+    expect(pushStateSpy).toHaveBeenCalled();
+    expect(replaceStateSpy).toHaveBeenCalled();
+
+    addEventListenerSpy.mockRestore();
+    pushStateSpy.mockRestore();
+    replaceStateSpy.mockRestore();
   });
 });
 

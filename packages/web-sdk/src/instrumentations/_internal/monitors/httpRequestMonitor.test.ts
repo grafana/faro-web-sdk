@@ -2,12 +2,11 @@ import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
-import { monitorHttpRequests } from './httpRequestMonitor';
+import { monitorHttpRequests, __resetHttpRequestMonitorForTests } from './httpRequestMonitor';
 
 describe('monitorHttpRequests', () => {
-  beforeEach(() => {});
-
   afterEach(() => {
+    __resetHttpRequestMonitorForTests();
     jest.resetAllMocks();
   });
 
@@ -98,5 +97,11 @@ describe('monitorHttpRequests', () => {
     });
 
     global.fetch = originalFetch;
+  });
+
+  it('returns the same observable instance on repeated calls', () => {
+    const first = monitorHttpRequests();
+    const second = monitorHttpRequests();
+    expect(second).toBe(first);
   });
 });

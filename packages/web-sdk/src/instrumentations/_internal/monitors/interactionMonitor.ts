@@ -7,14 +7,35 @@ export type InteractionMessage = {
   name: string;
 };
 
-export function monitorInteractions(eventNames: string[]): Observable {
-  const observable = new Observable<InteractionMessage>();
+let interactionObservable: Observable<InteractionMessage> | undefined;
+const registeredEventNames = new Set<string>();
+const eventNameToHandler = new Map<string, (e: Event) => void>();
+
+export function monitorInteractions(eventNames: string[]): Observable<InteractionMessage> {
+  if (!interactionObservable) {
+    interactionObservable = new Observable<InteractionMessage>();
+  }
 
   eventNames.forEach((eventName) => {
-    window.addEventListener(eventName, () => {
-      observable.notify({ type: MESSAGE_TYPE_INTERACTION, name: eventName });
-    });
+    if (!registeredEventNames.has(eventName)) {
+      const handler = () => {
+        interactionObservable!.notify({ type: MESSAGE_TYPE_INTERACTION, name: eventName });
+      };
+      window.addEventListener(eventName, handler);
+      registeredEventNames.add(eventName);
+      eventNameToHandler.set(eventName, handler);
+    }
   });
 
-  return observable;
+  return interactionObservable;
+}
+
+// Test-only utility to reset state between tests
+export function __resetInteractionMonitorForTests() {
+  eventNameToHandler.forEach((handler, eventName) => {
+    window.removeEventListener(eventName, handler);
+  });
+  eventNameToHandler.clear();
+  registeredEventNames.clear();
+  interactionObservable = undefined;
 }

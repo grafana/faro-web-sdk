@@ -1,7 +1,8 @@
-import { MESSAGE_TYPE_INTERACTION, monitorInteractions } from './interactionMonitor';
+import { MESSAGE_TYPE_INTERACTION, monitorInteractions, __resetInteractionMonitorForTests } from './interactionMonitor';
 
 describe('monitorInteractions', () => {
   afterEach(() => {
+    __resetInteractionMonitorForTests();
     jest.resetAllMocks();
   });
 
@@ -45,6 +46,28 @@ describe('monitorInteractions', () => {
       type: MESSAGE_TYPE_INTERACTION,
       name: 'click',
     });
+  });
+
+  it('returns the same observable instance across calls', () => {
+    const first = monitorInteractions(['click']);
+    const second = monitorInteractions(['keydown']);
+    expect(second).toBe(first);
+  });
+
+  it('does not add duplicate window listeners for the same event', () => {
+    const addEventListenerSpy = jest.spyOn(window, 'addEventListener');
+
+    const obs1 = monitorInteractions(['click', 'scroll']);
+    const obs2 = monitorInteractions(['click']);
+    expect(obs2).toBe(obs1);
+
+    // Two calls for two unique events only once each
+    const callsForClick = addEventListenerSpy.mock.calls.filter((c) => c[0] === 'click');
+    const callsForScroll = addEventListenerSpy.mock.calls.filter((c) => c[0] === 'scroll');
+    expect(callsForClick.length).toBe(1);
+    expect(callsForScroll.length).toBe(1);
+
+    addEventListenerSpy.mockRestore();
   });
 });
 
