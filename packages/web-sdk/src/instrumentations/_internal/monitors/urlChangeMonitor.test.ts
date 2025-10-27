@@ -81,9 +81,13 @@ describe('monitorUrlChanges', () => {
         addEventListener: (type: string, cb: Function) => listeners[type]?.push(cb),
         removeEventListener: (type: string, cb: Function) => {
           const arr = listeners[type];
-          if (!arr) return;
+          if (!arr) {
+            return;
+          }
           const idx = arr.indexOf(cb);
-          if (idx >= 0) arr.splice(idx, 1);
+          if (idx >= 0) {
+            arr.splice(idx, 1);
+          }
         },
         _dispatch: (type: string, ev: any) => listeners[type]?.forEach((cb) => cb(ev)),
       };

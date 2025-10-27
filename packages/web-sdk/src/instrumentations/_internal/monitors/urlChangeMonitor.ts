@@ -6,13 +6,7 @@ export type UrlChangeMessage = {
   type: typeof MESSAGE_TYPE_URL_CHANGE;
   from: string;
   to: string;
-  trigger:
-    | 'pushState'
-    | 'replaceState'
-    | 'popstate'
-    | 'hashchange'
-    | 'navigate'
-    | 'navigate-intercept';
+  trigger: 'pushState' | 'replaceState' | 'popstate' | 'hashchange' | 'navigate' | 'navigate-intercept';
 };
 
 let urlChangeObservable: Observable<UrlChangeMessage> | undefined;
@@ -23,9 +17,7 @@ let originalReplaceState: typeof window.history.replaceState | undefined;
 let onPopStateHandler: ((this: Window, ev: PopStateEvent) => any) | undefined;
 let onHashChangeHandler: ((this: Window, ev: HashChangeEvent) => any) | undefined;
 let onNavigateHandler: ((this: any, ev: any) => any) | undefined;
-let originalNavigateEventIntercept:
-  | (((this: any, options?: any) => any) & { _faroWrapped?: boolean })
-  | undefined;
+let originalNavigateEventIntercept: (((this: any, options?: any) => any) & { _faroWrapped?: boolean }) | undefined;
 
 export function monitorUrlChanges(): Observable<UrlChangeMessage> {
   if (!urlChangeObservable) {
@@ -74,7 +66,12 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
           try {
             const canIntercept = !!this?.canIntercept;
             const destination = this?.destination as { url?: string; sameDocument?: boolean } | undefined;
-            if (canIntercept && destination && destination.sameDocument === false && typeof destination.url === 'string') {
+            if (
+              canIntercept &&
+              destination &&
+              destination.sameDocument === false &&
+              typeof destination.url === 'string'
+            ) {
               emit('navigate-intercept', destination.url);
             }
           } catch (_err) {
