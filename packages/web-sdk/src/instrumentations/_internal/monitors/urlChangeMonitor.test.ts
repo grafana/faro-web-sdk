@@ -67,4 +67,91 @@ describe('monitorUrlChanges', () => {
     pushStateSpy.mockRestore();
     replaceStateSpy.mockRestore();
   });
+
+  describe('with Navigation API', () => {
+    let originalNavigation: any;
+    let originalNavigateEvent: any;
+
+    beforeEach(() => {
+      originalNavigation = (window as any).navigation;
+      originalNavigateEvent = (window as any).NavigateEvent;
+
+      const listeners: Record<string, Function[]> = { navigate: [] };
+      (window as any).navigation = {
+        addEventListener: (type: string, cb: Function) => listeners[type]?.push(cb),
+        removeEventListener: (type: string, cb: Function) => {
+          const arr = listeners[type];
+          if (!arr) return;
+          const idx = arr.indexOf(cb);
+          if (idx >= 0) arr.splice(idx, 1);
+        },
+        _dispatch: (type: string, ev: any) => listeners[type]?.forEach((cb) => cb(ev)),
+      };
+
+      function FakeNavigateEvent(this: any, _type: string, init: any) {
+        this.destination = init?.destination;
+      }
+      (FakeNavigateEvent as any).prototype = {
+        intercept: jest.fn(),
+      };
+
+      (window as any).NavigateEvent = FakeNavigateEvent as any;
+    });
+
+    afterEach(() => {
+      (window as any).navigation = originalNavigation;
+      (window as any).NavigateEvent = originalNavigateEvent;
+    });
+
+    it('emits on same-document navigate events and does not patch history', () => {
+      const initialHref = window.location.href;
+      const observable = monitorUrlChanges();
+      const subscriber = jest.fn();
+      observable.subscribe(subscriber);
+
+      (window as any).navigation._dispatch(
+        'navigate',
+        new (window as any).NavigateEvent('navigate', {
+          destination: { url: initialHref + '#nav', sameDocument: true },
+        })
+      );
+
+      expect(subscriber).toHaveBeenCalledTimes(1);
+      expect(subscriber).toHaveBeenCalledWith({
+        type: MESSAGE_TYPE_URL_CHANGE,
+        from: initialHref,
+        to: initialHref + '#nav',
+        trigger: 'navigate',
+      });
+
+      // ensure history methods were not wrapped in this mode
+      const pushDesc = Object.getOwnPropertyDescriptor(window.history, 'pushState');
+      const replaceDesc = Object.getOwnPropertyDescriptor(window.history, 'replaceState');
+      expect(pushDesc?.value).toBeDefined();
+      expect(replaceDesc?.value).toBeDefined();
+    });
+
+    it('emits on intercept for cross-document navigations (soft navigation)', () => {
+      const initialHref = window.location.href;
+      const observable = monitorUrlChanges();
+      const subscriber = jest.fn();
+      observable.subscribe(subscriber);
+
+      const ev = new (window as any).NavigateEvent('navigate', {
+        destination: { url: initialHref + '/soft', sameDocument: false },
+      });
+      // make intercept permitted
+      (ev as any).canIntercept = true;
+      // call the wrapped intercept
+      (window as any).NavigateEvent.prototype.intercept.call(ev, {});
+
+      expect(subscriber).toHaveBeenCalledTimes(1);
+      expect(subscriber).toHaveBeenCalledWith({
+        type: MESSAGE_TYPE_URL_CHANGE,
+        from: initialHref,
+        to: initialHref + '/soft',
+        trigger: 'navigate-intercept',
+      });
+    });
+  });
 });
