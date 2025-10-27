@@ -26,7 +26,6 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
   }
 
   function emit(trigger: UrlChangeMessage['trigger'], toOverride?: string) {
-    console.log('********* EMIT *********', trigger, toOverride);
     const next = toOverride ?? location.href;
     if (next !== lastHref) {
       urlChangeObservable!.notify({ type: MESSAGE_TYPE_URL_CHANGE, from: lastHref!, to: next, trigger });
