@@ -3260,10 +3260,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rolldown/pluginutils@npm:1.0.0-beta.35":
-  version: 1.0.0-beta.35
-  resolution: "@rolldown/pluginutils@npm:1.0.0-beta.35"
-  checksum: 10c0/feb6ab8f77ef2bde675099409c3ccd6a168f35a3c3e88482df3ca42494260fd42befe36e8e90ce358847a12aaab94cd8fe7069cf1e905edf91eb411d933906d9
+"@rolldown/pluginutils@npm:1.0.0-beta.43":
+  version: 1.0.0-beta.43
+  resolution: "@rolldown/pluginutils@npm:1.0.0-beta.43"
+  checksum: 10c0/1c17a0b16c277a0fdbab080fd22ef91e37c1f0d710ecfdacb6a080068062eb14ff030d0e9d2ec2325a1d4246dba0c49625755c82c0090f6cbf98d16e80183e02
   languageName: node
   linkType: hard
 
@@ -4855,14 +4855,14 @@ __metadata:
   linkType: hard
 
 "@vitejs/plugin-react-swc@npm:^4.0.0":
-  version: 4.1.0
-  resolution: "@vitejs/plugin-react-swc@npm:4.1.0"
+  version: 4.2.0
+  resolution: "@vitejs/plugin-react-swc@npm:4.2.0"
   dependencies:
-    "@rolldown/pluginutils": "npm:1.0.0-beta.35"
+    "@rolldown/pluginutils": "npm:1.0.0-beta.43"
     "@swc/core": "npm:^1.13.5"
   peerDependencies:
     vite: ^4 || ^5 || ^6 || ^7
-  checksum: 10c0/f9e0f8cd1f6aab705895c9723904e7020ddf59b2525ac52865bf9b3b05ae3100f729796835b474fd2a03aea431165ce02e5535c03b1e8338c0de1a874b2315b5
+  checksum: 10c0/6be31f6771853b8cda9e6ce55dc50589fc181bfba37be1547434355ad70e12cb2ed409fa5bd88332f3e5b3ef895fb67c786f83f02ca1c0351302a231f2265fa0
   languageName: node
   linkType: hard
 
