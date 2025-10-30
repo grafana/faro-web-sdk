@@ -126,7 +126,7 @@ function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
     ...(browserConfig.metas ?? []),
   ];
 
-  const isK6BrowserSession = isObject((window as any).k6);
+  const isK6BrowserSession = isObject((window as any)?.k6);
   if (isK6BrowserSession) {
     return [...initialMetas, k6Meta];
   }

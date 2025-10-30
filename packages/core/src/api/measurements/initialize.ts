@@ -72,9 +72,7 @@ export function initializeMeasurementsAPI({
       internalLogger.debug('Pushing measurement\n', item);
 
       const activeUserAction = getActiveUserActionInternal(userActionsApi);
-      if (activeUserAction) {
-        activeUserAction.addItem(item);
-      } else {
+      if (!activeUserAction || !activeUserAction.addItem(item)) {
         transports.execute(item);
       }
     } catch (err) {
