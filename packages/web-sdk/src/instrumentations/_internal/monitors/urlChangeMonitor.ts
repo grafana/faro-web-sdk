@@ -50,18 +50,18 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
       };
       (window as any).navigation.addEventListener('navigate', onNavigateHandler as any);
 
-      const NavigateEventCtor = (window as any).NavigateEvent;
+      const NavigateEventConstructor = (window as any).NavigateEvent;
       if (
-        NavigateEventCtor &&
-        NavigateEventCtor.prototype &&
-        typeof NavigateEventCtor.prototype.intercept === 'function'
+        NavigateEventConstructor &&
+        NavigateEventConstructor.prototype &&
+        typeof NavigateEventConstructor.prototype.intercept === 'function'
       ) {
         if (!originalNavigateEventIntercept) {
-          originalNavigateEventIntercept = NavigateEventCtor.prototype.intercept;
+          originalNavigateEventIntercept = NavigateEventConstructor.prototype.intercept;
         }
 
         // Wrap intercept to detect soft navigations (cross-document turned same-document)
-        NavigateEventCtor.prototype.intercept = function (this: any, options?: any) {
+        NavigateEventConstructor.prototype.intercept = function (this: any, options?: any) {
           try {
             const canIntercept = !!this?.canIntercept;
             const destination = this?.destination as { url?: string; sameDocument?: boolean } | undefined;
