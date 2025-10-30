@@ -8,6 +8,7 @@ import { deepEqual, defaultLogLevel, getCurrentTimestamp, isEmpty, isNull, strin
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 import type { UserActionsAPI } from '../userActions';
+import { getActiveUserActionInternal } from '../userActions/initialize';
 
 import { defaultLogArgsSerializer } from './const';
 import type { LogEvent, LogsAPI } from './types';
@@ -74,7 +75,7 @@ export function initializeLogsAPI({
 
       internalLogger.debug('Pushing log\n', item);
 
-      const activeUserAction = userActionsApi.getActiveUserAction();
+      const activeUserAction = getActiveUserActionInternal(userActionsApi);
       if (activeUserAction) {
         activeUserAction.addItem(item);
       } else {

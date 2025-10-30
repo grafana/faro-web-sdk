@@ -1,5 +1,3 @@
-import { type TransportItem } from '../../transports';
-
 import { UserActionSeverity, userActionStartByApiCallEventName } from './const';
 
 export enum UserActionState {
@@ -13,7 +11,6 @@ export interface UserActionInterface {
   name: string;
   parentId: string;
 
-  addItem(item: TransportItem): void;
   end(attributes?: Record<string, string>): void;
   cancel(): void;
   getState(): UserActionState;

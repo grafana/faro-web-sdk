@@ -8,6 +8,7 @@ import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues 
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 import type { UserActionsAPI } from '../userActions';
+import { getActiveUserActionInternal } from '../userActions/initialize';
 
 import type { MeasurementEvent, MeasurementsAPI } from './types';
 
@@ -70,7 +71,7 @@ export function initializeMeasurementsAPI({
 
       internalLogger.debug('Pushing measurement\n', item);
 
-      const activeUserAction = userActionsApi.getActiveUserAction();
+      const activeUserAction = getActiveUserActionInternal(userActionsApi);
       if (activeUserAction) {
         activeUserAction.addItem(item);
       } else {
