@@ -2,12 +2,11 @@ import { initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
-import { monitorHttpRequests } from './httpRequestMonitor';
+import { __resetHttpRequestMonitorForTests, monitorHttpRequests } from './httpRequestMonitor';
 
 describe('monitorHttpRequests', () => {
-  beforeEach(() => {});
-
   afterEach(() => {
+    __resetHttpRequestMonitorForTests();
     jest.resetAllMocks();
   });
 
@@ -16,6 +15,8 @@ describe('monitorHttpRequests', () => {
   });
 
   it('Monitors xhr requests and sends a message if request are pending', async () => {
+    const url = 'https://www.httpbin.org/get';
+
     const observable = monitorHttpRequests();
     const mockSubscribe = jest.fn();
     observable.subscribe(mockSubscribe);
@@ -24,7 +25,7 @@ describe('monitorHttpRequests', () => {
 
     const xhr = new XMLHttpRequest();
 
-    xhr.open('GET', 'https://www.grafana.com');
+    xhr.open('GET', url);
 
     await new Promise((resolve) => {
       xhr.onreadystatechange = function () {
@@ -42,7 +43,7 @@ describe('monitorHttpRequests', () => {
         apiType: 'xhr',
         method: 'GET',
         requestId: expect.any(String),
-        url: 'https://www.grafana.com',
+        url,
       },
     });
     expect(mockSubscribe).toHaveBeenNthCalledWith(2, {
@@ -51,7 +52,7 @@ describe('monitorHttpRequests', () => {
         apiType: 'xhr',
         method: 'GET',
         requestId: expect.any(String),
-        url: 'https://www.grafana.com',
+        url,
       },
     });
   });
@@ -96,5 +97,11 @@ describe('monitorHttpRequests', () => {
     });
 
     global.fetch = originalFetch;
+  });
+
+  it('returns the same observable instance on repeated calls', () => {
+    const first = monitorHttpRequests();
+    const second = monitorHttpRequests();
+    expect(second).toBe(first);
   });
 });
