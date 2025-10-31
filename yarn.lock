@@ -3010,7 +3010,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-trace-web@npm:2.1.0, @opentelemetry/sdk-trace-web@npm:^2.0.0":
+"@opentelemetry/sdk-trace-web@npm:2.1.0":
   version: 2.1.0
   resolution: "@opentelemetry/sdk-trace-web@npm:2.1.0"
   dependencies:
@@ -3022,7 +3022,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-trace-web@npm:2.2.0":
+"@opentelemetry/sdk-trace-web@npm:2.2.0, @opentelemetry/sdk-trace-web@npm:^2.0.0":
   version: 2.2.0
   resolution: "@opentelemetry/sdk-trace-web@npm:2.2.0"
   dependencies:
