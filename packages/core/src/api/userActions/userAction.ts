@@ -7,9 +7,13 @@ import { type MeasurementEvent } from '../measurements';
 import { type APIEvent } from '../types';
 
 import { userActionEventName, UserActionSeverity } from './const';
-import { type UserActionInterface, UserActionState } from './types';
+import { type UserActionInterface, UserActionState, type UserActionInternals } from './types';
 
-export default class UserAction extends Observable implements UserActionInterface {
+/**
+ * User action class.
+ * This is the main class for managing user actions state and lifecycle.
+ */
+export class UserAction extends Observable {
   name: string;
   id: string;
   attributes?: Record<string, string>;
@@ -69,6 +73,14 @@ export default class UserAction extends Observable implements UserActionInterfac
     if (this._state === UserActionState.Started) {
       this.startTime = dateNow();
     }
+  }
+
+  halt() {
+    if (this._state !== UserActionState.Started) {
+      return;
+    }
+    this._state = UserActionState.Halted;
+    this.notify(this._state);
   }
 
   cancel() {
@@ -140,6 +152,58 @@ export default class UserAction extends Observable implements UserActionInterfac
 
   getState(): UserActionState {
     return this._state;
+  }
+}
+
+/**
+ * Public view of the user action.
+ * This is used by external packages to interact with the user action.
+ */
+export class UserActionPublicView implements UserActionInterface {
+  private _userAction: UserAction;
+
+  constructor(userAction: UserAction) {
+    this._userAction = userAction;
+  }
+
+  get name(): string {
+    return this._userAction.name;
+  }
+
+  get parentId(): string {
+    return this._userAction.parentId;
+  }
+}
+
+/**
+ * Internal view of the user action.
+ * This is used by internal packages to interact with the user action.
+ */
+export class UserActionInternalView implements UserActionInternals {
+  private _userAction: UserAction;
+
+  constructor(userAction: UserAction) {
+    this._userAction = userAction;
+  }
+
+  addItem(item: TransportItem): boolean {
+    return this._userAction.addItem(item);
+  }
+
+  halt(): void {
+    this._userAction.halt();
+  }
+
+  cancel(): void {
+    this._userAction.cancel();
+  }
+
+  end(): void {
+    this._userAction.end();
+  }
+
+  getState(): UserActionState {
+    return this._userAction.getState();
   }
 }
 

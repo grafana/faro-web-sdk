@@ -6,9 +6,9 @@ import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
 import { deepEqual, defaultLogLevel, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
+import { getUserActionInternalView } from '../_internal/userActions';
 import type { TracesAPI } from '../traces';
 import type { UserActionsAPI } from '../userActions';
-import { getActiveUserActionInternal } from '../userActions/initialize';
 
 import { defaultLogArgsSerializer } from './const';
 import type { LogEvent, LogsAPI } from './types';
@@ -75,8 +75,8 @@ export function initializeLogsAPI({
 
       internalLogger.debug('Pushing log\n', item);
 
-      const activeUserAction = getActiveUserActionInternal(userActionsApi);
-      if (!activeUserAction || !activeUserAction.addItem(item)) {
+      const activeUserActionInternalView = getUserActionInternalView(userActionsApi.getActiveUserAction()!);
+      if (!activeUserActionInternalView || !activeUserActionInternalView.addItem(item)) {
         transports.execute(item);
       }
     } catch (err) {

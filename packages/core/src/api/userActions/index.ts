@@ -1,4 +1,4 @@
-export { type UserActionsAPI, UserActionState, type UserActionInterface } from './types';
+export { type UserActionsAPI, UserActionState, type UserActionInterface, type UserActionInternals } from './types';
 export { UserActionSeverity } from './const';
 
 export { initializeUserActionsAPI, userActionsMessageBus } from './initialize';

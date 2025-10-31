@@ -10,15 +10,10 @@ import {
   type UserActionsAPI,
   UserActionState,
 } from './types';
-import UserAction from './userAction';
+import { UserAction, UserActionInternalView, UserActionPublicView } from './userAction';
+import { removeUserActionInternalView, setUserActionInternalView } from '../_internal';
 
 export const userActionsMessageBus = new Observable<UserActionMessage>();
-
-// Internal-only access to the concrete UserAction instance for a given API
-const userActionsInternals = new WeakMap<UserActionsAPI, () => UserAction | undefined>();
-export function getActiveUserActionInternal(api: UserActionsAPI): UserAction | undefined {
-  return userActionsInternals.get(api)?.();
-}
 
 export function initializeUserActionsAPI({
   transports,
@@ -53,18 +48,28 @@ export function initializeUserActionsAPI({
         severity: options?.severity || UserActionSeverity.Normal,
         trackUserActionsExcludeItem,
       });
+      
+      const userActionPublic = new UserActionPublicView(userAction);
+
       userAction
         .filter((v) => [UserActionState.Ended, UserActionState.Cancelled].includes(v))
         .first()
         .subscribe(() => {
           activeUserAction = undefined;
+          removeUserActionInternalView(userActionPublic);
         });
+
+      // set internal API for the user action instance
+      // this is used by external packages without making these methods public
+      const userActionInternal = new UserActionInternalView(userAction);
+      setUserActionInternalView(userActionPublic, userActionInternal);
 
       userActionsMessageBus.notify({
         type: userActionStart,
         userAction: userAction,
       });
       activeUserAction = userAction;
+
       return activeUserAction;
     } else {
       internalLogger.error('Attempted to create a new user action while one is already running. This is not possible.');
@@ -80,8 +85,6 @@ export function initializeUserActionsAPI({
     startUserAction,
     getActiveUserAction,
   };
-
-  userActionsInternals.set(api, () => activeUserAction);
 
   return api;
 }
