@@ -1,5 +1,3 @@
-import { type TransportItem } from '../../transports';
-
 import { UserActionSeverity, userActionStartByApiCallEventName } from './const';
 
 export enum UserActionState {
@@ -9,16 +7,11 @@ export enum UserActionState {
   Ended,
 }
 
-export type HaltPredicate = () => boolean;
-
 export interface UserActionInterface {
   name: string;
   parentId: string;
 
-  addItem(item: TransportItem): boolean;
-  extend(haltPredicate?: HaltPredicate): void;
   end(attributes?: Record<string, string>): void;
-  halt(reason?: string): void;
   cancel(): void;
   getState(): UserActionState;
 }

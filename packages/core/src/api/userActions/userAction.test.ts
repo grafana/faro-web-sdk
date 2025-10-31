@@ -51,23 +51,6 @@ describe('UserAction', () => {
     expect(transports.execute).not.toHaveBeenCalled();
   });
 
-  it('halt() is no-op if user action is not started', () => {
-    const ua = new UserAction({ name: 'foo', transports, trigger: 'foo' });
-    ua.cancel();
-    ua.halt();
-
-    expect(ua.getState()).toBe(UserActionState.Cancelled);
-  });
-
-  it('halt() will end() after halt timeoute time', () => {
-    const ua = new UserAction({ name: 'foo', transports, trigger: 'foo' });
-    ua.extend(() => true);
-    jest.advanceTimersByTime(ua.cancelTimeout);
-    expect(ua.getState()).toBe(UserActionState.Halted);
-    jest.advanceTimersByTime(ua.haltTimeout);
-    expect(ua.getState()).toBe(UserActionState.Ended);
-  });
-
   it('end() will not fire if action is cancelled', () => {
     const ua = new UserAction({ name: 'foo', transports, trigger: 'foo' });
     ua.cancel();

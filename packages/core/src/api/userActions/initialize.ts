@@ -14,6 +14,12 @@ import UserAction from './userAction';
 
 export const userActionsMessageBus = new Observable<UserActionMessage>();
 
+// Internal-only access to the concrete UserAction instance for a given API
+const userActionsInternals = new WeakMap<UserActionsAPI, () => UserAction | undefined>();
+export function getActiveUserActionInternal(api: UserActionsAPI): UserAction | undefined {
+  return userActionsInternals.get(api)?.();
+}
+
 export function initializeUserActionsAPI({
   transports,
   internalLogger,
@@ -70,8 +76,12 @@ export function initializeUserActionsAPI({
     return activeUserAction;
   };
 
-  return {
+  const api: UserActionsAPI = {
     startUserAction,
     getActiveUserAction,
   };
+
+  userActionsInternals.set(api, () => activeUserAction);
+
+  return api;
 }

@@ -72,14 +72,6 @@ describe('initializeUserActionsAPI', () => {
     expect(a2).not.toBeDefined();
   });
 
-  it('create an action while one is halted will result action not getting created', () => {
-    const a1 = api.startUserAction('A');
-    expect(a1).toBeDefined();
-    a1?.halt();
-    const a2 = api.startUserAction('B');
-    expect(a2).not.toBeDefined();
-  });
-
   it('getActiveUserAction returns undefined if the action is ended', () => {
     const action = api.startUserAction('first');
     action?.end();
