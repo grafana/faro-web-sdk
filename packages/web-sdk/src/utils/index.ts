@@ -11,3 +11,11 @@ export {
 export { throttle } from './throttle';
 
 export { getIgnoreUrls, getUrlFromResource } from './url';
+
+export {
+  buildStackFrame,
+  getDataFromSafariExtensions,
+  getStackFramesFromError,
+  parseStacktrace,
+  createStacktraceParser,
+} from './stackFrames';
