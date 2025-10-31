@@ -53,7 +53,7 @@
     "drone:sign": "drone --server https://drone.grafana.net sign --save grafana/faro-web-sdk .drone/drone.yml"
   },
   "devDependencies": {
-    "@grafana/eslint-config": "^8.0.0",
+    "@grafana/eslint-config": "^9.0.0",
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-terser": "^0.4.4",
