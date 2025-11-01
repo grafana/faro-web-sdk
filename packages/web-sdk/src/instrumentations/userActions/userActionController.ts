@@ -1,6 +1,6 @@
-// packages/web-sdk/src/instrumentations/userActions/userActionController.ts
 import { Observable, UserActionState } from '@grafana/faro-core';
 import type { Subscription, UserActionInterface } from '@grafana/faro-core';
+import { getUserActionInternalView, type UserActionInternals } from '@grafana/faro-core/internal';
 
 import { monitorDomMutations } from './domMutationMonitor';
 import { monitorHttpRequests } from './httpRequestMonitor';
@@ -16,6 +16,8 @@ export class UserActionController {
   private readonly dom = monitorDomMutations();
   private readonly perf = monitorPerformanceEntries();
 
+  private userActionInternalView: UserActionInternals | undefined;
+
   private allMonitorsSub?: Subscription;
   private stateSub?: Subscription;
   private followUpTid?: number;
@@ -25,17 +27,19 @@ export class UserActionController {
   private isHalted = false;
   private runningRequests = new Map<string, HttpRequestMessagePayload>();
 
-  constructor(private ua: UserActionInterface) {}
+  constructor(private ua: UserActionInterface) {
+    this.userActionInternalView = getUserActionInternalView(this.ua);
+  }
 
   attach(): void {
     // Subscribe to monitors while action is active/halting
     this.allMonitorsSub = new Observable()
       .merge(this.http, this.dom, this.perf)
-      .takeWhile(() => [UserActionState.Started, UserActionState.Halted].includes(this.ua.getState()))
+      .takeWhile(() => [UserActionState.Started, UserActionState.Halted].includes(this.userActionInternalView?.getState() ?? UserActionState.Started))
       .filter((msg) => {
         // If the user action is in halt state, we only keep listening to ended http requests
         if (
-          this.ua.getState() === UserActionState.Halted &&
+          this.userActionInternalView?.getState() === UserActionState.Halted &&
           !(isRequestEndMessage(msg) && this.runningRequests.has(msg.request.requestId))
         ) {
           return false;
@@ -80,7 +84,7 @@ export class UserActionController {
     this.clearTimer(this.followUpTid);
     this.followUpTid = setTimeout(() => {
       // If action just started and there's pending work, go to halted
-      if (this.ua.getState() === UserActionState.Started && this.runningRequests.size > 0) {
+      if (this.userActionInternalView?.getState() === UserActionState.Started && this.runningRequests.size > 0) {
         this.haltAction();
         return;
       }
@@ -97,7 +101,7 @@ export class UserActionController {
   }
 
   private haltAction() {
-    if (this.ua.getState() !== UserActionState.Started) {
+    if (this.userActionInternalView?.getState() !== UserActionState.Started) {
       return;
     }
     this.isHalted = true;
@@ -110,7 +114,7 @@ export class UserActionController {
       this.haltTid,
       () => {
         // If still halted after timeout, end
-        if (this.ua.getState() === UserActionState.Halted) {
+        if (this.userActionInternalView?.getState() === UserActionState.Halted) {
           this.endAction();
         }
       },
@@ -119,12 +123,12 @@ export class UserActionController {
   }
 
   private endAction() {
-    this.ua.end();
+    this.userActionInternalView?.end();
     this.cleanup();
   }
 
   private cancelAction() {
-    this.ua.cancel();
+    this.userActionInternalView?.cancel();
     this.cleanup();
   }
 
