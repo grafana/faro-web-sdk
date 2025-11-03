@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/otlp-transformer": "^0.206.0"
+    "@opentelemetry/otlp-transformer": "^0.207.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.1"
