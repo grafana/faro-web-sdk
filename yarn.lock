@@ -854,7 +854,7 @@ __metadata:
     "@types/cookie-parser": "npm:^1.4.3"
     "@types/express": "npm:^5.0.0"
     "@types/jsonwebtoken": "npm:^9.0.1"
-    "@types/react": "npm:^18.0.26"
+    "@types/react": "npm:^19.2.2"
     "@types/react-dom": "npm:^18.0.10"
     "@types/react-redux": "npm:^7.1.25"
     "@types/react-router-bootstrap": "npm:^0.26.6"
@@ -877,7 +877,7 @@ __metadata:
     pg-hstore: "npm:^2.3.4"
     prom-client: "npm:^15.0.0"
     protobufjs: "npm:^7.2.4"
-    react: "npm:^18.2.0"
+    react: "npm:^19.2.0"
     react-bootstrap: "npm:^2.7.0"
     react-dom: "npm:^18.2.0"
     react-helmet-async: "npm:^1.3.0"
@@ -902,9 +902,9 @@ __metadata:
     "@grafana/faro-web-sdk": "npm:^2.0.0-beta-2"
     "@grafana/faro-web-tracing": "npm:^2.0.0-beta-2"
     "@types/hoist-non-react-statics": "npm:^3.3.1"
-    "@types/react": "npm:^18.0.26"
+    "@types/react": "npm:^19.2.2"
     hoist-non-react-statics: "npm:^3.3.2"
-    react: "npm:^18.2.0"
+    react: "npm:^19.2.0"
     react-dom: "npm:^18.2.0"
     react-router-dom: "npm:^6.6.2"
   peerDependencies:
@@ -4127,7 +4127,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/prop-types@npm:*, @types/prop-types@npm:^15.7.12":
+"@types/prop-types@npm:^15.7.12":
   version: 15.7.15
   resolution: "@types/prop-types@npm:15.7.15"
   checksum: 10c0/b59aad1ad19bf1733cf524fd4e618196c6c7690f48ee70a327eb450a42aab8e8a063fbe59ca0a5701aebe2d92d582292c0fb845ea57474f6a15f6994b0e260b2
@@ -4196,13 +4196,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^18.0.26":
-  version: 18.3.23
-  resolution: "@types/react@npm:18.3.23"
+"@types/react@npm:^19.2.2":
+  version: 19.2.2
+  resolution: "@types/react@npm:19.2.2"
   dependencies:
-    "@types/prop-types": "npm:*"
     csstype: "npm:^3.0.2"
-  checksum: 10c0/49331800b76572eb2992a5c44801dbf8c612a5f99c8f4e4200f06c7de6f3a6e9455c661784a6c5469df96fa45622cb4a9d0982c44e6a0d5719be5f2ef1f545ed
+  checksum: 10c0/f830b1204aca4634ce3c6cb3477b5d3d066b80a4dd832a4ee0069acb504b6debd2416548a43a11c1407c12bc60e2dc6cf362934a18fe75fe06a69c0a98cba8ab
   languageName: node
   linkType: hard
 
@@ -14051,12 +14050,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^18.2.0":
-  version: 18.3.1
-  resolution: "react@npm:18.3.1"
-  dependencies:
-    loose-envify: "npm:^1.1.0"
-  checksum: 10c0/283e8c5efcf37802c9d1ce767f302dd569dd97a70d9bb8c7be79a789b9902451e0d16334b05d73299b20f048cbc3c7d288bbbde10b701fa194e2089c237dbea3
+"react@npm:^19.2.0":
+  version: 19.2.0
+  resolution: "react@npm:19.2.0"
+  checksum: 10c0/1b6d64eacb9324725bfe1e7860cb7a6b8a34bc89a482920765ebff5c10578eb487e6b46b2f0df263bd27a25edbdae2c45e5ea5d81ae61404301c1a7192c38330
   languageName: node
   linkType: hard
 
