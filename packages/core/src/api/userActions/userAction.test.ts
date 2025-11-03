@@ -74,9 +74,7 @@ describe('UserAction', () => {
 
   it('addItem returns false when state is Halted', () => {
     const userAction = new UserAction({ name: 'foo', transports, trigger: 'foo' });
-    userAction.extend(() => true);
-    jest.advanceTimersByTime(userAction.cancelTimeout);
-    expect(userAction.getState()).toBe(UserActionState.Halted);
+    userAction.halt();
     const item: TransportItem = { type: TransportItemType.EVENT, payload: {}, meta: {} };
     const result = userAction.addItem(item);
     expect(result).toBe(false);

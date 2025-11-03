@@ -7,9 +7,9 @@ import { type MeasurementEvent } from '../measurements';
 import { type APIEvent } from '../types';
 
 import { userActionEventName, UserActionSeverity } from './const';
-import { type UserActionInterface, UserActionState } from './types';
+import { type UserActionInterface, UserActionState, type UserActionTransportItemBuffer } from './types';
 
-export default class UserAction extends Observable implements UserActionInterface {
+export default class UserAction extends Observable implements UserActionInterface, UserActionTransportItemBuffer {
   name: string;
   id: string;
   attributes?: Record<string, string>;
@@ -69,6 +69,14 @@ export default class UserAction extends Observable implements UserActionInterfac
     if (this._state === UserActionState.Started) {
       this.startTime = dateNow();
     }
+  }
+
+  halt() {
+    if (this._state !== UserActionState.Started) {
+      return;
+    }
+    this._state = UserActionState.Halted;
+    this.notify(this._state);
   }
 
   cancel() {

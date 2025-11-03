@@ -1,4 +1,4 @@
-import { type InternalLogger, type Transports } from '../..';
+import { type InternalLogger, type TransportItem, type Transports } from '../..';
 import type { Config } from '../../config';
 import { Observable } from '../../utils/reactive';
 
@@ -9,16 +9,11 @@ import {
   type UserActionMessage,
   type UserActionsAPI,
   UserActionState,
+  type UserActionTransportItemBuffer,
 } from './types';
 import UserAction from './userAction';
 
 export const userActionsMessageBus = new Observable<UserActionMessage>();
-
-// Internal-only access to the concrete UserAction instance for a given API
-const userActionsInternals = new WeakMap<UserActionsAPI, () => UserAction | undefined>();
-export function getActiveUserActionInternal(api: UserActionsAPI): UserAction | undefined {
-  return userActionsInternals.get(api)?.();
-}
 
 export function initializeUserActionsAPI({
   transports,
@@ -65,6 +60,7 @@ export function initializeUserActionsAPI({
         userAction: userAction,
       });
       activeUserAction = userAction;
+
       return activeUserAction;
     } else {
       internalLogger.error('Attempted to create a new user action while one is already running. This is not possible.');
@@ -81,7 +77,20 @@ export function initializeUserActionsAPI({
     getActiveUserAction,
   };
 
-  userActionsInternals.set(api, () => activeUserAction);
-
   return api;
+}
+
+/**
+ * Adds an item to the buffer associated with the given UserAction.
+ * The item will only be added if the UserAction is in the Started state.
+ * @param userAction The UserAction instance
+ * @param item The item to add to the buffer
+ * @returns {boolean} True if the item was added, false otherwise
+ */
+export function addItemToUserActionBuffer(userAction: UserActionInterface | undefined, item: TransportItem): boolean {
+  if (!userAction || userAction.getState() !== UserActionState.Started) {
+    return false;
+  }
+  (userAction as unknown as UserActionTransportItemBuffer).addItem(item);
+  return true;
 }
