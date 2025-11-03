@@ -37,7 +37,6 @@ export default class UserAction extends Observable implements UserActionInterfac
     parentId?: string;
     trigger: string;
     attributes?: Record<string, string>;
-    haltTimeout?: number;
     trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
     severity?: UserActionSeverity;
   }) {
