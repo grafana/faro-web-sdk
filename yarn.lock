@@ -647,10 +647,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@es-joy/resolve.exports@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@es-joy/resolve.exports@npm:1.0.0"
-  checksum: 10c0/08f9483abba56ce3f7c9e7fea0ee44d6c46b679aa810bf1901e735d587ef8d5dcd2e72503487248612d2971056c09dbeb3f3413dded5b535626a4ccf77493ddc
+"@es-joy/resolve.exports@npm:1.2.0":
+  version: 1.2.0
+  resolution: "@es-joy/resolve.exports@npm:1.2.0"
+  checksum: 10c0/7e4713471f5eccb17a925a12415a2d9e372a42376813a19f6abd9c35e8d01ab1403777265817da67c6150cffd4f558d9ad51e26a8de6911dad89d9cb7eedacd8
   languageName: node
   linkType: hard
 
@@ -2757,7 +2757,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation@npm:0.206.0, @opentelemetry/instrumentation@npm:^0.206.0":
+"@opentelemetry/instrumentation@npm:0.206.0":
   version: 0.206.0
   resolution: "@opentelemetry/instrumentation@npm:0.206.0"
   dependencies:
@@ -7854,11 +7854,11 @@ __metadata:
   linkType: hard
 
 "eslint-plugin-jsdoc@npm:^61.1.1":
-  version: 61.1.9
-  resolution: "eslint-plugin-jsdoc@npm:61.1.9"
+  version: 61.1.11
+  resolution: "eslint-plugin-jsdoc@npm:61.1.11"
   dependencies:
     "@es-joy/jsdoccomment": "npm:~0.76.0"
-    "@es-joy/resolve.exports": "npm:1.0.0"
+    "@es-joy/resolve.exports": "npm:1.2.0"
     are-docs-informative: "npm:^0.0.2"
     comment-parser: "npm:1.4.1"
     debug: "npm:^4.4.3"
@@ -7873,7 +7873,7 @@ __metadata:
     to-valid-identifier: "npm:^1.0.0"
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
-  checksum: 10c0/40aa8fad92c8f09ef9e8cf92b7f27763b706e04772b72f32956b0c4225d7d4b946376b4a262680ea813256573774831771ef4bf429065a1de81e0fff2713e7e8
+  checksum: 10c0/bdc5353eddd40440924aa9b908289ab7d5f50bd64585a9ac1d49be56a22af802b90648e9e0fd27729f38508aee3f6c3437330d98be4c6398aa2dfd7a3fcd5028
   languageName: node
   linkType: hard
 
