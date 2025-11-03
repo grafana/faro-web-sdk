@@ -9,11 +9,21 @@ export enum UserActionState {
   Ended,
 }
 
+/**
+ * Public interface for the UserAction.
+ * This is the interface that is part of the public API.
+ */
 export interface UserActionInterface {
   name: string;
   parentId: string;
+}
 
-  halt: () => void;
+/**
+ * Internal interface for the UserAction.
+ * This interface is intended for internal use only and not guaranteed to be stable.
+ */
+export interface UserActionInternalInterface extends UserActionInterface {
+  halt(): void;
   end(attributes?: Record<string, string>): void;
   cancel(): void;
   getState(): UserActionState;

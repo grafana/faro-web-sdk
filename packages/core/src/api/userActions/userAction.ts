@@ -7,9 +7,12 @@ import { type MeasurementEvent } from '../measurements';
 import { type APIEvent } from '../types';
 
 import { userActionEventName, UserActionSeverity } from './const';
-import { type UserActionInterface, UserActionState, type UserActionTransportItemBuffer } from './types';
+import { type UserActionInternalInterface, UserActionState, type UserActionTransportItemBuffer } from './types';
 
-export default class UserAction extends Observable implements UserActionInterface, UserActionTransportItemBuffer {
+export default class UserAction
+  extends Observable
+  implements UserActionInternalInterface, UserActionTransportItemBuffer
+{
   name: string;
   id: string;
   attributes?: Record<string, string>;

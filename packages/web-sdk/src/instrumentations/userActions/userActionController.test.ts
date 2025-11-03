@@ -14,12 +14,16 @@ describe('UserActionController', () => {
   let fakeAction: any;
 
   beforeEach(() => {
+    let state = UserActionState.Started;
     fakeAction = {
       end: jest.fn(),
       cancel: jest.fn(),
-      getState: jest.fn().mockReturnValue(UserActionState.Started),
+      getState: jest.fn().mockImplementation(() => state),
       // Provide Observable-like API used by controller for state cleanup
       filter: jest.fn().mockReturnValue({ first: jest.fn().mockReturnValue({ subscribe: jest.fn() }) }),
+      halt: jest.fn().mockImplementation(() => {
+        state = UserActionState.Halted;
+      }),
     };
   });
 
@@ -86,9 +90,6 @@ describe('UserActionController', () => {
 
     // Move past the follow-up window so the controller halts due to pending requests
     jest.advanceTimersByTime(101);
-
-    // Simulate UA being in halted state now
-    fakeAction.getState.mockReturnValue(UserActionState.Halted);
 
     // End a different request id; original 'foo' is still pending
     httpObservable.notify({

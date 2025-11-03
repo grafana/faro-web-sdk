@@ -1,6 +1,6 @@
 // packages/web-sdk/src/instrumentations/userActions/userActionController.ts
 import { Observable, UserActionState } from '@grafana/faro-core';
-import type { Subscription, UserActionInterface } from '@grafana/faro-core';
+import type { Subscription, UserActionInternalInterface } from '@grafana/faro-core';
 
 import { monitorDomMutations } from './domMutationMonitor';
 import { monitorHttpRequests } from './httpRequestMonitor';
@@ -24,7 +24,7 @@ export class UserActionController {
   private isValid = false;
   private runningRequests = new Map<string, HttpRequestMessagePayload>();
 
-  constructor(private userAction: UserActionInterface) {}
+  constructor(private userAction: UserActionInternalInterface) {}
 
   attach(): void {
     // Subscribe to monitors while action is active/halting

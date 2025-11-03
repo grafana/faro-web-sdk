@@ -1,4 +1,4 @@
-import { initializeFaro, Observable } from '@grafana/faro-core';
+import { initializeFaro, Observable, UserActionInternalInterface } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { MESSAGE_TYPE_DOM_MUTATION, MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
@@ -42,7 +42,7 @@ describe('UserActionInstrumentation output', () => {
     inst.initialize();
 
     const ua = faro.api.startUserAction('ua-dom');
-    const cancelSpy = jest.spyOn(ua!, 'cancel');
+    const cancelSpy = jest.spyOn(ua as unknown as UserActionInternalInterface, 'cancel');
 
     jest.advanceTimersByTime(200);
 
@@ -57,7 +57,7 @@ describe('UserActionInstrumentation output', () => {
     inst.initialize();
 
     const ua = faro.api.startUserAction('ua-dom');
-    const endSpy = jest.spyOn(ua!, 'end');
+    const endSpy = jest.spyOn(ua as unknown as UserActionInternalInterface, 'end');
 
     dom$.notify({ type: MESSAGE_TYPE_DOM_MUTATION });
 
@@ -74,7 +74,7 @@ describe('UserActionInstrumentation output', () => {
     inst.initialize();
 
     const ua = faro.api.startUserAction('ua-perf');
-    const endSpy = jest.spyOn(ua!, 'end');
+    const endSpy = jest.spyOn(ua as unknown as UserActionInternalInterface, 'end');
 
     perf$.notify({ type: 'performance-entry' });
 
@@ -91,7 +91,7 @@ describe('UserActionInstrumentation output', () => {
     inst.initialize();
 
     const ua = faro.api.startUserAction('ua-http');
-    const endSpy = jest.spyOn(ua!, 'end');
+    const endSpy = jest.spyOn(ua as unknown as UserActionInternalInterface, 'end');
 
     const requestId = 'req-1';
     http$.notify({

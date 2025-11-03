@@ -1,4 +1,4 @@
-import type { Faro, Subscription, UserActionInterface } from '@grafana/faro-core';
+import type { Faro, Subscription, UserActionInterface, UserActionInternalInterface } from '@grafana/faro-core';
 
 import { userActionDataAttributeParsed as userActionDataAttribute } from './const';
 import { UserActionController } from './userActionController';
@@ -25,7 +25,8 @@ export function getUserEventHandler(faro: Faro) {
   }
 
   function processUserActionStarted(userAction: UserActionInterface) {
-    new UserActionController(userAction).attach();
+    const internalUserAction = userAction as unknown as UserActionInternalInterface;
+    new UserActionController(internalUserAction).attach();
   }
 
   return { processUserEvent, processUserActionStarted };

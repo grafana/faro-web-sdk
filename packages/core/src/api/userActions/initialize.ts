@@ -6,6 +6,7 @@ import { UserActionSeverity, userActionStart, userActionStartByApiCallEventName 
 import {
   type StartUserActionOptions,
   type UserActionInterface,
+  type UserActionInternalInterface,
   type UserActionMessage,
   type UserActionsAPI,
   UserActionState,
@@ -88,7 +89,11 @@ export function initializeUserActionsAPI({
  * @returns {boolean} True if the item was added, false otherwise
  */
 export function addItemToUserActionBuffer(userAction: UserActionInterface | undefined, item: TransportItem): boolean {
-  if (!userAction || userAction.getState() !== UserActionState.Started) {
+  if (!userAction) {
+    return false;
+  }
+  const state = (userAction as unknown as UserActionInternalInterface)?.getState();
+  if (state !== UserActionState.Started) {
     return false;
   }
   (userAction as unknown as UserActionTransportItemBuffer).addItem(item);

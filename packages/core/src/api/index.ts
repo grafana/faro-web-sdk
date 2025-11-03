@@ -26,6 +26,7 @@ export {
   UserActionSeverity,
   UserActionState,
   type UserActionInterface,
+  type UserActionInternalInterface,
   type UserActionsAPI,
   userActionsMessageBus,
 } from './userActions';
