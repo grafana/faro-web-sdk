@@ -24,17 +24,17 @@ export class UserActionController {
   private isValid = false;
   private runningRequests = new Map<string, HttpRequestMessagePayload>();
 
-  constructor(private ua: UserActionInterface) {}
+  constructor(private userAction: UserActionInterface) {}
 
   attach(): void {
     // Subscribe to monitors while action is active/halting
     this.allMonitorsSub = new Observable()
       .merge(this.http, this.dom, this.perf)
-      .takeWhile(() => [UserActionState.Started, UserActionState.Halted].includes(this.ua.getState()))
+      .takeWhile(() => [UserActionState.Started, UserActionState.Halted].includes(this.userAction.getState()))
       .filter((msg) => {
         // If the user action is in halt state, we only keep listening to ended http requests
         if (
-          this.ua.getState() === UserActionState.Halted &&
+          this.userAction.getState() === UserActionState.Halted &&
           !(isRequestEndMessage(msg) && this.runningRequests.has(msg.request.requestId))
         ) {
           return false;
@@ -60,13 +60,13 @@ export class UserActionController {
             this.isValid = true;
           }
           this.scheduleFollowUp();
-        } else if (this.ua.getState() === UserActionState.Halted && this.runningRequests.size === 0) {
+        } else if (this.userAction.getState() === UserActionState.Halted && this.runningRequests.size === 0) {
           this.endAction();
         }
       });
 
     // When UA ends or cancels, cleanup timers/subscriptions
-    this.stateSub = (this.ua as unknown as Observable)
+    this.stateSub = (this.userAction as unknown as Observable)
       .filter((s: UserActionState) => [UserActionState.Ended, UserActionState.Cancelled].includes(s))
       .first()
       .subscribe(() => this.cleanup());
@@ -79,7 +79,7 @@ export class UserActionController {
     this.clearTimer(this.followUpTid);
     this.followUpTid = setTimeout(() => {
       // If action just started and there's pending work, go to halted
-      if (this.ua.getState() === UserActionState.Started && this.runningRequests.size > 0) {
+      if (this.userAction.getState() === UserActionState.Started && this.runningRequests.size > 0) {
         this.haltAction();
         return;
       }
@@ -96,10 +96,10 @@ export class UserActionController {
   }
 
   private haltAction() {
-    if (this.ua.getState() !== UserActionState.Started) {
+    if (this.userAction.getState() !== UserActionState.Started) {
       return;
     }
-    this.ua.halt();
+    this.userAction.halt();
     this.startHaltTimeout();
   }
 
@@ -109,7 +109,7 @@ export class UserActionController {
       this.haltTid,
       () => {
         // If still halted after timeout, end
-        if (this.ua.getState() === UserActionState.Halted) {
+        if (this.userAction.getState() === UserActionState.Halted) {
           this.endAction();
         }
       },
@@ -118,12 +118,12 @@ export class UserActionController {
   }
 
   private endAction() {
-    this.ua.end();
+    this.userAction.end();
     this.cleanup();
   }
 
   private cancelAction() {
-    this.ua.cancel();
+    this.userAction.cancel();
     this.cleanup();
   }
 
