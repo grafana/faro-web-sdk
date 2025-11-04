@@ -8,3 +8,5 @@ export const UserActionImportance = {
 } as const;
 
 export type UserActionImportanceType = (typeof UserActionImportance)[keyof typeof UserActionImportance];
+
+export const userActionEventName = 'faro.user.action';

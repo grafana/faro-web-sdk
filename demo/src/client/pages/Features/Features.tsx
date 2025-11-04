@@ -8,6 +8,7 @@ import { Events } from './Events';
 import { MetricsMeasurements } from './MetricsMeasurements';
 import { ReactInstrumentation } from './ReactInstrumentation';
 import { TracingInstrumentation } from './TracingInstrumentation';
+import { UserActionsInstrumentation } from './UserActionsInstrumentation';
 
 export function Features() {
   return (
@@ -34,6 +35,10 @@ export function Features() {
 
       <Container as="article" className="pb-4 mb-4 border-bottom">
         <ReactInstrumentation />
+      </Container>
+
+      <Container as="article" className="pb-4 mb-4 border-bottom">
+        <UserActionsInstrumentation />
       </Container>
     </Page>
   );

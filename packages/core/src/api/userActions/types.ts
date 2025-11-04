@@ -15,7 +15,7 @@ export interface UserActionInterface {
   name: string;
   parentId: string;
 
-  addItem(item: TransportItem): void;
+  addItem(item: TransportItem): boolean;
   extend(haltPredicate?: HaltPredicate): void;
   end(attributes?: Record<string, string>): void;
   halt(reason?: string): void;

@@ -79,8 +79,12 @@ export default class UserAction extends Observable implements UserActionInterfac
     this._start();
   }
 
-  addItem(item: TransportItem) {
-    this._itemBuffer.addItem(item);
+  addItem(item: TransportItem): boolean {
+    if (this._state === UserActionState.Started) {
+      this._itemBuffer.addItem(item);
+      return true;
+    }
+    return false;
   }
 
   extend(haltPredicate?: HaltPredicate) {
@@ -174,8 +178,9 @@ export default class UserAction extends Observable implements UserActionInterfac
     this.notify(this._state);
 
     faro.api.pushEvent(
-      this.name,
+      userActionEventName,
       {
+        userActionName: this.name,
         userActionStartTime: this.startTime!.toString(),
         userActionEndTime: endTime.toString(),
         userActionDuration: duration.toString(),

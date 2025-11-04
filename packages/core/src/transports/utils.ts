@@ -49,7 +49,7 @@ export function getTransportBody(item: TransportItem[]): TransportBody {
       case TransportItemType.LOG:
       case TransportItemType.EVENT:
       case TransportItemType.EXCEPTION:
-      case TransportItemType.MEASUREMENT:
+      case TransportItemType.MEASUREMENT: {
         const bk = transportItemTypeToBodyKey[currentItem.type];
         const signals = body[bk] as LogEvent[] | EventEvent[] | ExceptionEvent[] | MeasurementEvent[];
 
@@ -58,12 +58,14 @@ export function getTransportBody(item: TransportItem[]): TransportBody {
           [bk]: signals === undefined ? [currentItem.payload] : [...signals, currentItem.payload],
         };
         break;
-      case TransportItemType.TRACE:
+      }
+      case TransportItemType.TRACE: {
         body = {
           ...body,
           traces: mergeResourceSpans(body.traces, (currentItem.payload as TraceEvent).resourceSpans),
         };
         break;
+      }
     }
   });
 

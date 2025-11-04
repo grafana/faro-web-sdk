@@ -5,7 +5,7 @@ import { UserActionSeverity } from '@grafana/faro-core';
 import { faro } from '@grafana/faro-react';
 
 export function TracingInstrumentation() {
-  const fetchSuccess = (ev) => {
+  const fetchSuccess = () => {
     // Override the user action creation
     faro.api.startUserAction(
       'fetch-success',

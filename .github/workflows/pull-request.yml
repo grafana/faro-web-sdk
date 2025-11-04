@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
           cache: 'yarn'
@@ -71,7 +71,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: 'lts/iron'
           cache: 'yarn'
@@ -83,7 +83,7 @@ jobs:
         run: yarn build
 
       - name: E2E tests
-        uses: cypress-io/github-action@b8ba51a856ba5f4c15cf39007636d4ab04f23e3c
+        uses: cypress-io/github-action@0df54ae94d937756289cf9540ecfe1c76167884a
         env:
           DATABASE_HOST: database
           DATABASE_PORT: 5432
