@@ -67,27 +67,6 @@ describe('initializeUserActionsAPI', () => {
     );
   });
 
-  it('startUserAction has custom severity (converts to importance) and trigger set', () => {
-    const action = api.startUserAction('second', undefined, {
-      severity: UserActionImportance.Critical,
-      triggerName: 'foo',
-    });
-    expect(action).toBeInstanceOf(UserAction);
-
-    const activeAction = api.getActiveUserAction();
-    expect(activeAction).toBe(action);
-
-    activeAction?.end();
-
-    expect(faro.api.pushEvent).toHaveBeenCalledTimes(1);
-    expect(faro.api.pushEvent).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({ userActionImportance: 'critical', userActionTrigger: 'foo' }),
-      undefined,
-      expect.any(Object)
-    );
-  });
-
   it('subsequent startUserAction calls will return undefined as long as there is an action running', () => {
     api.startUserAction('A');
     const a2 = api.startUserAction('B');

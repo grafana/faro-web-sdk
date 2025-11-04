@@ -41,10 +41,6 @@ export type EndUserActionProps = {
 export type StartUserActionOptions = {
   triggerName?: string;
   importance?: UserActionImportanceType;
-  /**
-   * @deprecated Use importance instead
-   */
-  severity?: UserActionImportanceType;
 };
 
 export interface UserActionsAPI {

@@ -19,10 +19,6 @@ export default class UserAction extends Observable implements UserActionInterfac
   parentId: string;
   trigger: string;
   importance: UserActionImportanceType;
-  /**
-   * @deprecated Use importance instead
-   */
-  severity?: UserActionImportanceType;
   startTime?: number;
   trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
   cancelTimeout: number;
@@ -44,7 +40,6 @@ export default class UserAction extends Observable implements UserActionInterfac
     attributes,
     trackUserActionsExcludeItem,
     importance = UserActionImportance.Normal,
-    severity = UserActionImportance.Normal,
   }: {
     name: string;
     transports: Transports;
@@ -54,10 +49,6 @@ export default class UserAction extends Observable implements UserActionInterfac
     haltTimeout?: number;
     trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
     importance?: UserActionImportanceType;
-    /**
-     * @deprecated Use importance instead
-     */
-    severity?: UserActionImportanceType;
   }) {
     super();
     this.name = name;
@@ -68,8 +59,7 @@ export default class UserAction extends Observable implements UserActionInterfac
     this.haltTimeout = haltTimeout ?? defaultHaltTimeout;
     this.parentId = parentId ?? this.id;
     this.trackUserActionsExcludeItem = trackUserActionsExcludeItem;
-    this.importance = importance || severity;
-    this.severity = this.importance;
+    this.importance = importance;
 
     this._itemBuffer = new ItemBuffer<TransportItem>();
     this._transports = transports;

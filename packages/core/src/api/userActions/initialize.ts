@@ -44,8 +44,7 @@ export function initializeUserActionsAPI({
         transports,
         attributes,
         trigger: options?.triggerName || userActionStartByApiCallEventName,
-        importance: options?.importance || options?.severity || UserActionImportance.Normal,
-        severity: options?.importance || options?.severity || UserActionImportance.Normal,
+        importance: options?.importance || UserActionImportance.Normal,
         trackUserActionsExcludeItem,
       });
       userAction

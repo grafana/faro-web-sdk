@@ -4,10 +4,6 @@ export {
   defaultErrorArgsSerializer,
   UserActionImportance,
   type UserActionImportanceType,
-  /**
-   * @deprecated Use UserActionImportance instead
-   */
-  UserActionImportance as UserActionSeverity,
   UserActionState,
   userActionsMessageBus,
 } from './api';
