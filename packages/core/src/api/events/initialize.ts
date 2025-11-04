@@ -8,6 +8,7 @@ import { deepEqual, getCurrentTimestamp, isEmpty, isNull, stringifyObjectValues 
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 import type { UserActionsAPI } from '../userActions';
+import { addItemToUserActionBuffer } from '../userActions/initialize';
 
 import type { EventEvent, EventsAPI } from './types';
 
@@ -71,8 +72,7 @@ export function initializeEventsAPI({
 
       internalLogger.debug('Pushing event\n', item);
 
-      const currentUserAction = userActionsApi.getActiveUserAction();
-      if (!currentUserAction || !currentUserAction.addItem(item)) {
+      if (!addItemToUserActionBuffer(userActionsApi.getActiveUserAction(), item)) {
         transports.execute(item);
       }
     } catch (err) {

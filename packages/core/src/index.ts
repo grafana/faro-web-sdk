@@ -37,6 +37,7 @@ export type {
   TracesAPI,
   UserAction,
   UserActionInterface,
+  UserActionInternalInterface,
 } from './api';
 
 export { BaseExtension } from './extensions';

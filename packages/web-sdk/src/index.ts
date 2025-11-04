@@ -97,6 +97,7 @@ export {
   Observable,
   unknownString,
   UserActionState,
+  type UserActionInternalInterface,
 } from '@grafana/faro-core';
 
 export type {

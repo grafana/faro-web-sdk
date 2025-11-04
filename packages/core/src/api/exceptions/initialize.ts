@@ -18,6 +18,7 @@ import {
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
 import type { UserActionsAPI } from '../userActions';
+import { addItemToUserActionBuffer } from '../userActions/initialize';
 import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
@@ -113,8 +114,7 @@ export function initializeExceptionsAPI({
 
       internalLogger.debug('Pushing exception\n', item);
 
-      const activeUserAction = userActionsApi.getActiveUserAction();
-      if (!activeUserAction || !activeUserAction.addItem(item)) {
+      if (!addItemToUserActionBuffer(userActionsApi.getActiveUserAction(), item)) {
         transports.execute(item);
       }
     } catch (err) {

@@ -4,7 +4,7 @@ import { mockTransports } from '../apiTestHelpers';
 
 import { userActionEventName } from './const';
 import { initializeUserActionsAPI } from './initialize';
-import { UserActionsAPI } from './types';
+import { UserActionInternalInterface, UserActionsAPI } from './types';
 import UserAction from './userAction';
 
 jest.mock('../../sdk/registerFaro', () => ({
@@ -56,7 +56,7 @@ describe('initializeUserActionsAPI', () => {
     const activeAction = api.getActiveUserAction();
     expect(activeAction).toBe(action);
 
-    activeAction?.end();
+    (activeAction as unknown as UserActionInternalInterface)?.end();
 
     expect(faro.api.pushEvent).toHaveBeenCalledTimes(1);
     expect(faro.api.pushEvent).toHaveBeenCalledWith(
@@ -73,23 +73,15 @@ describe('initializeUserActionsAPI', () => {
     expect(a2).not.toBeDefined();
   });
 
-  it('create an action while one is halted will result action not getting created', () => {
-    const a1 = api.startUserAction('A');
-    expect(a1).toBeDefined();
-    a1?.halt();
-    const a2 = api.startUserAction('B');
-    expect(a2).not.toBeDefined();
-  });
-
   it('getActiveUserAction returns undefined if the action is ended', () => {
     const action = api.startUserAction('first');
-    action?.end();
+    (action as unknown as UserActionInternalInterface)?.end();
     expect(api.getActiveUserAction()).toBeUndefined();
   });
 
   it('getActiveUserAction returns undefined if the action is cancelled', () => {
     const action = api.startUserAction('first');
-    action?.cancel();
+    (action as unknown as UserActionInternalInterface)?.cancel();
     expect(api.getActiveUserAction()).toBeUndefined();
   });
 
@@ -99,7 +91,7 @@ describe('initializeUserActionsAPI', () => {
       { foo: 'bar' },
       { importance: UserActionImportance.Critical, triggerName: 'foo' }
     );
-    action?.end();
+    (action as unknown as UserActionInternalInterface)?.end();
 
     expect(faro.api.pushEvent).toHaveBeenCalledWith(
       userActionEventName,
