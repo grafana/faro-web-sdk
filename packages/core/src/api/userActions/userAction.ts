@@ -6,7 +6,7 @@ import { ItemBuffer } from '../ItemBuffer';
 import { type MeasurementEvent } from '../measurements';
 import { type APIEvent } from '../types';
 
-import { UserActionImportance, type UserActionImportanceType } from './const';
+import { userActionEventName, UserActionImportance, type UserActionImportanceType } from './const';
 import { type HaltPredicate, type UserActionInterface, UserActionState } from './types';
 
 const defaultFollowUpActionTimeRange = 100;

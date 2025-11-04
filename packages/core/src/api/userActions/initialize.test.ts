@@ -118,7 +118,7 @@ describe('initializeUserActionsAPI', () => {
     const action = api.startUserAction(
       'test-action',
       { foo: 'bar' },
-      { severity: UserActionSeverity.Critical, triggerName: 'foo' }
+      { importance: UserActionImportance.Critical, triggerName: 'foo' }
     );
     action?.end();
 
@@ -127,7 +127,7 @@ describe('initializeUserActionsAPI', () => {
       expect.objectContaining({
         userActionName: 'test-action',
         userActionDuration: expect.any(String),
-        userActionSeverity: 'critical',
+        userActionImportance: 'critical',
         userActionStartTime: expect.any(String),
         userActionEndTime: expect.any(String),
         userActionTrigger: 'foo',
