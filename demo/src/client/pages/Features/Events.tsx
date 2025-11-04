@@ -1,6 +1,7 @@
 import { Button, ButtonGroup } from 'react-bootstrap';
 
 import { createSession, faro } from '@grafana/faro-react';
+import { UserEventsInstrumentation } from '@grafana/faro-web-sdk/src/instrumentations/userEvents/instrumentation';
 
 import { useAppDispatch } from '../../hooks';
 import { setSession } from '../../store';
@@ -22,6 +23,7 @@ export function Events() {
 
   const changeView = () => {
     faro.api.setView({ name: `randomly-changed-view-${Math.random()}` });
+    UserEventsInstrumentation.stopJourney('testing_features_page');
   };
 
   return (
