@@ -2,7 +2,8 @@ export {
   defaultExceptionType,
   defaultLogArgsSerializer,
   defaultErrorArgsSerializer,
-  UserActionSeverity,
+  UserActionImportance,
+  type UserActionImportanceType,
   UserActionState,
   userActionsMessageBus,
 } from './api';

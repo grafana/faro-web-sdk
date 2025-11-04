@@ -6,7 +6,7 @@ import { ItemBuffer } from '../ItemBuffer';
 import { type MeasurementEvent } from '../measurements';
 import { type APIEvent } from '../types';
 
-import { userActionEventName, UserActionSeverity } from './const';
+import { userActionEventName, UserActionImportance, type UserActionImportanceType } from './const';
 import { type UserActionInternalInterface, UserActionState, type UserActionTransportItemBuffer } from './types';
 
 export default class UserAction
@@ -18,7 +18,7 @@ export default class UserAction
   attributes?: Record<string, string>;
   parentId: string;
   trigger: string;
-  severity: UserActionSeverity;
+  importance: UserActionImportanceType;
   startTime?: number;
   trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
 
@@ -33,7 +33,7 @@ export default class UserAction
     transports,
     attributes,
     trackUserActionsExcludeItem,
-    severity = UserActionSeverity.Normal,
+    importance = UserActionImportance.Normal,
   }: {
     name: string;
     transports: Transports;
@@ -41,7 +41,7 @@ export default class UserAction
     trigger: string;
     attributes?: Record<string, string>;
     trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
-    severity?: UserActionSeverity;
+    importance?: UserActionImportanceType;
   }) {
     super();
     this.name = name;
@@ -50,7 +50,7 @@ export default class UserAction
     this.trigger = trigger;
     this.parentId = parentId ?? this.id;
     this.trackUserActionsExcludeItem = trackUserActionsExcludeItem;
-    this.severity = severity;
+    this.importance = importance;
 
     this._itemBuffer = new ItemBuffer<TransportItem>();
     this._transports = transports;
@@ -130,7 +130,7 @@ export default class UserAction
         userActionEndTime: endTime.toString(),
         userActionDuration: duration.toString(),
         userActionTrigger: this.trigger!,
-        userActionSeverity: this.severity,
+        userActionImportance: this.importance,
         ...stringifyObjectValues(this.attributes),
       },
       undefined,

@@ -1,4 +1,4 @@
-import { faro, UserActionSeverity } from '../..';
+import { faro, UserActionImportance } from '../..';
 import { mockConfig, mockInternalLogger } from '../../testUtils';
 import { mockTransports } from '../apiTestHelpers';
 
@@ -29,6 +29,7 @@ describe('initializeUserActionsAPI', () => {
     });
     internalLogger = mockInternalLogger;
     api = initializeUserActionsAPI({ transports, config, internalLogger });
+    jest.resetAllMocks();
   });
 
   afterEach(() => {
@@ -45,9 +46,9 @@ describe('initializeUserActionsAPI', () => {
     expect(api.getActiveUserAction()).toBe(action);
   });
 
-  it('startUserAction has custom severity and trigger set', () => {
+  it('startUserAction has custom importance and trigger set', () => {
     const action = api.startUserAction('first', undefined, {
-      severity: UserActionSeverity.Critical,
+      importance: UserActionImportance.Critical,
       triggerName: 'foo',
     });
     expect(action).toBeInstanceOf(UserAction);
@@ -60,7 +61,7 @@ describe('initializeUserActionsAPI', () => {
     expect(faro.api.pushEvent).toHaveBeenCalledTimes(1);
     expect(faro.api.pushEvent).toHaveBeenCalledWith(
       expect.any(String),
-      expect.objectContaining({ userActionSeverity: 'critical', userActionTrigger: 'foo' }),
+      expect.objectContaining({ userActionImportance: 'critical', userActionTrigger: 'foo' }),
       undefined,
       expect.any(Object)
     );
@@ -88,7 +89,7 @@ describe('initializeUserActionsAPI', () => {
     const action = api.startUserAction(
       'test-action',
       { foo: 'bar' },
-      { severity: UserActionSeverity.Critical, triggerName: 'foo' }
+      { importance: UserActionImportance.Critical, triggerName: 'foo' }
     );
     (action as unknown as UserActionInternalInterface)?.end();
 
@@ -97,7 +98,7 @@ describe('initializeUserActionsAPI', () => {
       expect.objectContaining({
         userActionName: 'test-action',
         userActionDuration: expect.any(String),
-        userActionSeverity: 'critical',
+        userActionImportance: 'critical',
         userActionStartTime: expect.any(String),
         userActionEndTime: expect.any(String),
         userActionTrigger: 'foo',

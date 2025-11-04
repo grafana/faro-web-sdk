@@ -2,7 +2,7 @@ import { type InternalLogger, type TransportItem, type Transports } from '../..'
 import type { Config } from '../../config';
 import { Observable } from '../../utils/reactive';
 
-import { UserActionSeverity, userActionStart, userActionStartByApiCallEventName } from './const';
+import { UserActionImportance, userActionStart, userActionStartByApiCallEventName } from './const';
 import {
   type StartUserActionOptions,
   type UserActionInterface,
@@ -46,7 +46,7 @@ export function initializeUserActionsAPI({
         transports,
         attributes,
         trigger: options?.triggerName || userActionStartByApiCallEventName,
-        severity: options?.severity || UserActionSeverity.Normal,
+        importance: options?.importance || UserActionImportance.Normal,
         trackUserActionsExcludeItem,
       });
       userAction

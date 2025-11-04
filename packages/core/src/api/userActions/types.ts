@@ -1,6 +1,6 @@
 import { type TransportItem } from '../../transports';
 
-import { UserActionSeverity, userActionStartByApiCallEventName } from './const';
+import { type UserActionImportanceType, userActionStartByApiCallEventName } from './const';
 
 export enum UserActionState {
   Started,
@@ -50,7 +50,7 @@ export type EndUserActionProps = {
 
 export type StartUserActionOptions = {
   triggerName?: string;
-  severity?: UserActionSeverity;
+  importance?: UserActionImportanceType;
 };
 
 export interface UserActionsAPI {
