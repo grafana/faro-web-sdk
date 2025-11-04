@@ -1,7 +1,7 @@
 import { type Context, SpanKind } from '@opentelemetry/api';
 import type { ReadableSpan, Span, SpanProcessor } from '@opentelemetry/sdk-trace-web';
 
-import { faro, UserActionState } from '@grafana/faro-web-sdk';
+import { faro, type UserActionInternalInterface, UserActionState } from '@grafana/faro-web-sdk';
 
 // There is very rare race condition that would result in span being attached to different user action. As shown in the diagram below.
 // The scenario is the following
@@ -23,7 +23,11 @@ export class FaroUserActionSpanProcessor implements SpanProcessor {
 
   onStart(span: Span, parentContext: Context): void {
     const userAction = faro.api.getActiveUserAction();
-    if (userAction && userAction.getState() === UserActionState.Started && span.kind === SpanKind.CLIENT) {
+    if (
+      userAction &&
+      (userAction as unknown as UserActionInternalInterface)?.getState() === UserActionState.Started &&
+      span.kind === SpanKind.CLIENT
+    ) {
       if (!span.attributes['faro.action.user.name']) {
         span.attributes['faro.action.user.name'] = userAction?.name;
       }

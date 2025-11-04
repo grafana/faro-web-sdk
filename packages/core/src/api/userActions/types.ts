@@ -9,18 +9,28 @@ export enum UserActionState {
   Ended,
 }
 
-export type HaltPredicate = () => boolean;
-
+/**
+ * Public interface for the UserAction.
+ * This is the interface that is part of the public API.
+ */
 export interface UserActionInterface {
   name: string;
   parentId: string;
+}
 
-  addItem(item: TransportItem): boolean;
-  extend(haltPredicate?: HaltPredicate): void;
+/**
+ * Internal interface for the UserAction.
+ * This interface is intended for internal use only and not guaranteed to be stable.
+ */
+export interface UserActionInternalInterface extends UserActionInterface {
+  halt(): void;
   end(attributes?: Record<string, string>): void;
-  halt(reason?: string): void;
   cancel(): void;
   getState(): UserActionState;
+}
+
+export interface UserActionTransportItemBuffer {
+  addItem(item: TransportItem): boolean;
 }
 
 export type ApiUserActionEvent = {

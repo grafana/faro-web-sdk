@@ -51,23 +51,6 @@ describe('UserAction', () => {
     expect(transports.execute).not.toHaveBeenCalled();
   });
 
-  it('halt() is no-op if user action is not started', () => {
-    const ua = new UserAction({ name: 'foo', transports, trigger: 'foo' });
-    ua.cancel();
-    ua.halt();
-
-    expect(ua.getState()).toBe(UserActionState.Cancelled);
-  });
-
-  it('halt() will end() after halt timeoute time', () => {
-    const ua = new UserAction({ name: 'foo', transports, trigger: 'foo' });
-    ua.extend(() => true);
-    jest.advanceTimersByTime(ua.cancelTimeout);
-    expect(ua.getState()).toBe(UserActionState.Halted);
-    jest.advanceTimersByTime(ua.haltTimeout);
-    expect(ua.getState()).toBe(UserActionState.Ended);
-  });
-
   it('end() will not fire if action is cancelled', () => {
     const ua = new UserAction({ name: 'foo', transports, trigger: 'foo' });
     ua.cancel();
@@ -91,9 +74,7 @@ describe('UserAction', () => {
 
   it('addItem returns false when state is Halted', () => {
     const userAction = new UserAction({ name: 'foo', transports, trigger: 'foo' });
-    userAction.extend(() => true);
-    jest.advanceTimersByTime(userAction.cancelTimeout);
-    expect(userAction.getState()).toBe(UserActionState.Halted);
+    userAction.halt();
     const item: TransportItem = { type: TransportItemType.EVENT, payload: {}, meta: {} };
     const result = userAction.addItem(item);
     expect(result).toBe(false);
