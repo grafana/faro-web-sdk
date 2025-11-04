@@ -3,6 +3,7 @@ export {
   defaultLogArgsSerializer,
   defaultErrorArgsSerializer,
   UserActionImportance,
+  type UserActionImportanceType,
   /**
    * @deprecated Use UserActionImportance instead
    */

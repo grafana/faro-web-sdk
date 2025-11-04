@@ -6,7 +6,7 @@ import { ItemBuffer } from '../ItemBuffer';
 import { type MeasurementEvent } from '../measurements';
 import { type APIEvent } from '../types';
 
-import { UserActionImportance } from './const';
+import { UserActionImportance, type UserActionImportanceType } from './const';
 import { type HaltPredicate, type UserActionInterface, UserActionState } from './types';
 
 const defaultFollowUpActionTimeRange = 100;
@@ -18,11 +18,11 @@ export default class UserAction extends Observable implements UserActionInterfac
   attributes?: Record<string, string>;
   parentId: string;
   trigger: string;
-  importance: UserActionImportance;
+  importance: UserActionImportanceType;
   /**
    * @deprecated Use importance instead
    */
-  severity?: UserActionImportance;
+  severity?: UserActionImportanceType;
   startTime?: number;
   trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
   cancelTimeout: number;
@@ -53,11 +53,11 @@ export default class UserAction extends Observable implements UserActionInterfac
     attributes?: Record<string, string>;
     haltTimeout?: number;
     trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
-    importance?: UserActionImportance;
+    importance?: UserActionImportanceType;
     /**
      * @deprecated Use importance instead
      */
-    severity?: UserActionImportance;
+    severity?: UserActionImportanceType;
   }) {
     super();
     this.name = name;

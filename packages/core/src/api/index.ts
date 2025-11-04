@@ -24,6 +24,7 @@ export type { MetaAPI } from './meta';
 
 export {
   UserActionImportance,
+  type UserActionImportanceType,
   UserActionState,
   type UserActionInterface,
   type UserActionsAPI,
