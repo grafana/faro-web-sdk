@@ -4991,7 +4991,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-styles@npm:^4.0.0, ansi-styles@npm:^4.1.0, ansi-styles@npm:^4.2.1":
+"ansi-styles@npm:^4.0.0, ansi-styles@npm:^4.1.0":
   version: 4.3.0
   resolution: "ansi-styles@npm:4.3.0"
   dependencies:
@@ -5000,7 +5000,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-styles@npm:^5.2.0":
+"ansi-styles@npm:^5.0.0, ansi-styles@npm:^5.2.0":
   version: 5.2.0
   resolution: "ansi-styles@npm:5.2.0"
   checksum: 10c0/9c4ca80eb3c2fb7b33841c210d2f20807f40865d27008d7c3f707b7f95cab7d67462a565e2388ac3285b71cb3d9bb2173de8da37c57692a362885ec34d6e27df
@@ -8070,7 +8070,7 @@ __metadata:
     madge: "npm:^8.0.0"
     markdownlint: "npm:^0.39.0"
     markdownlint-cli: "npm:^0.45.0"
-    npm-run-all2: "npm:5.0.0"
+    npm-run-all2: "npm:5.0.2"
     os-browserify: "npm:^0.3.0"
     prettier: "npm:^3.0.3"
     process: "npm:^0.11.10"
@@ -12518,11 +12518,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"npm-run-all2@npm:5.0.0":
-  version: 5.0.0
-  resolution: "npm-run-all2@npm:5.0.0"
+"npm-run-all2@npm:5.0.2":
+  version: 5.0.2
+  resolution: "npm-run-all2@npm:5.0.2"
   dependencies:
-    ansi-styles: "npm:^4.2.1"
+    ansi-styles: "npm:^5.0.0"
     cross-spawn: "npm:^7.0.3"
     memorystream: "npm:^0.3.1"
     minimatch: "npm:^3.0.4"
@@ -12533,7 +12533,7 @@ __metadata:
     npm-run-all: bin/npm-run-all/index.js
     run-p: bin/run-p/index.js
     run-s: bin/run-s/index.js
-  checksum: 10c0/4bbc902d9791576c1c8af599bc10fcb34fc11c1dd52845a25273aff5ce0d3b19ba8839072cb0208001cfa24693921dda35f7e941607e5e88cafd3e553e545cd8
+  checksum: 10c0/72de78d3f3bbfe940d644bd1c97cd54189651758175df55507eb8a5475f0e6978a036d8cd6e4a4585c913c1c6ab1a76b0ce9a653c2beeabff69a98b5eac09afe
   languageName: node
   linkType: hard
 
