@@ -9,15 +9,15 @@ let perf$: Observable<any>;
 
 jest.useFakeTimers();
 
-jest.mock('./domMutationMonitor', () => ({
+jest.mock('../_internal/monitors/domMutationMonitor', () => ({
   monitorDomMutations: () => dom$,
 }));
 
-jest.mock('./httpRequestMonitor', () => ({
+jest.mock('../_internal/monitors/httpRequestMonitor', () => ({
   monitorHttpRequests: () => http$,
 }));
 
-jest.mock('./performanceEntriesMonitor', () => ({
+jest.mock('../_internal/monitors/performanceEntriesMonitor', () => ({
   monitorPerformanceEntries: () => perf$,
 }));
 
