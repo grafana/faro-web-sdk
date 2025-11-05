@@ -3,7 +3,7 @@ import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xm
 import type { XMLHttpRequestInstrumentationConfig } from '@opentelemetry/instrumentation-xml-http-request';
 import type { OpenFunction } from '@opentelemetry/instrumentation-xml-http-request/build/src/types';
 
-import { faro, getUrlFromResource, UserActionState } from '@grafana/faro-web-sdk';
+import { faro, getUrlFromResource, type UserActionInternalInterface, UserActionState } from '@grafana/faro-web-sdk';
 
 type Parent = {
   _createSpan: (xhr: XMLHttpRequest, url: string, method: string) => Span | undefined;
@@ -35,7 +35,11 @@ export class FaroXhrInstrumentation extends XMLHttpRequestInstrumentation {
         }
 
         const currentAction = faro.api.getActiveUserAction();
-        if (span && currentAction && currentAction.getState() === UserActionState.Started) {
+        if (
+          span &&
+          currentAction &&
+          (currentAction as unknown as UserActionInternalInterface)?.getState() === UserActionState.Started
+        ) {
           span.setAttribute('faro.action.user.name', currentAction.name);
           span.setAttribute('faro.action.user.parentId', currentAction.parentId);
         }

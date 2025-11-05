@@ -6,94 +6,64 @@ import { ItemBuffer } from '../ItemBuffer';
 import { type MeasurementEvent } from '../measurements';
 import { type APIEvent } from '../types';
 
-import { UserActionSeverity } from './const';
-import { type HaltPredicate, type UserActionInterface, UserActionState } from './types';
+import { userActionEventName, UserActionImportance, type UserActionImportanceType } from './const';
+import { type UserActionInternalInterface, UserActionState, type UserActionTransportItemBuffer } from './types';
 
-const defaultFollowUpActionTimeRange = 100;
-const defaultHaltTimeout = 10 * 1000;
-
-export default class UserAction extends Observable implements UserActionInterface {
+export default class UserAction
+  extends Observable
+  implements UserActionInternalInterface, UserActionTransportItemBuffer
+{
   name: string;
   id: string;
   attributes?: Record<string, string>;
   parentId: string;
   trigger: string;
-  severity: UserActionSeverity;
+  importance: UserActionImportanceType;
   startTime?: number;
   trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
-  cancelTimeout: number;
-  haltTimeout: number;
 
   private _state: UserActionState;
-  private _timeoutId?: number;
   private _itemBuffer: ItemBuffer<TransportItem>;
   private _transports: Transports;
-  private _haltTimeoutId: any;
-  private _isValid: boolean;
 
   constructor({
     name,
     parentId,
-    haltTimeout,
     trigger,
     transports,
     attributes,
     trackUserActionsExcludeItem,
-    severity = UserActionSeverity.Normal,
+    importance = UserActionImportance.Normal,
   }: {
     name: string;
     transports: Transports;
     parentId?: string;
     trigger: string;
     attributes?: Record<string, string>;
-    haltTimeout?: number;
     trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
-    severity?: UserActionSeverity;
+    importance?: UserActionImportanceType;
   }) {
     super();
     this.name = name;
     this.attributes = attributes;
     this.id = genShortID();
     this.trigger = trigger;
-    this.cancelTimeout = defaultFollowUpActionTimeRange;
-    this.haltTimeout = haltTimeout ?? defaultHaltTimeout;
     this.parentId = parentId ?? this.id;
     this.trackUserActionsExcludeItem = trackUserActionsExcludeItem;
-    this.severity = severity;
+    this.importance = importance;
 
     this._itemBuffer = new ItemBuffer<TransportItem>();
     this._transports = transports;
-    this._haltTimeoutId = -1;
     this._state = UserActionState.Started;
-    this._isValid = false;
     this._start();
   }
 
-  addItem(item: TransportItem) {
-    this._itemBuffer.addItem(item);
-  }
-
-  extend(haltPredicate?: HaltPredicate) {
-    if (!this._isValid) {
-      this._isValid = true;
+  addItem(item: TransportItem): boolean {
+    if (this._state === UserActionState.Started) {
+      this._itemBuffer.addItem(item);
+      return true;
     }
-    this._setFollowupActionTimeout(haltPredicate);
-  }
-
-  private _setFollowupActionTimeout(haltPredicate?: HaltPredicate) {
-    this._timeoutId = startTimeout(
-      this._timeoutId,
-      () => {
-        if (this._state === UserActionState.Started && haltPredicate?.()) {
-          this.halt();
-        } else if (this._isValid) {
-          this.end();
-        } else {
-          this.cancel();
-        }
-      },
-      defaultFollowUpActionTimeRange
-    );
+    return false;
   }
 
   private _start(): void {
@@ -101,7 +71,6 @@ export default class UserAction extends Observable implements UserActionInterfac
     if (this._state === UserActionState.Started) {
       this.startTime = dateNow();
     }
-    this._setFollowupActionTimeout();
   }
 
   halt() {
@@ -109,12 +78,6 @@ export default class UserAction extends Observable implements UserActionInterfac
       return;
     }
     this._state = UserActionState.Halted;
-
-    // If the halt timeout fires, we end the user action as
-    // it is still a valid one.
-    this._haltTimeoutId = setTimeout(() => {
-      this.end();
-    }, this.haltTimeout);
     this.notify(this._state);
   }
 
@@ -132,10 +95,6 @@ export default class UserAction extends Observable implements UserActionInterfac
     if (this._state === UserActionState.Cancelled) {
       return;
     }
-
-    // Make sure we don't end the user action twice
-    clearTimeout(this._haltTimeoutId);
-    clearTimeout(this._timeoutId);
 
     const endTime = dateNow();
     const duration = endTime - this.startTime!;
@@ -164,13 +123,14 @@ export default class UserAction extends Observable implements UserActionInterfac
     this.notify(this._state);
 
     faro.api.pushEvent(
-      this.name,
+      userActionEventName,
       {
+        userActionName: this.name,
         userActionStartTime: this.startTime!.toString(),
         userActionEndTime: endTime.toString(),
         userActionDuration: duration.toString(),
         userActionTrigger: this.trigger!,
-        userActionSeverity: this.severity,
+        userActionImportance: this.importance,
         ...stringifyObjectValues(this.attributes),
       },
       undefined,
@@ -201,17 +161,4 @@ function isExcludeFromUserAction(
     trackUserActionsExcludeItem?.(item) ||
     (item.type === TransportItemType.MEASUREMENT && (item.payload as MeasurementEvent).type === 'web-vitals')
   );
-}
-
-function startTimeout(timeoutId: number | undefined, cb: () => void, delay: number) {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-
-  //@ts-expect-error for some reason vscode is using the node types
-  timeoutId = setTimeout(() => {
-    cb();
-  }, delay);
-
-  return timeoutId;
 }

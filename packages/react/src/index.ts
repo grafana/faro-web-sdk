@@ -193,5 +193,5 @@ export type {
   Transports,
   UnpatchedConsole,
   ExceptionEventExtended,
-  UserActionSeverity,
+  UserActionImportance,
 } from '@grafana/faro-web-sdk';

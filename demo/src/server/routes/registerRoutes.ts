@@ -15,6 +15,14 @@ export async function registerRoutes(app: Express): Promise<Router> {
 
   app.use(traceparentMiddleware);
 
+  globalRouter.get('/long-running-request', (req, res) => {
+    const delay = Number(req.query['delay'] ?? 0);
+
+    setTimeout(() => {
+      res.send(`Long Running Request with delay: ${delay}`);
+    }, delay);
+  });
+
   registerApiRoutes(globalRouter, app);
 
   registerMetricsRoutes(globalRouter, app);

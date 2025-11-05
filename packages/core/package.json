@@ -46,14 +46,14 @@
     "quality:test": "jest",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/core --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s 'quality:lint:*'",
-    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/core --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/core \"./**/*.{js,jsx,ts,tsx}\"",
     "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/core --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/otlp-transformer": "^0.205.0"
+    "@opentelemetry/otlp-transformer": "^0.207.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.1"
