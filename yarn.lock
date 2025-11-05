@@ -854,8 +854,8 @@ __metadata:
     "@types/cookie-parser": "npm:^1.4.3"
     "@types/express": "npm:^5.0.0"
     "@types/jsonwebtoken": "npm:^9.0.1"
-    "@types/react": "npm:^18.0.26"
-    "@types/react-dom": "npm:^18.0.10"
+    "@types/react": "npm:18.3.23"
+    "@types/react-dom": "npm:18.3.7"
     "@types/react-redux": "npm:^7.1.25"
     "@types/react-router-bootstrap": "npm:^0.26.6"
     "@types/serve-static": "npm:^2.2.0"
@@ -902,7 +902,7 @@ __metadata:
     "@grafana/faro-web-sdk": "npm:^2.0.0-beta-2"
     "@grafana/faro-web-tracing": "npm:^2.0.0-beta-2"
     "@types/hoist-non-react-statics": "npm:^3.3.1"
-    "@types/react": "npm:^18.0.26"
+    "@types/react": "npm:18.3.23"
     hoist-non-react-statics: "npm:^3.3.2"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
@@ -4148,7 +4148,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^18.0.10":
+"@types/react-dom@npm:18.3.7":
   version: 18.3.7
   resolution: "@types/react-dom@npm:18.3.7"
   peerDependencies:
@@ -4196,7 +4196,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^18.0.26":
+"@types/react@npm:18.3.23":
   version: 18.3.23
   resolution: "@types/react@npm:18.3.23"
   dependencies:
