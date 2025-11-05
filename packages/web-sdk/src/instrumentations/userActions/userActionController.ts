@@ -2,10 +2,11 @@
 import { Observable, UserActionState } from '@grafana/faro-core';
 import type { Subscription, UserActionInternalInterface } from '@grafana/faro-core';
 
-import { monitorDomMutations } from './domMutationMonitor';
-import { monitorHttpRequests } from './httpRequestMonitor';
-import { monitorPerformanceEntries } from './performanceEntriesMonitor';
-import type { HttpRequestMessagePayload } from './types';
+import { monitorDomMutations } from '../_internal/monitors/domMutationMonitor';
+import { monitorHttpRequests } from '../_internal/monitors/httpRequestMonitor';
+import { monitorPerformanceEntries } from '../_internal/monitors/performanceEntriesMonitor';
+import type { HttpRequestMessagePayload } from '../_internal/monitors/types';
+
 import { isRequestEndMessage, isRequestStartMessage, startTimeout } from './util';
 
 const defaultFollowUpActionTimeRange = 100;
