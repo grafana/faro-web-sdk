@@ -210,7 +210,7 @@ describe('config', () => {
     expect(config).toBeTruthy();
     expect(config?.trackNavigationPreview).toBe(false);
   });
-  
+
   it('trackNavigation setting are added to the config as provided by the user', () => {
     const browserConfig = {
       url: 'http://example.com/my-collector',

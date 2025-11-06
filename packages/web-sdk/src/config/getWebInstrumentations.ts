@@ -4,12 +4,12 @@ import {
   ConsoleInstrumentation,
   CSPInstrumentation,
   ErrorsInstrumentation,
+  NavigationInstrumentation,
   PerformanceInstrumentation,
   SessionInstrumentation,
   UserActionInstrumentation,
   ViewInstrumentation,
   WebVitalsInstrumentation,
-  NavigationInstrumentation,
 } from '../instrumentations';
 
 import type { GetWebInstrumentationsOptions } from './types';
