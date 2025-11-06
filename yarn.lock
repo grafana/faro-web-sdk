@@ -854,7 +854,7 @@ __metadata:
     "@types/cookie-parser": "npm:^1.4.3"
     "@types/express": "npm:^5.0.0"
     "@types/jsonwebtoken": "npm:^9.0.1"
-    "@types/react": "npm:18.3.23"
+    "@types/react": "npm:18.3.26"
     "@types/react-dom": "npm:18.3.7"
     "@types/react-redux": "npm:^7.1.25"
     "@types/react-router-bootstrap": "npm:^0.26.6"
@@ -902,7 +902,7 @@ __metadata:
     "@grafana/faro-web-sdk": "npm:^2.0.0-beta-2"
     "@grafana/faro-web-tracing": "npm:^2.0.0-beta-2"
     "@types/hoist-non-react-statics": "npm:^3.3.1"
-    "@types/react": "npm:18.3.23"
+    "@types/react": "npm:18.3.26"
     hoist-non-react-statics: "npm:^3.3.2"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
@@ -4196,13 +4196,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.3.23":
-  version: 18.3.23
-  resolution: "@types/react@npm:18.3.23"
+"@types/react@npm:18.3.26":
+  version: 18.3.26
+  resolution: "@types/react@npm:18.3.26"
   dependencies:
     "@types/prop-types": "npm:*"
     csstype: "npm:^3.0.2"
-  checksum: 10c0/49331800b76572eb2992a5c44801dbf8c612a5f99c8f4e4200f06c7de6f3a6e9455c661784a6c5469df96fa45622cb4a9d0982c44e6a0d5719be5f2ef1f545ed
+  checksum: 10c0/7b62d91c33758f14637311921c92db6045b6328e2300666a35ef8130d06385e39acada005eaf317eee93228edc10ea5f0cd34a0385654d2014d24699a65bfeef
   languageName: node
   linkType: hard
 
@@ -7582,9 +7582,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^61.1.1":
-  version: 61.1.11
-  resolution: "eslint-plugin-jsdoc@npm:61.1.11"
+"eslint-plugin-jsdoc@npm:^61.1.11":
+  version: 61.1.12
+  resolution: "eslint-plugin-jsdoc@npm:61.1.12"
   dependencies:
     "@es-joy/jsdoccomment": "npm:~0.76.0"
     "@es-joy/resolve.exports": "npm:1.2.0"
@@ -7602,7 +7602,7 @@ __metadata:
     to-valid-identifier: "npm:^1.0.0"
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
-  checksum: 10c0/bdc5353eddd40440924aa9b908289ab7d5f50bd64585a9ac1d49be56a22af802b90648e9e0fd27729f38508aee3f6c3437330d98be4c6398aa2dfd7a3fcd5028
+  checksum: 10c0/a0d291796029f8c3711ece955afde3cbac2b366735ad99f22723e4d53e54b9dcb6224a7a23369d9bf95a25c01e64b7cf6e7807218b73a18fd33bfe6eabf0bbdd
   languageName: node
   linkType: hard
 
@@ -8057,7 +8057,7 @@ __metadata:
     eslint: "npm:^8.32.0"
     eslint-config-prettier: "npm:^10.0.1"
     eslint-plugin-import: "npm:^2.27.5"
-    eslint-plugin-jsdoc: "npm:^61.1.1"
+    eslint-plugin-jsdoc: "npm:^61.1.11"
     eslint-plugin-no-only-tests: "npm:^3.1.0"
     eslint-plugin-prettier: "npm:^5.0.1"
     eslint-plugin-react: "npm:^7.32.1"
