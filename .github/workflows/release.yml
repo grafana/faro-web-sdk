@@ -46,7 +46,7 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: cypress/browsers:22.12.0
+      image: cypress/browsers:25.0.0@sha256:008da4da0a285b9695d3bfdd1c5c5acb540ada14080d5b90269b34fdf4b9ec6a
       options: --user 1001
     needs: test
 
