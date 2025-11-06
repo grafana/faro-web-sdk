@@ -15,7 +15,34 @@ describe('monitorHttpRequests', () => {
   });
 
   it('Monitors xhr requests and sends a message if request are pending', async () => {
-    const url = 'https://www.httpbin.org/get';
+    const url = 'https://www.grafana.com';
+
+    // Store the original send method to restore later
+    const originalSend = XMLHttpRequest.prototype.send;
+
+    // Mock the send method to avoid actual network calls
+    XMLHttpRequest.prototype.send = function () {
+      // Trigger loadstart event
+      const loadStartEvent = new Event('loadstart');
+      this.dispatchEvent(loadStartEvent);
+
+      // Simulate async response
+      setTimeout(() => {
+        // Set readyState and status using defineProperty to override readonly
+        Object.defineProperty(this, 'readyState', { value: 4, writable: true });
+        Object.defineProperty(this, 'status', { value: 200, writable: true });
+
+        // Trigger load event (successful response)
+        const loadEvent = new Event('load');
+        this.dispatchEvent(loadEvent);
+
+        // Trigger readystatechange for compatibility
+        if (this.onreadystatechange) {
+          const event = new Event('readystatechange');
+          this.onreadystatechange.call(this, event as any);
+        }
+      }, 0);
+    };
 
     const observable = monitorHttpRequests();
     const mockSubscribe = jest.fn();
@@ -55,6 +82,9 @@ describe('monitorHttpRequests', () => {
         url,
       },
     });
+
+    // Restore original send method
+    XMLHttpRequest.prototype.send = originalSend;
   });
 
   it('Monitors fetch requests and sends a message if request are pending', async () => {
