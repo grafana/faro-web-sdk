@@ -272,6 +272,13 @@ export interface Config<P = APIEvent> {
    * Faro exception payload to include additional context or fix missing information.
    */
   preserveOriginalError?: boolean;
+
+  /**
+   * This is a preview feature.
+   * We have tested it thoroughly, but it is possible that it might not work as expected in all cases.
+   */
+  // TODO: remove preview postfix when feature is ga
+  trackNavigationPreview?: boolean;
 }
 
 export type Patterns = Array<string | RegExp>;

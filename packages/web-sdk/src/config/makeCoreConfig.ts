@@ -61,6 +61,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     trackUserActionsPreview = false,
     trackUserActionsDataAttributeName = userActionDataAttribute,
     url: browserConfigUrl,
+    trackNavigationPreview = false,
     // Properties without default values or which aren't used to create derived config
     ...restProperties
   }: BrowserConfig = browserConfig;
@@ -102,15 +103,19 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     trackUserActionsPreview,
     trackUserActionsDataAttributeName,
+    trackNavigationPreview,
   };
 }
 
 function getFilteredInstrumentations(
   instrumentations: Instrumentation[],
-  { trackUserActionsPreview }: BrowserConfig
+  { trackUserActionsPreview, trackNavigationPreview }: BrowserConfig
 ): Instrumentation[] {
   return instrumentations.filter((instr) => {
     if (instr.name === '@grafana/faro-web-sdk:instrumentation-user-action' && !trackUserActionsPreview) {
+      return false;
+    }
+    if (instr.name === '@grafana/faro-web-sdk:instrumentation-navigation' && !trackNavigationPreview) {
       return false;
     }
     return true;

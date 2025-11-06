@@ -9,6 +9,7 @@ import {
   UserActionInstrumentation,
   ViewInstrumentation,
   WebVitalsInstrumentation,
+  NavigationInstrumentation,
 } from '../instrumentations';
 
 import type { GetWebInstrumentationsOptions } from './types';
@@ -20,6 +21,7 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
     new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
     new ViewInstrumentation(),
+    new NavigationInstrumentation(),
   ];
 
   if (options.enablePerformanceInstrumentation !== false) {

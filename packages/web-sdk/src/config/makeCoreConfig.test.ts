@@ -199,4 +199,27 @@ describe('config', () => {
     expect(config?.trackUserActionsPreview).toBe(true);
     expect(config?.trackUserActionsDataAttributeName).toBe('data-test-action-name');
   });
+
+  it('trackNavigation settings defaults are applied', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.trackNavigationPreview).toBe(false);
+  });
+  
+  it('trackNavigation setting are added to the config as provided by the user', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      trackNavigationPreview: true,
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.trackNavigationPreview).toBe(true);
+  });
 });
