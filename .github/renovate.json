@@ -1,8 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
-  "rangeStrategy": "replace",
-  "preserveSemverRanges": true,
   "schedule": ["before 5am on Monday"],
   "semanticCommits": "enabled",
   "separateMajorMinor": true,
@@ -30,6 +28,7 @@
     },
     {
       "description": "Prioritize security updates",
+      "matchDatasources": ["npm"],
       "vulnerabilityAlerts": true,
       "labels": ["security"],
       "prPriority": 10
