@@ -36,10 +36,9 @@ export class NavigationInstrumentation extends BaseInstrumentation {
           msg.events?.some((e: any) => e.type === 'dom-mutation')
         ) {
           faro.api.pushEvent('navigation', {
-            from: msg.events?.find((e: any) => e.type === 'url-change')?.from,
-            to: msg.events?.find((e: any) => e.type === 'url-change')?.to,
-            trigger: msg.events?.find((e: any) => e.type === 'url-change')?.trigger,
-            same_document: 'true',
+            fromUrl: msg.events?.find((e: any) => e.type === 'url-change')?.from,
+            toUrl: msg.events?.find((e: any) => e.type === 'url-change')?.to,
+            sameDocument: 'true',
             duration: msg.duration,
           });
         }
