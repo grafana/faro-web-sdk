@@ -4,7 +4,7 @@ services:
   mimir:
     env_file:
       - './.env'
-    image: 'grafana/mimir:2.12.0'
+    image: 'grafana/mimir:2.17.2@sha256:760702691842344b3e94c7f48622d8a784cb6000b634d5faeb4b968922a2515a'
     volumes:
       - '${MIMIR_CONFIG_PATH_LOCAL}:${MIMIR_CONFIG_PATH}'
     entrypoint:
