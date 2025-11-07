@@ -274,11 +274,15 @@ export interface Config<P = APIEvent> {
   preserveOriginalError?: boolean;
 
   /**
-   * This is a preview feature.
-   * We have tested it thoroughly, but it is possible that it might not work as expected in all cases.
+   * Configuration for experimental features.
+   * These features have been tested thoroughly, but it is possible that they might not work as expected in all cases.
    */
-  // TODO: remove preview postfix when feature is ga
-  trackNavigationPreview?: boolean;
+  experimental?: {
+    /**
+     * Track navigation events.
+     */
+    trackNavigation?: boolean;
+  };
 }
 
 export type Patterns = Array<string | RegExp>;
