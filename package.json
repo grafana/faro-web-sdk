@@ -63,7 +63,7 @@
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "7.18.0",
     "cypress": "15.6.0",
-    "eslint": "8.57.1",
+    "eslint": "9.39.1",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-jsdoc": "61.1.12",
