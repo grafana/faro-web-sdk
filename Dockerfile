@@ -1,4 +1,4 @@
-FROM node:25-alpine
+FROM node:25-alpine@sha256:7e467cc5aa91c87e94f93c4608cf234ca24aac3ec941f7f3db207367ccccdd11
 
 ARG DEMO_DEMO_PATH
 ARG DEMO_PACKAGES_CORE_PATH
@@ -9,6 +9,7 @@ ARG DEMO_PACKAGES_WEB_TRACING_PATH
 ARG DEMO_PORT
 ARG DEMO_PORT_HMR
 ARG DEMO_WORKSPACE_PATH
+ARG DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH
 
 # Install Python in order to be able to build the native modules
 
@@ -39,7 +40,11 @@ COPY .env \
      tsconfig.base.esm.json \
      tsconfig.base.spec.json \
      yarn.lock \
+     .yarnrc.yml \
      ./
+
+# Copy .yarn directory with patches and releases
+COPY .yarn .yarn
 
 # Demo
 COPY ${DEMO_DEMO_PATH}/package.json \
@@ -107,12 +112,27 @@ RUN mkdir ${DEMO_PACKAGES_WEB_TRACING_PATH}/src
 RUN cp index.ts ${DEMO_PACKAGES_WEB_TRACING_PATH}/src
 
 
+# Experimental - Transport OTLP HTTP
+COPY ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}/package.json \
+     ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}/rollup.config.js \
+     ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}/tsconfig.bundle.json \
+     ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}/tsconfig.cjs.json \
+     ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}/tsconfig.esm.json \
+     ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}/tsconfig.spec.json \
+     ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}/tsconfig.json \
+     ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}/
+
+RUN mkdir -p ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}/src
+RUN cp index.ts ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}/src
+
+
+
 RUN rm index.ts
 
 # Install external dependencies
 # In order to save some time, we install the external dependencies first
 # And later we rebuild everything
-RUN SKIP_GEN_VERSION=1 yarn install --pure-lockfile
+RUN SKIP_GEN_VERSION=1 yarn install --immutable
 
 # Add the rest of the files necessary for internal dependencies
 # Demo
@@ -122,6 +142,10 @@ COPY ${DEMO_DEMO_PATH} \
 # Packages
 COPY ${DEMO_PACKAGES_PATH}/ \
      ${DEMO_PACKAGES_PATH}/
+
+# Experimental
+COPY ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH} \
+     ${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}/
 
 # Build the packages
 RUN yarn clean
