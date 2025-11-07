@@ -31,9 +31,11 @@ class DummyObservable {
 }
 
 let httpObservable = new Observable();
-jest.mock('./httpRequestMonitor', () => ({ monitorHttpRequests: () => httpObservable }));
-jest.mock('./domMutationMonitor', () => ({ monitorDomMutations: () => new Observable() }));
-jest.mock('./performanceEntriesMonitor', () => ({ monitorPerformanceEntries: () => new Observable() }));
+jest.mock('../_internal/monitors/httpRequestMonitor', () => ({ monitorHttpRequests: () => httpObservable }));
+jest.mock('../_internal/monitors/domMutationMonitor', () => ({ monitorDomMutations: () => new Observable() }));
+jest.mock('../_internal/monitors/performanceEntriesMonitor', () => ({
+  monitorPerformanceEntries: () => new Observable(),
+}));
 
 describe('Utility functions', () => {
   it('getUserActionNameFromElement returns matching dataset value', () => {
@@ -68,8 +70,10 @@ describe('getUserEventHandler', () => {
 
   beforeEach(() => {
     // Mock monitors to use DummyObservable
-    jest.mock('./domMutationMonitor', () => ({ monitorDomMutations: () => new DummyObservable() }));
-    jest.mock('./performanceEntriesMonitor', () => ({ monitorPerformanceEntries: () => new DummyObservable() }));
+    jest.mock('../_internal/monitors/domMutationMonitor', () => ({ monitorDomMutations: () => new DummyObservable() }));
+    jest.mock('../_internal/monitors/performanceEntriesMonitor', () => ({
+      monitorPerformanceEntries: () => new DummyObservable(),
+    }));
 
     startSpy = jest.fn();
     getCurrentSpy = jest.fn();

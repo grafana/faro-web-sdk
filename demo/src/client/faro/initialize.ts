@@ -49,6 +49,7 @@ export function initializeFaro(): Faro {
     },
 
     trackUserActionsPreview: true,
+    trackNavigationPreview: true,
   });
 
   faro.api.pushLog(['Faro was initialized']);

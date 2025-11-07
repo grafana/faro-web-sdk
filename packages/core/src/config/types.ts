@@ -272,6 +272,17 @@ export interface Config<P = APIEvent> {
    * Faro exception payload to include additional context or fix missing information.
    */
   preserveOriginalError?: boolean;
+
+  /**
+   * Configuration for experimental features.
+   * These features have been tested thoroughly, but it is possible that they might not work as expected in all cases.
+   */
+  experimental?: {
+    /**
+     * Track navigation events.
+     */
+    trackNavigation?: boolean;
+  };
 }
 
 export type Patterns = Array<string | RegExp>;

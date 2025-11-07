@@ -1,5 +1,6 @@
+import type { HttpRequestEndMessage, HttpRequestStartMessage } from '../_internal/monitors/types';
+
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
-import type { HttpRequestEndMessage, HttpRequestStartMessage } from './types';
 
 /**
  * Parses the action attribute name by removing the 'data-' prefix and converting

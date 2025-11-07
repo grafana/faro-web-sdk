@@ -6,9 +6,11 @@ import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from '
 import { UserActionController } from './userActionController';
 
 let httpObservable = new Observable();
-jest.mock('./httpRequestMonitor', () => ({ monitorHttpRequests: () => httpObservable }));
-jest.mock('./domMutationMonitor', () => ({ monitorDomMutations: () => new Observable() }));
-jest.mock('./performanceEntriesMonitor', () => ({ monitorPerformanceEntries: () => new Observable() }));
+jest.mock('../_internal/monitors/httpRequestMonitor', () => ({ monitorHttpRequests: () => httpObservable }));
+jest.mock('../_internal/monitors/domMutationMonitor', () => ({ monitorDomMutations: () => new Observable() }));
+jest.mock('../_internal/monitors/performanceEntriesMonitor', () => ({
+  monitorPerformanceEntries: () => new Observable(),
+}));
 
 describe('UserActionController', () => {
   let fakeAction: any;

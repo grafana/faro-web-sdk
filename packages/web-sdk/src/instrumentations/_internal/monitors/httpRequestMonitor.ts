@@ -1,6 +1,6 @@
 import { genShortID, Observable } from '@grafana/faro-core';
 
-import { getUrlFromResource, isUrlIgnored } from '../../utils/url';
+import { getUrlFromResource, isUrlIgnored } from '../../../utils/url';
 
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
 import type { HttpRequestEndMessage, HttpRequestMessagePayload, HttpRequestStartMessage } from './types';
@@ -13,34 +13,47 @@ const apiTypeXhr = 'xhr';
 /**
  * Monitors if any http requests are in progress.
  */
+let httpRequestObservable: Observable<HttpRequestStartMessage | HttpRequestEndMessage> | undefined;
+let isInstrumented = false;
+let originalXhrOpen: typeof XMLHttpRequest.prototype.open | undefined;
+let originalFetchFn: typeof window.fetch | undefined;
+
 export function monitorHttpRequests(): Observable<HttpRequestStartMessage | HttpRequestEndMessage> {
-  const observable = new Observable<HttpRequestStartMessage | HttpRequestEndMessage>();
+  if (httpRequestObservable) {
+    return httpRequestObservable;
+  }
+
+  httpRequestObservable = new Observable<HttpRequestStartMessage | HttpRequestEndMessage>();
 
   function emitStartMessage(requestProps: RequestProps) {
-    observable.notify({
+    httpRequestObservable!.notify({
       type: MESSAGE_TYPE_HTTP_REQUEST_START,
       request: requestProps,
     });
   }
 
   function emitEndMessage(requestProps: RequestProps) {
-    observable.notify({
+    httpRequestObservable!.notify({
       type: MESSAGE_TYPE_HTTP_REQUEST_END,
       request: requestProps,
     });
   }
 
-  monitorFetch({
-    onRequestStart: emitStartMessage,
-    onRequestEnd: emitEndMessage,
-  });
+  if (!isInstrumented) {
+    monitorFetch({
+      onRequestStart: emitStartMessage,
+      onRequestEnd: emitEndMessage,
+    });
 
-  monitorXhr({
-    onRequestStart: emitStartMessage,
-    onRequestEnd: emitEndMessage,
-  });
+    monitorXhr({
+      onRequestStart: emitStartMessage,
+      onRequestEnd: emitEndMessage,
+    });
 
-  return observable;
+    isInstrumented = true;
+  }
+
+  return httpRequestObservable;
 }
 
 function monitorXhr({
@@ -50,7 +63,9 @@ function monitorXhr({
   onRequestStart: (props: RequestProps) => void;
   onRequestEnd: (props: RequestProps) => void;
 }) {
-  const originalOpen = XMLHttpRequest.prototype.open;
+  if (!originalXhrOpen) {
+    originalXhrOpen = XMLHttpRequest.prototype.open;
+  }
 
   XMLHttpRequest.prototype.open = function () {
     const url = arguments[1];
@@ -84,8 +99,7 @@ function monitorXhr({
         onRequestEnd({ url, method, requestId, apiType: apiTypeXhr });
       }
     });
-
-    originalOpen.apply(this, arguments as any);
+    originalXhrOpen!.apply(this, arguments as any);
   };
 }
 
@@ -96,7 +110,9 @@ function monitorFetch({
   onRequestStart: (props: RequestProps) => void;
   onRequestEnd: (props: RequestProps) => void;
 }) {
-  const originalFetch = window.fetch;
+  if (!originalFetchFn) {
+    originalFetchFn = window.fetch;
+  }
 
   window.fetch = function () {
     const url = getUrlFromResource(arguments[0]) ?? '';
@@ -109,7 +125,7 @@ function monitorFetch({
       onRequestStart({ url, method, requestId, apiType: apiTypeFetch });
     }
 
-    return originalFetch
+    return originalFetchFn!
       .apply(this, arguments as any)
       .then((response) => {
         if (!isIgnoredUrl) {
@@ -124,4 +140,18 @@ function monitorFetch({
         throw error;
       });
   };
+}
+
+// Test-only utility to reset instrumentation and singleton between tests
+export function __resetHttpRequestMonitorForTests() {
+  if (originalXhrOpen) {
+    XMLHttpRequest.prototype.open = originalXhrOpen;
+  }
+  if (originalFetchFn) {
+    (window as any).fetch = originalFetchFn;
+  }
+  httpRequestObservable = undefined;
+  isInstrumented = false;
+  originalXhrOpen = undefined;
+  originalFetchFn = undefined;
 }

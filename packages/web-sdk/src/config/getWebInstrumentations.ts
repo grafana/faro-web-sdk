@@ -4,6 +4,7 @@ import {
   ConsoleInstrumentation,
   CSPInstrumentation,
   ErrorsInstrumentation,
+  NavigationInstrumentation,
   PerformanceInstrumentation,
   SessionInstrumentation,
   UserActionInstrumentation,
@@ -20,6 +21,7 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
     new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
     new ViewInstrumentation(),
+    new NavigationInstrumentation(),
   ];
 
   if (options.enablePerformanceInstrumentation !== false) {
