@@ -51,7 +51,7 @@ export function setItem(key: string, value: string, webStorageMechanism: Storage
   if (isWebStorageTypeAvailable(webStorageMechanism)) {
     try {
       window[webStorageMechanism].setItem(key, value);
-    } catch (error) {
+    } catch (_error) {
       // do nothing
     }
   }

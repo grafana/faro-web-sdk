@@ -11,7 +11,7 @@ export function getMajorReactVersion(): number | null {
 
   try {
     return major[0] ? parseInt(major[0], 10) : null;
-  } catch (err) {
+  } catch (_err) {
     return null;
   }
 }

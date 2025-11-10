@@ -134,8 +134,7 @@ export default [
       'import/export': 'off',
 
       // Duplicate imports
-      'no-duplicate-imports': 'off',
-      '@typescript-eslint/no-duplicate-imports': ['error'],
+      'import/no-duplicates': 'error',
 
       // Testing rules
       'no-only-tests/no-only-tests': 'error',
@@ -240,7 +239,7 @@ export default [
 
   // Configuration for Node.js files
   {
-    files: ['**/*.{js,cjs}'],
+    files: ['**/*.{js,cjs,mjs}'],
     languageOptions: {
       sourceType: 'commonjs',
       globals: {
@@ -252,6 +251,9 @@ export default [
         process: 'readonly',
         Buffer: 'readonly',
         global: 'readonly',
+      },
+      parserOptions: {
+        project: null,
       },
     },
   },

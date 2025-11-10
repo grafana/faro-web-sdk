@@ -5,7 +5,7 @@ export const defaultLogArgsSerializer: LogArgsSerializer = (args) =>
     .map((arg) => {
       try {
         return String(arg);
-      } catch (err) {
+      } catch (_err) {
         return '';
       }
     })
