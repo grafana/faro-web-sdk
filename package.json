@@ -79,7 +79,7 @@
     "madge": "8.0.0",
     "markdownlint": "0.39.0",
     "markdownlint-cli": "0.45.0",
-    "npm-run-all2": "6.2.6",
+    "npm-run-all2": "8.0.4",
     "os-browserify": "0.3.0",
     "prettier": "3.6.2",
     "process": "0.11.10",
