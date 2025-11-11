@@ -14,10 +14,7 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
   }
 
   private intializeWebVitalsInstrumentation() {
-    if (
-      this.config?.trackWebVitalsAttribution === false ||
-      this.config?.webVitalsInstrumentation?.trackAttribution === false
-    ) {
+    if (this.config?.webVitalsInstrumentation?.trackAttribution === false) {
       return new WebVitalsBasic(this.api.pushMeasurement, this.config.webVitalsInstrumentation);
     }
     return new WebVitalsWithAttribution(this.api.pushMeasurement, this.config.webVitalsInstrumentation);

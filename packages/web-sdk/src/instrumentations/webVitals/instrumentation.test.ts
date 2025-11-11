@@ -27,12 +27,14 @@ describe('WebVitals Instrumentation', () => {
     expect(WebVitalsWithAttribution).toHaveBeenCalledTimes(1);
   });
 
-  it('load WebVitalsBasic when trackWebVitalAttribution is false', () => {
+  it('load WebVitalsBasic when webVitalsInstrumentation.trackAttribution is false', () => {
     const transport = new MockTransport();
 
     initializeFaro(
       mockConfig({
-        trackWebVitalsAttribution: false,
+        webVitalsInstrumentation: {
+          trackAttribution: false,
+        },
         transports: [transport],
         instrumentations: [new WebVitalsInstrumentation()],
       })

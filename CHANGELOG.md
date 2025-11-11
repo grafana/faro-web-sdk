@@ -9,6 +9,11 @@
   queries to use the new event name (`faro.user.action`) and filter by the `userActionName`
   attribute for the specific action.
 
+- Breaking (`@grafana/faro-web-sdk`): Removed the deprecated `trackWebVitalsAttribution` configuration
+  flag. Use `webVitalsInstrumentation.trackAttribution` instead.
+  **Migration note:** If you were using `trackWebVitalsAttribution`, replace it with
+  `webVitalsInstrumentation: { trackAttribution: false }` in your configuration.
+
 - Fix (`@grafana/faro-web-sdk`): Fixed an issue where custom severity and custom trigger properties
   were not being included in user action attributes (#1551)
 - Fix (`@grafana/faro-web-sdk`): Fixed an error when `initializeFaro` is called without any window
