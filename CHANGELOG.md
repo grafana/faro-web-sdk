@@ -9,10 +9,12 @@
   queries to use the new event name (`faro.user.action`) and filter by the `userActionName`
   attribute for the specific action.
 
-- Breaking (`@grafana/faro-web-sdk`): Removed the deprecated `trackWebVitalsAttribution` configuration
-  flag. Use `webVitalsInstrumentation.trackAttribution` instead.
-  **Migration note:** If you were using `trackWebVitalsAttribution`, replace it with
-  `webVitalsInstrumentation: { trackAttribution: false }` in your configuration.
+- Breaking (`@grafana/faro-web-sdk`): Web vitals now always track attribution data. The
+  `trackWebVitalsAttribution` and `webVitalsInstrumentation.trackAttribution` configuration flags have
+  been removed. Attribution data is now collected by default and cannot be disabled.
+  **Migration note:** If you were using `trackWebVitalsAttribution: false` or
+  `webVitalsInstrumentation: { trackAttribution: false }` to disable attribution, remove these options
+  from your configuration. Attribution data will now always be included in web vitals measurements.
 
 - Fix (`@grafana/faro-web-sdk`): Fixed an issue where custom severity and custom trigger properties
   were not being included in user action attributes (#1551)

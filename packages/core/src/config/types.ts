@@ -173,11 +173,6 @@ export interface Config<P = APIEvent> {
      * for measuring these metrics in production.
      */
     reportAllChanges?: boolean;
-
-    /**
-     * Track web vitals attribution data (default: true)
-     */
-    trackAttribution?: boolean;
   };
 
   /**
