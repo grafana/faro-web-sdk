@@ -58,7 +58,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
-    trackUserActionsPreview = false,
     trackUserActionsDataAttributeName = userActionDataAttribute,
     url: browserConfigUrl,
     experimental,
@@ -104,7 +103,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
         sessionTracking: browserConfig.sessionTracking,
       }),
     },
-    trackUserActionsPreview,
     trackUserActionsDataAttributeName,
     experimental: {
       trackNavigation,
@@ -114,14 +112,11 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 
 function getFilteredInstrumentations(
   instrumentations: Instrumentation[],
-  { trackUserActionsPreview, experimental }: BrowserConfig
+  { experimental }: BrowserConfig
 ): Instrumentation[] {
   const trackNavigation = experimental?.trackNavigation ?? false;
 
   return instrumentations.filter((instr) => {
-    if (instr.name === '@grafana/faro-web-sdk:instrumentation-user-action' && !trackUserActionsPreview) {
-      return false;
-    }
     if (instr.name === '@grafana/faro-web-sdk:instrumentation-navigation' && !trackNavigation) {
       return false;
     }

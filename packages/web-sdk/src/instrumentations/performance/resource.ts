@@ -26,11 +26,9 @@ export function observeResourceTimings(
         continue;
       }
 
-      if (faro.config.trackUserActionsPreview) {
-        observable?.notify({
-          type: RESOURCE_ENTRY,
-        });
-      }
+      observable?.notify({
+        type: RESOURCE_ENTRY,
+      });
 
       const resourceEntryJson = resourceEntryRaw.toJSON();
       let spanContext: SpanContext = getSpanContextFromServerTiming(resourceEntryJson?.serverTiming);
