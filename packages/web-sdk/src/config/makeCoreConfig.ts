@@ -58,7 +58,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
-    trackUserActionsDataAttributeName = userActionDataAttribute,
     url: browserConfigUrl,
     experimental,
     // Properties without default values or which aren't used to create derived config
@@ -67,6 +66,12 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 
   // Extract experimental features with defaults
   const trackNavigation = experimental?.trackNavigation ?? false;
+
+  // Extract user actions instrumentation with defaults
+  const userActionsInstrumentation = {
+    dataAttributeName: browserConfig.userActionsInstrumentation?.dataAttributeName ?? userActionDataAttribute,
+    excludeItem: browserConfig.userActionsInstrumentation?.excludeItem,
+  };
 
   return {
     ...restProperties,
@@ -103,7 +108,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
         sessionTracking: browserConfig.sessionTracking,
       }),
     },
-    trackUserActionsDataAttributeName,
+    userActionsInstrumentation,
     experimental: {
       trackNavigation,
     },

@@ -1,4 +1,3 @@
-import { type Config } from '../../config';
 import { faro } from '../../sdk/registerFaro';
 import { type TransportItem, TransportItemType, type Transports } from '../../transports';
 import { dateNow, genShortID, Observable, stringifyObjectValues } from '../../utils';
@@ -155,7 +154,7 @@ export default class UserAction
 
 function isExcludeFromUserAction(
   item: TransportItem<APIEvent>,
-  trackUserActionsExcludeItem: Config['trackUserActionsExcludeItem']
+  trackUserActionsExcludeItem: ((item: TransportItem<APIEvent>) => boolean) | undefined
 ) {
   return (
     trackUserActionsExcludeItem?.(item) ||

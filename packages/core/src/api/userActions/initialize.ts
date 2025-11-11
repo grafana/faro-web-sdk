@@ -25,7 +25,7 @@ export function initializeUserActionsAPI({
   config: Config;
   internalLogger: InternalLogger;
 }): UserActionsAPI {
-  const trackUserActionsExcludeItem = config.trackUserActionsExcludeItem;
+  const trackUserActionsExcludeItem = config.userActionsInstrumentation?.excludeItem;
 
   // Currently running user action. It can be in either started or halted
   // state

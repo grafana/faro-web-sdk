@@ -91,7 +91,9 @@ describe('getUserEventHandler', () => {
         getActiveUserAction: getCurrentSpy,
       } as any,
       config: {
-        trackUserActionsDataAttributeName: 'data-foo-bar',
+        userActionsInstrumentation: {
+          dataAttributeName: 'data-foo-bar',
+        },
       } as any,
     };
   });
