@@ -159,11 +159,6 @@ export interface Config<P = APIEvent> {
   trackResources?: boolean;
 
   /**
-   * Track web vitals attribution data (default: true)
-   */
-  trackWebVitalsAttribution?: boolean;
-
-  /**
    * Configuration for the web vitals instrumentation
    */
   webVitalsInstrumentation?: {
@@ -178,13 +173,6 @@ export interface Config<P = APIEvent> {
      * for measuring these metrics in production.
      */
     reportAllChanges?: boolean;
-
-    /**
-     * Track web vitals attribution data (default: true)
-     *
-     * Functionally the same as setting `trackWebVitalsAttribution` to true.
-     */
-    trackAttribution?: boolean;
   };
 
   /**

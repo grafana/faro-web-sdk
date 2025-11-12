@@ -85,11 +85,10 @@ describe('config', () => {
     expect(config?.ignoreUrls).toEqual([browserConfig.url, /\/collect(?:\/[\w]*)?$/]);
   });
 
-  it('enables web vitals feature when trackWebVitalsAttribution is true', () => {
+  it('passes through web vitals configuration', () => {
     const browserConfig = {
       url: 'http://example.com/my-collector',
       app: {},
-      trackWebVitalsAttribution: true,
       webVitalsInstrumentation: {
         reportAllChanges: true,
       },
@@ -97,24 +96,7 @@ describe('config', () => {
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.trackWebVitalsAttribution).toBe(true);
     expect(config?.webVitalsInstrumentation?.reportAllChanges).toBe(true);
-  });
-
-  it('enables web vitals feature when webVitalsInstrumentation.trackAttribution is true', () => {
-    const browserConfig = {
-      url: 'http://example.com/my-collector',
-      app: {},
-      webVitalsInstrumentation: {
-        reportAllChanges: true,
-        trackAttribution: true,
-      },
-    };
-    const config = makeCoreConfig(browserConfig);
-
-    expect(config).toBeTruthy();
-    expect(config?.webVitalsInstrumentation?.reportAllChanges).toBe(true);
-    expect(config?.webVitalsInstrumentation?.trackAttribution).toBe(true);
   });
 
   it('merges configured urls with default URLs into ignoreUrls list', () => {

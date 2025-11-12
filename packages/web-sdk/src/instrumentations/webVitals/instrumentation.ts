@@ -1,6 +1,5 @@
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
-import { WebVitalsBasic } from './webVitalsBasic';
 import { WebVitalsWithAttribution } from './webVitalsWithAttribution';
 
 export class WebVitalsInstrumentation extends BaseInstrumentation {
@@ -9,17 +8,7 @@ export class WebVitalsInstrumentation extends BaseInstrumentation {
 
   initialize(): void {
     this.logDebug('Initializing');
-    const webVitals = this.intializeWebVitalsInstrumentation();
+    const webVitals = new WebVitalsWithAttribution(this.api.pushMeasurement, this.config.webVitalsInstrumentation);
     webVitals.initialize();
-  }
-
-  private intializeWebVitalsInstrumentation() {
-    if (
-      this.config?.trackWebVitalsAttribution === false ||
-      this.config?.webVitalsInstrumentation?.trackAttribution === false
-    ) {
-      return new WebVitalsBasic(this.api.pushMeasurement, this.config.webVitalsInstrumentation);
-    }
-    return new WebVitalsWithAttribution(this.api.pushMeasurement, this.config.webVitalsInstrumentation);
   }
 }
