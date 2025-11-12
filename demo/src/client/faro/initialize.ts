@@ -48,7 +48,6 @@ export function initializeFaro(): Faro {
       itemLimit: 100,
     },
 
-    trackUserActionsPreview: true,
     trackNavigationPreview: true,
   });
 

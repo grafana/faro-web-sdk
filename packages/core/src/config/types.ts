@@ -230,22 +230,20 @@ export interface Config<P = APIEvent> {
   trackGeolocation?: boolean;
 
   /**
-   * This is a preview feature.
-   * We have tested it thoroughly, but it is possible that it might not work as expected in all cases.
+   * Configuration for the user actions instrumentation
    */
-  // TODO: remove preview postfix when feature is ga
-  trackUserActionsPreview?: boolean;
+  userActionsInstrumentation?: {
+    /**
+     * Configure your own attribute name for tracking user actions. Default is 'data-faro-user-action-name'
+     */
+    dataAttributeName?: string;
 
-  /**
-   * Configure your own attribute name for tracking user actions. Default is 'data-faro-user-action-name'
-   */
-  trackUserActionsDataAttributeName?: string;
-
-  /**
-   * Predicate function to exclude items from user actions.
-   * If the function returns true, the item will be excluded from user actions.
-   */
-  trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
+    /**
+     * Predicate function to exclude items from user actions.
+     * If the function returns true, the item will be excluded from user actions.
+     */
+    excludeItem?: (item: TransportItem<APIEvent>) => boolean;
+  };
 
   /**
    * When enabled, preserves the original Error object in the transport item for use in the beforeSend hook.

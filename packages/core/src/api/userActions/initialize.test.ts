@@ -25,7 +25,9 @@ describe('initializeUserActionsAPI', () => {
     transports = mockTransports;
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     config = mockConfig({
-      trackUserActionsExcludeItem: jest.fn(),
+      userActionsInstrumentation: {
+        excludeItem: jest.fn(),
+      },
     });
     internalLogger = mockInternalLogger;
     api = initializeUserActionsAPI({ transports, config, internalLogger });

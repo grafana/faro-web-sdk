@@ -164,22 +164,21 @@ describe('config', () => {
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.trackUserActionsPreview).toBe(false);
-    expect(config?.trackUserActionsDataAttributeName).toBe(userActionDataAttribute);
+    expect(config?.userActionsInstrumentation?.dataAttributeName).toBe(userActionDataAttribute);
   });
 
   it('trackUserActions setting are added to the config as provided by the user', () => {
     const browserConfig = {
       url: 'http://example.com/my-collector',
       app: {},
-      trackUserActionsPreview: true,
-      trackUserActionsDataAttributeName: 'data-test-action-name',
+      userActionsInstrumentation: {
+        dataAttributeName: 'data-test-action-name',
+      },
     };
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.trackUserActionsPreview).toBe(true);
-    expect(config?.trackUserActionsDataAttributeName).toBe('data-test-action-name');
+    expect(config?.userActionsInstrumentation?.dataAttributeName).toBe('data-test-action-name');
   });
 
   it('experimental settings defaults are applied', () => {

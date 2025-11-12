@@ -10,7 +10,7 @@ export function getUserEventHandler(faro: Faro) {
   function processUserEvent(event: PointerEvent | KeyboardEvent) {
     const userActionName = getUserActionNameFromElement(
       event.target as HTMLElement,
-      config.trackUserActionsDataAttributeName ?? userActionDataAttribute
+      config.userActionsInstrumentation?.dataAttributeName ?? userActionDataAttribute
     );
 
     // We don't have a data attribute
