@@ -129,4 +129,4 @@ jobs:
         run: npm install -g npm@latest
 
       - name: Publish package to NPM
-        run: npm run publish -- --yes
+        run: npm run publish -- from-git --yes
