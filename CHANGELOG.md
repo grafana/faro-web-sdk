@@ -23,6 +23,12 @@
   `trackUserActionsPreview: false` to disable user actions tracking, you now need to exclude the
   `UserActionInstrumentation` from your instrumentations array manually.
 
+- Feature (`@grafana/faro-web-sdk`) [experimental]: Added navigation instrumentation to track soft
+  navigations (same-document navigations). The instrumentation monitors URL changes, DOM mutations,
+  HTTP requests, and user interactions to automatically detect and report navigation events with
+  details including fromUrl, toUrl, and duration. Enable by setting `experimental.trackNavigation: true`
+  in the configuration.
+
 - Fix (`@grafana/faro-web-sdk`): Fixed an issue where custom severity and custom trigger properties
   were not being included in user action attributes (#1551)
 - Fix (`@grafana/faro-web-sdk`): Fixed an error when `initializeFaro` is called without any window
