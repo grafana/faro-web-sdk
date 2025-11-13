@@ -2,6 +2,8 @@
 
 ## Next
 
+## 2.0.2
+
 - Breaking (`@grafana/faro-web-sdk`): User action events now have a standardized event name
   (`faro.user.action`), with the specific user action name moved to a parameter for improved
   consistency and filtering capabilities.
