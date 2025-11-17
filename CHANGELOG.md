@@ -2,8 +2,39 @@
 
 ## Next
 
+## 2.0.2
+
+- Breaking (`@grafana/faro-web-sdk`): User action events now have a standardized event name
+  (`faro.user.action`), with the specific user action name moved to a parameter for improved
+  consistency and filtering capabilities.
+  **Migration note:** If you previously filtered user action events by event name, update your
+  queries to use the new event name (`faro.user.action`) and filter by the `userActionName`
+  attribute for the specific action.
+
+- Breaking (`@grafana/faro-web-sdk`): Web vitals now always tracks attribution data. The
+  `trackWebVitalsAttribution` and `webVitalsInstrumentation.trackAttribution` configuration flags have
+  been removed. Attribution data is now collected by default and cannot be disabled.
+  **Migration note:** If you were using `trackWebVitalsAttribution: false` or
+  `webVitalsInstrumentation: { trackAttribution: false }` to disable attribution, remove these options
+  from your configuration. Attribution data will now always be included in web vitals measurements.
+
+- Breaking (`@grafana/faro-web-sdk`): Removed the `trackUserActionsPreview` option from Faro
+  configuration. User actions instrumentation is now always enabled by default (#1772).
+  **Migration note:** If you previously used `trackUserActionsPreview: true` or left it unset,
+  simply remove this option - no further action is required. If you had set
+  `trackUserActionsPreview: false` to disable user actions tracking, you now need to exclude the
+  `UserActionInstrumentation` from your instrumentations array manually.
+
+- Feature (`@grafana/faro-web-sdk`) [experimental]: Added navigation instrumentation to track soft
+  navigations (same-document navigations). The instrumentation monitors URL changes, DOM mutations,
+  HTTP requests, and user interactions to automatically detect and report navigation events with
+  details including fromUrl, toUrl, and duration. Enable by setting `experimental.trackNavigation: true`
+  in the configuration.
+
 - Fix (`@grafana/faro-web-sdk`): Fixed an issue where custom severity and custom trigger properties
   were not being included in user action attributes (#1551)
+- Fix (`@grafana/faro-web-sdk`): Fixed an error when `initializeFaro` is called without any window
+  object present (#1643)
 
 ## 2.0.0.beta-2
 

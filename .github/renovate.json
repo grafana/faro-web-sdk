@@ -1,0 +1,44 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["before 5am on Monday"],
+  "semanticCommits": "enabled",
+  "separateMajorMinor": true,
+  "separateMultipleMajor": true,
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 10,
+  "packageRules": [
+    {
+      "description": "Group npm dependencies",
+      "matchManagers": ["npm"],
+      "groupName": "npm-dependencies",
+      "schedule": ["before 5am on Monday"]
+    },
+    {
+      "description": "Group GitHub Actions dependencies",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions",
+      "schedule": ["before 5am on Monday"]
+    },
+    {
+      "description": "Group patch updates together",
+      "matchUpdateTypes": ["patch"],
+      "groupName": "patch updates",
+      "automerge": true
+    },
+    {
+      "description": "Prioritize security updates",
+      "matchDatasources": ["npm"],
+      "vulnerabilityAlerts": {
+        "enabled": true
+      },
+      "labels": ["security"],
+      "prPriority": 10
+    },
+    {
+      "description": "Restrict ua-parser-js to version below 2.x.x as it changes licensing model with v2 onwards",
+      "matchPackageNames": ["ua-parser-js"],
+      "allowedVersions": "<2.0.0"
+    }
+  ]
+}

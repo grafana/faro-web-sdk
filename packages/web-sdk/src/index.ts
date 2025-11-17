@@ -18,6 +18,7 @@ export {
   PerformanceInstrumentation,
   CSPInstrumentation,
   UserActionInstrumentation,
+  NavigationInstrumentation,
 } from './instrumentations';
 export type { ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
@@ -97,6 +98,7 @@ export {
   Observable,
   unknownString,
   UserActionState,
+  type UserActionInternalInterface,
 } from '@grafana/faro-core';
 
 export type {
@@ -161,7 +163,7 @@ export type {
   TransportItemPayload,
   Transports,
   UnpatchedConsole,
-  UserActionSeverity,
+  UserActionImportance,
 } from '@grafana/faro-core';
 
 export {

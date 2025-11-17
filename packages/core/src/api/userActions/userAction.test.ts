@@ -51,23 +51,6 @@ describe('UserAction', () => {
     expect(transports.execute).not.toHaveBeenCalled();
   });
 
-  it('halt() is no-op if user action is not started', () => {
-    const ua = new UserAction({ name: 'foo', transports, trigger: 'foo' });
-    ua.cancel();
-    ua.halt();
-
-    expect(ua.getState()).toBe(UserActionState.Cancelled);
-  });
-
-  it('halt() will end() after halt timeoute time', () => {
-    const ua = new UserAction({ name: 'foo', transports, trigger: 'foo' });
-    ua.extend(() => true);
-    jest.advanceTimersByTime(ua.cancelTimeout);
-    expect(ua.getState()).toBe(UserActionState.Halted);
-    jest.advanceTimersByTime(ua.haltTimeout);
-    expect(ua.getState()).toBe(UserActionState.Ended);
-  });
-
   it('end() will not fire if action is cancelled', () => {
     const ua = new UserAction({ name: 'foo', transports, trigger: 'foo' });
     ua.cancel();
@@ -80,5 +63,36 @@ describe('UserAction', () => {
     ua.end();
     expect(ua.getState()).toBe(UserActionState.Ended);
     expect(transports.execute).not.toHaveBeenCalledWith('koko');
+  });
+
+  it('addItem returns true and buffers when state is Started', () => {
+    const userAction = new UserAction({ name: 'foo', transports, trigger: 'foo' });
+    const item: TransportItem = { type: TransportItemType.EVENT, payload: {}, meta: {} };
+    const result = userAction.addItem(item);
+    expect(result).toBe(true);
+  });
+
+  it('addItem returns false when state is Halted', () => {
+    const userAction = new UserAction({ name: 'foo', transports, trigger: 'foo' });
+    userAction.halt();
+    const item: TransportItem = { type: TransportItemType.EVENT, payload: {}, meta: {} };
+    const result = userAction.addItem(item);
+    expect(result).toBe(false);
+  });
+
+  it('addItem returns false when state is Cancelled', () => {
+    const userAction = new UserAction({ name: 'foo', transports, trigger: 'foo' });
+    userAction.cancel();
+    const item: TransportItem = { type: TransportItemType.EVENT, payload: {}, meta: {} };
+    const result = userAction.addItem(item);
+    expect(result).toBe(false);
+  });
+
+  it('addItem returns false when state is Ended', () => {
+    const userAction = new UserAction({ name: 'foo', transports, trigger: 'foo' });
+    userAction.end();
+    const item: TransportItem = { type: TransportItemType.EVENT, payload: {}, meta: {} };
+    const result = userAction.addItem(item);
+    expect(result).toBe(false);
   });
 });

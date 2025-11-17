@@ -1,9 +1,10 @@
-import { faro, UserActionSeverity } from '../..';
+import { faro, UserActionImportance } from '../..';
 import { mockConfig, mockInternalLogger } from '../../testUtils';
 import { mockTransports } from '../apiTestHelpers';
 
+import { userActionEventName } from './const';
 import { initializeUserActionsAPI } from './initialize';
-import { UserActionsAPI } from './types';
+import { UserActionInternalInterface, UserActionsAPI } from './types';
 import UserAction from './userAction';
 
 jest.mock('../../sdk/registerFaro', () => ({
@@ -24,10 +25,17 @@ describe('initializeUserActionsAPI', () => {
     transports = mockTransports;
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     config = mockConfig({
-      trackUserActionsExcludeItem: jest.fn(),
+      userActionsInstrumentation: {
+        excludeItem: jest.fn(),
+      },
     });
     internalLogger = mockInternalLogger;
     api = initializeUserActionsAPI({ transports, config, internalLogger });
+    jest.resetAllMocks();
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   it('getActiveUserAction returns undefined before any action is created', () => {
@@ -40,9 +48,9 @@ describe('initializeUserActionsAPI', () => {
     expect(api.getActiveUserAction()).toBe(action);
   });
 
-  it('startUserAction has custom severity and trigger set', () => {
+  it('startUserAction has custom importance and trigger set', () => {
     const action = api.startUserAction('first', undefined, {
-      severity: UserActionSeverity.Critical,
+      importance: UserActionImportance.Critical,
       triggerName: 'foo',
     });
     expect(action).toBeInstanceOf(UserAction);
@@ -50,12 +58,12 @@ describe('initializeUserActionsAPI', () => {
     const activeAction = api.getActiveUserAction();
     expect(activeAction).toBe(action);
 
-    activeAction?.end();
+    (activeAction as unknown as UserActionInternalInterface)?.end();
 
     expect(faro.api.pushEvent).toHaveBeenCalledTimes(1);
     expect(faro.api.pushEvent).toHaveBeenCalledWith(
       expect.any(String),
-      expect.objectContaining({ userActionSeverity: 'critical', userActionTrigger: 'foo' }),
+      expect.objectContaining({ userActionImportance: 'critical', userActionTrigger: 'foo' }),
       undefined,
       expect.any(Object)
     );
@@ -67,23 +75,39 @@ describe('initializeUserActionsAPI', () => {
     expect(a2).not.toBeDefined();
   });
 
-  it('create an action while one is halted will result action not getting created', () => {
-    const a1 = api.startUserAction('A');
-    expect(a1).toBeDefined();
-    a1?.halt();
-    const a2 = api.startUserAction('B');
-    expect(a2).not.toBeDefined();
-  });
-
   it('getActiveUserAction returns undefined if the action is ended', () => {
     const action = api.startUserAction('first');
-    action?.end();
+    (action as unknown as UserActionInternalInterface)?.end();
     expect(api.getActiveUserAction()).toBeUndefined();
   });
 
   it('getActiveUserAction returns undefined if the action is cancelled', () => {
     const action = api.startUserAction('first');
-    action?.cancel();
+    (action as unknown as UserActionInternalInterface)?.cancel();
     expect(api.getActiveUserAction()).toBeUndefined();
+  });
+
+  it('user action has proper event name and contains all necessary attributes', () => {
+    const action = api.startUserAction(
+      'test-action',
+      { foo: 'bar' },
+      { importance: UserActionImportance.Critical, triggerName: 'foo' }
+    );
+    (action as unknown as UserActionInternalInterface)?.end();
+
+    expect(faro.api.pushEvent).toHaveBeenCalledWith(
+      userActionEventName,
+      expect.objectContaining({
+        userActionName: 'test-action',
+        userActionDuration: expect.any(String),
+        userActionImportance: 'critical',
+        userActionStartTime: expect.any(String),
+        userActionEndTime: expect.any(String),
+        userActionTrigger: 'foo',
+        foo: 'bar',
+      }),
+      undefined,
+      expect.any(Object)
+    );
   });
 });

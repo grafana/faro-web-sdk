@@ -2,7 +2,8 @@ export {
   defaultExceptionType,
   defaultLogArgsSerializer,
   defaultErrorArgsSerializer,
-  UserActionSeverity,
+  UserActionImportance,
+  type UserActionImportanceType,
   UserActionState,
   userActionsMessageBus,
 } from './api';
@@ -36,6 +37,7 @@ export type {
   TracesAPI,
   UserAction,
   UserActionInterface,
+  UserActionInternalInterface,
 } from './api';
 
 export { BaseExtension } from './extensions';

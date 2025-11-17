@@ -85,11 +85,10 @@ describe('config', () => {
     expect(config?.ignoreUrls).toEqual([browserConfig.url, /\/collect(?:\/[\w]*)?$/]);
   });
 
-  it('enables web vitals feature when trackWebVitalsAttribution is true', () => {
+  it('passes through web vitals configuration', () => {
     const browserConfig = {
       url: 'http://example.com/my-collector',
       app: {},
-      trackWebVitalsAttribution: true,
       webVitalsInstrumentation: {
         reportAllChanges: true,
       },
@@ -97,24 +96,7 @@ describe('config', () => {
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.trackWebVitalsAttribution).toBe(true);
     expect(config?.webVitalsInstrumentation?.reportAllChanges).toBe(true);
-  });
-
-  it('enables web vitals feature when webVitalsInstrumentation.trackAttribution is true', () => {
-    const browserConfig = {
-      url: 'http://example.com/my-collector',
-      app: {},
-      webVitalsInstrumentation: {
-        reportAllChanges: true,
-        trackAttribution: true,
-      },
-    };
-    const config = makeCoreConfig(browserConfig);
-
-    expect(config).toBeTruthy();
-    expect(config?.webVitalsInstrumentation?.reportAllChanges).toBe(true);
-    expect(config?.webVitalsInstrumentation?.trackAttribution).toBe(true);
   });
 
   it('merges configured urls with default URLs into ignoreUrls list', () => {
@@ -182,21 +164,93 @@ describe('config', () => {
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.trackUserActionsPreview).toBe(false);
-    expect(config?.trackUserActionsDataAttributeName).toBe(userActionDataAttribute);
+    expect(config?.userActionsInstrumentation?.dataAttributeName).toBe(userActionDataAttribute);
   });
 
   it('trackUserActions setting are added to the config as provided by the user', () => {
     const browserConfig = {
       url: 'http://example.com/my-collector',
       app: {},
-      trackUserActionsPreview: true,
-      trackUserActionsDataAttributeName: 'data-test-action-name',
+      userActionsInstrumentation: {
+        dataAttributeName: 'data-test-action-name',
+      },
     };
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.trackUserActionsPreview).toBe(true);
-    expect(config?.trackUserActionsDataAttributeName).toBe('data-test-action-name');
+    expect(config?.userActionsInstrumentation?.dataAttributeName).toBe('data-test-action-name');
+  });
+
+  it('experimental settings defaults are applied', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.experimental?.trackNavigation).toBe(false);
+  });
+
+  it('experimental.trackNavigation setting is added to the config as provided by the user', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      experimental: {
+        trackNavigation: true,
+      },
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.experimental?.trackNavigation).toBe(true);
+  });
+
+  it('filters out navigation instrumentation when experimental.trackNavigation is false', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      experimental: {
+        trackNavigation: false,
+      },
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    const navigationInstrumentation = config?.instrumentations?.find(
+      (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
+    );
+    expect(navigationInstrumentation).toBeUndefined();
+  });
+
+  it('includes navigation instrumentation when experimental.trackNavigation is true', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+      experimental: {
+        trackNavigation: true,
+      },
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    const navigationInstrumentation = config?.instrumentations?.find(
+      (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
+    );
+    expect(navigationInstrumentation).toBeDefined();
+  });
+
+  it('filters out navigation instrumentation by default when experimental is not provided', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    const navigationInstrumentation = config?.instrumentations?.find(
+      (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
+    );
+    expect(navigationInstrumentation).toBeUndefined();
   });
 });

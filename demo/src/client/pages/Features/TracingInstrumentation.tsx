@@ -1,24 +1,27 @@
 import { SpanStatusCode } from '@opentelemetry/api';
 import { Button, ButtonGroup } from 'react-bootstrap';
 
-import { UserActionSeverity } from '@grafana/faro-core';
+import { UserActionImportance } from '@grafana/faro-core';
 import { faro } from '@grafana/faro-react';
 
 export function TracingInstrumentation() {
-  const fetchSuccess = (ev) => {
+  const fetchSuccess = () => {
     // Override the user action creation
     faro.api.startUserAction(
       'fetch-success',
       {},
       {
-        severity: UserActionSeverity.Critical,
+        importance: UserActionImportance.Critical,
       }
     );
     fetch('/');
   };
 
   const xhrSuccess = () => {
-    faro.api.startUserAction('xhr-success', undefined, { severity: UserActionSeverity.Critical, triggerName: 'foo' });
+    faro.api.startUserAction('xhr-success', undefined, {
+      importance: UserActionImportance.Critical,
+      triggerName: 'foo',
+    });
     const xhr = new XMLHttpRequest();
     xhr.open('GET', '/');
     xhr.send();

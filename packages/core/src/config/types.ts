@@ -159,11 +159,6 @@ export interface Config<P = APIEvent> {
   trackResources?: boolean;
 
   /**
-   * Track web vitals attribution data (default: true)
-   */
-  trackWebVitalsAttribution?: boolean;
-
-  /**
    * Configuration for the web vitals instrumentation
    */
   webVitalsInstrumentation?: {
@@ -178,13 +173,6 @@ export interface Config<P = APIEvent> {
      * for measuring these metrics in production.
      */
     reportAllChanges?: boolean;
-
-    /**
-     * Track web vitals attribution data (default: true)
-     *
-     * Functionally the same as setting `trackWebVitalsAttribution` to true.
-     */
-    trackAttribution?: boolean;
   };
 
   /**
@@ -242,22 +230,20 @@ export interface Config<P = APIEvent> {
   trackGeolocation?: boolean;
 
   /**
-   * This is a preview feature.
-   * We have tested it thoroughly, but it is possible that it might not work as expected in all cases.
+   * Configuration for the user actions instrumentation
    */
-  // TODO: remove preview postfix when feature is ga
-  trackUserActionsPreview?: boolean;
+  userActionsInstrumentation?: {
+    /**
+     * Configure your own attribute name for tracking user actions. Default is 'data-faro-user-action-name'
+     */
+    dataAttributeName?: string;
 
-  /**
-   * Configure your own attribute name for tracking user actions. Default is 'data-faro-user-action-name'
-   */
-  trackUserActionsDataAttributeName?: string;
-
-  /**
-   * Predicate function to exclude items from user actions.
-   * If the function returns true, the item will be excluded from user actions.
-   */
-  trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
+    /**
+     * Predicate function to exclude items from user actions.
+     * If the function returns true, the item will be excluded from user actions.
+     */
+    excludeItem?: (item: TransportItem<APIEvent>) => boolean;
+  };
 
   /**
    * When enabled, preserves the original Error object in the transport item for use in the beforeSend hook.
@@ -272,6 +258,17 @@ export interface Config<P = APIEvent> {
    * Faro exception payload to include additional context or fix missing information.
    */
   preserveOriginalError?: boolean;
+
+  /**
+   * Configuration for experimental features.
+   * These features have been tested thoroughly, but it is possible that they might not work as expected in all cases.
+   */
+  experimental?: {
+    /**
+     * Track navigation events.
+     */
+    trackNavigation?: boolean;
+  };
 }
 
 export type Patterns = Array<string | RegExp>;

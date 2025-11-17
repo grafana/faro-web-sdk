@@ -50,7 +50,7 @@ export class OtelPayload {
         case TransportItemType.LOG:
         case TransportItemType.EXCEPTION:
         case TransportItemType.EVENT:
-        case TransportItemType.MEASUREMENT:
+        case TransportItemType.MEASUREMENT: {
           const { toLogRecord, toResourceLog } = this.getLogTransforms;
 
           // Currently the scope is fixed to '@grafana/faro-web-sdk'.
@@ -63,7 +63,8 @@ export class OtelPayload {
             this.resourceLogs[0]?.scopeLogs[0]?.logRecords.push(toLogRecord(transportItem));
           }
           break;
-        case TransportItemType.TRACE:
+        }
+        case TransportItemType.TRACE: {
           const { toResourceSpan } = this.getTraceTransforms;
 
           // We use the Otel Model as it is to avoid unnecessary resource consumption.
@@ -73,6 +74,7 @@ export class OtelPayload {
           this.resourceSpans.push(toResourceSpan(transportItem as TransportItem<TraceEvent>));
 
           break;
+        }
         default:
           this.internalLogger?.error(`Unknown TransportItemType: ${type}`);
           break;

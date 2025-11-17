@@ -13,16 +13,17 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6
         with:
           node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -45,13 +46,13 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: cypress/browsers:22.12.0
+      image: cypress/browsers:25.0.0@sha256:008da4da0a285b9695d3bfdd1c5c5acb540ada14080d5b90269b34fdf4b9ec6a
       options: --user 1001
     needs: test
 
     services:
       database:
-        image: postgres:17.5
+        image: postgres:18.0@sha256:41fc5342eefba6cc2ccda736aaf034bbbb7c3df0fdb81516eba1ba33f360162c
         env:
           POSTGRES_DB: demo
           POSTGRES_PASSWORD: postgres
@@ -63,14 +64,15 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6
         with:
-          node-version: 'lts/iron'
+          node-version: 'lts/*'
+          package-manager-cache: false
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -79,7 +81,7 @@ jobs:
         run: yarn build
 
       - name: E2E tests
-        uses: cypress-io/github-action@b8ba51a856ba5f4c15cf39007636d4ab04f23e3c
+        uses: cypress-io/github-action@53299cbe789c64daab823c4bfb1882d05e9feaf3
         env:
           DATABASE_HOST: database
           DATABASE_PORT: 5432
@@ -100,17 +102,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, e2e]
 
+    env:
+      NPM_CONFIG_ACCESS: public
+      NPM_CONFIG_PROVENANCE: true
+
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6
         with:
-          node-version: 'lts/iron'
+          node-version: 'lts/*'
           registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -118,14 +125,8 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: 'Get vault secrets'
-        id: vault-secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b
-        with:
-          repo_secrets: |
-            NPM_TOKEN=github-actions:npm-token
+      - name: Install npm latest version #needed for Trusted Publishing
+        run: npm install -g npm@latest
 
-      - name: Publish
-        run: yarn run publish from-git --yes --no-verify-access
-        env:
-          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
+      - name: Publish package to NPM
+        run: npm run publish -- from-git --yes

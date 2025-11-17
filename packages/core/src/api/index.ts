@@ -23,9 +23,11 @@ export type { MeasurementEvent, MeasurementsAPI, PushMeasurementOptions } from '
 export type { MetaAPI } from './meta';
 
 export {
-  UserActionSeverity,
+  UserActionImportance,
+  type UserActionImportanceType,
   UserActionState,
   type UserActionInterface,
+  type UserActionInternalInterface,
   type UserActionsAPI,
   userActionsMessageBus,
 } from './userActions';

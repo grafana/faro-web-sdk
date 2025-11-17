@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-react",
-  "version": "2.0.0-beta-2",
+  "version": "2.0.2",
   "description": "Faro package that enables easier integration in projects built with React.",
   "keywords": [
     "observability",
@@ -46,22 +46,22 @@
     "quality:test": "exit 0",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s 'quality:lint:*'",
-    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/react --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/react \"./**/*.{js,jsx,ts,tsx}\"",
     "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "^2.0.0-beta-2",
-    "@grafana/faro-web-tracing": "^2.0.0-beta-2",
+    "@grafana/faro-web-sdk": "^2.0.2",
+    "@grafana/faro-web-tracing": "^2.0.2",
     "hoist-non-react-statics": "^3.3.2"
   },
   "devDependencies": {
-    "@types/hoist-non-react-statics": "^3.3.1",
-    "@types/react": "^18.0.26",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.6.2"
+    "@types/hoist-non-react-statics": "3.3.7",
+    "@types/react": "18.3.26",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.30.2"
   },
   "peerDependencies": {
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",

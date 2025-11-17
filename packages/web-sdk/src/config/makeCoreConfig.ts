@@ -58,12 +58,20 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
-    trackUserActionsPreview = false,
-    trackUserActionsDataAttributeName = userActionDataAttribute,
     url: browserConfigUrl,
+    experimental,
     // Properties without default values or which aren't used to create derived config
     ...restProperties
   }: BrowserConfig = browserConfig;
+
+  // Extract experimental features with defaults
+  const trackNavigation = experimental?.trackNavigation ?? false;
+
+  // Extract user actions instrumentation with defaults
+  const userActionsInstrumentation = {
+    dataAttributeName: browserConfig.userActionsInstrumentation?.dataAttributeName ?? userActionDataAttribute,
+    excludeItem: browserConfig.userActionsInstrumentation?.excludeItem,
+  };
 
   return {
     ...restProperties,
@@ -100,17 +108,21 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
         sessionTracking: browserConfig.sessionTracking,
       }),
     },
-    trackUserActionsPreview,
-    trackUserActionsDataAttributeName,
+    userActionsInstrumentation,
+    experimental: {
+      trackNavigation,
+    },
   };
 }
 
 function getFilteredInstrumentations(
   instrumentations: Instrumentation[],
-  { trackUserActionsPreview }: BrowserConfig
+  { experimental }: BrowserConfig
 ): Instrumentation[] {
+  const trackNavigation = experimental?.trackNavigation ?? false;
+
   return instrumentations.filter((instr) => {
-    if (instr.name === '@grafana/faro-web-sdk:instrumentation-user-action' && !trackUserActionsPreview) {
+    if (instr.name === '@grafana/faro-web-sdk:instrumentation-navigation' && !trackNavigation) {
       return false;
     }
     return true;
@@ -126,7 +138,7 @@ function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
     ...(browserConfig.metas ?? []),
   ];
 
-  const isK6BrowserSession = isObject((window as any).k6);
+  const isK6BrowserSession = isObject((window as any)?.k6);
   if (isK6BrowserSession) {
     return [...initialMetas, k6Meta];
   }

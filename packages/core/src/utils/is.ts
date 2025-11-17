@@ -11,7 +11,7 @@ export function isToString<T = unknown>(value: unknown, type: string): value is 
 export function isInstanceOf<T extends Function = any>(value: unknown, reference: T): value is T {
   try {
     return value instanceof reference;
-  } catch (err) {
+  } catch (_err) {
     return false;
   }
 }

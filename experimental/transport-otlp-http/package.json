@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-transport-otlp-http",
-  "version": "2.0.0-beta-2",
+  "version": "2.0.2",
   "description": "Faro transport which converts the Faro data model to the Otlp data model.",
   "keywords": [
     "observability",
@@ -44,19 +44,19 @@
     "quality:test": "jest",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/transportOtlpHttp --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s 'quality:lint:*'",
-    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/transportOtlpHttp --ignore-path ../../.eslintignore \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/transportOtlpHttp \"./**/*.{js,jsx,ts,tsx}\"",
     "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/transportOtlpHttp --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
   },
   "devDependencies": {
-    "@grafana/faro-core": "^2.0.0-beta-2"
+    "@grafana/faro-core": "^2.0.2"
   },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@opentelemetry/otlp-transformer": "^0.204.0",
+    "@opentelemetry/otlp-transformer": "^0.208.0",
     "@opentelemetry/semantic-conventions": "^1.28.0"
   }
 }
