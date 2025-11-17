@@ -15,7 +15,6 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
   private stopFn: { (): void } | null = () => { };
   private isRecording: boolean = false;
   private options: SessionRecordingInstrumentationOptions = defaultSessionRecordingInstrumentationOptions;
-  private eventSeq: number = 1;
 
   constructor(options: SessionRecordingInstrumentationOptions = {}) {
     super();
@@ -68,7 +67,6 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         this.stopFn = stop;
       }
 
-      this.eventSeq = 1;
       this.isRecording = true;
       this.logDebug('Session recording started');
     } catch (err) {
