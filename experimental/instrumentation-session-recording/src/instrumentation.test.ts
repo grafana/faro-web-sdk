@@ -28,7 +28,6 @@ describe('SessionRecordingInstrumentation', () => {
       maskAllInputs: false,
       maskInputOptions: {
         password: true,
-        date: true,
       },
       collectFonts: false,
       inlineImages: false,

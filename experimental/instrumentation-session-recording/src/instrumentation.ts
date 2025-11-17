@@ -21,6 +21,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
     super();
 
     this.options = {
+      ...defaultSessionRecordingInstrumentationOptions,
       ...options,
     };
   }
@@ -58,7 +59,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         recordDOM: true,
         inlineStylesheet: this.options.inlineStylesheet,
         errorHandler: (err) => {
-          this.logError('Error ocurred during session recording', err);
+          this.logError('Error occurred during session recording', err);
         },
       };
 
@@ -75,7 +76,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private handleEvent(event: eventWithTime, isCheckout?: boolean): void {
+  private handleEvent(event: eventWithTime, _isCheckout?: boolean): void {
     try {
       // Apply beforeSend transformation if provided
       let processedEvent = event;
@@ -88,8 +89,6 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
 
       this.api.pushEvent(faroSessionRecordingEventName, {
         event: JSON.stringify(processedEvent),
-        is_checkout: !!isCheckout ? "true" : "false",
-        seq: String(this.eventSeq++),
       });
     } catch (err) {
       this.logWarn(`Failed to push ${faroSessionRecordingEventName} event`, err);
