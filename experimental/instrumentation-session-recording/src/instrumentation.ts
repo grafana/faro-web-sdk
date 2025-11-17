@@ -3,8 +3,8 @@ import { record, type recordOptions } from 'rrweb';
 
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
-import type { SessionRecordingInstrumentationOptions } from './types';
 import { defaultSessionRecordingInstrumentationOptions } from './const';
+import type { SessionRecordingInstrumentationOptions } from './types';
 
 const faroSessionRecordingEventName = 'faro.session_recording.event';
 
@@ -12,7 +12,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-session-recording';
   readonly version = VERSION;
 
-  private stopFn: { (): void } | null = () => { };
+  private stopFn: { (): void } | null = () => {};
   private isRecording: boolean = false;
   private options: SessionRecordingInstrumentationOptions = defaultSessionRecordingInstrumentationOptions;
 

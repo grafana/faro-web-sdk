@@ -35,7 +35,8 @@ initializeFaro({
 ### Privacy & Masking Options
 
 - **`maskAllInputs`** (default: `false`): Whether to mask all input elements
-- **`maskInputOptions`** (default: `{ password: true }`): Fine-grained control over which input types to mask. Available options:
+- **`maskInputOptions`** (default: `{ password: true }`): Fine-grained control over which input types to mask.
+  Available options:
   - `password` - Password inputs
   - `text` - Text inputs
   - `email` - Email inputs
@@ -62,11 +63,14 @@ initializeFaro({
 
 ### Hooks
 
-- **`beforeSend`**: Custom function to transform or filter events before they are sent. Return the modified event or `null`/`undefined` to skip sending
+- **`beforeSend`**: Custom function to transform or filter events before they are sent.
+  Return the modified event or `null`/`undefined` to skip sending
 
 ## How It Works
 
-The session recording instrumentation uses [rrweb](https://www.rrweb.io/) to capture and replay user interactions. Events are automatically sent to Faro with the following behavior:
+The session recording instrumentation uses [rrweb](https://www.rrweb.io/)
+to capture and replay user interactions.
+Events are automatically sent to Faro with the following behavior:
 
 - **Checkout Interval**: Full DOM snapshots are captured every 30 seconds or after 500 events
 - **Event Sequencing**: Each event is assigned a sequence number for proper ordering
@@ -76,7 +80,8 @@ The session recording instrumentation uses [rrweb](https://www.rrweb.io/) to cap
 
 This instrumentation records user interactions on your website. Make sure to:
 
-1. **Enable appropriate masking options** - By default, only password inputs are masked. Configure `maskInputOptions` to mask additional sensitive fields
+1. **Enable appropriate masking options** - By default, only password inputs are masked.
+   Configure `maskInputOptions` to mask additional sensitive fields
 2. **Use CSS selectors** - Use `maskSelector` to mask sensitive content, `blockSelector` to completely exclude elements
 3. **Implement filtering** - Use the `beforeSend` hook to filter or transform events before sending
 4. **Review your privacy policy** - Ensure you have proper user consent for session recording
