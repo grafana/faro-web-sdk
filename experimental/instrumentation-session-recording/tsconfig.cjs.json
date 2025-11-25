@@ -6,7 +6,15 @@
     "rootDir": "./src",
     "tsBuildInfoFile": "../../.cache/tsc/instrumentationSessionRecording.cjs.tsbuildinfo"
   },
-  "include": ["./src"],
-  "exclude": ["**/*.test.ts"],
-  "references": [{ "path": "../../packages/core/tsconfig.spec.json" }]
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "**/*.test.ts"
+  ],
+  "references": [
+    {
+      "path": "../../packages/core/tsconfig.cjs.json"
+    }
+  ]
 }
