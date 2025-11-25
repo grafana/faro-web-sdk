@@ -76,7 +76,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
       let processedEvent = event;
       if (this.options.beforeSend) {
         processedEvent = this.options.beforeSend(event);
-        if (!processedEvent) {
+        if (processedEvent === null || processedEvent === undefined) {
           return;
         }
       }
