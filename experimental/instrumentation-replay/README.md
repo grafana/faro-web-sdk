@@ -49,7 +49,7 @@ initializeFaro({
   - `range` - Range inputs
   - `textarea` - Textarea elements
   - `select` - Select dropdowns
-- **`maskSelector`**: Custom CSS selector to mask specific elements
+- **`maskTextSelector`**: Custom CSS selector to mask specific elements
 - **`blockSelector`**: CSS selector to completely block elements from recording
 - **`ignoreSelector`**: CSS selector to ignore specific elements
 
@@ -90,7 +90,7 @@ new ReplayInstrumentation({
     textarea: true,
   },
   // Mask elements with specific CSS classes
-  maskSelector: '.sensitive-data, .pii',
+  maskTextSelector: '.sensitive-data, .pii',
   // Block elements completely from recording
   blockSelector: '.payment-form, .credit-card-info',
   // Ignore certain elements (won't be recorded at all)
