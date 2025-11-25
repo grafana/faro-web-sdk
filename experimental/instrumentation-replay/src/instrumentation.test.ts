@@ -158,8 +158,7 @@ describe('ReplayInstrumentation', () => {
           ignoreSelector: '.ignore',
           maskInputOptions: { password: true, email: true },
           recordDOM: true,
-          checkoutEveryNms: 30000,
-          checkoutEveryNth: 500,
+          checkoutEveryNms: 300_000,
         })
       );
     });
