@@ -12,7 +12,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-instrumentation-replay';
   readonly version = VERSION;
 
-  private stopFn: { (): void } | null = () => {};
+  private stopFn: { (): void } | null = null;
   private isRecording: boolean = false;
   private options: ReplayInstrumentationOptions = defaultReplayInstrumentationOptions;
 
