@@ -72,7 +72,7 @@ This instrumentation records user interactions on your website. Make sure to:
 
 1. **Enable appropriate masking options** - By default, only password inputs are masked.
    Configure `maskInputOptions` to mask additional sensitive fields
-2. **Use CSS selectors** - Use `maskSelector` to mask sensitive content, `blockSelector` to completely exclude elements
+2. **Use CSS selectors** - Use `maskTextSelector` to mask sensitive content, `blockSelector` to completely exclude elements
 3. **Implement filtering** - Use the `beforeSend` hook to filter or transform events before sending
 4. **Review your privacy policy** - Ensure you have proper user consent for session recording
 5. **Test your configuration** - Verify no sensitive information is captured in recordings
