@@ -185,6 +185,7 @@ describe('api.events', () => {
           name: 'test',
           trigger: 'foo',
           transports: mockTransports,
+          pushEvent: jest.fn(),
         })
       );
       api.pushEvent('test');

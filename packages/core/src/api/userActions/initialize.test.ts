@@ -1,4 +1,4 @@
-import { faro, UserActionImportance } from '../..';
+import { UserActionImportance } from '../..';
 import { mockConfig, mockInternalLogger } from '../../testUtils';
 import { mockTransports } from '../apiTestHelpers';
 
@@ -7,19 +7,12 @@ import { initializeUserActionsAPI } from './initialize';
 import { UserActionInternalInterface, UserActionsAPI } from './types';
 import UserAction from './userAction';
 
-jest.mock('../../sdk/registerFaro', () => ({
-  faro: {
-    api: {
-      pushEvent: jest.fn(),
-    },
-  },
-}));
-
 describe('initializeUserActionsAPI', () => {
   let transports;
   let config;
   let internalLogger;
   let api: UserActionsAPI;
+  let mockPushEvent: jest.Mock;
 
   beforeEach(() => {
     transports = mockTransports;
@@ -30,7 +23,8 @@ describe('initializeUserActionsAPI', () => {
       },
     });
     internalLogger = mockInternalLogger;
-    api = initializeUserActionsAPI({ transports, config, internalLogger });
+    mockPushEvent = jest.fn();
+    api = initializeUserActionsAPI({ transports, config, internalLogger, pushEvent: mockPushEvent });
     jest.resetAllMocks();
   });
 
@@ -60,8 +54,8 @@ describe('initializeUserActionsAPI', () => {
 
     (activeAction as unknown as UserActionInternalInterface)?.end();
 
-    expect(faro.api.pushEvent).toHaveBeenCalledTimes(1);
-    expect(faro.api.pushEvent).toHaveBeenCalledWith(
+    expect(mockPushEvent).toHaveBeenCalledTimes(1);
+    expect(mockPushEvent).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ userActionImportance: 'critical', userActionTrigger: 'foo' }),
       undefined,
@@ -95,7 +89,7 @@ describe('initializeUserActionsAPI', () => {
     );
     (action as unknown as UserActionInternalInterface)?.end();
 
-    expect(faro.api.pushEvent).toHaveBeenCalledWith(
+    expect(mockPushEvent).toHaveBeenCalledWith(
       userActionEventName,
       expect.objectContaining({
         userActionName: 'test-action',
