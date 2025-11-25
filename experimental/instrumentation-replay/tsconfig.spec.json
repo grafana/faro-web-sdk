@@ -4,7 +4,7 @@
     "declarationDir": "./dist/types",
     "outDir": "./dist/spec",
     "rootDir": "../../",
-    "tsBuildInfoFile": "../../.cache/tsc/instrumentationSessionRecording.spec.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/instrumentationReplay.spec.tsbuildinfo"
   },
   "include": ["./src"],
   "references": [{ "path": "../../packages/core/tsconfig.spec.json" }]

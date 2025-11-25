@@ -1,6 +1,6 @@
-import { type SessionRecordingInstrumentationOptions } from './types';
+import { type ReplayInstrumentationOptions } from './types';
 
-export const defaultSessionRecordingInstrumentationOptions: SessionRecordingInstrumentationOptions = {
+export const defaultReplayInstrumentationOptions: ReplayInstrumentationOptions = {
   maskAllInputs: false,
   maskInputOptions: {
     password: true,

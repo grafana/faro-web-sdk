@@ -1,4 +1,4 @@
-export interface SessionRecordingInstrumentationOptions {
+export interface ReplayInstrumentationOptions {
   /**
    * Whether to mask all inputs
    * @default false

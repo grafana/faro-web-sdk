@@ -1,3 +1,3 @@
 const { getRollupConfigBase } = require('../../rollup.config.base.js');
 
-module.exports = getRollupConfigBase('instrumentationSessionRecording');
+module.exports = getRollupConfigBase('instrumentationReplay');

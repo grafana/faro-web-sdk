@@ -1,13 +1,13 @@
 {
-  "name": "@grafana/faro-instrumentation-session-recording",
-  "version": "1.19.0",
-  "description": "Faro instrumentation for session recording with rrweb",
+  "name": "@grafana/faro-instrumentation-replay",
+  "version": "2.0.2",
+  "description": "Faro instrumentation for session replay with rrweb",
   "keywords": [
     "observability",
     "apm",
     "rum",
     "dem",
-    "session-recording",
+    "session-replay",
     "rrweb",
     "browser"
   ],
@@ -17,7 +17,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/grafana/faro-web-sdk.git",
-    "directory": "experimental/instrumentation-session-recording"
+    "directory": "experimental/instrumentation-replay"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -41,10 +41,10 @@
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s 'quality:*'",
     "quality:test": "jest",
-    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/webSessionRecording --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/webSessionReplay --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s 'quality:lint:*'",
-    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/webSessionRecording \"./**/*.{js,jsx,ts,tsx}\"",
-    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/webSessionRecording --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/webSessionReplay \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/webSessionReplay --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
     "quality:circular-deps": "madge --circular ."
   },

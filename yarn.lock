@@ -941,9 +941,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@grafana/faro-instrumentation-session-recording@workspace:experimental/instrumentation-session-recording":
+"@grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay":
   version: 0.0.0-use.local
-  resolution: "@grafana/faro-instrumentation-session-recording@workspace:experimental/instrumentation-session-recording"
+  resolution: "@grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay"
   dependencies:
     "@grafana/faro-core": "npm:^2.0.2"
     rrweb: "npm:^2.0.0-alpha.18"

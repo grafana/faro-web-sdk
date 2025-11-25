@@ -1,24 +1,24 @@
-# @grafana/faro-web-session-recording
+# @grafana/faro-instrumentation-replay
 
-Faro instrumentation for session recording with rrweb.
+Faro instrumentation for session replay with rrweb.
 
 ## Installation
 
 ```bash
-npm install @grafana/faro-web-session-recording
+npm install @grafana/faro-instrumentation-replay
 ```
 
 ## Usage
 
 ```typescript
-import { SessionRecordingInstrumentation } from '@grafana/faro-web-session-recording';
+import { ReplayInstrumentation } from '@grafana/faro-instrumentation-replay';
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 
 initializeFaro({
   url: 'https://your-faro-endpoint.com',
   instrumentations: [
     ...getWebInstrumentations(),
-    new SessionRecordingInstrumentation({
+    new ReplayInstrumentation({
       maskInputOptions: {
         password: true,
         email: true,
@@ -80,7 +80,7 @@ This instrumentation records user interactions on your website. Make sure to:
 ### Example: Advanced Privacy Configuration
 
 ```typescript
-new SessionRecordingInstrumentation({
+new ReplayInstrumentation({
   // Mask all text and email inputs, but allow number inputs
   maskInputOptions: {
     password: true,

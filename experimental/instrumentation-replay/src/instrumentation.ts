@@ -3,31 +3,31 @@ import { record, type recordOptions } from 'rrweb';
 
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
-import { defaultSessionRecordingInstrumentationOptions } from './const';
-import type { SessionRecordingInstrumentationOptions } from './types';
+import { defaultReplayInstrumentationOptions } from './const';
+import type { ReplayInstrumentationOptions } from './types';
 
-const faroSessionRecordingEventName = 'faro.session_recording.event';
+const faroSessionReplayEventName = 'faro.session_recording.event';
 
-export class SessionRecordingInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/faro-web-session-recording';
+export class ReplayInstrumentation extends BaseInstrumentation {
+  readonly name = '@grafana/faro-instrumentation-replay';
   readonly version = VERSION;
 
   private stopFn: { (): void } | null = () => {};
   private isRecording: boolean = false;
-  private options: SessionRecordingInstrumentationOptions = defaultSessionRecordingInstrumentationOptions;
+  private options: ReplayInstrumentationOptions = defaultReplayInstrumentationOptions;
 
-  constructor(options: SessionRecordingInstrumentationOptions = {}) {
+  constructor(options: ReplayInstrumentationOptions = {}) {
     super();
 
     this.options = {
-      ...defaultSessionRecordingInstrumentationOptions,
+      ...defaultReplayInstrumentationOptions,
       ...options,
     };
   }
 
   initialize(): void {
     if (this.isRecording) {
-      this.logWarn('Session recording is already running');
+      this.logWarn('Session replay is already running');
       return;
     }
 
@@ -54,7 +54,7 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         recordDOM: true,
         inlineStylesheet: this.options.inlineStylesheet,
         errorHandler: (err) => {
-          this.logError('Error occurred during session recording', err);
+          this.logError('Error occurred during session replay', err);
         },
       };
 
@@ -64,9 +64,9 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
       }
 
       this.isRecording = true;
-      this.logDebug('Session recording started');
+      this.logDebug('Session replay started');
     } catch (err) {
-      this.logWarn('Failed to start session recording', err);
+      this.logWarn('Failed to start session replay', err);
     }
   }
 
@@ -81,11 +81,11 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
         }
       }
 
-      this.api.pushEvent(faroSessionRecordingEventName, {
+      this.api.pushEvent(faroSessionReplayEventName, {
         event: JSON.stringify(processedEvent),
       });
     } catch (err) {
-      this.logWarn(`Failed to push ${faroSessionRecordingEventName} event`, err);
+      this.logWarn(`Failed to push ${faroSessionReplayEventName} event`, err);
     }
   }
 
@@ -96,6 +96,6 @@ export class SessionRecordingInstrumentation extends BaseInstrumentation {
     }
 
     this.isRecording = false;
-    this.logDebug('Session recording stopped');
+    this.logDebug('Session replay stopped');
   }
 }

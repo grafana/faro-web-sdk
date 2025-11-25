@@ -4,7 +4,7 @@
     "declarationDir": "./dist/types",
     "outDir": "./dist/esm",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.cache/tsc/instrumentationSessionRecording.esm.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/instrumentationReplay.esm.tsbuildinfo"
   },
   "include": ["./src"],
   "exclude": ["**/*.test.ts"],
