@@ -28,6 +28,8 @@ export function initializeAPI(
   const pushEventWrapper: EventsAPI['pushEvent'] = (name, attributes, domain, options) => {
     if (pushEventImpl) {
       pushEventImpl(name, attributes, domain, options);
+    } else {
+      internalLogger.warn('pushEventImpl is not initialized. Event dropped:', { name, attributes, domain, options });
     }
   };
 
