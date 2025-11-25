@@ -40,8 +40,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
         emit: (event: eventWithTime, isCheckout?: boolean): void => {
           this.handleEvent(event, isCheckout);
         },
-        checkoutEveryNms: 30000, // 30 seconds
-        checkoutEveryNth: 500,
+        checkoutEveryNms: 300_000, // 5 minutes
         recordCrossOriginIframes: this.options.recordCrossOriginIframes,
         maskAllInputs: this.options.maskAllInputs,
         maskInputOptions: this.options.maskInputOptions,
