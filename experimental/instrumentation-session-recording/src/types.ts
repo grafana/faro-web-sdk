@@ -18,13 +18,13 @@ export interface SessionRecordingInstrumentationOptions {
   maskSelector?: string;
 
   /**
-   * Whether to block specified CSS selectors
+   * Custom CSS selector to block elements
    * @default undefined
    */
   blockSelector?: string;
 
   /**
-   * Whether to ignore specified CSS selectors
+   * Custom CSS selector to ignore elements
    * @default undefined
    */
   ignoreSelector?: string;
