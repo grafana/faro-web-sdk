@@ -5,7 +5,7 @@ export const defaultReplayInstrumentationOptions: ReplayInstrumentationOptions =
   maskInputOptions: {
     password: true,
   },
-  maskSelector: undefined,
+  maskTextSelector: undefined,
   blockSelector: undefined,
   ignoreSelector: undefined,
   collectFonts: false,

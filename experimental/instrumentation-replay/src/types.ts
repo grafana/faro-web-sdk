@@ -12,10 +12,10 @@ export interface ReplayInstrumentationOptions {
   maskInputOptions?: MaskInputOptions;
 
   /**
-   * Custom CSS selector to mask elements
+   * Custom CSS selector to mask text elements
    * @default undefined
    */
-  maskSelector?: string;
+  maskTextSelector?: string;
 
   /**
    * Custom CSS selector to block elements

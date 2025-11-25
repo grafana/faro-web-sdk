@@ -45,7 +45,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
         recordCrossOriginIframes: this.options.recordCrossOriginIframes,
         maskAllInputs: this.options.maskAllInputs,
         maskInputOptions: this.options.maskInputOptions,
-        maskTextSelector: this.options.maskSelector,
+        maskTextSelector: this.options.maskTextSelector,
         blockSelector: this.options.blockSelector,
         ignoreSelector: this.options.ignoreSelector,
         recordCanvas: this.options.recordCanvas,
