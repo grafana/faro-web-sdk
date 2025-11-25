@@ -66,16 +66,6 @@ initializeFaro({
 - **`beforeSend`**: Custom function to transform or filter events before they are sent.
   Return the modified event or `null`/`undefined` to skip sending
 
-## How It Works
-
-The session recording instrumentation uses [rrweb](https://www.rrweb.io/)
-to capture and replay user interactions.
-Events are automatically sent to Faro with the following behavior:
-
-- **Checkout Interval**: Full DOM snapshots are captured every 30 seconds or after 500 events
-- **Event Sequencing**: Each event is assigned a sequence number for proper ordering
-- **Event Name**: Events are sent with the name `faro.session_recording.event`
-
 ## Privacy and Security
 
 This instrumentation records user interactions on your website. Make sure to:
