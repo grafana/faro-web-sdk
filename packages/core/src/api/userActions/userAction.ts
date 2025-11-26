@@ -1,8 +1,8 @@
-import { faro } from '../../sdk/registerFaro';
 import { type TransportItem, TransportItemType, type Transports } from '../../transports';
 import { dateNow, genShortID, Observable, stringifyObjectValues } from '../../utils';
+import type { EventsAPI } from '../events/types';
 import { ItemBuffer } from '../ItemBuffer';
-import { type MeasurementEvent } from '../measurements';
+import { type MeasurementEvent } from '../measurements/types';
 import { type APIEvent } from '../types';
 
 import { userActionEventName, UserActionImportance, type UserActionImportanceType } from './const';
@@ -24,6 +24,7 @@ export default class UserAction
   private _state: UserActionState;
   private _itemBuffer: ItemBuffer<TransportItem>;
   private _transports: Transports;
+  private _pushEvent: EventsAPI['pushEvent'];
 
   constructor({
     name,
@@ -33,6 +34,7 @@ export default class UserAction
     attributes,
     trackUserActionsExcludeItem,
     importance = UserActionImportance.Normal,
+    pushEvent,
   }: {
     name: string;
     transports: Transports;
@@ -41,6 +43,7 @@ export default class UserAction
     attributes?: Record<string, string>;
     trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
     importance?: UserActionImportanceType;
+    pushEvent: EventsAPI['pushEvent'];
   }) {
     super();
     this.name = name;
@@ -50,6 +53,7 @@ export default class UserAction
     this.parentId = parentId ?? this.id;
     this.trackUserActionsExcludeItem = trackUserActionsExcludeItem;
     this.importance = importance;
+    this._pushEvent = pushEvent;
 
     this._itemBuffer = new ItemBuffer<TransportItem>();
     this._transports = transports;
@@ -121,7 +125,7 @@ export default class UserAction
     this._state = UserActionState.Ended;
     this.notify(this._state);
 
-    faro.api.pushEvent(
+    this._pushEvent(
       userActionEventName,
       {
         userActionName: this.name,

@@ -1,6 +1,8 @@
-import { type InternalLogger, type TransportItem, type Transports } from '../..';
 import type { Config } from '../../config';
+import type { InternalLogger } from '../../internalLogger';
+import type { TransportItem, Transports } from '../../transports';
 import { Observable } from '../../utils/reactive';
+import type { EventsAPI } from '../events/types';
 
 import { UserActionImportance, userActionStart, userActionStartByApiCallEventName } from './const';
 import {
@@ -20,10 +22,12 @@ export function initializeUserActionsAPI({
   transports,
   internalLogger,
   config,
+  pushEvent,
 }: {
   transports: Transports;
   config: Config;
   internalLogger: InternalLogger;
+  pushEvent: EventsAPI['pushEvent'];
 }): UserActionsAPI {
   const trackUserActionsExcludeItem = config.userActionsInstrumentation?.excludeItem;
 
@@ -48,6 +52,7 @@ export function initializeUserActionsAPI({
         trigger: options?.triggerName || userActionStartByApiCallEventName,
         importance: options?.importance || UserActionImportance.Normal,
         trackUserActionsExcludeItem,
+        pushEvent,
       });
       userAction
         .filter((v) => [UserActionState.Ended, UserActionState.Cancelled].includes(v))

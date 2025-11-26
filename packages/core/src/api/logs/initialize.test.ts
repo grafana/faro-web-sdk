@@ -202,6 +202,7 @@ describe('api.logs', () => {
           name: 'test',
           trigger: 'foo',
           transports: mockTransports,
+          pushEvent: jest.fn(),
         })
       );
       api.pushLog(['This is a log']);

@@ -280,6 +280,7 @@ describe('api.measurements', () => {
           name: 'test',
           trigger: 'foo',
           transports: mockTransports,
+          pushEvent: jest.fn(),
         })
       );
       api.pushMeasurement({ type: 'test', values: { a: 1 } });

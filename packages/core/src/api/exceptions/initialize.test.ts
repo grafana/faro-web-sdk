@@ -346,6 +346,7 @@ describe('api.exceptions', () => {
           name: 'test',
           trigger: 'foo',
           transports: mockTransports,
+          pushEvent: jest.fn(),
         })
       );
       api.pushError(new Error('test'));
