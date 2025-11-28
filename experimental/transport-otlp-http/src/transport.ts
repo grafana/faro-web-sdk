@@ -89,10 +89,15 @@ export class OtlpHttpTransport extends BaseTransport {
         const body = JSON.stringify({ [key]: value });
 
         const { requestOptions, apiKey } = this.options;
-        const { headers, ...restOfRequestOptions } = requestOptions ?? {};
+        const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
 
         if (!url) {
           continue;
+        }
+
+        const resolvedHeaders: Record<string, string> = {};
+        for (const [key, value] of Object.entries(headers)) {
+          resolvedHeaders[key] = typeof value === 'function' ? value() : value;
         }
 
         this.promiseBuffer.add(() => {
@@ -100,7 +105,7 @@ export class OtlpHttpTransport extends BaseTransport {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              ...(headers ?? {}),
+              ...resolvedHeaders,
               ...(apiKey ? { 'x-api-key': apiKey } : {}),
             },
             body,

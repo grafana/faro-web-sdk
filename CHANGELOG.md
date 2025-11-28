@@ -2,6 +2,10 @@
 
 ## Next
 
+- Feature (`@grafana/faro-web-sdk`): Fetch transport now supports dynamic header values. Each header can be a static string or a function returning a string, resolved at request time (#1490).
+
+- Feature (`@grafana/faro-transport-otlp-http [experimental]`): OLTP HTTP transport now supports dynamic header values. Each header can be a static string or a function returning a string, resolved at request time (#1490).
+
 ## 2.0.2
 
 - Breaking (`@grafana/faro-web-sdk`): User action events now have a standardized event name

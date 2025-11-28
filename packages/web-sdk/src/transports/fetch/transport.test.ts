@@ -249,6 +249,93 @@ describe('FetchTransport', () => {
     expect(ignoreUrls).toStrictEqual([collectorUrl, ...globalIgnoreUrls]);
   });
 
+  it('will add static header values', () => {
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      requestOptions: {
+        headers: {
+          Authorization: 'Bearer static-token',
+          'X-Static': 'static-value',
+        },
+      },
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+
+    transport.internalLogger = mockInternalLogger;
+
+    transport.send([item]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      'http://example.com/collect',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer static-token',
+          'X-Static': 'static-value',
+        }),
+      })
+    );
+  });
+
+  it('will add dynamic header values from sync callbacks', () => {
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      requestOptions: {
+        headers: {
+          Authorization: () => `Bearer ${mockSessionId}-token`,
+          'X-User': () => 'user-123',
+        },
+      },
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+
+    transport.internalLogger = mockInternalLogger;
+
+    transport.send([item]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      'http://example.com/collect',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: `Bearer ${mockSessionId}-token`,
+          'X-User': 'user-123',
+        }),
+      })
+    );
+  });
+
+  it('will add static header values and dynamic header values from sync callbacks', () => {
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      requestOptions: {
+        headers: {
+          Authorization: () => `Bearer ${mockSessionId}-token`,
+          'X-Static': 'static-value',
+        },
+      },
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+
+    transport.internalLogger = mockInternalLogger;
+
+    transport.send([item]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      'http://example.com/collect',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: `Bearer ${mockSessionId}-token`,
+          'X-Static': 'static-value',
+        }),
+      })
+    );
+  });
+
   it('creates a new faro session if collector response indicates an invalid session', async () => {
     fetch.mockImplementationOnce(() =>
       Promise.resolve({

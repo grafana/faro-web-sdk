@@ -1,7 +1,13 @@
 import type { ExceptionEvent, MeasurementEvent, TransportItem } from '@grafana/faro-core';
 
 export interface OtlpTransportRequestOptions extends Omit<RequestInit, 'body' | 'headers'> {
-  headers?: Record<string, string>;
+  /**
+   * Headers to include in every request.
+   * Each value can be:
+   * - a string (static value)
+   * - a function returning a string (dynamic value)
+   */
+  headers?: Record<string, string | (() => string)>;
 }
 
 export interface OtlpHttpTransportOptions {
