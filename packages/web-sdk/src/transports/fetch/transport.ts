@@ -49,7 +49,7 @@ export class FetchTransport extends BaseTransport {
 
         const { url, requestOptions, apiKey } = this.options;
 
-        const { headers, ...restOfRequestOptions } = requestOptions ?? {};
+        const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
 
         let sessionId;
         const sessionMeta = this.metas.value.session;
@@ -57,11 +57,16 @@ export class FetchTransport extends BaseTransport {
           sessionId = sessionMeta.id;
         }
 
+        const resolvedHeaders: Record<string, string> = {};
+        for (const [key, value] of Object.entries(headers)) {
+          resolvedHeaders[key] = typeof value === 'function' ? value() : value;
+        }
+
         return fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(headers ?? {}),
+            ...resolvedHeaders,
             ...(apiKey ? { 'x-api-key': apiKey } : {}),
             ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
           },

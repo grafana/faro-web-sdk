@@ -2,6 +2,14 @@
 
 ## Next
 
+- Feature (`@grafana/faro-web-sdk`): Fetch transport now supports dynamic header values.
+  Each header can be a static string or a function returning a string, resolved at request
+  time (#1490).
+
+- Feature (`@grafana/faro-transport-otlp-http [experimental]`): OLTP HTTP transport now supports
+  dynamic header values. Each header can be a static string or a function returning a string,
+  resolved at request time (#1490).
+
 ## 2.1.0
 
 - Feature (`@grafana/faro-react`): support for React 19 and React Router 7
