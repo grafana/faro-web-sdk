@@ -1,0 +1,58 @@
+{
+  "name": "@grafana/faro-instrumentation-replay",
+  "version": "2.0.2",
+  "description": "Faro instrumentation for session replay with rrweb",
+  "keywords": [
+    "observability",
+    "apm",
+    "rum",
+    "dem",
+    "session-replay",
+    "rrweb",
+    "browser"
+  ],
+  "license": "Apache-2.0",
+  "author": "Grafana Labs",
+  "homepage": "https://github.com/grafana/faro-web-sdk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/faro-web-sdk.git",
+    "directory": "experimental/instrumentation-replay"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "yarn watch",
+    "build": "run-s 'build:*'",
+    "build:compile": "run-p 'build:compile:*'",
+    "build:compile:cjs": "tsc --build tsconfig.cjs.json",
+    "build:compile:esm": "tsc --build tsconfig.esm.json",
+    "build:compile:bundle": "run-s 'build:compile:bundle:*'",
+    "build:compile:bundle:create": "rollup -c ./rollup.config.js",
+    "build:compile:bundle:remove-extras": "rimraf dist/bundle/dist",
+    "watch": "run-s watch:compile",
+    "watch:compile": "yarn build:compile:cjs -w",
+    "clean": "rimraf dist/ yarn-error.log",
+    "quality": "run-s 'quality:*'",
+    "quality:test": "jest",
+    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/webSessionReplay --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint": "run-s 'quality:lint:*'",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/webSessionReplay \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/webSessionReplay --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:md": "markdownlint README.md",
+    "quality:circular-deps": "madge --circular ."
+  },
+  "dependencies": {
+    "@grafana/faro-core": "^2.0.2",
+    "rrweb": "^2.0.0-alpha.18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

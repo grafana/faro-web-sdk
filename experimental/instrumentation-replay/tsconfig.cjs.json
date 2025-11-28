@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.cjs.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/cjs",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.cache/tsc/instrumentationReplay.cjs.tsbuildinfo"
+  },
+  "include": ["./src"],
+  "exclude": ["**/*.test.ts"],
+  "references": [
+    {
+      "path": "../../packages/core/tsconfig.cjs.json"
+    }
+  ]
+}

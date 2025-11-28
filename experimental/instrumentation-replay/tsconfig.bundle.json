@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.esm.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/bundle/types",
+    "outDir": "./dist/bundle",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.cache/tsc/instrumentationReplay.bundle.tsbuildinfo"
+  },
+  "include": ["./src"],
+  "exclude": ["./**/*.test.ts"]
+}

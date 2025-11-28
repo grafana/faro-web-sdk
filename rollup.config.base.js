@@ -46,6 +46,12 @@ const modules = {
     globalName: 'GrafanaFaroInstrumentationFetch',
     externals: [],
   },
+  instrumentationReplay: {
+    name: '@grafana/faro-instrumentation-replay',
+    bundleName: 'faro-instrumentation-replay',
+    globalName: 'GrafanaFaroInstrumentationReplay',
+    externals: [],
+  },
   instrumentationXHR: {
     name: '@grafana/faro-instrumentation-xhr',
     bundleName: 'faro-instrumentation-xhr',
