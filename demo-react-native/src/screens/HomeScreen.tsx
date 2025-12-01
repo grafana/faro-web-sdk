@@ -8,13 +8,17 @@ import {
 } from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import type {RootStackParamList} from '../navigation/AppNavigator';
-import {faro} from '@grafana/faro-react-native';
+import {
+  faro,
+  trackUserAction,
+} from '@grafana/faro-react-native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export function HomeScreen({navigation}: Props) {
   const [eventCount, setEventCount] = useState(0);
   const [userSet, setUserSet] = useState(false);
+  const [userActionCount, setUserActionCount] = useState(0);
 
   const handleTestLog = () => {
     // Send console logs (captured by ConsoleInstrumentation)
@@ -51,12 +55,41 @@ export function HomeScreen({navigation}: Props) {
     setUserSet(true);
   };
 
+  const handleManualUserAction = () => {
+    // Example of manual user action tracking for complex workflows
+    const action = trackUserAction('complex_workflow', {
+      step: 'demonstration',
+      screenName: 'Home',
+    });
+
+    // Simulate some work
+    setTimeout(() => {
+      // End the action when done
+      // TODO: Export UserActionInternalInterface from @grafana/faro-react-native to avoid direct core import
+      if (action) {
+        (action as any).end();
+      }
+      setUserActionCount(prev => prev + 1);
+    }, 100);
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Faro React Native Demo</Text>
       <Text style={styles.subtitle}>
         Welcome to the Grafana Faro React Native SDK Demo
       </Text>
+
+      {userActionCount > 0 && (
+        <View style={styles.infoBox}>
+          <Text style={styles.infoText}>
+            ✅ User Actions Tracked: {userActionCount}
+          </Text>
+          <Text style={styles.infoSubtext}>
+            All button presses are automatically tracked!
+          </Text>
+        </View>
+      )}
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
@@ -79,6 +112,17 @@ export function HomeScreen({navigation}: Props) {
           </Text>
           <Text style={styles.buttonDescription}>
             {userSet ? 'User tracking enabled' : 'Enable user identification'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.manualActionButton]}
+          onPress={handleManualUserAction}>
+          <Text style={styles.buttonText}>
+            🎯 Manual User Action
+          </Text>
+          <Text style={styles.buttonDescription}>
+            Demonstrates manual user action tracking API
           </Text>
         </TouchableOpacity>
 
@@ -127,7 +171,25 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    marginBottom: 32,
+    marginBottom: 20,
+    color: '#666',
+  },
+  infoBox: {
+    backgroundColor: '#e6f7ff',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#1890ff',
+  },
+  infoText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1890ff',
+    marginBottom: 4,
+  },
+  infoSubtext: {
+    fontSize: 14,
     color: '#666',
   },
   buttonContainer: {
@@ -151,6 +213,9 @@ const styles = StyleSheet.create({
   },
   userSetButton: {
     backgroundColor: '#10b981',
+  },
+  manualActionButton: {
+    backgroundColor: '#8b5cf6',
   },
   buttonText: {
     fontSize: 18,

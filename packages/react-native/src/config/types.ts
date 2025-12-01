@@ -43,4 +43,9 @@ export interface GetRNInstrumentationsOptions {
    * Track view/screen changes (default: true)
    */
   trackViews?: boolean;
+
+  /**
+   * Track user actions/interactions (default: true)
+   */
+  trackUserActions?: boolean;
 }

@@ -14,6 +14,14 @@ export { ConsoleInstrumentation } from './instrumentations/console';
 export { SessionInstrumentation } from './instrumentations/session';
 export { ViewInstrumentation } from './instrumentations/view';
 export { AppStateInstrumentation } from './instrumentations/appState';
+export { UserActionInstrumentation } from './instrumentations/userActions';
+
+// Export user action helpers
+export {
+  withFaroUserAction,
+  trackUserAction,
+  type WithFaroUserActionProps,
+} from './instrumentations/userActions/withFaroUserAction';
 
 // Export metas
 export { getDeviceMeta } from './metas/device';

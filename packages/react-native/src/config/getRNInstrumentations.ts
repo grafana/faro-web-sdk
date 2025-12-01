@@ -5,6 +5,7 @@ import { ConsoleInstrumentation } from '../instrumentations/console';
 import { SessionInstrumentation } from '../instrumentations/session';
 import { ViewInstrumentation } from '../instrumentations/view';
 import { AppStateInstrumentation } from '../instrumentations/appState';
+import { UserActionInstrumentation } from '../instrumentations/userActions';
 
 /**
  * Returns the default set of instrumentations for React Native
@@ -18,6 +19,7 @@ export function getRNInstrumentations(
     captureErrors = true,
     trackSessions = true,
     trackViews = true,
+    trackUserActions = true,
   } = options;
 
   const instrumentations: Instrumentation[] = [];
@@ -40,6 +42,10 @@ export function getRNInstrumentations(
 
   if (trackAppState) {
     instrumentations.push(new AppStateInstrumentation());
+  }
+
+  if (trackUserActions) {
+    instrumentations.push(new UserActionInstrumentation());
   }
 
   return instrumentations;
