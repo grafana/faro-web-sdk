@@ -194,6 +194,16 @@ export function HomeScreen({ navigation }: Props) {
 
         <TouchableOpacity
           style={styles.button}
+          onPress={() => navigation.navigate('ErrorBoundaryDemo')}
+        >
+          <Text style={styles.buttonText}>Error Boundary Demo</Text>
+          <Text style={styles.buttonDescription}>
+            Test React Error Boundary with Faro
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
           onPress={() => navigation.navigate('PerformanceDemo')}
         >
           <Text style={styles.buttonText}>Performance Demo</Text>

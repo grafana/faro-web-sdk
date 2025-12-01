@@ -24,6 +24,15 @@ export {
   type WithFaroUserActionProps,
 } from './instrumentations/userActions/withFaroUserAction';
 
+// Export error boundary
+export { FaroErrorBoundary } from './errorBoundary/FaroErrorBoundary';
+export { withFaroErrorBoundary } from './errorBoundary/withFaroErrorBoundary';
+export type {
+  FaroErrorBoundaryProps,
+  FaroErrorBoundaryState,
+  FaroErrorBoundaryFallbackRender,
+} from './errorBoundary/types';
+
 // Export metas
 export { getDeviceMeta } from './metas/device';
 export { getScreenMeta } from './metas/screen';
