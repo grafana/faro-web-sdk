@@ -11,12 +11,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   initialize(): void {
-    this.unpatchedConsole.log('[Faro Session] Initializing session instrumentation');
-
     const sessionTrackingConfig = this.config.sessionTracking;
 
     if (!sessionTrackingConfig?.enabled) {
-      this.unpatchedConsole.warn('[Faro Session] Session tracking is disabled');
       this.logInfo('Session tracking is disabled');
       return;
     }
@@ -31,12 +28,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
       },
     };
 
-    this.unpatchedConsole.log('[Faro Session] Created session with ID:', sessionId);
-
     // Set the session in the API so it gets added to meta
     this.api.setSession(session);
 
-    this.unpatchedConsole.log('[Faro Session] Session instrumentation initialized');
     this.logInfo('Session instrumentation initialized');
   }
 }

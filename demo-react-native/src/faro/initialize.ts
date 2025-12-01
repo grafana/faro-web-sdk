@@ -1,16 +1,19 @@
+import { FARO_COLLECTOR_URL } from '@env';
+
 import {
   FetchTransport,
   getRNInstrumentations,
   initializeFaro,
 } from '@grafana/faro-react-native';
-import { FARO_COLLECTOR_URL } from '@env';
 
 /**
  * Initialize Faro for React Native demo app with Grafana Cloud
  */
 export function initFaro() {
   if (!FARO_COLLECTOR_URL) {
-    console.warn('FARO_COLLECTOR_URL not configured. Faro will not be initialized.');
+    console.warn(
+      'FARO_COLLECTOR_URL not configured. Faro will not be initialized.',
+    );
     return undefined;
   }
 

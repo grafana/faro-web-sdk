@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import {faro} from '@grafana/faro-react-native';
 
 export function PerformanceDemoScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,6 +27,17 @@ export function PerformanceDemoScreen() {
       }
 
       const duration = Date.now() - startTime;
+
+      // Report measurement to Faro
+      faro.api.pushMeasurement({
+        type: 'heavy_computation',
+        value: duration,
+        context: {
+          iterations: '10000000',
+          result: sum.toFixed(2),
+        },
+      });
+
       setResult(`Computation took ${duration}ms. Result: ${sum.toFixed(2)}`);
       setIsLoading(false);
     }, 100);
@@ -35,7 +47,20 @@ export function PerformanceDemoScreen() {
     setIsLoading(true);
     setResult('');
 
+    const startTime = Date.now();
+
     setTimeout(() => {
+      const duration = Date.now() - startTime;
+
+      // Report measurement to Faro
+      faro.api.pushMeasurement({
+        type: 'slow_render',
+        value: duration,
+        context: {
+          simulatedDelay: '2000',
+        },
+      });
+
       setResult('Render simulation complete');
       setIsLoading(false);
     }, 2000);

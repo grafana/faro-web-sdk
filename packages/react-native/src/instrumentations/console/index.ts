@@ -39,22 +39,17 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
 
           // Then try to send to Faro
           try {
-            this.unpatchedConsole.log(`[Faro Console] Captured ${level}:`, args);
-
             if (level === LogLevel.ERROR) {
               // Send errors as pushError
               const errorMessage = args.map(arg =>
                 typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
               ).join(' ');
 
-              this.unpatchedConsole.log('[Faro Console] Pushing error:', errorMessage);
               this.api.pushError(new Error(ConsoleInstrumentation.consoleErrorPrefix + errorMessage));
             } else {
               // Send other logs as pushLog
-              this.unpatchedConsole.log('[Faro Console] Pushing log:', args, 'level:', level);
               this.api.pushLog(args, { level });
             }
-            this.unpatchedConsole.log('[Faro Console] Successfully sent to API');
           } catch (err) {
             // Use unpatchedConsole to avoid infinite loop
             this.unpatchedConsole.error('[Faro Console] Error capturing log:', err);
@@ -63,7 +58,6 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
         };
       });
 
-    this.unpatchedConsole.log('[Faro Console] Console instrumentation initialized');
     this.logInfo('Console instrumentation initialized');
   }
 

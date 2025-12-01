@@ -34,12 +34,8 @@ export class FetchTransport extends BaseTransport {
 
   async send(items: TransportItem[]): Promise<void> {
     try {
-      this.unpatchedConsole.log('[Faro Transport] send() called with', items.length, 'items');
-
       if (this.disabledUntil > new Date(this.getNow())) {
         this.logWarn(`Dropping transport item due to too many requests. Backoff until ${this.disabledUntil}`);
-        this.unpatchedConsole.warn('[Faro Transport] Dropping items due to rate limit');
-
         return Promise.resolve();
       }
 
@@ -57,10 +53,6 @@ export class FetchTransport extends BaseTransport {
           sessionId = sessionMeta.id;
         }
 
-        this.unpatchedConsole.log('[Faro Transport] Sending to:', url);
-        this.unpatchedConsole.log('[Faro Transport] Transport body:', JSON.stringify(transportBody, null, 2));
-        this.unpatchedConsole.log('[Faro Transport] Body length:', body.length);
-
         return fetch(url, {
           method: 'POST',
           headers: {
@@ -75,14 +67,6 @@ export class FetchTransport extends BaseTransport {
           ...(restOfRequestOptions ?? {}),
         })
           .then(async (response) => {
-            this.unpatchedConsole.log('[Faro Transport] Response status:', response.status);
-
-            // Read response body for debugging
-            const responseText = await response.text().catch(() => '');
-            if (response.status !== ACCEPTED) {
-              this.unpatchedConsole.error('[Faro Transport] Error response body:', responseText);
-            }
-
             if (response.status === ACCEPTED) {
               const sessionExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
 

@@ -33,15 +33,65 @@ FARO_COLLECTOR_URL=https://faro-collector-prod-YOUR-REGION.grafana.net/collect/Y
 
 This demo app demonstrates:
 
+### Core Instrumentations ✅
 - **Console Instrumentation**: Captures console logs, warnings, and errors
+- **Errors Instrumentation**: Captures unhandled errors and promise rejections using React Native's ErrorUtils
 - **Session Tracking**: Generates and tracks user sessions
+- **View Instrumentation**: Tracks screen/navigation changes
+- **App State Instrumentation**: Tracks when app goes to background/foreground
+
+### Faro APIs ✅
+- **Custom Events**: `faro.api.pushEvent()` - Track custom user actions
+- **Performance Measurements**: `faro.api.pushMeasurement()` - Track performance metrics
+- **User Identification**: `faro.api.setUser()` - Associate telemetry with users
+- **Manual Logs**: `faro.api.pushLog()` - Send custom log messages (captured by console)
+- **Manual Errors**: `faro.api.pushError()` - Report errors manually
+
+### Platform-Specific ✅
 - **Device Meta**: Collects device information (model, OS version, etc.)
 - **Screen Meta**: Tracks screen dimensions
-- **Transport**: Sends telemetry data to Grafana Cloud
+- **Transport**: Sends telemetry data to Grafana Cloud via fetch
+
+### Not Yet Implemented ⏳
+- **User Actions Instrumentation**: Automatic tracking of taps/touches
+- **HTTP Request Instrumentation**: Automatic tracking of fetch/API calls
+- **OpenTelemetry Tracing**: Distributed tracing support
+- **Performance Navigation Timing**: Enhanced navigation performance tracking
 
 ## Testing
 
-Press the "Send Test Logs" button on the home screen to send test logs to Grafana Cloud. Check your Grafana Cloud dashboard to see the logs appear.
+### Home Screen
+- **🚀 Send Test Logs** - Sends console logs and custom events. Click counter shows number of events sent.
+- **👤 Set User Info** - Demonstrates user identification. All subsequent telemetry will be associated with the demo user.
+
+### Error Demo Screen
+- **Throw Sync Error** - Tests synchronous error capture
+- **Throw Async Error** - Tests asynchronous error capture
+- **Unhandled Rejection** - Tests promise rejection tracking
+- **Console Error** - Tests console.error capture
+
+### Performance Demo Screen
+- **Run Heavy Computation** - Tracks and reports computation time as a measurement
+- **Simulate Slow Render** - Tracks and reports render timing
+
+## Viewing Data in Grafana Cloud
+
+To view your telemetry data:
+
+1. Go to your Grafana Cloud instance at `https://<your-org>.grafana.net`
+2. Navigate to **Explore** (compass icon)
+3. Select your **Loki** data source
+4. Query your data:
+   ```logql
+   {app_name="React Native Test"}
+   ```
+5. Filter by:
+   - `kind="log"` - Console logs
+   - `kind="event"` - Custom events (demo_button_clicked, user_identified, etc.)
+   - `kind="measurement"` - Performance measurements (heavy_computation, slow_render)
+   - `kind="exception"` - Errors and exceptions
+   - `session_id` - Filter by specific user session
+   - `user_id="demo-user-123"` - Filter by user (after clicking "Set User Info")
 
 ---
 
