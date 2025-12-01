@@ -1,3 +1,50 @@
+# Faro React Native Demo
+
+Demo application showcasing the Grafana Faro React Native SDK.
+
+## Prerequisites
+
+Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+yarn install
+cd ios && bundle install && bundle exec pod install && cd ..
+```
+
+### 2. Configure environment variables
+
+Copy the `.env.example` file to `.env` and add your Grafana Cloud Faro collector URL:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and replace with your actual Faro collector URL from Grafana Cloud:
+
+```
+FARO_COLLECTOR_URL=https://faro-collector-prod-YOUR-REGION.grafana.net/collect/YOUR_TOKEN_HERE
+```
+
+## Features
+
+This demo app demonstrates:
+
+- **Console Instrumentation**: Captures console logs, warnings, and errors
+- **Session Tracking**: Generates and tracks user sessions
+- **Device Meta**: Collects device information (model, OS version, etc.)
+- **Screen Meta**: Tracks screen dimensions
+- **Transport**: Sends telemetry data to Grafana Cloud
+
+## Testing
+
+Press the "Send Test Logs" button on the home screen to send test logs to Grafana Cloud. Check your Grafana Cloud dashboard to see the logs appear.
+
+---
+
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
 # Getting Started

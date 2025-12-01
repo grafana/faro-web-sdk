@@ -1,18 +1,27 @@
-import { initializeFaro, getRNInstrumentations, FetchTransport } from '@grafana/faro-react-native';
+import {
+  FetchTransport,
+  getRNInstrumentations,
+  initializeFaro,
+} from '@grafana/faro-react-native';
+import { FARO_COLLECTOR_URL } from '@env';
 
 /**
- * Initialize Faro for React Native demo app
+ * Initialize Faro for React Native demo app with Grafana Cloud
  */
 export function initFaro() {
+  if (!FARO_COLLECTOR_URL) {
+    console.warn('FARO_COLLECTOR_URL not configured. Faro will not be initialized.');
+    return undefined;
+  }
+
   const faro = initializeFaro({
-    url: 'https://faro-collector-example.com/collect', // Replace with your collector URL
-    apiKey: 'demo-api-key', // Replace with your API key
     app: {
-      name: 'faro-react-native-demo',
+      name: 'React Native Test',
       version: '1.0.0',
-      environment: 'development',
+      environment: 'production',
     },
     instrumentations: [
+      // React Native specific instrumentations (equivalent to getWebInstrumentations)
       ...getRNInstrumentations({
         captureConsole: true,
         trackAppState: true,
@@ -23,12 +32,11 @@ export function initFaro() {
     ],
     transports: [
       new FetchTransport({
-        url: 'https://faro-collector-example.com/collect',
-        apiKey: 'demo-api-key',
+        url: FARO_COLLECTOR_URL,
       }),
     ],
   });
 
-  console.log('Faro initialized:', faro);
+  console.log('Faro initialized successfully for React Native');
   return faro;
 }

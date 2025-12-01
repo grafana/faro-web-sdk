@@ -1,4 +1,4 @@
-import { BaseExtension, BaseTransport, createPromiseBuffer, getTransportBody, noop, VERSION } from '@grafana/faro-core';
+import { BaseExtension, BaseTransport, createPromiseBuffer, getTransportBody, VERSION } from '@grafana/faro-core';
 import type { Config, Patterns, PromiseBuffer, TransportItem } from '@grafana/faro-core';
 
 import type { FetchTransportOptions } from './types';
@@ -34,14 +34,18 @@ export class FetchTransport extends BaseTransport {
 
   async send(items: TransportItem[]): Promise<void> {
     try {
+      this.unpatchedConsole.log('[Faro Transport] send() called with', items.length, 'items');
+
       if (this.disabledUntil > new Date(this.getNow())) {
         this.logWarn(`Dropping transport item due to too many requests. Backoff until ${this.disabledUntil}`);
+        this.unpatchedConsole.warn('[Faro Transport] Dropping items due to rate limit');
 
         return Promise.resolve();
       }
 
       await this.promiseBuffer.add(() => {
-        const body = JSON.stringify(getTransportBody(items));
+        const transportBody = getTransportBody(items);
+        const body = JSON.stringify(transportBody);
 
         const { url, requestOptions, apiKey } = this.options;
 
@@ -52,6 +56,10 @@ export class FetchTransport extends BaseTransport {
         if (sessionMeta != null) {
           sessionId = sessionMeta.id;
         }
+
+        this.unpatchedConsole.log('[Faro Transport] Sending to:', url);
+        this.unpatchedConsole.log('[Faro Transport] Transport body:', JSON.stringify(transportBody, null, 2));
+        this.unpatchedConsole.log('[Faro Transport] Body length:', body.length);
 
         return fetch(url, {
           method: 'POST',
@@ -67,6 +75,14 @@ export class FetchTransport extends BaseTransport {
           ...(restOfRequestOptions ?? {}),
         })
           .then(async (response) => {
+            this.unpatchedConsole.log('[Faro Transport] Response status:', response.status);
+
+            // Read response body for debugging
+            const responseText = await response.text().catch(() => '');
+            if (response.status !== ACCEPTED) {
+              this.unpatchedConsole.error('[Faro Transport] Error response body:', responseText);
+            }
+
             if (response.status === ACCEPTED) {
               const sessionExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
 
@@ -80,15 +96,15 @@ export class FetchTransport extends BaseTransport {
               this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
             }
 
-            // read the body so the connection can be closed
-            response.text().catch(noop);
             return response;
           })
           .catch((err) => {
+            this.unpatchedConsole.error('[Faro Transport] Fetch error:', err);
             this.logError('Failed sending payload to the receiver\n', JSON.parse(body), err);
           });
       });
     } catch (err) {
+      this.unpatchedConsole.error('[Faro Transport] Send error:', err);
       this.logError(err);
     }
   }

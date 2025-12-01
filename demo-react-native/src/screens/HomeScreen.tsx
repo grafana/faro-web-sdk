@@ -12,6 +12,12 @@ import type {RootStackParamList} from '../navigation/AppNavigator';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export function HomeScreen({navigation}: Props) {
+  const handleTestLog = () => {
+    console.log('Test log from Faro React Native!');
+    console.warn('Test warning from Faro React Native!');
+    console.info('Test info from Faro React Native!');
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Faro React Native Demo</Text>
@@ -20,6 +26,15 @@ export function HomeScreen({navigation}: Props) {
       </Text>
 
       <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.button, styles.testButton]}
+          onPress={handleTestLog}>
+          <Text style={styles.buttonText}>🚀 Send Test Logs</Text>
+          <Text style={styles.buttonDescription}>
+            Send sample logs to Grafana Cloud
+          </Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('ErrorDemo')}>
@@ -80,6 +95,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  testButton: {
+    backgroundColor: '#00D7C7',
   },
   buttonText: {
     fontSize: 18,
