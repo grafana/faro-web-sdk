@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.4",
+    "@react-native-async-storage/async-storage": "^1.21.0",
     "@react-native/new-app-screen": "0.82.1",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
     "react": "19.1.1",
     "react-native": "0.82.1",
+    "react-native-device-info": "^11.1.0",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^4.6.0"
   },
