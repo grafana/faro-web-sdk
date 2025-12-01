@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.esm.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/esm",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.cache/tsc/reactNative.esm.tsbuildinfo"
+  },
+  "include": ["./src"],
+  "exclude": ["./**/*.test.ts"]
+}

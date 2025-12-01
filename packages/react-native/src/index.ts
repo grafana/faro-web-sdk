@@ -1,0 +1,45 @@
+// Main entry point for @grafana/faro-react-native
+export { initializeFaro } from './initialize';
+export { faro } from '@grafana/faro-core';
+
+// Export types
+export type { ReactNativeConfig } from './config/types';
+
+// Export instrumentation helpers
+export { getRNInstrumentations } from './config/getRNInstrumentations';
+
+// Export instrumentations
+export { ErrorsInstrumentation } from './instrumentations/errors';
+export { ConsoleInstrumentation } from './instrumentations/console';
+export { SessionInstrumentation } from './instrumentations/session';
+export { ViewInstrumentation } from './instrumentations/view';
+export { AppStateInstrumentation } from './instrumentations/appState';
+
+// Export metas
+export { getDeviceMeta } from './metas/device';
+export { getScreenMeta } from './metas/screen';
+export { getSdkMeta } from './metas/sdk';
+
+// Export transports
+export { FetchTransport } from './transports/fetch';
+
+// Export navigation (if available)
+export { ReactNativeNavigationIntegration } from './navigation/v6';
+export type {
+  ReactNavigationDependencies,
+  ReactNavigationConfig,
+} from './navigation/types';
+
+// Re-export core types that consumers will need
+export type {
+  Config,
+  Faro,
+  Instrumentation,
+  Meta,
+  Transport,
+  PushErrorOptions,
+  PushEventOptions,
+  PushLogOptions,
+  PushMeasurementOptions,
+  LogLevel,
+} from '@grafana/faro-core';
