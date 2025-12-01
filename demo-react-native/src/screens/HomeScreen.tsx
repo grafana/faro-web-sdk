@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,19 +6,19 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {RootStackParamList} from '../navigation/AppNavigator';
-import {
-  faro,
-  trackUserAction,
-} from '@grafana/faro-react-native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../navigation/AppNavigator';
+import { faro, trackUserAction } from '@grafana/faro-react-native';
+import { UserActionInternalInterface } from '@grafana/faro-core';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-export function HomeScreen({navigation}: Props) {
+export function HomeScreen({ navigation }: Props) {
   const [eventCount, setEventCount] = useState(0);
   const [userSet, setUserSet] = useState(false);
   const [userActionCount, setUserActionCount] = useState(0);
+  const [httpRequestCount, setHttpRequestCount] = useState(0);
+  const [httpLoading, setHttpLoading] = useState(false);
 
   const handleTestLog = () => {
     // Send console logs (captured by ConsoleInstrumentation)
@@ -65,12 +65,37 @@ export function HomeScreen({navigation}: Props) {
     // Simulate some work
     setTimeout(() => {
       // End the action when done
-      // TODO: Export UserActionInternalInterface from @grafana/faro-react-native to avoid direct core import
       if (action) {
-        (action as any).end();
+        (action as UserActionInternalInterface).end();
       }
       setUserActionCount(prev => prev + 1);
     }, 100);
+  };
+
+  const handleTestHttp = async () => {
+    setHttpLoading(true);
+    try {
+      // Test successful HTTP request
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts/1');
+      const data = await response.json();
+      console.log('HTTP test successful:', data);
+
+      faro.api.pushEvent('http_test_completed', {
+        status: 'success',
+        statusCode: String(response.status),
+      });
+
+      setHttpRequestCount(prev => prev + 1);
+    } catch (error) {
+      console.error('HTTP test failed:', error);
+
+      faro.api.pushEvent('http_test_completed', {
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    } finally {
+      setHttpLoading(false);
+    }
   };
 
   return (
@@ -91,10 +116,22 @@ export function HomeScreen({navigation}: Props) {
         </View>
       )}
 
+      {httpRequestCount > 0 && (
+        <View style={[styles.infoBox, styles.httpInfoBox]}>
+          <Text style={styles.infoText}>
+            🌐 HTTP Requests: {httpRequestCount}
+          </Text>
+          <Text style={styles.infoSubtext}>
+            Fetch API calls are automatically monitored!
+          </Text>
+        </View>
+      )}
+
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, styles.testButton]}
-          onPress={handleTestLog}>
+          onPress={handleTestLog}
+        >
           <Text style={styles.buttonText}>
             🚀 Send Test Logs {eventCount > 0 && `(${eventCount})`}
           </Text>
@@ -104,9 +141,13 @@ export function HomeScreen({navigation}: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, userSet ? styles.userSetButton : styles.userButton]}
+          style={[
+            styles.button,
+            userSet ? styles.userSetButton : styles.userButton,
+          ]}
           onPress={handleSetUser}
-          disabled={userSet}>
+          disabled={userSet}
+        >
           <Text style={styles.buttonText}>
             👤 {userSet ? 'User Set ✓' : 'Set User Info'}
           </Text>
@@ -117,18 +158,34 @@ export function HomeScreen({navigation}: Props) {
 
         <TouchableOpacity
           style={[styles.button, styles.manualActionButton]}
-          onPress={handleManualUserAction}>
-          <Text style={styles.buttonText}>
-            🎯 Manual User Action
-          </Text>
+          onPress={handleManualUserAction}
+        >
+          <Text style={styles.buttonText}>🎯 Manual User Action</Text>
           <Text style={styles.buttonDescription}>
             Demonstrates manual user action tracking API
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={[styles.button, styles.httpButton]}
+          onPress={handleTestHttp}
+          disabled={httpLoading}
+        >
+          <Text style={styles.buttonText}>
+            🌐 {httpLoading ? 'Testing...' : 'Test HTTP Request'}{' '}
+            {httpRequestCount > 0 && `(${httpRequestCount})`}
+          </Text>
+          <Text style={styles.buttonDescription}>
+            {httpLoading
+              ? 'Making HTTP request...'
+              : 'Test automatic HTTP/fetch monitoring'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate('ErrorDemo')}>
+          onPress={() => navigation.navigate('ErrorDemo')}
+        >
           <Text style={styles.buttonText}>Error Demo</Text>
           <Text style={styles.buttonDescription}>
             Test error capture and reporting
@@ -137,7 +194,8 @@ export function HomeScreen({navigation}: Props) {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate('PerformanceDemo')}>
+          onPress={() => navigation.navigate('PerformanceDemo')}
+        >
           <Text style={styles.buttonText}>Performance Demo</Text>
           <Text style={styles.buttonDescription}>
             Test performance monitoring
@@ -146,7 +204,8 @@ export function HomeScreen({navigation}: Props) {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate('About')}>
+          onPress={() => navigation.navigate('About')}
+        >
           <Text style={styles.buttonText}>About</Text>
           <Text style={styles.buttonDescription}>
             About this demo application
@@ -182,6 +241,10 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#1890ff',
   },
+  httpInfoBox: {
+    backgroundColor: '#f0fdf4',
+    borderLeftColor: '#10b981',
+  },
   infoText: {
     fontSize: 16,
     fontWeight: '600',
@@ -200,7 +263,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 8,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
@@ -216,6 +279,9 @@ const styles = StyleSheet.create({
   },
   manualActionButton: {
     backgroundColor: '#8b5cf6',
+  },
+  httpButton: {
+    backgroundColor: '#10b981',
   },
   buttonText: {
     fontSize: 18,

@@ -15,6 +15,7 @@ export { SessionInstrumentation } from './instrumentations/session';
 export { ViewInstrumentation } from './instrumentations/view';
 export { AppStateInstrumentation } from './instrumentations/appState';
 export { UserActionInstrumentation } from './instrumentations/userActions';
+export { HttpInstrumentation } from './instrumentations/http';
 
 // Export user action helpers
 export {

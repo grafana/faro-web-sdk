@@ -48,4 +48,14 @@ export interface GetRNInstrumentationsOptions {
    * Track user actions/interactions (default: true)
    */
   trackUserActions?: boolean;
+
+  /**
+   * Track HTTP/fetch requests (default: true)
+   */
+  trackHttpRequests?: boolean;
+
+  /**
+   * URLs to ignore for HTTP tracking (regex patterns)
+   */
+  ignoredHttpUrls?: RegExp[];
 }

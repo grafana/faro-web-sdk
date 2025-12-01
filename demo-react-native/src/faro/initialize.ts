@@ -31,6 +31,8 @@ export function initFaro() {
         captureErrors: true,
         trackSessions: true,
         trackViews: true,
+        trackUserActions: true,
+        trackHttpRequests: true, // Explicitly enable HTTP tracking
       }),
     ],
     transports: [
@@ -40,6 +42,10 @@ export function initFaro() {
     ],
   });
 
-  console.log('Faro initialized successfully for React Native');
+  // Test that Faro is working by sending a test event
+  faro.api.pushEvent('faro_initialized', {
+    timestamp: new Date().toISOString(),
+  });
+
   return faro;
 }

@@ -6,6 +6,7 @@ import { SessionInstrumentation } from '../instrumentations/session';
 import { ViewInstrumentation } from '../instrumentations/view';
 import { AppStateInstrumentation } from '../instrumentations/appState';
 import { UserActionInstrumentation } from '../instrumentations/userActions';
+import { HttpInstrumentation } from '../instrumentations/http';
 
 /**
  * Returns the default set of instrumentations for React Native
@@ -20,6 +21,8 @@ export function getRNInstrumentations(
     trackSessions = true,
     trackViews = true,
     trackUserActions = true,
+    trackHttpRequests = true,
+    ignoredHttpUrls = [],
   } = options;
 
   const instrumentations: Instrumentation[] = [];
@@ -46,6 +49,10 @@ export function getRNInstrumentations(
 
   if (trackUserActions) {
     instrumentations.push(new UserActionInstrumentation());
+  }
+
+  if (trackHttpRequests) {
+    instrumentations.push(new HttpInstrumentation({ ignoredUrls: ignoredHttpUrls }));
   }
 
   return instrumentations;

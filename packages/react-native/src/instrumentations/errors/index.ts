@@ -1,5 +1,6 @@
-import { BaseInstrumentation } from '@grafana/faro-core';
 import type { ErrorUtils } from 'react-native';
+
+import { BaseInstrumentation } from '@grafana/faro-core';
 
 // Access the global ErrorUtils
 declare const global: {
@@ -69,9 +70,7 @@ export class ErrorsInstrumentation extends BaseInstrumentation {
           error = reason;
         } else {
           error = new Error(
-            `Unhandled Promise Rejection: ${
-              typeof reason === 'object' ? JSON.stringify(reason) : String(reason)
-            }`
+            `Unhandled Promise Rejection: ${typeof reason === 'object' ? JSON.stringify(reason) : String(reason)}`
           );
         }
 
