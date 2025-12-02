@@ -83,7 +83,9 @@ export class HttpInstrumentation extends BaseInstrumentation {
 
     global.fetch = function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url || '';
-      const method = init?.method?.toUpperCase() || 'GET';
+      // Extract method from Request object or init options
+      const requestMethod = typeof input !== 'string' && !(input instanceof URL) ? input.method : undefined;
+      const method = (init?.method || requestMethod || 'GET').toUpperCase();
 
       if (self.isUrlIgnored(url)) {
         return self.originalFetch!.call(this, input, init);
@@ -105,17 +107,21 @@ export class HttpInstrumentation extends BaseInstrumentation {
       notifyHttpRequestStart(payload);
 
       // Track request start
-      self.api?.pushMeasurement({
-        type: 'http_request_start',
-        values: {
-          timestamp: startTime,
+      self.api?.pushMeasurement(
+        {
+          type: 'http_request_start',
+          values: {
+            timestamp: startTime,
+          },
         },
-        context: {
-          url,
-          method,
-          requestId,
-        },
-      });
+        {
+          context: {
+            url,
+            method,
+            requestId,
+          },
+        }
+      );
 
       return self
         .originalFetch!.call(this, input, init)
@@ -131,19 +137,23 @@ export class HttpInstrumentation extends BaseInstrumentation {
           notifyHttpRequestEnd(payload);
 
           // Track successful request
-          self.api?.pushMeasurement({
-            type: 'http_request',
-            values: {
-              duration,
-              status: response.status,
+          self.api?.pushMeasurement(
+            {
+              type: 'http_request',
+              values: {
+                duration,
+                status: response.status,
+              },
             },
-            context: {
-              url,
-              method,
-              requestId,
-              statusText: response.statusText,
-            },
-          });
+            {
+              context: {
+                url,
+                method,
+                requestId,
+                statusText: response.statusText,
+              },
+            }
+          );
 
           self.requests.delete(requestId);
           return response;
@@ -160,18 +170,22 @@ export class HttpInstrumentation extends BaseInstrumentation {
           notifyHttpRequestEnd(payload);
 
           // Track failed request
-          self.api?.pushMeasurement({
-            type: 'http_request_error',
-            values: {
-              duration,
+          self.api?.pushMeasurement(
+            {
+              type: 'http_request_error',
+              values: {
+                duration,
+              },
             },
-            context: {
-              url,
-              method,
-              requestId,
-              error: payload.error || 'Unknown error',
-            },
-          });
+            {
+              context: {
+                url,
+                method,
+                requestId,
+                error: payload.error || 'Unknown error',
+              },
+            }
+          );
 
           self.api?.pushError(error, {
             type: 'HTTP Request Failed',
