@@ -41,12 +41,16 @@ export { getSdkMeta } from './metas/sdk';
 // Export transports
 export { FetchTransport } from './transports/fetch';
 
-// Export navigation (if available)
+// Export navigation utilities
 export { ReactNativeNavigationIntegration } from './navigation/v6';
-export type {
-  ReactNavigationDependencies,
-  ReactNavigationConfig,
-} from './navigation/types';
+export {
+  useFaroNavigation,
+  createNavigationStateChangeHandler,
+  getCurrentRoute,
+  getRouteName,
+  onNavigationStateChange,
+} from './navigation';
+export type { ReactNavigationDependencies, ReactNavigationConfig } from './navigation/types';
 
 // Re-export core types that consumers will need
 export type {

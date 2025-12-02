@@ -2050,6 +2050,7 @@ __metadata:
     "@babel/core": "npm:^7.25.2"
     "@babel/preset-env": "npm:^7.25.3"
     "@babel/runtime": "npm:^7.28.4"
+    "@grafana/faro-react-native": "link:../packages/react-native"
     "@react-native-async-storage/async-storage": "npm:^1.21.0"
     "@react-native-community/cli": "npm:20.0.0"
     "@react-native-community/cli-platform-android": "npm:20.0.0"
@@ -2154,6 +2155,12 @@ __metadata:
     "@grafana/faro-core": "npm:^2.0.2"
     rrweb: "npm:^2.0.0-alpha.18"
   languageName: unknown
+  linkType: soft
+
+"@grafana/faro-react-native@link:../packages/react-native::locator=%40grafana%2Ffaro-demo-react-native%40workspace%3Ademo-react-native":
+  version: 0.0.0-use.local
+  resolution: "@grafana/faro-react-native@link:../packages/react-native::locator=%40grafana%2Ffaro-demo-react-native%40workspace%3Ademo-react-native"
+  languageName: node
   linkType: soft
 
 "@grafana/faro-react-native@workspace:packages/react-native":

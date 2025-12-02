@@ -1,6 +1,7 @@
 import type { Config } from '@grafana/faro-core';
 import type { ReactNativeConfig } from './types';
 import { getDeviceMeta } from '../metas/device';
+import { createPageMeta } from '../metas/page';
 import { getScreenMeta } from '../metas/screen';
 import { getSdkMeta } from '../metas/sdk';
 
@@ -11,7 +12,7 @@ export function makeRNConfig(config: ReactNativeConfig): Config {
   const { metas = [], ...rest } = config;
 
   // Default metas for React Native
-  const defaultMetas = [getSdkMeta(), getDeviceMeta(), getScreenMeta()];
+  const defaultMetas = [getSdkMeta(), getDeviceMeta(), getScreenMeta(), createPageMeta()];
 
   return {
     ...rest,

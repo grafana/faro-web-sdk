@@ -277,29 +277,19 @@ The SDK automatically emits session lifecycle events:
 
 ## Navigation Integration
 
-### React Navigation v6
+Faro provides seamless integration with React Navigation to automatically track screen changes.
+
+### Quick Start
 
 ```tsx
-import { useEffect } from 'react';
 import { useNavigationContainerRef } from '@react-navigation/native';
-import { faro } from '@grafana/faro-react-native';
+import { useFaroNavigation } from '@grafana/faro-react-native';
 
 function App() {
   const navigationRef = useNavigationContainerRef();
 
-  useEffect(() => {
-    const unsubscribe = navigationRef.current?.addListener('state', () => {
-      const currentRoute = navigationRef.current?.getCurrentRoute();
-      if (currentRoute) {
-        faro.api.pushEvent('view_change', {
-          routeName: currentRoute.name,
-          params: JSON.stringify(currentRoute.params || {}),
-        });
-      }
-    });
-
-    return unsubscribe;
-  }, []);
+  // Automatically track navigation changes
+  useFaroNavigation(navigationRef);
 
   return (
     <NavigationContainer ref={navigationRef}>
@@ -308,6 +298,34 @@ function App() {
   );
 }
 ```
+
+### Static Navigation API
+
+For React Navigation 7+ static navigation:
+
+```tsx
+import { createStaticNavigation, useNavigationContainerRef } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useFaroNavigation } from '@grafana/faro-react-native';
+
+const RootStack = createNativeStackNavigator({
+  screens: {
+    Home: { screen: HomeScreen, options: { title: 'Welcome' } },
+    Profile: { screen: ProfileScreen },
+  },
+});
+
+const Navigation = createStaticNavigation(RootStack);
+
+function App() {
+  const navigationRef = useNavigationContainerRef();
+  useFaroNavigation(navigationRef);
+
+  return <Navigation ref={navigationRef} />;
+}
+```
+
+For detailed integration guides, advanced usage, and troubleshooting, see [NAVIGATION_INTEGRATION.md](./NAVIGATION_INTEGRATION.md).
 
 ## TypeScript
 

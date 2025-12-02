@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.4",
+    "@grafana/faro-react-native": "link:../packages/react-native",
     "@react-native-async-storage/async-storage": "^1.21.0",
     "@react-native/new-app-screen": "0.82.1",
     "@react-navigation/native": "^6.1.18",

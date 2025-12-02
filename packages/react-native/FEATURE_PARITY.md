@@ -10,17 +10,18 @@ This document provides a comprehensive comparison between the Faro React Native 
 
 | Metric | Completion |
 |--------|------------|
-| **Core Functionality** | ~70% |
-| **Feature Parity** (excluding web-only) | ~60% |
-| **With Tracing Support** | ~45% |
+| **Core Functionality** | ~78% |
+| **Feature Parity** (excluding web-only) | ~70% |
+| **With Tracing Support** | ~52% |
 
 ### Quick Stats
-- ✅ **Fully Implemented**: 8/15 core features
-- ⏳ **Partially Implemented/Placeholder**: 3/15 features
+- ✅ **Fully Implemented**: 9/15 core features
+- ⏳ **Partially Implemented/Placeholder**: 2/15 features
 - ❌ **Not Applicable**: 4 web-only features
 - 🔄 **Needs Adaptation**: 5 features
 
 ### Recent Updates
+- **2025-12-02**: ✅ ViewInstrumentation fully implemented with React Navigation integration (hook + utilities)
 - **2025-12-02**: ✅ SessionInstrumentation fully implemented with AsyncStorage persistence, expiration tracking, and sampling support
 
 ---
@@ -34,7 +35,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 | **ConsoleInstrumentation** | ✅ Basic | Missing: unpatch(), advanced serialization |
 | **ErrorsInstrumentation** | ✅ Implemented | Missing: Advanced stack frame parsing |
 | **SessionInstrumentation** | ✅ Fully Implemented | Complete with AsyncStorage, expiration, sampling |
-| **ViewInstrumentation** | ⏳ Placeholder | Missing: Screen tracking, navigation integration |
+| **ViewInstrumentation** | ✅ Fully Implemented | Complete with React Navigation integration |
 | **WebVitalsInstrumentation** | ❌ N/A | Web-only (CLS, LCP, INP metrics) |
 | **PerformanceInstrumentation** | ❌ N/A | Web-only (Performance API) |
 | **UserActionInstrumentation** | ✅ Basic | Missing: Automatic gesture detection, duration |
@@ -132,21 +133,50 @@ This document provides a comprehensive comparison between the Faro React Native 
 - Tracks view/route changes
 - Enforces default view value
 - Integrates with history API
+- Emits VIEW_CHANGED events
 
-**React Native SDK**
-- ⚠️ Skeleton implementation only
-- ❌ No screen change tracking
-- ❌ No navigation library integration
+**React Native SDK** ✅ **FULLY IMPLEMENTED** (as of 2025-12-02)
+- ✅ Tracks screen/view changes
+- ✅ Listens to meta changes and emits VIEW_CHANGED events
+- ✅ React Navigation integration via `useFaroNavigation` hook
+- ✅ Support for NavigationContainer ref pattern
+- ✅ Support for static navigation API (React Navigation 7+)
+- ✅ Automatic nested navigator support
+- ✅ Route parameter tracking
+- ✅ Screen meta integration
+- ✅ Unpatch support for cleanup
 
-**Action Items:**
-- [ ] Implement React Navigation v5 integration
-- [ ] Implement React Navigation v6 integration
-- [ ] Track screen change events
-- [ ] Generate screen IDs
-- [ ] Emit view change events with timing
-- [ ] Document integration patterns
+**Implementation Files:**
+- `packages/react-native/src/instrumentations/view/index.ts` - Main instrumentation
+- `packages/react-native/src/navigation/useFaroNavigation.ts` - React hook for easy integration
+- `packages/react-native/src/navigation/utils.ts` - Navigation utilities
+- `packages/react-native/src/metas/screen.ts` - Screen meta management
+- `packages/react-native/NAVIGATION_INTEGRATION.md` - Comprehensive integration guide
 
-**Priority:** 🔴 HIGH
+**Usage Examples:**
+
+```tsx
+// Using the hook (recommended)
+import { useFaroNavigation } from '@grafana/faro-react-native';
+
+const navigationRef = useNavigationContainerRef();
+useFaroNavigation(navigationRef);
+
+<NavigationContainer ref={navigationRef}>
+  {/* navigation */}
+</NavigationContainer>
+```
+
+```tsx
+// Using static navigation API
+const Navigation = createStaticNavigation(RootStack);
+const navigationRef = useNavigationContainerRef();
+useFaroNavigation(navigationRef);
+
+<Navigation ref={navigationRef} />
+```
+
+**Priority:** ✅ COMPLETE
 
 ---
 
@@ -552,17 +582,21 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 
 ---
 
-#### 2. ViewInstrumentation - Screen Tracking ⏳
+#### 2. ViewInstrumentation - Screen Tracking ✅ COMPLETE
 **Why:** Essential for understanding user navigation and app flow
 
-**Tasks:**
-- React Navigation v5 integration
-- React Navigation v6 integration
-- Screen change detection
-- View change event emission
-- Route context capture
+**Status:** ✅ Fully implemented as of 2025-12-02
 
-**Estimated Effort:** 2 weeks
+**Completed Tasks:**
+- ✅ React Navigation v5+ integration
+- ✅ React Navigation v6 integration
+- ✅ Screen change detection
+- ✅ View change event emission
+- ✅ Route context and parameter capture
+- ✅ useFaroNavigation hook
+- ✅ Static navigation API support
+- ✅ Nested navigator support
+- ✅ Comprehensive documentation
 
 ---
 
@@ -594,10 +628,19 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 
 ### 🟡 MEDIUM PRIORITY (Important for full feature parity)
 
-#### 5. React Navigation Integration ⏳
+#### 5. React Navigation Integration ✅ COMPLETE
 **Why:** Proper navigation tracking is essential for RN apps
 
-**Estimated Effort:** 2 weeks
+**Status:** ✅ Fully implemented as of 2025-12-02
+
+**Completed Tasks:**
+- ✅ useFaroNavigation hook
+- ✅ createNavigationStateChangeHandler utility
+- ✅ Support for NavigationContainer ref pattern
+- ✅ Support for static navigation API
+- ✅ Automatic nested navigator handling
+- ✅ Route parameter tracking
+- ✅ Comprehensive integration guide
 
 ---
 
@@ -795,7 +838,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 | **Console** | ✅ Full | ⚠️ Basic | Unpatch, options |
 | **Errors** | ✅ Full | ⚠️ Basic | Stack parsing |
 | **Session** | ✅ Full | ✅ Full | None |
-| **View** | ✅ Full | ⏳ Placeholder | Implementation needed |
+| **View** | ✅ Full | ✅ Full | None |
 | **Web Vitals** | ✅ | ❌ N/A | Web-only |
 | **Performance** | ✅ | ❌ N/A | Web-only |
 | **User Actions** | ✅ Full | ⚠️ Basic | Auto-detection |
@@ -804,7 +847,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 | **HTTP** | ✅ | ✅ Full | None |
 | **App State** | N/A | ⏳ Placeholder | Implementation needed |
 
-**Score (excluding N/A):** 5/8 (62.5%)
+**Score (excluding N/A):** 6/8 (75%)
 
 ---
 
@@ -816,9 +859,9 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 | **Error Boundary HOC** | ✅ | ✅ | None |
 | **Profiler** | ✅ | ❌ | Implementation needed |
 | **Profiler HOC** | ✅ | ❌ | Implementation needed |
-| **Router Integration** | ✅ | ⏳ Placeholder | Implementation needed |
+| **Navigation Integration** | ✅ | ✅ | None |
 
-**Score:** 2/5 (40%)
+**Score:** 3/5 (60%)
 
 ---
 
@@ -841,10 +884,10 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 | Category | Score |
 |----------|-------|
 | **Core SDK** | 94% ✅ |
-| **Instrumentations** | 62.5% ⚠️ |
-| **React Integration** | 40% ⚠️ |
+| **Instrumentations** | 75% ✅ |
+| **React Integration** | 60% ⚠️ |
 | **Tracing** | 0% ❌ |
-| **Overall** | **49%** |
+| **Overall** | **57%** |
 
 ---
 
