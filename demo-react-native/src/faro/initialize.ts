@@ -1,7 +1,9 @@
 import { FARO_COLLECTOR_URL } from '@env';
 
 import {
+  ConsoleTransport,
   FetchTransport,
+  LogLevel,
   getRNInstrumentations,
   initializeFaro,
 } from '@grafana/faro-react-native';
@@ -38,6 +40,10 @@ export function initFaro() {
     transports: [
       new FetchTransport({
         url: FARO_COLLECTOR_URL,
+      }),
+      // Add ConsoleTransport for debugging - prints all events to console
+      new ConsoleTransport({
+        level: LogLevel.INFO, // Use INFO level to avoid too much noise
       }),
     ],
   });

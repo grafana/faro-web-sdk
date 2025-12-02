@@ -622,6 +622,66 @@ See the [demo-react-native](../../demo-react-native) directory for a complete ex
 - `withFaroUserAction<P>(Component, defaultActionName)` - HOC for tracking component interactions
 - `trackUserAction(actionName, context?)` - Manual user action tracking
 
+### Transports
+
+Transports control where and how telemetry data is sent.
+
+#### FetchTransport
+
+Sends telemetry to a remote Faro collector (default):
+
+```tsx
+import { initializeFaro, FetchTransport } from '@grafana/faro-react-native';
+
+initializeFaro({
+  url: 'https://faro-collector-prod-YOUR-REGION.grafana.net/collect/YOUR_TOKEN_HERE',
+  app: { name: 'my-app', version: '1.0.0' },
+  // FetchTransport is automatically configured from the url
+});
+```
+
+#### ConsoleTransport
+
+Logs telemetry to the console for debugging (useful during development):
+
+```tsx
+import { initializeFaro, ConsoleTransport, LogLevel } from '@grafana/faro-react-native';
+
+initializeFaro({
+  url: 'https://faro-collector-prod-YOUR-REGION.grafana.net/collect/YOUR_TOKEN_HERE',
+  app: { name: 'my-app', version: '1.0.0' },
+  transports: [
+    new ConsoleTransport({
+      level: LogLevel.INFO, // Optional: DEBUG, INFO, WARN, ERROR (default: DEBUG)
+    }),
+  ],
+});
+```
+
+The ConsoleTransport prints formatted telemetry data to the console, showing:
+- All metadata (device info, session, user, etc.)
+- Event payloads (logs, errors, events, measurements)
+- Structured JSON format for easy inspection
+
+**Use Cases:**
+- Local development and debugging
+- Verify instrumentation is working correctly
+- Inspect exact structure of events before they reach Grafana
+- Test without sending data to production
+- Run alongside FetchTransport for dual output
+
+**Example Output:**
+```javascript
+console.debug('New event', {
+  meta: {
+    browser: { name: 'iOS', version: '18.0', ... },
+    session: { id: 'abc123', ... },
+    ...
+  },
+  logs: [{ message: 'Hello', level: 'info', ... }]
+})
+```
+
 ### Instrumentations
 
 - `ConsoleInstrumentation` - Console logging

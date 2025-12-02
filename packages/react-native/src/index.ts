@@ -43,6 +43,8 @@ export { getSdkMeta } from './metas/sdk';
 
 // Export transports
 export { FetchTransport } from './transports/fetch';
+export { ConsoleTransport } from './transports/console';
+export type { ConsoleTransportOptions } from './transports/console';
 
 // Export navigation utilities
 export { ReactNativeNavigationIntegration } from './navigation/v6';
@@ -55,7 +57,7 @@ export {
 } from './navigation';
 export type { ReactNavigationDependencies, ReactNavigationConfig } from './navigation/types';
 
-// Re-export core types that consumers will need
+// Re-export core types and enums that consumers will need
 export type {
   Config,
   Faro,
@@ -66,5 +68,7 @@ export type {
   PushEventOptions,
   PushLogOptions,
   PushMeasurementOptions,
-  LogLevel,
 } from '@grafana/faro-core';
+
+// Export LogLevel enum (not just the type)
+export { LogLevel } from '@grafana/faro-core';
