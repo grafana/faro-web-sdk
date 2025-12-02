@@ -221,6 +221,60 @@ initializeFaro({
 });
 ```
 
+### Session Configuration
+
+The SDK supports both persistent and volatile session tracking with configurable expiration and inactivity timeouts:
+
+```tsx
+import { initializeFaro } from '@grafana/faro-react-native';
+
+initializeFaro({
+  url: 'https://your-faro-collector-url',
+  app: {
+    name: 'my-app',
+    version: '1.0.0',
+  },
+  sessionTracking: {
+    enabled: true,
+    // Use AsyncStorage for persistent sessions across app restarts
+    persistent: true,
+    // Session expires after 4 hours by default (can be customized)
+    // Session is also invalidated after 15 minutes of inactivity
+
+    // Optional: Sampling rate (0-1) to sample sessions
+    samplingRate: 1.0, // 100% of sessions
+
+    // Optional: Custom session ID generator
+    generateSessionId: () => 'custom-session-id',
+
+    // Optional: Callback when session changes
+    onSessionChange: (previousSession, newSession) => {
+      console.log('Session changed:', previousSession?.id, '->', newSession?.id);
+    },
+
+    // Optional: Initial session attributes
+    session: {
+      attributes: {
+        customAttribute: 'value',
+      },
+    },
+  },
+});
+```
+
+**Session Types:**
+
+- **Persistent Sessions** (`persistent: true`): Stored in AsyncStorage and survive app restarts. Sessions expire after 4 hours or 15 minutes of inactivity.
+
+- **Volatile Sessions** (`persistent: false`, default): Stored in memory only. Each app launch creates a new session.
+
+**Session Events:**
+
+The SDK automatically emits session lifecycle events:
+- `faro.session.start` - New session created
+- `faro.session.resume` - Existing session resumed (persistent only)
+- `faro.session.extend` - Session extended from the same previous session
+
 ## Navigation Integration
 
 ### React Navigation v6
