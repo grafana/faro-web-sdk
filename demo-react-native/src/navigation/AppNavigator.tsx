@@ -10,6 +10,7 @@ import { ErrorDemoScreen } from '../screens/ErrorDemoScreen';
 import { ErrorBoundaryDemoScreen } from '../screens/ErrorBoundaryDemoScreen';
 import { PerformanceDemoScreen } from '../screens/PerformanceDemoScreen';
 import { AboutScreen } from '../screens/AboutScreen';
+import ConsoleTestScreen from '../screens/ConsoleTestScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -17,6 +18,7 @@ export type RootStackParamList = {
   ErrorBoundaryDemo: undefined;
   PerformanceDemo: undefined;
   About: undefined;
+  ConsoleTest: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -66,6 +68,11 @@ export function AppNavigator() {
           name="About"
           component={AboutScreen}
           options={{ title: 'About' }}
+        />
+        <Stack.Screen
+          name="ConsoleTest"
+          component={ConsoleTestScreen}
+          options={{ title: 'Console Tests' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

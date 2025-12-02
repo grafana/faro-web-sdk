@@ -197,6 +197,90 @@ interface GetRNInstrumentationsOptions {
 }
 ```
 
+### Console Instrumentation Configuration
+
+The console instrumentation can be configured with advanced options:
+
+```tsx
+import { initializeFaro, LogLevel } from '@grafana/faro-react-native';
+
+initializeFaro({
+  url: 'https://your-faro-collector-url',
+  app: {
+    name: 'my-app',
+    version: '1.0.0',
+  },
+  consoleInstrumentation: {
+    // Configure which log levels to capture
+    // By default: [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG] are disabled
+    disabledLevels: [LogLevel.DEBUG, LogLevel.TRACE],
+
+    // Treat console.error as log instead of error (default: false)
+    consoleErrorAsLog: false,
+
+    // Enable advanced error serialization for better error details (default: false)
+    // When enabled, payloads may become larger but include more error context
+    serializeErrors: true,
+
+    // Optional: Custom error serializer function
+    errorSerializer: (args) => {
+      return args.map(arg => {
+        if (typeof arg === 'object') {
+          return JSON.stringify(arg, null, 2); // Pretty print objects
+        }
+        return String(arg);
+      }).join(' ');
+    },
+  },
+});
+```
+
+**Console Instrumentation Features:**
+
+- **Configurable Log Levels**: Choose which console methods to capture (log, info, warn, error, debug, trace)
+- **Smart Object Serialization**: Automatically converts objects to JSON strings instead of `[object Object]`
+- **Advanced Error Serialization**: Extract detailed error information including:
+  - Error message and type
+  - Stack frames with file, function, line, and column information
+  - Better handling of Error objects in console.error
+- **Flexible Error Handling**: Choose to send console.error as:
+  - Errors (default): Appears in error tracking views
+  - Logs: Appears in log views with error context
+- **Custom Serializers**: Provide your own logic for converting console arguments to strings
+- **Unpatch Support**: Clean up console patching when needed
+
+**Example Use Cases:**
+
+```tsx
+// Capture all console levels including debug
+getRNInstrumentations({
+  captureConsole: true,
+});
+
+initializeFaro({
+  // ...
+  consoleInstrumentation: {
+    disabledLevels: [], // Capture everything
+  },
+});
+
+// Send console.error as logs instead of errors
+initializeFaro({
+  // ...
+  consoleInstrumentation: {
+    consoleErrorAsLog: true,
+  },
+});
+
+// Enable detailed error serialization
+initializeFaro({
+  // ...
+  consoleInstrumentation: {
+    serializeErrors: true, // Extract stack frames and error details
+  },
+});
+```
+
 ### Custom Configuration
 
 ```tsx

@@ -213,6 +213,16 @@ export function HomeScreen({ navigation }: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={[styles.button, styles.consoleTestButton]}
+          onPress={() => navigation.navigate('ConsoleTest')}
+        >
+          <Text style={styles.buttonText}>🔧 Console Tests</Text>
+          <Text style={styles.buttonDescription}>
+            Test advanced console instrumentation features
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('About')}
         >
@@ -292,6 +302,9 @@ const styles = StyleSheet.create({
   },
   httpButton: {
     backgroundColor: '#10b981',
+  },
+  consoleTestButton: {
+    backgroundColor: '#f59e0b',
   },
   buttonText: {
     fontSize: 18,

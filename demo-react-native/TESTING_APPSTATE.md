@@ -5,6 +5,7 @@ This guide explains how to test the AppState instrumentation which tracks when y
 ## What is AppState Tracking?
 
 AppState instrumentation tracks app lifecycle transitions:
+
 - **active**: App is running in the foreground
 - **background**: User switched to another app or home screen
 - **inactive**: Transitional state (incoming call, control center opened)
@@ -23,36 +24,41 @@ The AppState instrumentation is enabled by default in the demo app (`src/faro/in
 
 ```tsx
 getRNInstrumentations({
-  trackAppState: true,  // Enabled by default
+  trackAppState: true, // Enabled by default
   // ...
-})
+});
 ```
 
 ### 2. Trigger App State Changes
 
 **Method 1: Home Button / Swipe (Background)**
+
 1. With the app open, press the Home button (simulator) or swipe up (device)
 2. Wait 2-3 seconds
 3. Reopen the app
 4. This triggers: `active` → `background` → `active`
 
 **Method 2: App Switcher (Background)**
+
 1. Double-tap Home button or swipe up and hold (iOS)
 2. Switch to another app
 3. Switch back to the Faro demo
 4. This triggers: `active` → `inactive` → `background` → `inactive` → `active`
 
 **Method 3: Control Center (Inactive - iOS only)**
+
 1. Swipe down from top-right corner (iOS)
 2. Close control center
 3. This triggers: `active` → `inactive` → `active`
 
 **Method 4: Notification Center (Inactive)**
+
 1. Pull down notification center while app is open
 2. Close it
 3. This triggers: `active` → `inactive` → `active`
 
 **Method 5: Incoming Call Simulation (iOS Simulator)**
+
 1. In Simulator menu: **Hardware** → **Simulate Call**
 2. Accept or decline the call
 3. This triggers: `active` → `inactive` → `background` (if accepted) → `active`
@@ -66,7 +72,7 @@ For each app state change, Faro sends an `app_state_changed` event with:
   "event_name": "app_state_changed",
   "fromState": "active",
   "toState": "background",
-  "duration": "5234",        // Time spent in previous state (ms)
+  "duration": "5234", // Time spent in previous state (ms)
   "timestamp": "1701518400000"
 }
 ```
@@ -91,58 +97,66 @@ If you have React Native DevTools or console logging enabled, you'll see:
 
 ### 2. Query App State Events
 
+**Important:** Grafana Cloud stores Faro events using `logfmt` format with `event_data_` prefixes for event attributes.
+
 #### View All App State Changes
+
 ```logql
-{app_name="React Native Test", kind="event"}
-| json
-| event_name="app_state_changed"
+{service_name="React Native Test", kind="event"}
+| logfmt
+| line_format "{{.event_data_fromState}} -> {{.event_data_toState}} ({{.event_data_duration}}ms)"
 ```
 
 #### View Background Transitions
+
 ```logql
-{app_name="React Native Test", kind="event"}
-| json
-| event_name="app_state_changed"
-| toState="background"
-| line_format "{{.fromState}} -> {{.toState}} ({{.duration}}ms)"
+{service_name="React Native Test", kind="event"}
+| logfmt
+| event_data_toState="background"
+| line_format "{{.event_data_fromState}} -> {{.event_data_toState}} ({{.event_data_duration}}ms)"
 ```
 
 #### View Foreground Returns
+
 ```logql
-{app_name="React Native Test", kind="event"}
-| json
-| event_name="app_state_changed"
-| toState="active"
-| fromState="background"
+{service_name="React Native Test", kind="event"}
+| logfmt
+| event_data_toState="active"
+| event_data_fromState="background"
+| line_format "{{.event_data_fromState}} -> {{.event_data_toState}} ({{.event_data_duration}}ms)"
 ```
 
 #### Count State Transitions by Type
+
 ```logql
-sum by (toState) (
+sum by (event_data_toState) (
   count_over_time(
-    {app_name="React Native Test", kind="event"}
-    | json
-    | event_name="app_state_changed"
+    {service_name="React Native Test", kind="event"}
+    | logfmt
     [24h]
   )
 )
 ```
 
 #### Average Time in Each State
+
 ```logql
-{app_name="React Native Test", kind="event"}
-| json
-| event_name="app_state_changed"
-| unwrap duration
-| sum by (fromState) / count by (fromState)
+avg by (event_data_fromState) (
+  avg_over_time(
+    {service_name="React Native Test", kind="event"}
+    | logfmt
+    | unwrap event_data_duration
+    [1h]
+  )
+)
 ```
 
 #### App State Timeline
+
 ```logql
-{app_name="React Native Test", kind="event"}
-| json
-| event_name="app_state_changed"
-| line_format "{{.timestamp}}: {{.fromState}} -> {{.toState}} ({{.duration}}ms)"
+{service_name="React Native Test", kind="event"}
+| logfmt
+| line_format "{{.event_data_timestamp}}: {{.event_data_fromState}} -> {{.event_data_toState}} ({{.event_data_duration}}ms)"
 ```
 
 ### 3. Create App State Dashboard
@@ -150,42 +164,42 @@ sum by (toState) (
 In Grafana, create panels to visualize app state data:
 
 **Panel 1: State Transitions Over Time (Time Series)**
+
 ```logql
-rate({app_name="React Native Test", kind="event"}
-| json
-| event_name="app_state_changed"
+rate({service_name="React Native Test", kind="event"}
+| logfmt
 [5m])
 ```
 
 **Panel 2: Most Common State Transitions (Bar Chart)**
+
 ```logql
-sum by (fromState, toState) (
+sum by (event_data_fromState, event_data_toState) (
   count_over_time(
-    {app_name="React Native Test", kind="event"}
-    | json
-    | event_name="app_state_changed"
+    {service_name="React Native Test", kind="event"}
+    | logfmt
     [24h]
   )
 )
 ```
 
 **Panel 3: Average Duration in Each State (Stat Panel)**
+
 ```logql
-avg_over_time({app_name="React Native Test", kind="event"}
-| json
-| event_name="app_state_changed"
-| unwrap duration
+avg_over_time({service_name="React Native Test", kind="event"}
+| logfmt
+| unwrap event_data_duration
 [1h])
 ```
 
 **Panel 4: Background/Foreground Ratio (Pie Chart)**
+
 ```logql
-sum by (toState) (
+sum by (event_data_toState) (
   count_over_time(
-    {app_name="React Native Test", kind="event"}
-    | json
-    | event_name="app_state_changed"
-    | toState=~"active|background"
+    {service_name="React Native Test", kind="event"}
+    | logfmt
+    | event_data_toState=~"active|background"
     [24h]
   )
 )
@@ -203,10 +217,11 @@ sum by (toState) (
 6. **Check**: All events should have the same `session_id` (session persists across background)
 
 Query to verify:
+
 ```logql
-{app_name="React Native Test", session_id="YOUR_SESSION_ID"}
-| json
-| line_format "{{.timestamp}} - {{.event_name}} - {{.toState}}"
+{service_name="React Native Test", session_id="YOUR_SESSION_ID"}
+| logfmt
+| line_format "{{.event_data_timestamp}} - {{.event_data_toState}}"
 ```
 
 ### Test Long Background Duration
@@ -221,16 +236,16 @@ Query to verify:
 Test if errors occur when returning from background:
 
 ```logql
-{app_name="React Native Test"}
-| json
-| line_format "{{.timestamp}} - {{.kind}} - {{.event_name}}"
+{service_name="React Native Test"}
+| logfmt
 ```
 
-Look for errors that happen within a few seconds of `toState="active"` events.
+Look for errors that happen within a few seconds of events where `event_data_toState="active"`.
 
 ### Test Inactive State (iOS)
 
 iOS has more granular states than Android:
+
 1. Open Control Center → `active` → `inactive`
 2. Receive a call → `active` → `inactive` → `background`
 3. Open Notification Center → `active` → `inactive`
@@ -240,6 +255,7 @@ iOS has more granular states than Android:
 ### App State Events Not Appearing?
 
 **Check 1: Verify instrumentation is enabled**
+
 ```bash
 # In src/faro/initialize.ts
 trackAppState: true  // Must be true
@@ -261,11 +277,13 @@ The first app state change after app launch might have `fromState="unknown"` bec
 ### Android vs iOS Differences
 
 **iOS:**
+
 - Has `inactive` state (transitional)
 - More granular state tracking
 - Better support for multitasking states
 
 **Android:**
+
 - Primarily uses `active` and `background`
 - `inactive` is less common
 - Simpler state model
@@ -284,23 +302,29 @@ After 5 minutes of testing (backgrounding and foregrounding the app several time
 ## Use Cases
 
 ### 1. Track User Engagement
+
 Measure how long users keep your app in the foreground vs background.
 
 ### 2. Identify Background-Related Crashes
+
 Correlate errors with returning from background state.
 
 ### 3. Optimize Background Tasks
+
 Measure frequency and duration of background sessions to optimize background task scheduling.
 
 ### 4. Session Analysis
+
 Understand how app state transitions affect session duration and user journeys.
 
 ### 5. Performance Monitoring
+
 Track if performance degrades after returning from background (e.g., memory pressure, state restoration issues).
 
 ## Next Steps
 
 Once app state tracking is working:
+
 1. Combine with error tracking to identify background-related crashes
 2. Create alerts for unusual backgrounding patterns
 3. Track session duration by app state
@@ -309,6 +333,7 @@ Once app state tracking is working:
 ## Support
 
 If you encounter issues:
+
 1. Check the main README: `/demo-react-native/README.md`
 2. Review the React Native SDK docs: `packages/react-native/README.md`
 3. Open an issue on GitHub

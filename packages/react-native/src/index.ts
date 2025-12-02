@@ -17,6 +17,9 @@ export { AppStateInstrumentation } from './instrumentations/appState';
 export { UserActionInstrumentation } from './instrumentations/userActions';
 export { HttpInstrumentation } from './instrumentations/http';
 
+// Export console utilities
+export { reactNativeLogArgsSerializer } from './instrumentations/console/utils';
+
 // Export user action helpers
 export {
   withFaroUserAction,

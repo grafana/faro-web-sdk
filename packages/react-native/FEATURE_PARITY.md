@@ -21,6 +21,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 - 🔄 **Needs Adaptation**: 5 features
 
 ### Recent Updates
+- **2025-12-02**: ✅ ConsoleInstrumentation enhanced with unpatch(), advanced error serialization, and custom serializers
 - **2025-12-02**: ✅ AppStateInstrumentation fully implemented with foreground/background/inactive state tracking
 - **2025-12-02**: ✅ Page meta provider implemented for Grafana Page Performance view support
 - **2025-12-02**: ✅ ViewInstrumentation fully implemented with React Navigation integration (hook + utilities)
@@ -34,7 +35,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 
 | Instrumentation | React Native Status | Notes |
 |-----------------|---------------------|-------|
-| **ConsoleInstrumentation** | ✅ Basic | Missing: unpatch(), advanced serialization |
+| **ConsoleInstrumentation** | ✅ Fully Implemented | Complete with unpatch(), advanced serialization |
 | **ErrorsInstrumentation** | ✅ Implemented | Missing: Advanced stack frame parsing |
 | **SessionInstrumentation** | ✅ Fully Implemented | Complete with AsyncStorage, expiration, sampling |
 | **ViewInstrumentation** | ✅ Fully Implemented | Complete with React Navigation integration |
@@ -55,15 +56,36 @@ This document provides a comprehensive comparison between the Faro React Native 
 - Option to treat console.error as log or error
 - Unpatch capability
 
-**React Native SDK**
-- ✅ Basic console capture
-- ✅ Configurable log levels
-- ❌ Missing unpatch() method
-- ❌ Missing advanced error serialization options
+**React Native SDK** ✅ **FULLY IMPLEMENTED** (as of 2025-12-02)
+- ✅ Console capture for all log levels
+- ✅ Configurable log levels with defaultDisabledLevels
+- ✅ unpatch() method for cleanup
+- ✅ Advanced error serialization with serializeErrors option
+- ✅ Custom error serializer support (errorSerializer)
+- ✅ consoleErrorAsLog option
+- ✅ Stack frame extraction from Error objects
+- ✅ Proper handling of Error types (name, message)
+- ✅ React Native-specific stack trace parsing
 
-**Action Items:**
-- [ ] Add unpatch() method to ConsoleInstrumentation
-- [ ] Implement advanced error serialization options
+**Implementation Files:**
+- `packages/react-native/src/instrumentations/console/index.ts` - Complete implementation
+- `packages/react-native/src/instrumentations/console/utils.ts` - Error details extraction and stack parsing
+
+**Features:**
+- **Configurable Log Levels**: Choose which console methods to capture
+- **Advanced Error Serialization**: Extract detailed error information including stack frames
+- **Flexible Error Handling**: Send console.error as errors or logs
+- **Custom Serializers**: Provide custom logic for argument serialization
+- **Unpatch Support**: Clean console restoration
+
+**Completed Items:**
+- ✅ Add unpatch() method to ConsoleInstrumentation
+- ✅ Implement advanced error serialization options
+- ✅ Add consoleErrorAsLog configuration
+- ✅ Add custom errorSerializer support
+- ✅ Stack frame extraction for React Native errors
+
+**Priority:** ✅ COMPLETE
 
 ---
 
@@ -878,7 +900,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 
 | Feature | Web SDK | React Native | Gap |
 |---------|---------|--------------|-----|
-| **Console** | ✅ Full | ⚠️ Basic | Unpatch, options |
+| **Console** | ✅ Full | ✅ Full | None |
 | **Errors** | ✅ Full | ⚠️ Basic | Stack parsing |
 | **Session** | ✅ Full | ✅ Full | None |
 | **View** | ✅ Full | ✅ Full | None |

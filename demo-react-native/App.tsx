@@ -3,11 +3,11 @@
  * Demonstrates the Grafana Faro React Native SDK
  */
 
-import React, {useEffect} from 'react';
-import {StatusBar, useColorScheme} from 'react-native';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {AppNavigator} from './src/navigation/AppNavigator';
-import {initFaro} from './src/faro/initialize';
+import React, { useEffect } from 'react';
+import { StatusBar, useColorScheme } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AppNavigator } from './src/navigation/AppNavigator';
+import { initFaro } from './src/faro/initialize';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
