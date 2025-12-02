@@ -10,17 +10,18 @@ This document provides a comprehensive comparison between the Faro React Native 
 
 | Metric | Completion |
 |--------|------------|
-| **Core Functionality** | ~78% |
-| **Feature Parity** (excluding web-only) | ~70% |
-| **With Tracing Support** | ~52% |
+| **Core Functionality** | ~82% |
+| **Feature Parity** (excluding web-only) | ~75% |
+| **With Tracing Support** | ~54% |
 
 ### Quick Stats
-- ✅ **Fully Implemented**: 9/15 core features
-- ⏳ **Partially Implemented/Placeholder**: 2/15 features
+- ✅ **Fully Implemented**: 10/15 core features
+- ⏳ **Partially Implemented/Placeholder**: 1/15 features
 - ❌ **Not Applicable**: 4 web-only features
-- 🔄 **Needs Adaptation**: 5 features
+- 🔄 **Needs Adaptation**: 4 features
 
 ### Recent Updates
+- **2025-12-02**: ✅ Enhanced UserActionInstrumentation - Added intelligent duration tracking, HTTP correlation, and automatic lifecycle management
 - **2025-12-02**: ✅ ConsoleTransport - Implemented debugging transport for local development
 - **2025-12-02**: ✅ Enhanced Device Meta - Added locale/language, network (carrier), battery status, memory info, and device type
 - **2025-12-02**: ✅ ConsoleInstrumentation - Added smart object serialization (JSON.stringify instead of [object Object])
@@ -44,7 +45,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 | **ViewInstrumentation** | ✅ Fully Implemented | Complete with React Navigation integration |
 | **WebVitalsInstrumentation** | ❌ N/A | Web-only (CLS, LCP, INP metrics) |
 | **PerformanceInstrumentation** | ❌ N/A | Web-only (Performance API) |
-| **UserActionInstrumentation** | ✅ Basic | Missing: Automatic gesture detection, duration |
+| **UserActionInstrumentation** | ✅ Enhanced | Intelligent duration tracking, HTTP correlation |
 | **CSPInstrumentation** | ❌ N/A | Web-only (Content Security Policy) |
 | **NavigationInstrumentation** | ❌ N/A | Web-only (DOM-specific) |
 | **HttpInstrumentation** | ✅ Implemented | Good: Fetch patching, ignored URLs |

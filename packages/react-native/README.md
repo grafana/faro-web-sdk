@@ -46,11 +46,15 @@ initializeFaro({
 
 ### Tracking User Actions
 
-The SDK provides two ways to track user interactions:
+The SDK provides intelligent user action tracking with:
+- **Intelligent Duration Tracking**: Automatically determines when actions complete
+- **HTTP Request Correlation**: Tracks HTTP requests triggered by user actions
+- **Automatic Lifecycle Management**: No manual `end()` calls needed with HOC
+- **Halt State**: Waits for pending async operations before ending actions
 
-#### 1. Using the HOC (Higher-Order Component)
+#### 1. Using the HOC (Higher-Order Component) - Recommended
 
-Wrap your touchable components with `withFaroUserAction`:
+Wrap your touchable components with `withFaroUserAction` for automatic tracking:
 
 ```tsx
 import { TouchableOpacity, Text } from 'react-native';
@@ -68,6 +72,13 @@ function MyForm() {
 }
 ```
 
+**Automatic Features:**
+- User action starts on press
+- HTTP requests triggered by the action are automatically correlated
+- Action ends ~100ms after the last activity (HTTP request completion)
+- If HTTP requests are pending, enters "halt" state and waits up to 10 seconds
+- No manual `end()` call required!
+
 You can override the action name and add context per instance:
 
 ```tsx
@@ -80,9 +91,30 @@ You can override the action name and add context per instance:
 </TrackedButton>
 ```
 
+**Example with HTTP:**
+```tsx
+const TrackedButton = withFaroUserAction(TouchableOpacity, 'load_data');
+
+function DataLoader() {
+  const handleLoad = async () => {
+    // This HTTP request will be correlated with the user action
+    // The action will wait for this to complete before ending
+    const response = await fetch('https://api.example.com/data');
+    const data = await response.json();
+    setData(data);
+  };
+
+  return (
+    <TrackedButton onPress={handleLoad}>
+      <Text>Load Data</Text>
+    </TrackedButton>
+  );
+}
+```
+
 #### 2. Using Manual Tracking
 
-For complex workflows or custom tracking:
+For complex workflows where you need explicit control:
 
 ```tsx
 import { trackUserAction } from '@grafana/faro-react-native';
@@ -96,10 +128,28 @@ function handleComplexAction() {
   // Do your work...
   await performSomeWork();
 
-  // End the action when done
+  // Manually end the action when done
+  // Note: With HOC, this is automatic!
   action?.end();
 }
 ```
+
+#### How Intelligent Duration Tracking Works
+
+1. **User Action Starts**: When button is pressed or `trackUserAction()` is called
+2. **Monitor Activity**: Tracks HTTP requests started during the action
+3. **Detect Completion**:
+   - If no HTTP requests: Ends after ~100ms
+   - If HTTP requests pending: Enters "halt" state
+4. **Wait for HTTP**: Action stays in halt state until all HTTP requests complete
+5. **Auto-End**: Once all activity stops, action automatically ends
+6. **Timeout**: If pending operations take too long (>10s), action forcibly ends
+
+**Benefits:**
+- Accurate action duration including async operations
+- Correlate errors/events with the user action that triggered them
+- Better understanding of user flows and performance
+- No need to manually manage action lifecycle
 
 ### User Identification
 

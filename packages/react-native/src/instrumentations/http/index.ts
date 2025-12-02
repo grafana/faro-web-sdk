@@ -1,4 +1,5 @@
 import { BaseInstrumentation, genShortID, VERSION } from '@grafana/faro-core';
+import { notifyHttpRequestStart, notifyHttpRequestEnd } from '../userActions/httpRequestMonitor';
 
 export interface HttpRequestPayload {
   url: string;
@@ -99,6 +100,9 @@ export class HttpInstrumentation extends BaseInstrumentation {
 
       self.requests.set(requestId, payload);
 
+      // Notify user action monitor
+      notifyHttpRequestStart(payload);
+
       // Track request start
       self.api?.pushMeasurement({
         type: 'http_request_start',
@@ -121,6 +125,9 @@ export class HttpInstrumentation extends BaseInstrumentation {
           payload.endTime = endTime;
           payload.duration = duration;
           payload.status = response.status;
+
+          // Notify user action monitor
+          notifyHttpRequestEnd(payload);
 
           // Track successful request
           self.api?.pushMeasurement({
@@ -147,6 +154,9 @@ export class HttpInstrumentation extends BaseInstrumentation {
           payload.endTime = endTime;
           payload.duration = duration;
           payload.error = error?.message || 'Unknown error';
+
+          // Notify user action monitor
+          notifyHttpRequestEnd(payload);
 
           // Track failed request
           self.api?.pushMeasurement({

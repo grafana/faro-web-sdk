@@ -2,6 +2,8 @@ import React, { type ComponentType } from 'react';
 import { faro, type UserActionInternalInterface } from '@grafana/faro-core';
 import type { GestureResponderEvent } from 'react-native';
 
+import { UserActionController } from './userActionController';
+
 export interface WithFaroUserActionProps {
   /**
    * Optional: Override the action name for this specific instance
@@ -61,12 +63,14 @@ export function withFaroUserAction<P extends WithFaroUserActionProps>(
           { triggerName: 'press' }
         );
 
-        // End the user action after a short delay or on next tick
-        // This gives time for immediate synchronous work to complete
+        // Attach the controller to intelligently manage the action lifecycle
+        // The controller will:
+        // - Monitor HTTP requests triggered by this action
+        // - Wait for async operations to complete
+        // - Auto-end the action after appropriate timeout
         if (userAction) {
-          setTimeout(() => {
-            (userAction as unknown as UserActionInternalInterface).end();
-          }, 0);
+          const controller = new UserActionController(userAction as unknown as UserActionInternalInterface);
+          controller.attach();
         }
       } catch (error) {
         // Don't let tracking errors break the app
