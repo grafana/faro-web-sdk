@@ -487,6 +487,109 @@ function App() {
 
 For detailed integration guides, advanced usage, and troubleshooting, see [NAVIGATION_INTEGRATION.md](./NAVIGATION_INTEGRATION.md).
 
+## Enhanced Device Meta
+
+The Faro React Native SDK automatically collects comprehensive device information to provide better context for debugging and analytics.
+
+### Automatically Collected Information
+
+The SDK collects the following device information synchronously:
+
+- **Device Info**: Brand, model, device ID, type (mobile/tablet)
+- **System Info**: OS name, OS version, app version
+- **Locale/Language**: Device locales, timezone, primary language
+- **Memory**: Total and used memory
+- **Screen**: Viewport width and height
+- **Environment**: Whether running on emulator/simulator
+
+### Async Device Information
+
+For battery and network information that requires async calls, use `getAsyncDeviceMeta()`:
+
+```tsx
+import { getAsyncDeviceMeta } from '@grafana/faro-react-native';
+
+// Fetch async device information
+const asyncDeviceInfo = await getAsyncDeviceMeta();
+console.log('Battery Level:', asyncDeviceInfo.batteryLevel);
+console.log('Carrier:', asyncDeviceInfo.carrier);
+console.log('Is Charging:', asyncDeviceInfo.isCharging);
+console.log('Low Power Mode:', asyncDeviceInfo.lowPowerMode);
+```
+
+### Available Device Meta Fields
+
+```typescript
+interface ExtendedBrowserMeta {
+  // Standard fields
+  name: string;              // OS name (e.g., "iOS", "Android")
+  version: string;           // App version
+  os: string;                // OS with version (e.g., "iOS 17.0")
+  mobile: boolean;           // true for mobile, false for tablet
+  userAgent: string;         // User agent string
+  language: string;          // Primary language
+  brands: string;            // Device brand and model
+  viewportWidth: string;     // Screen width
+  viewportHeight: string;    // Screen height
+
+  // Enhanced fields
+  locale?: string;           // Primary locale (e.g., "en-US")
+  locales?: string;          // All device locales
+  timezone?: string;         // Device timezone (e.g., "America/New_York")
+  deviceType?: string;       // "mobile" or "tablet"
+  isEmulator?: string;       // "true" if running on emulator/simulator
+  totalMemory?: string;      // Total device memory in bytes
+  usedMemory?: string;       // Used memory in bytes
+
+  // Async fields (from getAsyncDeviceMeta)
+  batteryLevel?: string;     // Battery percentage (e.g., "85%")
+  isCharging?: string;       // "true" if device is charging
+  lowPowerMode?: string;     // "true" if low power mode is enabled
+  carrier?: string;          // Mobile carrier name (e.g., "Verizon")
+}
+```
+
+### Use Cases
+
+**1. Debug Device-Specific Issues**
+```tsx
+// Query Grafana Cloud for errors on specific devices
+{service_name="MyApp", browser_deviceType="tablet"}
+| logfmt
+| kind="exception"
+```
+
+**2. Track Low Battery Correlation**
+```tsx
+// Find if errors correlate with low battery
+{service_name="MyApp", browser_batteryLevel=~"[0-9]%|[12][0-9]%"}
+| logfmt
+| kind="exception"
+```
+
+**3. Locale-Specific Analysis**
+```tsx
+// Analyze issues by locale
+{service_name="MyApp", browser_locale=~"ja.*"}
+| logfmt
+```
+
+**4. Memory Pressure Detection**
+```tsx
+// Correlate high memory usage with crashes
+{service_name="MyApp"}
+| logfmt
+| browser_usedMemory > 1000000000
+```
+
+### Notes
+
+- All device meta is collected automatically when Faro initializes
+- Async device info (battery, carrier) is fetched lazily to avoid blocking initialization
+- All fields are optional and gracefully handle permission errors
+- Memory values are in bytes
+- Battery level is a percentage string (e.g., "85%")
+
 ## TypeScript
 
 The package is written in TypeScript and includes type definitions out of the box.

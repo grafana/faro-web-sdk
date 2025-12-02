@@ -223,6 +223,16 @@ export function HomeScreen({ navigation }: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={[styles.button, styles.deviceInfoButton]}
+          onPress={() => navigation.navigate('DeviceInfo')}
+        >
+          <Text style={styles.buttonText}>📱 Device Info</Text>
+          <Text style={styles.buttonDescription}>
+            View enhanced device metadata collection
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('About')}
         >
@@ -305,6 +315,9 @@ const styles = StyleSheet.create({
   },
   consoleTestButton: {
     backgroundColor: '#f59e0b',
+  },
+  deviceInfoButton: {
+    backgroundColor: '#3b82f6',
   },
   buttonText: {
     fontSize: 18,
