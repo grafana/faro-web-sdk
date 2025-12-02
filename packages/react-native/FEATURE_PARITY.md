@@ -10,17 +10,18 @@ This document provides a comprehensive comparison between the Faro React Native 
 
 | Metric | Completion |
 |--------|------------|
-| **Core Functionality** | ~82% |
-| **Feature Parity** (excluding web-only) | ~75% |
-| **With Tracing Support** | ~54% |
+| **Core Functionality** | ~85% |
+| **Feature Parity** (excluding web-only) | ~80% |
+| **With Tracing Support** | ~56% |
 
 ### Quick Stats
-- ✅ **Fully Implemented**: 10/15 core features
-- ⏳ **Partially Implemented/Placeholder**: 1/15 features
+- ✅ **Fully Implemented**: 11/15 core features
+- ⏳ **Partially Implemented/Placeholder**: 0/15 features
 - ❌ **Not Applicable**: 4 web-only features
 - 🔄 **Needs Adaptation**: 4 features
 
 ### Recent Updates
+- **2025-12-02**: ✅ Enhanced ErrorsInstrumentation - Added React Native stack trace parsing, platform context, error deduplication, and filtering
 - **2025-12-02**: ✅ Enhanced UserActionInstrumentation - Added intelligent duration tracking, HTTP correlation, and automatic lifecycle management
 - **2025-12-02**: ✅ ConsoleTransport - Implemented debugging transport for local development
 - **2025-12-02**: ✅ Enhanced Device Meta - Added locale/language, network (carrier), battery status, memory info, and device type
@@ -40,7 +41,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 | Instrumentation | React Native Status | Notes |
 |-----------------|---------------------|-------|
 | **ConsoleInstrumentation** | ✅ Fully Implemented | Complete with unpatch(), advanced serialization |
-| **ErrorsInstrumentation** | ✅ Implemented | Missing: Advanced stack frame parsing |
+| **ErrorsInstrumentation** | ✅ Fully Implemented | Complete with stack parsing, deduplication, filtering |
 | **SessionInstrumentation** | ✅ Fully Implemented | Complete with AsyncStorage, expiration, sampling |
 | **ViewInstrumentation** | ✅ Fully Implemented | Complete with React Navigation integration |
 | **WebVitalsInstrumentation** | ❌ N/A | Web-only (CLS, LCP, INP metrics) |
@@ -105,17 +106,47 @@ This document provides a comprehensive comparison between the Faro React Native 
 - Safari extensions support
 - Error details extraction from various error types
 
-**React Native SDK**
-- ✅ Uses React Native ErrorUtils
-- ✅ Captures unhandled errors and rejections
-- ✅ Fatal error flag support
-- ⚠️ Basic stack frame parsing
-- ❌ Missing platform-specific optimizations
+**React Native SDK** ✅ **FULLY IMPLEMENTED** (as of 2025-12-02)
+- ✅ Uses React Native ErrorUtils for error capture
+- ✅ Captures unhandled errors and promise rejections
+- ✅ Fatal error flag support (isFatal context)
+- ✅ Advanced stack frame parsing for React Native
+- ✅ Platform context (iOS/Android, OS version, Hermes detection)
+- ✅ Error deduplication (configurable time window)
+- ✅ Error filtering by message patterns (ignoreErrors)
+- ✅ Multiple stack trace format support:
+  - Dev mode: `at functionName (file.js:123:45)`
+  - Release/minified: `functionName@123:456`
+  - Native calls: `at functionName (native)`
+  - Metro bundler: `at Object.functionName (/path/to/file.js:123:456)`
+- ✅ Structured stack frames with function, filename, line, column
+- ✅ Memory-efficient deduplication tracking
+- ✅ Configuration options for deduplication window and max entries
+- ✅ Preserves original error handlers
 
-**Action Items:**
-- [ ] Enhance stack frame parsing for React Native
-- [ ] Consider source map support
-- [ ] Add iOS/Android-specific error handling
+**Implementation Files:**
+- `packages/react-native/src/instrumentations/errors/index.ts` - Main instrumentation with deduplication
+- `packages/react-native/src/instrumentations/errors/stackTraceParser.ts` - Comprehensive stack trace parsing
+
+**Features:**
+- **React Native Stack Trace Parsing**: Handles all React Native stack formats (dev, release, Metro, native)
+- **Platform Context**: Automatically includes platform, version, and JS engine info
+- **Error Deduplication**: Prevents duplicate reports with configurable time window (default: 5s)
+- **Error Filtering**: Ignore errors by message patterns
+- **Automatic Capture**: Unhandled errors and promise rejections
+
+**Completed Items:**
+- ✅ Enhance stack frame parsing for React Native (all formats)
+- ✅ Add iOS/Android-specific error handling (platform context)
+- ✅ Implement error deduplication
+- ✅ Add configurable error filtering
+- ✅ Extract platform information (OS, version, Hermes)
+
+**Priority:** ✅ COMPLETE
+
+**Future Considerations:**
+- Source map support (requires separate implementation)
+- Integration with crash reporting services
 
 ---
 

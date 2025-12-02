@@ -8,6 +8,10 @@ import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { initFaro } from './src/faro/initialize';
+import { markBundleLoaded } from '@grafana/faro-react-native';
+
+// Mark bundle loaded after all imports
+markBundleLoaded();
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';

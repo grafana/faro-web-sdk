@@ -25,7 +25,7 @@ export interface GetRNInstrumentationsOptions {
   trackAppState?: boolean;
 
   /**
-   * Track performance metrics (default: false)
+   * Track performance metrics (app launch, screen navigation) (default: true)
    */
   trackPerformance?: boolean;
 

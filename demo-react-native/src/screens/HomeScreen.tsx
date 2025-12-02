@@ -213,6 +213,16 @@ export function HomeScreen({ navigation }: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={[styles.button, styles.slowLoadButton]}
+          onPress={() => navigation.navigate('SlowLoadDemo')}
+        >
+          <Text style={styles.buttonText}>🐌 Slow Load Demo</Text>
+          <Text style={styles.buttonDescription}>
+            2.5s delayed screen - see performance metrics in Grafana Cloud
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={[styles.button, styles.consoleTestButton]}
           onPress={() => navigation.navigate('ConsoleTest')}
         >
@@ -312,6 +322,9 @@ const styles = StyleSheet.create({
   },
   httpButton: {
     backgroundColor: '#10b981',
+  },
+  slowLoadButton: {
+    backgroundColor: '#ec4899',
   },
   consoleTestButton: {
     backgroundColor: '#f59e0b',

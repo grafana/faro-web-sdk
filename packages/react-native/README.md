@@ -331,6 +331,111 @@ initializeFaro({
 });
 ```
 
+### Errors Instrumentation Configuration
+
+The errors instrumentation now includes enhanced features for React Native error tracking:
+
+```tsx
+import { initializeFaro, ErrorsInstrumentation } from '@grafana/faro-react-native';
+
+initializeFaro({
+  url: 'https://your-faro-collector-url',
+  app: {
+    name: 'my-app',
+    version: '1.0.0',
+  },
+  instrumentations: [
+    new ErrorsInstrumentation({
+      // Ignore specific errors by message pattern
+      ignoreErrors: [
+        /network timeout/i,
+        /cancelled/i,
+        /aborted/i,
+      ],
+
+      // Enable error deduplication (default: true)
+      // Prevents sending the same error multiple times within a time window
+      enableDeduplication: true,
+
+      // Deduplication time window in milliseconds (default: 5000)
+      // Errors with same message/stack within this window are considered duplicates
+      deduplicationWindow: 5000,
+
+      // Maximum number of errors to track for deduplication (default: 50)
+      maxDeduplicationEntries: 50,
+    }),
+  ],
+});
+```
+
+**Enhanced Errors Instrumentation Features:**
+
+- **React Native Stack Trace Parsing**: Automatically parses React Native stack traces into structured stack frames
+  - Supports multiple formats: Dev mode, Release/minified, Metro bundler, Native calls
+  - Extracts function name, filename, line number, and column number
+  - Handles platform-specific stack trace formats (iOS/Android)
+
+- **Platform Context**: Automatically includes platform information with every error:
+  - Platform OS (ios/android)
+  - Platform version
+  - JavaScript engine (Hermes detection)
+
+- **Error Deduplication**: Prevents duplicate error reports
+  - Tracks errors by message and stack trace
+  - Configurable time window (default: 5 seconds)
+  - Memory-efficient with configurable maximum entries
+
+- **Error Filtering**: Ignore specific errors using regex patterns
+  - Filter by error message
+  - Useful for ignoring known non-critical errors
+  - Reduces noise in error tracking
+
+- **Automatic Error Capture**:
+  - Unhandled JavaScript errors (via ErrorUtils)
+  - Unhandled promise rejections
+  - Preserves original error handlers
+
+**Example - Different Stack Trace Formats Handled:**
+
+```
+// Dev mode: at functionName (file.js:123:45)
+// Release: functionName@123:456
+// Native: at functionName (native)
+// Metro: at Object.functionName (/path/to/file.js:123:456)
+```
+
+All formats are automatically parsed and converted to structured stack frames sent to Grafana Cloud.
+
+**Example - Platform Context Included:**
+
+Every error report includes:
+```tsx
+{
+  platform: "ios",           // or "android"
+  platformVersion: "17.0",   // iOS/Android version
+  isHermes: "true"          // JavaScript engine
+}
+```
+
+**Use Cases:**
+
+```tsx
+// Ignore network-related errors
+new ErrorsInstrumentation({
+  ignoreErrors: [/network/i, /fetch failed/i],
+});
+
+// Increase deduplication window for high-frequency errors
+new ErrorsInstrumentation({
+  deduplicationWindow: 10000, // 10 seconds
+});
+
+// Disable deduplication for debugging
+new ErrorsInstrumentation({
+  enableDeduplication: false,
+});
+```
+
 ### Custom Configuration
 
 ```tsx
@@ -484,6 +589,182 @@ The SDK automatically emits `app_state_changed` events when the app state transi
 ```
 
 For detailed testing instructions, see `demo-react-native/TESTING_APPSTATE.md`.
+
+### Performance Instrumentation Configuration
+
+The Performance Instrumentation automatically tracks app launch and screen navigation performance metrics for React Native applications.
+
+```tsx
+import { initializeFaro, PerformanceInstrumentation, markAppStart, markBundleLoaded } from '@grafana/faro-react-native';
+
+// IMPORTANT: Call markAppStart() as early as possible in your app's entry point (index.js)
+markAppStart();
+
+initializeFaro({
+  url: 'https://your-faro-collector-url',
+  app: {
+    name: 'my-app',
+    version: '1.0.0',
+  },
+  instrumentations: [
+    new PerformanceInstrumentation({
+      // Track app launch performance (cold/warm starts) (default: true)
+      trackAppLaunch: true,
+
+      // Track screen navigation performance (default: true)
+      // Requires ViewInstrumentation for automatic tracking
+      trackScreenPerformance: true,
+
+      // Track JavaScript bundle load time (default: true)
+      trackBundlePerformance: true,
+
+      // Track React component performance (default: false)
+      // Warning: May add performance overhead
+      trackReactPerformance: false,
+
+      // Component IDs to track (when trackReactPerformance is true)
+      trackedComponents: ['App', 'HomeScreen'],
+    }),
+  ],
+});
+
+// Call markBundleLoaded() after your imports are complete
+markBundleLoaded();
+```
+
+**Performance Metrics Tracked:**
+
+1. **App Launch Performance** (`faro.performance.app_launch` event):
+   - `jsBundleLoadTime` - Time to load JavaScript bundle (ms)
+   - `timeToFirstScreen` - Time until first screen renders (ms)
+   - `totalLaunchTime` - Total app launch time (ms)
+   - `launchType` - "cold" (app not in memory) or "warm" (app in background)
+   - `platform` - iOS or Android
+   - `platformVersion` - OS version
+
+2. **Screen Navigation Performance** (`faro.performance.screen` event):
+   - `screenName` - Name of the screen
+   - `mountTime` - Time to mount screen component (ms)
+   - `transitionTime` - Time from previous screen unmount to new screen mount (ms)
+   - `navigationType` - Type of navigation (push, pop, replace, reset)
+   - `previousScreen` - Previous screen name (for journey tracking)
+   - `faroScreenId` - Unique ID for this screen navigation
+   - `faroPreviousScreenId` - Links to previous screen for journey analysis
+
+**Setup Instructions:**
+
+1. **Mark App Start** - Add to your app's entry point (`index.js` or `index.tsx`):
+```tsx
+// index.js
+import { markAppStart } from '@grafana/faro-react-native';
+
+// Call immediately at the top of the file
+markAppStart();
+
+import { AppRegistry } from 'react-native';
+import App from './App';
+import { name as appName } from './app.json';
+
+AppRegistry.registerComponent(appName, () => App);
+```
+
+2. **Mark Bundle Loaded** - Add after imports in your root component:
+```tsx
+// App.tsx
+import React from 'react';
+import { markBundleLoaded } from '@grafana/faro-react-native';
+
+// Call after all imports
+markBundleLoaded();
+
+export function App() {
+  return <YourAppContent />;
+}
+```
+
+3. **Enable via getRNInstrumentations** (simpler):
+```tsx
+initializeFaro({
+  // ...config
+  instrumentations: [
+    ...getRNInstrumentations({
+      trackPerformance: true, // Enabled by default
+    }),
+  ],
+});
+```
+
+**Example Performance Data:**
+
+```json
+{
+  "event": "faro.performance.app_launch",
+  "faroLaunchId": "abc123",
+  "platform": "ios",
+  "platformVersion": "17.0",
+  "launchType": "cold",
+  "jsBundleLoadTime": "245",
+  "timeToFirstScreen": "892",
+  "totalLaunchTime": "892"
+}
+```
+
+```json
+{
+  "event": "faro.performance.screen",
+  "faroScreenId": "def456",
+  "faroLaunchId": "abc123",
+  "faroPreviousScreenId": "xyz789",
+  "screenName": "ProfileScreen",
+  "previousScreen": "HomeScreen",
+  "mountTime": "156",
+  "transitionTime": "234",
+  "navigationType": "push"
+}
+```
+
+**Use Cases:**
+
+- Monitor app startup performance across different devices
+- Identify slow screen transitions
+- Compare cold start vs warm start performance
+- Track performance regressions after releases
+- Correlate performance with user sessions
+- Measure impact of bundle size on startup time
+
+**Example Grafana Queries (Loki):**
+
+```logql
+# Average app launch time by platform
+{app_name="my-app", kind="event"}
+| json
+| event_name="faro.performance.app_launch"
+| unwrap totalLaunchTime
+| avg by (platform)
+
+# Slowest screen navigations
+{app_name="my-app", kind="event"}
+| json
+| event_name="faro.performance.screen"
+| unwrap mountTime
+| topk(10)
+
+# Cold vs warm start comparison
+{app_name="my-app", kind="event"}
+| json
+| event_name="faro.performance.app_launch"
+| unwrap totalLaunchTime
+| avg by (launchType)
+```
+
+**Performance Best Practices:**
+
+- Call `markAppStart()` as early as possible in `index.js`
+- Call `markBundleLoaded()` after all module imports
+- Use screen navigation tracking to identify bottlenecks
+- Set `trackReactPerformance: false` in production (adds overhead)
+- Monitor cold start times as primary KPI
+- Track bundle load time to optimize bundle size
 
 ## Navigation Integration
 

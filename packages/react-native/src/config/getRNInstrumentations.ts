@@ -7,6 +7,7 @@ import { ViewInstrumentation } from '../instrumentations/view';
 import { AppStateInstrumentation } from '../instrumentations/appState';
 import { UserActionInstrumentation } from '../instrumentations/userActions';
 import { HttpInstrumentation } from '../instrumentations/http';
+import { PerformanceInstrumentation } from '../instrumentations/performance';
 
 /**
  * Returns the default set of instrumentations for React Native
@@ -22,6 +23,7 @@ export function getRNInstrumentations(
     trackViews = true,
     trackUserActions = true,
     trackHttpRequests = true,
+    trackPerformance = true,
     ignoredHttpUrls = [],
   } = options;
 
@@ -53,6 +55,10 @@ export function getRNInstrumentations(
 
   if (trackHttpRequests) {
     instrumentations.push(new HttpInstrumentation({ ignoredUrls: ignoredHttpUrls }));
+  }
+
+  if (trackPerformance) {
+    instrumentations.push(new PerformanceInstrumentation());
   }
 
   return instrumentations;

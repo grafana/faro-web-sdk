@@ -3,9 +3,9 @@ import { FARO_COLLECTOR_URL } from '@env';
 import {
   ConsoleTransport,
   FetchTransport,
-  LogLevel,
   getRNInstrumentations,
   initializeFaro,
+  LogLevel,
 } from '@grafana/faro-react-native';
 
 /**
@@ -34,8 +34,10 @@ export function initFaro() {
         trackSessions: true,
         trackViews: true,
         trackUserActions: true,
-        trackHttpRequests: true, // Explicitly enable HTTP tracking
+        trackHttpRequests: true,
+        trackPerformance: true, // Enable performance tracking
       }),
+      // Add custom ErrorsInstrumentation with enhanced configuration
     ],
     transports: [
       new FetchTransport({
