@@ -275,6 +275,82 @@ The SDK automatically emits session lifecycle events:
 - `faro.session.resume` - Existing session resumed (persistent only)
 - `faro.session.extend` - Session extended from the same previous session
 
+### AppState Tracking
+
+The SDK automatically tracks React Native app state changes (foreground/background/inactive). This is enabled by default and requires no additional configuration.
+
+```tsx
+import { initializeFaro, getRNInstrumentations } from '@grafana/faro-react-native';
+
+initializeFaro({
+  url: 'https://your-faro-collector-url',
+  app: {
+    name: 'my-app',
+    version: '1.0.0',
+  },
+  instrumentations: [
+    ...getRNInstrumentations({
+      trackAppState: true,  // Enabled by default
+    }),
+  ],
+});
+```
+
+**App States:**
+
+- **active**: App is running in the foreground
+- **background**: User switched to another app or home screen
+- **inactive**: Transitional state (incoming call, control center on iOS)
+- **unknown**: Initial state before first change (iOS only)
+- **extension**: App extension is running (iOS only)
+
+**App State Events:**
+
+The SDK automatically emits `app_state_changed` events when the app state transitions:
+
+```typescript
+{
+  event_name: "app_state_changed",
+  fromState: "active",       // Previous state
+  toState: "background",     // New state
+  duration: "5234",          // Time spent in previous state (ms)
+  timestamp: "1701518400000" // Unix timestamp
+}
+```
+
+**Use Cases:**
+
+- Track user engagement (foreground vs background time)
+- Identify background-related crashes or errors
+- Measure session duration by app state
+- Optimize background task scheduling
+- Detect performance issues after returning from background
+
+**Example Queries (Grafana Explore with Loki):**
+
+```logql
+# View all app state changes
+{app_name="my-app", kind="event"}
+| json
+| event_name="app_state_changed"
+
+# Count background transitions
+{app_name="my-app", kind="event"}
+| json
+| event_name="app_state_changed"
+| toState="background"
+
+# Average time in foreground
+{app_name="my-app", kind="event"}
+| json
+| event_name="app_state_changed"
+| fromState="active"
+| unwrap duration
+| avg
+```
+
+For detailed testing instructions, see `demo-react-native/TESTING_APPSTATE.md`.
+
 ## Navigation Integration
 
 Faro provides seamless integration with React Navigation to automatically track screen changes.
