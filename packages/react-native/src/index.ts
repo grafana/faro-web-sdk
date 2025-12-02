@@ -17,7 +17,12 @@ export { ViewInstrumentation } from './instrumentations/view';
 export { AppStateInstrumentation } from './instrumentations/appState';
 export { UserActionInstrumentation } from './instrumentations/userActions';
 export { HttpInstrumentation } from './instrumentations/http';
-export { PerformanceInstrumentation, markAppStart, markBundleLoaded, trackScreenPerformance } from './instrumentations/performance';
+export {
+  PerformanceInstrumentation,
+  markAppStart,
+  markBundleLoaded,
+  trackScreenPerformance,
+} from './instrumentations/performance';
 export type { PerformanceInstrumentationOptions } from './instrumentations/performance/types';
 
 // Export console utilities

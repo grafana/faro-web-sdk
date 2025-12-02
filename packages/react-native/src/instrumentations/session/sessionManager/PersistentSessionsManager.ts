@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { faro, stringifyExternalJson } from '@grafana/faro-core';
 import { AppState, AppStateStatus } from 'react-native';
+
+import { faro, stringifyExternalJson } from '@grafana/faro-core';
 
 import { throttle } from '../../../utils/throttle';
 

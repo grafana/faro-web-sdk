@@ -1,5 +1,6 @@
-import { faro } from '@grafana/faro-core';
 import { AppState, AppStateStatus } from 'react-native';
+
+import { faro } from '@grafana/faro-core';
 
 import { throttle } from '../../../utils/throttle';
 

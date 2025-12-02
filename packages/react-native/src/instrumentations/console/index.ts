@@ -1,11 +1,4 @@
-import {
-  allLogLevels,
-  BaseInstrumentation,
-  defaultErrorArgsSerializer,
-  defaultLogArgsSerializer,
-  LogLevel,
-  VERSION,
-} from '@grafana/faro-core';
+import { allLogLevels, BaseInstrumentation, defaultErrorArgsSerializer, LogLevel, VERSION } from '@grafana/faro-core';
 import type { LogArgsSerializer } from '@grafana/faro-core';
 
 import { getDetailsFromConsoleErrorArgs, reactNativeLogArgsSerializer } from './utils';

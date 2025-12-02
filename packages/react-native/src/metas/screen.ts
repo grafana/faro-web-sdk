@@ -12,10 +12,9 @@ type CreateScreenMetaProps = {
  * Screen meta for React Native
  * Tracks the current screen name instead of URL (as in web page meta)
  */
-export function createScreenMeta({
-  generateScreenId,
-  initialScreenMeta,
-}: CreateScreenMetaProps = {}): MetaItem<Pick<Meta, 'page'>> {
+export function createScreenMeta({ generateScreenId, initialScreenMeta }: CreateScreenMetaProps = {}): MetaItem<
+  Pick<Meta, 'page'>
+> {
   const screenMeta: MetaItem<Pick<Meta, 'page'>> = () => {
     const screenName = currentScreen || 'unknown';
 

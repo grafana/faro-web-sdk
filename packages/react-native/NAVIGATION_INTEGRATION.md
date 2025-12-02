@@ -150,18 +150,21 @@ export default App;
 When you integrate Faro with React Navigation, the following data is automatically collected:
 
 ### Screen Changes
+
 - **Event Type**: `faro.view.changed`
 - **Attributes**:
   - `fromView`: Previous screen name
   - `toView`: Current screen name
 
 ### Navigation Events (with params)
+
 - **Event Type**: `navigation`
 - **Attributes**:
   - `screen`: Screen name
   - `params`: Route parameters (stringified)
 
 ### Meta Data
+
 - **Screen Name**: Updated in `meta.view.name`
 - **Screen URL**: Updated in `meta.page.url` as `screen://{screenName}`
 
@@ -187,15 +190,9 @@ function HomeScreen({ navigation }: HomeProps) {
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Faro Demo!</Text>
 
-      <Button
-        title="Go to Profile"
-        onPress={() => navigation.navigate('Profile', { userId: '123' })}
-      />
+      <Button title="Go to Profile" onPress={() => navigation.navigate('Profile', { userId: '123' })} />
 
-      <Button
-        title="Go to Settings"
-        onPress={() => navigation.navigate('Settings')}
-      />
+      <Button title="Go to Settings" onPress={() => navigation.navigate('Settings')} />
     </View>
   );
 }
@@ -257,6 +254,7 @@ To view your navigation tracking data in Grafana Cloud:
 ```
 
 Filter by specific screens:
+
 ```logql
 {app_name="your-app-name", kind="event"}
 | json
@@ -265,6 +263,7 @@ Filter by specific screens:
 ```
 
 View navigation flow:
+
 ```logql
 {app_name="your-app-name", kind="event"}
 | json
@@ -335,11 +334,12 @@ When users navigate to the Feed tab, Faro will track it as `Feed`, not `Main`.
 **Problem**: Screen changes aren't showing up in Grafana Cloud.
 
 **Solution**:
+
 1. Ensure ViewInstrumentation is enabled:
    ```tsx
    instrumentations: getRNInstrumentations({
      trackViews: true, // Must be true
-   })
+   });
    ```
 2. Verify the navigation ref is properly passed:
    ```tsx
@@ -387,6 +387,7 @@ useFaroNavigation(navigationRef);
 React hook that automatically tracks navigation changes.
 
 **Parameters:**
+
 - `navigationRef`: React ref object from `useNavigationContainerRef()`
 
 **Returns:** `void`
@@ -406,6 +407,7 @@ Creates a callback function for NavigationContainer's `onStateChange` prop.
 Manually handles navigation state changes.
 
 **Parameters:**
+
 - `state`: NavigationState object
 
 **Returns:** `void`
@@ -417,6 +419,7 @@ Manually handles navigation state changes.
 Gets the currently active route from navigation state.
 
 **Parameters:**
+
 - `state`: NavigationState or PartialState object
 
 **Returns:** `Route<string> | undefined`
@@ -428,6 +431,7 @@ Gets the currently active route from navigation state.
 Extracts the route name from a route object.
 
 **Parameters:**
+
 - `route`: Route object
 
 **Returns:** `string | undefined`

@@ -79,10 +79,7 @@ export function getUserSessionUpdater({
       await storeUserSession(newSession);
 
       faro.api?.setSession(newSession.sessionMeta);
-      faro.config.sessionTracking?.onSessionChange?.(
-        sessionFromStorage?.sessionMeta ?? null,
-        newSession.sessionMeta!
-      );
+      faro.config.sessionTracking?.onSessionChange?.(sessionFromStorage?.sessionMeta ?? null, newSession.sessionMeta!);
     }
   };
 }

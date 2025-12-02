@@ -1,20 +1,20 @@
 import type { Instrumentation } from '@grafana/faro-core';
-import type { GetRNInstrumentationsOptions } from './types';
-import { ErrorsInstrumentation } from '../instrumentations/errors';
-import { ConsoleInstrumentation } from '../instrumentations/console';
-import { SessionInstrumentation } from '../instrumentations/session';
-import { ViewInstrumentation } from '../instrumentations/view';
+
 import { AppStateInstrumentation } from '../instrumentations/appState';
-import { UserActionInstrumentation } from '../instrumentations/userActions';
+import { ConsoleInstrumentation } from '../instrumentations/console';
+import { ErrorsInstrumentation } from '../instrumentations/errors';
 import { HttpInstrumentation } from '../instrumentations/http';
 import { PerformanceInstrumentation } from '../instrumentations/performance';
+import { SessionInstrumentation } from '../instrumentations/session';
+import { UserActionInstrumentation } from '../instrumentations/userActions';
+import { ViewInstrumentation } from '../instrumentations/view';
+
+import type { GetRNInstrumentationsOptions } from './types';
 
 /**
  * Returns the default set of instrumentations for React Native
  */
-export function getRNInstrumentations(
-  options: GetRNInstrumentationsOptions = {}
-): Instrumentation[] {
+export function getRNInstrumentations(options: GetRNInstrumentationsOptions = {}): Instrumentation[] {
   const {
     captureConsole = false,
     trackAppState = true,

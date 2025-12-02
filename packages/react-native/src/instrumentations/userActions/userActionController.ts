@@ -1,20 +1,20 @@
 import { Observable, UserActionState } from '@grafana/faro-core';
 import type { Subscription, UserActionInternalInterface } from '@grafana/faro-core';
 
-import {
-  monitorHttpRequests,
-  type HttpRequestMessage,
-  type HttpRequestMessagePayload,
-} from './httpRequestMonitor';
+import { type HttpRequestMessage, type HttpRequestMessagePayload, monitorHttpRequests } from './httpRequestMonitor';
 
 const defaultFollowUpActionTimeRange = 100; // 100ms after activity stops
 const defaultHaltTimeout = 10 * 1000; // 10 seconds max wait for HTTP
 
-function isRequestStartMessage(msg: HttpRequestMessage): msg is { type: 'http_request_start'; request: HttpRequestMessagePayload } {
+function isRequestStartMessage(
+  msg: HttpRequestMessage
+): msg is { type: 'http_request_start'; request: HttpRequestMessagePayload } {
   return msg.type === 'http_request_start';
 }
 
-function isRequestEndMessage(msg: HttpRequestMessage): msg is { type: 'http_request_end'; request: HttpRequestMessagePayload } {
+function isRequestEndMessage(
+  msg: HttpRequestMessage
+): msg is { type: 'http_request_end'; request: HttpRequestMessagePayload } {
   return msg.type === 'http_request_end';
 }
 
@@ -57,10 +57,7 @@ export class UserActionController {
       })
       .filter((msg) => {
         // If the user action is in halt state, we only keep listening to ended http requests
-        if (
-          this.isHalted &&
-          !(isRequestEndMessage(msg) && this.runningRequests.has(msg.request.requestId))
-        ) {
+        if (this.isHalted && !(isRequestEndMessage(msg) && this.runningRequests.has(msg.request.requestId))) {
           return false;
         }
 

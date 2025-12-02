@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import {faro} from '@grafana/faro-react-native';
+import { faro } from '@grafana/faro-react-native';
 
 /**
  * Slow Load Demo Screen
@@ -38,9 +38,7 @@ export function SlowLoadDemoScreen() {
         loadDuration: duration.toString(),
       });
 
-      console.log(
-        `🐌 Slow screen finished loading after ${duration}ms`,
-      );
+      console.log(`🐌 Slow screen finished loading after ${duration}ms`);
     }, 2500); // 2.5 second delay
 
     return () => clearTimeout(timer);
@@ -58,8 +56,12 @@ export function SlowLoadDemoScreen() {
           Check Grafana Cloud to see the performance metrics:
         </Text>
         <View style={styles.metricsBox}>
-          <Text style={styles.metricText}>• transitionTime: Time from previous screen</Text>
-          <Text style={styles.metricText}>• mountTime: Time for this screen to mount</Text>
+          <Text style={styles.metricText}>
+            • transitionTime: Time from previous screen
+          </Text>
+          <Text style={styles.metricText}>
+            • mountTime: Time for this screen to mount
+          </Text>
           <Text style={styles.metricText}>• screenName: "SlowLoadDemo"</Text>
         </View>
       </View>
@@ -69,9 +71,7 @@ export function SlowLoadDemoScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>🐌 Slow Load Complete!</Text>
-      <Text style={styles.subtitle}>
-        Content loaded successfully
-      </Text>
+      <Text style={styles.subtitle}>Content loaded successfully</Text>
 
       <View style={styles.successBox}>
         <Text style={styles.successText}>✅ Screen Loaded</Text>
@@ -87,11 +87,9 @@ export function SlowLoadDemoScreen() {
           <Text style={styles.metricDetail}>
             📊 Event: faro.performance.screen
           </Text>
+          <Text style={styles.metricDetail}>🏷️ screenName: "SlowLoadDemo"</Text>
           <Text style={styles.metricDetail}>
-            🏷️  screenName: "SlowLoadDemo"
-          </Text>
-          <Text style={styles.metricDetail}>
-            ⏱️  transitionTime: Time from previous screen
+            ⏱️ transitionTime: Time from previous screen
           </Text>
           <Text style={styles.metricDetail}>
             🚀 mountTime: ~2500ms (slow loading simulation)
@@ -101,17 +99,13 @@ export function SlowLoadDemoScreen() {
 
       <View style={styles.tipBox}>
         <Text style={styles.tipTitle}>💡 View in Grafana Cloud</Text>
-        <Text style={styles.tipText}>
-          Query in Explore:
-        </Text>
+        <Text style={styles.tipText}>Query in Explore:</Text>
         <View style={styles.codeBox}>
           <Text style={styles.codeText}>
             {'{'}kind="event", event_name="faro.performance.screen"{'}'}
           </Text>
         </View>
-        <Text style={styles.tipText}>
-          Filter by:
-        </Text>
+        <Text style={styles.tipText}>Filter by:</Text>
         <View style={styles.codeBox}>
           <Text style={styles.codeText}>
             | event_attributes_screenName = "SlowLoadDemo"

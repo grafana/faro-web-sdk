@@ -1,9 +1,11 @@
 import type { Config } from '@grafana/faro-core';
-import type { ReactNativeConfig } from './types';
+
 import { getDeviceMeta } from '../metas/device';
 import { createPageMeta } from '../metas/page';
 import { getScreenMeta } from '../metas/screen';
 import { getSdkMeta } from '../metas/sdk';
+
+import type { ReactNativeConfig } from './types';
 
 /**
  * Creates a full Faro config from React Native specific config

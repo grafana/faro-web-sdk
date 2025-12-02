@@ -1,6 +1,7 @@
-import { initializeFaro as initializeFaroCore, type Faro } from '@grafana/faro-core';
-import type { ReactNativeConfig } from './config/types';
+import { type Faro, initializeFaro as initializeFaroCore } from '@grafana/faro-core';
+
 import { makeRNConfig } from './config/makeRNConfig';
+import type { ReactNativeConfig } from './config/types';
 
 export function initializeFaro(config: ReactNativeConfig): Faro {
   const fullConfig = makeRNConfig(config);

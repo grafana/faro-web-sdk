@@ -31,7 +31,7 @@ export function monitorHttpRequests(): Observable<HttpRequestMessage> {
           global.__FARO_HTTP_MONITOR__.subscribers.forEach((sub: any) => {
             try {
               sub.next({ type: 'http_request_start', request });
-            } catch (err) {
+            } catch (_err) {
               // Ignore subscriber errors
             }
           });
@@ -40,7 +40,7 @@ export function monitorHttpRequests(): Observable<HttpRequestMessage> {
           global.__FARO_HTTP_MONITOR__.subscribers.forEach((sub: any) => {
             try {
               sub.next({ type: 'http_request_end', request });
-            } catch (err) {
+            } catch (_err) {
               // Ignore subscriber errors
             }
           });

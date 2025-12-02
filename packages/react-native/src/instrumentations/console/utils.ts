@@ -133,10 +133,7 @@ export function getDetailsFromErrorArgs(args: [any?, ...any[]]): ErrorDetails {
  * If first argument is an Error, extracts error details with stack frames
  * Otherwise, uses the provided serializer to stringify the arguments
  */
-export function getDetailsFromConsoleErrorArgs(
-  args: [any?, ...any[]],
-  serializer: LogArgsSerializer
-): ErrorDetails {
+export function getDetailsFromConsoleErrorArgs(args: [any?, ...any[]], serializer: LogArgsSerializer): ErrorDetails {
   if (isError(args[0])) {
     return getDetailsFromErrorArgs(args);
   } else {

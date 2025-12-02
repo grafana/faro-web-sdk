@@ -1,4 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
+
 import type { PushErrorOptions } from '@grafana/faro-core';
 
 export type ReactNodeRender = () => ReactNode;

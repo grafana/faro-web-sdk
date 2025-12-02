@@ -1,16 +1,9 @@
-import { BaseInstrumentation, genShortID, VERSION } from '@grafana/faro-core';
 import { AppState, AppStateStatus } from 'react-native';
 
-import {
-  getPlatformInfo,
-  performanceStore,
-  toPerformanceTimingString,
-} from './performanceUtils';
-import type {
-  FaroAppLaunchItem,
-  FaroScreenNavigationItem,
-  PerformanceInstrumentationOptions,
-} from './types';
+import { BaseInstrumentation, genShortID, VERSION } from '@grafana/faro-core';
+
+import { getPlatformInfo, performanceStore, toPerformanceTimingString } from './performanceUtils';
+import type { FaroAppLaunchItem, FaroScreenNavigationItem, PerformanceInstrumentationOptions } from './types';
 
 /**
  * Performance instrumentation for React Native
@@ -303,7 +296,7 @@ export function markBundleLoaded(): void {
  */
 export function trackScreenPerformance(
   screenName: string,
-  navigationType: 'push' | 'pop' | 'replace' | 'reset' = 'push'
+  _navigationType: 'push' | 'pop' | 'replace' | 'reset' = 'push'
 ): void {
   performanceStore.startMarker(`screen_${screenName}`);
 }

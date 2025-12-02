@@ -2,11 +2,7 @@ import type { ErrorUtils } from 'react-native';
 
 import { BaseInstrumentation } from '@grafana/faro-core';
 
-import {
-  enhanceErrorWithContext,
-  getPlatformErrorContext,
-  getStackFramesFromError,
-} from './stackTraceParser';
+import { enhanceErrorWithContext } from './stackTraceParser';
 
 // Access the global ErrorUtils
 declare const global: {
@@ -125,7 +121,11 @@ export class ErrorsInstrumentation extends BaseInstrumentation {
         }
 
         // Enhance error with React Native context and stack frames
-        const { error: enhancedError, stackFrames, context } = enhanceErrorWithContext(error, {
+        const {
+          error: enhancedError,
+          stackFrames,
+          context,
+        } = enhanceErrorWithContext(error, {
           isFatal: String(isFatal ?? false),
         });
 

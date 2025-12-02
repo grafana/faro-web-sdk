@@ -1,5 +1,6 @@
-import { faro } from '@grafana/faro-core';
 import type { NavigationState, PartialState, Route } from '@react-navigation/native';
+
+import { faro } from '@grafana/faro-core';
 
 import { setCurrentPage } from '../metas/page';
 import { setCurrentScreen } from '../metas/screen';

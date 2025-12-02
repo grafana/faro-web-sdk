@@ -1,4 +1,5 @@
 import { BaseInstrumentation } from '@grafana/faro-core';
+
 import type { ReactNavigationConfig } from '../types';
 
 /**

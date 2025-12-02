@@ -1,4 +1,5 @@
 import { AppState } from 'react-native';
+
 import type { TransportItem } from '@grafana/faro-core';
 
 export type SendFn = (items: TransportItem[]) => void;
@@ -19,7 +20,7 @@ export class RNBatchExecutor {
   private signalBuffer: TransportItem[] = [];
   private sendFn: SendFn;
   private paused: boolean;
-  private flushInterval?: NodeJS.Timeout;
+  private flushInterval?: ReturnType<typeof setInterval>;
   private appStateSubscription?: any;
 
   constructor(sendFn: SendFn, options?: BatchExecutorOptions) {

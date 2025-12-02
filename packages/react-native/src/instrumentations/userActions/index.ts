@@ -1,10 +1,10 @@
 import {
   BaseInstrumentation,
-  VERSION,
-  userActionsMessageBus,
   type Subscription,
   type UserActionInterface,
   type UserActionInternalInterface,
+  userActionsMessageBus,
+  VERSION,
 } from '@grafana/faro-core';
 
 import { UserActionController } from './userActionController';

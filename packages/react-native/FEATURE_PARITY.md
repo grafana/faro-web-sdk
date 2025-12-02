@@ -8,19 +8,22 @@ This document provides a comprehensive comparison between the Faro React Native 
 
 ## 📊 Current Status
 
-| Metric | Completion |
-|--------|------------|
-| **Core Functionality** | ~85% |
-| **Feature Parity** (excluding web-only) | ~80% |
-| **With Tracing Support** | ~56% |
+| Metric                                  | Completion |
+| --------------------------------------- | ---------- |
+| **Core Functionality**                  | ~85%       |
+| **Feature Parity** (excluding web-only) | ~80%       |
+| **With Tracing Support**                | ~56%       |
 
 ### Quick Stats
+
 - ✅ **Fully Implemented**: 11/15 core features
 - ⏳ **Partially Implemented/Placeholder**: 0/15 features
 - ❌ **Not Applicable**: 4 web-only features
 - 🔄 **Needs Adaptation**: 4 features
 
 ### Recent Updates
+
+- **2025-12-02**: ✅ PerformanceInstrumentation - React Native performance monitoring with app launch tracking, screen navigation performance, and bundle load time measurement
 - **2025-12-02**: ✅ Enhanced ErrorsInstrumentation - Added React Native stack trace parsing, platform context, error deduplication, and filtering
 - **2025-12-02**: ✅ Enhanced UserActionInstrumentation - Added intelligent duration tracking, HTTP correlation, and automatic lifecycle management
 - **2025-12-02**: ✅ ConsoleTransport - Implemented debugging transport for local development
@@ -38,23 +41,24 @@ This document provides a comprehensive comparison between the Faro React Native 
 
 ### Web SDK Instrumentations
 
-| Instrumentation | React Native Status | Notes |
-|-----------------|---------------------|-------|
-| **ConsoleInstrumentation** | ✅ Fully Implemented | Complete with unpatch(), advanced serialization |
-| **ErrorsInstrumentation** | ✅ Fully Implemented | Complete with stack parsing, deduplication, filtering |
-| **SessionInstrumentation** | ✅ Fully Implemented | Complete with AsyncStorage, expiration, sampling |
-| **ViewInstrumentation** | ✅ Fully Implemented | Complete with React Navigation integration |
-| **WebVitalsInstrumentation** | ❌ N/A | Web-only (CLS, LCP, INP metrics) |
-| **PerformanceInstrumentation** | ❌ N/A | Web-only (Performance API) |
-| **UserActionInstrumentation** | ✅ Enhanced | Intelligent duration tracking, HTTP correlation |
-| **CSPInstrumentation** | ❌ N/A | Web-only (Content Security Policy) |
-| **NavigationInstrumentation** | ❌ N/A | Web-only (DOM-specific) |
-| **HttpInstrumentation** | ✅ Implemented | Good: Fetch patching, ignored URLs |
-| **AppStateInstrumentation** | ✅ Fully Implemented | Complete with state change tracking |
+| Instrumentation                | React Native Status  | Notes                                                 |
+| ------------------------------ | -------------------- | ----------------------------------------------------- |
+| **ConsoleInstrumentation**     | ✅ Fully Implemented | Complete with unpatch(), advanced serialization       |
+| **ErrorsInstrumentation**      | ✅ Fully Implemented | Complete with stack parsing, deduplication, filtering |
+| **SessionInstrumentation**     | ✅ Fully Implemented | Complete with AsyncStorage, expiration, sampling      |
+| **ViewInstrumentation**        | ✅ Fully Implemented | Complete with React Navigation integration            |
+| **WebVitalsInstrumentation**   | ❌ N/A               | Web-only (CLS, LCP, INP metrics)                      |
+| **PerformanceInstrumentation** | ✅ Fully Implemented | React Native-specific (app launch, screen navigation) |
+| **UserActionInstrumentation**  | ✅ Enhanced          | Intelligent duration tracking, HTTP correlation       |
+| **CSPInstrumentation**         | ❌ N/A               | Web-only (Content Security Policy)                    |
+| **NavigationInstrumentation**  | ❌ N/A               | Web-only (DOM-specific)                               |
+| **HttpInstrumentation**        | ✅ Implemented       | Good: Fetch patching, ignored URLs                    |
+| **AppStateInstrumentation**    | ✅ Fully Implemented | Complete with state change tracking                   |
 
 ### ConsoleInstrumentation Details
 
 **Web SDK (`packages/web-sdk/src/instrumentations/console/`)**
+
 - Captures console logs (warn, info, error)
 - Configurable log levels
 - Advanced error serialization
@@ -62,6 +66,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 - Unpatch capability
 
 **React Native SDK** ✅ **FULLY IMPLEMENTED** (as of 2025-12-02)
+
 - ✅ Console capture for all log levels
 - ✅ Configurable log levels with defaultDisabledLevels
 - ✅ unpatch() method for cleanup
@@ -74,10 +79,12 @@ This document provides a comprehensive comparison between the Faro React Native 
 - ✅ Smart object serialization (JSON.stringify for objects/arrays instead of `[object Object]`)
 
 **Implementation Files:**
+
 - `packages/react-native/src/instrumentations/console/index.ts` - Complete implementation
 - `packages/react-native/src/instrumentations/console/utils.ts` - Error details extraction, stack parsing, and `reactNativeLogArgsSerializer`
 
 **Features:**
+
 - **Configurable Log Levels**: Choose which console methods to capture
 - **Smart Object Serialization**: Objects and arrays automatically converted to JSON strings
 - **Advanced Error Serialization**: Extract detailed error information including stack frames
@@ -86,6 +93,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 - **Unpatch Support**: Clean console restoration
 
 **Completed Items:**
+
 - ✅ Add unpatch() method to ConsoleInstrumentation
 - ✅ Implement advanced error serialization options
 - ✅ Add consoleErrorAsLog configuration
@@ -100,6 +108,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 ### ErrorsInstrumentation Details
 
 **Web SDK (`packages/web-sdk/src/instrumentations/errors/`)**
+
 - Captures unhandled exceptions via `window.onerror`
 - Captures unhandled promise rejections
 - Advanced stack frame parsing
@@ -107,6 +116,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 - Error details extraction from various error types
 
 **React Native SDK** ✅ **FULLY IMPLEMENTED** (as of 2025-12-02)
+
 - ✅ Uses React Native ErrorUtils for error capture
 - ✅ Captures unhandled errors and promise rejections
 - ✅ Fatal error flag support (isFatal context)
@@ -125,10 +135,12 @@ This document provides a comprehensive comparison between the Faro React Native 
 - ✅ Preserves original error handlers
 
 **Implementation Files:**
+
 - `packages/react-native/src/instrumentations/errors/index.ts` - Main instrumentation with deduplication
 - `packages/react-native/src/instrumentations/errors/stackTraceParser.ts` - Comprehensive stack trace parsing
 
 **Features:**
+
 - **React Native Stack Trace Parsing**: Handles all React Native stack formats (dev, release, Metro, native)
 - **Platform Context**: Automatically includes platform, version, and JS engine info
 - **Error Deduplication**: Prevents duplicate reports with configurable time window (default: 5s)
@@ -136,6 +148,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 - **Automatic Capture**: Unhandled errors and promise rejections
 
 **Completed Items:**
+
 - ✅ Enhance stack frame parsing for React Native (all formats)
 - ✅ Add iOS/Android-specific error handling (platform context)
 - ✅ Implement error deduplication
@@ -145,6 +158,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 **Priority:** ✅ COMPLETE
 
 **Future Considerations:**
+
 - Source map support (requires separate implementation)
 - Integration with crash reporting services
 
@@ -153,6 +167,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 ### SessionInstrumentation Details
 
 **Web SDK (`packages/web-sdk/src/instrumentations/session/`)**
+
 - ✅ Persistent session management (LocalStorage)
 - ✅ Volatile session management (in-memory)
 - ✅ Session expiration tracking
@@ -164,6 +179,7 @@ This document provides a comprehensive comparison between the Faro React Native 
   - `SESSION_INACTIVITY_TIME`: 15 minutes
 
 **React Native SDK** ✅ **FULLY IMPLEMENTED** (as of 2025-12-02)
+
 - ✅ AsyncStorage-based persistent session management
 - ✅ Volatile session management (in-memory)
 - ✅ Session expiration tracking (4-hour default)
@@ -176,6 +192,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 - ✅ Unpatch support for cleanup
 
 **Implementation Files:**
+
 - `packages/react-native/src/instrumentations/session/index.ts` - Main instrumentation
 - `packages/react-native/src/instrumentations/session/sessionManager/` - Session management architecture
   - `PersistentSessionsManager.ts` - AsyncStorage-based persistence
@@ -189,15 +206,113 @@ This document provides a comprehensive comparison between the Faro React Native 
 
 ---
 
+### PerformanceInstrumentation Details
+
+**Web SDK (`packages/web-sdk/src/instrumentations/performance/`)**
+
+- Tracks Navigation Timing API metrics
+- Tracks Resource Timing API metrics
+- Uses PerformanceObserver for automatic collection
+- Captures page load, navigation, and resource performance
+
+**React Native SDK** ✅ **FULLY IMPLEMENTED** (as of 2025-12-02)
+
+- ✅ App launch performance tracking (cold/warm starts)
+- ✅ Screen navigation performance monitoring
+- ✅ JavaScript bundle load time measurement
+- ✅ Transition time between screens
+- ✅ Mount time for screen components
+- ✅ Helper functions: `markAppStart()`, `markBundleLoaded()`, `trackScreenPerformance()`
+- ✅ Manual performance marker API
+- ✅ Performance timing store for cross-module timing
+- ✅ AppState integration for warm start detection
+- ✅ Meta listener integration for automatic screen tracking
+- ✅ Unpatch support for cleanup
+
+**Implementation Files:**
+
+- `packages/react-native/src/instrumentations/performance/index.ts` - Main instrumentation class
+- `packages/react-native/src/instrumentations/performance/performanceUtils.ts` - Timing utilities and storage
+- `packages/react-native/src/instrumentations/performance/types.ts` - TypeScript interfaces
+
+**Events Emitted:**
+
+- `faro.performance.app_launch` - App startup metrics
+  - `jsBundleLoadTime`: Time to load JavaScript bundle
+  - `timeToFirstScreen`: Time until first screen rendered
+  - `totalLaunchTime`: Total app launch time
+  - `launchType`: "cold" or "warm"
+  - `platform`: iOS/Android
+  - `platformVersion`: OS version
+
+- `faro.performance.screen` - Screen navigation metrics
+  - `faroScreenId`: Unique ID for this screen instance
+  - `faroLaunchId`: Links back to app launch
+  - `faroPreviousScreenId`: Links to previous screen
+  - `screenName`: Current screen name
+  - `previousScreen`: Previous screen name
+  - `mountTime`: Time for screen to mount
+  - `transitionTime`: Time spent transitioning
+  - `navigationType`: Type of navigation
+
+**Helper Functions:**
+
+```typescript
+// Mark app start time (call in index.js)
+markAppStart();
+
+// Mark bundle loaded (call in App.tsx after imports)
+markBundleLoaded();
+
+// Manual screen tracking (if not using ViewInstrumentation)
+trackScreenPerformance('MyScreen', 'push');
+```
+
+**Features:**
+
+- **Automatic Tracking**: Integrates with ViewInstrumentation for automatic screen performance
+- **Launch Type Detection**: Distinguishes between cold and warm starts via AppState
+- **Journey Tracking**: Links screens together with unique IDs
+- **Performance Store**: Global timing storage for cross-module coordination
+- **Manual API**: Helpers for explicit timing control
+
+**Demo Implementation:**
+
+- Slow Load Demo screen with 2.5s delay for visible metrics in Grafana Cloud
+- Console logging of performance events
+- Integration with demo app navigation
+
+**Completed Items:**
+
+- ✅ Research React Native performance APIs
+- ✅ Design performance instrumentation architecture
+- ✅ Create performance types and interfaces
+- ✅ Implement app startup performance tracking
+- ✅ Implement screen/navigation performance
+- ✅ Add performance utilities and timing store
+- ✅ Create PerformanceInstrumentation class
+- ✅ Export helper functions from main index
+- ✅ Update getRNInstrumentations with trackPerformance option
+- ✅ Update README documentation
+- ✅ Test in demo app with Slow Load Demo screen
+
+**Priority:** ✅ COMPLETE
+
+**Note:** This is React Native-specific and differs from web's PerformanceInstrumentation which uses the Performance API. The RN version focuses on app launch and screen navigation metrics relevant to mobile apps.
+
+---
+
 ### ViewInstrumentation Details
 
 **Web SDK (`packages/web-sdk/src/instrumentations/view/`)**
+
 - Tracks view/route changes
 - Enforces default view value
 - Integrates with history API
 - Emits VIEW_CHANGED events
 
 **React Native SDK** ✅ **FULLY IMPLEMENTED** (as of 2025-12-02)
+
 - ✅ Tracks screen/view changes
 - ✅ Listens to meta changes and emits VIEW_CHANGED events
 - ✅ React Navigation integration via `useFaroNavigation` hook
@@ -209,6 +324,7 @@ This document provides a comprehensive comparison between the Faro React Native 
 - ✅ Unpatch support for cleanup
 
 **Implementation Files:**
+
 - `packages/react-native/src/instrumentations/view/index.ts` - Main instrumentation
 - `packages/react-native/src/navigation/useFaroNavigation.ts` - React hook for easy integration
 - `packages/react-native/src/navigation/utils.ts` - Navigation utilities
@@ -224,9 +340,7 @@ import { useFaroNavigation } from '@grafana/faro-react-native';
 const navigationRef = useNavigationContainerRef();
 useFaroNavigation(navigationRef);
 
-<NavigationContainer ref={navigationRef}>
-  {/* navigation */}
-</NavigationContainer>
+<NavigationContainer ref={navigationRef}>{/* navigation */}</NavigationContainer>;
 ```
 
 ```tsx
@@ -235,7 +349,7 @@ const Navigation = createStaticNavigation(RootStack);
 const navigationRef = useNavigationContainerRef();
 useFaroNavigation(navigationRef);
 
-<Navigation ref={navigationRef} />
+<Navigation ref={navigationRef} />;
 ```
 
 **Priority:** ✅ COMPLETE
@@ -247,6 +361,7 @@ useFaroNavigation(navigationRef);
 **React Native Specific** (No Web equivalent) ✅ **FULLY IMPLEMENTED** (as of 2025-12-02)
 
 **React Native SDK:**
+
 - ✅ AppState.addEventListener for 'change' events
 - ✅ Tracks active/background/inactive/unknown/extension states
 - ✅ Emits `app_state_changed` events with fromState, toState, duration
@@ -256,11 +371,13 @@ useFaroNavigation(navigationRef);
 - ✅ Comprehensive logging for state transitions
 
 **Implementation Files:**
+
 - `packages/react-native/src/instrumentations/appState/index.ts` - Complete implementation
 - `packages/core/src/semantic.ts` - Added EVENT_APP_STATE_CHANGED constant
 - `demo-react-native/TESTING_APPSTATE.md` - Comprehensive testing guide
 
 **App State Values:**
+
 - `active` - App running in foreground
 - `background` - User switched away or app minimized
 - `inactive` - Transitional state (incoming call, control center on iOS)
@@ -268,6 +385,7 @@ useFaroNavigation(navigationRef);
 - `extension` - App extension running (iOS only)
 
 **Event Structure:**
+
 ```typescript
 {
   event_name: "app_state_changed",
@@ -279,6 +397,7 @@ useFaroNavigation(navigationRef);
 ```
 
 **Completed Items:**
+
 - ✅ Implement AppState.addEventListener for 'change'
 - ✅ Track active/background/inactive states
 - ✅ Emit app state change events
@@ -293,11 +412,13 @@ useFaroNavigation(navigationRef);
 ### HttpInstrumentation Details
 
 **Web SDK**
+
 - Separate FetchInstrumentation and XHRInstrumentation
 - Part of web-tracing package
 - Integrated with OpenTelemetry
 
 **React Native SDK**
+
 - ✅ Fetch API patching implemented
 - ✅ Request/response tracking
 - ✅ Duration measurement
@@ -307,6 +428,7 @@ useFaroNavigation(navigationRef);
 - ❌ Not integrated with tracing yet
 
 **Action Items:**
+
 - [ ] Integrate with future tracing package
 - [ ] Add request/response body capture (optional)
 - [ ] Add GraphQL instrumentation consideration
@@ -318,6 +440,7 @@ useFaroNavigation(navigationRef);
 ### UserActionInstrumentation Details
 
 **Web SDK (`packages/web-sdk/src/instrumentations/userAction/`)**
+
 - Automatic click/interaction tracking
 - Pointer and keyboard event monitoring
 - User action controller with duration tracking
@@ -325,6 +448,7 @@ useFaroNavigation(navigationRef);
 - Context extraction from DOM elements
 
 **React Native SDK**
+
 - ✅ Message bus subscription
 - ✅ HOC component support (`withFaroUserAction`)
 - ✅ Manual tracking support (`trackUserAction()`)
@@ -332,6 +456,7 @@ useFaroNavigation(navigationRef);
 - ⚠️ Basic duration tracking
 
 **Action Items:**
+
 - [ ] Research automatic gesture detection for React Native
 - [ ] Enhance duration tracking
 - [ ] Improve context extraction
@@ -346,17 +471,18 @@ useFaroNavigation(navigationRef);
 
 ### Web SDK Metas
 
-| Meta | React Native Equivalent | Status |
-|------|-------------------------|--------|
-| **browserMeta** | deviceMeta | ✅ Adapted |
-| **pageMeta** | screenMeta + pageMeta | ✅ Fully Implemented |
-| **sdkMeta** | sdkMeta | ✅ Implemented |
-| **k6Meta** | N/A | ❌ Web-only |
-| **sessionMeta** | sessionMeta | ✅ Full |
+| Meta            | React Native Equivalent | Status               |
+| --------------- | ----------------------- | -------------------- |
+| **browserMeta** | deviceMeta              | ✅ Adapted           |
+| **pageMeta**    | screenMeta + pageMeta   | ✅ Fully Implemented |
+| **sdkMeta**     | sdkMeta                 | ✅ Implemented       |
+| **k6Meta**      | N/A                     | ❌ Web-only          |
+| **sessionMeta** | sessionMeta             | ✅ Full              |
 
 ### deviceMeta (React Native) vs browserMeta (Web)
 
 **Web SDK browserMeta provides:**
+
 - Browser name, version
 - OS name, version
 - User agent
@@ -366,6 +492,7 @@ useFaroNavigation(navigationRef);
 - Viewport dimensions
 
 **React Native deviceMeta provides:**
+
 - ✅ Device brand, model, ID
 - ✅ OS name, version
 - ✅ App version
@@ -374,6 +501,7 @@ useFaroNavigation(navigationRef);
 - ✅ Platform-specific information
 
 **Action Items:**
+
 - [ ] Consider adding locale/language info
 - [ ] Add network info (wifi/cellular)
 - [ ] Consider battery status (if useful)
@@ -385,11 +513,13 @@ useFaroNavigation(navigationRef);
 ### screenMeta & pageMeta (React Native) vs pageMeta (Web)
 
 **Web SDK pageMeta provides:**
+
 - Current URL
 - Page ID generation
 - Initial page meta support
 
 **React Native screenMeta + pageMeta provides:**
+
 - ✅ Screen name tracking
 - ✅ Screen ID generation
 - ✅ Uses `screen://` URL format
@@ -398,11 +528,13 @@ useFaroNavigation(navigationRef);
 - ✅ Automatic page meta updates on screen navigation
 
 **Implementation Files:**
+
 - `packages/react-native/src/metas/screen.ts` - Screen meta management
 - `packages/react-native/src/metas/page.ts` - Page meta provider (NEW as of 2025-12-02)
 - `packages/react-native/src/navigation/utils.ts` - Updates both screen and page meta on navigation
 
 **Completed Items:**
+
 - ✅ Proper integration with ViewInstrumentation
 - ✅ Route parameters capture
 - ✅ Document URL format conventions
@@ -416,19 +548,21 @@ useFaroNavigation(navigationRef);
 
 ### Web SDK Transports
 
-| Transport | React Native Status | Notes |
-|-----------|---------------------|-------|
-| **FetchTransport** | ✅ Implemented | Custom batch executor |
-| **ConsoleTransport** | ✅ Implemented | Full parity with web SDK |
+| Transport            | React Native Status | Notes                    |
+| -------------------- | ------------------- | ------------------------ |
+| **FetchTransport**   | ✅ Implemented      | Custom batch executor    |
+| **ConsoleTransport** | ✅ Implemented      | Full parity with web SDK |
 
 ### ConsoleTransport ✅ COMPLETE
 
 **Web SDK (`packages/web-sdk/src/transports/console/`)**
+
 - Debug logging to console
 - Pretty printing
 - Useful during development
 
 **React Native SDK** ✅ **FULLY IMPLEMENTED** (as of 2025-12-02)
+
 - ✅ Debug logging to console
 - ✅ Configurable log level (DEBUG, INFO, WARN, ERROR)
 - ✅ Structured JSON output with metadata
@@ -436,17 +570,20 @@ useFaroNavigation(navigationRef);
 - ✅ Identical API to web SDK
 
 **Implementation Files:**
+
 - `packages/react-native/src/transports/console/transport.ts` - Main implementation
 - `packages/react-native/src/transports/console/types.ts` - TypeScript types
 - `packages/react-native/src/transports/console/index.ts` - Exports
 
 **Features:**
+
 - **Debug Mode**: Print all telemetry to console during development
 - **Configurable Levels**: Choose console method (debug, info, warn, error)
 - **Structured Output**: Shows metadata, logs, errors, events in JSON format
 - **Dual Output**: Can run alongside FetchTransport
 
 **Completed Items:**
+
 - ✅ Implement ConsoleTransport class
 - ✅ Add configurable log level option
 - ✅ Export from package index
@@ -461,6 +598,7 @@ useFaroNavigation(navigationRef);
 ### Web Tracing Package (`packages/web-tracing/`)
 
 **Features:**
+
 1. **TracingInstrumentation**
    - OpenTelemetry integration
    - Trace context propagation
@@ -491,6 +629,7 @@ useFaroNavigation(navigationRef);
 #### New Package: `@grafana/faro-react-native-tracing`
 
 **Structure:**
+
 ```
 packages/react-native-tracing/
 ├── src/
@@ -513,6 +652,7 @@ packages/react-native-tracing/
 ```
 
 **Action Items:**
+
 - [ ] Create new package structure
 - [ ] Implement React Native-compatible OTEL SDK setup
 - [ ] Create FetchInstrumentation for React Native
@@ -526,6 +666,7 @@ packages/react-native-tracing/
 - [ ] Consider AsyncStorage for trace batching
 
 **Dependencies to Add:**
+
 ```json
 {
   "@opentelemetry/api": "^1.x",
@@ -546,22 +687,23 @@ packages/react-native-tracing/
 
 ### Web React Package (`packages/react/`)
 
-| Feature | React Native Status | Notes |
-|---------|---------------------|-------|
-| **FaroErrorBoundary** | ✅ Implemented | Complete |
-| **withFaroErrorBoundary** HOC | ✅ Implemented | Complete |
-| **FaroProfiler** | ❌ Missing | Component render tracking |
-| **withFaroProfiler** HOC | ❌ Missing | Profiler HOC |
-| **React Router v4/v5** | N/A | Web-only |
-| **React Router v6** | N/A | Web-only |
-| **React Navigation v5** | ⏳ Placeholder | Needs implementation |
-| **React Navigation v6** | ⏳ Placeholder | Needs implementation |
+| Feature                       | React Native Status | Notes                     |
+| ----------------------------- | ------------------- | ------------------------- |
+| **FaroErrorBoundary**         | ✅ Implemented      | Complete                  |
+| **withFaroErrorBoundary** HOC | ✅ Implemented      | Complete                  |
+| **FaroProfiler**              | ❌ Missing          | Component render tracking |
+| **withFaroProfiler** HOC      | ❌ Missing          | Profiler HOC              |
+| **React Router v4/v5**        | N/A                 | Web-only                  |
+| **React Router v6**           | N/A                 | Web-only                  |
+| **React Navigation v5**       | ⏳ Placeholder      | Needs implementation      |
+| **React Navigation v6**       | ⏳ Placeholder      | Needs implementation      |
 
 ### FaroErrorBoundary
 
 **Status:** ✅ **Fully Implemented**
 
 Both Web and React Native have complete implementations with:
+
 - Error boundary component
 - Fallback rendering
 - Error capture and reporting
@@ -572,15 +714,18 @@ Both Web and React Native have complete implementations with:
 ### FaroProfiler
 
 **Web SDK (`packages/react/src/profiler/`)**
+
 - React Profiler integration
 - Component render tracking
 - Performance measurements
 - HOC: `withFaroProfiler`
 
 **React Native SDK**
+
 - ❌ Not implemented
 
 **Action Items:**
+
 - [ ] Port FaroProfiler component to React Native
 - [ ] Adapt for React Native performance characteristics
 - [ ] Test with React Native Profiler
@@ -596,6 +741,7 @@ Both Web and React Native have complete implementations with:
 ### React Navigation Integration
 
 **Web SDK has:**
+
 - Complete React Router v4/v5 integration
 - Complete React Router v6 integration
 - React Router v6 Data support
@@ -604,12 +750,14 @@ Both Web and React Native have complete implementations with:
 - Route change events
 
 **React Native SDK has:**
+
 - ⚠️ Skeleton for React Navigation v6
 - ❌ No actual implementation
 - ❌ No screen change detection
 - ❌ No route context capture
 
 **Action Items:**
+
 - [ ] Implement React Navigation v5 integration
   - [ ] useNavigationContainerRef hook
   - [ ] onStateChange listener
@@ -636,17 +784,18 @@ Both Web and React Native have complete implementations with:
 
 These packages exist in `experimental/` and could potentially be adapted for React Native:
 
-| Package | Applicability | Priority |
-|---------|---------------|----------|
-| **instrumentation-replay** | 🔄 Complex to adapt | 🟢 LOW |
-| **transport-otlp-http** | ✅ Should work | 🟡 MEDIUM |
-| **instrumentation-websocket** | ✅ Could adapt | 🟢 LOW |
-| **instrumentation-otel-axios** | ✅ Would work | 🟢 LOW |
-| **instrumentation-otel-redux-saga** | ✅ Would work | 🟢 LOW |
+| Package                             | Applicability       | Priority  |
+| ----------------------------------- | ------------------- | --------- |
+| **instrumentation-replay**          | 🔄 Complex to adapt | 🟢 LOW    |
+| **transport-otlp-http**             | ✅ Should work      | 🟡 MEDIUM |
+| **instrumentation-websocket**       | ✅ Could adapt      | 🟢 LOW    |
+| **instrumentation-otel-axios**      | ✅ Would work       | 🟢 LOW    |
+| **instrumentation-otel-redux-saga** | ✅ Would work       | 🟢 LOW    |
 
 ### Session Replay
 
 **Complexity:** Very high - would require:
+
 - Touch event recording
 - Native view hierarchy capture
 - Network recording
@@ -662,6 +811,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 **Status:** Should work with minimal changes
 
 **Action Items:**
+
 - [ ] Test experimental OTLP transport with React Native
 - [ ] Create React Native-specific configuration example
 - [ ] Document usage
@@ -685,11 +835,13 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ### 🔴 HIGH PRIORITY (Critical for basic functionality)
 
 #### 1. SessionInstrumentation - Persistent Sessions ✅ COMPLETE
+
 **Why:** Sessions need to survive app restarts for proper user journey tracking
 
 **Status:** ✅ Fully implemented as of 2025-12-02
 
 **Completed Tasks:**
+
 - ✅ Implement AsyncStorage-based session management
 - ✅ Session expiration logic (4-hour default)
 - ✅ Inactivity timeout tracking (15-minute default)
@@ -700,11 +852,13 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 #### 2. ViewInstrumentation - Screen Tracking ✅ COMPLETE
+
 **Why:** Essential for understanding user navigation and app flow
 
 **Status:** ✅ Fully implemented as of 2025-12-02
 
 **Completed Tasks:**
+
 - ✅ React Navigation v5+ integration
 - ✅ React Navigation v6 integration
 - ✅ Screen change detection
@@ -718,11 +872,13 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 #### 3. AppStateInstrumentation ✅ COMPLETE
+
 **Why:** Critical for understanding app lifecycle and user engagement
 
 **Status:** ✅ Fully implemented as of 2025-12-02
 
 **Completed Tasks:**
+
 - ✅ AppState event listeners
 - ✅ Track active/background/inactive states
 - ✅ App state change events with duration
@@ -734,9 +890,11 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 #### 4. ConsoleInstrumentation - Enhanced ⏳
+
 **Why:** Complete the existing implementation
 
 **Tasks:**
+
 - Add unpatch() method
 - Advanced error serialization options
 - Configuration improvements
@@ -748,11 +906,13 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ### 🟡 MEDIUM PRIORITY (Important for full feature parity)
 
 #### 5. React Navigation Integration ✅ COMPLETE
+
 **Why:** Proper navigation tracking is essential for RN apps
 
 **Status:** ✅ Fully implemented as of 2025-12-02
 
 **Completed Tasks:**
+
 - ✅ useFaroNavigation hook
 - ✅ createNavigationStateChangeHandler utility
 - ✅ Support for NavigationContainer ref pattern
@@ -764,6 +924,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 #### 6. Tracing Package ❌
+
 **Why:** Distributed tracing is a core Faro feature
 
 **Estimated Effort:** 3-4 weeks (major effort)
@@ -771,6 +932,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 #### 7. ConsoleTransport ⏳
+
 **Why:** Useful for development and debugging
 
 **Estimated Effort:** 1-2 days
@@ -778,9 +940,11 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 #### 8. Enhanced User Actions 🔄
+
 **Why:** Better user interaction insights
 
 **Tasks:**
+
 - Automatic gesture detection research
 - Duration tracking improvements
 - Better context extraction
@@ -791,9 +955,11 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 #### 9. Error Stack Frame Parsing 🔄
+
 **Why:** Better error debugging and reporting
 
 **Tasks:**
+
 - Enhanced stack trace parsing for React Native
 - Source map support consideration
 - Platform-specific optimizations
@@ -803,9 +969,11 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 #### 10. Enhanced HTTP Instrumentation 🔄
+
 **Why:** Better network observability
 
 **Tasks:**
+
 - Integration with tracing (when available)
 - Request/response body capture
 - GraphQL instrumentation
@@ -817,6 +985,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ### 🟢 LOW PRIORITY (Nice to have)
 
 #### 11. FaroProfiler ❌
+
 **Why:** Useful for performance optimization but not critical
 
 **Estimated Effort:** 1 week
@@ -824,11 +993,13 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 #### 12. Enhanced Device Meta ✅ COMPLETE
+
 **Why:** Additional context but not essential
 
 **Status:** ✅ Fully implemented as of 2025-12-02
 
 **Completed Features:**
+
 - ✅ Locale/language info (primary locale, all locales, timezone)
 - ✅ Network info (carrier)
 - ✅ Battery status (level, charging, low power mode)
@@ -839,10 +1010,12 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 - ✅ Device Info demo screen
 
 **Implementation Files:**
+
 - `packages/react-native/src/metas/device.ts` - Enhanced device meta provider
 - `demo-react-native/src/screens/DeviceInfoScreen.tsx` - Demo screen
 
 **New Fields Added:**
+
 - `locale`, `locales`, `timezone` - Language and region info
 - `carrier` - Mobile network carrier
 - `batteryLevel`, `isCharging`, `lowPowerMode` - Battery status
@@ -852,6 +1025,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 #### 13. Experimental Packages Adaptation ❌
+
 **Why:** Wait for user demand
 
 **Estimated Effort:** Varies (1-3 weeks each)
@@ -861,9 +1035,11 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ## 🚧 Recommended Implementation Roadmap
 
 ### Phase 1: Core Completion (2-3 weeks)
+
 **Goal:** Complete all basic instrumentations
 
 **Deliverables:**
+
 - ✅ Complete SessionInstrumentation with AsyncStorage
 - ✅ Implement ViewInstrumentation
 - ✅ Implement AppStateInstrumentation
@@ -871,6 +1047,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 - ✅ ConsoleTransport for debugging
 
 **Success Criteria:**
+
 - Sessions persist across app restarts
 - Screen changes are tracked automatically
 - App state transitions are captured
@@ -879,9 +1056,11 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 ### Phase 2: Navigation & Enhanced Features (2-3 weeks)
+
 **Goal:** Production-ready navigation tracking and improved features
 
 **Deliverables:**
+
 - ✅ Complete React Navigation v5 integration
 - ✅ Complete React Navigation v6 integration
 - ✅ Enhanced error stack parsing
@@ -890,6 +1069,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 - ✅ Example implementations
 
 **Success Criteria:**
+
 - Navigation tracking works seamlessly with React Navigation
 - Error reports include clear, readable stack traces
 - User actions provide meaningful interaction data
@@ -898,9 +1078,11 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 ### Phase 3: Tracing (3-4 weeks)
+
 **Goal:** Distributed tracing support
 
 **Deliverables:**
+
 - ✅ Create `@grafana/faro-react-native-tracing` package
 - ✅ OTEL SDK integration
 - ✅ Fetch instrumentation for traces
@@ -911,6 +1093,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 - ✅ Documentation with examples
 
 **Success Criteria:**
+
 - Traces are collected and exported successfully
 - Spans include proper context (session, user, screen)
 - Fetch requests are automatically traced
@@ -920,9 +1103,11 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 ---
 
 ### Phase 4: Advanced Features (2-3 weeks)
+
 **Goal:** Polish and advanced capabilities
 
 **Deliverables:**
+
 - ✅ FaroProfiler component
 - ✅ OTLP transport support
 - ✅ Enhanced network instrumentation
@@ -931,6 +1116,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 - ✅ Advanced configuration options
 
 **Success Criteria:**
+
 - Component performance can be tracked
 - Multiple transport options available
 - Network instrumentation includes body capture
@@ -942,25 +1128,25 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 
 ### Core SDK Features
 
-| Feature | Web SDK | React Native | Gap |
-|---------|---------|--------------|-----|
-| **Initialization** | ✅ | ✅ | None |
-| **API Methods** | ✅ | ✅ | None |
-| **Push Error** | ✅ | ✅ | None |
-| **Push Log** | ✅ | ✅ | None |
-| **Push Event** | ✅ | ✅ | None |
-| **Push Measurement** | ✅ | ✅ | None |
-| **Push Traces** | ✅ | ⏳ | Tracing package needed |
-| **Set User** | ✅ | ✅ | None |
-| **Set View** | ✅ | ✅ | None |
-| **Unpached Console** | ✅ | ✅ | None |
-| **Internal Logger** | ✅ | ✅ | None |
-| **Event Deduplication** | ✅ | ✅ | None |
-| **Pattern Matching** | ✅ | ✅ | None |
-| **Batching** | ✅ | ✅ | None |
-| **BeforeSend Hook** | ✅ | ✅ | None |
-| **Ignore Errors** | ✅ | ✅ | None |
-| **Isolated Instances** | ✅ | ✅ | None |
+| Feature                 | Web SDK | React Native | Gap                    |
+| ----------------------- | ------- | ------------ | ---------------------- |
+| **Initialization**      | ✅      | ✅           | None                   |
+| **API Methods**         | ✅      | ✅           | None                   |
+| **Push Error**          | ✅      | ✅           | None                   |
+| **Push Log**            | ✅      | ✅           | None                   |
+| **Push Event**          | ✅      | ✅           | None                   |
+| **Push Measurement**    | ✅      | ✅           | None                   |
+| **Push Traces**         | ✅      | ⏳           | Tracing package needed |
+| **Set User**            | ✅      | ✅           | None                   |
+| **Set View**            | ✅      | ✅           | None                   |
+| **Unpached Console**    | ✅      | ✅           | None                   |
+| **Internal Logger**     | ✅      | ✅           | None                   |
+| **Event Deduplication** | ✅      | ✅           | None                   |
+| **Pattern Matching**    | ✅      | ✅           | None                   |
+| **Batching**            | ✅      | ✅           | None                   |
+| **BeforeSend Hook**     | ✅      | ✅           | None                   |
+| **Ignore Errors**       | ✅      | ✅           | None                   |
+| **Isolated Instances**  | ✅      | ✅           | None                   |
 
 **Score:** 16/17 (94%)
 
@@ -968,19 +1154,19 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 
 ### Instrumentations
 
-| Feature | Web SDK | React Native | Gap |
-|---------|---------|--------------|-----|
-| **Console** | ✅ Full | ✅ Full | None |
-| **Errors** | ✅ Full | ⚠️ Basic | Stack parsing |
-| **Session** | ✅ Full | ✅ Full | None |
-| **View** | ✅ Full | ✅ Full | None |
-| **Web Vitals** | ✅ | ❌ N/A | Web-only |
-| **Performance** | ✅ | ❌ N/A | Web-only |
-| **User Actions** | ✅ Full | ⚠️ Basic | Auto-detection |
-| **CSP** | ✅ | ❌ N/A | Web-only |
-| **Navigation** | ✅ | ❌ N/A | Web-only |
-| **HTTP** | ✅ | ✅ Full | None |
-| **App State** | N/A | ✅ Full | None (RN-specific feature) |
+| Feature          | Web SDK | React Native | Gap                        |
+| ---------------- | ------- | ------------ | -------------------------- |
+| **Console**      | ✅ Full | ✅ Full      | None                       |
+| **Errors**       | ✅ Full | ⚠️ Basic     | Stack parsing              |
+| **Session**      | ✅ Full | ✅ Full      | None                       |
+| **View**         | ✅ Full | ✅ Full      | None                       |
+| **Web Vitals**   | ✅      | ❌ N/A       | Web-only                   |
+| **Performance**  | ✅      | ❌ N/A       | Web-only                   |
+| **User Actions** | ✅ Full | ⚠️ Basic     | Auto-detection             |
+| **CSP**          | ✅      | ❌ N/A       | Web-only                   |
+| **Navigation**   | ✅      | ❌ N/A       | Web-only                   |
+| **HTTP**         | ✅      | ✅ Full      | None                       |
+| **App State**    | N/A     | ✅ Full      | None (RN-specific feature) |
 
 **Score (excluding N/A):** 7/8 (88%)
 
@@ -988,13 +1174,13 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 
 ### React Integration
 
-| Feature | Web SDK | React Native | Gap |
-|---------|---------|--------------|-----|
-| **Error Boundary** | ✅ | ✅ | None |
-| **Error Boundary HOC** | ✅ | ✅ | None |
-| **Profiler** | ✅ | ❌ | Implementation needed |
-| **Profiler HOC** | ✅ | ❌ | Implementation needed |
-| **Navigation Integration** | ✅ | ✅ | None |
+| Feature                    | Web SDK | React Native | Gap                   |
+| -------------------------- | ------- | ------------ | --------------------- |
+| **Error Boundary**         | ✅      | ✅           | None                  |
+| **Error Boundary HOC**     | ✅      | ✅           | None                  |
+| **Profiler**               | ✅      | ❌           | Implementation needed |
+| **Profiler HOC**           | ✅      | ❌           | Implementation needed |
+| **Navigation Integration** | ✅      | ✅           | None                  |
 
 **Score:** 3/5 (60%)
 
@@ -1002,13 +1188,13 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 
 ### Tracing
 
-| Feature | Web SDK | React Native | Gap |
-|---------|---------|--------------|-----|
-| **Tracing Package** | ✅ | ❌ | Entire package needed |
-| **OTEL Integration** | ✅ | ❌ | Needed |
-| **Fetch Tracing** | ✅ | ❌ | Needed |
-| **Trace Exporter** | ✅ | ❌ | Needed |
-| **Span Processors** | ✅ | ❌ | Needed |
+| Feature              | Web SDK | React Native | Gap                   |
+| -------------------- | ------- | ------------ | --------------------- |
+| **Tracing Package**  | ✅      | ❌           | Entire package needed |
+| **OTEL Integration** | ✅      | ❌           | Needed                |
+| **Fetch Tracing**    | ✅      | ❌           | Needed                |
+| **Trace Exporter**   | ✅      | ❌           | Needed                |
+| **Span Processors**  | ✅      | ❌           | Needed                |
 
 **Score:** 0/5 (0%)
 
@@ -1016,13 +1202,13 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 
 ### Overall Feature Parity
 
-| Category | Score |
-|----------|-------|
-| **Core SDK** | 94% ✅ |
-| **Instrumentations** | 75% ✅ |
-| **React Integration** | 60% ⚠️ |
-| **Tracing** | 0% ❌ |
-| **Overall** | **57%** |
+| Category              | Score   |
+| --------------------- | ------- |
+| **Core SDK**          | 94% ✅  |
+| **Instrumentations**  | 75% ✅  |
+| **React Integration** | 60% ⚠️  |
+| **Tracing**           | 0% ❌   |
+| **Overall**           | **57%** |
 
 ---
 
@@ -1031,6 +1217,7 @@ These packages exist in `experimental/` and could potentially be adapted for Rea
 To track progress toward feature parity, monitor these metrics:
 
 ### Functionality Metrics
+
 - [ ] All core instrumentations implemented (8/8)
 - [ ] All transports implemented (2/2)
 - [ ] All metas implemented (3/3)
@@ -1038,6 +1225,7 @@ To track progress toward feature parity, monitor these metrics:
 - [ ] Tracing package released (0/1)
 
 ### Quality Metrics
+
 - [ ] Test coverage > 80%
 - [ ] All instrumentations have unpatch capability
 - [ ] Documentation complete for all features
@@ -1045,6 +1233,7 @@ To track progress toward feature parity, monitor these metrics:
 - [ ] Performance benchmarks established
 
 ### User Experience Metrics
+
 - [ ] Setup time < 10 minutes
 - [ ] Documentation rated helpful by users
 - [ ] GitHub issues < 5 open bugs
@@ -1058,6 +1247,7 @@ To track progress toward feature parity, monitor these metrics:
 As features are implemented, ensure documentation is created:
 
 ### Package Documentation
+
 - [ ] Main README with quick start
 - [ ] API reference
 - [ ] Configuration options
@@ -1065,6 +1255,7 @@ As features are implemented, ensure documentation is created:
 - [ ] Migration guides (if applicable)
 
 ### Integration Guides
+
 - [ ] React Navigation v5 integration
 - [ ] React Navigation v6 integration
 - [ ] Redux integration
@@ -1073,6 +1264,7 @@ As features are implemented, ensure documentation is created:
 - [ ] Custom transport guide
 
 ### Examples
+
 - [ ] Basic setup example
 - [ ] Complete demo app
 - [ ] Error tracking example
@@ -1081,6 +1273,7 @@ As features are implemented, ensure documentation is created:
 - [ ] Tracing example (when available)
 
 ### Blog Posts / Tutorials
+
 - [ ] "Getting Started with Faro React Native"
 - [ ] "Monitoring React Native Apps with Grafana"
 - [ ] "React Native Observability Best Practices"
@@ -1091,18 +1284,21 @@ As features are implemented, ensure documentation is created:
 ## 🔧 Technical Considerations
 
 ### Performance
+
 - Minimize overhead in production
 - Efficient batching of events
 - Careful use of AsyncStorage (limited storage)
 - Consider bundle size impact
 
 ### Compatibility
+
 - Support React Native 0.70+
 - Support Expo (both managed and bare workflow)
 - iOS 13+ and Android 6+
 - New Architecture compatibility (when stable)
 
 ### Testing Strategy
+
 - Unit tests for all instrumentations
 - Integration tests for React Navigation
 - E2E tests in demo app
@@ -1110,6 +1306,7 @@ As features are implemented, ensure documentation is created:
 - Manual testing on iOS and Android
 
 ### Release Strategy
+
 - Alpha releases for early feedback
 - Beta releases for production testing
 - Stable 1.0 when core features complete
@@ -1142,9 +1339,9 @@ This is a living document. When implementing features:
 
 ## 📅 Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | 2025-12-02 | Initial comprehensive analysis |
+| Version | Date       | Changes                        |
+| ------- | ---------- | ------------------------------ |
+| 1.0     | 2025-12-02 | Initial comprehensive analysis |
 
 ---
 
@@ -1166,4 +1363,4 @@ This is a living document. When implementing features:
 
 ---
 
-*This document is maintained by the Faro React Native SDK team and community contributors.*
+_This document is maintained by the Faro React Native SDK team and community contributors._

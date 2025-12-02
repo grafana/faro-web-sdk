@@ -7,7 +7,7 @@
  * @returns A throttled version of the function
  */
 export function throttle<T extends (...args: any[]) => any>(func: T, wait: number): T {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
   let previous = 0;
 
   return function (this: any, ...args: Parameters<T>) {

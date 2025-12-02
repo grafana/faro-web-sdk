@@ -160,10 +160,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       this.registerBeforeSendHook(SessionManager);
 
-      const { initialSession, lifecycleType } = await this.createInitialSession(
-        SessionManager,
-        sessionTrackingConfig
-      );
+      const { initialSession, lifecycleType } = await this.createInitialSession(SessionManager, sessionTrackingConfig);
 
       await SessionManager.storeUserSession(initialSession);
 

@@ -1,5 +1,6 @@
 import { BaseInstrumentation, genShortID, VERSION } from '@grafana/faro-core';
-import { notifyHttpRequestStart, notifyHttpRequestEnd } from '../userActions/httpRequestMonitor';
+
+import { notifyHttpRequestEnd, notifyHttpRequestStart } from '../userActions/httpRequestMonitor';
 
 export interface HttpRequestPayload {
   url: string;
@@ -116,8 +117,8 @@ export class HttpInstrumentation extends BaseInstrumentation {
         },
       });
 
-      return self.originalFetch!
-        .call(this, input, init)
+      return self
+        .originalFetch!.call(this, input, init)
         .then((response) => {
           const endTime = Date.now();
           const duration = endTime - startTime;

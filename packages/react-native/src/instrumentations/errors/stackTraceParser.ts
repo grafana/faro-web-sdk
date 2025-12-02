@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+
 import type { StackFrame } from '@grafana/faro-core';
 
 /**
@@ -128,7 +129,7 @@ export function parseStackTrace(stackTrace: string): ParsedStackFrame[] {
  * Convert parsed stack frames to Faro's StackFrame format
  */
 export function toFaroStackFrames(parsedFrames: ParsedStackFrame[]): StackFrame[] {
-  return parsedFrames.map((frame, index) => ({
+  return parsedFrames.map((frame, _index) => ({
     filename: frame.filename || '<unknown>',
     function: frame.function || '<anonymous>',
     lineno: frame.lineno,
@@ -147,7 +148,7 @@ export function getStackFramesFromError(error: Error): StackFrame[] {
   try {
     const parsedFrames = parseStackTrace(error.stack);
     return toFaroStackFrames(parsedFrames);
-  } catch (e) {
+  } catch (_e) {
     // If parsing fails, return empty array
     return [];
   }

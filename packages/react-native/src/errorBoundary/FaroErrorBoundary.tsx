@@ -1,4 +1,5 @@
-import React, { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
+
 import { faro } from '@grafana/faro-core';
 
 import { faroErrorBoundaryInitialState } from './const';
@@ -90,9 +91,10 @@ export class FaroErrorBoundary extends Component<FaroErrorBoundaryProps, FaroErr
         : this.props.children;
     }
 
-    const element = typeof this.props.fallback !== 'function'
-      ? this.props.fallback
-      : this.props.fallback(this.state.error, this.resetErrorBoundary);
+    const element =
+      typeof this.props.fallback !== 'function'
+        ? this.props.fallback
+        : this.props.fallback(this.state.error, this.resetErrorBoundary);
 
     // Check if element exists - isValidElement may fail in monorepos with multiple React instances
     if (element != null) {
@@ -100,7 +102,6 @@ export class FaroErrorBoundary extends Component<FaroErrorBoundaryProps, FaroErr
     }
 
     if (this.props.fallback) {
-      // eslint-disable-next-line no-console
       console.warn('[Faro ErrorBoundary] Cannot get a valid ReactElement from "fallback"');
     }
 

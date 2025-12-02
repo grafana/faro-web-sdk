@@ -1,4 +1,5 @@
 import React, { type ComponentType, type FC } from 'react';
+
 import { unknownString } from '@grafana/faro-core';
 
 import { FaroErrorBoundary } from './FaroErrorBoundary';

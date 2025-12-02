@@ -1,5 +1,6 @@
-import { Platform, Dimensions, NativeModules, I18nManager } from 'react-native';
+import { Dimensions, I18nManager, NativeModules, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+
 import { unknownString } from '@grafana/faro-core';
 import type { Meta, MetaItem } from '@grafana/faro-core';
 
@@ -51,9 +52,7 @@ function getLocaleInfo(): { locale: string; locales: string; timezone: string } 
       const settings = NativeModules.SettingsManager?.settings;
       if (settings) {
         locale = settings.AppleLocale || settings.AppleLanguages?.[0] || unknownString;
-        locales = Array.isArray(settings.AppleLanguages)
-          ? settings.AppleLanguages.join(', ')
-          : locale;
+        locales = Array.isArray(settings.AppleLanguages) ? settings.AppleLanguages.join(', ') : locale;
       }
     } else if (Platform.OS === 'android') {
       const localeIdentifier = I18nManager.getConstants?.()?.localeIdentifier;
@@ -66,13 +65,13 @@ function getLocaleInfo(): { locale: string; locales: string; timezone: string } 
     // Get timezone - use Intl API if available
     try {
       timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || unknownString;
-    } catch (e) {
+    } catch (_e) {
       // Intl might not be available in some environments
       timezone = unknownString;
     }
 
     return { locale, locales, timezone };
-  } catch (error) {
+  } catch (_error) {
     // Gracefully handle any errors getting locale info
     return {
       locale: unknownString,
@@ -166,7 +165,7 @@ export const getAsyncDeviceMeta = async (): Promise<Partial<ExtendedBrowserMeta>
       lowPowerMode: String(lowPowerMode),
       carrier: carrier || unknownString,
     };
-  } catch (error) {
+  } catch (_error) {
     // Gracefully handle errors - return empty object if async info fails
     return {};
   }

@@ -1,6 +1,7 @@
 import React, { type ComponentType } from 'react';
-import { faro, type UserActionInternalInterface } from '@grafana/faro-core';
 import type { GestureResponderEvent } from 'react-native';
+
+import { faro, type UserActionInternalInterface } from '@grafana/faro-core';
 
 import { UserActionController } from './userActionController';
 
@@ -57,11 +58,7 @@ export function withFaroUserAction<P extends WithFaroUserActionProps>(
         const actionName = faroActionName || defaultActionName;
 
         // Start a user action with optional context
-        const userAction = faro?.api?.startUserAction?.(
-          actionName,
-          faroContext || {},
-          { triggerName: 'press' }
-        );
+        const userAction = faro?.api?.startUserAction?.(actionName, faroContext || {}, { triggerName: 'press' });
 
         // Attach the controller to intelligently manage the action lifecycle
         // The controller will:
@@ -106,16 +103,9 @@ export function withFaroUserAction<P extends WithFaroUserActionProps>(
  * }
  * ```
  */
-export function trackUserAction(
-  actionName: string,
-  context?: Record<string, string>
-) {
+export function trackUserAction(actionName: string, context?: Record<string, string>) {
   try {
-    return faro?.api?.startUserAction?.(
-      actionName,
-      context || {},
-      { triggerName: 'manual' }
-    );
+    return faro?.api?.startUserAction?.(actionName, context || {}, { triggerName: 'manual' });
   } catch (error) {
     console.warn('[Faro] Error tracking user action:', error);
     return undefined;

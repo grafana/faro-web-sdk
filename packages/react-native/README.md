@@ -47,6 +47,7 @@ initializeFaro({
 ### Tracking User Actions
 
 The SDK provides intelligent user action tracking with:
+
 - **Intelligent Duration Tracking**: Automatically determines when actions complete
 - **HTTP Request Correlation**: Tracks HTTP requests triggered by user actions
 - **Automatic Lifecycle Management**: No manual `end()` calls needed with HOC
@@ -73,6 +74,7 @@ function MyForm() {
 ```
 
 **Automatic Features:**
+
 - User action starts on press
 - HTTP requests triggered by the action are automatically correlated
 - Action ends ~100ms after the last activity (HTTP request completion)
@@ -92,6 +94,7 @@ You can override the action name and add context per instance:
 ```
 
 **Example with HTTP:**
+
 ```tsx
 const TrackedButton = withFaroUserAction(TouchableOpacity, 'load_data');
 
@@ -122,7 +125,7 @@ import { trackUserAction } from '@grafana/faro-react-native';
 function handleComplexAction() {
   const action = trackUserAction('complex_workflow', {
     step: '1',
-    userId: '123'
+    userId: '123',
   });
 
   // Do your work...
@@ -146,6 +149,7 @@ function handleComplexAction() {
 6. **Timeout**: If pending operations take too long (>10s), action forcibly ends
 
 **Benefits:**
+
 - Accurate action duration including async operations
 - Correlate errors/events with the user action that triggered them
 - Better understanding of user flows and performance
@@ -274,12 +278,14 @@ initializeFaro({
 
     // Optional: Custom error serializer function
     errorSerializer: (args) => {
-      return args.map(arg => {
-        if (typeof arg === 'object') {
-          return JSON.stringify(arg, null, 2); // Pretty print objects
-        }
-        return String(arg);
-      }).join(' ');
+      return args
+        .map((arg) => {
+          if (typeof arg === 'object') {
+            return JSON.stringify(arg, null, 2); // Pretty print objects
+          }
+          return String(arg);
+        })
+        .join(' ');
     },
   },
 });
@@ -347,11 +353,7 @@ initializeFaro({
   instrumentations: [
     new ErrorsInstrumentation({
       // Ignore specific errors by message pattern
-      ignoreErrors: [
-        /network timeout/i,
-        /cancelled/i,
-        /aborted/i,
-      ],
+      ignoreErrors: [/network timeout/i, /cancelled/i, /aborted/i],
 
       // Enable error deduplication (default: true)
       // Prevents sending the same error multiple times within a time window
@@ -409,6 +411,7 @@ All formats are automatically parsed and converted to structured stack frames se
 **Example - Platform Context Included:**
 
 Every error report includes:
+
 ```tsx
 {
   platform: "ios",           // or "android"
@@ -449,10 +452,7 @@ initializeFaro({
     version: '1.0.0',
     environment: 'production',
   },
-  instrumentations: [
-    new ConsoleInstrumentation(),
-    new ErrorsInstrumentation(),
-  ],
+  instrumentations: [new ConsoleInstrumentation(), new ErrorsInstrumentation()],
   // Add custom metas
   metas: [
     // Your custom meta implementations
@@ -510,6 +510,7 @@ initializeFaro({
 **Session Events:**
 
 The SDK automatically emits session lifecycle events:
+
 - `faro.session.start` - New session created
 - `faro.session.resume` - Existing session resumed (persistent only)
 - `faro.session.extend` - Session extended from the same previous session
@@ -529,7 +530,7 @@ initializeFaro({
   },
   instrumentations: [
     ...getRNInstrumentations({
-      trackAppState: true,  // Enabled by default
+      trackAppState: true, // Enabled by default
     }),
   ],
 });
@@ -654,6 +655,7 @@ markBundleLoaded();
 **Setup Instructions:**
 
 1. **Mark App Start** - Add to your app's entry point (`index.js` or `index.tsx`):
+
 ```tsx
 // index.js
 import { markAppStart } from '@grafana/faro-react-native';
@@ -669,6 +671,7 @@ AppRegistry.registerComponent(appName, () => App);
 ```
 
 2. **Mark Bundle Loaded** - Add after imports in your root component:
+
 ```tsx
 // App.tsx
 import React from 'react';
@@ -683,6 +686,7 @@ export function App() {
 ```
 
 3. **Enable via getRNInstrumentations** (simpler):
+
 ```tsx
 initializeFaro({
   // ...config
@@ -782,11 +786,7 @@ function App() {
   // Automatically track navigation changes
   useFaroNavigation(navigationRef);
 
-  return (
-    <NavigationContainer ref={navigationRef}>
-      {/* Your navigation */}
-    </NavigationContainer>
-  );
+  return <NavigationContainer ref={navigationRef}>{/* Your navigation */}</NavigationContainer>;
 }
 ```
 
@@ -853,36 +853,37 @@ console.log('Low Power Mode:', asyncDeviceInfo.lowPowerMode);
 ```typescript
 interface ExtendedBrowserMeta {
   // Standard fields
-  name: string;              // OS name (e.g., "iOS", "Android")
-  version: string;           // App version
-  os: string;                // OS with version (e.g., "iOS 17.0")
-  mobile: boolean;           // true for mobile, false for tablet
-  userAgent: string;         // User agent string
-  language: string;          // Primary language
-  brands: string;            // Device brand and model
-  viewportWidth: string;     // Screen width
-  viewportHeight: string;    // Screen height
+  name: string; // OS name (e.g., "iOS", "Android")
+  version: string; // App version
+  os: string; // OS with version (e.g., "iOS 17.0")
+  mobile: boolean; // true for mobile, false for tablet
+  userAgent: string; // User agent string
+  language: string; // Primary language
+  brands: string; // Device brand and model
+  viewportWidth: string; // Screen width
+  viewportHeight: string; // Screen height
 
   // Enhanced fields
-  locale?: string;           // Primary locale (e.g., "en-US")
-  locales?: string;          // All device locales
-  timezone?: string;         // Device timezone (e.g., "America/New_York")
-  deviceType?: string;       // "mobile" or "tablet"
-  isEmulator?: string;       // "true" if running on emulator/simulator
-  totalMemory?: string;      // Total device memory in bytes
-  usedMemory?: string;       // Used memory in bytes
+  locale?: string; // Primary locale (e.g., "en-US")
+  locales?: string; // All device locales
+  timezone?: string; // Device timezone (e.g., "America/New_York")
+  deviceType?: string; // "mobile" or "tablet"
+  isEmulator?: string; // "true" if running on emulator/simulator
+  totalMemory?: string; // Total device memory in bytes
+  usedMemory?: string; // Used memory in bytes
 
   // Async fields (from getAsyncDeviceMeta)
-  batteryLevel?: string;     // Battery percentage (e.g., "85%")
-  isCharging?: string;       // "true" if device is charging
-  lowPowerMode?: string;     // "true" if low power mode is enabled
-  carrier?: string;          // Mobile carrier name (e.g., "Verizon")
+  batteryLevel?: string; // Battery percentage (e.g., "85%")
+  isCharging?: string; // "true" if device is charging
+  lowPowerMode?: string; // "true" if low power mode is enabled
+  carrier?: string; // Mobile carrier name (e.g., "Verizon")
 }
 ```
 
 ### Use Cases
 
 **1. Debug Device-Specific Issues**
+
 ```tsx
 // Query Grafana Cloud for errors on specific devices
 {service_name="MyApp", browser_deviceType="tablet"}
@@ -891,6 +892,7 @@ interface ExtendedBrowserMeta {
 ```
 
 **2. Track Low Battery Correlation**
+
 ```tsx
 // Find if errors correlate with low battery
 {service_name="MyApp", browser_batteryLevel=~"[0-9]%|[12][0-9]%"}
@@ -899,6 +901,7 @@ interface ExtendedBrowserMeta {
 ```
 
 **3. Locale-Specific Analysis**
+
 ```tsx
 // Analyze issues by locale
 {service_name="MyApp", browser_locale=~"ja.*"}
@@ -906,6 +909,7 @@ interface ExtendedBrowserMeta {
 ```
 
 **4. Memory Pressure Detection**
+
 ```tsx
 // Correlate high memory usage with crashes
 {service_name="MyApp"}
@@ -926,10 +930,7 @@ interface ExtendedBrowserMeta {
 The package is written in TypeScript and includes type definitions out of the box.
 
 ```tsx
-import type {
-  ReactNativeConfig,
-  WithFaroUserActionProps,
-} from '@grafana/faro-react-native';
+import type { ReactNativeConfig, WithFaroUserActionProps } from '@grafana/faro-react-native';
 ```
 
 ## Examples
@@ -990,11 +991,13 @@ initializeFaro({
 ```
 
 The ConsoleTransport prints formatted telemetry data to the console, showing:
+
 - All metadata (device info, session, user, etc.)
 - Event payloads (logs, errors, events, measurements)
 - Structured JSON format for easy inspection
 
 **Use Cases:**
+
 - Local development and debugging
 - Verify instrumentation is working correctly
 - Inspect exact structure of events before they reach Grafana
@@ -1002,6 +1005,7 @@ The ConsoleTransport prints formatted telemetry data to the console, showing:
 - Run alongside FetchTransport for dual output
 
 **Example Output:**
+
 ```javascript
 console.debug('New event', {
   meta: {
