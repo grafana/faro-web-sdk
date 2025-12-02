@@ -160,8 +160,8 @@ export function getStackFramesFromError(error: Error): StackFrame[] {
 export function getPlatformErrorContext(): Record<string, string> {
   return {
     platform: Platform.OS,
-    platformVersion: Platform.Version.toString(),
-    isHermes: !!(global as any).HermesInternal,
+    platformVersion: Platform.Version?.toString() || 'unknown',
+    isHermes: !!(global as any).HermesInternal ? 'true' : 'false',
   };
 }
 

@@ -42,7 +42,7 @@
     "watch:compile:esm": "yarn build:compile:esm -w",
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s 'quality:*'",
-    "quality:test": "jest",
+    "quality:test": "../../node_modules/.bin/jest",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/reactNative --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s 'quality:lint:*'",
     "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/reactNative \"./**/*.{js,jsx,ts,tsx}\"",
