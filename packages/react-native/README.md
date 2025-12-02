@@ -1026,6 +1026,26 @@ console.debug('New event', {
 - `AppStateInstrumentation` - App state changes
 - `UserActionInstrumentation` - User interaction tracking
 
+## Future Enhancements
+
+### TODO: PerformanceObserver Support
+
+React Native Next (upcoming version) will include native `PerformanceObserver` support, which will enable greater feature parity with the web SDK's performance monitoring capabilities.
+
+**Planned Enhancements:**
+- Implement `PerformanceObserver`-based instrumentation similar to web SDK
+- Support for performance entry types: `mark`, `measure`, `event`, `longtask`
+- Real-time performance monitoring via observer callbacks
+- Better integration with React Native's native performance APIs
+- Enhanced performance timeline tracking
+
+**References:**
+- [React Native PerformanceObserver API Documentation](https://reactnative.dev/docs/next/global-PerformanceObserver)
+- Web SDK Performance Instrumentation: `packages/web-sdk/src/instrumentations/performance/`
+
+**Current State:**
+The current implementation uses custom performance utilities (`performanceUtils.ts`) that provide basic timing and marker functionality. Once React Native's `PerformanceObserver` is stable, we can migrate to a more comprehensive solution that matches the web SDK's capabilities.
+
 ## License
 
 Apache-2.0
