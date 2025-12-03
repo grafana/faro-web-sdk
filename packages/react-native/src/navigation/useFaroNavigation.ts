@@ -1,6 +1,5 @@
+import { useEffect, useRef } from 'react';
 import type { NavigationContainerRef, NavigationState } from '@react-navigation/native';
-// Import React dynamically to use the same instance as the consuming app
-import * as React from 'react';
 
 import { onNavigationStateChange } from './utils';
 
@@ -29,10 +28,10 @@ import { onNavigationStateChange } from './utils';
  * }
  * ```
  */
-export function useFaroNavigation(navigationRef: React.RefObject<NavigationContainerRef<any>>): void {
-  const unsubscribeRef = React.useRef<(() => void) | null>(null);
+export function useFaroNavigation(navigationRef: { current: NavigationContainerRef<any> | null }): void {
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!navigationRef.current) {
       return;
     }
