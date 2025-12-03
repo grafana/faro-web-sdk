@@ -170,11 +170,6 @@ export class TracingInstrumentation extends BaseInstrumentation {
     // Get ignore URLs from transports to prevent infinite loops
     const ignoreUrls = this.getIgnoreUrls();
 
-    // Debug: log the ignored URLs
-    console.log('[Faro Tracing] Ignoring URLs to prevent loops:', ignoreUrls);
-    console.log('[Faro Tracing] Ignore URLs count:', ignoreUrls.length);
-    console.log('[Faro Tracing] Ignore URLs types:', ignoreUrls.map(u => typeof u === 'string' ? `string: ${u}` : `regex: ${u}`));
-
     // Register instrumentations
     registerInstrumentations({
       instrumentations:
