@@ -14,9 +14,11 @@ import { AboutScreen } from '../screens/AboutScreen';
 import ConsoleTestScreen from '../screens/ConsoleTestScreen';
 import DeviceInfoScreen from '../screens/DeviceInfoScreen';
 import TracingDemoScreen from '../screens/TracingDemoScreen';
+import { ShowcaseScreen } from '../screens/ShowcaseScreen';
 
 export type RootStackParamList = {
   Home: undefined;
+  Showcase: undefined;
   ErrorDemo: undefined;
   ErrorBoundaryDemo: undefined;
   PerformanceDemo: undefined;
@@ -54,6 +56,11 @@ export function AppNavigator() {
           name="Home"
           component={HomeScreen}
           options={{ title: 'Faro RN Demo' }}
+        />
+        <Stack.Screen
+          name="Showcase"
+          component={ShowcaseScreen}
+          options={{ title: 'SDK Showcase' }}
         />
         <Stack.Screen
           name="ErrorDemo"

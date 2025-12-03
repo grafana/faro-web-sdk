@@ -129,6 +129,16 @@ export function HomeScreen({ navigation }: Props) {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
+          style={[styles.button, styles.showcaseButton]}
+          onPress={() => navigation.navigate('Showcase')}
+        >
+          <Text style={styles.buttonText}>✨ SDK Showcase</Text>
+          <Text style={styles.buttonDescription}>
+            Demo all features with different user profiles - Perfect for presentations!
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={[styles.button, styles.testButton]}
           onPress={handleTestLog}
         >
@@ -317,6 +327,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  showcaseButton: {
+    backgroundColor: '#d946ef',
+    borderWidth: 2,
+    borderColor: '#a21caf',
   },
   testButton: {
     backgroundColor: '#00D7C7',
