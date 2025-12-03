@@ -83,13 +83,17 @@ export class FetchTransport extends BaseTransport {
             return response;
           })
           .catch((err) => {
+            // Only log to unpatched console to avoid infinite loop
+            // Don't call this.logError() as it would trigger console instrumentation
             this.unpatchedConsole.error('[Faro Transport] Fetch error:', err);
-            this.logError('Failed sending payload to the receiver\n', JSON.parse(body), err);
+            this.unpatchedConsole.error('Failed sending payload to the receiver\n', JSON.parse(body));
           });
       });
     } catch (err) {
+      // Only log to unpatched console to avoid infinite loop when buffer is full
+      // Don't call this.logError() as it would trigger console instrumentation
+      // and create more events when the buffer is already full
       this.unpatchedConsole.error('[Faro Transport] Send error:', err);
-      this.logError(err);
     }
   }
 
