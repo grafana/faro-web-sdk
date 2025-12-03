@@ -1,0 +1,76 @@
+{
+  "name": "@grafana/faro-react-native-tracing",
+  "version": "2.0.2",
+  "description": "Faro React Native tracing implementation with OpenTelemetry.",
+  "keywords": [
+    "observability",
+    "apm",
+    "rum",
+    "logs",
+    "traces",
+    "metrics",
+    "react-native",
+    "mobile",
+    "opentelemetry"
+  ],
+  "license": "Apache-2.0",
+  "author": "Grafana Labs",
+  "homepage": "https://github.com/grafana/faro-web-sdk",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/faro-web-sdk.git",
+    "directory": "packages/react-native-tracing"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "react-native": "./src/index.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "yarn watch",
+    "build": "run-s 'build:*'",
+    "build:compile": "run-p 'build:compile:*'",
+    "build:compile:cjs": "tsc --build tsconfig.cjs.json",
+    "build:compile:esm": "tsc --build tsconfig.esm.json",
+    "watch": "run-p 'watch:compile:*'",
+    "watch:compile:cjs": "yarn build:compile:cjs -w",
+    "watch:compile:esm": "yarn build:compile:esm -w",
+    "clean": "rimraf dist/ yarn-error.log",
+    "quality": "run-s 'quality:*'",
+    "quality:test": "../../node_modules/.bin/jest",
+    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/reactNativeTracing --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint": "run-s 'quality:lint:*'",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/reactNativeTracing \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/reactNativeTracing --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:md": "markdownlint README.md",
+    "quality:circular-deps": "madge --circular ."
+  },
+  "dependencies": {
+    "@grafana/faro-core": "^2.0.2",
+    "@grafana/faro-react-native": "^2.0.2",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/core": "^2.0.0",
+    "@opentelemetry/instrumentation": "^0.208.0",
+    "@opentelemetry/instrumentation-fetch": "^0.208.0",
+    "@opentelemetry/otlp-transformer": "^0.208.0",
+    "@opentelemetry/resources": "^2.0.0",
+    "@opentelemetry/sdk-trace-base": "^2.0.0",
+    "@opentelemetry/semantic-conventions": "^1.32.0"
+  },
+  "peerDependencies": {
+    "react-native": ">=0.70.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/react-native": "^0.73.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -7,6 +7,7 @@ import {
   initializeFaro,
   LogLevel,
 } from '@grafana/faro-react-native';
+import { TracingInstrumentation } from '@grafana/faro-react-native-tracing';
 
 /**
  * Initialize Faro for React Native demo app with Grafana Cloud
@@ -37,7 +38,9 @@ export function initFaro() {
         trackHttpRequests: true,
         trackPerformance: true, // Enable performance tracking
       }),
-      // Add custom ErrorsInstrumentation with enhanced configuration
+      // Add tracing instrumentation to enable distributed tracing
+      // Note: ignoreUrls are automatically extracted from transports via getIgnoreUrls()
+      new TracingInstrumentation({}),
     ],
     transports: [
       new FetchTransport({

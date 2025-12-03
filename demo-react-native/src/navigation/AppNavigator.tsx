@@ -13,6 +13,7 @@ import { SlowLoadDemoScreen } from '../screens/SlowLoadDemoScreen';
 import { AboutScreen } from '../screens/AboutScreen';
 import ConsoleTestScreen from '../screens/ConsoleTestScreen';
 import DeviceInfoScreen from '../screens/DeviceInfoScreen';
+import TracingDemoScreen from '../screens/TracingDemoScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   About: undefined;
   ConsoleTest: undefined;
   DeviceInfo: undefined;
+  TracingDemo: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -87,6 +89,11 @@ export function AppNavigator() {
           name="DeviceInfo"
           component={DeviceInfoScreen}
           options={{ title: 'Device Info' }}
+        />
+        <Stack.Screen
+          name="TracingDemo"
+          component={TracingDemoScreen}
+          options={{ title: 'Tracing Demo' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -243,6 +243,16 @@ export function HomeScreen({ navigation }: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={[styles.button, styles.tracingButton]}
+          onPress={() => navigation.navigate('TracingDemo')}
+        >
+          <Text style={styles.buttonText}>🔍 Tracing Demo</Text>
+          <Text style={styles.buttonDescription}>
+            Test distributed tracing with trace ID display
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('About')}
         >
@@ -331,6 +341,9 @@ const styles = StyleSheet.create({
   },
   deviceInfoButton: {
     backgroundColor: '#3b82f6',
+  },
+  tracingButton: {
+    backgroundColor: '#14b8a6',
   },
   buttonText: {
     fontSize: 18,

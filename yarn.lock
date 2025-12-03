@@ -2051,6 +2051,7 @@ __metadata:
     "@babel/preset-env": "npm:^7.25.3"
     "@babel/runtime": "npm:^7.28.4"
     "@grafana/faro-react-native": "link:../packages/react-native"
+    "@grafana/faro-react-native-tracing": "link:../packages/react-native-tracing"
     "@react-native-async-storage/async-storage": "npm:^1.21.0"
     "@react-native-community/cli": "npm:20.0.0"
     "@react-native-community/cli-platform-android": "npm:20.0.0"
@@ -2157,13 +2158,40 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@grafana/faro-react-native-tracing@link:../packages/react-native-tracing::locator=%40grafana%2Ffaro-demo-react-native%40workspace%3Ademo-react-native":
+  version: 0.0.0-use.local
+  resolution: "@grafana/faro-react-native-tracing@link:../packages/react-native-tracing::locator=%40grafana%2Ffaro-demo-react-native%40workspace%3Ademo-react-native"
+  languageName: node
+  linkType: soft
+
+"@grafana/faro-react-native-tracing@workspace:packages/react-native-tracing":
+  version: 0.0.0-use.local
+  resolution: "@grafana/faro-react-native-tracing@workspace:packages/react-native-tracing"
+  dependencies:
+    "@grafana/faro-core": "npm:^2.0.2"
+    "@grafana/faro-react-native": "npm:^2.0.2"
+    "@opentelemetry/api": "npm:^1.9.0"
+    "@opentelemetry/core": "npm:^2.0.0"
+    "@opentelemetry/instrumentation": "npm:^0.208.0"
+    "@opentelemetry/instrumentation-fetch": "npm:^0.208.0"
+    "@opentelemetry/otlp-transformer": "npm:^0.208.0"
+    "@opentelemetry/resources": "npm:^2.0.0"
+    "@opentelemetry/sdk-trace-base": "npm:^2.0.0"
+    "@opentelemetry/semantic-conventions": "npm:^1.32.0"
+    "@types/node": "npm:24.10.1"
+    "@types/react-native": "npm:^0.73.0"
+  peerDependencies:
+    react-native: ">=0.70.0"
+  languageName: unknown
+  linkType: soft
+
 "@grafana/faro-react-native@link:../packages/react-native::locator=%40grafana%2Ffaro-demo-react-native%40workspace%3Ademo-react-native":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-react-native@link:../packages/react-native::locator=%40grafana%2Ffaro-demo-react-native%40workspace%3Ademo-react-native"
   languageName: node
   linkType: soft
 
-"@grafana/faro-react-native@workspace:packages/react-native":
+"@grafana/faro-react-native@npm:^2.0.2, @grafana/faro-react-native@workspace:packages/react-native":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-react-native@workspace:packages/react-native"
   dependencies:
@@ -4356,7 +4384,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-trace-base@npm:2.2.0":
+"@opentelemetry/sdk-trace-base@npm:2.2.0, @opentelemetry/sdk-trace-base@npm:^2.0.0":
   version: 2.2.0
   resolution: "@opentelemetry/sdk-trace-base@npm:2.2.0"
   dependencies:
