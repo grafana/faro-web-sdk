@@ -36,7 +36,7 @@ export function initFaro() {
         trackViews: true,
         trackUserActions: true,
         trackHttpRequests: true,
-        trackPerformance: true, // Enable performance tracking
+        trackPerformance: true,
       }),
       // Add tracing instrumentation to enable distributed tracing
       // Note: ignoreUrls are automatically extracted from transports via getIgnoreUrls()
@@ -46,9 +46,10 @@ export function initFaro() {
       new FetchTransport({
         url: FARO_COLLECTOR_URL,
       }),
-      // Add ConsoleTransport for debugging - prints all events to console
+      // ConsoleTransport disabled - causes infinite loop when transport fails
+      // because React Native DevTools intercepts unpatchedConsole.error() calls
       new ConsoleTransport({
-        level: LogLevel.INFO, // Use INFO level to avoid too much noise
+        level: LogLevel.INFO,
       }),
     ],
   });

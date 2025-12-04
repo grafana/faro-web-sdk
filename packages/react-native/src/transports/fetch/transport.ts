@@ -6,6 +6,8 @@ import type { FetchTransportOptions } from './types';
 const DEFAULT_BUFFER_SIZE = 30;
 const DEFAULT_CONCURRENCY = 5;
 const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
+const MAX_CONSECUTIVE_FAILURES = 3;
+const FAILURE_BACKOFF_MS = 30000; // 30 seconds
 
 const TOO_MANY_REQUESTS = 429;
 const ACCEPTED = 202;
@@ -19,6 +21,7 @@ export class FetchTransport extends BaseTransport {
   private readonly rateLimitBackoffMs: number;
   private readonly getNow: () => number;
   private disabledUntil: Date = new Date();
+  private consecutiveFailures: number = 0;
 
   constructor(private options: FetchTransportOptions) {
     super();
@@ -34,8 +37,11 @@ export class FetchTransport extends BaseTransport {
 
   async send(items: TransportItem[]): Promise<void> {
     try {
-      if (this.disabledUntil > new Date(this.getNow())) {
-        this.logWarn(`Dropping transport item due to too many requests. Backoff until ${this.disabledUntil}`);
+      const now = new Date(this.getNow());
+
+      // Check if we're in backoff period
+      if (this.disabledUntil > now) {
+        // Silently drop events during backoff to prevent infinite loops
         return Promise.resolve();
       }
 
@@ -67,6 +73,9 @@ export class FetchTransport extends BaseTransport {
           ...(restOfRequestOptions ?? {}),
         })
           .then(async (response) => {
+            // Reset failure counter on success
+            this.consecutiveFailures = 0;
+
             if (response.status === ACCEPTED) {
               const sessionExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
 
@@ -77,23 +86,28 @@ export class FetchTransport extends BaseTransport {
 
             if (response.status === TOO_MANY_REQUESTS) {
               this.disabledUntil = this.getRetryAfterDate(response);
-              this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
             }
 
             return response;
           })
-          .catch((err) => {
-            // Only log to unpatched console to avoid infinite loop
-            // Don't call this.logError() as it would trigger console instrumentation
-            this.unpatchedConsole.error('[Faro Transport] Fetch error:', err);
-            this.unpatchedConsole.error('Failed sending payload to the receiver\n', JSON.parse(body));
+          .catch(() => {
+            // Increment failure counter
+            this.consecutiveFailures++;
+
+            // After MAX_CONSECUTIVE_FAILURES, enable circuit breaker to prevent infinite loops
+            if (this.consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+              this.disabledUntil = new Date(this.getNow() + FAILURE_BACKOFF_MS);
+              // Reset counter so we can try again after backoff
+              this.consecutiveFailures = 0;
+            }
+
+            // Do NOT log errors to console - this causes infinite loops in React Native
+            // when the DevTools console override intercepts even unpatchedConsole calls
           });
       });
-    } catch (err) {
-      // Only log to unpatched console to avoid infinite loop when buffer is full
-      // Don't call this.logError() as it would trigger console instrumentation
-      // and create more events when the buffer is already full
-      this.unpatchedConsole.error('[Faro Transport] Send error:', err);
+    } catch {
+      // Buffer full error - Do NOT log to console as it creates infinite loops
+      // The error is typically "Task buffer full" when the device is offline
     }
   }
 

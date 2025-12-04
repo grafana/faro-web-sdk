@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
@@ -97,6 +98,7 @@ export function HomeScreen({ navigation }: Props) {
       setHttpLoading(false);
     }
   };
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

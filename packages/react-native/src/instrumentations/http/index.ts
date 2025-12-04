@@ -70,7 +70,23 @@ export class HttpInstrumentation extends BaseInstrumentation {
       return true;
     }
 
-    return this.ignoredUrls.some((pattern) => pattern.test(url));
+    // Check user-provided ignored URLs
+    if (this.ignoredUrls.some((pattern) => pattern.test(url))) {
+      return true;
+    }
+
+    // Check config ignore URLs (includes transport URLs)
+    const configIgnoreUrls = this.config?.ignoreUrls || [];
+    if (configIgnoreUrls.some((pattern) => {
+      if (typeof pattern === 'string') {
+        return url.includes(pattern);
+      }
+      return pattern.test(url);
+    })) {
+      return true;
+    }
+
+    return false;
   }
 
   private patchFetch(): void {
