@@ -14,7 +14,7 @@ export function ErrorDemoScreen() {
 
   const throwAsyncError = async () => {
     // @ts-expect-error - React Native 19 has stricter setTimeout types
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     throw new Error('This is an async error for testing');
   };
 

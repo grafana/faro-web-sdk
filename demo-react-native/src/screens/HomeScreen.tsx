@@ -70,7 +70,7 @@ export function HomeScreen({ navigation }: Props) {
       if (action) {
         (action as UserActionInternalInterface).end();
       }
-      setUserActionCount(prev => prev + 1);
+      setUserActionCount((prev) => prev + 1);
     }, 100);
   };
 
@@ -89,7 +89,7 @@ export function HomeScreen({ navigation }: Props) {
         statusCode: String(response.status),
       });
 
-      setHttpRequestCount(prev => prev + 1);
+      setHttpRequestCount((prev) => prev + 1);
     } catch (error) {
       console.error('HTTP test failed:', error);
 

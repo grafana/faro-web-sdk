@@ -163,7 +163,7 @@ export function ShowcaseScreen(_props: Props) {
       }
     }
 
-    setActionCounts(prev => ({ ...prev, logs: prev.logs + numLogs }));
+    setActionCounts((prev) => ({ ...prev, logs: prev.logs + numLogs }));
     Alert.alert(
       'Logs Sent',
       `${numLogs} realistic log messages sent for ${currentUser.displayName}`,
@@ -282,7 +282,7 @@ export function ShowcaseScreen(_props: Props) {
       });
     }
 
-    setActionCounts(prev => ({ ...prev, events: prev.events + numEvents }));
+    setActionCounts((prev) => ({ ...prev, events: prev.events + numEvents }));
     Alert.alert(
       'Events Sent',
       `${numEvents} realistic events sent:\n${selectedEvents.join(
@@ -408,7 +408,7 @@ export function ShowcaseScreen(_props: Props) {
         response_size: String(JSON.stringify(data).length),
       });
 
-      setActionCounts(prev => ({
+      setActionCounts((prev) => ({
         ...prev,
         httpRequests: prev.httpRequests + 1,
       }));
@@ -513,7 +513,7 @@ export function ShowcaseScreen(_props: Props) {
       timestamp: new Date().toISOString(),
     });
 
-    setActionCounts(prev => ({ ...prev, errors: prev.errors + 1 }));
+    setActionCounts((prev) => ({ ...prev, errors: prev.errors + 1 }));
 
     Alert.alert(
       'Error Generated',
@@ -717,7 +717,7 @@ export function ShowcaseScreen(_props: Props) {
               },
             });
 
-            await new Promise<void>(resolve =>
+            await new Promise<void>((resolve) =>
               setTimeout(resolve, step.duration),
             );
 
@@ -746,7 +746,7 @@ export function ShowcaseScreen(_props: Props) {
         ),
       });
 
-      setActionCounts(prev => ({ ...prev, traces: prev.traces + 1 }));
+      setActionCounts((prev) => ({ ...prev, traces: prev.traces + 1 }));
 
       Alert.alert(
         'Trace Created',
@@ -979,7 +979,7 @@ export function ShowcaseScreen(_props: Props) {
         }
 
         if (step.delay > 0) {
-          await new Promise<void>(resolve => setTimeout(resolve, step.delay));
+          await new Promise<void>((resolve) => setTimeout(resolve, step.delay));
         }
       }
 
@@ -988,7 +988,7 @@ export function ShowcaseScreen(_props: Props) {
         (action as any).end?.();
       }
 
-      setActionCounts(prev => ({
+      setActionCounts((prev) => ({
         logs: prev.logs + logCount,
         events: prev.events + eventCount,
         httpRequests: prev.httpRequests + httpCount,
@@ -1046,7 +1046,7 @@ export function ShowcaseScreen(_props: Props) {
           Grafana dashboard
         </Text>
         <View style={styles.userGrid}>
-          {DEMO_USERS.map(user => (
+          {DEMO_USERS.map((user) => (
             <TouchableOpacity
               key={user.id}
               style={[
@@ -1078,7 +1078,7 @@ export function ShowcaseScreen(_props: Props) {
       </View>
 
       {/* Action Stats */}
-      {Object.values(actionCounts).some(count => count > 0) && (
+      {Object.values(actionCounts).some((count) => count > 0) && (
         <View style={styles.statsCard}>
           <Text style={styles.statsTitle}>Session Activity</Text>
           <View style={styles.statsGrid}>
