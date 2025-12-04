@@ -1,16 +1,17 @@
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
-  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../navigation/AppNavigator';
-import { faro, trackUserAction } from '@grafana/faro-react-native';
+
 import { UserActionInternalInterface } from '@grafana/faro-core';
+import { faro, trackUserAction } from '@grafana/faro-react-native';
+
+import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -77,7 +78,9 @@ export function HomeScreen({ navigation }: Props) {
     setHttpLoading(true);
     try {
       // Test successful HTTP request
-      const response = await fetch('https://jsonplaceholder.typicode.com/posts/1');
+      const response = await fetch(
+        'https://jsonplaceholder.typicode.com/posts/1',
+      );
       const data = await response.json();
       console.log('HTTP test successful:', data);
 
@@ -98,7 +101,6 @@ export function HomeScreen({ navigation }: Props) {
       setHttpLoading(false);
     }
   };
-
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -136,7 +138,8 @@ export function HomeScreen({ navigation }: Props) {
         >
           <Text style={styles.buttonText}>✨ SDK Showcase</Text>
           <Text style={styles.buttonDescription}>
-            Demo all features with different user profiles - Perfect for presentations!
+            Demo all features with different user profiles - Perfect for
+            presentations!
           </Text>
         </TouchableOpacity>
 

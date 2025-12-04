@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../navigation/AppNavigator';
-import { faro, trackUserAction } from '@grafana/faro-react-native';
 import { SpanStatusCode } from '@opentelemetry/api';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+import { faro, trackUserAction } from '@grafana/faro-react-native';
+
+import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Showcase'>;
 
@@ -71,7 +73,7 @@ const DEMO_USERS = [
   },
 ];
 
-export function ShowcaseScreen({ navigation }: Props) {
+export function ShowcaseScreen(_props: Props) {
   const [currentUser, setCurrentUser] = useState(DEMO_USERS[0]);
   const [actionCounts, setActionCounts] = useState({
     logs: 0,
@@ -88,7 +90,7 @@ export function ShowcaseScreen({ navigation }: Props) {
     switchUser(DEMO_USERS[0]);
   }, []);
 
-  const switchUser = (user: typeof DEMO_USERS[0]) => {
+  const switchUser = (user: (typeof DEMO_USERS)[0]) => {
     setCurrentUser(user);
 
     // Update Faro with new user info
@@ -118,7 +120,7 @@ export function ShowcaseScreen({ navigation }: Props) {
 
     Alert.alert(
       'User Switched',
-      `Now demonstrating as:\n${user.displayName}\n\nAll telemetry will be associated with this user.`
+      `Now demonstrating as:\n${user.displayName}\n\nAll telemetry will be associated with this user.`,
     );
   };
 
@@ -143,7 +145,8 @@ export function ShowcaseScreen({ navigation }: Props) {
     const selectedLogs = [];
 
     for (let i = 0; i < numLogs; i++) {
-      const randomLog = logMessages[Math.floor(Math.random() * logMessages.length)];
+      const randomLog =
+        logMessages[Math.floor(Math.random() * logMessages.length)];
       selectedLogs.push(randomLog);
 
       const message = `[${currentUser.username}] ${randomLog.msg}`;
@@ -161,23 +164,97 @@ export function ShowcaseScreen({ navigation }: Props) {
     }
 
     setActionCounts(prev => ({ ...prev, logs: prev.logs + numLogs }));
-    Alert.alert('Logs Sent', `${numLogs} realistic log messages sent for ${currentUser.displayName}`);
+    Alert.alert(
+      'Logs Sent',
+      `${numLogs} realistic log messages sent for ${currentUser.displayName}`,
+    );
   };
 
   // Demo Action 2: Send Custom Events
   const handleSendEvents = () => {
     // Realistic app events to choose from
     const eventOptions = [
-      { name: 'feature_accessed', attrs: { feature: 'analytics_dashboard', duration_ms: Math.floor(Math.random() * 2000) + 500 } },
-      { name: 'report_generated', attrs: { report_type: 'quarterly_summary', format: 'pdf', pages: Math.floor(Math.random() * 20) + 5 } },
-      { name: 'settings_updated', attrs: { setting_category: 'notifications', change_count: Math.floor(Math.random() * 5) + 1 } },
-      { name: 'search_performed', attrs: { query_length: Math.floor(Math.random() * 30) + 5, results_count: Math.floor(Math.random() * 100) } },
-      { name: 'export_completed', attrs: { format: ['csv', 'json', 'xlsx'][Math.floor(Math.random() * 3)], record_count: Math.floor(Math.random() * 1000) + 100 } },
-      { name: 'filter_applied', attrs: { filter_type: ['date_range', 'category', 'status'][Math.floor(Math.random() * 3)], items_filtered: Math.floor(Math.random() * 500) } },
-      { name: 'notification_viewed', attrs: { notification_type: ['alert', 'info', 'warning'][Math.floor(Math.random() * 3)], age_hours: Math.floor(Math.random() * 48) } },
-      { name: 'collaboration_invite_sent', attrs: { recipient_count: Math.floor(Math.random() * 5) + 1, workspace: 'team_dashboard' } },
-      { name: 'data_refresh_triggered', attrs: { data_source: ['api', 'database', 'cache'][Math.floor(Math.random() * 3)], auto: Math.random() > 0.5 } },
-      { name: 'widget_customized', attrs: { widget_type: ['chart', 'table', 'metric'][Math.floor(Math.random() * 3)], action: ['resize', 'reorder', 'configure'][Math.floor(Math.random() * 3)] } },
+      {
+        name: 'feature_accessed',
+        attrs: {
+          feature: 'analytics_dashboard',
+          duration_ms: Math.floor(Math.random() * 2000) + 500,
+        },
+      },
+      {
+        name: 'report_generated',
+        attrs: {
+          report_type: 'quarterly_summary',
+          format: 'pdf',
+          pages: Math.floor(Math.random() * 20) + 5,
+        },
+      },
+      {
+        name: 'settings_updated',
+        attrs: {
+          setting_category: 'notifications',
+          change_count: Math.floor(Math.random() * 5) + 1,
+        },
+      },
+      {
+        name: 'search_performed',
+        attrs: {
+          query_length: Math.floor(Math.random() * 30) + 5,
+          results_count: Math.floor(Math.random() * 100),
+        },
+      },
+      {
+        name: 'export_completed',
+        attrs: {
+          format: ['csv', 'json', 'xlsx'][Math.floor(Math.random() * 3)],
+          record_count: Math.floor(Math.random() * 1000) + 100,
+        },
+      },
+      {
+        name: 'filter_applied',
+        attrs: {
+          filter_type: ['date_range', 'category', 'status'][
+            Math.floor(Math.random() * 3)
+          ],
+          items_filtered: Math.floor(Math.random() * 500),
+        },
+      },
+      {
+        name: 'notification_viewed',
+        attrs: {
+          notification_type: ['alert', 'info', 'warning'][
+            Math.floor(Math.random() * 3)
+          ],
+          age_hours: Math.floor(Math.random() * 48),
+        },
+      },
+      {
+        name: 'collaboration_invite_sent',
+        attrs: {
+          recipient_count: Math.floor(Math.random() * 5) + 1,
+          workspace: 'team_dashboard',
+        },
+      },
+      {
+        name: 'data_refresh_triggered',
+        attrs: {
+          data_source: ['api', 'database', 'cache'][
+            Math.floor(Math.random() * 3)
+          ],
+          auto: Math.random() > 0.5,
+        },
+      },
+      {
+        name: 'widget_customized',
+        attrs: {
+          widget_type: ['chart', 'table', 'metric'][
+            Math.floor(Math.random() * 3)
+          ],
+          action: ['resize', 'reorder', 'configure'][
+            Math.floor(Math.random() * 3)
+          ],
+        },
+      },
     ];
 
     // Pick 1-3 random events
@@ -185,7 +262,8 @@ export function ShowcaseScreen({ navigation }: Props) {
     const selectedEvents = [];
 
     for (let i = 0; i < numEvents; i++) {
-      const randomEvent = eventOptions[Math.floor(Math.random() * eventOptions.length)];
+      const randomEvent =
+        eventOptions[Math.floor(Math.random() * eventOptions.length)];
       selectedEvents.push(randomEvent.name);
 
       // Convert all attributes to strings for Faro
@@ -207,7 +285,9 @@ export function ShowcaseScreen({ navigation }: Props) {
     setActionCounts(prev => ({ ...prev, events: prev.events + numEvents }));
     Alert.alert(
       'Events Sent',
-      `${numEvents} realistic events sent:\n${selectedEvents.join(', ')}\n\nThese events will appear in your Grafana dashboard.`
+      `${numEvents} realistic events sent:\n${selectedEvents.join(
+        ', ',
+      )}\n\nThese events will appear in your Grafana dashboard.`,
     );
   };
 
@@ -217,26 +297,82 @@ export function ShowcaseScreen({ navigation }: Props) {
     try {
       // Realistic API endpoints with varied resources and dynamic IDs
       const endpointOptions = [
-        { baseUrl: 'https://jsonplaceholder.typicode.com/posts', resource: 'post_data', method: 'GET', idRange: 100 },
-        { baseUrl: 'https://jsonplaceholder.typicode.com/users', resource: 'user_profile', method: 'GET', idRange: 10 },
-        { baseUrl: 'https://jsonplaceholder.typicode.com/comments', resource: 'comments_list', method: 'GET', query: true },
-        { baseUrl: 'https://jsonplaceholder.typicode.com/todos', resource: 'todo_item', method: 'GET', idRange: 200 },
-        { baseUrl: 'https://jsonplaceholder.typicode.com/albums', resource: 'albums_collection', method: 'GET', idRange: 100 },
-        { baseUrl: 'https://jsonplaceholder.typicode.com/photos', resource: 'photo_gallery', method: 'GET', query: true },
-        { baseUrl: 'https://jsonplaceholder.typicode.com/users', resource: 'users_directory', method: 'GET', collection: true },
-        { baseUrl: 'https://jsonplaceholder.typicode.com/posts', resource: 'user_posts', method: 'GET', query: true },
-        { baseUrl: 'https://httpbin.org/delay', resource: 'slow_operation', method: 'GET', delayParam: true },
-        { baseUrl: 'https://jsonplaceholder.typicode.com/posts', resource: 'post_comments', method: 'GET', commentsPath: true },
+        {
+          baseUrl: 'https://jsonplaceholder.typicode.com/posts',
+          resource: 'post_data',
+          method: 'GET',
+          idRange: 100,
+        },
+        {
+          baseUrl: 'https://jsonplaceholder.typicode.com/users',
+          resource: 'user_profile',
+          method: 'GET',
+          idRange: 10,
+        },
+        {
+          baseUrl: 'https://jsonplaceholder.typicode.com/comments',
+          resource: 'comments_list',
+          method: 'GET',
+          query: true,
+        },
+        {
+          baseUrl: 'https://jsonplaceholder.typicode.com/todos',
+          resource: 'todo_item',
+          method: 'GET',
+          idRange: 200,
+        },
+        {
+          baseUrl: 'https://jsonplaceholder.typicode.com/albums',
+          resource: 'albums_collection',
+          method: 'GET',
+          idRange: 100,
+        },
+        {
+          baseUrl: 'https://jsonplaceholder.typicode.com/photos',
+          resource: 'photo_gallery',
+          method: 'GET',
+          query: true,
+        },
+        {
+          baseUrl: 'https://jsonplaceholder.typicode.com/users',
+          resource: 'users_directory',
+          method: 'GET',
+          collection: true,
+        },
+        {
+          baseUrl: 'https://jsonplaceholder.typicode.com/posts',
+          resource: 'user_posts',
+          method: 'GET',
+          query: true,
+        },
+        {
+          baseUrl: 'https://httpbin.org/delay',
+          resource: 'slow_operation',
+          method: 'GET',
+          delayParam: true,
+        },
+        {
+          baseUrl: 'https://jsonplaceholder.typicode.com/posts',
+          resource: 'post_comments',
+          method: 'GET',
+          commentsPath: true,
+        },
       ];
 
-      const selectedEndpoint = endpointOptions[Math.floor(Math.random() * endpointOptions.length)];
+      const selectedEndpoint =
+        endpointOptions[Math.floor(Math.random() * endpointOptions.length)];
 
       // Build the URL with random parameters
       let url = selectedEndpoint.baseUrl;
 
-      if (selectedEndpoint.idRange && !selectedEndpoint.collection && !selectedEndpoint.query) {
+      if (
+        selectedEndpoint.idRange &&
+        !selectedEndpoint.collection &&
+        !selectedEndpoint.query
+      ) {
         // Add random ID to path
-        const randomId = Math.floor(Math.random() * selectedEndpoint.idRange) + 1;
+        const randomId =
+          Math.floor(Math.random() * selectedEndpoint.idRange) + 1;
         url = `${url}/${randomId}`;
       } else if (selectedEndpoint.query) {
         // Add query parameters
@@ -272,11 +408,14 @@ export function ShowcaseScreen({ navigation }: Props) {
         response_size: String(JSON.stringify(data).length),
       });
 
-      setActionCounts(prev => ({ ...prev, httpRequests: prev.httpRequests + 1 }));
+      setActionCounts(prev => ({
+        ...prev,
+        httpRequests: prev.httpRequests + 1,
+      }));
 
       Alert.alert(
         'HTTP Request Completed',
-        `Resource: ${selectedEndpoint.resource}\nEndpoint: ${url}\nStatus: ${response.status}\n\nHTTP requests are automatically traced!`
+        `Resource: ${selectedEndpoint.resource}\nEndpoint: ${url}\nStatus: ${response.status}\n\nHTTP requests are automatically traced!`,
       );
     } catch (error) {
       Alert.alert('Error', `HTTP request failed: ${error}`);
@@ -351,10 +490,13 @@ export function ShowcaseScreen({ navigation }: Props) {
       },
     ];
 
-    const randomError = errorTypes[Math.floor(Math.random() * errorTypes.length)];
+    const randomError =
+      errorTypes[Math.floor(Math.random() * errorTypes.length)];
 
     // Log the error
-    console.error(`[${currentUser.username}] ${randomError.type}: ${randomError.message}`);
+    console.error(
+      `[${currentUser.username}] ${randomError.type}: ${randomError.message}`,
+    );
 
     // Push error to Faro
     const error = new Error(randomError.message);
@@ -375,7 +517,7 @@ export function ShowcaseScreen({ navigation }: Props) {
 
     Alert.alert(
       'Error Generated',
-      `Type: ${randomError.type}\nCode: ${randomError.code}\nSeverity: ${randomError.severity}\n\nThis error is now tracked in Grafana Cloud.`
+      `Type: ${randomError.type}\nCode: ${randomError.code}\nSeverity: ${randomError.severity}\n\nThis error is now tracked in Grafana Cloud.`,
     );
   };
 
@@ -397,95 +539,158 @@ export function ShowcaseScreen({ navigation }: Props) {
         name: 'data-export-workflow',
         steps: [
           { name: 'validate-permissions', duration: 150 },
-          { name: 'query-database', duration: 400, event: 'rows-fetched', eventData: { count: Math.floor(Math.random() * 1000) + 100 } },
+          {
+            name: 'query-database',
+            duration: 400,
+            event: 'rows-fetched',
+            eventData: { count: Math.floor(Math.random() * 1000) + 100 },
+          },
           { name: 'transform-data', duration: 250 },
-          { name: 'generate-file', duration: 300, event: 'file-created', eventData: { size_kb: Math.floor(Math.random() * 5000) + 500 } },
-        ]
+          {
+            name: 'generate-file',
+            duration: 300,
+            event: 'file-created',
+            eventData: { size_kb: Math.floor(Math.random() * 5000) + 500 },
+          },
+        ],
       },
       {
         name: 'report-generation-workflow',
         steps: [
           { name: 'fetch-user-data', duration: 200 },
-          { name: 'aggregate-metrics', duration: 350, event: 'metrics-calculated', eventData: { metric_count: Math.floor(Math.random() * 50) + 10 } },
+          {
+            name: 'aggregate-metrics',
+            duration: 350,
+            event: 'metrics-calculated',
+            eventData: { metric_count: Math.floor(Math.random() * 50) + 10 },
+          },
           { name: 'render-charts', duration: 450 },
-          { name: 'compile-pdf', duration: 500, event: 'pdf-ready', eventData: { pages: Math.floor(Math.random() * 30) + 5 } },
-        ]
+          {
+            name: 'compile-pdf',
+            duration: 500,
+            event: 'pdf-ready',
+            eventData: { pages: Math.floor(Math.random() * 30) + 5 },
+          },
+        ],
       },
       {
         name: 'user-onboarding-workflow',
         steps: [
           { name: 'create-account', duration: 180 },
           { name: 'send-welcome-email', duration: 220 },
-          { name: 'setup-preferences', duration: 150, event: 'preferences-saved', eventData: { settings_count: 12 } },
+          {
+            name: 'setup-preferences',
+            duration: 150,
+            event: 'preferences-saved',
+            eventData: { settings_count: 12 },
+          },
           { name: 'initialize-workspace', duration: 280 },
-        ]
+        ],
       },
       {
         name: 'data-sync-workflow',
         steps: [
           { name: 'check-last-sync', duration: 100 },
-          { name: 'fetch-remote-changes', duration: 600, event: 'changes-detected', eventData: { change_count: Math.floor(Math.random() * 200) + 20 } },
+          {
+            name: 'fetch-remote-changes',
+            duration: 600,
+            event: 'changes-detected',
+            eventData: { change_count: Math.floor(Math.random() * 200) + 20 },
+          },
           { name: 'merge-conflicts', duration: 250 },
           { name: 'update-local-store', duration: 300 },
-        ]
+        ],
       },
       {
         name: 'analytics-processing-workflow',
         steps: [
           { name: 'load-raw-events', duration: 400 },
-          { name: 'filter-by-criteria', duration: 200, event: 'events-filtered', eventData: { filtered_count: Math.floor(Math.random() * 5000) + 1000 } },
+          {
+            name: 'filter-by-criteria',
+            duration: 200,
+            event: 'events-filtered',
+            eventData: {
+              filtered_count: Math.floor(Math.random() * 5000) + 1000,
+            },
+          },
           { name: 'compute-aggregates', duration: 350 },
           { name: 'store-results', duration: 180 },
-        ]
+        ],
       },
       {
         name: 'payment-processing-workflow',
         steps: [
           { name: 'validate-payment-info', duration: 150 },
           { name: 'charge-payment-method', duration: 800 },
-          { name: 'update-subscription', duration: 200, event: 'subscription-updated', eventData: { plan: currentUser.attributes.plan } },
+          {
+            name: 'update-subscription',
+            duration: 200,
+            event: 'subscription-updated',
+            eventData: { plan: currentUser.attributes.plan },
+          },
           { name: 'send-receipt', duration: 250 },
-        ]
+        ],
       },
       {
         name: 'backup-workflow',
         steps: [
-          { name: 'snapshot-database', duration: 700, event: 'snapshot-created', eventData: { size_mb: Math.floor(Math.random() * 5000) + 1000 } },
+          {
+            name: 'snapshot-database',
+            duration: 700,
+            event: 'snapshot-created',
+            eventData: { size_mb: Math.floor(Math.random() * 5000) + 1000 },
+          },
           { name: 'compress-data', duration: 450 },
           { name: 'upload-to-storage', duration: 900 },
           { name: 'verify-backup', duration: 200 },
-        ]
+        ],
       },
       {
         name: 'notification-workflow',
         steps: [
           { name: 'fetch-user-preferences', duration: 120 },
           { name: 'build-notification', duration: 150 },
-          { name: 'send-push-notification', duration: 300, event: 'notification-sent', eventData: { channel: 'push' } },
+          {
+            name: 'send-push-notification',
+            duration: 300,
+            event: 'notification-sent',
+            eventData: { channel: 'push' },
+          },
           { name: 'log-delivery', duration: 100 },
-        ]
+        ],
       },
       {
         name: 'search-workflow',
         steps: [
           { name: 'parse-query', duration: 80 },
-          { name: 'search-index', duration: 400, event: 'results-found', eventData: { result_count: Math.floor(Math.random() * 500) + 50 } },
+          {
+            name: 'search-index',
+            duration: 400,
+            event: 'results-found',
+            eventData: { result_count: Math.floor(Math.random() * 500) + 50 },
+          },
           { name: 'rank-results', duration: 200 },
           { name: 'apply-filters', duration: 150 },
-        ]
+        ],
       },
       {
         name: 'cache-refresh-workflow',
         steps: [
           { name: 'check-cache-status', duration: 100 },
           { name: 'fetch-fresh-data', duration: 500 },
-          { name: 'invalidate-old-cache', duration: 120, event: 'cache-cleared', eventData: { keys_removed: Math.floor(Math.random() * 100) + 20 } },
+          {
+            name: 'invalidate-old-cache',
+            duration: 120,
+            event: 'cache-cleared',
+            eventData: { keys_removed: Math.floor(Math.random() * 100) + 20 },
+          },
           { name: 'populate-new-cache', duration: 250 },
-        ]
+        ],
       },
     ];
 
-    const selectedWorkflow = workflowTypes[Math.floor(Math.random() * workflowTypes.length)];
+    const selectedWorkflow =
+      workflowTypes[Math.floor(Math.random() * workflowTypes.length)];
 
     // Create a parent span for the user's workflow
     const workflowSpan = tracer.startSpan(selectedWorkflow.name, {
@@ -500,28 +705,33 @@ export function ShowcaseScreen({ navigation }: Props) {
     });
 
     try {
-      await context.with(trace.setSpan(context.active(), workflowSpan), async () => {
-        // Execute each step in the workflow
-        for (const step of selectedWorkflow.steps) {
-          const stepSpan = tracer.startSpan(step.name, {
-            attributes: {
-              'step.name': step.name,
-              'step.duration_ms': step.duration,
-            },
-          });
+      await context.with(
+        trace.setSpan(context.active(), workflowSpan),
+        async () => {
+          // Execute each step in the workflow
+          for (const step of selectedWorkflow.steps) {
+            const stepSpan = tracer.startSpan(step.name, {
+              attributes: {
+                'step.name': step.name,
+                'step.duration_ms': step.duration,
+              },
+            });
 
-          await new Promise<void>(resolve => setTimeout(resolve, step.duration));
+            await new Promise<void>(resolve =>
+              setTimeout(resolve, step.duration),
+            );
 
-          if (step.event) {
-            stepSpan.addEvent(step.event, step.eventData || {});
+            if (step.event) {
+              stepSpan.addEvent(step.event, step.eventData || {});
+            }
+
+            stepSpan.setStatus({ code: SpanStatusCode.OK });
+            stepSpan.end();
           }
 
-          stepSpan.setStatus({ code: SpanStatusCode.OK });
-          stepSpan.end();
-        }
-
-        workflowSpan.setStatus({ code: SpanStatusCode.OK });
-      });
+          workflowSpan.setStatus({ code: SpanStatusCode.OK });
+        },
+      );
 
       const traceId = workflowSpan.spanContext().traceId;
       setLastTraceId(traceId);
@@ -531,14 +741,16 @@ export function ShowcaseScreen({ navigation }: Props) {
         userId: currentUser.id,
         workflowType: selectedWorkflow.name,
         stepCount: String(selectedWorkflow.steps.length),
-        totalDuration: String(selectedWorkflow.steps.reduce((sum, s) => sum + s.duration, 0)),
+        totalDuration: String(
+          selectedWorkflow.steps.reduce((sum, s) => sum + s.duration, 0),
+        ),
       });
 
       setActionCounts(prev => ({ ...prev, traces: prev.traces + 1 }));
 
       Alert.alert(
         'Trace Created',
-        `Workflow: ${selectedWorkflow.name}\n\nTrace ID: ${traceId}\n\n${selectedWorkflow.steps.length} steps traced for ${currentUser.displayName}`
+        `Workflow: ${selectedWorkflow.name}\n\nTrace ID: ${traceId}\n\n${selectedWorkflow.steps.length} steps traced for ${currentUser.displayName}`,
       );
     } catch (error) {
       workflowSpan.setStatus({
@@ -559,14 +771,28 @@ export function ShowcaseScreen({ navigation }: Props) {
     // Helper function to generate random URLs
     const getRandomUrl = () => {
       const urls = [
-        `https://jsonplaceholder.typicode.com/users/${Math.floor(Math.random() * 10) + 1}`,
-        `https://jsonplaceholder.typicode.com/posts/${Math.floor(Math.random() * 100) + 1}`,
-        `https://jsonplaceholder.typicode.com/comments?postId=${Math.floor(Math.random() * 100) + 1}`,
-        `https://jsonplaceholder.typicode.com/todos/${Math.floor(Math.random() * 200) + 1}`,
-        `https://jsonplaceholder.typicode.com/albums/${Math.floor(Math.random() * 100) + 1}`,
-        `https://jsonplaceholder.typicode.com/photos?albumId=${Math.floor(Math.random() * 100) + 1}`,
+        `https://jsonplaceholder.typicode.com/users/${
+          Math.floor(Math.random() * 10) + 1
+        }`,
+        `https://jsonplaceholder.typicode.com/posts/${
+          Math.floor(Math.random() * 100) + 1
+        }`,
+        `https://jsonplaceholder.typicode.com/comments?postId=${
+          Math.floor(Math.random() * 100) + 1
+        }`,
+        `https://jsonplaceholder.typicode.com/todos/${
+          Math.floor(Math.random() * 200) + 1
+        }`,
+        `https://jsonplaceholder.typicode.com/albums/${
+          Math.floor(Math.random() * 100) + 1
+        }`,
+        `https://jsonplaceholder.typicode.com/photos?albumId=${
+          Math.floor(Math.random() * 100) + 1
+        }`,
         'https://jsonplaceholder.typicode.com/users',
-        `https://jsonplaceholder.typicode.com/posts?userId=${Math.floor(Math.random() * 10) + 1}`,
+        `https://jsonplaceholder.typicode.com/posts?userId=${
+          Math.floor(Math.random() * 10) + 1
+        }`,
       ];
       return urls[Math.floor(Math.random() * urls.length)];
     };
@@ -576,58 +802,130 @@ export function ShowcaseScreen({ navigation }: Props) {
       {
         name: 'onboarding-journey',
         steps: [
-          { type: 'log', message: 'User started onboarding process', delay: 200 },
+          {
+            type: 'log',
+            message: 'User started onboarding process',
+            delay: 200,
+          },
           { type: 'http', url: getRandomUrl(), delay: 300 },
-          { type: 'event', name: 'profile_completed', attrs: { completion_rate: 100 }, delay: 200 },
+          {
+            type: 'event',
+            name: 'profile_completed',
+            attrs: { completion_rate: 100 },
+            delay: 200,
+          },
           { type: 'log', message: 'Welcome email queued', delay: 150 },
-          { type: 'event', name: 'tutorial_started', attrs: { tutorial_id: 'getting-started' }, delay: 0 },
-        ]
+          {
+            type: 'event',
+            name: 'tutorial_started',
+            attrs: { tutorial_id: 'getting-started' },
+            delay: 0,
+          },
+        ],
       },
       {
         name: 'content-creation-journey',
         steps: [
           { type: 'log', message: 'User opened content editor', delay: 150 },
-          { type: 'event', name: 'editor_loaded', attrs: { editor_type: 'rich-text' }, delay: 200 },
+          {
+            type: 'event',
+            name: 'editor_loaded',
+            attrs: { editor_type: 'rich-text' },
+            delay: 200,
+          },
           { type: 'http', url: getRandomUrl(), delay: 250 },
           { type: 'log', message: 'Draft auto-saved', delay: 300 },
-          { type: 'event', name: 'content_published', attrs: { word_count: Math.floor(Math.random() * 2000) + 500 }, delay: 0 },
-        ]
+          {
+            type: 'event',
+            name: 'content_published',
+            attrs: { word_count: Math.floor(Math.random() * 2000) + 500 },
+            delay: 0,
+          },
+        ],
       },
       {
         name: 'data-analysis-journey',
         steps: [
-          { type: 'log', message: 'User navigated to analytics dashboard', delay: 180 },
+          {
+            type: 'log',
+            message: 'User navigated to analytics dashboard',
+            delay: 180,
+          },
           { type: 'http', url: getRandomUrl(), delay: 400 },
-          { type: 'event', name: 'filter_applied', attrs: { filter_type: 'date_range', days: 30 }, delay: 150 },
-          { type: 'log', message: 'Chart rendered with 1,247 data points', delay: 200 },
+          {
+            type: 'event',
+            name: 'filter_applied',
+            attrs: { filter_type: 'date_range', days: 30 },
+            delay: 150,
+          },
+          {
+            type: 'log',
+            message: 'Chart rendered with 1,247 data points',
+            delay: 200,
+          },
           { type: 'http', url: getRandomUrl(), delay: 350 },
-          { type: 'event', name: 'report_exported', attrs: { format: 'csv', rows: 1247 }, delay: 0 },
-        ]
+          {
+            type: 'event',
+            name: 'report_exported',
+            attrs: { format: 'csv', rows: 1247 },
+            delay: 0,
+          },
+        ],
       },
       {
         name: 'collaboration-journey',
         steps: [
           { type: 'log', message: 'User opened shared workspace', delay: 150 },
           { type: 'http', url: getRandomUrl(), delay: 280 },
-          { type: 'event', name: 'teammate_invited', attrs: { invitee_count: 3 }, delay: 200 },
-          { type: 'log', message: 'Permissions updated for workspace members', delay: 150 },
-          { type: 'event', name: 'comment_posted', attrs: { thread_id: 'ws-42' }, delay: 0 },
-        ]
+          {
+            type: 'event',
+            name: 'teammate_invited',
+            attrs: { invitee_count: 3 },
+            delay: 200,
+          },
+          {
+            type: 'log',
+            message: 'Permissions updated for workspace members',
+            delay: 150,
+          },
+          {
+            type: 'event',
+            name: 'comment_posted',
+            attrs: { thread_id: 'ws-42' },
+            delay: 0,
+          },
+        ],
       },
       {
         name: 'shopping-journey',
         steps: [
           { type: 'log', message: 'User browsing product catalog', delay: 200 },
           { type: 'http', url: getRandomUrl(), delay: 350 },
-          { type: 'event', name: 'product_viewed', attrs: { product_id: 'prod-' + Math.floor(Math.random() * 1000) }, delay: 150 },
-          { type: 'event', name: 'added_to_cart', attrs: { quantity: Math.floor(Math.random() * 3) + 1 }, delay: 200 },
+          {
+            type: 'event',
+            name: 'product_viewed',
+            attrs: { product_id: 'prod-' + Math.floor(Math.random() * 1000) },
+            delay: 150,
+          },
+          {
+            type: 'event',
+            name: 'added_to_cart',
+            attrs: { quantity: Math.floor(Math.random() * 3) + 1 },
+            delay: 200,
+          },
           { type: 'http', url: getRandomUrl(), delay: 400 },
-          { type: 'event', name: 'checkout_initiated', attrs: { cart_total: Math.floor(Math.random() * 500) + 50 }, delay: 0 },
-        ]
+          {
+            type: 'event',
+            name: 'checkout_initiated',
+            attrs: { cart_total: Math.floor(Math.random() * 500) + 50 },
+            delay: 0,
+          },
+        ],
       },
     ];
 
-    const selectedJourney = journeyTypes[Math.floor(Math.random() * journeyTypes.length)];
+    const selectedJourney =
+      journeyTypes[Math.floor(Math.random() * journeyTypes.length)];
 
     // Track as a user action
     const action = trackUserAction(selectedJourney.name, {
@@ -640,7 +938,9 @@ export function ShowcaseScreen({ navigation }: Props) {
     let httpCount = 0;
 
     try {
-      console.log(`[Journey] ${currentUser.username} started ${selectedJourney.name}`);
+      console.log(
+        `[Journey] ${currentUser.username} started ${selectedJourney.name}`,
+      );
 
       for (const step of selectedJourney.steps) {
         switch (step.type) {
@@ -698,7 +998,7 @@ export function ShowcaseScreen({ navigation }: Props) {
 
       Alert.alert(
         'Journey Complete',
-        `${currentUser.displayName} completed:\n${selectedJourney.name}\n\n📊 Generated:\n• ${logCount} logs\n• ${eventCount} events\n• ${httpCount} HTTP requests\n• 1 trace\n\nCheck your Grafana dashboard!`
+        `${currentUser.displayName} completed:\n${selectedJourney.name}\n\n📊 Generated:\n• ${logCount} logs\n• ${eventCount} events\n• ${httpCount} HTTP requests\n• 1 trace\n\nCheck your Grafana dashboard!`,
       );
     } catch (error) {
       Alert.alert('Error', `Journey failed: ${error}`);
@@ -718,15 +1018,23 @@ export function ShowcaseScreen({ navigation }: Props) {
       </View>
 
       {/* Current User Display */}
-      <View style={[styles.currentUserCard, { borderLeftColor: currentUser.color }]}>
+      <View
+        style={[styles.currentUserCard, { borderLeftColor: currentUser.color }]}
+      >
         <Text style={styles.currentUserLabel}>Current Demo User</Text>
         <Text style={[styles.currentUserName, { color: currentUser.color }]}>
           {currentUser.displayName}
         </Text>
         <View style={styles.userDetails}>
-          <Text style={styles.userDetailText}>Plan: {currentUser.attributes.plan}</Text>
-          <Text style={styles.userDetailText}>Role: {currentUser.attributes.role}</Text>
-          <Text style={styles.userDetailText}>Company: {currentUser.attributes.company}</Text>
+          <Text style={styles.userDetailText}>
+            Plan: {currentUser.attributes.plan}
+          </Text>
+          <Text style={styles.userDetailText}>
+            Role: {currentUser.attributes.role}
+          </Text>
+          <Text style={styles.userDetailText}>
+            Company: {currentUser.attributes.company}
+          </Text>
         </View>
       </View>
 
@@ -734,10 +1042,11 @@ export function ShowcaseScreen({ navigation }: Props) {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Switch Demo User</Text>
         <Text style={styles.sectionDescription}>
-          Choose a user profile to demonstrate different scenarios in your Grafana dashboard
+          Choose a user profile to demonstrate different scenarios in your
+          Grafana dashboard
         </Text>
         <View style={styles.userGrid}>
-          {DEMO_USERS.map((user) => (
+          {DEMO_USERS.map(user => (
             <TouchableOpacity
               key={user.id}
               style={[

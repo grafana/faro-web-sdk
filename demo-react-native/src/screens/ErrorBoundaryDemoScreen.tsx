@@ -1,4 +1,3 @@
-import { FaroErrorBoundary } from '@grafana/faro-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import {
@@ -8,6 +7,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
+import { FaroErrorBoundary } from '@grafana/faro-react-native';
+
 import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ErrorBoundaryDemo'>;
@@ -30,12 +32,20 @@ function BrokenComponent({ shouldThrow }: { shouldThrow: boolean }) {
 /**
  * Fallback UI shown when an error is caught
  */
-function ErrorFallback({ error, resetError }: { error?: Error | null; resetError: () => void }) {
+function ErrorFallback({
+  error,
+  resetError,
+}: {
+  error?: Error | null;
+  resetError: () => void;
+}) {
   if (!error) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorTitle}>❌ Unknown Error</Text>
-        <Text style={styles.errorMessage}>An error occurred but no details are available</Text>
+        <Text style={styles.errorMessage}>
+          An error occurred but no details are available
+        </Text>
         <TouchableOpacity style={styles.resetButton} onPress={resetError}>
           <Text style={styles.resetButtonText}>🔄 Reset and Try Again</Text>
         </TouchableOpacity>

@@ -1,8 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Button, RefreshControl } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  Button,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
 // @ts-expect-error - TS module resolution issue, export exists in source
-import { getAsyncDeviceMeta } from '@grafana/faro-react-native';
-import { faro } from '@grafana/faro-react-native';
+import { faro, getAsyncDeviceMeta } from '@grafana/faro-react-native';
 
 /**
  * Device Info Screen
@@ -23,7 +30,11 @@ export default function DeviceInfoScreen() {
       const asyncInfo = await getAsyncDeviceMeta();
       setAsyncDeviceInfo(asyncInfo);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch async device info');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to fetch async device info',
+      );
     } finally {
       setRefreshing(false);
     }
@@ -49,12 +60,18 @@ export default function DeviceInfoScreen() {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchAsyncDeviceInfo} />}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={fetchAsyncDeviceInfo}
+        />
+      }
     >
       <View style={styles.content}>
         <Text style={styles.title}>Device Information</Text>
         <Text style={styles.description}>
-          All metadata automatically collected by Faro SDK for better debugging and analytics.
+          All metadata automatically collected by Faro SDK for better debugging
+          and analytics.
         </Text>
 
         {/* System Information */}
@@ -73,7 +90,10 @@ export default function DeviceInfoScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🔧 Device Details</Text>
           {renderMetaField('Brand & Model', browserMeta.brands)}
-          {renderMetaField('Viewport', `${browserMeta.viewportWidth}x${browserMeta.viewportHeight}`)}
+          {renderMetaField(
+            'Viewport',
+            `${browserMeta.viewportWidth}x${browserMeta.viewportHeight}`,
+          )}
         </View>
 
         {/* Locale & Language */}
@@ -91,14 +111,24 @@ export default function DeviceInfoScreen() {
           {renderMetaField(
             'Total Memory',
             browserMeta.totalMemory
-              ? `${(parseInt(browserMeta.totalMemory) / 1024 / 1024 / 1024).toFixed(2)} GB`
-              : 'Unknown'
+              ? `${(
+                  parseInt(browserMeta.totalMemory) /
+                  1024 /
+                  1024 /
+                  1024
+                ).toFixed(2)} GB`
+              : 'Unknown',
           )}
           {renderMetaField(
             'Used Memory',
             browserMeta.usedMemory
-              ? `${(parseInt(browserMeta.usedMemory) / 1024 / 1024 / 1024).toFixed(2)} GB`
-              : 'Unknown'
+              ? `${(
+                  parseInt(browserMeta.usedMemory) /
+                  1024 /
+                  1024 /
+                  1024
+                ).toFixed(2)} GB`
+              : 'Unknown',
           )}
         </View>
 
@@ -132,8 +162,8 @@ export default function DeviceInfoScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>💡 Usage in Grafana Cloud</Text>
           <Text style={styles.instructions}>
-            All this metadata is automatically attached to every log, error, and event sent to
-            Grafana Cloud.
+            All this metadata is automatically attached to every log, error, and
+            event sent to Grafana Cloud.
             {'\n\n'}
             Query examples:
             {'\n\n'}

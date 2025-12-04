@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SpanStatusCode } from '@opentelemetry/api';
-import { faro, trackUserAction } from '@grafana/faro-react-native';
-import { UserActionImportance, UserActionInternalInterface } from '@grafana/faro-core';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+import { UserActionImportance } from '@grafana/faro-core';
+import { faro } from '@grafana/faro-react-native';
 
 /**
  * Comprehensive Tracing Demo Screen
@@ -45,7 +54,9 @@ export default function TracingDemoScreen() {
     setLoading(true);
     try {
       // FetchInstrumentation automatically creates a span for this request
-      const response = await fetch('https://jsonplaceholder.typicode.com/posts/1');
+      const response = await fetch(
+        'https://jsonplaceholder.typicode.com/posts/1',
+      );
       const data = await response.json();
 
       // Capture the trace ID from the automatically created span
@@ -53,7 +64,9 @@ export default function TracingDemoScreen() {
 
       Alert.alert(
         'Success',
-        `Fetched post: "${data.title}"\n\n${traceId ? `Trace ID: ${traceId}` : 'Check console for trace'}`,
+        `Fetched post: "${data.title}"\n\n${
+          traceId ? `Trace ID: ${traceId}` : 'Check console for trace'
+        }`,
       );
     } catch (error) {
       Alert.alert('Error', `Fetch failed: ${error}`);
@@ -69,16 +82,24 @@ export default function TracingDemoScreen() {
       // All three requests will be traced as separate spans
       // They share the same trace context, showing parallel execution
       const [post1, post2, post3] = await Promise.all([
-        fetch('https://jsonplaceholder.typicode.com/posts/1').then(r => r.json()),
-        fetch('https://jsonplaceholder.typicode.com/posts/2').then(r => r.json()),
-        fetch('https://jsonplaceholder.typicode.com/posts/3').then(r => r.json()),
+        fetch('https://jsonplaceholder.typicode.com/posts/1').then(r =>
+          r.json(),
+        ),
+        fetch('https://jsonplaceholder.typicode.com/posts/2').then(r =>
+          r.json(),
+        ),
+        fetch('https://jsonplaceholder.typicode.com/posts/3').then(r =>
+          r.json(),
+        ),
       ]);
 
       const traceId = captureTraceId('Parallel Requests');
 
       Alert.alert(
         'Success',
-        `Fetched 3 posts in parallel\n\nTitles:\n1. ${post1.title}\n2. ${post2.title}\n3. ${post3.title}\n\n${traceId ? `Trace ID: ${traceId}` : ''}`,
+        `Fetched 3 posts in parallel\n\nTitles:\n1. ${post1.title}\n2. ${
+          post2.title
+        }\n3. ${post3.title}\n\n${traceId ? `Trace ID: ${traceId}` : ''}`,
       );
     } catch (error) {
       Alert.alert('Error', `Parallel requests failed: ${error}`);
@@ -92,15 +113,23 @@ export default function TracingDemoScreen() {
     setLoading(true);
     try {
       // Sequential requests show dependency chain in trace waterfall
-      const post1 = await fetch('https://jsonplaceholder.typicode.com/posts/1').then(r => r.json());
-      const post2 = await fetch('https://jsonplaceholder.typicode.com/posts/2').then(r => r.json());
-      const post3 = await fetch('https://jsonplaceholder.typicode.com/posts/3').then(r => r.json());
+      await fetch('https://jsonplaceholder.typicode.com/posts/1').then(r =>
+        r.json(),
+      );
+      await fetch('https://jsonplaceholder.typicode.com/posts/2').then(r =>
+        r.json(),
+      );
+      await fetch('https://jsonplaceholder.typicode.com/posts/3').then(r =>
+        r.json(),
+      );
 
       const traceId = captureTraceId('Sequential Requests');
 
       Alert.alert(
         'Success',
-        `Fetched 3 posts sequentially\n\nThis creates a waterfall pattern in traces\n\n${traceId ? `Trace ID: ${traceId}` : ''}`,
+        `Fetched 3 posts sequentially\n\nThis creates a waterfall pattern in traces\n\n${
+          traceId ? `Trace ID: ${traceId}` : ''
+        }`,
       );
     } catch (error) {
       Alert.alert('Error', `Sequential requests failed: ${error}`);
@@ -122,7 +151,9 @@ export default function TracingDemoScreen() {
 
       Alert.alert(
         'Success',
-        `Slow request completed in ${duration}ms\n\nYou can see the duration in the trace span\n\n${traceId ? `Trace ID: ${traceId}` : ''}`,
+        `Slow request completed in ${duration}ms\n\nYou can see the duration in the trace span\n\n${
+          traceId ? `Trace ID: ${traceId}` : ''
+        }`,
       );
     } catch (error) {
       Alert.alert('Error', `Slow request failed: ${error}`);
@@ -135,20 +166,26 @@ export default function TracingDemoScreen() {
   const testErrorTrace = async () => {
     setLoading(true);
     try {
-      const response = await fetch('https://jsonplaceholder.typicode.com/invalid-endpoint-404');
+      const response = await fetch(
+        'https://jsonplaceholder.typicode.com/invalid-endpoint-404',
+      );
 
       if (!response.ok) {
         const traceId = captureTraceId('Error Trace - 404');
         Alert.alert(
           'Error Traced',
-          `404 error was automatically traced\n\nStatus: ${response.status}\n\n${traceId ? `Trace ID: ${traceId}` : ''}`,
+          `404 error was automatically traced\n\nStatus: ${
+            response.status
+          }\n\n${traceId ? `Trace ID: ${traceId}` : ''}`,
         );
       }
     } catch (error) {
       const traceId = captureTraceId('Error Trace - Network');
       Alert.alert(
         'Error Traced',
-        `Network error was traced: ${error}\n\n${traceId ? `Trace ID: ${traceId}` : ''}`,
+        `Network error was traced: ${error}\n\n${
+          traceId ? `Trace ID: ${traceId}` : ''
+        }`,
       );
     } finally {
       setLoading(false);
@@ -163,7 +200,10 @@ export default function TracingDemoScreen() {
   const testManualSpan = async () => {
     const otel = (faro as any).otel;
     if (!otel) {
-      Alert.alert('Error', 'OTEL not available. Make sure tracing is initialized.');
+      Alert.alert(
+        'Error',
+        'OTEL not available. Make sure tracing is initialized.',
+      );
       return;
     }
 
@@ -205,7 +245,7 @@ export default function TracingDemoScreen() {
       // Mark span as failed
       span.setStatus({
         code: SpanStatusCode.ERROR,
-        message: String(error)
+        message: String(error),
       });
       Alert.alert('Error', `Manual span failed: ${error}`);
     } finally {
@@ -236,38 +276,41 @@ export default function TracingDemoScreen() {
 
     try {
       // Set parent span as active context
-      await context.with(trace.setSpan(context.active(), parentSpan), async () => {
-        // Simulate parent work
-        await // @ts-expect-error - React Native 19 setTimeout types
-      new Promise(resolve => setTimeout(resolve, 500));
-        parentSpan.setAttribute('parent.work', 'completed');
+      await context.with(
+        trace.setSpan(context.active(), parentSpan),
+        async () => {
+          // Simulate parent work
+          await // @ts-expect-error - React Native 19 setTimeout types
+          new Promise(resolve => setTimeout(resolve, 500));
+          parentSpan.setAttribute('parent.work', 'completed');
 
-        // Create child span 1
-        const childSpan1 = tracer.startSpan('child-operation-1', {
-          attributes: {
-            'operation.level': 'child',
-            'child.index': 1,
-          },
-        });
+          // Create child span 1
+          const childSpan1 = tracer.startSpan('child-operation-1', {
+            attributes: {
+              'operation.level': 'child',
+              'child.index': 1,
+            },
+          });
 
-        await // @ts-expect-error - React Native 19 setTimeout types
-      new Promise(resolve => setTimeout(resolve, 300));
-        childSpan1.setStatus({ code: SpanStatusCode.OK });
-        childSpan1.end();
+          await // @ts-expect-error - React Native 19 setTimeout types
+          new Promise(resolve => setTimeout(resolve, 300));
+          childSpan1.setStatus({ code: SpanStatusCode.OK });
+          childSpan1.end();
 
-        // Create child span 2
-        const childSpan2 = tracer.startSpan('child-operation-2', {
-          attributes: {
-            'operation.level': 'child',
-            'child.index': 2,
-          },
-        });
+          // Create child span 2
+          const childSpan2 = tracer.startSpan('child-operation-2', {
+            attributes: {
+              'operation.level': 'child',
+              'child.index': 2,
+            },
+          });
 
-        await // @ts-expect-error - React Native 19 setTimeout types
-      new Promise(resolve => setTimeout(resolve, 400));
-        childSpan2.setStatus({ code: SpanStatusCode.OK });
-        childSpan2.end();
-      });
+          await // @ts-expect-error - React Native 19 setTimeout types
+          new Promise(resolve => setTimeout(resolve, 400));
+          childSpan2.setStatus({ code: SpanStatusCode.OK });
+          childSpan2.end();
+        },
+      );
 
       parentSpan.setStatus({ code: SpanStatusCode.OK });
 
@@ -280,7 +323,10 @@ export default function TracingDemoScreen() {
         `Created nested spans (1 parent + 2 children)\n\nCheck Grafana to see the parent-child relationship\n\nTrace ID: ${traceId}`,
       );
     } catch (error) {
-      parentSpan.setStatus({ code: SpanStatusCode.ERROR, message: String(error) });
+      parentSpan.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: String(error),
+      });
       Alert.alert('Error', `Nested spans failed: ${error}`);
     } finally {
       parentSpan.end();
@@ -313,7 +359,7 @@ export default function TracingDemoScreen() {
 
       span.addEvent('operation.checkpoint', {
         'checkpoint.name': 'halfway',
-        'progress': '50%',
+        progress: '50%',
       });
 
       await // @ts-expect-error - React Native 19 setTimeout types
@@ -321,7 +367,7 @@ export default function TracingDemoScreen() {
 
       span.addEvent('operation.completed', {
         'end.timestamp': Date.now(),
-        'result': 'success',
+        result: 'success',
       });
 
       span.setStatus({ code: SpanStatusCode.OK });
@@ -366,19 +412,23 @@ export default function TracingDemoScreen() {
       {},
       {
         importance: UserActionImportance.Critical,
-      }
+      },
     );
 
     try {
       // The fetch span will automatically include the user action context
-      const response = await fetch('https://jsonplaceholder.typicode.com/posts/1');
-      const data = await response.json();
+      const response = await fetch(
+        'https://jsonplaceholder.typicode.com/posts/1',
+      );
+      await response.json();
 
       const traceId = captureTraceId('Trace with User Action');
 
       Alert.alert(
         'Success',
-        `Trace includes user action context\n\nUser Action: fetch-with-user-action\nImportance: Critical\n\n${traceId ? `Trace ID: ${traceId}` : ''}`,
+        `Trace includes user action context\n\nUser Action: fetch-with-user-action\nImportance: Critical\n\n${
+          traceId ? `Trace ID: ${traceId}` : ''
+        }`,
       );
     } catch (error) {
       Alert.alert('Error', `Failed: ${error}`);
@@ -439,7 +489,8 @@ export default function TracingDemoScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>OpenTelemetry Tracing Demo</Text>
         <Text style={styles.subtitle}>
-          Comprehensive examples of distributed tracing with automatic and manual instrumentation
+          Comprehensive examples of distributed tracing with automatic and
+          manual instrumentation
         </Text>
       </View>
 
@@ -454,7 +505,8 @@ export default function TracingDemoScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>📡 Automatic HTTP Tracing</Text>
         <Text style={styles.description}>
-          FetchInstrumentation automatically creates spans for all fetch() requests
+          FetchInstrumentation automatically creates spans for all fetch()
+          requests
         </Text>
 
         <TouchableOpacity
@@ -472,7 +524,9 @@ export default function TracingDemoScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>2. Parallel Requests</Text>
-          <Text style={styles.buttonSubtext}>3 concurrent requests, shows parallel execution</Text>
+          <Text style={styles.buttonSubtext}>
+            3 concurrent requests, shows parallel execution
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -481,7 +535,9 @@ export default function TracingDemoScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>3. Sequential Requests</Text>
-          <Text style={styles.buttonSubtext}>Waterfall pattern with dependencies</Text>
+          <Text style={styles.buttonSubtext}>
+            Waterfall pattern with dependencies
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -490,7 +546,9 @@ export default function TracingDemoScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>4. Slow Request (2s delay)</Text>
-          <Text style={styles.buttonSubtext}>Demonstrates duration tracking</Text>
+          <Text style={styles.buttonSubtext}>
+            Demonstrates duration tracking
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -499,7 +557,9 @@ export default function TracingDemoScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>5. Error Trace (404)</Text>
-          <Text style={styles.buttonSubtext}>Automatic error status tracking</Text>
+          <Text style={styles.buttonSubtext}>
+            Automatic error status tracking
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -525,7 +585,9 @@ export default function TracingDemoScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>7. Nested Spans</Text>
-          <Text style={styles.buttonSubtext}>Parent-child span relationships</Text>
+          <Text style={styles.buttonSubtext}>
+            Parent-child span relationships
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -534,7 +596,9 @@ export default function TracingDemoScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>8. Span with Events</Text>
-          <Text style={styles.buttonSubtext}>Timestamped checkpoints in a span</Text>
+          <Text style={styles.buttonSubtext}>
+            Timestamped checkpoints in a span
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -551,7 +615,9 @@ export default function TracingDemoScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>9. Trace with User Action</Text>
-          <Text style={styles.buttonSubtext}>Automatic user action context</Text>
+          <Text style={styles.buttonSubtext}>
+            Automatic user action context
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -560,7 +626,9 @@ export default function TracingDemoScreen() {
           disabled={loading}
         >
           <Text style={styles.buttonText}>10. Trace with Log</Text>
-          <Text style={styles.buttonSubtext}>Log correlated with trace context</Text>
+          <Text style={styles.buttonSubtext}>
+            Log correlated with trace context
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -572,7 +640,9 @@ export default function TracingDemoScreen() {
         </Text>
 
         {traceIds.length === 0 ? (
-          <Text style={styles.noTraces}>No traces captured yet. Run a test above.</Text>
+          <Text style={styles.noTraces}>
+            No traces captured yet. Run a test above.
+          </Text>
         ) : (
           <>
             {lastTestName && (
@@ -581,14 +651,19 @@ export default function TracingDemoScreen() {
                 <Text style={styles.lastTestName}>{lastTestName}</Text>
               </View>
             )}
-            {traceIds.slice().reverse().map((traceId, index) => (
-              <View key={index} style={styles.traceIdContainer}>
-                <Text style={styles.traceIdLabel}>Trace #{traceIds.length - index}:</Text>
-                <Text style={styles.traceId} selectable>
-                  {traceId}
-                </Text>
-              </View>
-            ))}
+            {traceIds
+              .slice()
+              .reverse()
+              .map((traceId, index) => (
+                <View key={index} style={styles.traceIdContainer}>
+                  <Text style={styles.traceIdLabel}>
+                    Trace #{traceIds.length - index}:
+                  </Text>
+                  <Text style={styles.traceId} selectable>
+                    {traceId}
+                  </Text>
+                </View>
+              ))}
             <TouchableOpacity
               style={[styles.button, styles.clearButton]}
               onPress={clearTraceIds}
@@ -601,7 +676,8 @@ export default function TracingDemoScreen() {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          💡 Tip: After running tests, go to Grafana Cloud → Explore → Tempo and search by trace ID
+          💡 Tip: After running tests, go to Grafana Cloud → Explore → Tempo and
+          search by trace ID
         </Text>
         <Text style={styles.footerText}>
           📚 Learn more about OpenTelemetry at opentelemetry.io

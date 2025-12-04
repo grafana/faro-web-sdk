@@ -1,13 +1,14 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import {faro} from '@grafana/faro-react-native';
+
+import { faro } from '@grafana/faro-react-native';
 
 export function PerformanceDemoScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -81,14 +82,16 @@ export function PerformanceDemoScreen() {
         <TouchableOpacity
           style={styles.button}
           onPress={runHeavyComputation}
-          disabled={isLoading}>
+          disabled={isLoading}
+        >
           <Text style={styles.buttonText}>Run Heavy Computation</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.button}
           onPress={simulateSlowRender}
-          disabled={isLoading}>
+          disabled={isLoading}
+        >
           <Text style={styles.buttonText}>Simulate Slow Render</Text>
         </TouchableOpacity>
       </View>

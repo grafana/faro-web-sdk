@@ -1,21 +1,23 @@
-import React from 'react';
 import {
   NavigationContainer,
   useNavigationContainerRef,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+
 // @ts-expect-error - TS module resolution issue, export exists in source
 import { useFaroNavigation } from '@grafana/faro-react-native';
-import { HomeScreen } from '../screens/HomeScreen';
-import { ErrorDemoScreen } from '../screens/ErrorDemoScreen';
-import { ErrorBoundaryDemoScreen } from '../screens/ErrorBoundaryDemoScreen';
-import { PerformanceDemoScreen } from '../screens/PerformanceDemoScreen';
-import { SlowLoadDemoScreen } from '../screens/SlowLoadDemoScreen';
+
 import { AboutScreen } from '../screens/AboutScreen';
 import ConsoleTestScreen from '../screens/ConsoleTestScreen';
 import DeviceInfoScreen from '../screens/DeviceInfoScreen';
-import TracingDemoScreen from '../screens/TracingDemoScreen';
+import { ErrorBoundaryDemoScreen } from '../screens/ErrorBoundaryDemoScreen';
+import { ErrorDemoScreen } from '../screens/ErrorDemoScreen';
+import { HomeScreen } from '../screens/HomeScreen';
+import { PerformanceDemoScreen } from '../screens/PerformanceDemoScreen';
 import { ShowcaseScreen } from '../screens/ShowcaseScreen';
+import { SlowLoadDemoScreen } from '../screens/SlowLoadDemoScreen';
+import TracingDemoScreen from '../screens/TracingDemoScreen';
 
 export type RootStackParamList = {
   Home: undefined;

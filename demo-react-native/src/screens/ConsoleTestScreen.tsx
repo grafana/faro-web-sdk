@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Button, Alert } from 'react-native';
+import {
+  Alert,
+  Button,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
 import { faro } from '@grafana/faro-react-native';
 
 /**
@@ -19,7 +27,10 @@ export default function ConsoleTestScreen() {
     console.info('ℹ️ Test info message');
     console.warn('⚠️ Test warning message');
     console.error('❌ Test error message');
-    Alert.alert('Success', 'Basic logging test completed. Check Grafana Cloud.');
+    Alert.alert(
+      'Success',
+      'Basic logging test completed. Check Grafana Cloud.',
+    );
   };
 
   // Test 2: Error Object Serialization
@@ -38,7 +49,10 @@ export default function ConsoleTestScreen() {
     const rangeError = new RangeError('Range error test');
     console.error(rangeError);
 
-    Alert.alert('Success', 'Error serialization test completed. Check Grafana Cloud for stack frames.');
+    Alert.alert(
+      'Success',
+      'Error serialization test completed. Check Grafana Cloud for stack frames.',
+    );
   };
 
   // Test 3: Stack Frame Parsing
@@ -55,7 +69,10 @@ export default function ConsoleTestScreen() {
       anotherHelper();
     } catch (error) {
       console.error('Caught error with call stack:', error);
-      Alert.alert('Success', 'Stack frame test completed. Check Grafana Cloud for call chain.');
+      Alert.alert(
+        'Success',
+        'Stack frame test completed. Check Grafana Cloud for call chain.',
+      );
     }
   };
 
@@ -68,16 +85,27 @@ export default function ConsoleTestScreen() {
     console.error('Authentication error:', error);
 
     // Multiple arguments
-    console.error('Multiple args:', new Error('Test'), { context: 'payment' }, 'Additional info');
+    console.error(
+      'Multiple args:',
+      new Error('Test'),
+      { context: 'payment' },
+      'Additional info',
+    );
 
     // Error-like object
-    console.error({ message: 'Custom error object', stack: 'fake stack trace' });
+    console.error({
+      message: 'Custom error object',
+      stack: 'fake stack trace',
+    });
 
     // Array and object logging
     console.error('Array:', [1, 2, 3]);
     console.error('Object:', { user: 'test', action: 'login' });
 
-    Alert.alert('Success', 'Complex errors test completed. Check Grafana Cloud.');
+    Alert.alert(
+      'Success',
+      'Complex errors test completed. Check Grafana Cloud.',
+    );
   };
 
   // Test 5: Nested Function Calls (Deep Stack)
@@ -98,7 +126,10 @@ export default function ConsoleTestScreen() {
       level1();
     } catch (error) {
       console.error('Deep stack trace error:', error);
-      Alert.alert('Success', 'Deep stack test completed. Check Grafana Cloud for full call chain.');
+      Alert.alert(
+        'Success',
+        'Deep stack test completed. Check Grafana Cloud for full call chain.',
+      );
     }
   };
 
@@ -112,7 +143,7 @@ export default function ConsoleTestScreen() {
 
     Alert.alert(
       'Success',
-      'Log levels test completed. Debug and log may be disabled by default. Check Grafana Cloud.'
+      'Log levels test completed. Debug and log may be disabled by default. Check Grafana Cloud.',
     );
   };
 
@@ -126,7 +157,10 @@ export default function ConsoleTestScreen() {
       throw new Error('Payment processing failed');
     } catch (error) {
       console.error(`[${action}] Error for user ${userId}:`, error);
-      Alert.alert('Success', 'Error with context test completed. Check Grafana Cloud.');
+      Alert.alert(
+        'Success',
+        'Error with context test completed. Check Grafana Cloud.',
+      );
     }
   };
 
@@ -135,9 +169,11 @@ export default function ConsoleTestScreen() {
     console.log('✅ This should be captured - BEFORE unpatch');
 
     // Get the console instrumentation and unpatch it
-    const consoleInstrumentation = faro.instrumentations?.instrumentations?.find(
-      (i: any) => i.name === '@grafana/faro-react-native:instrumentation-console'
-    );
+    const consoleInstrumentation =
+      faro.instrumentations?.instrumentations?.find(
+        (i: any) =>
+          i.name === '@grafana/faro-react-native:instrumentation-console',
+      );
 
     if (consoleInstrumentation && 'unpatch' in consoleInstrumentation) {
       (consoleInstrumentation as any).unpatch();
@@ -146,7 +182,7 @@ export default function ConsoleTestScreen() {
 
       Alert.alert(
         'Success',
-        'Unpatch test completed. Only the first message should appear in Grafana Cloud. Restart app to re-enable console instrumentation.'
+        'Unpatch test completed. Only the first message should appear in Grafana Cloud. Restart app to re-enable console instrumentation.',
       );
     } else {
       Alert.alert('Error', 'Could not find console instrumentation');
@@ -155,11 +191,14 @@ export default function ConsoleTestScreen() {
 
   // Test 9: Promise Rejection
   const testPromiseRejection = () => {
-    Promise.reject(new Error('Test promise rejection')).catch((error) => {
+    Promise.reject(new Error('Test promise rejection')).catch(error => {
       console.error('Promise rejection caught:', error);
     });
 
-    Alert.alert('Success', 'Promise rejection test completed. Check Grafana Cloud.');
+    Alert.alert(
+      'Success',
+      'Promise rejection test completed. Check Grafana Cloud.',
+    );
   };
 
   // Test 10: Async Error
@@ -172,7 +211,10 @@ export default function ConsoleTestScreen() {
       });
     } catch (error) {
       console.error('Async error caught:', error);
-      Alert.alert('Success', 'Async error test completed. Check Grafana Cloud.');
+      Alert.alert(
+        'Success',
+        'Async error test completed. Check Grafana Cloud.',
+      );
     }
   };
 
@@ -181,8 +223,8 @@ export default function ConsoleTestScreen() {
       <View style={styles.content}>
         <Text style={styles.title}>Console Instrumentation Tests</Text>
         <Text style={styles.description}>
-          Test enhanced console instrumentation features. After each test, check Grafana Cloud to
-          verify the data was captured correctly.
+          Test enhanced console instrumentation features. After each test, check
+          Grafana Cloud to verify the data was captured correctly.
         </Text>
 
         <View style={styles.section}>
@@ -193,7 +235,10 @@ export default function ConsoleTestScreen() {
           </View>
 
           <View style={styles.buttonContainer}>
-            <Button title="2. Error Serialization" onPress={testErrorSerialization} />
+            <Button
+              title="2. Error Serialization"
+              onPress={testErrorSerialization}
+            />
           </View>
 
           <View style={styles.buttonContainer}>
@@ -217,11 +262,17 @@ export default function ConsoleTestScreen() {
           </View>
 
           <View style={styles.buttonContainer}>
-            <Button title="7. Error with Context" onPress={testErrorWithContext} />
+            <Button
+              title="7. Error with Context"
+              onPress={testErrorWithContext}
+            />
           </View>
 
           <View style={styles.buttonContainer}>
-            <Button title="8. Promise Rejection" onPress={testPromiseRejection} />
+            <Button
+              title="8. Promise Rejection"
+              onPress={testPromiseRejection}
+            />
           </View>
 
           <View style={styles.buttonContainer}>
@@ -233,10 +284,15 @@ export default function ConsoleTestScreen() {
           <Text style={styles.sectionTitle}>Cleanup Tests</Text>
 
           <View style={styles.buttonContainer}>
-            <Button title="⚠️ 10. Unpatch Console" onPress={testUnpatch} color="red" />
+            <Button
+              title="⚠️ 10. Unpatch Console"
+              onPress={testUnpatch}
+              color="red"
+            />
           </View>
           <Text style={styles.warning}>
-            ⚠️ Warning: Unpatch will disable console tracking. Restart app to re-enable.
+            ⚠️ Warning: Unpatch will disable console tracking. Restart app to
+            re-enable.
           </Text>
         </View>
 

@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export function ErrorDemoScreen() {
@@ -30,27 +30,25 @@ export function ErrorDemoScreen() {
       </Text>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={throwSyncError}>
+        <TouchableOpacity style={styles.button} onPress={throwSyncError}>
           <Text style={styles.buttonText}>Throw Sync Error</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={throwAsyncError}>
+        <TouchableOpacity style={styles.button} onPress={throwAsyncError}>
           <Text style={styles.buttonText}>Throw Async Error</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.button}
-          onPress={triggerUnhandledRejection}>
+          onPress={triggerUnhandledRejection}
+        >
           <Text style={styles.buttonText}>Unhandled Rejection</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, styles.buttonLog]}
-          onPress={() => console.error('Test console error')}>
+          onPress={() => console.error('Test console error')}
+        >
           <Text style={styles.buttonText}>Console Error</Text>
         </TouchableOpacity>
       </View>

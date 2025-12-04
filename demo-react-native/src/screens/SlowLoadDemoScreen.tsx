@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   ActivityIndicator,
   ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
+
 import { faro } from '@grafana/faro-react-native';
 
 /**

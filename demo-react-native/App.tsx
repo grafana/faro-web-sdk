@@ -6,10 +6,12 @@
 import React, { useEffect } from 'react';
 import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AppNavigator } from './src/navigation/AppNavigator';
-import { initFaro } from './src/faro/initialize';
+
 // @ts-expect-error - TS module resolution issue, export exists in source
 import { markBundleLoaded } from '@grafana/faro-react-native';
+
+import { initFaro } from './src/faro/initialize';
+import { AppNavigator } from './src/navigation/AppNavigator';
 
 // Mark bundle loaded after all imports
 markBundleLoaded();
