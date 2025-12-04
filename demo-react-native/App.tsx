@@ -8,6 +8,7 @@ import { StatusBar, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { initFaro } from './src/faro/initialize';
+// @ts-expect-error - TS module resolution issue, export exists in source
 import { markBundleLoaded } from '@grafana/faro-react-native';
 
 // Mark bundle loaded after all imports

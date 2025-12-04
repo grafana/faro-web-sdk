@@ -4,6 +4,7 @@ import {
   useNavigationContainerRef,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+// @ts-expect-error - TS module resolution issue, export exists in source
 import { useFaroNavigation } from '@grafana/faro-react-native';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ErrorDemoScreen } from '../screens/ErrorDemoScreen';

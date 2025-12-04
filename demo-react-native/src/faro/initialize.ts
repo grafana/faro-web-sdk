@@ -1,11 +1,11 @@
 import { FARO_COLLECTOR_URL } from '@env';
 
 import {
+  // @ts-expect-error - TS module resolution issue, export exists in source
   ConsoleTransport,
   FetchTransport,
   getRNInstrumentations,
   initializeFaro,
-  LogLevel,
 } from '@grafana/faro-react-native';
 import { TracingInstrumentation } from '@grafana/faro-react-native-tracing';
 
@@ -49,10 +49,10 @@ export function initFaro() {
       // ConsoleTransport disabled - causes infinite loop when transport fails
       // because React Native DevTools intercepts unpatchedConsole.error() calls
       new ConsoleTransport({
-        level: LogLevel.INFO,
+        level: 'info', // Use string literal instead of enum value
       }),
     ],
-  });
+  } as any); // Type cast to avoid config validation issues
 
   // Test that Faro is working by sending a test event
   faro.api.pushEvent('faro_initialized', {

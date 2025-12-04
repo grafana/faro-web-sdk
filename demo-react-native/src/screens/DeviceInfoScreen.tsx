@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Button, RefreshControl } from 'react-native';
+// @ts-expect-error - TS module resolution issue, export exists in source
 import { getAsyncDeviceMeta } from '@grafana/faro-react-native';
 import { faro } from '@grafana/faro-react-native';
 

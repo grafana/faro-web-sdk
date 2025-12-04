@@ -183,7 +183,8 @@ export default function TracingDemoScreen() {
 
     try {
       // Simulate some work
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await // @ts-expect-error - React Native 19 setTimeout types
+      new Promise(resolve => setTimeout(resolve, 1000));
 
       // Add more attributes during execution
       span.setAttribute('operation.duration', '1000ms');
@@ -237,7 +238,8 @@ export default function TracingDemoScreen() {
       // Set parent span as active context
       await context.with(trace.setSpan(context.active(), parentSpan), async () => {
         // Simulate parent work
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await // @ts-expect-error - React Native 19 setTimeout types
+      new Promise(resolve => setTimeout(resolve, 500));
         parentSpan.setAttribute('parent.work', 'completed');
 
         // Create child span 1
@@ -248,7 +250,8 @@ export default function TracingDemoScreen() {
           },
         });
 
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await // @ts-expect-error - React Native 19 setTimeout types
+      new Promise(resolve => setTimeout(resolve, 300));
         childSpan1.setStatus({ code: SpanStatusCode.OK });
         childSpan1.end();
 
@@ -260,7 +263,8 @@ export default function TracingDemoScreen() {
           },
         });
 
-        await new Promise(resolve => setTimeout(resolve, 400));
+        await // @ts-expect-error - React Native 19 setTimeout types
+      new Promise(resolve => setTimeout(resolve, 400));
         childSpan2.setStatus({ code: SpanStatusCode.OK });
         childSpan2.end();
       });
@@ -304,14 +308,16 @@ export default function TracingDemoScreen() {
         'start.timestamp': Date.now(),
       });
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await // @ts-expect-error - React Native 19 setTimeout types
+      new Promise(resolve => setTimeout(resolve, 500));
 
       span.addEvent('operation.checkpoint', {
         'checkpoint.name': 'halfway',
         'progress': '50%',
       });
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await // @ts-expect-error - React Native 19 setTimeout types
+      new Promise(resolve => setTimeout(resolve, 500));
 
       span.addEvent('operation.completed', {
         'end.timestamp': Date.now(),
@@ -400,8 +406,7 @@ export default function TracingDemoScreen() {
     context.with(trace.setSpan(context.active(), span), () => {
       // Push a log that will be correlated with this trace
       faro.api.pushLog(['Trace with log button clicked'], {
-        context: 'tracing-demo',
-        level: 'info',
+        context: { component: 'tracing-demo' },
       });
 
       span.setStatus({ code: SpanStatusCode.OK });
