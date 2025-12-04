@@ -75,7 +75,7 @@ export function ErrorBoundaryDemoScreen({ navigation }: Props) {
   const handleReset = () => {
     setShouldThrowError(false);
     // Force error boundary to reset by changing key
-    setBoundaryKey((prev) => prev + 1);
+    setBoundaryKey(prev => prev + 1);
   };
 
   return (

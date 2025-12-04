@@ -37,7 +37,7 @@ export default function TracingDemoScreen() {
       const span = trace.getActiveSpan();
       if (span) {
         const traceId = span.spanContext().traceId;
-        setTraceIds((prev) => [...prev, traceId]);
+        setTraceIds(prev => [...prev, traceId]);
         setLastTestName(testName);
         return traceId;
       }
@@ -82,13 +82,13 @@ export default function TracingDemoScreen() {
       // All three requests will be traced as separate spans
       // They share the same trace context, showing parallel execution
       const [post1, post2, post3] = await Promise.all([
-        fetch('https://jsonplaceholder.typicode.com/posts/1').then((r) =>
+        fetch('https://jsonplaceholder.typicode.com/posts/1').then(r =>
           r.json(),
         ),
-        fetch('https://jsonplaceholder.typicode.com/posts/2').then((r) =>
+        fetch('https://jsonplaceholder.typicode.com/posts/2').then(r =>
           r.json(),
         ),
-        fetch('https://jsonplaceholder.typicode.com/posts/3').then((r) =>
+        fetch('https://jsonplaceholder.typicode.com/posts/3').then(r =>
           r.json(),
         ),
       ]);
@@ -113,13 +113,13 @@ export default function TracingDemoScreen() {
     setLoading(true);
     try {
       // Sequential requests show dependency chain in trace waterfall
-      await fetch('https://jsonplaceholder.typicode.com/posts/1').then((r) =>
+      await fetch('https://jsonplaceholder.typicode.com/posts/1').then(r =>
         r.json(),
       );
-      await fetch('https://jsonplaceholder.typicode.com/posts/2').then((r) =>
+      await fetch('https://jsonplaceholder.typicode.com/posts/2').then(r =>
         r.json(),
       );
-      await fetch('https://jsonplaceholder.typicode.com/posts/3').then((r) =>
+      await fetch('https://jsonplaceholder.typicode.com/posts/3').then(r =>
         r.json(),
       );
 
@@ -224,7 +224,7 @@ export default function TracingDemoScreen() {
     try {
       // Simulate some work
       await // @ts-expect-error - React Native 19 setTimeout types
-      new Promise((resolve) => setTimeout(resolve, 1000));
+      new Promise(resolve => setTimeout(resolve, 1000));
 
       // Add more attributes during execution
       span.setAttribute('operation.duration', '1000ms');
@@ -234,7 +234,7 @@ export default function TracingDemoScreen() {
       span.setStatus({ code: SpanStatusCode.OK });
 
       const traceId = span.spanContext().traceId;
-      setTraceIds((prev) => [...prev, traceId]);
+      setTraceIds(prev => [...prev, traceId]);
       setLastTestName('Manual Span');
 
       Alert.alert(
@@ -281,7 +281,7 @@ export default function TracingDemoScreen() {
         async () => {
           // Simulate parent work
           await // @ts-expect-error - React Native 19 setTimeout types
-          new Promise((resolve) => setTimeout(resolve, 500));
+          new Promise(resolve => setTimeout(resolve, 500));
           parentSpan.setAttribute('parent.work', 'completed');
 
           // Create child span 1
@@ -293,7 +293,7 @@ export default function TracingDemoScreen() {
           });
 
           await // @ts-expect-error - React Native 19 setTimeout types
-          new Promise((resolve) => setTimeout(resolve, 300));
+          new Promise(resolve => setTimeout(resolve, 300));
           childSpan1.setStatus({ code: SpanStatusCode.OK });
           childSpan1.end();
 
@@ -306,7 +306,7 @@ export default function TracingDemoScreen() {
           });
 
           await // @ts-expect-error - React Native 19 setTimeout types
-          new Promise((resolve) => setTimeout(resolve, 400));
+          new Promise(resolve => setTimeout(resolve, 400));
           childSpan2.setStatus({ code: SpanStatusCode.OK });
           childSpan2.end();
         },
@@ -315,7 +315,7 @@ export default function TracingDemoScreen() {
       parentSpan.setStatus({ code: SpanStatusCode.OK });
 
       const traceId = parentSpan.spanContext().traceId;
-      setTraceIds((prev) => [...prev, traceId]);
+      setTraceIds(prev => [...prev, traceId]);
       setLastTestName('Nested Spans');
 
       Alert.alert(
@@ -355,7 +355,7 @@ export default function TracingDemoScreen() {
       });
 
       await // @ts-expect-error - React Native 19 setTimeout types
-      new Promise((resolve) => setTimeout(resolve, 500));
+      new Promise(resolve => setTimeout(resolve, 500));
 
       span.addEvent('operation.checkpoint', {
         'checkpoint.name': 'halfway',
@@ -363,7 +363,7 @@ export default function TracingDemoScreen() {
       });
 
       await // @ts-expect-error - React Native 19 setTimeout types
-      new Promise((resolve) => setTimeout(resolve, 500));
+      new Promise(resolve => setTimeout(resolve, 500));
 
       span.addEvent('operation.completed', {
         'end.timestamp': Date.now(),
@@ -373,7 +373,7 @@ export default function TracingDemoScreen() {
       span.setStatus({ code: SpanStatusCode.OK });
 
       const traceId = span.spanContext().traceId;
-      setTraceIds((prev) => [...prev, traceId]);
+      setTraceIds(prev => [...prev, traceId]);
       setLastTestName('Span with Events');
 
       Alert.alert(
@@ -462,7 +462,7 @@ export default function TracingDemoScreen() {
       span.setStatus({ code: SpanStatusCode.OK });
 
       const traceId = span.spanContext().traceId;
-      setTraceIds((prev) => [...prev, traceId]);
+      setTraceIds(prev => [...prev, traceId]);
       setLastTestName('Trace with Log');
 
       Alert.alert(

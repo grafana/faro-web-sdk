@@ -191,7 +191,7 @@ export default function ConsoleTestScreen() {
 
   // Test 9: Promise Rejection
   const testPromiseRejection = () => {
-    Promise.reject(new Error('Test promise rejection')).catch((error) => {
+    Promise.reject(new Error('Test promise rejection')).catch(error => {
       console.error('Promise rejection caught:', error);
     });
 
