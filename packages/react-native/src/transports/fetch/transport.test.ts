@@ -407,4 +407,255 @@ describe('FetchTransport', () => {
       method: 'POST',
     });
   });
+
+  describe('Circuit Breaker - Offline Behavior', () => {
+    it('activates circuit breaker after 3 consecutive failures', async () => {
+      let now = Date.now();
+
+      const transport = new FetchTransport({
+        url: 'http://example.com/collect',
+        getNow: () => now,
+      });
+
+      transport.metas.value = { session: { id: mockSessionId } };
+      transport.internalLogger = mockInternalLogger;
+
+      // Mock 3 consecutive failures (simulating offline device)
+      fetch.mockImplementation(() => Promise.reject(new Error('Network error')));
+
+      // First 3 failures should increment the counter
+      await transport.send([item]);
+      await transport.send([item]);
+      await transport.send([item]);
+
+      expect(fetch).toHaveBeenCalledTimes(3);
+
+      // After 3 failures, circuit breaker should be active
+      // Next attempt should be silently dropped (no fetch call)
+      await transport.send([item]);
+      expect(fetch).toHaveBeenCalledTimes(3); // Still 3, no new call
+
+      // Fast forward past backoff period (30 seconds)
+      now += 30001;
+
+      // Reset fetch to succeed
+      fetch.mockImplementation(() =>
+        Promise.resolve({
+          status: 202,
+          text: () => Promise.resolve(),
+          headers: {
+            get: () => null,
+          },
+        })
+      );
+
+      // Now it should try again
+      await transport.send([item]);
+      expect(fetch).toHaveBeenCalledTimes(4);
+    });
+
+    it('resets failure counter on successful request', async () => {
+      let now = Date.now();
+
+      const transport = new FetchTransport({
+        url: 'http://example.com/collect',
+        getNow: () => now,
+      });
+
+      transport.metas.value = { session: { id: mockSessionId } };
+      transport.internalLogger = mockInternalLogger;
+
+      // Mock 2 failures, then success
+      fetch
+        .mockImplementationOnce(() => Promise.reject(new Error('Network error')))
+        .mockImplementationOnce(() => Promise.reject(new Error('Network error')))
+        .mockImplementationOnce(() =>
+          Promise.resolve({
+            status: 202,
+            text: () => Promise.resolve(),
+            headers: {
+              get: () => null,
+            },
+          })
+        );
+
+      await transport.send([item]); // Failure 1
+      await transport.send([item]); // Failure 2
+      await transport.send([item]); // Success - should reset counter
+
+      expect(fetch).toHaveBeenCalledTimes(3);
+
+      // Mock 2 more failures
+      fetch
+        .mockImplementationOnce(() => Promise.reject(new Error('Network error')))
+        .mockImplementationOnce(() => Promise.reject(new Error('Network error')));
+
+      await transport.send([item]); // Failure 1 (counter reset, so this is first)
+      await transport.send([item]); // Failure 2
+
+      // Circuit breaker should NOT be active yet (needs 3 failures)
+      await transport.send([item]); // This should still attempt
+      expect(fetch).toHaveBeenCalledTimes(6); // All 6 calls were made
+    });
+
+    it('silently drops events during backoff period', async () => {
+      let now = Date.now();
+
+      const transport = new FetchTransport({
+        url: 'http://example.com/collect',
+        getNow: () => now,
+      });
+
+      transport.metas.value = { session: { id: mockSessionId } };
+      transport.internalLogger = mockInternalLogger;
+
+      // Mock 3 consecutive failures to trigger circuit breaker
+      fetch.mockImplementation(() => Promise.reject(new Error('Network error')));
+
+      await transport.send([item]);
+      await transport.send([item]);
+      await transport.send([item]);
+
+      expect(fetch).toHaveBeenCalledTimes(3);
+
+      // During backoff period, events should be silently dropped
+      await transport.send([item]);
+      await transport.send([item]);
+      await transport.send([item]);
+      expect(fetch).toHaveBeenCalledTimes(3); // No new calls
+
+      // Advance time by 15 seconds (still in backoff)
+      now += 15000;
+
+      await transport.send([item]);
+      expect(fetch).toHaveBeenCalledTimes(3); // Still no new calls
+
+      // Advance past backoff period
+      now += 15001; // Total: 30001ms
+
+      // Should try again now
+      await transport.send([item]);
+      expect(fetch).toHaveBeenCalledTimes(4);
+    });
+
+    it('does not log errors to console (prevents infinite loops)', async () => {
+      const consoleSpy = jest.spyOn(console, 'error');
+      const consoleWarnSpy = jest.spyOn(console, 'warn');
+      const consoleLogSpy = jest.spyOn(console, 'log');
+
+      const transport = new FetchTransport({
+        url: 'http://example.com/collect',
+      });
+
+      transport.metas.value = { session: { id: mockSessionId } };
+      transport.internalLogger = mockInternalLogger;
+
+      // Mock failures
+      fetch.mockImplementation(() => Promise.reject(new Error('Network error')));
+
+      // Send multiple failing requests
+      await transport.send([item]);
+      await transport.send([item]);
+      await transport.send([item]);
+
+      // Verify NO console calls were made (to prevent infinite loops in RN)
+      expect(consoleSpy).not.toHaveBeenCalled();
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
+      expect(consoleLogSpy).not.toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
+      consoleLogSpy.mockRestore();
+    });
+
+    it('handles buffer full errors silently', async () => {
+      const consoleSpy = jest.spyOn(console, 'error');
+
+      const transport = new FetchTransport({
+        url: 'http://example.com/collect',
+        bufferSize: 1, // Very small buffer
+        concurrency: 1,
+      });
+
+      transport.metas.value = { session: { id: mockSessionId } };
+      transport.internalLogger = mockInternalLogger;
+
+      // Make fetch slow to fill up buffer
+      fetch.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  status: 202,
+                  text: () => Promise.resolve(),
+                  headers: {
+                    get: () => null,
+                  },
+                }),
+              100
+            )
+          )
+      );
+
+      // Try to send multiple items quickly to overflow buffer
+      const promises = [];
+      for (let i = 0; i < 10; i++) {
+        promises.push(transport.send([item]));
+      }
+
+      await Promise.all(promises);
+
+      // Should not log buffer full errors to console
+      expect(consoleSpy).not.toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+    });
+
+    it('continues to respect rate limiting during circuit breaker recovery', async () => {
+      let now = Date.now();
+
+      const transport = new FetchTransport({
+        url: 'http://example.com/collect',
+        getNow: () => now,
+      });
+
+      transport.metas.value = { session: { id: mockSessionId } };
+      transport.internalLogger = mockInternalLogger;
+
+      // Trigger rate limit (429)
+      fetch.mockImplementationOnce(() =>
+        Promise.resolve({
+          status: 429,
+          headers: {
+            get: () => '5', // 5 seconds
+          },
+          text: () => Promise.resolve(),
+        })
+      );
+
+      await transport.send([item]);
+      expect(fetch).toHaveBeenCalledTimes(1);
+
+      // Should be in rate limit backoff
+      await transport.send([item]);
+      expect(fetch).toHaveBeenCalledTimes(1);
+
+      // Advance past rate limit backoff
+      now += 5001;
+
+      // Now trigger circuit breaker with 3 failures
+      fetch.mockImplementation(() => Promise.reject(new Error('Network error')));
+
+      await transport.send([item]);
+      await transport.send([item]);
+      await transport.send([item]);
+
+      expect(fetch).toHaveBeenCalledTimes(4); // 1 + 3 failures
+
+      // Should be in circuit breaker backoff now
+      await transport.send([item]);
+      expect(fetch).toHaveBeenCalledTimes(4); // No new call
+    });
+  });
 });

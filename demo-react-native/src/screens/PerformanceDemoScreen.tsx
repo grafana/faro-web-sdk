@@ -31,7 +31,9 @@ export function PerformanceDemoScreen() {
       // Report measurement to Faro
       faro.api.pushMeasurement({
         type: 'heavy_computation',
-        value: duration,
+        values: {
+          duration,
+        },
         context: {
           iterations: '10000000',
           result: sum.toFixed(2),
@@ -55,7 +57,9 @@ export function PerformanceDemoScreen() {
       // Report measurement to Faro
       faro.api.pushMeasurement({
         type: 'slow_render',
-        value: duration,
+        values: {
+          duration,
+        },
         context: {
           simulatedDelay: '2000',
         },
