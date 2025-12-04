@@ -593,13 +593,15 @@ For detailed testing instructions, see `demo-react-native/TESTING_APPSTATE.md`.
 
 ### Performance Instrumentation Configuration
 
-The Performance Instrumentation automatically tracks app launch and screen navigation performance metrics for React Native applications.
+The Performance Instrumentation tracks screen navigation performance for React Native applications.
+
+**Important Limitation:** App launch performance (cold/warm start times) and JavaScript bundle load time **cannot be accurately measured** by a JavaScript-only SDK like Faro, because:
+- Faro initializes after JavaScript loads
+- True app launch metrics require native code that runs before the JS bundle loads
+- See [Honeycomb's React Native OpenTelemetry SDK](https://github.com/honeycombio/honeycomb-opentelemetry-react-native) for an example of native SDK integration
 
 ```tsx
-import { initializeFaro, PerformanceInstrumentation, markAppStart, markBundleLoaded } from '@grafana/faro-react-native';
-
-// IMPORTANT: Call markAppStart() as early as possible in your app's entry point (index.js)
-markAppStart();
+import { initializeFaro, PerformanceInstrumentation } from '@grafana/faro-react-native';
 
 initializeFaro({
   url: 'https://your-faro-collector-url',
@@ -609,15 +611,9 @@ initializeFaro({
   },
   instrumentations: [
     new PerformanceInstrumentation({
-      // Track app launch performance (cold/warm starts) (default: true)
-      trackAppLaunch: true,
-
       // Track screen navigation performance (default: true)
       // Requires ViewInstrumentation for automatic tracking
       trackScreenPerformance: true,
-
-      // Track JavaScript bundle load time (default: true)
-      trackBundlePerformance: true,
 
       // Track React component performance (default: false)
       // Warning: May add performance overhead
@@ -628,64 +624,20 @@ initializeFaro({
     }),
   ],
 });
-
-// Call markBundleLoaded() after your imports are complete
-markBundleLoaded();
 ```
 
 **Performance Metrics Tracked:**
 
-1. **App Launch Performance** (`faro.performance.app_launch` event):
-   - `jsBundleLoadTime` - Time to load JavaScript bundle (ms)
-   - `timeToFirstScreen` - Time until first screen renders (ms)
-   - `totalLaunchTime` - Total app launch time (ms)
-   - `launchType` - "cold" (app not in memory) or "warm" (app in background)
-   - `platform` - iOS or Android
-   - `platformVersion` - OS version
+**Screen Navigation Performance** (`faro.performance.screen` event):
+- `screenName` - Name of the screen
+- `mountTime` - Time to mount screen component (ms)
+- `transitionTime` - Time from previous screen unmount to new screen mount (ms)
+- `navigationType` - Type of navigation (push, pop, replace, reset)
+- `previousScreen` - Previous screen name (for journey tracking)
+- `faroScreenId` - Unique ID for this screen navigation
+- `faroPreviousScreenId` - Links to previous screen for journey analysis
 
-2. **Screen Navigation Performance** (`faro.performance.screen` event):
-   - `screenName` - Name of the screen
-   - `mountTime` - Time to mount screen component (ms)
-   - `transitionTime` - Time from previous screen unmount to new screen mount (ms)
-   - `navigationType` - Type of navigation (push, pop, replace, reset)
-   - `previousScreen` - Previous screen name (for journey tracking)
-   - `faroScreenId` - Unique ID for this screen navigation
-   - `faroPreviousScreenId` - Links to previous screen for journey analysis
-
-**Setup Instructions:**
-
-1. **Mark App Start** - Add to your app's entry point (`index.js` or `index.tsx`):
-
-```tsx
-// index.js
-import { markAppStart } from '@grafana/faro-react-native';
-
-// Call immediately at the top of the file
-markAppStart();
-
-import { AppRegistry } from 'react-native';
-import App from './App';
-import { name as appName } from './app.json';
-
-AppRegistry.registerComponent(appName, () => App);
-```
-
-2. **Mark Bundle Loaded** - Add after imports in your root component:
-
-```tsx
-// App.tsx
-import React from 'react';
-import { markBundleLoaded } from '@grafana/faro-react-native';
-
-// Call after all imports
-markBundleLoaded();
-
-export function App() {
-  return <YourAppContent />;
-}
-```
-
-3. **Enable via getRNInstrumentations** (simpler):
+**Enable via getRNInstrumentations:**
 
 ```tsx
 initializeFaro({
@@ -699,19 +651,6 @@ initializeFaro({
 ```
 
 **Example Performance Data:**
-
-```json
-{
-  "event": "faro.performance.app_launch",
-  "faroLaunchId": "abc123",
-  "platform": "ios",
-  "platformVersion": "17.0",
-  "launchType": "cold",
-  "jsBundleLoadTime": "245",
-  "timeToFirstScreen": "892",
-  "totalLaunchTime": "892"
-}
-```
 
 ```json
 {
@@ -729,23 +668,14 @@ initializeFaro({
 
 **Use Cases:**
 
-- Monitor app startup performance across different devices
 - Identify slow screen transitions
-- Compare cold start vs warm start performance
 - Track performance regressions after releases
 - Correlate performance with user sessions
-- Measure impact of bundle size on startup time
+- Monitor screen load times across devices
 
 **Example Grafana Queries (Loki):**
 
 ```logql
-# Average app launch time by platform
-{app_name="my-app", kind="event"}
-| json
-| event_name="faro.performance.app_launch"
-| unwrap totalLaunchTime
-| avg by (platform)
-
 # Slowest screen navigations
 {app_name="my-app", kind="event"}
 | json
@@ -753,22 +683,19 @@ initializeFaro({
 | unwrap mountTime
 | topk(10)
 
-# Cold vs warm start comparison
+# Average mount time by screen
 {app_name="my-app", kind="event"}
 | json
-| event_name="faro.performance.app_launch"
-| unwrap totalLaunchTime
-| avg by (launchType)
+| event_name="faro.performance.screen"
+| unwrap mountTime
+| avg by (screenName)
 ```
 
 **Performance Best Practices:**
 
-- Call `markAppStart()` as early as possible in `index.js`
-- Call `markBundleLoaded()` after all module imports
 - Use screen navigation tracking to identify bottlenecks
 - Set `trackReactPerformance: false` in production (adds overhead)
-- Monitor cold start times as primary KPI
-- Track bundle load time to optimize bundle size
+- For true app launch metrics, consider a native SDK solution
 
 ## Navigation Integration
 

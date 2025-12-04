@@ -217,19 +217,20 @@ This document provides a comprehensive comparison between the Faro React Native 
 - Uses PerformanceObserver for automatic collection
 - Captures page load, navigation, and resource performance
 
-**React Native SDK** ✅ **FULLY IMPLEMENTED** (as of 2025-12-02)
+**React Native SDK** ⚠️ **PARTIALLY IMPLEMENTED** (as of 2025-12-04)
 
-- ✅ App launch performance tracking (cold/warm starts)
+- ❌ App launch performance tracking (cold/warm starts) - **Requires native SDK**
+- ❌ JavaScript bundle load time measurement - **Requires native SDK**
 - ✅ Screen navigation performance monitoring
-- ✅ JavaScript bundle load time measurement
 - ✅ Transition time between screens
 - ✅ Mount time for screen components
-- ✅ Helper functions: `markAppStart()`, `markBundleLoaded()`, `trackScreenPerformance()`
+- ✅ Helper function: `trackScreenPerformance()`
 - ✅ Manual performance marker API
 - ✅ Performance timing store for cross-module timing
-- ✅ AppState integration for warm start detection
 - ✅ Meta listener integration for automatic screen tracking
 - ✅ Unpatch support for cleanup
+
+**Important Limitation:** True app launch metrics cannot be measured by a JavaScript-only SDK because Faro initializes after the JavaScript bundle loads. Accurate app startup metrics require a native SDK that starts before JavaScript loads. See [Honeycomb's React Native OpenTelemetry SDK](https://github.com/honeycombio/honeycomb-opentelemetry-react-native) for reference.
 
 **Implementation Files:**
 
@@ -239,17 +240,9 @@ This document provides a comprehensive comparison between the Faro React Native 
 
 **Events Emitted:**
 
-- `faro.performance.app_launch` - App startup metrics
-  - `jsBundleLoadTime`: Time to load JavaScript bundle
-  - `timeToFirstScreen`: Time until first screen rendered
-  - `totalLaunchTime`: Total app launch time
-  - `launchType`: "cold" or "warm"
-  - `platform`: iOS/Android
-  - `platformVersion`: OS version
-
 - `faro.performance.screen` - Screen navigation metrics
   - `faroScreenId`: Unique ID for this screen instance
-  - `faroLaunchId`: Links back to app launch
+  - `faroLaunchId`: Links back to app launch session
   - `faroPreviousScreenId`: Links to previous screen
   - `screenName`: Current screen name
   - `previousScreen`: Previous screen name
@@ -260,12 +253,6 @@ This document provides a comprehensive comparison between the Faro React Native 
 **Helper Functions:**
 
 ```typescript
-// Mark app start time (call in index.js)
-markAppStart();
-
-// Mark bundle loaded (call in App.tsx after imports)
-markBundleLoaded();
-
 // Manual screen tracking (if not using ViewInstrumentation)
 trackScreenPerformance('MyScreen', 'push');
 ```
@@ -273,7 +260,6 @@ trackScreenPerformance('MyScreen', 'push');
 **Features:**
 
 - **Automatic Tracking**: Integrates with ViewInstrumentation for automatic screen performance
-- **Launch Type Detection**: Distinguishes between cold and warm starts via AppState
 - **Journey Tracking**: Links screens together with unique IDs
 - **Performance Store**: Global timing storage for cross-module coordination
 - **Manual API**: Helpers for explicit timing control
@@ -289,7 +275,6 @@ trackScreenPerformance('MyScreen', 'push');
 - ✅ Research React Native performance APIs
 - ✅ Design performance instrumentation architecture
 - ✅ Create performance types and interfaces
-- ✅ Implement app startup performance tracking
 - ✅ Implement screen/navigation performance
 - ✅ Add performance utilities and timing store
 - ✅ Create PerformanceInstrumentation class
@@ -298,9 +283,17 @@ trackScreenPerformance('MyScreen', 'push');
 - ✅ Update README documentation
 - ✅ Test in demo app with Slow Load Demo screen
 
-**Priority:** ✅ COMPLETE
+**Priority:** ⚠️ PARTIALLY COMPLETE (Screen navigation only)
 
-**Note:** This is React Native-specific and differs from web's PerformanceInstrumentation which uses the Performance API. The RN version focuses on app launch and screen navigation metrics relevant to mobile apps.
+**Future Enhancement:**
+
+To properly track app launch metrics, a future version would require:
+- Native iOS SDK (Swift/Objective-C)
+- Native Android SDK (Kotlin/Java)
+- Native module initialization before JavaScript loads
+- Integration with React Native's native modules API
+
+**Note:** This is React Native-specific and differs from web's PerformanceInstrumentation which uses the Performance API. The RN version focuses on screen navigation metrics that can be measured from JavaScript.
 
 ---
 

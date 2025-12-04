@@ -128,26 +128,18 @@ export interface FaroReactPerformanceItem extends ReactPerformanceTiming {
 
 /**
  * Configuration options for PerformanceInstrumentation
+ *
+ * **Note:** App launch and bundle load tracking require a native SDK
+ * that initializes before JavaScript loads. This is not currently
+ * supported by the JS-only Faro SDK.
  */
 export interface PerformanceInstrumentationOptions {
-  /**
-   * Track app launch performance
-   * @default true
-   */
-  trackAppLaunch?: boolean;
-
   /**
    * Track screen navigation performance
    * Requires ViewInstrumentation or manual screen tracking
    * @default true
    */
   trackScreenPerformance?: boolean;
-
-  /**
-   * Track JavaScript bundle load performance
-   * @default true
-   */
-  trackBundlePerformance?: boolean;
 
   /**
    * Track React component performance using Profiler API
