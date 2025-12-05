@@ -78,9 +78,9 @@ You can find a [release schedule on nodejs.org](https://nodejs.org/en/about/prev
 
 ---
 
-### 📢 Faro v2 Pre-release is Live! 🎉
+### 📢 Faro v2 is Live! 🎉
 
-We’re excited to announce that Faro v2 is now available in pre-release.
+We’re excited to announce that Faro v2 is now available.
 This version modernizes Faro, simplifies setup, and removes legacy code, to give users a cleaner and better performing experience.
 
 #### ✨ What’s New
@@ -92,11 +92,6 @@ This version modernizes Faro, simplifies setup, and removes legacy code, to give
 - Simplified Setup – Simplified the console instrumentation configuration.
 
 - Leaner Core – Deprecated packages and legacy internals were removed for improved stability.
-
-#### ⚠️ Pre-release Note
-
-- Please install using this version range **@^2.0.0-beta**
-- 👉 **@latest** will continue to point to **v1.19.0** until v2 reaches GA.
 
 ##### Follow the upgrade guides for more information
 
