@@ -518,6 +518,56 @@ The SDK automatically emits session lifecycle events:
 - `faro.session.resume` - Existing session resumed (persistent only)
 - `faro.session.extend` - Session extended from the same previous session
 
+### Default Session Attributes
+
+Every telemetry event automatically includes default session attributes with device and SDK information. These attributes match the [Grafana Faro Flutter SDK](https://github.com/grafana/faro-flutter-sdk) format for cross-platform compatibility.
+
+**Automatically Collected Attributes:**
+
+| Attribute | Description | iOS Example | Android Example |
+|-----------|-------------|-------------|-----------------|
+| `faro_sdk_version` | SDK version | `2.0.2` | `2.0.2` |
+| `react_native_version` | React Native version | `0.75.1` | `0.75.1` |
+| `device_os` | Operating system | `iOS` | `Android` |
+| `device_os_version` | OS version | `17.0` | `15` |
+| `device_os_detail` | Detailed OS info | `iOS 17.0` | `Android 15 (SDK 35)` |
+| `device_manufacturer` | Manufacturer | `apple` | `samsung` |
+| `device_model` | Raw model identifier | `iPhone16,1` | `SM-A155F` |
+| `device_model_name` | Human-readable model | `iPhone 15 Pro` | `SM-A155F`* |
+| `device_brand` | Device brand | `iPhone` | `samsung` |
+| `device_is_physical` | Physical or emulator | `true` | `true` |
+| `device_id` | Unique device ID | `uuid` | `uuid` |
+
+*Android does not provide a mapping from model codes to marketing names, so `device_model_name` equals `device_model`.
+
+**How It Works:**
+
+- Attributes are collected automatically during session initialization
+- No manual configuration needed
+- Uses existing `react-native-device-info` dependency
+- Attributes are included with every telemetry event (logs, errors, measurements, etc.)
+- Custom attributes can be added via `sessionTracking.session.attributes` (default attributes take precedence)
+
+**Example Grafana Query:**
+
+```logql
+# Filter events by device OS
+{app_name="my-app"} | json | device_os="iOS"
+
+# Filter by specific device model
+{app_name="my-app"} | json | device_model="iPhone16,1"
+
+# Group by manufacturer
+{app_name="my-app"} | json | count by device_manufacturer
+
+# Filter emulator vs physical devices
+{app_name="my-app"} | json | device_is_physical="false"
+```
+
+**Feature Parity with Flutter SDK:**
+
+This implementation provides complete feature parity with the Grafana Faro Flutter SDK, ensuring consistent attribute naming and data format across platforms. This enables unified dashboards and queries for multi-platform applications.
+
 ### AppState Tracking
 
 The SDK automatically tracks React Native app state changes (foreground/background/inactive). This is enabled by default and requires no additional configuration.

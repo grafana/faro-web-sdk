@@ -11,6 +11,7 @@ import type { Config, Meta, MetaSession } from '@grafana/faro-core';
 
 import type { TransportItem } from '../../transports/fetch/types';
 
+import { getSessionAttributes } from './sessionAttributes';
 import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
 import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
 import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
@@ -68,6 +69,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
       }
     }
 
+    // Get default session attributes (device info, SDK version, etc.)
+    // These match the Flutter SDK's default session attributes
+    const defaultAttributes = await getSessionAttributes();
+
     let lifecycleType: LifecycleType;
     let initialSession: FaroUserSession;
 
@@ -90,8 +95,12 @@ export class SessionInstrumentation extends BaseInstrumentation {
         ...sessionsConfig.session,
         id: sessionId,
         attributes: {
+          // Start with custom attributes from config
           ...sessionsConfig.session?.attributes,
+          // Merge with stored attributes
           ...storedUserSessionMeta?.attributes,
+          // Default attributes take precedence (matching Flutter SDK behavior)
+          ...defaultAttributes,
           // For valid resumed sessions we do not want to recalculate the sampling decision on each init phase.
           isSampled: initialSession.isSampled.toString(),
         },
@@ -113,7 +122,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
         id: sessionId,
         attributes: {
           isSampled: initialSession.isSampled.toString(),
+          // Start with custom attributes from config
           ...sessionsConfig.session?.attributes,
+          // Default attributes take precedence (matching Flutter SDK behavior)
+          ...defaultAttributes,
         },
         // new session we don't care about previous overrides
         ...(overrides ? { overrides } : {}),
