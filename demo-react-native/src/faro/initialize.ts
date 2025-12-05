@@ -10,6 +10,19 @@ import {
 import { TracingInstrumentation } from '@grafana/faro-react-native-tracing';
 
 /**
+ * Demo versions to simulate different app releases
+ */
+const DEMO_VERSIONS = ['1.0.0', '1.1.0', '1.2.0', '2.0.0', '2.1.0'];
+
+/**
+ * Get a random version for demo purposes
+ */
+function getDemoVersion(): string {
+  const randomIndex = Math.floor(Math.random() * DEMO_VERSIONS.length);
+  return DEMO_VERSIONS[randomIndex];
+}
+
+/**
  * Initialize Faro for React Native demo app with Grafana Cloud
  */
 export function initFaro() {
@@ -21,6 +34,10 @@ export function initFaro() {
     );
     return undefined;
   }
+
+  // Get random version for demo
+  const appVersion = getDemoVersion();
+  console.log(`[FARO DEBUG] App version: ${appVersion}`);
 
   console.log('[FARO DEBUG] Creating instrumentations...');
   const instrumentations = getRNInstrumentations({
@@ -43,7 +60,7 @@ export function initFaro() {
   const faro = initializeFaro({
     app: {
       name: 'React Native Test',
-      version: '1.0.0',
+      version: appVersion,
       environment: 'production',
     },
     instrumentations: [
