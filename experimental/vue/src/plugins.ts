@@ -4,6 +4,7 @@ import type { Router } from 'vue-router';
 import { faro, LogLevel } from '@grafana/faro-web-sdk';
 
 import { api } from './dependencies';
+import { sendComponentPerformanceEvent } from './performance/utils';
 import { VueRouterInstrumentation } from './router';
 
 export interface FaroVuePluginOptions {
@@ -32,10 +33,6 @@ export interface FaroVuePluginOptions {
    */
   router?: Router;
 }
-
-const EVENT_PERFORMANCE_COMPONENT_MOUNT = 'faro.vue.performance.component.mount';
-const EVENT_PERFORMANCE_COMPONENT_UPDATE = 'faro.vue.performance.component.update';
-const EVENT_PERFORMANCE_COMPONENT_LIFECYCLE = 'faro.vue.performance.component.lifecycle';
 
 export const FaroVuePlugin = {
   install: (app: App, options: FaroVuePluginOptions = {}) => {
@@ -84,11 +81,7 @@ export const FaroVuePlugin = {
           const duration = performance.now() - (this as any).$_faroMountStartTime;
           const name = this.$options?.name || (this.$options as any)?.__name || 'Anonymous';
 
-          api?.pushEvent(EVENT_PERFORMANCE_COMPONENT_MOUNT, {
-            name,
-            phase: 'mount',
-            duration: duration.toString(),
-          });
+          sendComponentPerformanceEvent(name, 'mount', duration);
 
           (this as any).$_faroMountEndTime = performance.now();
         },
@@ -100,11 +93,7 @@ export const FaroVuePlugin = {
             const duration = performance.now() - (this as any).$_faroUpdateStartTime;
             const name = this.$options?.name || (this.$options as any)?.__name || 'Anonymous';
 
-            api?.pushEvent(EVENT_PERFORMANCE_COMPONENT_UPDATE, {
-              name,
-              phase: 'update',
-              duration: duration.toString(),
-            });
+            sendComponentPerformanceEvent(name, 'update', duration);
 
             (this as any).$_faroUpdateStartTime = undefined;
           }
@@ -114,11 +103,7 @@ export const FaroVuePlugin = {
             const duration = performance.now() - (this as any).$_faroMountEndTime;
             const name = this.$options?.name || (this.$options as any)?.__name || 'Anonymous';
 
-            api?.pushEvent(EVENT_PERFORMANCE_COMPONENT_LIFECYCLE, {
-              name,
-              phase: 'lifecycle',
-              duration: duration.toString(),
-            });
+            sendComponentPerformanceEvent(name, 'lifecycle', duration);
           }
         },
       });

@@ -123,10 +123,8 @@ const { state, resetErrorBoundary } = useFaroErrorBoundary({
 
 ## Events Sent
 
-- `faro.vue.performance.component.mount` - Component mount duration
-- `faro.vue.performance.component.update` - Component update duration
-- `faro.vue.performance.component.lifecycle` - Component lifetime (mount to unmount)
-- `EVENT_ROUTE_CHANGE` - Route navigation with duration
+- `faro.vue.performance.component` - Component performance with attributes: `name`, `phase` ('mount' | 'update' | 'lifecycle'), `duration`
+- `EVENT_ROUTE_CHANGE` - Route navigation with attributes: `toRoute`, `fromRoute`, `toUrl`, `duration`
 
 ## License
 

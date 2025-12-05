@@ -1,8 +1,6 @@
 import { onBeforeUpdate, onMounted, onUnmounted, onUpdated } from 'vue';
 
-import { api } from '../dependencies';
-
-const COMPONENT_EVENT_NAME = 'faro.vue.performance.component';
+import { sendComponentPerformanceEvent } from './utils';
 
 export function useFaroProfiler(name: string) {
   const mountStartTime = performance.now();
@@ -12,12 +10,7 @@ export function useFaroProfiler(name: string) {
   onMounted(() => {
     mountEndTime = performance.now();
     const duration = mountEndTime - mountStartTime;
-
-    api?.pushEvent(COMPONENT_EVENT_NAME, {
-      name,
-      phase: 'mount',
-      duration: duration.toString(),
-    });
+    sendComponentPerformanceEvent(name, 'mount', duration);
   });
 
   onBeforeUpdate(() => {
@@ -27,13 +20,7 @@ export function useFaroProfiler(name: string) {
   onUpdated(() => {
     if (updateStartTime !== undefined) {
       const duration = performance.now() - updateStartTime;
-
-      api?.pushEvent(COMPONENT_EVENT_NAME, {
-        name,
-        phase: 'update',
-        duration: duration.toString(),
-      });
-
+      sendComponentPerformanceEvent(name, 'update', duration);
       updateStartTime = undefined;
     }
   });
@@ -41,12 +28,7 @@ export function useFaroProfiler(name: string) {
   onUnmounted(() => {
     if (mountEndTime !== undefined) {
       const duration = performance.now() - mountEndTime;
-
-      api?.pushEvent(COMPONENT_EVENT_NAME, {
-        name,
-        phase: 'lifecycle',
-        duration: duration.toString(),
-      });
+      sendComponentPerformanceEvent(name, 'lifecycle', duration);
     }
   });
 }
