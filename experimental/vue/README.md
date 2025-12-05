@@ -46,7 +46,7 @@ initializeFaro({
 });
 ```
 
-Captures: `toRoute` (route pattern), `fromRoute`, `toUrl` (full URL).
+Captures: `toRoute` (route pattern), `fromRoute`, `toUrl` (full URL), `duration` (navigation duration in ms).
 
 ## Error Boundary
 
