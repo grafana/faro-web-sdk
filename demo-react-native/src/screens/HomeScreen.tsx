@@ -8,11 +8,13 @@ import {
   View,
 } from 'react-native';
 
+import { useFaroUser } from '../hooks/useFaroUser';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export function HomeScreen({ navigation }: Props) {
+  const currentUser = useFaroUser();
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -20,6 +22,19 @@ export function HomeScreen({ navigation }: Props) {
       <Text style={styles.subtitle}>
         Welcome to the Grafana Faro React Native SDK Demo
       </Text>
+
+      {currentUser && (
+        <View style={styles.userInfoBox}>
+          <Text style={styles.userInfoTitle}>👤 Current User</Text>
+          <Text style={styles.userInfoText}>
+            {currentUser.username} ({currentUser.email})
+          </Text>
+          <Text style={styles.userInfoDetails}>
+            Role: {currentUser.attributes?.role} • Plan:{' '}
+            {currentUser.attributes?.plan}
+          </Text>
+        </View>
+      )}
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
@@ -37,7 +52,7 @@ export function HomeScreen({ navigation }: Props) {
           style={[styles.button, styles.errorButton]}
           onPress={() => navigation.navigate('ErrorDemo')}
         >
-          <Text style={styles.buttonText}>Error Demo</Text>
+          <Text style={styles.buttonText}>❌ Error Demo</Text>
           <Text style={styles.buttonDescription}>
             Test error capture and reporting
           </Text>
@@ -47,7 +62,7 @@ export function HomeScreen({ navigation }: Props) {
           style={[styles.button, styles.performanceButton]}
           onPress={() => navigation.navigate('PerformanceDemo')}
         >
-          <Text style={styles.buttonText}>Performance Demo</Text>
+          <Text style={styles.buttonText}>⚡ Performance Demo</Text>
           <Text style={styles.buttonDescription}>
             Test performance monitoring
           </Text>
@@ -87,7 +102,7 @@ export function HomeScreen({ navigation }: Props) {
           style={[styles.button, styles.aboutButton]}
           onPress={() => navigation.navigate('About')}
         >
-          <Text style={styles.buttonText}>About</Text>
+          <Text style={styles.buttonText}>ℹ️ About</Text>
           <Text style={styles.buttonDescription}>
             About this demo application
           </Text>
@@ -113,6 +128,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 20,
     color: '#666',
+  },
+  userInfoBox: {
+    backgroundColor: '#f0f9ff',
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#3b82f6',
+  },
+  userInfoTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1e40af',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  userInfoText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e3a8a',
+    marginBottom: 4,
+  },
+  userInfoDetails: {
+    fontSize: 13,
+    color: '#3b82f6',
   },
   buttonContainer: {
     gap: 16,

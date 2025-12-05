@@ -1,6 +1,6 @@
 import { SpanStatusCode } from '@opentelemetry/api';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,68 +13,32 @@ import {
 
 import { faro, trackUserAction } from '@grafana/faro-react-native';
 
+import { useFaroUser } from '../hooks/useFaroUser';
 import type { RootStackParamList } from '../navigation/AppNavigator';
+import { DEMO_USERS } from '../utils/randomUser';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Showcase'>;
 
-// Demo user profiles for showcasing different user scenarios
-const DEMO_USERS = [
-  {
-    id: 'user-alice-premium',
-    username: 'alice_premium',
-    email: 'alice@company.com',
-    attributes: {
-      plan: 'premium',
-      role: 'admin',
-      signupDate: '2023-01-15',
-      company: 'Acme Corp',
-    },
-    displayName: 'Alice (Premium Admin)',
-    color: '#8b5cf6',
-  },
-  {
-    id: 'user-bob-standard',
-    username: 'bob_standard',
-    email: 'bob@example.com',
-    attributes: {
-      plan: 'standard',
-      role: 'user',
-      signupDate: '2024-03-22',
-      company: 'Example Inc',
-    },
-    displayName: 'Bob (Standard User)',
-    color: '#3b82f6',
-  },
-  {
-    id: 'user-charlie-free',
-    username: 'charlie_free',
-    email: 'charlie@demo.com',
-    attributes: {
-      plan: 'free',
-      role: 'user',
-      signupDate: '2024-11-01',
-      company: 'Demo LLC',
-    },
-    displayName: 'Charlie (Free Tier)',
-    color: '#10b981',
-  },
-  {
-    id: 'user-dana-enterprise',
-    username: 'dana_enterprise',
-    email: 'dana@enterprise.com',
-    attributes: {
-      plan: 'enterprise',
-      role: 'super_admin',
-      signupDate: '2022-06-10',
-      company: 'Enterprise Solutions',
-    },
-    displayName: 'Dana (Enterprise)',
-    color: '#f59e0b',
-  },
-];
+// Map demo users to showcase format with colors
+const SHOWCASE_USERS = DEMO_USERS.map((user, index) => {
+  const colors = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ec4899'];
+  return {
+    ...user,
+    displayName: `${user.username} (${user.attributes.role})`,
+    color: colors[index % colors.length],
+  };
+});
+
+type ShowcaseUser = (typeof SHOWCASE_USERS)[0];
 
 export function ShowcaseScreen(_props: Props) {
-  const [currentUser, setCurrentUser] = useState(DEMO_USERS[0]);
+  const faroUser = useFaroUser();
+
+  // Map Faro user to ShowcaseUser with color
+  const currentUser: ShowcaseUser | null = faroUser
+    ? SHOWCASE_USERS.find(u => u.id === faroUser.id) || SHOWCASE_USERS[0]
+    : null;
+
   const [actionCounts, setActionCounts] = useState({
     logs: 0,
     events: 0,
@@ -85,13 +49,8 @@ export function ShowcaseScreen(_props: Props) {
   const [loading, setLoading] = useState(false);
   const [lastTraceId, setLastTraceId] = useState<string | null>(null);
 
-  // Set initial user on mount
-  useEffect(() => {
-    switchUser(DEMO_USERS[0]);
-  }, []);
-
-  const switchUser = (user: (typeof DEMO_USERS)[0]) => {
-    setCurrentUser(user);
+  const switchUser = (user: ShowcaseUser) => {
+    // No need to setCurrentUser - it will update automatically via useFaroUser hook
 
     // Update Faro with new user info
     faro.api.setUser({
@@ -126,6 +85,8 @@ export function ShowcaseScreen(_props: Props) {
 
   // Demo Action 1: Send Various Logs
   const handleSendLogs = () => {
+    if (!currentUser) return;
+
     // Random realistic log messages
     const logMessages = [
       { level: 'log', msg: 'User navigated to dashboard page' },
@@ -172,6 +133,7 @@ export function ShowcaseScreen(_props: Props) {
 
   // Demo Action 2: Send Custom Events
   const handleSendEvents = () => {
+    if (!currentUser) return;
     // Realistic app events to choose from
     const eventOptions = [
       {
@@ -276,7 +238,7 @@ export function ShowcaseScreen(_props: Props) {
         userId: currentUser.id,
         plan: currentUser.attributes.plan,
         role: currentUser.attributes.role,
-        company: currentUser.attributes.company,
+        company: currentUser.attributes.company || 'Unknown',
         timestamp: new Date().toISOString(),
         ...stringAttrs,
       });
@@ -293,6 +255,8 @@ export function ShowcaseScreen(_props: Props) {
 
   // Demo Action 3: Simulated HTTP Requests
   const handleHttpRequests = async () => {
+    if (!currentUser) return;
+
     setLoading(true);
     try {
       // Realistic API endpoints with varied resources and dynamic IDs
@@ -426,6 +390,7 @@ export function ShowcaseScreen(_props: Props) {
 
   // Demo Action 4: Generate Errors (different severity)
   const handleGenerateError = () => {
+    if (!currentUser) return;
     // Realistic error scenarios
     const errorTypes = [
       {
@@ -523,6 +488,8 @@ export function ShowcaseScreen(_props: Props) {
 
   // Demo Action 5: Create Distributed Trace
   const handleCreateTrace = async () => {
+    if (!currentUser) return;
+
     const otel = (faro as any).otel;
     if (!otel) {
       Alert.alert('Error', 'OTEL not available');
@@ -699,7 +666,7 @@ export function ShowcaseScreen(_props: Props) {
         'user.username': currentUser.username,
         'user.plan': currentUser.attributes.plan,
         'user.role': currentUser.attributes.role,
-        'user.company': currentUser.attributes.company,
+        'user.company': currentUser.attributes.company || 'Unknown',
         'workflow.type': selectedWorkflow.name,
       },
     });
@@ -766,6 +733,8 @@ export function ShowcaseScreen(_props: Props) {
 
   // Demo Action 6: Complex User Journey
   const handleComplexJourney = async () => {
+    if (!currentUser) return;
+
     setLoading(true);
 
     // Helper function to generate random URLs
@@ -1018,25 +987,32 @@ export function ShowcaseScreen(_props: Props) {
       </View>
 
       {/* Current User Display */}
-      <View
-        style={[styles.currentUserCard, { borderLeftColor: currentUser.color }]}
-      >
-        <Text style={styles.currentUserLabel}>Current Demo User</Text>
-        <Text style={[styles.currentUserName, { color: currentUser.color }]}>
-          {currentUser.displayName}
-        </Text>
-        <View style={styles.userDetails}>
-          <Text style={styles.userDetailText}>
-            Plan: {currentUser.attributes.plan}
+      {currentUser && (
+        <View
+          style={[
+            styles.currentUserCard,
+            { borderLeftColor: currentUser.color },
+          ]}
+        >
+          <Text style={styles.currentUserLabel}>Current Demo User</Text>
+          <Text style={[styles.currentUserName, { color: currentUser.color }]}>
+            {currentUser.displayName}
           </Text>
-          <Text style={styles.userDetailText}>
-            Role: {currentUser.attributes.role}
-          </Text>
-          <Text style={styles.userDetailText}>
-            Company: {currentUser.attributes.company}
-          </Text>
+          <View style={styles.userDetails}>
+            <Text style={styles.userDetailText}>
+              Plan: {currentUser.attributes.plan}
+            </Text>
+            <Text style={styles.userDetailText}>
+              Role: {currentUser.attributes.role}
+            </Text>
+            {currentUser.attributes.company && (
+              <Text style={styles.userDetailText}>
+                Company: {currentUser.attributes.company}
+              </Text>
+            )}
+          </View>
         </View>
-      </View>
+      )}
 
       {/* User Selector */}
       <View style={styles.section}>
@@ -1046,20 +1022,22 @@ export function ShowcaseScreen(_props: Props) {
           Grafana dashboard
         </Text>
         <View style={styles.userGrid}>
-          {DEMO_USERS.map(user => (
+          {SHOWCASE_USERS.map(user => (
             <TouchableOpacity
               key={user.id}
               style={[
                 styles.userButton,
                 { borderColor: user.color },
-                currentUser.id === user.id && { backgroundColor: user.color },
+                currentUser?.id === user.id && { backgroundColor: user.color },
               ]}
               onPress={() => switchUser(user)}
             >
               <Text
                 style={[
                   styles.userButtonText,
-                  { color: currentUser.id === user.id ? '#fff' : user.color },
+                  {
+                    color: currentUser?.id === user.id ? '#fff' : user.color,
+                  },
                 ]}
               >
                 {user.displayName}
@@ -1067,7 +1045,7 @@ export function ShowcaseScreen(_props: Props) {
               <Text
                 style={[
                   styles.userButtonSubtext,
-                  { color: currentUser.id === user.id ? '#fff' : '#666' },
+                  { color: currentUser?.id === user.id ? '#fff' : '#666' },
                 ]}
               >
                 {user.attributes.plan} • {user.attributes.role}
@@ -1106,7 +1084,7 @@ export function ShowcaseScreen(_props: Props) {
         </View>
       )}
 
-      {loading && (
+      {loading && currentUser && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={currentUser.color} />
           <Text style={styles.loadingText}>Creating telemetry...</Text>

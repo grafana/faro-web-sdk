@@ -32,12 +32,9 @@ export function initFaro() {
     trackUserActions: true,
     trackHttpRequests: true,
     trackPerformance: true,
-    trackStartup: true, // Explicitly enable startup tracking
-    // Performance monitoring configuration - set to 5 seconds for demo
-    memoryUsageVitals: true,
-    cpuUsageVitals: true,
-    fetchVitalsInterval: 2000, // Collect metrics every 5 seconds (default is 30s)
-  });
+    // Performance monitoring configuration - set to 2 seconds for demo
+    fetchVitalsInterval: 2000, // Collect metrics every 2 seconds (default is 30s)
+  } as any);
   console.log(
     `[FARO DEBUG] Created ${instrumentations.length} instrumentations:`,
     instrumentations.map((i: any) => i.name),

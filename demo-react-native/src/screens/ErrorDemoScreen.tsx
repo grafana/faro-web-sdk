@@ -123,8 +123,8 @@ export function ErrorDemoScreen() {
       {/* Error Boundary Tests Section */}
       <Text style={styles.sectionTitle}>Error Boundary Tests</Text>
       <Text style={styles.sectionDescription}>
-        Test Faro's React Error Boundary integration. The boundary catches errors,
-        sends them to Faro, and shows a fallback UI.
+        Test Faro's React Error Boundary integration. The boundary catches
+        errors, sends them to Faro, and shows a fallback UI.
       </Text>
 
       <FaroErrorBoundary

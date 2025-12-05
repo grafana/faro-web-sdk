@@ -1,12 +1,6 @@
 import React from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-// @ts-expect-error - TS module resolution issue, export exists in source
 import { faro } from '@grafana/faro-react-native';
 
 import { PerformanceMetricsCard } from '../components/PerformanceMetricsCard';
@@ -77,7 +71,6 @@ export default function DeviceInfoScreen() {
           {renderMetaField('All Locales', browserMeta.locales)}
           {renderMetaField('Timezone', browserMeta.timezone)}
         </View>
-
 
         {/* Instructions */}
         <View style={styles.section}>

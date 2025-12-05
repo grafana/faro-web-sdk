@@ -42,11 +42,11 @@ export function PerformanceDemoScreen({ navigation }: Props) {
       // Run for 100ms chunks
       while (Date.now() - chunkStart < 100) {
         // CPU-intensive operations
-        let result = 0;
         for (let i = 0; i < 100000; i++) {
-          result += Math.sqrt(i) * Math.sin(i) * Math.cos(i);
-          result += Math.pow(i % 100, 2);
-          result += Math.log(i + 1);
+          // Perform CPU-intensive calculations (results intentionally unused)
+          Math.sqrt(i) * Math.sin(i) * Math.cos(i);
+          Math.pow(i % 100, 2);
+          Math.log(i + 1);
         }
         iterations++;
       }
@@ -69,9 +69,9 @@ export function PerformanceDemoScreen({ navigation }: Props) {
 
         setResult(
           `CPU stress test complete!\n` +
-          `Duration: ${totalDuration}ms\n` +
-          `Iterations: ${iterations}\n` +
-          `Watch the live CPU metrics above to see the spike!`
+            `Duration: ${totalDuration}ms\n` +
+            `Iterations: ${iterations}\n` +
+            `Watch the live CPU metrics above to see the spike!`,
         );
         setIsLoading(false);
         setCurrentTest('');
@@ -84,8 +84,10 @@ export function PerformanceDemoScreen({ navigation }: Props) {
 
   /**
    * Memory Stress Test - runs for 20 seconds
-   * Allocates large arrays to spike memory usage
+   * Allocates arrays to gradually increase memory usage
    * Live metrics update every 2 seconds to show the spike in real-time
+   *
+   * NOTE: Allocates smaller chunks less frequently to avoid OOM crashes
    */
   const runMemoryStressTest = () => {
     setIsLoading(true);
@@ -97,10 +99,11 @@ export function PerformanceDemoScreen({ navigation }: Props) {
     const memoryHogs: any[] = [];
     let allocationCount = 0;
 
-    // Allocate memory in chunks
+    // Allocate memory in smaller chunks less frequently
     const allocateChunk = () => {
-      // Allocate ~10MB per chunk (array of 2.5M numbers = ~10MB)
-      const chunk = new Array(2500000);
+      // Allocate ~5MB per chunk (array of 1.25M numbers = ~5MB)
+      // Reduced from 10MB to prevent OOM crashes
+      const chunk = new Array(1250000);
       for (let i = 0; i < chunk.length; i++) {
         chunk[i] = Math.random() * 1000000;
       }
@@ -109,12 +112,12 @@ export function PerformanceDemoScreen({ navigation }: Props) {
 
       // Check if test should continue
       if (Date.now() - startTime < testDuration) {
-        // Schedule next allocation
-        setTimeout(allocateChunk, 100);
+        // Schedule next allocation after 500ms (reduced frequency to prevent crashes)
+        setTimeout(allocateChunk, 500);
       } else {
         // Test complete
         const totalDuration = Date.now() - startTime;
-        const estimatedMemoryMB = allocationCount * 10;
+        const estimatedMemoryMB = allocationCount * 5; // Updated to 5MB per allocation
 
         faro.api.pushMeasurement({
           type: 'memory_stress_test',
@@ -127,9 +130,9 @@ export function PerformanceDemoScreen({ navigation }: Props) {
 
         setResult(
           `Memory stress test complete!\n` +
-          `Duration: ${totalDuration}ms\n` +
-          `Allocated: ~${estimatedMemoryMB}MB\n` +
-          `Watch the live memory metrics above to see the spike!`
+            `Duration: ${totalDuration}ms\n` +
+            `Allocated: ~${estimatedMemoryMB}MB\n` +
+            `Watch the live memory metrics above to see the spike!`,
         );
 
         // Clean up memory
@@ -195,7 +198,9 @@ export function PerformanceDemoScreen({ navigation }: Props) {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF5F00" />
           {currentTest && <Text style={styles.loadingText}>{currentTest}</Text>}
-          {!currentTest && <Text style={styles.loadingText}>Processing...</Text>}
+          {!currentTest && (
+            <Text style={styles.loadingText}>Processing...</Text>
+          )}
         </View>
       )}
 

@@ -5,10 +5,11 @@ export interface DemoUser {
   attributes: {
     role: string;
     plan: string;
+    company?: string;
   };
 }
 
-const DEMO_USERS: DemoUser[] = [
+export const DEMO_USERS: DemoUser[] = [
   {
     id: 'user-001',
     email: 'alice.smith@example.com',
