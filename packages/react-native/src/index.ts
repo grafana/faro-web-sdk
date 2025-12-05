@@ -17,7 +17,7 @@ export { ViewInstrumentation } from './instrumentations/view';
 export { AppStateInstrumentation } from './instrumentations/appState';
 export { UserActionInstrumentation } from './instrumentations/userActions';
 export { HttpInstrumentation } from './instrumentations/http';
-export { PerformanceInstrumentation, trackScreenPerformance } from './instrumentations/performance';
+export { PerformanceInstrumentation } from './instrumentations/performance';
 export type { PerformanceInstrumentationOptions } from './instrumentations/performance/types';
 export { StartupInstrumentation } from './instrumentations/startup';
 export type { StartupInstrumentationOptions } from './instrumentations/startup/types';

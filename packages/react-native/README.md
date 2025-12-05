@@ -43,6 +43,9 @@ initializeFaro({
 - **View Instrumentation** - Tracks screen/route changes
 - **App State Instrumentation** - Tracks when app goes to background/foreground
 - **User Actions Instrumentation** - Tracks user interactions with components
+- **Performance Instrumentation** - Monitors CPU usage, memory usage, and app startup time using native OS APIs
+- **Startup Instrumentation** - Automatically tracks app startup duration from process start
+- **HTTP Instrumentation** - Tracks HTTP requests and correlates them with user actions
 
 ### Tracking User Actions
 
@@ -593,15 +596,24 @@ For detailed testing instructions, see `demo-react-native/TESTING_APPSTATE.md`.
 
 ### Performance Instrumentation Configuration
 
-The Performance Instrumentation tracks screen navigation performance for React Native applications.
+The Performance Instrumentation provides comprehensive performance monitoring for React Native applications, including **CPU usage**, **memory usage**, and **app startup time tracking**.
 
-**Important Limitation:** App launch performance (cold/warm start times) and JavaScript bundle load time **cannot be accurately measured** by a JavaScript-only SDK like Faro, because:
-- Faro initializes after JavaScript loads
-- True app launch metrics require native code that runs before the JS bundle loads
-- See [Honeycomb's React Native OpenTelemetry SDK](https://github.com/honeycombio/honeycomb-opentelemetry-react-native) for an example of native SDK integration
+#### System Resource Monitoring (CPU & Memory)
+
+The SDK automatically monitors system resources using **native OS-level APIs** for accurate metrics:
+
+**iOS Implementation:**
+- **CPU**: Uses `host_statistics()` with differential calculation for precise CPU percentage
+- **Memory**: Uses `task_info()` to measure RSS (Resident Set Size) in kilobytes
+
+**Android Implementation:**
+- **CPU**: Parses `/proc/[pid]/stat` with differential calculation
+- **Memory**: Parses `/proc/[pid]/status` for VmRSS in kilobytes
+
+**Configuration:**
 
 ```tsx
-import { initializeFaro, PerformanceInstrumentation } from '@grafana/faro-react-native';
+import { initializeFaro, getRNInstrumentations } from '@grafana/faro-react-native';
 
 initializeFaro({
   url: 'https://your-faro-collector-url',
@@ -609,93 +621,144 @@ initializeFaro({
     name: 'my-app',
     version: '1.0.0',
   },
-  instrumentations: [
-    new PerformanceInstrumentation({
-      // Track screen navigation performance (default: true)
-      // Requires ViewInstrumentation for automatic tracking
-      trackScreenPerformance: true,
+  instrumentations: getRNInstrumentations({
+    // Enable performance monitoring (default: true)
+    trackPerformance: true,
 
-      // Track React component performance (default: false)
-      // Warning: May add performance overhead
-      trackReactPerformance: false,
+    // Enable memory usage monitoring (default: true)
+    // Monitors RSS (Resident Set Size) - physical memory used by the app
+    memoryUsageVitals: true,
 
-      // Component IDs to track (when trackReactPerformance is true)
-      trackedComponents: ['App', 'HomeScreen'],
-    }),
-  ],
+    // Enable CPU usage monitoring (default: true)
+    // Monitors CPU usage percentage via differential calculation
+    cpuUsageVitals: true,
+
+    // Collection interval in milliseconds (default: 30000 - 30 seconds)
+    // Metrics are collected and sent at this interval
+    fetchVitalsInterval: 30000,
+  }),
 });
 ```
 
-**Performance Metrics Tracked:**
+**Metrics Collected:**
 
-**Screen Navigation Performance** (`faro.performance.screen` event):
-- `screenName` - Name of the screen
-- `mountTime` - Time to mount screen component (ms)
-- `transitionTime` - Time from previous screen unmount to new screen mount (ms)
-- `navigationType` - Type of navigation (push, pop, replace, reset)
-- `previousScreen` - Previous screen name (for journey tracking)
-- `faroScreenId` - Unique ID for this screen navigation
-- `faroPreviousScreenId` - Links to previous screen for journey analysis
+1. **CPU Usage** (`app_cpu_usage` measurement):
+   - `cpu_usage` - CPU usage percentage (0-100+)
+   - Collected periodically based on `fetchVitalsInterval`
+   - First reading establishes baseline (returns 0)
+   - Subsequent readings show actual CPU percentage
 
-**Enable via getRNInstrumentations:**
-
-```tsx
-initializeFaro({
-  // ...config
-  instrumentations: [
-    ...getRNInstrumentations({
-      trackPerformance: true, // Enabled by default
-    }),
-  ],
-});
-```
-
-**Example Performance Data:**
-
-```json
-{
-  "event": "faro.performance.screen",
-  "faroScreenId": "def456",
-  "faroLaunchId": "abc123",
-  "faroPreviousScreenId": "xyz789",
-  "screenName": "ProfileScreen",
-  "previousScreen": "HomeScreen",
-  "mountTime": "156",
-  "transitionTime": "234",
-  "navigationType": "push"
-}
-```
-
-**Use Cases:**
-
-- Identify slow screen transitions
-- Track performance regressions after releases
-- Correlate performance with user sessions
-- Monitor screen load times across devices
+2. **Memory Usage** (`app_memory` measurement):
+   - `mem_usage` - Memory usage in kilobytes (RSS)
+   - Collected periodically based on `fetchVitalsInterval`
+   - Measures physical memory currently used by the app
 
 **Example Grafana Queries (Loki):**
 
 ```logql
-# Slowest screen navigations
-{app_name="my-app", kind="event"}
+# Average CPU usage over time
+{app_name="my-app", kind="measurement"}
 | json
-| event_name="faro.performance.screen"
-| unwrap mountTime
+| type="app_cpu_usage"
+| unwrap cpu_usage
+| rate(1m)
+
+# Memory usage spikes
+{app_name="my-app", kind="measurement"}
+| json
+| type="app_memory"
+| unwrap mem_usage
 | topk(10)
 
-# Average mount time by screen
-{app_name="my-app", kind="event"}
+# CPU usage during specific screen
+{app_name="my-app", kind="measurement"}
 | json
-| event_name="faro.performance.screen"
-| unwrap mountTime
-| avg by (screenName)
+| type="app_cpu_usage"
+| view_name="HomeScreen"
+| unwrap cpu_usage
+| avg
 ```
 
-**Performance Best Practices:**
+**Platform Requirements:**
+- **iOS**: Requires iOS 13.4+
+- **Android**: Requires API 21+ (Lollipop) for CPU monitoring, any version for memory
 
-- Use screen navigation tracking to identify bottlenecks
-- Set `trackReactPerformance: false` in production (adds overhead)
-- For true app launch metrics, consider a native SDK solution
+**No Manual Setup Required!**
+- Native modules are automatically linked via CocoaPods (iOS) and Gradle (Android)
+- OS-level APIs are used - no permissions needed
+- Works out of the box with default configuration
+
+#### Startup Performance Monitoring
+
+The SDK automatically tracks app startup time from process start to Faro initialization:
+
+**Configuration:**
+
+```tsx
+initializeFaro({
+  // ...config
+  instrumentations: getRNInstrumentations({
+    // Enable startup tracking (default: true)
+    trackStartup: true,
+  }),
+});
+```
+
+**Startup Metric** (`faro.startup` event):
+- `appStartDuration` - Time from process start to Faro init (milliseconds)
+- Measured using native OS APIs:
+  - **iOS**: `sysctl()` with `KERN_PROC` to get process start time
+  - **Android**: Parses process start time from system
+
+**Example Query:**
+
+```logql
+# Average app startup time
+{app_name="my-app", kind="event"}
+| json
+| event_name="faro.startup"
+| unwrap appStartDuration
+| avg
+```
+
+#### Performance Best Practices
+
+**For Production:**
+```tsx
+getRNInstrumentations({
+  trackPerformance: true,
+  memoryUsageVitals: true,
+  cpuUsageVitals: true,
+  fetchVitalsInterval: 30000, // 30 seconds - good balance
+})
+```
+
+**For Debugging/Testing:**
+```tsx
+getRNInstrumentations({
+  trackPerformance: true,
+  memoryUsageVitals: true,
+  cpuUsageVitals: true,
+  fetchVitalsInterval: 5000, // 5 seconds - more frequent for testing
+})
+```
+
+**Use Cases:**
+
+- **Detect Memory Leaks**: Monitor memory growth over time
+- **Identify CPU Bottlenecks**: Correlate CPU spikes with user actions
+- **Track Startup Performance**: Measure app launch time improvements
+- **Performance Regression Testing**: Compare metrics across app versions
+- **Resource-Based Crash Analysis**: Correlate crashes with high memory/CPU usage
+
+**Feature Parity with Flutter SDK:**
+
+This implementation provides complete feature parity with the [Grafana Faro Flutter SDK](https://github.com/grafana/faro-flutter-sdk):
+- Same native OS-level APIs
+- Same differential CPU calculation approach
+- Same memory measurement (RSS/VmRSS)
+- Same configuration options
+- Same default values (30-second interval)
 
 ## Navigation Integration
 

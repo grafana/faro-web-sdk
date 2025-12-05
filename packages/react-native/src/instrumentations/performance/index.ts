@@ -1,28 +1,47 @@
-import { BaseInstrumentation, genShortID, VERSION } from '@grafana/faro-core';
+import { NativeModules } from 'react-native';
 
-import { performanceStore, toPerformanceTimingString } from './performanceUtils';
-import type { FaroScreenNavigationItem, PerformanceInstrumentationOptions } from './types';
+import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
+
+import type { PerformanceInstrumentationOptions } from './types';
+
+const { FaroReactNativeModule } = NativeModules;
 
 /**
- * Performance instrumentation for React Native
+ * Measures React Native app performance metrics (CPU and Memory usage)
  *
- * **Important:** This instrumentation only tracks screen navigation performance.
- * True app launch metrics (cold/warm start times) require a native SDK that
- * initializes before JavaScript loads. See the Honeycomb OpenTelemetry example
- * for reference: https://github.com/honeycombio/honeycomb-opentelemetry-react-native
+ * Collects periodic performance metrics using native OS APIs:
+ * - iOS: task_info() for memory, host_statistics() for CPU
+ * - Android: /proc/[pid]/status for memory, /proc/[pid]/stat for CPU
  *
- * Currently tracks:
- * - Screen navigation performance (mount time, transition time)
+ * Implementation ported from Faro Flutter SDK with feature parity.
+ *
+ * **Key Features**:
+ * - ✅ NO manual setup required - OS tracks metrics automatically!
+ * - ✅ Periodic collection (default: every 30 seconds)
+ * - ✅ Configurable per-metric enable/disable
+ * - ✅ Differential CPU calculation (accurate usage percentages)
+ * - ✅ Memory usage in KB (Resident Set Size)
+ *
+ * **Metrics Captured**:
+ * - `mem_usage`: Current memory usage in KB (RSS - physical memory)
+ * - `cpu_usage`: Current CPU usage percentage (0-100+)
+ *
+ * **Requirements**:
+ * - iOS 13.4+ (any iOS that supports React Native)
+ * - Android API 21+ for CPU (Android 5.0 Lollipop, ~99% of devices)
+ * - Android any version for Memory
  *
  * @example
  * ```tsx
- * import { initializeFaro, PerformanceInstrumentation } from '@grafana/faro-react-native';
+ * import { initializeFaro, getRNInstrumentations } from '@grafana/faro-react-native';
  *
  * initializeFaro({
- *   // ...config
+ *   url: 'https://your-collector.com',
  *   instrumentations: [
- *     new PerformanceInstrumentation({
- *       trackScreenPerformance: true,
+ *     ...getRNInstrumentations({
+ *       memoryUsageVitals: true,      // default: true
+ *       cpuUsageVitals: true,          // default: true
+ *       fetchVitalsInterval: 30000,    // default: 30s
  *     }),
  *   ],
  * });
@@ -33,130 +52,129 @@ export class PerformanceInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   private options: Required<PerformanceInstrumentationOptions>;
-  private faroLaunchId: string;
-  private metaUnsubscribe?: () => void;
-  private lastScreenId?: string;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
 
   constructor(options: PerformanceInstrumentationOptions = {}) {
     super();
     this.options = {
-      trackScreenPerformance: options.trackScreenPerformance ?? true,
-      trackReactPerformance: options.trackReactPerformance ?? false,
-      trackedComponents: options.trackedComponents ?? [],
+      memoryUsageVitals: options.memoryUsageVitals ?? true,
+      cpuUsageVitals: options.cpuUsageVitals ?? true,
+      fetchVitalsInterval: options.fetchVitalsInterval ?? 30000,
     };
-
-    // Generate unique ID for this app launch session
-    this.faroLaunchId = genShortID();
   }
 
   initialize(): void {
-    this.logInfo('Performance instrumentation initialized');
+    // Only start if at least one metric is enabled
+    if (!this.options.memoryUsageVitals && !this.options.cpuUsageVitals) {
+      this.logInfo('Performance monitoring disabled - no metrics enabled');
+      return;
+    }
 
-    // Track screen performance by listening to meta changes
-    if (this.options.trackScreenPerformance) {
-      this.setupScreenPerformanceTracking();
+    // Check native module availability
+    if (!FaroReactNativeModule) {
+      this.logWarn(
+        'Native module not available. Performance instrumentation requires native module. ' +
+          'Run `cd ios && pod install` and rebuild the app.'
+      );
+      return;
+    }
+
+    // Start periodic collection
+    this.startPeriodicCollection();
+  }
+
+  private startPeriodicCollection(): void {
+    // Collect immediately on initialization
+    this.collectMetrics();
+
+    // Then collect periodically
+    this.intervalId = setInterval(() => {
+      this.collectMetrics();
+    }, this.options.fetchVitalsInterval);
+
+    this.logInfo(
+      `Performance monitoring started - collecting every ${this.options.fetchVitalsInterval}ms ` +
+        `(memory: ${this.options.memoryUsageVitals}, cpu: ${this.options.cpuUsageVitals})`
+    );
+  }
+
+  private collectMetrics(): void {
+    // Collect memory if enabled
+    if (this.options.memoryUsageVitals) {
+      this.collectMemoryUsage();
+    }
+
+    // Collect CPU if enabled
+    if (this.options.cpuUsageVitals) {
+      this.collectCpuUsage();
     }
   }
 
-  /**
-   * Setup screen performance tracking by listening to meta changes
-   */
-  private setupScreenPerformanceTracking(): void {
-    // Subscribe to meta changes to detect screen changes
-    this.metaUnsubscribe = this.metas.addListener((meta) => {
-      // Look for screen/view meta changes
-      if (meta.screen || meta.view) {
-        const screenName = meta.screen?.name || meta.view?.name;
-        if (screenName) {
-          this.trackScreenNavigation(screenName);
-        }
+  private collectMemoryUsage(): void {
+    try {
+      if (!FaroReactNativeModule?.getMemoryUsage) {
+        return;
       }
-    });
+
+      const memoryUsage = FaroReactNativeModule.getMemoryUsage();
+
+      if (memoryUsage == null || memoryUsage <= 0) {
+        return;
+      }
+
+      this.api.pushMeasurement(
+        {
+          type: 'app_memory',
+          values: {
+            mem_usage: memoryUsage,
+          },
+        },
+        {
+          skipDedupe: true,
+        }
+      );
+    } catch (error) {
+      this.logError('Failed to collect memory usage', error);
+    }
   }
 
-  /**
-   * Track screen navigation performance
-   */
-  private trackScreenNavigation(screenName: string): void {
+  private collectCpuUsage(): void {
     try {
-      // End previous screen marker if exists
-      let transitionTime: number | undefined;
-      if (performanceStore.hasMarker('screen_navigation')) {
-        transitionTime = performanceStore.endMarker('screen_navigation');
+      if (!FaroReactNativeModule?.getCpuUsage) {
+        return;
       }
 
-      // Start new screen marker
-      const marker = performanceStore.startMarker('screen_navigation');
+      const cpuUsage = FaroReactNativeModule.getCpuUsage();
 
-      // Generate screen ID
-      const faroScreenId = genShortID();
+      // Validate CPU usage (Flutter SDK filters 0-100 range, but allows >100)
+      // Skip null, negative, or exactly 0 (baseline reading)
+      if (cpuUsage == null || cpuUsage <= 0) {
+        return;
+      }
 
-      // Calculate mount time (simplified - in real app this would be from navigation event to component mount)
-      const mountTime = marker.getDuration();
-
-      // Store previous screen name for next navigation
-      const previousScreen = performanceStore.get('last_screen_name');
-      performanceStore.set('last_screen_name', screenName as any);
-
-      const screenNavigationItem: FaroScreenNavigationItem = {
-        faroScreenId,
-        faroLaunchId: this.faroLaunchId,
-        faroPreviousScreenId: this.lastScreenId || undefined,
-        screenName,
-        previousScreen: previousScreen ? String(previousScreen) : undefined,
-        mountTime: toPerformanceTimingString(mountTime),
-        transitionTime: transitionTime !== undefined ? toPerformanceTimingString(transitionTime) : undefined,
-        navigationType: 'unknown', // Would need React Navigation integration for accurate type
-      };
-
-      // Push event
-      this.api.pushEvent('faro.performance.screen', screenNavigationItem, {
-        skipDedupe: true,
-      });
-
-      this.lastScreenId = faroScreenId;
-
-      this.logDebug('Screen navigation performance tracked', {
-        screenName,
-        mountTime: screenNavigationItem.mountTime,
-      });
+      // Flutter SDK also filters values >= 100, but we allow them as they can be valid
+      // in multi-core scenarios where one core is maxed out
+      this.api.pushMeasurement(
+        {
+          type: 'app_cpu_usage',
+          values: {
+            cpu_usage: cpuUsage,
+          },
+        },
+        {
+          skipDedupe: true,
+        }
+      );
     } catch (error) {
-      this.logError('Failed to track screen navigation performance', error);
+      this.logError('Failed to collect CPU usage', error);
     }
   }
 
   unpatch(): void {
-    // Clean up meta listener
-    if (this.metaUnsubscribe) {
-      this.metaUnsubscribe();
-      this.metaUnsubscribe = undefined;
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+      this.logInfo('Performance monitoring stopped');
     }
-
-    // Clear performance store
-    performanceStore.clear();
   }
-}
-
-/**
- * Manual API to track screen navigation performance
- * Use this if you're not using ViewInstrumentation
- *
- * @example
- * ```tsx
- * import { trackScreenPerformance } from '@grafana/faro-react-native';
- *
- * function MyScreen() {
- *   useEffect(() => {
- *     trackScreenPerformance('MyScreen', 'push');
- *   }, []);
- *
- *   return <View>...</View>;
- * }
- * ```
- */
-export function trackScreenPerformance(
-  screenName: string,
-  _navigationType: 'push' | 'pop' | 'replace' | 'reset' = 'push'
-): void {
-  performanceStore.startMarker(`screen_${screenName}`);
 }

@@ -33,8 +33,15 @@ export function initFaro() {
     trackHttpRequests: true,
     trackPerformance: true,
     trackStartup: true, // Explicitly enable startup tracking
+    // Performance monitoring configuration - set to 5 seconds for demo
+    memoryUsageVitals: true,
+    cpuUsageVitals: true,
+    fetchVitalsInterval: 2000, // Collect metrics every 5 seconds (default is 30s)
   });
-  console.log(`[FARO DEBUG] Created ${instrumentations.length} instrumentations:`, instrumentations.map((i: any) => i.name));
+  console.log(
+    `[FARO DEBUG] Created ${instrumentations.length} instrumentations:`,
+    instrumentations.map((i: any) => i.name),
+  );
 
   const faro = initializeFaro({
     app: {

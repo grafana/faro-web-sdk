@@ -62,6 +62,29 @@ export interface GetRNInstrumentationsOptions {
   trackStartup?: boolean;
 
   /**
+   * Enable memory usage monitoring (default: true)
+   * Monitors RSS (Resident Set Size) - physical memory used by the app
+   * Uses native OS APIs - no manual setup required!
+   * Requires: iOS 13.4+, Android any version
+   */
+  memoryUsageVitals?: boolean;
+
+  /**
+   * Enable CPU usage monitoring (default: true)
+   * Monitors CPU usage percentage via differential calculation
+   * Uses native OS APIs - no manual setup required!
+   * Requires: iOS 13.4+, Android API 21+
+   */
+  cpuUsageVitals?: boolean;
+
+  /**
+   * Interval (in milliseconds) for collecting performance vitals (default: 30000 - 30 seconds)
+   * Controls how often memory and CPU metrics are collected and sent
+   * Minimum recommended: 5000ms (5 seconds) to avoid overhead
+   */
+  fetchVitalsInterval?: number;
+
+  /**
    * URLs to ignore for HTTP tracking (regex patterns)
    */
   ignoredHttpUrls?: RegExp[];

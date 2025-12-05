@@ -26,6 +26,9 @@ export function getRNInstrumentations(options: GetRNInstrumentationsOptions = {}
     trackHttpRequests = true,
     trackPerformance = true,
     trackStartup = true,
+    memoryUsageVitals = true,
+    cpuUsageVitals = true,
+    fetchVitalsInterval = 30000,
     ignoredHttpUrls = [],
   } = options;
 
@@ -60,7 +63,13 @@ export function getRNInstrumentations(options: GetRNInstrumentationsOptions = {}
   }
 
   if (trackPerformance) {
-    instrumentations.push(new PerformanceInstrumentation());
+    instrumentations.push(
+      new PerformanceInstrumentation({
+        memoryUsageVitals,
+        cpuUsageVitals,
+        fetchVitalsInterval,
+      })
+    );
   }
 
   if (trackStartup) {

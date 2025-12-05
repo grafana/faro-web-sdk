@@ -8,10 +8,15 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 
 /**
- * Faro React Native native module for startup timing measurement
+ * Faro React Native native module for performance monitoring
  *
- * Uses Android OS APIs to get accurate process start time without
- * requiring manual initialization or timestamp capture.
+ * Provides methods for monitoring:
+ * - App startup time
+ * - Memory usage (VmRSS)
+ * - CPU usage (via CPUInfo helper)
+ *
+ * Uses Android OS APIs to get accurate metrics without requiring
+ * manual initialization or timestamp capture.
  *
  * Implementation ported from Faro Flutter SDK:
  * https://github.com/grafana/faro-flutter-sdk/blob/main/android/src/main/java/com/grafana/faro/FaroPlugin.java
@@ -47,5 +52,32 @@ class FaroReactNativeModule(reactContext: ReactApplicationContext) :
             return duration.toDouble()
         }
         return 0.0
+    }
+
+    /**
+     * Gets current memory usage in kilobytes
+     *
+     * Reads VmRSS (Virtual Memory Resident Set Size) from /proc/[pid]/status.
+     * This represents the actual physical memory currently used by the process.
+     *
+     * @return Memory usage in KB, or null on error
+     */
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getMemoryUsage(): Double? {
+        return MemoryInfo.getMemoryUsage()
+    }
+
+    /**
+     * Gets current CPU usage percentage
+     *
+     * Uses differential calculation - first call returns 0.0 (baseline),
+     * subsequent calls return CPU usage percentage (0-100+).
+     * Requires Android API 21+ (Lollipop).
+     *
+     * @return CPU usage percentage, or null on error or unsupported Android version
+     */
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getCpuUsage(): Double? {
+        return CPUInfo.getCpuInfo()
     }
 }
