@@ -20,9 +20,6 @@ const faro = initializeFaro({
   url: 'https://collector.example.com/collect',
   app: { name: 'my-app', version: '1.0.0' },
 });
-
-// Required for error boundary and plugins
-setDependencies(faro.internalLogger, faro.api);
 ```
 
 ## Global Error & Warning Handlers
@@ -37,8 +34,6 @@ const app = createApp(App);
 app.use(FaroVuePlugin);
 app.mount('#app');
 ```
-
-Requires `setDependencies` to be called first.
 
 By default, this plugin:
 

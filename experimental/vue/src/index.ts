@@ -9,6 +9,4 @@ export { FaroProfiler, useFaroProfiler } from './performance';
 export { FaroVuePlugin } from './plugins';
 export type { FaroVuePluginOptions } from './plugins';
 
-export { setDependencies } from './dependencies';
-
 export { VERSION } from '@grafana/faro-web-sdk';
