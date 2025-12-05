@@ -85,6 +85,44 @@ const { state, resetErrorBoundary } = useFaroErrorBoundary({
 
 Uses Vue's `onErrorCaptured` hook. Captures error, component instance, and error source info.
 
+## Performance Profiling
+
+Tracks component mount, update, and lifecycle durations using `performance.now()` and sends custom events.
+
+### Component
+
+```vue
+<template>
+  <FaroProfiler name="MyComponent">
+    <MyComponent />
+  </FaroProfiler>
+</template>
+
+<script setup lang="ts">
+import { FaroProfiler } from '@grafana/faro-vue';
+</script>
+```
+
+### Composable
+
+```vue
+<script setup lang="ts">
+import { useFaroProfiler } from '@grafana/faro-vue';
+
+useFaroProfiler('MyComponent');
+</script>
+```
+
+Events sent: `faro.vue.component` with attributes:
+
+- `phase`: 'mount' | 'update' | 'lifecycle'
+- `name`: Component name
+- `duration`: Duration in milliseconds
+
+- `mount`: `setup` start -> `onMounted`
+- `update`: `onBeforeUpdate` -> `onUpdated`
+- `lifecycle`: `onMounted` -> `onUnmounted` (component lifetime)
+
 ## Available Options
 
 ```typescript

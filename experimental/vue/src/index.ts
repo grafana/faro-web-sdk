@@ -4,6 +4,8 @@ export type { VueRouterInstrumentationOptions } from './router';
 export { FaroErrorBoundary, useFaroErrorBoundary } from './errorBoundary';
 export type { FaroErrorBoundaryProps, FaroErrorBoundaryState, UseFaroErrorBoundaryOptions } from './errorBoundary';
 
+export { FaroProfiler, useFaroProfiler } from './performance';
+
 export { setDependencies } from './dependencies';
 
 export { VERSION } from '@grafana/faro-web-sdk';
