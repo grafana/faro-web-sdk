@@ -22,5 +22,5 @@ integrations and the following features:
 
 ## How to instrument with Faro React
 
-For a complete guide to instrumenting web applications with the Faro-React Web SDK, refer to our 
+For a complete guide to instrumenting web applications with the Faro-React Web SDK, refer to our
 Grafana Cloud Frontend Observability [documentation](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/instrument/faro-react/).
