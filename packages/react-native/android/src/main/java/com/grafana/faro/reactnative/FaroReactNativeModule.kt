@@ -15,6 +15,10 @@ import com.facebook.react.bridge.ReactMethod
  *
  * Implementation ported from Faro Flutter SDK:
  * https://github.com/grafana/faro-flutter-sdk/blob/main/android/src/main/java/com/grafana/faro/FaroPlugin.java
+ *
+ * TODO: Currently not tested in demo app due to Yarn workspace gradle path resolution issues.
+ * See demo-react-native/android/settings.gradle for details. This code is complete and ready
+ * to work in standalone React Native projects or once workspace gradle config is fixed.
  */
 class FaroReactNativeModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {

@@ -1,3 +1,9 @@
+// TODO: Android build is currently not working due to Yarn workspace path resolution issues.
+// React Native's codegen and other packages are in the root node_modules but gradle
+// expects them in the demo's local node_modules. The gradle-plugin path has been fixed
+// below, but codegen still fails. Native Android code in packages/react-native/android/
+// is complete and ready to work once gradle workspace configuration is resolved.
+
 pluginManagement { includeBuild("../../node_modules/@react-native/gradle-plugin") }
 plugins { id("com.facebook.react.settings") }
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
