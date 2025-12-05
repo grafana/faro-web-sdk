@@ -1,46 +1,10 @@
-import { Route } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 
-import { FaroRoutes } from '@grafana/faro-react';
+import { withFaroRouterInstrumentation } from '@grafana/faro-react';
 
-import { GeneralLayout } from '../layouts';
-import { About, ArticleAdd, Articles, ArticleView, Features, Home, Login, Register, Seed } from '../pages';
+import { routes } from './routes';
 
-import { LoggedInGuard, LoggedOutGuard } from './guards';
+export const router = createBrowserRouter(routes);
 
-export function Router() {
-  return (
-    <FaroRoutes>
-      <Route
-        path="/auth"
-        element={
-          <LoggedOutGuard>
-            <GeneralLayout />
-          </LoggedOutGuard>
-        }
-      >
-        <Route path="register" element={<Register />} />
-        <Route path="login" element={<Login />} />
-      </Route>
-
-      <Route
-        path="/articles"
-        element={
-          <LoggedInGuard>
-            <GeneralLayout />
-          </LoggedInGuard>
-        }
-      >
-        <Route path="" element={<Articles />} />
-        <Route path="add" element={<ArticleAdd />} />
-        <Route path="view/:id" element={<ArticleView />} />
-      </Route>
-
-      <Route path="*" element={<GeneralLayout />}>
-        <Route path="" element={<Home />} />
-        <Route path="about" element={<About />} />
-        <Route path="features" element={<Features />} />
-        <Route path="seed" element={<Seed />} />
-      </Route>
-    </FaroRoutes>
-  );
-}
+// Instrument the router with Faro for route change tracking
+withFaroRouterInstrumentation(router);

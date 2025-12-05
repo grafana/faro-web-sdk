@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Container, Pagination } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import { withFaroProfiler } from '@grafana/faro-react';
 

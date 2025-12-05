@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Alert, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { faro } from '@grafana/faro-react';
 

@@ -9,13 +9,15 @@ export function initializeReactRouterInstrumentation(options: ReactIntegrationCo
   const initMessage = 'Initializing React Router';
 
   switch (options.router?.version) {
+    case ReactRouterVersion.V7:
     case ReactRouterVersion.V6:
-      internalLogger.debug(`${initMessage} V6 instrumentation`);
+      internalLogger.debug(`${initMessage} ${options.router.version} instrumentation`);
       initializeReactRouterV6Instrumentation(options.router.dependencies);
       break;
 
+    case ReactRouterVersion.V7_data_router:
     case ReactRouterVersion.V6_data_router:
-      internalLogger.debug(`${initMessage} V6 data router instrumentation`);
+      internalLogger.debug(`${initMessage} ${options.router.version} data router instrumentation`);
       initializeReactRouterV6DataRouterInstrumentation(options.router.dependencies);
       break;
 

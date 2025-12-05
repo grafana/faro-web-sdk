@@ -1,5 +1,5 @@
 import { Container } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 
 import { useGetArticleQuery } from '../../api';
 import { LoadingScreen, Page } from '../../components';
