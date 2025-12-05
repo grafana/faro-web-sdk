@@ -1,4 +1,4 @@
-import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from 'react-router-dom';
+import { matchRoutes } from 'react-router';
 
 import {
   initializeFaro as coreInit,
@@ -24,13 +24,9 @@ export function initializeFaro(): Faro {
       new TracingInstrumentation(),
       new ReactIntegration({
         router: {
-          version: ReactRouterVersion.V6,
+          version: ReactRouterVersion.V7_data_router,
           dependencies: {
-            createRoutesFromChildren,
             matchRoutes,
-            Routes,
-            useLocation,
-            useNavigationType,
           },
         },
       }),
