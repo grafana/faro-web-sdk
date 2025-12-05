@@ -64,6 +64,12 @@ const modules = {
     globalName: 'GrafanaFaroInstrumentationK6Browser',
     externals: [],
   },
+  vue: {
+    name: '@grafana/faro-vue',
+    bundleName: 'faro-vue',
+    globalName: 'GrafanaFaroVue',
+    externals: ['webSdk'],
+  },
 };
 
 exports.getRollupConfigBase = (moduleName) => {
