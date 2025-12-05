@@ -1,7 +1,5 @@
 import { StrictMode } from 'react';
-import { SSRProvider } from 'react-bootstrap';
 import { hydrateRoot } from 'react-dom/client';
-import { HelmetProvider } from 'react-helmet-async';
 import { Provider as ReduxProvider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -18,13 +16,9 @@ hydrateRoot(
   <StrictMode>
     <FaroErrorBoundary>
       <ReduxProvider store={createStore((window as any).__PRELOADED_STATE__)}>
-        <HelmetProvider>
-          <BrowserRouter>
-            <SSRProvider>
-              <App />
-            </SSRProvider>
-          </BrowserRouter>
-        </HelmetProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </ReduxProvider>
     </FaroErrorBoundary>
   </StrictMode>

@@ -324,6 +324,29 @@ const pushErrorOptions: PushErrorOptions = {
 </FaroErrorBoundary>;
 ```
 
+### React 19 Error Handling Note
+
+React 19 introduced a change where errors caught by error boundaries are automatically logged to
+`console.error`. If you're using both `FaroErrorBoundary` and `ConsoleInstrumentation`, this may
+result in the same error being captured twice.
+
+To avoid duplicate error reporting in React 19, you can configure `ConsoleInstrumentation` to
+treat console errors as logs instead:
+
+```ts
+import { initializeFaro, ConsoleInstrumentation } from '@grafana/faro-react';
+
+initializeFaro({
+  // ...
+  instrumentations: [
+    new ConsoleInstrumentation({
+      consoleErrorAsLog: true, // Prevents duplicate errors from React 19's automatic logging
+    }),
+    // ... other instrumentations
+  ],
+});
+```
+
 ## React server side rendering support
 
 Follow this guide to learn how to initialize your Faro instrumentation to support React Server Side
