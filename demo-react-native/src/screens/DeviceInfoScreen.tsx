@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
-  Button,
-  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,40 +7,17 @@ import {
 } from 'react-native';
 
 // @ts-expect-error - TS module resolution issue, export exists in source
-import { faro, getAsyncDeviceMeta } from '@grafana/faro-react-native';
+import { faro } from '@grafana/faro-react-native';
+
+import { PerformanceMetricsCard } from '../components/PerformanceMetricsCard';
 
 /**
  * Device Info Screen
- * Displays all collected device metadata including async information
+ * Displays live performance metrics and device metadata
  */
 export default function DeviceInfoScreen() {
-  const [asyncDeviceInfo, setAsyncDeviceInfo] = useState<any>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   // Get synchronous device info from Faro's browser meta
   const browserMeta = (faro?.metas?.value?.browser as any) || {};
-
-  const fetchAsyncDeviceInfo = async () => {
-    try {
-      setRefreshing(true);
-      setError(null);
-      const asyncInfo = await getAsyncDeviceMeta();
-      setAsyncDeviceInfo(asyncInfo);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Failed to fetch async device info',
-      );
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAsyncDeviceInfo();
-  }, []);
 
   const renderMetaField = (label: string, value: any) => {
     if (value === undefined || value === null) {
@@ -58,21 +33,19 @@ export default function DeviceInfoScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={fetchAsyncDeviceInfo}
-        />
-      }
-    >
+    <ScrollView style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>Device Information</Text>
         <Text style={styles.description}>
-          All metadata automatically collected by Faro SDK for better debugging
-          and analytics.
+          Live performance metrics and device metadata automatically collected
+          by Faro SDK for better debugging and analytics.
         </Text>
+
+        {/* Live Performance Metrics */}
+        <PerformanceMetricsCard
+          title="⚡ Live Performance"
+          subtitle="Updates every 2 seconds"
+        />
 
         {/* System Information */}
         <View style={styles.section}>
@@ -105,58 +78,6 @@ export default function DeviceInfoScreen() {
           {renderMetaField('Timezone', browserMeta.timezone)}
         </View>
 
-        {/* Memory Information */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>💾 Memory</Text>
-          {renderMetaField(
-            'Total Memory',
-            browserMeta.totalMemory
-              ? `${(
-                  parseInt(browserMeta.totalMemory) /
-                  1024 /
-                  1024 /
-                  1024
-                ).toFixed(2)} GB`
-              : 'Unknown',
-          )}
-          {renderMetaField(
-            'Used Memory',
-            browserMeta.usedMemory
-              ? `${(
-                  parseInt(browserMeta.usedMemory) /
-                  1024 /
-                  1024 /
-                  1024
-                ).toFixed(2)} GB`
-              : 'Unknown',
-          )}
-        </View>
-
-        {/* Async Device Info */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🔋 Battery & Network (Async)</Text>
-          {error ? (
-            <Text style={styles.error}>Error: {error}</Text>
-          ) : asyncDeviceInfo ? (
-            <>
-              {renderMetaField('Battery Level', asyncDeviceInfo.batteryLevel)}
-              {renderMetaField('Is Charging', asyncDeviceInfo.isCharging)}
-              {renderMetaField('Low Power Mode', asyncDeviceInfo.lowPowerMode)}
-              {renderMetaField('Carrier', asyncDeviceInfo.carrier)}
-            </>
-          ) : (
-            <Text style={styles.loading}>Loading...</Text>
-          )}
-        </View>
-
-        {/* Refresh Button */}
-        <View style={styles.buttonContainer}>
-          <Button
-            title="Refresh Async Data"
-            onPress={fetchAsyncDeviceInfo}
-            disabled={refreshing}
-          />
-        </View>
 
         {/* Instructions */}
         <View style={styles.section}>
@@ -173,7 +94,7 @@ export default function DeviceInfoScreen() {
             {'\n'}
             {`{service_name="React Native Test", browser_isEmulator="true"}`}
             {'\n\n'}
-            Pull down to refresh battery and network info.
+            Performance metrics (CPU and memory) are updated every 2 seconds.
           </Text>
         </View>
       </View>

@@ -1,3 +1,4 @@
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -10,80 +11,28 @@ import {
 
 import { faro } from '@grafana/faro-react-native';
 
-export function PerformanceDemoScreen() {
+import { PerformanceMetricsCard } from '../components/PerformanceMetricsCard';
+import type { RootStackParamList } from '../navigation/AppNavigator';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'PerformanceDemo'>;
+
+export function PerformanceDemoScreen({ navigation }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string>('');
   const [currentTest, setCurrentTest] = useState<string>('');
 
-  const runHeavyComputation = () => {
-    setIsLoading(true);
-    setResult('');
-
-    setTimeout(() => {
-      const startTime = Date.now();
-
-      // Heavy computation
-      let sum = 0;
-      for (let i = 0; i < 10000000; i++) {
-        sum += Math.sqrt(i);
-      }
-
-      const duration = Date.now() - startTime;
-
-      // Report measurement to Faro
-      faro.api.pushMeasurement({
-        type: 'heavy_computation',
-        values: {
-          duration,
-        },
-        context: {
-          iterations: '10000000',
-          result: sum.toFixed(2),
-        },
-      });
-
-      setResult(`Computation took ${duration}ms. Result: ${sum.toFixed(2)}`);
-      setIsLoading(false);
-    }, 100);
-  };
-
-  const simulateSlowRender = () => {
-    setIsLoading(true);
-    setResult('');
-
-    const startTime = Date.now();
-
-    setTimeout(() => {
-      const duration = Date.now() - startTime;
-
-      // Report measurement to Faro
-      faro.api.pushMeasurement({
-        type: 'slow_render',
-        values: {
-          duration,
-        },
-        context: {
-          simulatedDelay: '2000',
-        },
-      });
-
-      setResult('Render simulation complete');
-      setIsLoading(false);
-    }, 2000);
-  };
-
   /**
-   * CPU Stress Test - runs for 10 seconds
+   * CPU Stress Test - runs for 20 seconds
    * Performs intensive mathematical calculations to spike CPU usage
-   * Metrics are collected every 5 seconds, so we should see 2-3 spikes
+   * Live metrics update every 2 seconds to show the spike in real-time
    */
   const runCPUStressTest = () => {
     setIsLoading(true);
     setResult('');
-    setCurrentTest('Running CPU stress test (10 seconds)...');
+    setCurrentTest('Running CPU stress test (20 seconds)...');
 
     const startTime = Date.now();
-    const testDuration = 10000; // 10 seconds
+    const testDuration = 20000; // 20 seconds
     let iterations = 0;
 
     // Run intensive computation in chunks to avoid blocking UI completely
@@ -122,7 +71,7 @@ export function PerformanceDemoScreen() {
           `CPU stress test complete!\n` +
           `Duration: ${totalDuration}ms\n` +
           `Iterations: ${iterations}\n` +
-          `Check Faro metrics for CPU spikes every 5 seconds`
+          `Watch the live CPU metrics above to see the spike!`
         );
         setIsLoading(false);
         setCurrentTest('');
@@ -134,17 +83,17 @@ export function PerformanceDemoScreen() {
   };
 
   /**
-   * Memory Stress Test - runs for 10 seconds
+   * Memory Stress Test - runs for 20 seconds
    * Allocates large arrays to spike memory usage
-   * Metrics are collected every 5 seconds, so we should see 2-3 spikes
+   * Live metrics update every 2 seconds to show the spike in real-time
    */
   const runMemoryStressTest = () => {
     setIsLoading(true);
     setResult('');
-    setCurrentTest('Running memory stress test (10 seconds)...');
+    setCurrentTest('Running memory stress test (20 seconds)...');
 
     const startTime = Date.now();
-    const testDuration = 10000; // 10 seconds
+    const testDuration = 20000; // 20 seconds
     const memoryHogs: any[] = [];
     let allocationCount = 0;
 
@@ -180,7 +129,7 @@ export function PerformanceDemoScreen() {
           `Memory stress test complete!\n` +
           `Duration: ${totalDuration}ms\n` +
           `Allocated: ~${estimatedMemoryMB}MB\n` +
-          `Check Faro metrics for memory spikes every 5 seconds`
+          `Watch the live memory metrics above to see the spike!`
         );
 
         // Clean up memory
@@ -199,10 +148,17 @@ export function PerformanceDemoScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Performance Demo</Text>
       <Text style={styles.description}>
-        Test performance monitoring and measurements. CPU/Memory metrics collected every 5 seconds.
+        Test performance monitoring with live metrics updating every 2 seconds.
+        Watch CPU and memory spike in real-time during stress tests!
       </Text>
 
-      <Text style={styles.sectionTitle}>Stress Tests (10 seconds each)</Text>
+      {/* Live Performance Metrics */}
+      <PerformanceMetricsCard
+        title="⚡ Live Performance Metrics"
+        subtitle="Run stress tests below to see CPU and memory spike in real-time!"
+      />
+
+      <Text style={styles.sectionTitle}>Stress Tests (20 seconds each)</Text>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, styles.cpuButton]}
@@ -221,22 +177,17 @@ export function PerformanceDemoScreen() {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.sectionTitle}>Other Tests</Text>
+      <Text style={styles.sectionTitle}>Other Performance Tests</Text>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={styles.button}
-          onPress={runHeavyComputation}
+          style={[styles.button, styles.slowLoadButton]}
+          onPress={() => navigation.navigate('SlowLoadDemo')}
           disabled={isLoading}
         >
-          <Text style={styles.buttonText}>Run Heavy Computation</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={simulateSlowRender}
-          disabled={isLoading}
-        >
-          <Text style={styles.buttonText}>Simulate Slow Render</Text>
+          <Text style={styles.buttonText}>🐌 Slow Load Demo</Text>
+          <Text style={styles.buttonSubtext}>
+            Navigate to a screen with 2.5s load delay
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -298,10 +249,18 @@ const styles = StyleSheet.create({
   memoryButton: {
     backgroundColor: '#007bff',
   },
+  slowLoadButton: {
+    backgroundColor: '#6f42c1',
+  },
   buttonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  buttonSubtext: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 4,
   },
   loadingContainer: {
     marginTop: 24,

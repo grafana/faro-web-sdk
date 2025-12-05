@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -8,99 +8,11 @@ import {
   View,
 } from 'react-native';
 
-import { UserActionInternalInterface } from '@grafana/faro-core';
-import { faro, trackUserAction } from '@grafana/faro-react-native';
-
 import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export function HomeScreen({ navigation }: Props) {
-  const [eventCount, setEventCount] = useState(0);
-  const [userSet, setUserSet] = useState(false);
-  const [userActionCount, setUserActionCount] = useState(0);
-  const [httpRequestCount, setHttpRequestCount] = useState(0);
-  const [httpLoading, setHttpLoading] = useState(false);
-
-  const handleTestLog = () => {
-    // Send console logs (captured by ConsoleInstrumentation)
-    console.log('Test log from Faro React Native!');
-    console.warn('Test warning from Faro React Native!');
-    console.info('Test info from Faro React Native!');
-
-    // Send a custom event
-    const count = eventCount + 1;
-    faro.api.pushEvent('demo_button_clicked', {
-      clickCount: String(count),
-      timestamp: new Date().toISOString(),
-    });
-
-    setEventCount(count);
-  };
-
-  const handleSetUser = () => {
-    // Set user identification
-    faro.api.setUser({
-      id: 'demo-user-123',
-      username: 'demo_user',
-      email: 'demo@example.com',
-      attributes: {
-        plan: 'premium',
-        signupDate: '2024-01-01',
-      },
-    });
-
-    faro.api.pushEvent('user_identified', {
-      userId: 'demo-user-123',
-    });
-
-    setUserSet(true);
-  };
-
-  const handleManualUserAction = () => {
-    // Example of manual user action tracking for complex workflows
-    const action = trackUserAction('complex_workflow', {
-      step: 'demonstration',
-      screenName: 'Home',
-    });
-
-    // Simulate some work
-    setTimeout(() => {
-      // End the action when done
-      if (action) {
-        (action as UserActionInternalInterface).end();
-      }
-      setUserActionCount(prev => prev + 1);
-    }, 100);
-  };
-
-  const handleTestHttp = async () => {
-    setHttpLoading(true);
-    try {
-      // Test successful HTTP request
-      const response = await fetch(
-        'https://jsonplaceholder.typicode.com/posts/1',
-      );
-      const data = await response.json();
-      console.log('HTTP test successful:', data);
-
-      faro.api.pushEvent('http_test_completed', {
-        status: 'success',
-        statusCode: String(response.status),
-      });
-
-      setHttpRequestCount(prev => prev + 1);
-    } catch (error) {
-      console.error('HTTP test failed:', error);
-
-      faro.api.pushEvent('http_test_completed', {
-        status: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    } finally {
-      setHttpLoading(false);
-    }
-  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -108,28 +20,6 @@ export function HomeScreen({ navigation }: Props) {
       <Text style={styles.subtitle}>
         Welcome to the Grafana Faro React Native SDK Demo
       </Text>
-
-      {userActionCount > 0 && (
-        <View style={styles.infoBox}>
-          <Text style={styles.infoText}>
-            ✅ User Actions Tracked: {userActionCount}
-          </Text>
-          <Text style={styles.infoSubtext}>
-            All button presses are automatically tracked!
-          </Text>
-        </View>
-      )}
-
-      {httpRequestCount > 0 && (
-        <View style={[styles.infoBox, styles.httpInfoBox]}>
-          <Text style={styles.infoText}>
-            🌐 HTTP Requests: {httpRequestCount}
-          </Text>
-          <Text style={styles.infoSubtext}>
-            Fetch API calls are automatically monitored!
-          </Text>
-        </View>
-      )}
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
@@ -144,61 +34,7 @@ export function HomeScreen({ navigation }: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, styles.testButton]}
-          onPress={handleTestLog}
-        >
-          <Text style={styles.buttonText}>
-            🚀 Send Test Logs {eventCount > 0 && `(${eventCount})`}
-          </Text>
-          <Text style={styles.buttonDescription}>
-            Send sample logs and events to Grafana Cloud
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.button,
-            userSet ? styles.userSetButton : styles.userButton,
-          ]}
-          onPress={handleSetUser}
-          disabled={userSet}
-        >
-          <Text style={styles.buttonText}>
-            👤 {userSet ? 'User Set ✓' : 'Set User Info'}
-          </Text>
-          <Text style={styles.buttonDescription}>
-            {userSet ? 'User tracking enabled' : 'Enable user identification'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.manualActionButton]}
-          onPress={handleManualUserAction}
-        >
-          <Text style={styles.buttonText}>🎯 Manual User Action</Text>
-          <Text style={styles.buttonDescription}>
-            Demonstrates manual user action tracking API
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.httpButton]}
-          onPress={handleTestHttp}
-          disabled={httpLoading}
-        >
-          <Text style={styles.buttonText}>
-            🌐 {httpLoading ? 'Testing...' : 'Test HTTP Request'}{' '}
-            {httpRequestCount > 0 && `(${httpRequestCount})`}
-          </Text>
-          <Text style={styles.buttonDescription}>
-            {httpLoading
-              ? 'Making HTTP request...'
-              : 'Test automatic HTTP/fetch monitoring'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, styles.errorButton]}
           onPress={() => navigation.navigate('ErrorDemo')}
         >
           <Text style={styles.buttonText}>Error Demo</Text>
@@ -208,32 +44,12 @@ export function HomeScreen({ navigation }: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('ErrorBoundaryDemo')}
-        >
-          <Text style={styles.buttonText}>Error Boundary Demo</Text>
-          <Text style={styles.buttonDescription}>
-            Test React Error Boundary with Faro
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, styles.performanceButton]}
           onPress={() => navigation.navigate('PerformanceDemo')}
         >
           <Text style={styles.buttonText}>Performance Demo</Text>
           <Text style={styles.buttonDescription}>
             Test performance monitoring
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.slowLoadButton]}
-          onPress={() => navigation.navigate('SlowLoadDemo')}
-        >
-          <Text style={styles.buttonText}>🐌 Slow Load Demo</Text>
-          <Text style={styles.buttonDescription}>
-            2.5s delayed screen - see performance metrics in Grafana Cloud
           </Text>
         </TouchableOpacity>
 
@@ -268,7 +84,7 @@ export function HomeScreen({ navigation }: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, styles.aboutButton]}
           onPress={() => navigation.navigate('About')}
         >
           <Text style={styles.buttonText}>About</Text>
@@ -298,28 +114,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#666',
   },
-  infoBox: {
-    backgroundColor: '#e6f7ff',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: '#1890ff',
-  },
-  httpInfoBox: {
-    backgroundColor: '#f0fdf4',
-    borderLeftColor: '#10b981',
-  },
-  infoText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1890ff',
-    marginBottom: 4,
-  },
-  infoSubtext: {
-    fontSize: 14,
-    color: '#666',
-  },
   buttonContainer: {
     gap: 16,
   },
@@ -334,36 +128,25 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   showcaseButton: {
-    backgroundColor: '#d946ef',
-    borderWidth: 2,
-    borderColor: '#a21caf',
+    backgroundColor: '#28a745',
   },
-  testButton: {
-    backgroundColor: '#00D7C7',
+  errorButton: {
+    backgroundColor: '#dc3545',
   },
-  userButton: {
-    backgroundColor: '#6366f1',
-  },
-  userSetButton: {
-    backgroundColor: '#10b981',
-  },
-  manualActionButton: {
-    backgroundColor: '#8b5cf6',
-  },
-  httpButton: {
-    backgroundColor: '#10b981',
-  },
-  slowLoadButton: {
-    backgroundColor: '#ec4899',
+  performanceButton: {
+    backgroundColor: '#007bff',
   },
   consoleTestButton: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: '#6f42c1',
   },
   deviceInfoButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#fd7e14',
   },
   tracingButton: {
-    backgroundColor: '#14b8a6',
+    backgroundColor: '#20c997',
+  },
+  aboutButton: {
+    backgroundColor: '#6c757d',
   },
   buttonText: {
     fontSize: 18,

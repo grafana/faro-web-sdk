@@ -11,7 +11,6 @@ import { useFaroNavigation } from '@grafana/faro-react-native';
 import { AboutScreen } from '../screens/AboutScreen';
 import ConsoleTestScreen from '../screens/ConsoleTestScreen';
 import DeviceInfoScreen from '../screens/DeviceInfoScreen';
-import { ErrorBoundaryDemoScreen } from '../screens/ErrorBoundaryDemoScreen';
 import { ErrorDemoScreen } from '../screens/ErrorDemoScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { PerformanceDemoScreen } from '../screens/PerformanceDemoScreen';
@@ -23,7 +22,6 @@ export type RootStackParamList = {
   Home: undefined;
   Showcase: undefined;
   ErrorDemo: undefined;
-  ErrorBoundaryDemo: undefined;
   PerformanceDemo: undefined;
   SlowLoadDemo: undefined;
   About: undefined;
@@ -69,11 +67,6 @@ export function AppNavigator() {
           name="ErrorDemo"
           component={ErrorDemoScreen}
           options={{ title: 'Error Demo' }}
-        />
-        <Stack.Screen
-          name="ErrorBoundaryDemo"
-          component={ErrorBoundaryDemoScreen}
-          options={{ title: 'Error Boundary Demo' }}
         />
         <Stack.Screen
           name="PerformanceDemo"
