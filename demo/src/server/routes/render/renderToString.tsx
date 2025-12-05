@@ -1,8 +1,5 @@
 import { StrictMode } from 'react';
-import { SSRProvider } from 'react-bootstrap';
 import { renderToString as reactRenderToString } from 'react-dom/server';
-import { HelmetProvider } from 'react-helmet-async';
-import type { FilledContext } from 'react-helmet-async';
 import { Provider as ReduxProvider } from 'react-redux';
 import { Routes } from 'react-router-dom';
 import { StaticRouter } from 'react-router-dom/server';
@@ -14,25 +11,16 @@ import { createStore } from '../../../client/store';
 
 setReactRouterV6SSRDependencies({ Routes });
 
-export function renderToString(url: string, preloadedState: {}): [string, FilledContext] {
-  const helmetContext: FilledContext = {} as FilledContext;
-
-  return [
-    reactRenderToString(
-      <StrictMode>
-        <FaroErrorBoundary>
-          <ReduxProvider store={createStore(preloadedState)}>
-            <HelmetProvider context={helmetContext}>
-              <StaticRouter location={url}>
-                <SSRProvider>
-                  <App />
-                </SSRProvider>
-              </StaticRouter>
-            </HelmetProvider>
-          </ReduxProvider>
-        </FaroErrorBoundary>
-      </StrictMode>
-    ),
-    helmetContext,
-  ];
+export function renderToString(url: string, preloadedState: {}): string {
+  return reactRenderToString(
+    <StrictMode>
+      <FaroErrorBoundary>
+        <ReduxProvider store={createStore(preloadedState)}>
+          <StaticRouter location={url}>
+            <App />
+          </StaticRouter>
+        </ReduxProvider>
+      </FaroErrorBoundary>
+    </StrictMode>
+  );
 }

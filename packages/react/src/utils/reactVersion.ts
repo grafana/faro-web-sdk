@@ -2,6 +2,7 @@ import { version } from 'react';
 
 export const reactVersion = version;
 export const reactVersionMajor = getMajorReactVersion();
+export const isReactVersionAtLeast19 = isReactVersionAtLeast(19);
 export const isReactVersionAtLeast18 = isReactVersionAtLeast(18);
 export const isReactVersionAtLeast17 = isReactVersionAtLeast(17);
 export const isReactVersionAtLeast16 = isReactVersionAtLeast(16);

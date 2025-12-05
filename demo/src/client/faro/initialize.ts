@@ -47,8 +47,6 @@ export function initializeFaro(): Faro {
     batching: {
       itemLimit: 100,
     },
-
-    trackNavigationPreview: true,
   });
 
   faro.api.pushLog(['Faro was initialized']);
