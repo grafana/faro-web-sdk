@@ -27,7 +27,7 @@ export async function renderPage(
     },
   };
 
-  const [renderedHtml, helmetContext] = render(req.originalUrl, preloadedState);
+  const renderedHtml = render(req.originalUrl, preloadedState);
 
   const html = template
     .replace(
@@ -36,7 +36,6 @@ export async function renderPage(
         ? `<meta name="traceparent" content="00-${spanContext.traceId}-${spanContext.spanId}-0${spanContext.traceFlags}" />`
         : ''
     )
-    .replace('<!--app-title-->', helmetContext.helmet.title.toString())
     .replace('<!--app-state-->', `<script>window.__PRELOADED_STATE__ = ${JSON.stringify(preloadedState)}</script>`)
     .replace('<!--app-env-->', `<script>window.__APP_ENV__ = ${JSON.stringify(env)}</script>`)
     .replace(`<!--app-html-->`, renderedHtml);
