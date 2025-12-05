@@ -984,6 +984,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@grafana/faro-vue@workspace:experimental/vue":
+  version: 0.0.0-use.local
+  resolution: "@grafana/faro-vue@workspace:experimental/vue"
+  dependencies:
+    "@grafana/faro-core": "npm:^2.0.2"
+    "@grafana/faro-web-sdk": "npm:^2.0.2"
+  languageName: unknown
+  linkType: soft
+
 "@grafana/faro-web-sdk@npm:^2.0.2, @grafana/faro-web-sdk@workspace:packages/web-sdk":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-web-sdk@workspace:packages/web-sdk"

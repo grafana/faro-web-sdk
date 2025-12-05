@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-vue",
-  "version": "0.0.1",
+  "version": "2.0.2",
   "description": "Faro Vue integration",
   "keywords": [
     "observability",
@@ -48,7 +48,8 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-core": "^2.0.2"
+    "@grafana/faro-core": "^2.0.2",
+    "@grafana/faro-web-sdk": "^2.0.2"
   },
   "publishConfig": {
     "access": "public"
