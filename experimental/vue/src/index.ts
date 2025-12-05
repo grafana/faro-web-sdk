@@ -6,6 +6,8 @@ export type { FaroErrorBoundaryProps, FaroErrorBoundaryState, UseFaroErrorBounda
 
 export { FaroProfiler, useFaroProfiler } from './performance';
 
+export { FaroVuePlugin } from './plugins';
+
 export { setDependencies } from './dependencies';
 
 export { VERSION } from '@grafana/faro-web-sdk';

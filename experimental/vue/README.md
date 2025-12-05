@@ -21,9 +21,24 @@ const faro = initializeFaro({
   app: { name: 'my-app', version: '1.0.0' },
 });
 
-// Required for error boundary
+// Required for error boundary and plugins
 setDependencies(faro.internalLogger, faro.api);
 ```
+
+## Global Error & Warning Handlers
+
+Registers global Vue error (`errorHandler`) and warning (`warnHandler`) handlers.
+
+```typescript
+import { createApp } from 'vue';
+import { FaroVuePlugin } from '@grafana/faro-vue';
+
+const app = createApp(App);
+app.use(FaroVuePlugin);
+app.mount('#app');
+```
+
+Requires `setDependencies` to be called first.
 
 ## Router Instrumentation
 
