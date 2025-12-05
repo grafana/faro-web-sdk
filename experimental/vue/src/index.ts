@@ -1,6 +1,4 @@
-// Placeholder - Vue integration code will be added here
+export { VueRouterInstrumentation } from './router';
+export type { VueRouterInstrumentationOptions } from './router';
 
-/**
- * Version of the @grafana/faro-vue package
- */
-export const VERSION = '0.0.1';
+export { VERSION } from '@grafana/faro-web-sdk';
