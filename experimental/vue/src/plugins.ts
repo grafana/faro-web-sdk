@@ -1,8 +1,10 @@
 import type { App } from 'vue';
+import type { Router } from 'vue-router';
 
-import { LogLevel } from '@grafana/faro-web-sdk';
+import { faro, LogLevel } from '@grafana/faro-web-sdk';
 
 import { api } from './dependencies';
+import { VueRouterInstrumentation } from './router';
 
 export interface FaroVuePluginOptions {
   /**
@@ -23,13 +25,21 @@ export interface FaroVuePluginOptions {
    * @default true
    */
   instrumentWarn?: boolean;
+
+  /**
+   * The Vue Router instance to instrument.
+   * If provided, the router instrumentation will be initialized automatically.
+   */
+  router?: Router;
 }
 
-const COMPONENT_EVENT_NAME = 'faro.vue.performance.component';
+const EVENT_PERFORMANCE_COMPONENT_MOUNT = 'faro.vue.performance.component.mount';
+const EVENT_PERFORMANCE_COMPONENT_UPDATE = 'faro.vue.performance.component.update';
+const EVENT_PERFORMANCE_COMPONENT_LIFECYCLE = 'faro.vue.performance.component.lifecycle';
 
 export const FaroVuePlugin = {
   install: (app: App, options: FaroVuePluginOptions = {}) => {
-    const { instrumentComponents = true, instrumentError = true, instrumentWarn = true } = options;
+    const { instrumentComponents = true, instrumentError = true, instrumentWarn = true, router } = options;
 
     if (instrumentError) {
       const originalErrorHandler = app.config.errorHandler;
@@ -74,7 +84,7 @@ export const FaroVuePlugin = {
           const duration = performance.now() - (this as any).$_faroMountStartTime;
           const name = this.$options?.name || (this.$options as any)?.__name || 'Anonymous';
 
-          api?.pushEvent(COMPONENT_EVENT_NAME, {
+          api?.pushEvent(EVENT_PERFORMANCE_COMPONENT_MOUNT, {
             name,
             phase: 'mount',
             duration: duration.toString(),
@@ -90,7 +100,7 @@ export const FaroVuePlugin = {
             const duration = performance.now() - (this as any).$_faroUpdateStartTime;
             const name = this.$options?.name || (this.$options as any)?.__name || 'Anonymous';
 
-            api?.pushEvent(COMPONENT_EVENT_NAME, {
+            api?.pushEvent(EVENT_PERFORMANCE_COMPONENT_UPDATE, {
               name,
               phase: 'update',
               duration: duration.toString(),
@@ -104,7 +114,7 @@ export const FaroVuePlugin = {
             const duration = performance.now() - (this as any).$_faroMountEndTime;
             const name = this.$options?.name || (this.$options as any)?.__name || 'Anonymous';
 
-            api?.pushEvent(COMPONENT_EVENT_NAME, {
+            api?.pushEvent(EVENT_PERFORMANCE_COMPONENT_LIFECYCLE, {
               name,
               phase: 'lifecycle',
               duration: duration.toString(),
@@ -112,6 +122,10 @@ export const FaroVuePlugin = {
           }
         },
       });
+    }
+
+    if (router) {
+      faro.instrumentations.add(new VueRouterInstrumentation({ router }));
     }
   },
 };
