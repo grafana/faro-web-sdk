@@ -40,6 +40,12 @@ app.mount('#app');
 
 Requires `setDependencies` to be called first.
 
+By default, this plugin:
+
+- Registers global error handler
+- Registers global warning handler
+- Enables automatic performance tracking for all components
+
 ## Router Instrumentation
 
 Tracks route changes using Vue Router's `afterEach` hook.
@@ -151,6 +157,12 @@ interface FaroErrorBoundaryProps {
   onError?: (error: Error, instance: ComponentPublicInstance | null, info: string) => void;
   onReset?: (error: Error | null) => void;
   pushErrorOptions?: PushErrorOptions;
+}
+
+interface FaroVuePluginOptions {
+  instrumentComponents?: boolean; // default true
+  instrumentError?: boolean; // default true
+  instrumentWarn?: boolean; // default true
 }
 ```
 

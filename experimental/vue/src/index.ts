@@ -7,6 +7,7 @@ export type { FaroErrorBoundaryProps, FaroErrorBoundaryState, UseFaroErrorBounda
 export { FaroProfiler, useFaroProfiler } from './performance';
 
 export { FaroVuePlugin } from './plugins';
+export type { FaroVuePluginOptions } from './plugins';
 
 export { setDependencies } from './dependencies';
 
