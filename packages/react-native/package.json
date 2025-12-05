@@ -28,6 +28,9 @@
   "files": [
     "dist",
     "src",
+    "ios",
+    "android",
+    "FaroReactNative.podspec",
     "README.md",
     "LICENSE"
   ],

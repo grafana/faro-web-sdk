@@ -19,6 +19,8 @@ export { UserActionInstrumentation } from './instrumentations/userActions';
 export { HttpInstrumentation } from './instrumentations/http';
 export { PerformanceInstrumentation, trackScreenPerformance } from './instrumentations/performance';
 export type { PerformanceInstrumentationOptions } from './instrumentations/performance/types';
+export { StartupInstrumentation } from './instrumentations/startup';
+export type { StartupInstrumentationOptions } from './instrumentations/startup/types';
 
 // Export console utilities
 export { reactNativeLogArgsSerializer } from './instrumentations/console/utils';

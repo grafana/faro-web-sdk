@@ -13,12 +13,28 @@ import { TracingInstrumentation } from '@grafana/faro-react-native-tracing';
  * Initialize Faro for React Native demo app with Grafana Cloud
  */
 export function initFaro() {
+  console.log('[FARO DEBUG] Starting Faro initialization...');
+
   if (!FARO_COLLECTOR_URL) {
     console.warn(
       'FARO_COLLECTOR_URL not configured. Faro will not be initialized.',
     );
     return undefined;
   }
+
+  console.log('[FARO DEBUG] Creating instrumentations...');
+  const instrumentations = getRNInstrumentations({
+    captureConsole: true,
+    trackAppState: true,
+    captureErrors: true,
+    trackSessions: true,
+    trackViews: true,
+    trackUserActions: true,
+    trackHttpRequests: true,
+    trackPerformance: true,
+    trackStartup: true, // Explicitly enable startup tracking
+  });
+  console.log(`[FARO DEBUG] Created ${instrumentations.length} instrumentations:`, instrumentations.map((i: any) => i.name));
 
   const faro = initializeFaro({
     app: {
@@ -28,16 +44,7 @@ export function initFaro() {
     },
     instrumentations: [
       // React Native specific instrumentations (equivalent to getWebInstrumentations)
-      ...getRNInstrumentations({
-        captureConsole: true,
-        trackAppState: true,
-        captureErrors: true,
-        trackSessions: true,
-        trackViews: true,
-        trackUserActions: true,
-        trackHttpRequests: true,
-        trackPerformance: true,
-      }),
+      ...instrumentations,
       // Add tracing instrumentation to enable distributed tracing
       // Note: ignoreUrls are automatically extracted from transports via getIgnoreUrls()
       new TracingInstrumentation({}),

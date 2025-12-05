@@ -6,6 +6,7 @@ import { ErrorsInstrumentation } from '../instrumentations/errors';
 import { HttpInstrumentation } from '../instrumentations/http';
 import { PerformanceInstrumentation } from '../instrumentations/performance';
 import { SessionInstrumentation } from '../instrumentations/session';
+import { StartupInstrumentation } from '../instrumentations/startup';
 import { UserActionInstrumentation } from '../instrumentations/userActions';
 import { ViewInstrumentation } from '../instrumentations/view';
 
@@ -24,6 +25,7 @@ export function getRNInstrumentations(options: GetRNInstrumentationsOptions = {}
     trackUserActions = true,
     trackHttpRequests = true,
     trackPerformance = true,
+    trackStartup = true,
     ignoredHttpUrls = [],
   } = options;
 
@@ -59,6 +61,10 @@ export function getRNInstrumentations(options: GetRNInstrumentationsOptions = {}
 
   if (trackPerformance) {
     instrumentations.push(new PerformanceInstrumentation());
+  }
+
+  if (trackStartup) {
+    instrumentations.push(new StartupInstrumentation());
   }
 
   return instrumentations;

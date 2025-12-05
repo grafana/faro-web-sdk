@@ -55,6 +55,13 @@ export interface GetRNInstrumentationsOptions {
   trackHttpRequests?: boolean;
 
   /**
+   * Track app startup time from process start to Faro init (default: true)
+   * Uses native OS APIs - no AppDelegate/MainActivity setup required!
+   * Requires: iOS 13.4+, Android API 24+
+   */
+  trackStartup?: boolean;
+
+  /**
    * URLs to ignore for HTTP tracking (regex patterns)
    */
   ignoredHttpUrls?: RegExp[];
