@@ -34,7 +34,7 @@ services:
   loki:
     env_file:
       - './.env'
-    image: 'grafana/loki:3.5.7@sha256:0eaee7bf39cc83aaef46914fb58f287d4f4c4be6ec96b86c2ed55719a75e49c8'
+    image: 'grafana/loki:3.6.2@sha256:fad94db64eeb0e14544953789c942453df68a860b6f760d867f06c5b31f461ab'
     command: '-config.file=${LOKI_CONFIG_PATH}/${LOKI_CONFIG_FILE}'
     ports:
       - '${LOKI_PORT}:${LOKI_PORT}'
