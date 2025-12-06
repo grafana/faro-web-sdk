@@ -24,7 +24,6 @@ like `web-sdk` or by the user.
 
 Methods:
 
-- `changeStacktraceParser` - replaces the existing stacktrace parser with a new one
 - `getStacktraceParser` - returns the current stacktrace parser
 - `pushError` - sends an exception
 
