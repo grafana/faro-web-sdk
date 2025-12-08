@@ -11,6 +11,16 @@ export class NavigationInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   override initialize(): void {
+    // We want to skip initialization if the Vue router instrumentation is present
+    // as we would otherwise track double navigation events.
+    const isVueRouterInstrumentationPresent = faro.instrumentations.instrumentations.some(
+      (instrumentation) => instrumentation.name === '@grafana/faro-vue-router-instrumentation'
+    );
+
+    if (isVueRouterInstrumentationPresent) {
+      return;
+    }
+
     const httpMonitor = monitorHttpRequests();
     const domMutationsMonitor = monitorDomMutations();
     const urlMonitor = monitorUrlChanges();
