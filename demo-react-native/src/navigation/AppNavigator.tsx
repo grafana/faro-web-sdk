@@ -45,7 +45,7 @@ export function AppNavigator() {
         initialRouteName="Home"
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#FF5F00',
+            backgroundColor: '#F15B2A',
           },
           headerTintColor: '#fff',
           headerTitleStyle: {

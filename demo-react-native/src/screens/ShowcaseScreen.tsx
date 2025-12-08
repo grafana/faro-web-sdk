@@ -76,11 +76,6 @@ export function ShowcaseScreen(_props: Props) {
       errors: 0,
       traces: 0,
     });
-
-    Alert.alert(
-      'User Switched',
-      `Now demonstrating as:\n${user.displayName}\n\nAll telemetry will be associated with this user.`,
-    );
   };
 
   // Demo Action 1: Send Various Logs
@@ -125,10 +120,6 @@ export function ShowcaseScreen(_props: Props) {
     }
 
     setActionCounts(prev => ({ ...prev, logs: prev.logs + numLogs }));
-    Alert.alert(
-      'Logs Sent',
-      `${numLogs} realistic log messages sent for ${currentUser.displayName}`,
-    );
   };
 
   // Demo Action 2: Send Custom Events
@@ -245,12 +236,6 @@ export function ShowcaseScreen(_props: Props) {
     }
 
     setActionCounts(prev => ({ ...prev, events: prev.events + numEvents }));
-    Alert.alert(
-      'Events Sent',
-      `${numEvents} realistic events sent:\n${selectedEvents.join(
-        ', ',
-      )}\n\nThese events will appear in your Grafana dashboard.`,
-    );
   };
 
   // Demo Action 3: Simulated HTTP Requests
@@ -258,134 +243,126 @@ export function ShowcaseScreen(_props: Props) {
     if (!currentUser) return;
 
     setLoading(true);
-    try {
-      // Realistic API endpoints with varied resources and dynamic IDs
-      const endpointOptions = [
-        {
-          baseUrl: 'https://jsonplaceholder.typicode.com/posts',
-          resource: 'post_data',
-          method: 'GET',
-          idRange: 100,
-        },
-        {
-          baseUrl: 'https://jsonplaceholder.typicode.com/users',
-          resource: 'user_profile',
-          method: 'GET',
-          idRange: 10,
-        },
-        {
-          baseUrl: 'https://jsonplaceholder.typicode.com/comments',
-          resource: 'comments_list',
-          method: 'GET',
-          query: true,
-        },
-        {
-          baseUrl: 'https://jsonplaceholder.typicode.com/todos',
-          resource: 'todo_item',
-          method: 'GET',
-          idRange: 200,
-        },
-        {
-          baseUrl: 'https://jsonplaceholder.typicode.com/albums',
-          resource: 'albums_collection',
-          method: 'GET',
-          idRange: 100,
-        },
-        {
-          baseUrl: 'https://jsonplaceholder.typicode.com/photos',
-          resource: 'photo_gallery',
-          method: 'GET',
-          query: true,
-        },
-        {
-          baseUrl: 'https://jsonplaceholder.typicode.com/users',
-          resource: 'users_directory',
-          method: 'GET',
-          collection: true,
-        },
-        {
-          baseUrl: 'https://jsonplaceholder.typicode.com/posts',
-          resource: 'user_posts',
-          method: 'GET',
-          query: true,
-        },
-        {
-          baseUrl: 'https://httpbin.org/delay',
-          resource: 'slow_operation',
-          method: 'GET',
-          delayParam: true,
-        },
-        {
-          baseUrl: 'https://jsonplaceholder.typicode.com/posts',
-          resource: 'post_comments',
-          method: 'GET',
-          commentsPath: true,
-        },
-      ];
 
-      const selectedEndpoint =
-        endpointOptions[Math.floor(Math.random() * endpointOptions.length)];
+    // Realistic API endpoints with varied resources and dynamic IDs
+    const endpointOptions = [
+      {
+        baseUrl: 'https://jsonplaceholder.typicode.com/posts',
+        resource: 'post_data',
+        method: 'GET',
+        idRange: 100,
+      },
+      {
+        baseUrl: 'https://jsonplaceholder.typicode.com/users',
+        resource: 'user_profile',
+        method: 'GET',
+        idRange: 10,
+      },
+      {
+        baseUrl: 'https://jsonplaceholder.typicode.com/comments',
+        resource: 'comments_list',
+        method: 'GET',
+        query: true,
+      },
+      {
+        baseUrl: 'https://jsonplaceholder.typicode.com/todos',
+        resource: 'todo_item',
+        method: 'GET',
+        idRange: 200,
+      },
+      {
+        baseUrl: 'https://jsonplaceholder.typicode.com/albums',
+        resource: 'albums_collection',
+        method: 'GET',
+        idRange: 100,
+      },
+      {
+        baseUrl: 'https://jsonplaceholder.typicode.com/photos',
+        resource: 'photo_gallery',
+        method: 'GET',
+        query: true,
+      },
+      {
+        baseUrl: 'https://jsonplaceholder.typicode.com/users',
+        resource: 'users_directory',
+        method: 'GET',
+        collection: true,
+      },
+      {
+        baseUrl: 'https://jsonplaceholder.typicode.com/posts',
+        resource: 'user_posts',
+        method: 'GET',
+        query: true,
+      },
+      {
+        baseUrl: 'https://httpbin.org/delay',
+        resource: 'slow_operation',
+        method: 'GET',
+        delayParam: true,
+      },
+      {
+        baseUrl: 'https://jsonplaceholder.typicode.com/posts',
+        resource: 'post_comments',
+        method: 'GET',
+        commentsPath: true,
+      },
+    ];
 
-      // Build the URL with random parameters
-      let url = selectedEndpoint.baseUrl;
+    const selectedEndpoint =
+      endpointOptions[Math.floor(Math.random() * endpointOptions.length)];
 
-      if (
-        selectedEndpoint.idRange &&
-        !selectedEndpoint.collection &&
-        !selectedEndpoint.query
-      ) {
-        // Add random ID to path
-        const randomId =
-          Math.floor(Math.random() * selectedEndpoint.idRange) + 1;
-        url = `${url}/${randomId}`;
-      } else if (selectedEndpoint.query) {
-        // Add query parameters
-        if (selectedEndpoint.resource === 'comments_list') {
-          const postId = Math.floor(Math.random() * 100) + 1;
-          url = `${url}?postId=${postId}`;
-        } else if (selectedEndpoint.resource === 'photo_gallery') {
-          const albumId = Math.floor(Math.random() * 100) + 1;
-          url = `${url}?albumId=${albumId}`;
-        } else if (selectedEndpoint.resource === 'user_posts') {
-          const userId = Math.floor(Math.random() * 10) + 1;
-          url = `${url}?userId=${userId}`;
-        }
-      } else if (selectedEndpoint.delayParam) {
-        // Add random delay between 1-3 seconds
-        const delay = Math.floor(Math.random() * 3) + 1;
-        url = `${url}/${delay}`;
-      } else if (selectedEndpoint.commentsPath) {
+    // Build the URL with random parameters
+    let url = selectedEndpoint.baseUrl;
+
+    if (
+      selectedEndpoint.idRange &&
+      !selectedEndpoint.collection &&
+      !selectedEndpoint.query
+    ) {
+      // Add random ID to path
+      const randomId =
+        Math.floor(Math.random() * selectedEndpoint.idRange) + 1;
+      url = `${url}/${randomId}`;
+    } else if (selectedEndpoint.query) {
+      // Add query parameters
+      if (selectedEndpoint.resource === 'comments_list') {
         const postId = Math.floor(Math.random() * 100) + 1;
-        url = `${url}/${postId}/comments`;
+        url = `${url}?postId=${postId}`;
+      } else if (selectedEndpoint.resource === 'photo_gallery') {
+        const albumId = Math.floor(Math.random() * 100) + 1;
+        url = `${url}?albumId=${albumId}`;
+      } else if (selectedEndpoint.resource === 'user_posts') {
+        const userId = Math.floor(Math.random() * 10) + 1;
+        url = `${url}?userId=${userId}`;
       }
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      faro.api.pushEvent('api_request_completed', {
-        endpoint: url,
-        resource: selectedEndpoint.resource,
-        method: selectedEndpoint.method,
-        status: String(response.status),
-        role: currentUser.attributes.role,
-        userId: currentUser.id,
-        response_size: String(JSON.stringify(data).length),
-      });
-
-      setActionCounts(prev => ({
-        ...prev,
-        httpRequests: prev.httpRequests + 1,
-      }));
-
-      Alert.alert(
-        'HTTP Request Completed',
-        `Resource: ${selectedEndpoint.resource}\nEndpoint: ${url}\nStatus: ${response.status}\n\nHTTP requests are automatically traced!`,
-      );
-    } catch (error) {
-      Alert.alert('Error', `HTTP request failed: ${error}`);
-    } finally {
-      setLoading(false);
+    } else if (selectedEndpoint.delayParam) {
+      // Add random delay between 1-3 seconds
+      const delay = Math.floor(Math.random() * 3) + 1;
+      url = `${url}/${delay}`;
+    } else if (selectedEndpoint.commentsPath) {
+      const postId = Math.floor(Math.random() * 100) + 1;
+      url = `${url}/${postId}/comments`;
     }
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    faro.api.pushEvent('api_request_completed', {
+      endpoint: url,
+      resource: selectedEndpoint.resource,
+      method: selectedEndpoint.method,
+      status: String(response.status),
+      role: currentUser.attributes.role,
+      userId: currentUser.id,
+      response_size: String(JSON.stringify(data).length),
+    });
+
+    setActionCounts(prev => ({
+      ...prev,
+      httpRequests: prev.httpRequests + 1,
+    }));
+
+    setLoading(false);
   };
 
   // Demo Action 4: Generate Errors (different severity)
@@ -479,11 +456,6 @@ export function ShowcaseScreen(_props: Props) {
     });
 
     setActionCounts(prev => ({ ...prev, errors: prev.errors + 1 }));
-
-    Alert.alert(
-      'Error Generated',
-      `Type: ${randomError.type}\nCode: ${randomError.code}\nSeverity: ${randomError.severity}\n\nThis error is now tracked in Grafana Cloud.`,
-    );
   };
 
   // Demo Action 5: Create Distributed Trace
@@ -671,64 +643,51 @@ export function ShowcaseScreen(_props: Props) {
       },
     });
 
-    try {
-      await context.with(
-        trace.setSpan(context.active(), workflowSpan),
-        async () => {
-          // Execute each step in the workflow
-          for (const step of selectedWorkflow.steps) {
-            const stepSpan = tracer.startSpan(step.name, {
-              attributes: {
-                'step.name': step.name,
-                'step.duration_ms': step.duration,
-              },
-            });
+    await context.with(
+      trace.setSpan(context.active(), workflowSpan),
+      async () => {
+        // Execute each step in the workflow
+        for (const step of selectedWorkflow.steps) {
+          const stepSpan = tracer.startSpan(step.name, {
+            attributes: {
+              'step.name': step.name,
+              'step.duration_ms': step.duration,
+            },
+          });
 
-            await new Promise<void>(resolve =>
-              setTimeout(resolve, step.duration),
-            );
+          await new Promise<void>(resolve =>
+            setTimeout(resolve, step.duration),
+          );
 
-            if (step.event) {
-              stepSpan.addEvent(step.event, step.eventData || {});
-            }
-
-            stepSpan.setStatus({ code: SpanStatusCode.OK });
-            stepSpan.end();
+          if (step.event) {
+            stepSpan.addEvent(step.event, step.eventData || {});
           }
 
-          workflowSpan.setStatus({ code: SpanStatusCode.OK });
-        },
-      );
+          stepSpan.setStatus({ code: SpanStatusCode.OK });
+          stepSpan.end();
+        }
 
-      const traceId = workflowSpan.spanContext().traceId;
-      setLastTraceId(traceId);
+        workflowSpan.setStatus({ code: SpanStatusCode.OK });
+      },
+    );
 
-      faro.api.pushEvent('workflow_completed', {
-        traceId,
-        userId: currentUser.id,
-        workflowType: selectedWorkflow.name,
-        stepCount: String(selectedWorkflow.steps.length),
-        totalDuration: String(
-          selectedWorkflow.steps.reduce((sum, s) => sum + s.duration, 0),
-        ),
-      });
+    const traceId = workflowSpan.spanContext().traceId;
+    setLastTraceId(traceId);
 
-      setActionCounts(prev => ({ ...prev, traces: prev.traces + 1 }));
+    faro.api.pushEvent('workflow_completed', {
+      traceId,
+      userId: currentUser.id,
+      workflowType: selectedWorkflow.name,
+      stepCount: String(selectedWorkflow.steps.length),
+      totalDuration: String(
+        selectedWorkflow.steps.reduce((sum, s) => sum + s.duration, 0),
+      ),
+    });
 
-      Alert.alert(
-        'Trace Created',
-        `Workflow: ${selectedWorkflow.name}\n\nTrace ID: ${traceId}\n\n${selectedWorkflow.steps.length} steps traced for ${currentUser.displayName}`,
-      );
-    } catch (error) {
-      workflowSpan.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: String(error),
-      });
-      Alert.alert('Error', `Trace creation failed: ${error}`);
-    } finally {
-      workflowSpan.end();
-      setLoading(false);
-    }
+    setActionCounts(prev => ({ ...prev, traces: prev.traces + 1 }));
+
+    workflowSpan.end();
+    setLoading(false);
   };
 
   // Demo Action 6: Complex User Journey
@@ -906,74 +865,65 @@ export function ShowcaseScreen(_props: Props) {
     let eventCount = 0;
     let httpCount = 0;
 
-    try {
-      console.log(
-        `[Journey] ${currentUser.username} started ${selectedJourney.name}`,
-      );
+    console.log(
+      `[Journey] ${currentUser.username} started ${selectedJourney.name}`,
+    );
 
-      for (const step of selectedJourney.steps) {
-        switch (step.type) {
-          case 'log':
-            if ('message' in step) {
-              console.log(`[${currentUser.username}] ${step.message}`);
-              logCount++;
-            }
-            break;
-          case 'http':
-            if ('url' in step && step.url) {
-              await fetch(step.url);
-              httpCount++;
-            }
-            break;
-          case 'event':
-            if ('name' in step && step.name) {
-              // Convert attrs to strings
-              const stringAttrs: Record<string, string> = {};
-              if ('attrs' in step && step.attrs) {
-                for (const [key, value] of Object.entries(step.attrs)) {
-                  stringAttrs[key] = String(value);
-                }
+    for (const step of selectedJourney.steps) {
+      switch (step.type) {
+        case 'log':
+          if ('message' in step) {
+            console.log(`[${currentUser.username}] ${step.message}`);
+            logCount++;
+          }
+          break;
+        case 'http':
+          if ('url' in step && step.url) {
+            await fetch(step.url);
+            httpCount++;
+          }
+          break;
+        case 'event':
+          if ('name' in step && step.name) {
+            // Convert attrs to strings
+            const stringAttrs: Record<string, string> = {};
+            if ('attrs' in step && step.attrs) {
+              for (const [key, value] of Object.entries(step.attrs)) {
+                stringAttrs[key] = String(value);
               }
-
-              faro.api.pushEvent(step.name, {
-                userId: currentUser.id,
-                plan: currentUser.attributes.plan,
-                role: currentUser.attributes.role,
-                timestamp: new Date().toISOString(),
-                ...stringAttrs,
-              });
-              eventCount++;
             }
-            break;
-        }
 
-        if (step.delay > 0) {
-          await new Promise<void>(resolve => setTimeout(resolve, step.delay));
-        }
+            faro.api.pushEvent(step.name, {
+              userId: currentUser.id,
+              plan: currentUser.attributes.plan,
+              role: currentUser.attributes.role,
+              timestamp: new Date().toISOString(),
+              ...stringAttrs,
+            });
+            eventCount++;
+          }
+          break;
       }
 
-      // Complete the journey
-      if (action) {
-        (action as any).end?.();
+      if (step.delay > 0) {
+        await new Promise<void>(resolve => setTimeout(resolve, step.delay));
       }
-
-      setActionCounts(prev => ({
-        logs: prev.logs + logCount,
-        events: prev.events + eventCount,
-        httpRequests: prev.httpRequests + httpCount,
-        errors: prev.errors,
-        traces: prev.traces + 1,
-      }));
-
-      Alert.alert(
-        'Journey Complete',
-        `${currentUser.displayName} completed:\n${selectedJourney.name}\n\n📊 Generated:\n• ${logCount} logs\n• ${eventCount} events\n• ${httpCount} HTTP requests\n• 1 trace\n\nCheck your Grafana dashboard!`,
-      );
-    } catch (error) {
-      Alert.alert('Error', `Journey failed: ${error}`);
-    } finally {
-      setLoading(false);
     }
+
+    // Complete the journey
+    if (action) {
+      (action as any).end?.();
+    }
+
+    setActionCounts(prev => ({
+      logs: prev.logs + logCount,
+      events: prev.events + eventCount,
+      httpRequests: prev.httpRequests + httpCount,
+      errors: prev.errors,
+      traces: prev.traces + 1,
+    }));
+
+    setLoading(false);
   };
 
   return (
