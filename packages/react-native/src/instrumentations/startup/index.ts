@@ -1,5 +1,6 @@
-import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 import { NativeModules } from 'react-native';
+
+import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
 import type { StartupInstrumentationOptions } from './types';
 
@@ -59,9 +60,6 @@ export class StartupInstrumentation extends BaseInstrumentation {
 
   private captureStartupMetrics(): void {
     try {
-      console.log('[STARTUP DEBUG] captureStartupMetrics called');
-      console.log('[STARTUP DEBUG] FaroReactNativeModule:', FaroReactNativeModule);
-
       // Get startup duration from native module
       if (!FaroReactNativeModule?.getAppStartDuration) {
         this.logWarn(
@@ -72,10 +70,8 @@ export class StartupInstrumentation extends BaseInstrumentation {
         return;
       }
 
-      console.log('[STARTUP DEBUG] Calling getAppStartDuration...');
       // Call native method to get duration (calculated on-demand by OS APIs)
       const appStartDuration = FaroReactNativeModule.getAppStartDuration();
-      console.log('[STARTUP DEBUG] App start duration received:', appStartDuration);
 
       if (appStartDuration === 0) {
         this.logWarn(
@@ -92,19 +88,20 @@ export class StartupInstrumentation extends BaseInstrumentation {
         total_duration_ms: appStartDuration,
       };
 
-      console.log('[STARTUP DEBUG] Pushing measurement:', { type: 'app_startup', values });
-      this.api.pushMeasurement(
-        { type: 'app_startup', values },
-        {
-          skipDedupe: true,
-        }
-      );
+      // Send measurement after 100ms to ensure Faro Transport is initialized.
+      // The values are already calculated, so timestamp is not important.
+      setTimeout(() => {
+        this.api.pushMeasurement(
+          { type: 'app_startup', values },
+          {
+            skipDedupe: true,
+          }
+        );
+      }, 100);
 
       this.logInfo(`Startup metrics captured successfully: ${appStartDuration}ms`);
-      console.log('[STARTUP DEBUG] Measurement pushed successfully');
     } catch (error) {
       this.logError('Failed to capture startup metrics', error);
-      console.error('[STARTUP DEBUG] Error:', error);
     }
   }
 
