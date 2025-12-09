@@ -47,6 +47,10 @@ initializeFaro({
 - **Startup Instrumentation** - Automatically tracks app startup duration from process start
 - **HTTP Instrumentation** - Tracks HTTP requests and correlates them with user actions
 
+### React Integration
+
+- **Error Boundary** - Catch and report React component errors with `FaroErrorBoundary`
+
 ### Tracking User Actions
 
 The SDK provides intelligent user action tracking with:
@@ -227,6 +231,134 @@ try {
   });
 }
 ```
+
+### React Error Boundary
+
+Catch and report React component errors automatically with Faro's Error Boundary:
+
+#### Using the Component
+
+```tsx
+import { FaroErrorBoundary } from '@grafana/faro-react-native';
+import { Text, View } from 'react-native';
+
+function App() {
+  return (
+    <FaroErrorBoundary fallback={<Text>Something went wrong</Text>}>
+      <YourApp />
+    </FaroErrorBoundary>
+  );
+}
+```
+
+#### Using the HOC
+
+```tsx
+import { withFaroErrorBoundary } from '@grafana/faro-react-native';
+import { Text } from 'react-native';
+
+const MyComponent = () => <Text>Hello</Text>;
+
+export default withFaroErrorBoundary(MyComponent, {
+  fallback: <Text>Error occurred</Text>,
+});
+```
+
+#### Advanced Configuration
+
+```tsx
+import { FaroErrorBoundary } from '@grafana/faro-react-native';
+
+function App() {
+  return (
+    <FaroErrorBoundary
+      // Static fallback UI
+      fallback={<ErrorScreen />}
+
+      // OR: Dynamic fallback with error details and reset function
+      fallback={(error, resetError) => (
+        <View>
+          <Text>Error: {error.message}</Text>
+          <Button title="Try Again" onPress={resetError} />
+        </View>
+      )}
+
+      // Modify error before it's sent to Faro
+      beforeCapture={(error) => {
+        console.log('About to capture:', error);
+      }}
+
+      // React to errors
+      onError={(error) => {
+        console.error('Error caught:', error);
+      }}
+
+      // Lifecycle hooks
+      onMount={() => console.log('Error boundary mounted')}
+      onUnmount={(error) => console.log('Unmounting, had error:', error)}
+      onReset={(error) => console.log('Resetting from error:', error)}
+
+      // Pass additional options to faro.api.pushError
+      pushErrorOptions={{
+        context: {
+          screen: 'HomeScreen',
+        },
+      }}
+    >
+      <YourApp />
+    </FaroErrorBoundary>
+  );
+}
+```
+
+**Error Boundary Props:**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `fallback` | `ReactElement \| (error, reset) => ReactElement` | UI to show when an error occurs. Can be static or a render function. |
+| `beforeCapture` | `(error: Error) => void` | Called before error is sent to Faro. Use to modify or inspect the error. |
+| `onError` | `(error: Error) => void` | Called after error is caught. Use for logging or analytics. |
+| `onMount` | `() => void` | Called when error boundary mounts. |
+| `onReset` | `(error: Error \| null) => void` | Called when error boundary is reset (via `resetError` function). |
+| `onUnmount` | `(error: Error \| null) => void` | Called when error boundary unmounts. Receives error if one was caught. |
+| `pushErrorOptions` | `PushErrorOptions` | Additional options passed to `faro.api.pushError()`. |
+| `children` | `ReactNode \| () => ReactNode` | Component(s) to wrap with error boundary. |
+
+**Features:**
+
+- ✅ **Automatic Error Reporting**: Errors are automatically sent to Faro
+- ✅ **Component Stack Traces**: Includes React component stack in error reports
+- ✅ **Custom Fallback UI**: Show user-friendly error messages
+- ✅ **Error Reset**: Programmatically recover from errors
+- ✅ **Lifecycle Hooks**: React to error boundary lifecycle events
+- ✅ **Flexible Configuration**: Static or dynamic fallback, custom error handling
+
+**Best Practices:**
+
+1. **Wrap your entire app** for global error catching:
+   ```tsx
+   <FaroErrorBoundary fallback={<GlobalErrorScreen />}>
+     <App />
+   </FaroErrorBoundary>
+   ```
+
+2. **Wrap critical sections** for granular error handling:
+   ```tsx
+   <FaroErrorBoundary fallback={<CheckoutError />}>
+     <CheckoutFlow />
+   </FaroErrorBoundary>
+   ```
+
+3. **Use dynamic fallback** for better UX:
+   ```tsx
+   fallback={(error, resetError) => (
+     <ErrorView error={error} onRetry={resetError} />
+   )}
+   ```
+
+4. **Combine with ErrorsInstrumentation** for comprehensive error tracking:
+   - Error Boundary catches React component errors
+   - ErrorsInstrumentation catches unhandled errors and promise rejections
 
 ## Configuration
 
@@ -642,7 +774,7 @@ The SDK automatically emits `app_state_changed` events when the app state transi
 | avg
 ```
 
-For detailed testing instructions, see `demo-react-native/TESTING_APPSTATE.md`.
+For a complete example of app state tracking in action, see the [demo-react-native](../../demo-react-native) application.
 
 ### Performance Instrumentation Configuration
 
@@ -994,6 +1126,11 @@ See the [demo-react-native](../../demo-react-native) directory for a complete ex
 - `withFaroUserAction<P>(Component, defaultActionName)` - HOC for tracking component interactions
 - `trackUserAction(actionName, context?)` - Manual user action tracking
 
+### Error Boundary API
+
+- `FaroErrorBoundary` - React component for catching and reporting component errors
+- `withFaroErrorBoundary<P>(Component, errorBoundaryProps)` - HOC for wrapping components with error boundary
+
 ### Transports
 
 Transports control where and how telemetry data is sent.
@@ -1065,6 +1202,14 @@ console.debug('New event', {
 - `ViewInstrumentation` - View/screen tracking
 - `AppStateInstrumentation` - App state changes
 - `UserActionInstrumentation` - User interaction tracking
+- `HttpInstrumentation` - HTTP request tracking with user action correlation
+- `PerformanceInstrumentation` - CPU and memory usage monitoring
+- `StartupInstrumentation` - App startup time tracking
+
+### React Components
+
+- `FaroErrorBoundary` - Error boundary component for catching React errors
+- `withFaroErrorBoundary` - HOC for wrapping components with error boundary
 
 ## Future Enhancements
 

@@ -53,9 +53,11 @@ This demo app demonstrates:
 - **Device Meta**: Collects device information (model, OS version, etc.)
 - **Screen Meta**: Tracks screen dimensions
 - **Transport**: Sends telemetry data to Grafana Cloud via fetch
+- **HTTP Request Instrumentation**: Automatic tracking of fetch/API calls with user action correlation
+- **Performance Monitoring**: CPU and memory usage tracking using native OS APIs
+- **Startup Instrumentation**: Automatic app startup time tracking
 
 ### Not Yet Implemented ⏳
-- **HTTP Request Instrumentation**: Automatic tracking of fetch/API calls
 - **OpenTelemetry Tracing**: Distributed tracing support
 - **Performance Navigation Timing**: Enhanced navigation performance tracking
 
