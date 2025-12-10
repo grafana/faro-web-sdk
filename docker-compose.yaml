@@ -1,131 +1,131 @@
-version: "3.8"
+version: '3.8'
 
 services:
   mimir:
     env_file:
-      - "./.env"
-    image: "grafana/mimir:3.0.1@sha256:5f4667c9b7164a376bd555a56b5a7074535303e1924192a267bad7f0b72893f7"
+      - './.env'
+    image: 'grafana/mimir:3.0.1@sha256:5f4667c9b7164a376bd555a56b5a7074535303e1924192a267bad7f0b72893f7'
     volumes:
-      - "${MIMIR_CONFIG_PATH_LOCAL}:${MIMIR_CONFIG_PATH}"
+      - '${MIMIR_CONFIG_PATH_LOCAL}:${MIMIR_CONFIG_PATH}'
     entrypoint:
-      - "/bin/mimir"
-      - "-config.file=${MIMIR_CONFIG_PATH}/${MIMIR_CONFIG_FILE}"
+      - '/bin/mimir'
+      - '-config.file=${MIMIR_CONFIG_PATH}/${MIMIR_CONFIG_FILE}'
     ports:
-      - "${MIMIR_PORT}:${MIMIR_PORT}"
+      - '${MIMIR_PORT}:${MIMIR_PORT}'
 
   grafana:
     env_file:
-      - "./.env"
-    image: "grafana/grafana:12.3.0@sha256:70d9599b186ce287be0d2c5ba9a78acb2e86c1a68c9c41449454d0fc3eeb84e8"
+      - './.env'
+    image: 'grafana/grafana:12.3.0@sha256:70d9599b186ce287be0d2c5ba9a78acb2e86c1a68c9c41449454d0fc3eeb84e8'
     volumes:
-      - "${GRAFANA_CONFIG_PATH_LOCAL}:${GRAFANA_CONFIG_PATH}"
-      - "${GRAFANA_DATASOURCES_PATH_LOCAL}:${GRAFANA_DATASOURCES_PATH}"
-      - "${GRAFANA_DASHBOARDS_PROVISIONING_PATH_LOCAL}:${GRAFANA_DASHBOARDS_PROVISIONING_PATH}"
-      - "${GRAFANA_DASHBOARDS_PATH_LOCAL}:${GRAFANA_DASHBOARDS_PATH}"
-      - "${GRAFANA_PLUGINS_PATH_LOCAL}:${GRAFANA_PLUGINS_PATH}"
-      - "${GRAFANA_PLUGINS_PROVISIONING_PATH_LOCAL}:${GRAFANA_PLUGINS_PROVISIONING_PATH}"
+      - '${GRAFANA_CONFIG_PATH_LOCAL}:${GRAFANA_CONFIG_PATH}'
+      - '${GRAFANA_DATASOURCES_PATH_LOCAL}:${GRAFANA_DATASOURCES_PATH}'
+      - '${GRAFANA_DASHBOARDS_PROVISIONING_PATH_LOCAL}:${GRAFANA_DASHBOARDS_PROVISIONING_PATH}'
+      - '${GRAFANA_DASHBOARDS_PATH_LOCAL}:${GRAFANA_DASHBOARDS_PATH}'
+      - '${GRAFANA_PLUGINS_PATH_LOCAL}:${GRAFANA_PLUGINS_PATH}'
+      - '${GRAFANA_PLUGINS_PROVISIONING_PATH_LOCAL}:${GRAFANA_PLUGINS_PROVISIONING_PATH}'
     entrypoint:
-      - "${GRAFANA_HOME_PATH}/bin/grafana-server"
-      - "--homepath=${GRAFANA_HOME_PATH}"
-      - "--config=${GRAFANA_CONFIG_PATH}/${GRAFANA_CONFIG_FILE}"
+      - '${GRAFANA_HOME_PATH}/bin/grafana-server'
+      - '--homepath=${GRAFANA_HOME_PATH}'
+      - '--config=${GRAFANA_CONFIG_PATH}/${GRAFANA_CONFIG_FILE}'
     ports:
-      - "${GRAFANA_PORT}:${GRAFANA_PORT}"
+      - '${GRAFANA_PORT}:${GRAFANA_PORT}'
 
   loki:
     env_file:
-      - "./.env"
-    image: "grafana/loki:3.6.2@sha256:fad94db64eeb0e14544953789c942453df68a860b6f760d867f06c5b31f461ab"
-    command: "-config.file=${LOKI_CONFIG_PATH}/${LOKI_CONFIG_FILE}"
+      - './.env'
+    image: 'grafana/loki:3.6.2@sha256:fad94db64eeb0e14544953789c942453df68a860b6f760d867f06c5b31f461ab'
+    command: '-config.file=${LOKI_CONFIG_PATH}/${LOKI_CONFIG_FILE}'
     ports:
-      - "${LOKI_PORT}:${LOKI_PORT}"
+      - '${LOKI_PORT}:${LOKI_PORT}'
 
   tempo:
     env_file:
-      - "./.env"
-    image: "grafana/tempo:2.9.0@sha256:65a5789759435f1ef696f1953258b9bbdb18eb571d5ce711ff812d2e128288a4"
+      - './.env'
+    image: 'grafana/tempo:2.9.0@sha256:65a5789759435f1ef696f1953258b9bbdb18eb571d5ce711ff812d2e128288a4'
     volumes:
-      - "${TEMPO_CONFIG_PATH_LOCAL}:${TEMPO_CONFIG_PATH}"
+      - '${TEMPO_CONFIG_PATH_LOCAL}:${TEMPO_CONFIG_PATH}'
     command:
-      - "-config.file=${TEMPO_CONFIG_PATH}/${TEMPO_CONFIG_FILE}"
-      - "-config.expand-env=true"
+      - '-config.file=${TEMPO_CONFIG_PATH}/${TEMPO_CONFIG_FILE}'
+      - '-config.expand-env=true'
     ports:
-      - "${TEMPO_PORT}:${TEMPO_PORT}"
+      - '${TEMPO_PORT}:${TEMPO_PORT}'
 
   alloy:
     env_file:
-      - "./.env"
-    image: "grafana/alloy:v1.11.3@sha256:8c7256f412feb9f5f48f9f6f9394dc97ca887f63dea9304f347970ecc1787669"
+      - './.env'
+    image: 'grafana/alloy:v1.11.3@sha256:8c7256f412feb9f5f48f9f6f9394dc97ca887f63dea9304f347970ecc1787669'
     volumes:
-      - "${ALLOY_CONFIG_PATH_LOCAL}:${ALLOY_CONFIG_PATH}"
+      - '${ALLOY_CONFIG_PATH_LOCAL}:${ALLOY_CONFIG_PATH}'
     entrypoint:
-      - "/bin/alloy"
-      - "run"
-      - "--server.http.listen-addr=0.0.0.0:12345"
+      - '/bin/alloy'
+      - 'run'
+      - '--server.http.listen-addr=0.0.0.0:12345'
       - '--config.extra-args="-config.expand-env"'
-      - "${ALLOY_CONFIG_PATH}/${ALLOY_CONFIG_FILE}"
+      - '${ALLOY_CONFIG_PATH}/${ALLOY_CONFIG_FILE}'
     ports:
-      - "${AGENT_PORT}:${AGENT_PORT}"
-      - "${AGENT_PORT_APP_RECEIVER}:${AGENT_PORT_APP_RECEIVER}"
-      - "${TEMPO_PORT_OTLP_RECEIVER}:${TEMPO_PORT_OTLP_RECEIVER}"
+      - '${AGENT_PORT}:${AGENT_PORT}'
+      - '${AGENT_PORT_APP_RECEIVER}:${AGENT_PORT_APP_RECEIVER}'
+      - '${TEMPO_PORT_OTLP_RECEIVER}:${TEMPO_PORT_OTLP_RECEIVER}'
     depends_on:
-      - "mimir"
-      - "grafana"
-      - "loki"
-      - "tempo"
+      - 'mimir'
+      - 'grafana'
+      - 'loki'
+      - 'tempo'
 
   database:
     env_file:
-      - "./.env"
-    image: "postgres:17.6@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929"
+      - './.env'
+    image: 'postgres:17.6@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929'
     volumes:
-      - "db_data:/var/lib/postgresql/data"
+      - 'db_data:/var/lib/postgresql/data'
     environment:
-      POSTGRES_USER: "${DATABASE_USER}"
-      POSTGRES_PASSWORD: "${DATABASE_PASSWORD}"
-      POSTGRES_DB: "${DATABASE_NAME}"
+      POSTGRES_USER: '${DATABASE_USER}'
+      POSTGRES_PASSWORD: '${DATABASE_PASSWORD}'
+      POSTGRES_DB: '${DATABASE_NAME}'
     ports:
-      - "${DATABASE_PORT}:${DATABASE_PORT}"
+      - '${DATABASE_PORT}:${DATABASE_PORT}'
 
   demo:
     env_file:
-      - "./.env"
+      - './.env'
     profiles:
-      - "demo"
+      - 'demo'
     volumes:
-      - "./${DEMO_DEMO_PATH}:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}"
-      - "./${DEMO_PACKAGES_PATH}:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_PATH}"
-      - "demo_build_cache:${DEMO_WORKSPACE_PATH}/.cache"
-      - "demo_node_modules:${DEMO_WORKSPACE_PATH}/node_modules"
-      - "demo_demo_dist:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/dist"
-      - "demo_demo_logs:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/${DEMO_SERVER_LOGS_PATH}"
-      - "demo_demo_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/node_modules"
-      - "demo_core_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/dist"
-      - "demo_core_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/node_modules"
-      - "demo_react_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_REACT_PATH}/dist"
-      - "demo_react_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_REACT_PATH}/node_modules"
-      - "demo_web_sdk_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_SDK_PATH}/dist"
-      - "demo_web_sdk_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_SDK_PATH}/node_modules"
-      - "demo_web_tracing_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_TRACING_PATH}/dist"
-      - "demo_web_tracing_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_TRACING_PATH}/node_modules"
+      - './${DEMO_DEMO_PATH}:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}'
+      - './${DEMO_PACKAGES_PATH}:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_PATH}'
+      - 'demo_build_cache:${DEMO_WORKSPACE_PATH}/.cache'
+      - 'demo_node_modules:${DEMO_WORKSPACE_PATH}/node_modules'
+      - 'demo_demo_dist:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/dist'
+      - 'demo_demo_logs:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/${DEMO_SERVER_LOGS_PATH}'
+      - 'demo_demo_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_DEMO_PATH}/node_modules'
+      - 'demo_core_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/dist'
+      - 'demo_core_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_CORE_PATH}/node_modules'
+      - 'demo_react_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_REACT_PATH}/dist'
+      - 'demo_react_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_REACT_PATH}/node_modules'
+      - 'demo_web_sdk_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_SDK_PATH}/dist'
+      - 'demo_web_sdk_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_SDK_PATH}/node_modules'
+      - 'demo_web_tracing_dist:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_TRACING_PATH}/dist'
+      - 'demo_web_tracing_node_modules:${DEMO_WORKSPACE_PATH}/${DEMO_PACKAGES_WEB_TRACING_PATH}/node_modules'
     build:
-      context: "."
+      context: '.'
       args:
-        DEMO_WORKSPACE_PATH: "${DEMO_WORKSPACE_PATH}"
-        DEMO_DEMO_PATH: "${DEMO_DEMO_PATH}"
-        DEMO_PACKAGES_CORE_PATH: "${DEMO_PACKAGES_CORE_PATH}"
-        DEMO_PACKAGES_PATH: "${DEMO_PACKAGES_PATH}"
-        DEMO_PACKAGES_REACT_PATH: "${DEMO_PACKAGES_REACT_PATH}"
-        DEMO_PACKAGES_WEB_SDK_PATH: "${DEMO_PACKAGES_WEB_SDK_PATH}"
-        DEMO_PACKAGES_WEB_TRACING_PATH: "${DEMO_PACKAGES_WEB_TRACING_PATH}"
-        DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH: "${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}"
-        DEMO_PORT: "${DEMO_PORT}"
-        DEMO_PORT_HMR: "${DEMO_PORT_HMR}"
+        DEMO_WORKSPACE_PATH: '${DEMO_WORKSPACE_PATH}'
+        DEMO_DEMO_PATH: '${DEMO_DEMO_PATH}'
+        DEMO_PACKAGES_CORE_PATH: '${DEMO_PACKAGES_CORE_PATH}'
+        DEMO_PACKAGES_PATH: '${DEMO_PACKAGES_PATH}'
+        DEMO_PACKAGES_REACT_PATH: '${DEMO_PACKAGES_REACT_PATH}'
+        DEMO_PACKAGES_WEB_SDK_PATH: '${DEMO_PACKAGES_WEB_SDK_PATH}'
+        DEMO_PACKAGES_WEB_TRACING_PATH: '${DEMO_PACKAGES_WEB_TRACING_PATH}'
+        DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH: '${DEMO_EXPERIMENTAL_TRANSPORT_OTLP_HTTP_PATH}'
+        DEMO_PORT: '${DEMO_PORT}'
+        DEMO_PORT_HMR: '${DEMO_PORT_HMR}'
     ports:
-      - "${DEMO_PORT}:${DEMO_PORT}"
-      - "${DEMO_PORT_HMR}:${DEMO_PORT_HMR}"
+      - '${DEMO_PORT}:${DEMO_PORT}'
+      - '${DEMO_PORT_HMR}:${DEMO_PORT_HMR}'
     depends_on:
-      - "alloy"
-      - "database"
+      - 'alloy'
+      - 'database'
 
 volumes:
   db_data:
