@@ -1,38 +1,35 @@
 import { StrictMode } from 'react';
-import { SSRProvider } from 'react-bootstrap';
 import { renderToString as reactRenderToString } from 'react-dom/server';
-import { HelmetProvider } from 'react-helmet-async';
-import type { FilledContext } from 'react-helmet-async';
 import { Provider as ReduxProvider } from 'react-redux';
-import { Routes } from 'react-router-dom';
-import { StaticRouter } from 'react-router-dom/server';
+import { createStaticHandler, createStaticRouter, StaticRouterProvider } from 'react-router';
 
-import { FaroErrorBoundary, setReactRouterV6SSRDependencies } from '@grafana/faro-react';
+import { FaroErrorBoundary } from '@grafana/faro-react';
 
-import { App } from '../../../client/App';
+import { routes } from '../../../client/router/routes';
 import { createStore } from '../../../client/store';
 
-setReactRouterV6SSRDependencies({ Routes });
+const handler = createStaticHandler(routes);
 
-export function renderToString(url: string, preloadedState: {}): [string, FilledContext] {
-  const helmetContext: FilledContext = {} as FilledContext;
+export async function renderToString(url: string, preloadedState: {}): Promise<string> {
+  const fetchRequest = new Request(`http://localhost${url}`, {
+    method: 'GET',
+  });
 
-  return [
-    reactRenderToString(
-      <StrictMode>
-        <FaroErrorBoundary>
-          <ReduxProvider store={createStore(preloadedState)}>
-            <HelmetProvider context={helmetContext}>
-              <StaticRouter location={url}>
-                <SSRProvider>
-                  <App />
-                </SSRProvider>
-              </StaticRouter>
-            </HelmetProvider>
-          </ReduxProvider>
-        </FaroErrorBoundary>
-      </StrictMode>
-    ),
-    helmetContext,
-  ];
+  const context = await handler.query(fetchRequest);
+
+  if (context instanceof Response) {
+    throw context;
+  }
+
+  const router = createStaticRouter(handler.dataRoutes, context);
+
+  return reactRenderToString(
+    <StrictMode>
+      <FaroErrorBoundary>
+        <ReduxProvider store={createStore(preloadedState)}>
+          <StaticRouterProvider router={router} context={context} />
+        </ReduxProvider>
+      </FaroErrorBoundary>
+    </StrictMode>
+  );
 }
