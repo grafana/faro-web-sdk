@@ -4,7 +4,8 @@ import type { InferAttributes, ModelCtor, Sequelize } from 'sequelize';
 import type { CommentInputModel, CommentModel } from '../../../common';
 
 export interface CommentShape
-  extends CommentModel,
+  extends
+    CommentModel,
     Model<InferAttributes<CommentShape>, CommentInputModel & Pick<CommentModel, 'articleId' | 'userId'>> {}
 
 export let Comment: ModelCtor<CommentShape>;
