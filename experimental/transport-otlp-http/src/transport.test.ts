@@ -420,6 +420,87 @@ describe('OtlpHttpTransport', () => {
     expect(mockResponseTextFn).toHaveBeenCalledTimes(1);
   });
 
+  it('will add static header values', () => {
+    const transport = new OtlpHttpTransport({
+      logsURL: 'https://www.example.com/v1/logs',
+      requestOptions: {
+        headers: {
+          Authorization: 'Bearer static-token',
+          'X-Static': 'static-value',
+        },
+      },
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    transport.send([logTransportItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://www.example.com/v1/logs',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer static-token',
+          'X-Static': 'static-value',
+        }),
+      })
+    );
+  });
+
+  it('will add dynamic header values from sync callbacks', () => {
+    const transport = new OtlpHttpTransport({
+      logsURL: 'https://www.example.com/v1/logs',
+      requestOptions: {
+        headers: {
+          Authorization: () => 'Bearer dynamic-token',
+          'X-User': () => 'user-123',
+        },
+      },
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    transport.send([logTransportItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://www.example.com/v1/logs',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer dynamic-token',
+          'X-User': 'user-123',
+        }),
+      })
+    );
+  });
+
+  it('will add static header values and dynamic header values from sync callbacks', () => {
+    const transport = new OtlpHttpTransport({
+      logsURL: 'https://www.example.com/v1/logs',
+      requestOptions: {
+        headers: {
+          Authorization: () => 'Bearer dynamic-token',
+          'X-Static': 'static-value',
+        },
+      },
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    transport.send([logTransportItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://www.example.com/v1/logs',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer dynamic-token',
+          'X-Static': 'static-value',
+        }),
+      })
+    );
+  });
+
   it('will not send traces data if traces URL is not set', () => {
     const transport = new OtlpHttpTransport({
       logsURL: 'www.example.com/v1/logs',
