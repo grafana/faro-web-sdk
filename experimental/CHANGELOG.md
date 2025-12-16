@@ -2,7 +2,7 @@
 
 ## Next
 
-## 2.0.3
+## 2.1.0
 
 - Added support for experimental `ReplayInstrumentation` (`@grafana/faro-instrumentation-replay`).
 
