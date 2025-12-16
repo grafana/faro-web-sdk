@@ -18,6 +18,24 @@ export class CSPInstrumentation extends BaseInstrumentation implements Instrumen
   }
 
   public securitypolicyviolationHandler(ev: SecurityPolicyViolationEvent) {
-    this.api.pushEvent('securitypolicyviolation', stringifyObjectValues(ev as Record<string, any>));
+    // We must explicitly extract properties because SecurityPolicyViolationEvent
+    // properties are getters on the prototype chain, not own enumerable properties.
+    // Object.entries() would not capture them.
+    const attributes = {
+      blockedURI: ev.blockedURI,
+      columnNumber: ev.columnNumber,
+      disposition: ev.disposition,
+      documentURI: ev.documentURI,
+      effectiveDirective: ev.effectiveDirective,
+      lineNumber: ev.lineNumber,
+      originalPolicy: ev.originalPolicy,
+      referrer: ev.referrer,
+      sample: ev.sample,
+      sourceFile: ev.sourceFile,
+      statusCode: ev.statusCode,
+      violatedDirective: ev.violatedDirective,
+    };
+
+    this.api.pushEvent('securitypolicyviolation', stringifyObjectValues(attributes));
   }
 }

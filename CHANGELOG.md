@@ -2,6 +2,10 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-sdk`): CSP violation events now correctly capture all SecurityPolicyViolationEvent
+  attributes. Previously, properties like `blockedURI`, `documentURI`, and others were missing because
+  native browser event properties are getters on the prototype chain, not own enumerable properties (#1491)
+
 ## 2.0.2
 
 - Breaking (`@grafana/faro-web-sdk`): User action events now have a standardized event name
