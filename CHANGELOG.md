@@ -2,9 +2,15 @@
 
 ## Next
 
+## 2.0.3
+
+- Feature (`@grafana/faro-react`): support for React 19 and React Router 7
+
 - Fix (`@grafana/faro-web-sdk`): CSP violation events now correctly capture all SecurityPolicyViolationEvent
   attributes. Previously, properties like `blockedURI`, `documentURI`, and others were missing because
   native browser event properties are getters on the prototype chain, not own enumerable properties (#1491)
+
+- Fix (`@grafana/faro-web-sdk`): circular dependency between events and userActions APIs (#1793)
 
 ## 2.0.2
 
