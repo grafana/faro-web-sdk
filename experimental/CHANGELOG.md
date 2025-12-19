@@ -2,6 +2,10 @@
 
 ## Next
 
+- Feature (`@grafana/faro-transport-otlp-http`): OLTP HTTP transport now supports
+  dynamic header values. Each header can be a static string or a function returning
+  a string, resolved at request time (#1490).
+
 ## 2.1.0
 
 - Added support for experimental `ReplayInstrumentation` (`@grafana/faro-instrumentation-replay`).
