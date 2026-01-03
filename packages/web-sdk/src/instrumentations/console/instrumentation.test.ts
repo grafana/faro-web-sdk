@@ -1,5 +1,5 @@
 import { initializeFaro, stringifyExternalJson, TransportItem } from '@grafana/faro-core';
-import type { ExceptionEvent, LogEvent } from '@grafana/faro-core';
+import type { ExceptionEvent, LogEvent, APIEvent } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
@@ -258,5 +258,81 @@ describe('ConsoleInstrumentation', () => {
     expect((mockTransport.items[2] as TransportItem<ExceptionEvent>)?.payload.value).toBe(
       'console.error: ' + errorLogMessage
     );
+  });
+
+  describe('console instrumentation race condition', () => {
+    it('should route console.error to both instances', () => {
+      const transport1 = new MockTransport();
+      const transport2 = new MockTransport();
+
+      initializeFaro(
+        makeCoreConfig(
+          mockConfig({
+            isolate: true,
+            transports: [transport1],
+          })
+        )!
+      );
+
+      initializeFaro(
+        makeCoreConfig(
+          mockConfig({
+            isolate: true,
+            transports: [transport2],
+          })
+        )!
+      );
+
+      console.error('Test console error');
+
+      const transport1Errors = transport1.items.filter(
+        (item: TransportItem<APIEvent>) =>
+          item.type === 'exception' || 
+          (item.type === 'log' && (item.payload as LogEvent).level === 'error')
+      );
+      const transport2Errors = transport2.items.filter(
+        (item: TransportItem<APIEvent>) =>
+          item.type === 'exception' || 
+          (item.type === 'log' && (item.payload as LogEvent).level === 'error')
+      );
+
+      expect(transport1Errors.length).toBeGreaterThan(0);
+      expect(transport2Errors.length).toBeGreaterThan(0);
+    });
+
+    it('should route console.log to both instances', () => {
+      const transport1 = new MockTransport();
+      const transport2 = new MockTransport();
+
+      initializeFaro(
+        makeCoreConfig(
+          mockConfig({
+            isolate: true,
+            transports: [transport1],
+          })
+        )!
+      );
+
+      initializeFaro(
+        makeCoreConfig(
+          mockConfig({
+            isolate: true,
+            transports: [transport2],
+          })
+        )!
+      );
+
+      console.log('Test log message');
+
+      const transport1Logs = transport1.items.filter(
+        (item: TransportItem<APIEvent>) => item.type === 'log'
+      );
+      const transport2Logs = transport2.items.filter(
+        (item: TransportItem<APIEvent>) => item.type === 'log'
+      );
+
+      expect(transport1Logs.length).toBeGreaterThan(0);
+      expect(transport2Logs.length).toBeGreaterThan(0);
+    });
   });
 });
