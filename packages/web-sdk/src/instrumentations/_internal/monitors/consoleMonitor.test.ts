@@ -1,4 +1,4 @@
-import { LogLevel } from '@grafana/faro-core';
+import { defaultUnpatchedConsole, LogLevel } from '@grafana/faro-core';
 
 import { __resetConsoleMonitorForTests, monitorConsole } from './consoleMonitor';
 import { MESSAGE_TYPE_CONSOLE } from './const';
@@ -69,8 +69,8 @@ describe('monitorConsole', () => {
   });
 
   it('calls original console method after notifying subscribers', () => {
-    const originalWarn = jest.fn();
-    console.warn = originalWarn;
+    // Spy on the defaultUnpatchedConsole which is what gets called after patching
+    const warnSpy = jest.spyOn(defaultUnpatchedConsole, 'warn').mockImplementation(() => {});
 
     const observable = monitorConsole();
     const mockSubscriber = jest.fn();
@@ -78,7 +78,25 @@ describe('monitorConsole', () => {
 
     console.warn('test warning');
 
-    expect(originalWarn).toHaveBeenCalledWith('test warning');
+    expect(warnSpy).toHaveBeenCalledWith('test warning');
+    expect(mockSubscriber).toHaveBeenCalled();
+
+    warnSpy.mockRestore();
+  });
+
+  it('allows overriding unpatchedConsole for testing', () => {
+    const mockConsole = {
+      warn: jest.fn(),
+    } as unknown as typeof console;
+
+    const observable = monitorConsole(mockConsole);
+    const mockSubscriber = jest.fn();
+    observable.subscribe(mockSubscriber);
+
+    console.warn('test warning');
+
+    // The mock unpatchedConsole should be called
+    expect(mockConsole.warn).toHaveBeenCalledWith('test warning');
     expect(mockSubscriber).toHaveBeenCalled();
   });
 
