@@ -7,31 +7,29 @@ let consoleObservable: Observable<ConsoleMessage> | undefined;
 let isInstrumented = false;
 let originalConsoleMethods: Partial<Record<LogLevel, (...args: unknown[]) => void>> = {};
 
-export function monitorConsole(disabledLevels: LogLevel[] = []): Observable<ConsoleMessage> {
+export function monitorConsole(): Observable<ConsoleMessage> {
   if (!consoleObservable) {
     consoleObservable = new Observable<ConsoleMessage>();
   }
 
   if (!isInstrumented) {
-    allLogLevels
-      .filter((level) => !disabledLevels.includes(level))
-      .forEach((level) => {
-        // Save original console method
+    // Patch ALL console methods - subscribers decide which levels to process
+    allLogLevels.forEach((level) => {
+      // Save original console method
+      originalConsoleMethods[level] = console[level];
 
-        originalConsoleMethods[level] = console[level];
+      console[level] = (...args: unknown[]) => {
+        // Notify all subscribers
+        consoleObservable!.notify({
+          type: MESSAGE_TYPE_CONSOLE,
+          level,
+          args,
+        });
 
-        console[level] = (...args: unknown[]) => {
-          // Notify all subscribers
-          consoleObservable!.notify({
-            type: MESSAGE_TYPE_CONSOLE,
-            level,
-            args,
-          });
-
-          // Call original console method
-          originalConsoleMethods[level]?.apply(console, args);
-        };
-      });
+        // Call original console method
+        originalConsoleMethods[level]?.apply(console, args);
+      };
+    });
 
     isInstrumented = true;
   }

@@ -30,8 +30,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
 
     const disabledLevels = instrumentationOptions?.disabledLevels ?? ConsoleInstrumentation.defaultDisabledLevels;
 
-    // Get the shared console monitor Observable (patches console only once)
-    const consoleMonitor = monitorConsole(disabledLevels);
+    const consoleMonitor = monitorConsole();
 
     // Subscribe this Faro instance to console events
     this.subscription = consoleMonitor.subscribe(({ level, args }) => {

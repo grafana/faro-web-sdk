@@ -1,4 +1,4 @@
-import { initializeFaro, stringifyExternalJson, TransportItem } from '@grafana/faro-core';
+import { initializeFaro, LogLevel, stringifyExternalJson, TransportItem } from '@grafana/faro-core';
 import type { APIEvent, ExceptionEvent, LogEvent } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
@@ -351,6 +351,76 @@ describe('ConsoleInstrumentation', () => {
 
       expect(transport1Logs.length).toBeGreaterThan(0);
       expect(transport2Logs.length).toBeGreaterThan(0);
+    });
+
+    it('should respect different disabledLevels for each isolated instance', () => {
+      const transport1 = new MockTransport();
+      const transport2 = new MockTransport();
+
+      // Instance 1: only captures ERROR (disables everything else)
+      initializeFaro(
+        makeCoreConfig(
+          mockConfig({
+            isolate: true,
+            transports: [transport1],
+            instrumentations: [new ConsoleInstrumentation()],
+            consoleInstrumentation: {
+              disabledLevels: [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG, LogLevel.INFO, LogLevel.WARN],
+            },
+            unpatchedConsole: {
+              error: jest.fn(),
+              warn: jest.fn(),
+              info: jest.fn(),
+            } as unknown as Console,
+          })
+        )!
+      );
+
+      // Instance 2: captures WARN, INFO, ERROR (disables DEBUG, TRACE, LOG)
+      initializeFaro(
+        makeCoreConfig(
+          mockConfig({
+            isolate: true,
+            transports: [transport2],
+            instrumentations: [new ConsoleInstrumentation()],
+            consoleInstrumentation: {
+              disabledLevels: [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG],
+            },
+            unpatchedConsole: {
+              error: jest.fn(),
+              warn: jest.fn(),
+              info: jest.fn(),
+            } as unknown as Console,
+          })
+        )!
+      );
+
+      // Emit various console levels
+      console.info('info message');
+      console.warn('warn message');
+      console.error('error message');
+      console.debug('debug message');
+      console.trace('trace message');
+      console.log('log message');
+
+      // Instance 1 should only have ERROR (1 item)
+      const transport1Items = transport1.items;
+      expect(transport1Items).toHaveLength(1);
+      expect((transport1Items[0] as TransportItem<ExceptionEvent>).payload.value).toContain('error message');
+
+      // Instance 2 should have INFO, WARN, ERROR (3 items)
+      const transport2Items = transport2.items;
+      expect(transport2Items).toHaveLength(3);
+
+      const transport2Levels = transport2Items.map((item: TransportItem<APIEvent>) => {
+        if (item.type === 'log') {
+          return (item.payload as LogEvent).level;
+        }
+        return 'error'; // exception type
+      });
+      expect(transport2Levels).toContain('info');
+      expect(transport2Levels).toContain('warn');
+      expect(transport2Levels).toContain('error');
     });
   });
 });

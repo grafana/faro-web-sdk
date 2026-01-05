@@ -82,23 +82,6 @@ describe('monitorConsole', () => {
     expect(mockSubscriber).toHaveBeenCalled();
   });
 
-  it('does not patch disabled log levels', () => {
-    const originalDebug = console.debug;
-    const mockSubscriber = jest.fn();
-
-    const observable = monitorConsole([LogLevel.DEBUG]);
-    observable.subscribe(mockSubscriber);
-
-    // Debug should be disabled, so calling it shouldn't notify
-    console.debug('test debug');
-
-    // Subscriber should not be called for disabled levels
-    expect(mockSubscriber).not.toHaveBeenCalled();
-
-    // Console.debug should remain the original function
-    expect(console.debug).toBe(originalDebug);
-  });
-
   it('notifies ALL subscribers when console method is called (multiple isolated instances)', () => {
     const observable = monitorConsole();
 
@@ -190,5 +173,29 @@ describe('monitorConsole', () => {
 
     console.warn('after reset');
     expect(subscriber).toHaveBeenCalledTimes(1);
+  });
+
+  it('emits events for all log levels', () => {
+    const receivedLevels: LogLevel[] = [];
+
+    monitorConsole().subscribe(({ level }) => {
+      receivedLevels.push(level);
+    });
+
+    // Call all log levels
+    console.debug('debug');
+    console.trace('trace');
+    console.log('log');
+    console.info('info');
+    console.warn('warn');
+    console.error('error');
+
+    // All 6 log levels should be captured
+    expect(receivedLevels).toContain(LogLevel.DEBUG);
+    expect(receivedLevels).toContain(LogLevel.TRACE);
+    expect(receivedLevels).toContain(LogLevel.LOG);
+    expect(receivedLevels).toContain(LogLevel.INFO);
+    expect(receivedLevels).toContain(LogLevel.WARN);
+    expect(receivedLevels).toContain(LogLevel.ERROR);
   });
 });
