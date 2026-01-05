@@ -15,6 +15,9 @@ import { FetchTransport } from './transport';
 const fetch = jest.fn(() =>
   Promise.resolve({
     status: 202,
+    headers: {
+      get: (_name: string): string | undefined => undefined,
+    },
     text: () => Promise.resolve(),
   })
 );
@@ -348,7 +351,8 @@ describe('FetchTransport', () => {
       })
     );
 
-    const mockGetUserSessionUpdater = jest.fn();
+    // getUserSessionUpdater returns a function that is then called with { forceSessionExtend: true }
+    const mockGetUserSessionUpdater = jest.fn(() => jest.fn());
     jest.spyOn(sessionManagerUtilsMock, 'getUserSessionUpdater').mockImplementationOnce(mockGetUserSessionUpdater);
 
     const transport = new FetchTransport({
@@ -357,6 +361,8 @@ describe('FetchTransport', () => {
 
     transport.metas.value = { session: { id: mockSessionId } };
     transport.internalLogger = mockInternalLogger;
+    // Bind logDebug to prevent 'this' context loss when passed as callback
+    transport.logDebug = transport.logDebug.bind(transport);
 
     const config = mockConfig({
       transports: [transport],
