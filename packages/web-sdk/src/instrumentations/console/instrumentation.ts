@@ -1,13 +1,13 @@
 import {
-  allLogLevels,
   BaseInstrumentation,
   defaultErrorArgsSerializer,
   defaultLogArgsSerializer,
   LogLevel,
   VERSION,
 } from '@grafana/faro-core';
-import type { LogArgsSerializer } from '@grafana/faro-core';
+import type { LogArgsSerializer, Subscription } from '@grafana/faro-core';
 
+import { monitorConsole } from '../_internal/monitors/consoleMonitor';
 import { getDetailsFromConsoleErrorArgs } from '../errors/getErrorDetails';
 
 export class ConsoleInstrumentation extends BaseInstrumentation {
@@ -16,7 +16,9 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
 
   static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];
   static consoleErrorPrefix = 'console.error: ';
+
   private errorSerializer: LogArgsSerializer = defaultLogArgsSerializer;
+  private subscription: Subscription | undefined;
 
   initialize() {
     const instrumentationOptions = this.config.consoleInstrumentation;
@@ -26,44 +28,51 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
       ? (instrumentationOptions?.errorSerializer ?? defaultErrorArgsSerializer)
       : defaultLogArgsSerializer;
 
-    allLogLevels
-      .filter(
-        (level) =>
-          !(instrumentationOptions?.disabledLevels ?? ConsoleInstrumentation.defaultDisabledLevels).includes(level)
-      )
-      .forEach((level) => {
-        /* eslint-disable-next-line no-console */
-        console[level] = (...args) => {
-          try {
-            if (level === LogLevel.ERROR && !instrumentationOptions?.consoleErrorAsLog) {
-              const { value, type, stackFrames } = getDetailsFromConsoleErrorArgs(args, this.errorSerializer);
+    const disabledLevels = instrumentationOptions?.disabledLevels ?? ConsoleInstrumentation.defaultDisabledLevels;
 
-              if (value && !type && !stackFrames) {
-                this.api.pushError(new Error(ConsoleInstrumentation.consoleErrorPrefix + value));
-                return;
-              }
+    // Get the shared console monitor Observable (patches console only once)
+    const consoleMonitor = monitorConsole(disabledLevels);
 
-              this.api.pushError(new Error(ConsoleInstrumentation.consoleErrorPrefix + value), { type, stackFrames });
-            } else if (level === LogLevel.ERROR && instrumentationOptions?.consoleErrorAsLog) {
-              const { value, type, stackFrames } = getDetailsFromConsoleErrorArgs(args, this.errorSerializer);
+    // Subscribe this Faro instance to console events
+    this.subscription = consoleMonitor.subscribe(({ level, args }) => {
+      // Skip if this level is disabled for this instance
+      if (disabledLevels.includes(level)) {
+        return;
+      }
 
-              this.api.pushLog(value ? [ConsoleInstrumentation.consoleErrorPrefix + value] : args, {
-                level,
-                context: {
-                  value: value ?? '',
-                  type: type ?? '',
-                  stackFrames: stackFrames?.length ? defaultErrorArgsSerializer(stackFrames) : '',
-                },
-              });
-            } else {
-              this.api.pushLog(args, { level });
-            }
-          } catch (err) {
-            this.logError(err);
-          } finally {
-            this.unpatchedConsole[level](...args);
+      try {
+        if (level === LogLevel.ERROR && !instrumentationOptions?.consoleErrorAsLog) {
+          const { value, type, stackFrames } = getDetailsFromConsoleErrorArgs(args, this.errorSerializer);
+
+          if (value && !type && !stackFrames) {
+            this.api.pushError(new Error(ConsoleInstrumentation.consoleErrorPrefix + value));
+            return;
           }
-        };
-      });
+
+          this.api.pushError(new Error(ConsoleInstrumentation.consoleErrorPrefix + value), { type, stackFrames });
+        } else if (level === LogLevel.ERROR && instrumentationOptions?.consoleErrorAsLog) {
+          const { value, type, stackFrames } = getDetailsFromConsoleErrorArgs(args, this.errorSerializer);
+
+          this.api.pushLog(value ? [ConsoleInstrumentation.consoleErrorPrefix + value] : args, {
+            level,
+            context: {
+              value: value ?? '',
+              type: type ?? '',
+              stackFrames: stackFrames?.length ? defaultErrorArgsSerializer(stackFrames) : '',
+            },
+          });
+        } else {
+          this.api.pushLog(args, { level });
+        }
+      } catch (err) {
+        this.logError(err);
+      }
+    });
+  }
+
+  // Clean up subscription when instrumentation is destroyed
+  destroy() {
+    this.subscription?.unsubscribe();
+    this.subscription = undefined;
   }
 }

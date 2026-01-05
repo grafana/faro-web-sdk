@@ -3,6 +3,7 @@ import type { ExceptionEvent, LogEvent, APIEvent } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
+import { __resetConsoleMonitorForTests } from '../_internal/monitors/consoleMonitor';
 
 import { ConsoleInstrumentation } from './instrumentation';
 
@@ -21,6 +22,7 @@ describe('ConsoleInstrumentation', () => {
   });
 
   afterEach(() => {
+    __resetConsoleMonitorForTests();
     jest.resetAllMocks();
     jest.restoreAllMocks();
     global.console = originalConsole;
@@ -270,6 +272,10 @@ describe('ConsoleInstrumentation', () => {
           mockConfig({
             isolate: true,
             transports: [transport1],
+            instrumentations: [new ConsoleInstrumentation()],
+            unpatchedConsole: {
+              error: jest.fn(),
+            } as unknown as Console,
           })
         )!
       );
@@ -279,6 +285,10 @@ describe('ConsoleInstrumentation', () => {
           mockConfig({
             isolate: true,
             transports: [transport2],
+            instrumentations: [new ConsoleInstrumentation()],
+            unpatchedConsole: {
+              error: jest.fn(),
+            } as unknown as Console,
           })
         )!
       );
@@ -309,6 +319,13 @@ describe('ConsoleInstrumentation', () => {
           mockConfig({
             isolate: true,
             transports: [transport1],
+            instrumentations: [new ConsoleInstrumentation()],
+            consoleInstrumentation: {
+              disabledLevels: [], // Enable all levels including log
+            },
+            unpatchedConsole: {
+              log: jest.fn(),
+            } as unknown as Console,
           })
         )!
       );
@@ -318,6 +335,13 @@ describe('ConsoleInstrumentation', () => {
           mockConfig({
             isolate: true,
             transports: [transport2],
+            instrumentations: [new ConsoleInstrumentation()],
+            consoleInstrumentation: {
+              disabledLevels: [], // Enable all levels including log
+            },
+            unpatchedConsole: {
+              log: jest.fn(),
+            } as unknown as Console,
           })
         )!
       );
