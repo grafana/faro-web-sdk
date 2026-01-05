@@ -17,10 +17,9 @@ export function monitorConsole(disabledLevels: LogLevel[] = []): Observable<Cons
       .filter((level) => !disabledLevels.includes(level))
       .forEach((level) => {
         // Save original console method
-        /* eslint-disable-next-line no-console */
+
         originalConsoleMethods[level] = console[level];
 
-        /* eslint-disable-next-line no-console */
         console[level] = (...args: unknown[]) => {
           // Notify all subscribers
           consoleObservable!.notify({
@@ -45,7 +44,6 @@ export function __resetConsoleMonitorForTests() {
   // Restore original console methods
   for (const level of allLogLevels) {
     if (originalConsoleMethods[level]) {
-      /* eslint-disable-next-line no-console */
       console[level] = originalConsoleMethods[level] as typeof console.log;
     }
   }
@@ -54,4 +52,3 @@ export function __resetConsoleMonitorForTests() {
   isInstrumented = false;
   originalConsoleMethods = {};
 }
-

@@ -1,7 +1,7 @@
 import { LogLevel } from '@grafana/faro-core';
 
-import { MESSAGE_TYPE_CONSOLE } from './const';
 import { __resetConsoleMonitorForTests, monitorConsole } from './consoleMonitor';
+import { MESSAGE_TYPE_CONSOLE } from './const';
 
 describe('monitorConsole', () => {
   const originalConsole = { ...console };
@@ -192,4 +192,3 @@ describe('monitorConsole', () => {
     expect(subscriber).toHaveBeenCalledTimes(1);
   });
 });
-

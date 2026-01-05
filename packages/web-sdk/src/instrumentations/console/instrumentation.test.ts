@@ -1,5 +1,5 @@
 import { initializeFaro, stringifyExternalJson, TransportItem } from '@grafana/faro-core';
-import type { ExceptionEvent, LogEvent, APIEvent } from '@grafana/faro-core';
+import type { APIEvent, ExceptionEvent, LogEvent } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config';
@@ -242,10 +242,10 @@ describe('ConsoleInstrumentation', () => {
     // excluded by default
     console.log(excludedLogMessage);
     const excludedTraceLogMessage = "trace isn't logged by default";
-    // eslint-disable-next-line no-console
+
     console.trace(excludedTraceLogMessage);
     const excludedDebugMessage = "debug isn't logged by default";
-    // eslint-disable-next-line no-console
+
     console.debug(excludedDebugMessage);
 
     expect(mockTransport.items).toHaveLength(3);
@@ -297,13 +297,11 @@ describe('ConsoleInstrumentation', () => {
 
       const transport1Errors = transport1.items.filter(
         (item: TransportItem<APIEvent>) =>
-          item.type === 'exception' || 
-          (item.type === 'log' && (item.payload as LogEvent).level === 'error')
+          item.type === 'exception' || (item.type === 'log' && (item.payload as LogEvent).level === 'error')
       );
       const transport2Errors = transport2.items.filter(
         (item: TransportItem<APIEvent>) =>
-          item.type === 'exception' || 
-          (item.type === 'log' && (item.payload as LogEvent).level === 'error')
+          item.type === 'exception' || (item.type === 'log' && (item.payload as LogEvent).level === 'error')
       );
 
       expect(transport1Errors.length).toBeGreaterThan(0);
@@ -348,12 +346,8 @@ describe('ConsoleInstrumentation', () => {
 
       console.log('Test log message');
 
-      const transport1Logs = transport1.items.filter(
-        (item: TransportItem<APIEvent>) => item.type === 'log'
-      );
-      const transport2Logs = transport2.items.filter(
-        (item: TransportItem<APIEvent>) => item.type === 'log'
-      );
+      const transport1Logs = transport1.items.filter((item: TransportItem<APIEvent>) => item.type === 'log');
+      const transport2Logs = transport2.items.filter((item: TransportItem<APIEvent>) => item.type === 'log');
 
       expect(transport1Logs.length).toBeGreaterThan(0);
       expect(transport2Logs.length).toBeGreaterThan(0);
