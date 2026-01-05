@@ -2,6 +2,24 @@
 
 ## Next
 
+- Feature (`@grafana/faro-web-sdk`): Fetch transport now supports dynamic header values.
+  Each header can be a static string or a function returning a string, resolved at request
+  time (#1490).
+
+- Feature (`@grafana/faro-transport-otlp-http [experimental]`): OLTP HTTP transport now supports
+  dynamic header values. Each header can be a static string or a function returning a string,
+  resolved at request time (#1490).
+
+## 2.1.0
+
+- Feature (`@grafana/faro-react`): support for React 19 and React Router 7
+
+- Fix (`@grafana/faro-web-sdk`): CSP violation events now correctly capture all SecurityPolicyViolationEvent
+  attributes. Previously, properties like `blockedURI`, `documentURI`, and others were missing because
+  native browser event properties are getters on the prototype chain, not own enumerable properties (#1491)
+
+- Fix (`@grafana/faro-web-sdk`): circular dependency between events and userActions APIs (#1793)
+
 ## 2.0.2
 
 - Breaking (`@grafana/faro-web-sdk`): User action events now have a standardized event name

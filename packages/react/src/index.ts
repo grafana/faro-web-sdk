@@ -43,7 +43,13 @@ export type {
   ReactRouterV6UseNavigationType,
 } from './router';
 
-export type { ReactIntegrationConfig, ReactRouterV4V5Config, ReactRouterV6Config } from './types';
+export type {
+  ReactIntegrationConfig,
+  ReactRouterV4V5Config,
+  ReactRouterV6Config,
+  ReactRouterV7Config,
+  ReactRouterV7DataRouterConfig,
+} from './types';
 
 export {
   getMajorReactVersion,
@@ -51,6 +57,7 @@ export {
   isReactVersionAtLeast16,
   isReactVersionAtLeast17,
   isReactVersionAtLeast18,
+  isReactVersionAtLeast19,
   reactVersion,
   reactVersionMajor,
 } from './utils';

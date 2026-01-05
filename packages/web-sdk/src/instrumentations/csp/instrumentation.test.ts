@@ -47,7 +47,21 @@ describe('CSPInstrumentation', () => {
     instrumentation.securitypolicyviolationHandler(fakeEvent);
     expect(mockTransport.items).toHaveLength(1);
 
-    expect((mockTransport.items[0] as TransportItem<EventEvent>)?.payload.attributes?.['lineNumber']).toBe('10');
+    const attributes = (mockTransport.items[0] as TransportItem<EventEvent>)?.payload.attributes;
+
+    // Verify all CSP attributes are captured
+    expect(attributes?.['blockedURI']).toBe('https://evil.com/script.js');
+    expect(attributes?.['documentURI']).toBe('https://my.app/');
+    expect(attributes?.['sourceFile']).toBe('https://my.app/index.js');
+    expect(attributes?.['statusCode']).toBe('200');
+    expect(attributes?.['lineNumber']).toBe('10');
+    expect(attributes?.['columnNumber']).toBe('5');
+    expect(attributes?.['disposition']).toBe('enforce');
+    expect(attributes?.['effectiveDirective']).toBe('script-src');
+    expect(attributes?.['violatedDirective']).toBe('script-src-elem');
+    expect(attributes?.['originalPolicy']).toBe("default-src 'self'; script-src 'self'");
+    expect(attributes?.['referrer']).toBe('https://referrer.app/');
+    expect(attributes?.['sample']).toBe('alert("xss")');
   });
 
   it('ensures listener gets removed on teardown', () => {

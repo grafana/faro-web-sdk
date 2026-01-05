@@ -16,6 +16,8 @@ export enum ReactRouterVersion {
   V5 = 'v5',
   V6 = 'v6',
   V6_data_router = 'v6_data_router',
+  V7 = 'v7',
+  V7_data_router = 'v7_data_router',
 }
 
 export enum NavigationType {
