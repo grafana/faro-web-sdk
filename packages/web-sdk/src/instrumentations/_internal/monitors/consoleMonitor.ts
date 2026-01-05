@@ -23,6 +23,7 @@ export function monitorConsole(unpatchedConsole?: UnpatchedConsole): Observable<
 
     // Patch ALL console methods - subscribers decide which levels to process
     allLogLevels.forEach((level) => {
+      // eslint-disable-next-line no-console
       console[level] = (...args: unknown[]) => {
         // Notify all subscribers
         consoleObservable!.notify({

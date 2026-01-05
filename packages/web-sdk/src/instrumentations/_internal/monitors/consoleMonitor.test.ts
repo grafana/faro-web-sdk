@@ -1,10 +1,22 @@
-import { defaultUnpatchedConsole, LogLevel } from '@grafana/faro-core';
+import { LogLevel } from '@grafana/faro-core';
+import type { UnpatchedConsole } from '@grafana/faro-core';
 
 import { __resetConsoleMonitorForTests, monitorConsole } from './consoleMonitor';
 import { MESSAGE_TYPE_CONSOLE } from './const';
 
 describe('monitorConsole', () => {
   const originalConsole = { ...console };
+
+  // Silent mock to prevent console output leaking to terminal during tests
+  const createSilentMockConsole = (): UnpatchedConsole =>
+    ({
+      debug: jest.fn(),
+      trace: jest.fn(),
+      log: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    }) as unknown as UnpatchedConsole;
 
   afterEach(() => {
     __resetConsoleMonitorForTests();
@@ -18,13 +30,13 @@ describe('monitorConsole', () => {
   });
 
   it('returns the same observable instance on repeated calls', () => {
-    const first = monitorConsole();
-    const second = monitorConsole();
+    const first = monitorConsole(createSilentMockConsole());
+    const second = monitorConsole(createSilentMockConsole());
     expect(second).toBe(first);
   });
 
   it('notifies subscribers when console.warn is called', () => {
-    const observable = monitorConsole();
+    const observable = monitorConsole(createSilentMockConsole());
     const mockSubscriber = jest.fn();
     observable.subscribe(mockSubscriber);
 
@@ -39,7 +51,7 @@ describe('monitorConsole', () => {
   });
 
   it('notifies subscribers when console.info is called', () => {
-    const observable = monitorConsole();
+    const observable = monitorConsole(createSilentMockConsole());
     const mockSubscriber = jest.fn();
     observable.subscribe(mockSubscriber);
 
@@ -54,7 +66,7 @@ describe('monitorConsole', () => {
   });
 
   it('notifies subscribers when console.error is called', () => {
-    const observable = monitorConsole();
+    const observable = monitorConsole(createSilentMockConsole());
     const mockSubscriber = jest.fn();
     observable.subscribe(mockSubscriber);
 
@@ -69,19 +81,16 @@ describe('monitorConsole', () => {
   });
 
   it('calls original console method after notifying subscribers', () => {
-    // Spy on the defaultUnpatchedConsole which is what gets called after patching
-    const warnSpy = jest.spyOn(defaultUnpatchedConsole, 'warn').mockImplementation(() => {});
+    const mockConsole = createSilentMockConsole();
 
-    const observable = monitorConsole();
+    const observable = monitorConsole(mockConsole);
     const mockSubscriber = jest.fn();
     observable.subscribe(mockSubscriber);
 
     console.warn('test warning');
 
-    expect(warnSpy).toHaveBeenCalledWith('test warning');
+    expect(mockConsole.warn).toHaveBeenCalledWith('test warning');
     expect(mockSubscriber).toHaveBeenCalled();
-
-    warnSpy.mockRestore();
   });
 
   it('allows overriding unpatchedConsole for testing', () => {
@@ -101,7 +110,7 @@ describe('monitorConsole', () => {
   });
 
   it('notifies ALL subscribers when console method is called (multiple isolated instances)', () => {
-    const observable = monitorConsole();
+    const observable = monitorConsole(createSilentMockConsole());
 
     // Simulate multiple Faro instances subscribing
     const subscriber1 = jest.fn();
@@ -131,7 +140,7 @@ describe('monitorConsole', () => {
   });
 
   it('allows subscribers to unsubscribe independently', () => {
-    const observable = monitorConsole();
+    const observable = monitorConsole(createSilentMockConsole());
 
     const subscriber1 = jest.fn();
     const subscriber2 = jest.fn();
@@ -160,10 +169,10 @@ describe('monitorConsole', () => {
     const preMonitorWarn = console.warn;
 
     // Call monitorConsole multiple times
-    monitorConsole();
+    monitorConsole(createSilentMockConsole());
     const afterFirstPatch = console.warn;
 
-    monitorConsole();
+    monitorConsole(createSilentMockConsole());
     const afterSecondCall = console.warn;
 
     // The function should be the same after the second call (no double-patching)
@@ -175,7 +184,7 @@ describe('monitorConsole', () => {
   it('resets properly for tests', () => {
     const originalWarn = console.warn;
 
-    monitorConsole();
+    monitorConsole(createSilentMockConsole());
     const patchedWarn = console.warn;
     expect(patchedWarn).not.toBe(originalWarn);
 
@@ -185,7 +194,7 @@ describe('monitorConsole', () => {
     expect(console.warn).toBe(originalWarn);
 
     // A new call should create a fresh observable
-    const newObservable = monitorConsole();
+    const newObservable = monitorConsole(createSilentMockConsole());
     const subscriber = jest.fn();
     newObservable.subscribe(subscriber);
 
@@ -196,7 +205,7 @@ describe('monitorConsole', () => {
   it('emits events for all log levels', () => {
     const receivedLevels: LogLevel[] = [];
 
-    monitorConsole().subscribe(({ level }) => {
+    monitorConsole(createSilentMockConsole()).subscribe(({ level }) => {
       receivedLevels.push(level);
     });
 
