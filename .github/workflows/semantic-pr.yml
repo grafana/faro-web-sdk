@@ -11,6 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: lint-pr-title
-        uses: grafana/shared-workflows/actions/lint-pr-title@2c612944c2fcdedc96344a8bd200816414efeeb2
+        uses: grafana/shared-workflows/actions/lint-pr-title@76191e8b248c430d5d8d974bbf6a2be07212422d
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

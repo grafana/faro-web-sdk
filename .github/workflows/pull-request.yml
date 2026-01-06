@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6
         with:
           node-version: ${{ matrix.node }}
           cache: 'yarn'
@@ -54,7 +54,7 @@ jobs:
 
     services:
       database:
-        image: postgres:18.0@sha256:41fc5342eefba6cc2ccda736aaf034bbbb7c3df0fdb81516eba1ba33f360162c
+        image: postgres:18.1@sha256:bfe50b2b0ddd9b55eadedd066fe24c7c6fe06626185b73358c480ea37868024d
         env:
           POSTGRES_DB: demo
           POSTGRES_PASSWORD: postgres
@@ -71,7 +71,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6
         with:
           node-version: 'lts/iron'
           cache: 'yarn'
@@ -83,7 +83,7 @@ jobs:
         run: yarn build
 
       - name: E2E tests
-        uses: cypress-io/github-action@53299cbe789c64daab823c4bfb1882d05e9feaf3
+        uses: cypress-io/github-action@945856dccca7c7fd820fd7c6687ec091b3b3a25c
         env:
           DATABASE_HOST: database
           DATABASE_PORT: 5432
