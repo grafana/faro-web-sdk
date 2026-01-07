@@ -1,0 +1,83 @@
+package com.grafana.faro.reactnative
+
+import android.os.Build
+import android.os.Process
+import android.os.SystemClock
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.ReactMethod
+
+/**
+ * Faro React Native native module for performance monitoring
+ *
+ * Provides methods for monitoring:
+ * - App startup time
+ * - Memory usage (VmRSS)
+ * - CPU usage (via CPUInfo helper)
+ *
+ * Uses Android OS APIs to get accurate metrics without requiring
+ * manual initialization or timestamp capture.
+ *
+ * Implementation ported from Faro Flutter SDK:
+ * https://github.com/grafana/faro-flutter-sdk/blob/main/android/src/main/java/com/grafana/faro/FaroPlugin.java
+ *
+ * TODO: Currently not tested in demo app due to Yarn workspace gradle path resolution issues.
+ * See demo-react-native/android/settings.gradle for details. This code is complete and ready
+ * to work in standalone React Native projects or once workspace gradle config is fixed.
+ */
+class FaroReactNativeModule(reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
+
+    companion object {
+        const val NAME = "FaroReactNativeModule"
+    }
+
+    override fun getName(): String = NAME
+
+    /**
+     * Gets app startup duration in milliseconds using Android OS APIs
+     *
+     * Uses Process.getStartElapsedRealtime() which returns when the process
+     * started, so no manual initialization is needed in MainActivity.
+     *
+     * Returns duration from process start to current time in milliseconds.
+     * Returns 0 if Android version < N (API 24).
+     *
+     * @return Duration in milliseconds, or 0 if unsupported Android version
+     */
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getAppStartDuration(): Double {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val duration = SystemClock.elapsedRealtime() - Process.getStartElapsedRealtime()
+            return duration.toDouble()
+        }
+        return 0.0
+    }
+
+    /**
+     * Gets current memory usage in kilobytes
+     *
+     * Reads VmRSS (Virtual Memory Resident Set Size) from /proc/[pid]/status.
+     * This represents the actual physical memory currently used by the process.
+     *
+     * @return Memory usage in KB, or null on error
+     */
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getMemoryUsage(): Double? {
+        return MemoryInfo.getMemoryUsage()
+    }
+
+    /**
+     * Gets current CPU usage percentage
+     *
+     * Uses differential calculation - first call returns 0.0 (baseline),
+     * subsequent calls return CPU usage percentage (0-100+).
+     * Requires Android API 21+ (Lollipop).
+     *
+     * @return CPU usage percentage, or null on error or unsupported Android version
+     */
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getCpuUsage(): Double? {
+        return CPUInfo.getCpuInfo()
+    }
+}

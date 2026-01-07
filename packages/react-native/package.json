@@ -1,0 +1,79 @@
+{
+  "name": "@grafana/faro-react-native",
+  "version": "2.0.2",
+  "description": "Faro instrumentations, metas, transports for React Native.",
+  "keywords": [
+    "observability",
+    "apm",
+    "rum",
+    "logs",
+    "traces",
+    "metrics",
+    "react-native",
+    "mobile"
+  ],
+  "license": "Apache-2.0",
+  "author": "Grafana Labs",
+  "homepage": "https://github.com/grafana/faro-web-sdk",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/faro-web-sdk.git",
+    "directory": "packages/react-native"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "react-native": "./src/index.ts",
+  "files": [
+    "dist",
+    "src",
+    "ios",
+    "android",
+    "FaroReactNative.podspec",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "yarn watch",
+    "build": "run-s 'build:*'",
+    "build:compile": "run-p 'build:compile:*'",
+    "build:compile:cjs": "tsc --build tsconfig.cjs.json",
+    "build:compile:esm": "tsc --build tsconfig.esm.json",
+    "watch": "run-p 'watch:compile:*'",
+    "watch:compile:cjs": "yarn build:compile:cjs -w",
+    "watch:compile:esm": "yarn build:compile:esm -w",
+    "clean": "rimraf dist/ yarn-error.log",
+    "quality": "run-s 'quality:*'",
+    "quality:test": "../../node_modules/.bin/jest",
+    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/reactNative --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint": "run-s 'quality:lint:*'",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/reactNative \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/reactNative --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:md": "markdownlint README.md",
+    "quality:circular-deps": "madge --circular ."
+  },
+  "dependencies": {
+    "@grafana/faro-core": "^2.0.2",
+    "@react-native-async-storage/async-storage": "^1.21.0",
+    "react-native-device-info": "^11.1.0"
+  },
+  "peerDependencies": {
+    "@react-navigation/native": ">=6.0.0",
+    "react": ">=18.0.0",
+    "react-native": ">=0.70.0"
+  },
+  "peerDependenciesMeta": {
+    "@react-navigation/native": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/react": "^19.1.1",
+    "@types/react-native": "^0.73.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

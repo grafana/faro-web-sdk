@@ -13,8 +13,12 @@
   "workspaces": [
     "packages/**",
     "experimental/**",
-    "demo"
+    "demo",
+    "demo-react-native"
   ],
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  },
   "main": "index.js",
   "scripts": {
     "start": "lerna run --parallel start",
