@@ -59,14 +59,8 @@
     "react-native-device-info": "^11.1.0"
   },
   "peerDependencies": {
-    "@react-navigation/native": ">=6.0.0",
     "react": ">=18.0.0",
     "react-native": ">=0.70.0"
-  },
-  "peerDependenciesMeta": {
-    "@react-navigation/native": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "@types/node": "24.10.1",
