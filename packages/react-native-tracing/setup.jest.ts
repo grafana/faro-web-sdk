@@ -1,4 +1,4 @@
-import { TextEncoder, TextDecoder } from 'util';
+import { TextDecoder, TextEncoder } from 'util';
 
 // Polyfill TextEncoder/TextDecoder for OTEL
 (global as any).TextEncoder = TextEncoder;

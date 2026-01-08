@@ -16,7 +16,7 @@ export class ViewInstrumentation extends BaseInstrumentation {
   // previously notified view, to ensure we don't send view changed
   // event twice for the same view
   private notifiedView: MetaView | undefined;
-  private metaUnsubscribe: (() => void) | undefined;
+  private boundListener: ((meta: Meta) => void) | undefined;
 
   private sendViewChangedEvent(meta: Meta): void {
     const view = meta.view;
@@ -37,7 +37,8 @@ export class ViewInstrumentation extends BaseInstrumentation {
   }
 
   initialize(): void {
-    this.metaUnsubscribe = this.metas.addListener(this.sendViewChangedEvent.bind(this));
+    this.boundListener = this.sendViewChangedEvent.bind(this);
+    this.metas.addListener(this.boundListener);
     this.logInfo('View instrumentation initialized');
   }
 
@@ -45,9 +46,9 @@ export class ViewInstrumentation extends BaseInstrumentation {
    * Clean up meta listener
    */
   unpatch(): void {
-    if (this.metaUnsubscribe) {
-      this.metaUnsubscribe();
-      this.metaUnsubscribe = undefined;
+    if (this.boundListener) {
+      this.metas.removeListener(this.boundListener);
+      this.boundListener = undefined;
     }
   }
 }

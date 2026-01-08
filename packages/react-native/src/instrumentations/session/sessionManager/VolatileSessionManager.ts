@@ -1,4 +1,4 @@
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, type AppStateStatus } from 'react-native';
 
 import { faro } from '@grafana/faro-core';
 
@@ -12,7 +12,7 @@ export class VolatileSessionsManager {
   private static volatileStorage: FaroUserSession | null = null;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
   private appStateSubscription: ReturnType<typeof AppState.addEventListener> | null = null;
-  private metaUnsubscribe: (() => void) | null = null;
+  private metaListener: ReturnType<typeof getSessionMetaUpdateHandler> | null = null;
 
   constructor() {
     this.updateUserSession = getUserSessionUpdater({
@@ -48,12 +48,11 @@ export class VolatileSessionsManager {
     this.appStateSubscription = AppState.addEventListener('change', this.handleAppStateChange);
 
     // Users can call the setSession() method, so we need to sync this with the in-memory session
-    this.metaUnsubscribe = faro.metas.addListener(
-      getSessionMetaUpdateHandler({
-        fetchUserSession: VolatileSessionsManager.fetchUserSession,
-        storeUserSession: VolatileSessionsManager.storeUserSession,
-      })
-    );
+    this.metaListener = getSessionMetaUpdateHandler({
+      fetchUserSession: VolatileSessionsManager.fetchUserSession,
+      storeUserSession: VolatileSessionsManager.storeUserSession,
+    });
+    faro.metas.addListener(this.metaListener);
   }
 
   /**
@@ -65,9 +64,9 @@ export class VolatileSessionsManager {
       this.appStateSubscription = null;
     }
 
-    if (this.metaUnsubscribe) {
-      this.metaUnsubscribe();
-      this.metaUnsubscribe = null;
+    if (this.metaListener) {
+      faro.metas.removeListener(this.metaListener);
+      this.metaListener = null;
     }
   }
 }

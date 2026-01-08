@@ -1,5 +1,5 @@
-import { BaseExtension, BaseTransport, createPromiseBuffer, getTransportBody, VERSION } from '@grafana/faro-core';
-import type { Config, Patterns, PromiseBuffer, TransportItem } from '@grafana/faro-core';
+import { BaseTransport, createPromiseBuffer, getTransportBody, VERSION } from '@grafana/faro-core';
+import type { Patterns, PromiseBuffer, TransportItem } from '@grafana/faro-core';
 
 import type { FetchTransportOptions } from './types';
 
@@ -10,7 +10,6 @@ const MAX_CONSECUTIVE_FAILURES = 3;
 const FAILURE_BACKOFF_MS = 30000; // 30 seconds
 
 const TOO_MANY_REQUESTS = 429;
-const ACCEPTED = 202;
 
 export class FetchTransport extends BaseTransport {
   readonly name = '@grafana/faro-react-native:transport-fetch';
@@ -134,5 +133,4 @@ export class FetchTransport extends BaseTransport {
 
     return new Date(now + this.rateLimitBackoffMs);
   }
-
 }

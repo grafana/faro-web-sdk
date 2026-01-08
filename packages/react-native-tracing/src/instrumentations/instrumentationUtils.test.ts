@@ -1,7 +1,7 @@
 import { SpanStatusCode } from '@opentelemetry/api';
 import { BasicTracerProvider } from '@opentelemetry/sdk-trace-base';
 
-import { setSpanStatusOnFetchError, fetchCustomAttributeFunctionWithDefaults } from './instrumentationUtils';
+import { fetchCustomAttributeFunctionWithDefaults, setSpanStatusOnFetchError } from './instrumentationUtils';
 
 describe('instrumentationUtils', () => {
   let provider: BasicTracerProvider;

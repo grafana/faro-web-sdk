@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, type AppStateStatus } from 'react-native';
 
 import { faro, stringifyExternalJson } from '@grafana/faro-core';
 
@@ -12,7 +12,7 @@ import type { FaroUserSession } from './types';
 export class PersistentSessionsManager {
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
   private appStateSubscription: ReturnType<typeof AppState.addEventListener> | null = null;
-  private metaUnsubscribe: (() => void) | null = null;
+  private metaListener: ReturnType<typeof getSessionMetaUpdateHandler> | null = null;
 
   constructor() {
     this.updateUserSession = getUserSessionUpdater({
@@ -70,12 +70,11 @@ export class PersistentSessionsManager {
     this.appStateSubscription = AppState.addEventListener('change', this.handleAppStateChange);
 
     // Users can call the setSession() method, so we need to sync this with AsyncStorage
-    this.metaUnsubscribe = faro.metas.addListener(
-      getSessionMetaUpdateHandler({
-        fetchUserSession: PersistentSessionsManager.fetchUserSession,
-        storeUserSession: PersistentSessionsManager.storeUserSession,
-      })
-    );
+    this.metaListener = getSessionMetaUpdateHandler({
+      fetchUserSession: PersistentSessionsManager.fetchUserSession,
+      storeUserSession: PersistentSessionsManager.storeUserSession,
+    });
+    faro.metas.addListener(this.metaListener);
   }
 
   /**
@@ -87,9 +86,9 @@ export class PersistentSessionsManager {
       this.appStateSubscription = null;
     }
 
-    if (this.metaUnsubscribe) {
-      this.metaUnsubscribe();
-      this.metaUnsubscribe = null;
+    if (this.metaListener) {
+      faro.metas.removeListener(this.metaListener);
+      this.metaListener = null;
     }
   }
 }

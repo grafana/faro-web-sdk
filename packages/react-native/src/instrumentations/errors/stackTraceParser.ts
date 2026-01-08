@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-import type { StackFrame } from '@grafana/faro-core';
+import type { ExceptionStackFrame } from '@grafana/faro-core';
 
 /**
  * Parse React Native stack traces into structured stack frames
@@ -52,8 +52,8 @@ export function parseStackTraceLine(line: string): ParsedStackFrame | null {
     return {
       function: match[1] || '<anonymous>',
       filename: match[2],
-      lineno: parseInt(match[3], 10),
-      colno: parseInt(match[4], 10),
+      lineno: parseInt(match[3] ?? '0', 10),
+      colno: parseInt(match[4] ?? '0', 10),
     };
   }
 
@@ -63,8 +63,8 @@ export function parseStackTraceLine(line: string): ParsedStackFrame | null {
     return {
       function: match[1] || '<anonymous>',
       filename: match[2],
-      lineno: parseInt(match[3], 10),
-      colno: parseInt(match[4], 10),
+      lineno: parseInt(match[3] ?? '0', 10),
+      colno: parseInt(match[4] ?? '0', 10),
     };
   }
 
@@ -74,8 +74,8 @@ export function parseStackTraceLine(line: string): ParsedStackFrame | null {
     return {
       function: '<anonymous>',
       filename: match[1],
-      lineno: parseInt(match[2], 10),
-      colno: parseInt(match[3], 10),
+      lineno: parseInt(match[2] ?? '0', 10),
+      colno: parseInt(match[3] ?? '0', 10),
     };
   }
 
@@ -95,8 +95,8 @@ export function parseStackTraceLine(line: string): ParsedStackFrame | null {
     return {
       function: match[1] || '<anonymous>',
       filename: '<unknown>',
-      lineno: parseInt(match[2], 10),
-      colno: parseInt(match[3], 10),
+      lineno: parseInt(match[2] ?? '0', 10),
+      colno: parseInt(match[3] ?? '0', 10),
     };
   }
 
@@ -126,9 +126,9 @@ export function parseStackTrace(stackTrace: string): ParsedStackFrame[] {
 }
 
 /**
- * Convert parsed stack frames to Faro's StackFrame format
+ * Convert parsed stack frames to Faro's ExceptionStackFrame format
  */
-export function toFaroStackFrames(parsedFrames: ParsedStackFrame[]): StackFrame[] {
+export function toFaroStackFrames(parsedFrames: ParsedStackFrame[]): ExceptionStackFrame[] {
   return parsedFrames.map((frame, _index) => ({
     filename: frame.filename || '<unknown>',
     function: frame.function || '<anonymous>',
@@ -140,7 +140,7 @@ export function toFaroStackFrames(parsedFrames: ParsedStackFrame[]): StackFrame[
 /**
  * Extract and parse stack frames from an Error object
  */
-export function getStackFramesFromError(error: Error): StackFrame[] {
+export function getStackFramesFromError(error: Error): ExceptionStackFrame[] {
   if (!error || !error.stack) {
     return [];
   }
@@ -161,7 +161,7 @@ export function getPlatformErrorContext(): Record<string, string> {
   return {
     platform: Platform.OS,
     platformVersion: Platform.Version?.toString() || 'unknown',
-    isHermes: !!(global as any).HermesInternal ? 'true' : 'false',
+    isHermes: (global as any).HermesInternal ? 'true' : 'false',
   };
 }
 
@@ -173,7 +173,7 @@ export function enhanceErrorWithContext(
   additionalContext?: Record<string, string>
 ): {
   error: Error;
-  stackFrames: StackFrame[];
+  stackFrames: ExceptionStackFrame[];
   context: Record<string, string>;
 } {
   const stackFrames = getStackFramesFromError(error);

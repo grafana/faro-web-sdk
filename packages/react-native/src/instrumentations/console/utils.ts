@@ -82,9 +82,9 @@ function getStackFramesFromError(error: Error): ExceptionStackFrame[] {
 }
 
 /**
- * Extracts error details from Error object
+ * Extracts error details from Error object or error-like object
  */
-function getErrorDetails(error: Error): [string | undefined, string | undefined, ExceptionStackFrame[]] {
+function getErrorDetails(error: any): [string | undefined, string | undefined, ExceptionStackFrame[]] {
   let value: string | undefined;
   let type: string | undefined;
   let stackFrames: ExceptionStackFrame[] = [];

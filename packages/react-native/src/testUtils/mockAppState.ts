@@ -7,7 +7,6 @@ export function mockAppState(): {
   setCurrentState: (state: AppStateStatus) => void;
   triggerChange: (state: AppStateStatus) => void;
 } {
-  let currentState: AppStateStatus = 'active';
   const listeners = new Set<(state: AppStateStatus) => void>();
 
   const mockAppState = {
@@ -33,11 +32,9 @@ export function mockAppState(): {
 
   return {
     setCurrentState: (state: AppStateStatus) => {
-      currentState = state;
       mockAppState.currentState = state;
     },
     triggerChange: (state: AppStateStatus) => {
-      currentState = state;
       mockAppState.currentState = state;
       listeners.forEach((listener) => listener(state));
     },

@@ -1,7 +1,7 @@
 import type { SpanContext } from '@opentelemetry/api';
 import { ESpanKind, type IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 
-import { faro, unknownString, createInternalLogger } from '@grafana/faro-core';
+import { createInternalLogger, faro, unknownString } from '@grafana/faro-core';
 import type { EventAttributes as FaroEventAttributes } from '@grafana/faro-core';
 
 const internalLogger = createInternalLogger();

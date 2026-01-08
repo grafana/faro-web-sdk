@@ -1,4 +1,4 @@
-import { parseStackTrace, parseStackTraceLine, toFaroStackFrames, getStackFramesFromError, getPlatformErrorContext, enhanceErrorWithContext } from './stackTraceParser';
+import { enhanceErrorWithContext, getPlatformErrorContext, getStackFramesFromError, parseStackTrace, parseStackTraceLine, toFaroStackFrames } from './stackTraceParser';
 
 describe('Stack Trace Parser', () => {
   describe('parseStackTraceLine', () => {

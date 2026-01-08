@@ -49,7 +49,7 @@ function getLocaleInfo(): { locale: string; locales: string; timezone: string } 
 
     // Get locale information based on platform
     if (Platform.OS === 'ios') {
-      const settings = NativeModules.SettingsManager?.settings;
+      const settings = NativeModules['SettingsManager']?.settings;
       if (settings) {
         locale = settings.AppleLocale || settings.AppleLanguages?.[0] || unknownString;
         locales = Array.isArray(settings.AppleLanguages) ? settings.AppleLanguages.join(', ') : locale;
@@ -153,7 +153,7 @@ export const getAsyncDeviceMeta = async (): Promise<Partial<ExtendedBrowserMeta>
     const [batteryLevel, carrier, lowPowerMode] = await Promise.all([
       DeviceInfo.getBatteryLevel(),
       DeviceInfo.getCarrier(),
-      DeviceInfo.isPowerSaveMode(),
+      (DeviceInfo as any).isPowerSaveMode?.() ?? false,
     ]);
 
     // Check if device is charging
