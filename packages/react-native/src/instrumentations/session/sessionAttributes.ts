@@ -153,7 +153,7 @@ export async function getSessionAttributes(): Promise<SessionAttributes> {
     };
 
     return attributes;
-  } catch (error) {
+  } catch {
     // If anything fails, return minimal attributes
     return {
       faro_sdk_version: VERSION,

@@ -3,8 +3,9 @@ import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 
 import { faro, type UserActionInternalInterface, UserActionState } from '@grafana/faro-core';
 
-import { fetchCustomAttributeFunctionWithDefaults } from './instrumentationUtils';
 import type { DefaultInstrumentationsOptions, InstrumentationOption } from '../types';
+
+import { fetchCustomAttributeFunctionWithDefaults } from './instrumentationUtils';
 
 /**
  * Get default OTEL instrumentations for React Native
@@ -43,7 +44,7 @@ function createFetchInstrumentationOptions(
       fetchInstrumentationOptions?.applyCustomAttributesOnSpan
     ),
     // Request hook to add user action context
-    requestHook: (span: Span, _: Request | RequestInit) => {
+    requestHook: (span: Span) => {
       try {
         const currentAction = faro.api.getActiveUserAction();
         if (
@@ -53,7 +54,7 @@ function createFetchInstrumentationOptions(
           span.setAttribute('faro.action.user.name', currentAction.name);
           span.setAttribute('faro.action.user.parentId', currentAction.parentId);
         }
-      } catch (error) {
+      } catch {
         // Silently fail - don't log to avoid infinite loops
         // The span will just not have user action context
       }

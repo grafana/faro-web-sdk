@@ -7,9 +7,9 @@ import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConst
 import {
   addSessionMetadataToNextSession,
   createUserSessionObject,
+  getSessionMetaUpdateHandler,
   getUserSessionUpdater,
   isUserSessionValid,
-  getSessionMetaUpdateHandler,
 } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
@@ -292,7 +292,7 @@ describe('sessionManagerUtils', () => {
         },
       });
 
-      const faro = initializeFaro(config);
+      initializeFaro(config);
 
       const mockFetchUserSession = jest.fn().mockResolvedValue(null);
       const mockStoreUserSession = jest.fn().mockResolvedValue(undefined);
@@ -353,7 +353,7 @@ describe('sessionManagerUtils', () => {
         },
       });
 
-      const faro = initializeFaro(config);
+      initializeFaro(config);
 
       const existingSession: FaroUserSession = {
         sessionId: 'old-session',

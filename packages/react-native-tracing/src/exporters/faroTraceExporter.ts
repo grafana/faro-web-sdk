@@ -5,10 +5,11 @@ import type { ReadableSpan, SpanExporter } from '@opentelemetry/sdk-trace-base';
 
 import { createInternalLogger } from '@grafana/faro-core';
 
-const internalLogger = createInternalLogger();
+import type { FaroTraceExporterConfig } from '../types';
 
 import { sendFaroEvents } from './faroTraceExporter.utils';
-import type { FaroTraceExporterConfig } from '../types';
+
+const internalLogger = createInternalLogger();
 
 /**
  * FaroTraceExporter for React Native

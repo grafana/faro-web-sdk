@@ -161,7 +161,7 @@ export function getPlatformErrorContext(): Record<string, string> {
   return {
     platform: Platform.OS,
     platformVersion: Platform.Version?.toString() || 'unknown',
-    isHermes: !!(global as any).HermesInternal ? 'true' : 'false',
+    isHermes: (global as any).HermesInternal ? 'true' : 'false',
   };
 }
 
