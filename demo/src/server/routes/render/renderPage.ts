@@ -27,19 +27,29 @@ export async function renderPage(
     },
   };
 
-  const [renderedHtml, helmetContext] = render(req.originalUrl, preloadedState);
+  try {
+    const renderedHtml = await render(req.originalUrl, preloadedState);
 
-  const html = template
-    .replace(
-      '<!--app-tracing-->',
-      spanContext
-        ? `<meta name="traceparent" content="00-${spanContext.traceId}-${spanContext.spanId}-0${spanContext.traceFlags}" />`
-        : ''
-    )
-    .replace('<!--app-title-->', helmetContext.helmet.title.toString())
-    .replace('<!--app-state-->', `<script>window.__PRELOADED_STATE__ = ${JSON.stringify(preloadedState)}</script>`)
-    .replace('<!--app-env-->', `<script>window.__APP_ENV__ = ${JSON.stringify(env)}</script>`)
-    .replace(`<!--app-html-->`, renderedHtml);
+    const html = template
+      .replace(
+        '<!--app-tracing-->',
+        spanContext
+          ? `<meta name="traceparent" content="00-${spanContext.traceId}-${spanContext.spanId}-0${spanContext.traceFlags}" />`
+          : ''
+      )
+      .replace('<!--app-state-->', `<script>window.__PRELOADED_STATE__ = ${JSON.stringify(preloadedState)}</script>`)
+      .replace('<!--app-env-->', `<script>window.__APP_ENV__ = ${JSON.stringify(env)}</script>`)
+      .replace(`<!--app-html-->`, renderedHtml);
 
-  res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+    res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+  } catch (error) {
+    if (error instanceof Response) {
+      const location = error.headers.get('Location');
+      if (location) {
+        res.redirect(error.status, location);
+        return;
+      }
+    }
+    throw error;
+  }
 }

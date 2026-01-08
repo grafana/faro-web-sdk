@@ -4,8 +4,7 @@ import type { InferAttributes, ModelCtor, Sequelize } from 'sequelize';
 import type { ArticleInputModel, ArticleModel } from '../../../common';
 
 export interface ArticleShape
-  extends ArticleModel,
-    Model<InferAttributes<ArticleShape>, ArticleInputModel & Pick<ArticleModel, 'userId'>> {}
+  extends ArticleModel, Model<InferAttributes<ArticleShape>, ArticleInputModel & Pick<ArticleModel, 'userId'>> {}
 
 export let Article: ModelCtor<ArticleShape>;
 
