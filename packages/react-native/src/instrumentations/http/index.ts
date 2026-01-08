@@ -4,7 +4,7 @@ import { notifyHttpRequestEnd, notifyHttpRequestStart } from '../userActions/htt
 
 export interface HttpRequestPayload {
   url: string;
-  method?: string;
+  method: string;
   requestId: string;
   startTime: number;
   endTime?: number;

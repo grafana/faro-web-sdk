@@ -1,4 +1,5 @@
-import { type ExceptionEvent, initializeFaro, type TransportItem } from '@grafana/faro-core';
+import { initializeFaro } from '@grafana/faro-core';
+import type { ExceptionEvent, TransportItem } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { ErrorsInstrumentation } from './index';

@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
-import { faro, unpatchedConsole } from '@grafana/faro-core';
+import { defaultUnpatchedConsole, faro } from '@grafana/faro-core';
 
 import { faroErrorBoundaryInitialState } from './const';
 import type { FaroErrorBoundaryProps, FaroErrorBoundaryState } from './types';
@@ -102,7 +102,7 @@ export class FaroErrorBoundary extends Component<FaroErrorBoundaryProps, FaroErr
     }
 
     if (this.props.fallback) {
-      unpatchedConsole.warn('[Faro ErrorBoundary] Cannot get a valid ReactElement from "fallback"');
+      defaultUnpatchedConsole.warn('[Faro ErrorBoundary] Cannot get a valid ReactElement from "fallback"');
     }
 
     return null;

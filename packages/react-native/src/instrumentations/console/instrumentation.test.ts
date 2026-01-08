@@ -225,10 +225,10 @@ describe('ConsoleInstrumentation', () => {
     // excluded by default
     console.log(excludedLogMessage);
     const excludedTraceLogMessage = "trace isn't logged by default";
-    // eslint-disable-next-line no-console
+
     console.trace(excludedTraceLogMessage);
     const excludedDebugMessage = "debug isn't logged by default";
-    // eslint-disable-next-line no-console
+
     console.debug(excludedDebugMessage);
 
     expect(mockTransport.items).toHaveLength(3);

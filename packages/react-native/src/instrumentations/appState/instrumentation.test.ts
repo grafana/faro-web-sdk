@@ -1,6 +1,7 @@
 import { AppState } from 'react-native';
 
-import { EVENT_APP_STATE_CHANGED, type EventEvent, initializeFaro, type TransportItem } from '@grafana/faro-core';
+import type { EventEvent, TransportItem } from '@grafana/faro-core';
+import { EVENT_APP_STATE_CHANGED, initializeFaro } from '@grafana/faro-core';
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { AppStateInstrumentation } from './index';

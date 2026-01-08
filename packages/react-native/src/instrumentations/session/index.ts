@@ -7,9 +7,7 @@ import {
   genShortID,
   VERSION,
 } from '@grafana/faro-core';
-import type { Config, Meta, MetaSession } from '@grafana/faro-core';
-
-import type { TransportItem } from '../../transports/fetch/types';
+import type { Config, Meta, MetaSession, TransportItem } from '@grafana/faro-core';
 
 import { getSessionAttributes } from './sessionAttributes';
 import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
