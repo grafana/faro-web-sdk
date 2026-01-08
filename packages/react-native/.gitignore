@@ -1,0 +1,23 @@
+# Android build output
+android/build/
+android/.gradle/
+android/.cxx/
+android/app/build/
+*.apk
+*.aab
+
+# iOS build output
+ios/build/
+ios/Pods/
+ios/*.xcworkspace
+ios/Podfile.lock
+
+# Node
+node_modules/
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+.DS_Store
+*.log

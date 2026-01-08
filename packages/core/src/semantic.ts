@@ -6,3 +6,4 @@ export const EVENT_SESSION_RESUME = 'session_resume';
 export const EVENT_SESSION_EXTEND = 'session_extend';
 export const EVENT_OVERRIDES_SERVICE_NAME = 'service_name_override';
 export const EVENT_ROUTE_CHANGE = 'route_change';
+export const EVENT_APP_STATE_CHANGED = 'app_state_changed';

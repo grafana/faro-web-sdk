@@ -2,7 +2,8 @@
   "packages": [
     "packages/*",
     "experimental/*",
-    "demo"
+    "demo",
+    "demo-react-native"
   ],
   "version": "2.1.0",
   "npmClient": "yarn",
