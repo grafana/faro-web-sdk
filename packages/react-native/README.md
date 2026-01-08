@@ -383,6 +383,27 @@ interface GetRNInstrumentationsOptions {
 
   /** Track user actions/interactions (default: true) */
   trackUserActions?: boolean;
+
+  /** Track HTTP/fetch requests (default: true) */
+  trackHttpRequests?: boolean;
+
+  /** Track performance metrics (CPU, memory, startup) (default: true) */
+  trackPerformance?: boolean;
+
+  /** Track app startup time from process start to Faro init (default: true) */
+  trackStartup?: boolean;
+
+  /** Enable memory usage monitoring (default: true) */
+  memoryUsageVitals?: boolean;
+
+  /** Enable CPU usage monitoring (default: true) */
+  cpuUsageVitals?: boolean;
+
+  /** Interval for collecting performance vitals in milliseconds (default: 30000) */
+  fetchVitalsInterval?: number;
+
+  /** URLs to ignore for HTTP tracking (regex patterns) */
+  ignoredHttpUrls?: RegExp[];
 }
 ```
 
