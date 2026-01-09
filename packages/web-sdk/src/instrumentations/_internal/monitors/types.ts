@@ -1,8 +1,17 @@
+import type { LogLevel } from '@grafana/faro-core';
+
 import type {
+  MESSAGE_TYPE_CONSOLE,
   MESSAGE_TYPE_DOM_MUTATION,
   MESSAGE_TYPE_HTTP_REQUEST_END,
   MESSAGE_TYPE_HTTP_REQUEST_START,
 } from './const';
+
+export type ConsoleMessage = {
+  type: typeof MESSAGE_TYPE_CONSOLE;
+  level: LogLevel;
+  args: unknown[];
+};
 
 export type DomMutationMessage = {
   type: typeof MESSAGE_TYPE_DOM_MUTATION;

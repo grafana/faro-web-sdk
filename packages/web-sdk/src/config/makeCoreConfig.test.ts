@@ -114,7 +114,12 @@ describe('config', () => {
   it.each(['http://example.com/collect', 'http://example.com/collect/874jdhalkfh7a9'])(
     'Matches default ignoreUrl with urls ending with /collect or ending with /collect followed by alphanumeric characters',
     (url) => {
-      const config = makeCoreConfig({ url: '', app: {} });
+      // Pass mock unpatchedConsole to suppress expected error log about missing url/transports
+      const config = makeCoreConfig({
+        url: '',
+        app: {},
+        unpatchedConsole: { error: jest.fn() } as unknown as Console,
+      });
       expect(config).toBeTruthy();
       // @ts-expect-error
       expect(config?.ignoreUrls[0]).toEqual(/\/collect(?:\/[\w]*)?$/);
