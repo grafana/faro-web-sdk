@@ -1,6 +1,6 @@
 import type { MouseEventHandler } from 'react';
 import { Navbar as BootstrapNavbar, Container, Nav } from 'react-bootstrap';
-import { LinkContainer } from 'react-router-bootstrap';
+import { NavLink } from 'react-router';
 
 import { useAppSelector } from '../../hooks';
 import { selectRootSpanId, selectRootTraceId, selectSession } from '../../store';
@@ -24,17 +24,21 @@ export function Navbar({ items, titleTo }: NavbarProps) {
     <>
       <BootstrapNavbar bg="dark" variant="dark" expand="lg">
         <Container>
-          <LinkContainer to={titleTo}>
-            <BootstrapNavbar.Brand>Demo</BootstrapNavbar.Brand>
-          </LinkContainer>
+          <NavLink to={titleTo} className="navbar-brand" end>
+            Demo
+          </NavLink>
           <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />
           <BootstrapNavbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
               {items.map((item) =>
                 item.to ? (
-                  <LinkContainer key={item.title} to={item.to}>
-                    <Nav.Link>{item.title}</Nav.Link>
-                  </LinkContainer>
+                  <NavLink
+                    key={item.title}
+                    to={item.to}
+                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  >
+                    {item.title}
+                  </NavLink>
                 ) : (
                   <Nav.Link key={item.title} onClick={item.onClick}>
                     {item.title}
