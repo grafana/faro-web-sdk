@@ -7,10 +7,30 @@ import { __resetConsoleMonitorForTests } from '../_internal/monitors/consoleMoni
 
 import { ConsoleInstrumentation } from './instrumentation';
 
+// Mock globalObject for SDK's _faroInternal registration.
+// This enables testing non-isolated Faro instances by providing a clean object
+// for each test. This is separate from global.console below - they serve different SDK subsystems.
+let mockGlobalObject: Record<string, unknown> = {};
+
+// Mock globalObject module - all internal imports use the index path
+jest.mock('@grafana/faro-core/src/globalObject', () => ({
+  get globalObject() {
+    return mockGlobalObject;
+  },
+}));
+
+function resetMockGlobalObject() {
+  mockGlobalObject = {};
+}
+
 describe('ConsoleInstrumentation', () => {
   const originalConsole = console;
 
   beforeEach(() => {
+    resetMockGlobalObject();
+
+    // Window global mock for capturing console.log/error calls.
+    // The ConsoleInstrumentation patches these methods to intercept logs.
     global.console = {
       error: jest.fn(),
       log: jest.fn(),
@@ -421,6 +441,56 @@ describe('ConsoleInstrumentation', () => {
       expect(transport2Levels).toContain('info');
       expect(transport2Levels).toContain('warn');
       expect(transport2Levels).toContain('error');
+    });
+
+    it('should route console.error to both isolated and non-isolated instances', () => {
+      const transport1 = new MockTransport();
+      const transport2 = new MockTransport();
+
+      // Non-isolated instance
+      initializeFaro(
+        makeCoreConfig(
+          mockConfig({
+            isolate: false,
+            preventGlobalExposure: false,
+            transports: [transport1],
+            instrumentations: [new ConsoleInstrumentation()],
+            unpatchedConsole: {
+              error: jest.fn(),
+            } as unknown as Console,
+          })
+        )!
+      );
+
+      expect(mockGlobalObject['faro']).toBeDefined();
+
+      // Isolated instance
+      initializeFaro(
+        makeCoreConfig(
+          mockConfig({
+            isolate: true,
+            transports: [transport2],
+            instrumentations: [new ConsoleInstrumentation()],
+            unpatchedConsole: {
+              error: jest.fn(),
+            } as unknown as Console,
+          })
+        )!
+      );
+
+      console.error('Test console error');
+
+      const transport1Errors = transport1.items.filter(
+        (item: TransportItem<APIEvent>) =>
+          item.type === 'exception' || (item.type === 'log' && (item.payload as LogEvent).level === 'error')
+      );
+      const transport2Errors = transport2.items.filter(
+        (item: TransportItem<APIEvent>) =>
+          item.type === 'exception' || (item.type === 'log' && (item.payload as LogEvent).level === 'error')
+      );
+
+      expect(transport1Errors.length).toBeGreaterThan(0);
+      expect(transport2Errors.length).toBeGreaterThan(0);
     });
   });
 });
