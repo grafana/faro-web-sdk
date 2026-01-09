@@ -21,13 +21,16 @@ function App() {
       initFaro();
 
       // Set a random user on app mount
-      const randomUser = getRandomUser();
-      faro.api.setUser({
-        id: randomUser.id,
-        email: randomUser.email,
-        username: randomUser.username,
-        attributes: randomUser.attributes,
-      });
+      // Check if faro is initialized before using it
+      if (faro?.api) {
+        const randomUser = getRandomUser();
+        faro.api.setUser({
+          id: randomUser.id,
+          email: randomUser.email,
+          username: randomUser.username,
+          attributes: randomUser.attributes,
+        });
+      }
     } catch (error) {
       console.error('Failed to initialize Faro:', error);
     }

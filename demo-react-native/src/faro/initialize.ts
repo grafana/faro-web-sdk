@@ -27,6 +27,8 @@ function getDemoVersion(): string {
  */
 export function initFaro() {
   console.log('[FARO DEBUG] Starting Faro initialization...');
+  console.log('[FARO DEBUG] FARO_COLLECTOR_URL value:', FARO_COLLECTOR_URL);
+  console.log('[FARO DEBUG] FARO_COLLECTOR_URL type:', typeof FARO_COLLECTOR_URL);
 
   if (!FARO_COLLECTOR_URL) {
     console.warn(

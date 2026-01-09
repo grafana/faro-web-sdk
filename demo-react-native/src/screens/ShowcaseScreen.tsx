@@ -53,20 +53,22 @@ export function ShowcaseScreen(_props: Props) {
     // No need to setCurrentUser - it will update automatically via useFaroUser hook
 
     // Update Faro with new user info
-    faro.api.setUser({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      attributes: user.attributes,
-    });
+    if (faro?.api) {
+      faro.api.setUser({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        attributes: user.attributes,
+      });
 
-    // Track user switch event
-    faro.api.pushEvent('showcase_user_switched', {
-      newUserId: user.id,
-      newUsername: user.username,
-      plan: user.attributes.plan,
-      role: user.attributes.role,
-    });
+      // Track user switch event
+      faro.api.pushEvent('showcase_user_switched', {
+        newUserId: user.id,
+        newUsername: user.username,
+        plan: user.attributes.plan,
+        role: user.attributes.role,
+      });
+    }
 
     // Reset action counts for the new user
     setActionCounts({
