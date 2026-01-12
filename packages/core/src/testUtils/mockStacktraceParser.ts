@@ -1,6 +1,6 @@
-import type { ExceptionStackFrame, StacktraceParser } from '../api';
+import type { ExceptionStackFrame, ExtendedError, Stacktrace } from '../api';
 
-export const mockStacktraceParser: StacktraceParser = (err) => {
+export const mockStacktraceParser = (err: ExtendedError): Stacktrace => {
   const frames: ExceptionStackFrame[] = [];
   const stack = err.stack ?? err.stacktrace;
 

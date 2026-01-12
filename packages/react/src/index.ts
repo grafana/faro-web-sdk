@@ -189,7 +189,6 @@ export type {
   PushLogOptions,
   PushMeasurementOptions,
   Stacktrace,
-  StacktraceParser,
   TraceContext,
   TraceEvent,
   TracesAPI,
