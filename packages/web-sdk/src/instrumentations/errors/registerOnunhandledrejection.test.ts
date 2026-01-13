@@ -3,15 +3,16 @@ import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { initializeFaro } from '../../initialize';
 
-import { registerOnunhandledrejection } from './registerOnunhandledrejection';
+import { __resetOnunhandledrejectionForTests, registerOnunhandledrejection } from './registerOnunhandledrejection';
 
 describe('registerOnunhandledrejection', () => {
   afterEach(() => {
-    // Clean up event listeners after each test
-    const listeners = (window as any).getEventListeners?.('unhandledrejection') || [];
-    listeners.forEach((listener: any) => {
-      window.removeEventListener('unhandledrejection', listener.listener);
-    });
+    __resetOnunhandledrejectionForTests();
+    jest.resetAllMocks();
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
   });
 
   it('will capture unhandled promise rejection', () => {
@@ -50,7 +51,7 @@ describe('registerOnunhandledrejection', () => {
         })
       );
 
-      // Register handlers for all three instances
+      // Register handlers for both instances
       registerOnunhandledrejection(api1);
       registerOnunhandledrejection(api2);
 
@@ -61,7 +62,7 @@ describe('registerOnunhandledrejection', () => {
 
       window.dispatchEvent(rejectionEvent);
 
-      // Verify all three instances received the event
+      // Verify both instances received the event
       expect(transport1.items).toHaveLength(1);
       expect((transport1.items[0] as TransportItem<ExceptionEventExtended>).payload.value).toBe('test rejection');
 
