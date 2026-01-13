@@ -5,8 +5,11 @@ import { primitiveUnhandledType, primitiveUnhandledValue } from './const';
 import { getErrorDetails } from './getErrorDetails';
 import type { ExtendedPromiseRejectionEvent } from './types';
 
+// Store handlers for cleanup in tests
+const registeredHandlers: Array<(evt: ExtendedPromiseRejectionEvent) => void> = [];
+
 export function registerOnunhandledrejection(api: API): void {
-  window.addEventListener('unhandledrejection', (evt: ExtendedPromiseRejectionEvent) => {
+  const handler = (evt: ExtendedPromiseRejectionEvent) => {
     let error = evt;
 
     if (error.reason) {
@@ -28,5 +31,16 @@ export function registerOnunhandledrejection(api: API): void {
     if (value) {
       api.pushError(new Error(value), { type, stackFrames });
     }
+  };
+
+  window.addEventListener('unhandledrejection', handler);
+  registeredHandlers.push(handler);
+}
+
+// Test-only utility to reset state between tests
+export function __resetOnunhandledrejectionForTests(): void {
+  registeredHandlers.forEach((handler) => {
+    window.removeEventListener('unhandledrejection', handler);
   });
+  registeredHandlers.length = 0;
 }
