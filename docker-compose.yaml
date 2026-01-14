@@ -4,7 +4,7 @@ services:
   mimir:
     env_file:
       - './.env'
-    image: 'grafana/mimir:3.0.1@sha256:5f4667c9b7164a376bd555a56b5a7074535303e1924192a267bad7f0b72893f7'
+    image: 'grafana/mimir:3.0.2@sha256:4231caf9be780e5d9113449e57a0258d388124aca74c0a14b9cf8857e23aad76'
     volumes:
       - '${MIMIR_CONFIG_PATH_LOCAL}:${MIMIR_CONFIG_PATH}'
     entrypoint:
@@ -16,7 +16,7 @@ services:
   grafana:
     env_file:
       - './.env'
-    image: 'grafana/grafana:12.3.0@sha256:70d9599b186ce287be0d2c5ba9a78acb2e86c1a68c9c41449454d0fc3eeb84e8'
+    image: 'grafana/grafana:12.3.1@sha256:2175aaa91c96733d86d31cf270d5310b278654b03f5718c59de12a865380a31f'
     volumes:
       - '${GRAFANA_CONFIG_PATH_LOCAL}:${GRAFANA_CONFIG_PATH}'
       - '${GRAFANA_DATASOURCES_PATH_LOCAL}:${GRAFANA_DATASOURCES_PATH}'
@@ -34,7 +34,7 @@ services:
   loki:
     env_file:
       - './.env'
-    image: 'grafana/loki:3.6.2@sha256:fad94db64eeb0e14544953789c942453df68a860b6f760d867f06c5b31f461ab'
+    image: 'grafana/loki:3.6.3@sha256:cd6e176883a90c21755f0315688668991634143423f75bdedfef41441b0fdc3c'
     command: '-config.file=${LOKI_CONFIG_PATH}/${LOKI_CONFIG_FILE}'
     ports:
       - '${LOKI_PORT}:${LOKI_PORT}'
