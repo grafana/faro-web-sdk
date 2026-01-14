@@ -87,7 +87,7 @@
     "@types/cookie-parser": "1.4.10",
     "@types/express": "5.0.6",
     "@types/jsonwebtoken": "9.0.10",
-    "@types/react": "^19.1.8",
+    "@types/react": "^19.2.7",
     "@types/react-dom": "^19.1.6",
     "@types/react-redux": "7.1.34",
     "@types/serve-static": "2.2.0",
