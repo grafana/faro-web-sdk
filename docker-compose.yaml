@@ -76,7 +76,7 @@ services:
   database:
     env_file:
       - './.env'
-    image: 'postgres:17.7@sha256:4ad49a4ba70130eab1de69bdd7a212d9c711e7410f10e1a23aae41a325b95093'
+    image: 'postgres:17.7@sha256:7352e0c4d62bbac8aa69d95e40220a60967c4a19f9c4f65b4d118175f7ce9e3b'
     volumes:
       - 'db_data:/var/lib/postgresql/data'
     environment:
