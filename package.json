@@ -74,7 +74,7 @@
     "husky": "9.1.7",
     "jest": "30.2.0",
     "jest-environment-jsdom": "30.2.0",
-    "lerna": "9.0.3",
+    "lerna": "^9.0.3",
     "lint-staged": "16.2.7",
     "madge": "8.0.0",
     "markdownlint": "0.40.0",
@@ -96,6 +96,7 @@
     "cross-spawn": "^7.0.0",
     "jsdom@npm:^26.1.0": "patch:jsdom@npm%3A26.1.0#~/.yarn/patches/jsdom-npm-26.1.0-3857255f02.patch",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "tar": "^7.5.3"
   }
 }
