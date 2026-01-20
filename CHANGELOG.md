@@ -2,6 +2,8 @@
 
 ## Next
 
+## 2.2.0
+
 - Feature (`@grafana/faro-web-sdk`): Fetch transport now supports dynamic header values.
   Each header can be a static string or a function returning a string, resolved at request
   time (#1490).
@@ -9,6 +11,11 @@
 - Feature (`@grafana/faro-transport-otlp-http [experimental]`): OLTP HTTP transport now supports
   dynamic header values. Each header can be a static string or a function returning a string,
   resolved at request time (#1490).
+
+- Fix (`@grafana/faro-web-sdk`): Console instrumentation now correctly handles multiple SDK
+  instances (#1825).
+
+- Chore (`@grafana/faro-*`): Updated multiple dependencies to address security vulnerabilities.
 
 ## 2.1.0
 
