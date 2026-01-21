@@ -11,3 +11,5 @@ export type { FaroTraceExporterConfig, TracingInstrumentationOptions } from './t
 export { setSpanStatusOnFetchError, fetchCustomAttributeFunctionWithDefaults } from './instrumentationUtils';
 
 export { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
+
+export { FaroUserActionSpanProcessor } from './faroUserActionSpanProcessor';
