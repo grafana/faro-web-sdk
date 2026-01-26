@@ -34,7 +34,7 @@ services:
   loki:
     env_file:
       - './.env'
-    image: 'grafana/loki:3.6.3@sha256:cd6e176883a90c21755f0315688668991634143423f75bdedfef41441b0fdc3c'
+    image: 'grafana/loki:3.6.4@sha256:be31579ac047e9f78b81e48f3b69d3af709e7299b431d5aa78bcda43382f9511'
     command: '-config.file=${LOKI_CONFIG_PATH}/${LOKI_CONFIG_FILE}'
     ports:
       - '${LOKI_PORT}:${LOKI_PORT}'
@@ -42,7 +42,7 @@ services:
   tempo:
     env_file:
       - './.env'
-    image: 'grafana/tempo:2.9.0@sha256:65a5789759435f1ef696f1953258b9bbdb18eb571d5ce711ff812d2e128288a4'
+    image: 'grafana/tempo:2.9.1@sha256:290414580eabd1bde91f22e4a4579242fe77377c425223f45d59b8ad1540ce3c'
     volumes:
       - '${TEMPO_CONFIG_PATH_LOCAL}:${TEMPO_CONFIG_PATH}'
     command:
