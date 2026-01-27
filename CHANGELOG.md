@@ -2,6 +2,13 @@
 
 ## Next
 
+## 2.2.1
+
+- Chore (`@grafana/faro-*`): Updated multiple dependencies to address security vulnerabilities
+  (#1855).
+
+- Chore (`@grafana/faro-*`): Updated multiple otel dependencies (#1856).
+
 ## 2.2.0
 
 - Feature (`@grafana/faro-web-sdk`): Fetch transport now supports dynamic header values.
