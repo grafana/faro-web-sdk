@@ -43,7 +43,7 @@
     "watch:compile:esm": "yarn build:compile:esm -w",
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s 'quality:*'",
-    "quality:test": "yarn jest",
+    "quality:test": "jest",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/core --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s 'quality:lint:*'",
     "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/core \"./**/*.{js,jsx,ts,tsx}\"",
