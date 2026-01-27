@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-core`): Buffered items are now correctly sent when a user action is cancelled
+  (#1861).
+
 ## 2.2.0
 
 - Feature (`@grafana/faro-web-sdk`): Fetch transport now supports dynamic header values.

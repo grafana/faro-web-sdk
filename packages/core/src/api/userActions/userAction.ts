@@ -87,7 +87,9 @@ export default class UserAction
   cancel() {
     if (this._state === UserActionState.Started) {
       // Empty the buffer
-      this._itemBuffer.flushBuffer();
+      this._itemBuffer.flushBuffer((item) => {
+        this._transports.execute(item);
+      });
     }
 
     this._state = UserActionState.Cancelled;
