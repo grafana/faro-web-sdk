@@ -43,7 +43,7 @@ describe('UserAction', () => {
 
     expect(ua.getState()).toBe(UserActionState.Cancelled);
     expect(ItemBuffer.prototype.flushBuffer).toHaveBeenCalled();
-    expect(transports.execute).not.toHaveBeenCalled();
+    expect(transports.execute).toHaveBeenCalled();
   });
 
   it('end() will not fire if action is cancelled', () => {
@@ -51,6 +51,8 @@ describe('UserAction', () => {
     ua.cancel();
     ua.end();
     expect(ua.getState()).toBe(UserActionState.Cancelled);
+    expect(transports.execute).toHaveBeenCalled();
+    expect(mockPushEvent).not.toHaveBeenCalled();
   });
 
   it('end() will send items with action payload', () => {
