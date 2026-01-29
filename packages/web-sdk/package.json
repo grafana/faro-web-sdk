@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@grafana/faro-core": "^2.2.1",
-    "ua-parser-js": "^1.0.32",
+    "ua-parser-js": "1.0.41",
     "web-vitals": "^5.1.0"
   },
   "devDependencies": {
