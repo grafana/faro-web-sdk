@@ -1,5 +1,3 @@
-import { createSession } from '@grafana/faro-react';
-
 import { getActiveSpanContext } from '../../otel';
 import { env, verifyToken } from '../../utils';
 import type { Request, Response } from '../../utils';
@@ -18,7 +16,7 @@ export async function renderPage(
 
   const preloadedState = {
     faro: {
-      session: createSession(),
+      session: null,
       rootSpanId: spanContext?.spanId ?? null,
       rootTraceId: spanContext?.traceId ?? null,
     },
