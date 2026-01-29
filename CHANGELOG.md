@@ -2,8 +2,15 @@
 
 ## Next
 
+## 2.2.1
+
 - Fix (`@grafana/faro-core`): Buffered items are now correctly sent when a user action is cancelled
   (#1861).
+
+- Chore (`@grafana/faro-*`): Updated multiple dependencies to address security vulnerabilities
+  (#1855).
+
+- Chore (`@grafana/faro-*`): Updated multiple otel dependencies (#1856).
 
 ## 2.2.0
 
