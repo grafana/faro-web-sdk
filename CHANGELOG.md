@@ -2,6 +2,10 @@
 
 ## Next
 
+## 2.2.2
+
+- Chore (`@grafana/faro-web-sdk`): Pin ua-parser-js package version (#1867).
+
 ## 2.2.1
 
 - Fix (`@grafana/faro-core`): Buffered items are now correctly sent when a user action is cancelled
