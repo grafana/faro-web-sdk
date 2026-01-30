@@ -8,6 +8,7 @@ export function registerInitialMetas(faro: Faro): void {
   const initial: Meta = {
     sdk: {
       version: VERSION,
+      name: 'faro',
     },
     app: {
       bundleId: faro.config.app.name && getBundleId(faro.config.app.name),

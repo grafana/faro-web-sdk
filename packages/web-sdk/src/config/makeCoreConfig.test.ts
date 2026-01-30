@@ -18,7 +18,7 @@ describe('defaultMetas', () => {
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.metas).toHaveLength(3);
+    expect(config?.metas).toHaveLength(4);
     expect(config?.metas.map((item) => (isFunction(item) ? item() : item))).toContainEqual({
       k6: {
         isK6Browser: true,
@@ -39,12 +39,31 @@ describe('defaultMetas', () => {
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.metas).toHaveLength(3);
+    expect(config?.metas).toHaveLength(4);
     expect(config?.metas.map((item) => (isFunction(item) ? item() : item))).toContainEqual({
       k6: { isK6Browser: true },
     });
 
     delete (global as any).k6;
+  });
+
+  it('includes sdkMeta with name and version in defaultMetas', () => {
+    const browserConfig = {
+      url: 'http://example.com/my-collector',
+      app: {},
+    };
+    const config = makeCoreConfig(browserConfig);
+
+    expect(config).toBeTruthy();
+    expect(config?.metas).toBeDefined();
+
+    const metas = config?.metas.map((item) => (isFunction(item) ? item() : item));
+    const sdkMeta = metas.find((meta) => meta.sdk);
+
+    expect(sdkMeta).toBeDefined();
+    expect(sdkMeta?.sdk?.name).toBe('faro-web');
+    expect(sdkMeta?.sdk?.version).toBeDefined();
+    expect(typeof sdkMeta?.sdk?.version).toBe('string');
   });
 });
 
