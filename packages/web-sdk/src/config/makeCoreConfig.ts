@@ -15,7 +15,7 @@ import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
 import { userActionDataAttribute } from '../instrumentations/userActions/const';
-import { browserMeta } from '../metas';
+import { browserMeta, sdkMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
@@ -136,6 +136,7 @@ function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
     browserMeta,
     createPageMeta({ generatePageId, initialPageMeta: page }),
     ...(browserConfig.metas ?? []),
+    sdkMeta,
   ];
 
   const isK6BrowserSession = isObject((window as any)?.k6);
