@@ -7,7 +7,7 @@
   version. The SDK name is set to `faro-web`
   in web-sdk configuration. If web sdk meta was included manually previously,
   it could potentially be breaking as instrumentation metas are removed
-  and sdk name changed from `@grafana/faro-core`to`faro-web` (#1865).
+  and sdk name changed from `@grafana/faro-core` to `faro-web` (#1865).
 
 ## 2.2.1
 
