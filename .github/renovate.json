@@ -41,6 +41,7 @@
       "allowedVersions": "<2.0.0"
     },
     {
+      "description": "Auto update grafana/shared-workflows",
       "matchPackageNames": ["grafana/shared-workflows"],
       "versioning": "regex:^(?<compatibility>.*)[-/]v?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)?$",
       "additionalBranchPrefix": "{{ lookup (split newVersion \"/\") 0 }}-",
