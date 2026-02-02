@@ -7,13 +7,13 @@ import { sendFaroEvents } from './faroTraceExporter.utils';
 import type { FaroTraceExporterConfig } from './types';
 
 export class FaroTraceExporter implements SpanExporter {
-  constructor(private config: FaroTraceExporterConfig) {}
+  constructor(private config: FaroTraceExporterConfig) { }
 
   export(spans: ReadableSpan[], resultCallback: (result: ExportResult) => void): void {
     const traceEvent = createExportTraceServiceRequest(spans, { useHex: true, useLongBits: false });
 
     this.config.api.pushTraces(traceEvent);
-    sendFaroEvents(traceEvent.resourceSpans);
+    sendFaroEvents(traceEvent.resourceSpans, this.config.api);
 
     resultCallback({ code: ExportResultCode.SUCCESS });
   }

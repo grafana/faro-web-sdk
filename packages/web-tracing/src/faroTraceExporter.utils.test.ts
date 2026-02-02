@@ -14,7 +14,7 @@ describe('faroTraceExporter.utils', () => {
     const faro = initializeFaro(mockConfig());
 
     const mockPushEvent = jest.fn();
-    jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
+    // jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
 
     // remove scopeSpan which contains client span
     const data: IResourceSpans = {
@@ -22,7 +22,7 @@ describe('faroTraceExporter.utils', () => {
       scopeSpans: testData[0]?.scopeSpans?.slice(0, -1) ?? [],
     };
 
-    sendFaroEvents([data]);
+    sendFaroEvents([data], faro.api);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(0);
   });
@@ -33,7 +33,7 @@ describe('faroTraceExporter.utils', () => {
     const mockPushEvent = jest.fn();
     jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
 
-    sendFaroEvents(testData);
+    sendFaroEvents(testData, faro.api);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent.mock.lastCall[0]).toBe('faro.tracing.fetch');
@@ -71,7 +71,7 @@ describe('faroTraceExporter.utils', () => {
     const lastScopeSpan = scopeSpans[scopeSpans.length - 1] as IScopeSpans & { scope: { name: string } };
     lastScopeSpan.scope.name = '@foo/coolName';
 
-    sendFaroEvents([data]);
+    sendFaroEvents([data], faro.api);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent.mock.lastCall[0]).toBe('faro.tracing.coolName');
@@ -96,7 +96,7 @@ describe('faroTraceExporter.utils', () => {
     const lastScopeSpan = scopeSpans[scopeSpans.length - 1] as IScopeSpans & { scope: { name: string } };
     lastScopeSpan.scope.name = '@foo/coolName';
 
-    sendFaroEvents([data]);
+    sendFaroEvents([data], faro.api);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent.mock.lastCall[3]).toMatchObject({
@@ -143,7 +143,7 @@ describe('faroTraceExporter.utils', () => {
       ],
     };
 
-    sendFaroEvents([data]);
+    sendFaroEvents([data], faro.api);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent.mock.lastCall[0]).not.toHaveProperty('duration_ns');
@@ -184,7 +184,7 @@ describe('faroTraceExporter.utils', () => {
       ],
     };
 
-    sendFaroEvents([data]);
+    sendFaroEvents([data], faro.api);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent.mock.lastCall[0]).not.toHaveProperty('duration_ns');
@@ -192,7 +192,7 @@ describe('faroTraceExporter.utils', () => {
 
   it('Adds action name and parentId to the payload if "faro.action.user.name" and "faro.action.user.parentId" attributes are present', () => {
     const transport = new MockTransport();
-    initializeFaro(mockConfig({ transports: [transport] }));
+    const faro = initializeFaro(mockConfig({ transports: [transport] }));
 
     // const mockPushEvent = jest.fn();
     // jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
@@ -240,7 +240,7 @@ describe('faroTraceExporter.utils', () => {
       ],
     };
 
-    sendFaroEvents([data]);
+    sendFaroEvents([data], faro.api);
 
     expect(transport.items).toHaveLength(1);
     expect(transport.items[0]?.payload).toStrictEqual({
