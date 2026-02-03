@@ -14,7 +14,6 @@ describe('faroTraceExporter.utils', () => {
     const faro = initializeFaro(mockConfig());
 
     const mockPushEvent = jest.fn();
-    // jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
 
     // remove scopeSpan which contains client span
     const data: IResourceSpans = {
