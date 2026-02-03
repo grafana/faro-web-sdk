@@ -39,16 +39,6 @@
       "description": "Restrict ua-parser-js to version below 2.x.x as it changes licensing model with v2 onwards",
       "matchPackageNames": ["ua-parser-js"],
       "allowedVersions": "<2.0.0"
-    },
-    {
-      "description": "Auto update grafana/shared-workflows",
-      "matchPackageNames": ["grafana/shared-workflows"],
-      "versioning": "regex:^(?<compatibility>.*)[-/]v?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)?$",
-      "additionalBranchPrefix": "{{ lookup (split newVersion \"/\") 0 }}-",
-      "commitMessagePrefix": "chore(deps):",
-      "commitMessageAction": "update",
-      "commitMessageTopic": "{{depName}}/{{ lookup (split newVersion \"/\") 0 }} action",
-      "commitMessageExtra": "to {{ lookup (split newVersion \"/\") 1 }}"
     }
   ]
 }
