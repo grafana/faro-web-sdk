@@ -52,6 +52,7 @@ context('Measurements', () => {
 
         const buttonName = `btn-${btnName}`;
         cy.get(`[data-cy="${buttonName}"]`).scrollIntoView().should('be.visible');
+        cy.wait(100);
         cy.clickButton(buttonName);
 
         cy.wait('@measurement', {
