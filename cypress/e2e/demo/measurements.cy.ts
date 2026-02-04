@@ -14,8 +14,6 @@ context('Measurements', () => {
 
         cy.visit('/features');
 
-        cy.reload();
-
         cy.clickButton('btn-log-log');
 
         cy.wait('@measurement', {
@@ -46,7 +44,7 @@ context('Measurements', () => {
 
         cy.visit('/features');
 
-        cy.reload();
+        //cy.reload();
 
         cy.contains('Metrics Measurements').scrollIntoView().should('be.visible');
 
