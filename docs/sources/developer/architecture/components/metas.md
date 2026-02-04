@@ -60,33 +60,23 @@ Properties:
 
 ### SDK
 
-By default the sdk meta contain only the version install Faro script, no information about configured
-integrations. This works fine because in Faro we always update all package together so they are always
-on teh same version number.
+The SDK meta contains information about the Faro library itself and is
+automatically included in all payloads.
 
-For debugging purposes you can get get information about Faro and installed integrations by adding
-the `metaSdk` object.
+The `sdk` meta defines the following properties:
 
-The `metaSdk` meta defines the following properties about the Faro library itself:
-
-- `name` - the name of the core library
+- `name` - the name of the SDK ('faro' in core, 'faro-web' in web-sdk)
 - `version` - the version of the library
-- `integrations` - the list of instrumentations that are used, identified by by the name and the version
 
-Example:
+The SDK meta is set automatically during initialization:
 
-```ts
-import { sdkMeta } from '@grafana/faro-web-sdk';
-
-initializeFaro({
-    ...
-    metas: [sdkMeta],
-});
-
-```
+- Core package (`@grafana/faro-core`) sets `name: 'faro'` and `version`
+- Web SDK package (`@grafana/faro-web-sdk`) includes an additional `sdkMeta`
+  that sets `name: 'faro-web'` which overrides the core name
 
 Note:
-The `sdk` meta creation is handled internally by the core package and the end-user should not change it.
+The `sdk` meta creation is handled internally by the core and web-sdk
+packages. Users should not modify it.
 
 ### Session
 
