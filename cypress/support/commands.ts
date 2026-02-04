@@ -12,12 +12,12 @@ Cypress.Commands.add('interceptCollector', (aliasGenerator) => {
 });
 
 Cypress.Commands.add('clickButton', (btnId) => {
-  cy.get(`[data-cy="${btnId}"]`).click({ force: true });
+  cy.get(`[data-cy="${btnId}"]`).click();
 });
 
 declare global {
   // cypress uses namespace typing so we have to extend it as well
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+
   namespace Cypress {
     interface Chainable {
       clickButton(btnId: string): Chainable<void>;
