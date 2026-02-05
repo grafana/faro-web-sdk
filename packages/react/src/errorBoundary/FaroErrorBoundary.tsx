@@ -1,4 +1,4 @@
-import { Component, isValidElement } from 'react';
+import React, { Component, isValidElement } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 
 import { isFunction } from '@grafana/faro-web-sdk';

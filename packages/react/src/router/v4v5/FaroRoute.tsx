@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { setActiveEventRoute } from './activeEvent';
 import { Route } from './routerDependencies';
 import type { ReactRouterV4V5RouteProps } from './types';

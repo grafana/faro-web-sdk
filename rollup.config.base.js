@@ -15,6 +15,7 @@ const modules = {
     bundleName: 'faro-react',
     globalName: 'GrafanaFaroReact',
     externals: ['webSdk', 'webTracing'],
+    peerDependencies: ['react', 'react-dom'],
   },
   webSdk: {
     name: '@grafana/faro-web-sdk',
@@ -74,16 +75,23 @@ exports.getRollupConfigBase = (moduleName) => {
     output: {
       file: `./dist/bundle/${module.bundleName}.iife.js`,
       format: 'iife',
-      globals: module.externals.reduce(
-        (acc, external) => ({
-          ...acc,
-          [modules[external].name]: modules[external].globalName,
-        }),
-        {}
-      ),
+      globals: {
+        ...module.externals.reduce(
+          (acc, external) => ({
+            ...acc,
+            [modules[external].name]: modules[external].globalName,
+          }),
+          {}
+        ),
+        react: 'React',
+        'react-dom': 'ReactDOM',
+      },
       name: module.globalName,
     },
-    external: module.externals.map((external) => modules[external].name),
+    external: [
+      ...module.externals.map((external) => modules[external].name),
+      ...(module.peerDependencies ?? []),
+    ],
     plugins: [
       resolve({
         browser: true,

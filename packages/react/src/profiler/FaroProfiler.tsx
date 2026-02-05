@@ -1,5 +1,5 @@
 import type { Attributes, Span, Tracer } from '@opentelemetry/api';
-import { Component } from 'react';
+import React, { Component } from 'react';
 import type { ReactNode } from 'react';
 
 import { VERSION } from '@grafana/faro-web-sdk';
