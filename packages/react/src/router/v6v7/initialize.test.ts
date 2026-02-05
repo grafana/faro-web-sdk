@@ -1,12 +1,6 @@
-import { initializeReactRouterInstrumentation } from '../initialize';
 import { ReactRouterVersion } from '../types';
 
-import {
-  createReactRouterV6DataOptions,
-  createReactRouterV6Options,
-  createReactRouterV7DataOptions,
-  createReactRouterV7Options,
-} from './initialize';
+import { createReactRouterV7DataOptions, createReactRouterV7Options } from './initialize';
 import { ReactRouterV6DataRouterDependencies, ReactRouterV6Dependencies } from './types';
 
 const mockV6Dependencies: ReactRouterV6Dependencies = {
@@ -20,15 +14,6 @@ const mockV6Dependencies: ReactRouterV6Dependencies = {
 const mockV6DataRouterDependencies: ReactRouterV6DataRouterDependencies = {
   matchRoutes: jest.fn(),
 };
-
-jest.mock('../../dependencies', () => ({
-  internalLogger: {
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  },
-}));
 
 describe('createReactRouterV7Options', () => {
   it('returns V7 config with dependencies', () => {
