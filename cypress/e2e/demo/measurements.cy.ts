@@ -14,8 +14,6 @@ context('Measurements', () => {
 
         cy.visit('/features');
 
-        cy.reload();
-
         cy.clickButton('btn-log-log');
 
         cy.wait('@measurement', {
@@ -46,12 +44,11 @@ context('Measurements', () => {
 
         cy.visit('/features');
 
-        cy.reload();
-
         cy.contains('Metrics Measurements').scrollIntoView().should('be.visible');
 
         const buttonName = `btn-${btnName}`;
-        cy.get(`[data-cy="${buttonName}"]`).should('be.visible');
+        cy.get(`[data-cy="${buttonName}"]`).scrollIntoView().should('be.visible');
+        cy.wait(1000);
         cy.clickButton(buttonName);
 
         cy.wait('@measurement', {
