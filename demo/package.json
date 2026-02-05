@@ -63,7 +63,7 @@
     "isomorphic-fetch": "^3.0.0",
     "jsonwebtoken": "^9.0.0",
     "path-to-regexp": "^8.2.0",
-    "pg": "^8.8.0",
+    "pg": "^8.13.0",
     "pg-hstore": "^2.3.4",
     "prom-client": "^15.0.0",
     "protobufjs": "^8.0.0",
