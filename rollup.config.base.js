@@ -104,10 +104,7 @@ exports.getRollupConfigBase = (moduleName) => {
       },
       name: module.globalName,
     },
-    external: [
-      ...module.externals.map((external) => modules[external].name),
-      ...peerDependencies,
-    ],
+    external: [...module.externals.map((external) => modules[external].name), ...peerDependencies],
     plugins: [
       resolve({
         browser: true,
