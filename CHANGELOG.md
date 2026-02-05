@@ -2,6 +2,11 @@
 
 ## Next
 
+- Fix (`@grafana/faro-react`): Migrated from new JSX transform (`react-jsx`) to classic JSX transform
+  (`react`) to prevent bundling `react/jsx-runtime` with the package. This fixes compatibility issues
+  with React 19 and older React versions where bundled JSX runtime could cause breakage. React and
+  react-dom are now properly treated as external peer dependencies in all bundle formats (#1878).
+
 - Fix (`@grafana/faro-core`, `@grafana/faro-web-sdk`): SDK name
   (`meta.sdk.name`) is now included in payload metadata alongside
   version. The SDK name is set to `faro-web`
