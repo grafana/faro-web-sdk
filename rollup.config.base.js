@@ -3,6 +3,12 @@ const resolve = require('@rollup/plugin-node-resolve');
 const terser = require('@rollup/plugin-terser');
 const typescript = require('@rollup/plugin-typescript');
 
+// Common global names for peer dependencies
+const PEER_DEPENDENCY_GLOBALS = {
+  react: 'React',
+  'react-dom': 'ReactDOM',
+};
+
 const modules = {
   core: {
     name: '@grafana/faro-core',
@@ -70,6 +76,17 @@ const modules = {
 exports.getRollupConfigBase = (moduleName) => {
   const module = modules[moduleName];
 
+  // Get peer dependencies from module config
+  const peerDependencies = module.peerDependencies ?? [];
+
+  // Build globals mapping for peer dependencies
+  const peerDependencyGlobals = peerDependencies.reduce((acc, dep) => {
+    if (PEER_DEPENDENCY_GLOBALS[dep]) {
+      acc[dep] = PEER_DEPENDENCY_GLOBALS[dep];
+    }
+    return acc;
+  }, {});
+
   return {
     input: './src/index.ts',
     output: {
@@ -83,14 +100,13 @@ exports.getRollupConfigBase = (moduleName) => {
           }),
           {}
         ),
-        react: 'React',
-        'react-dom': 'ReactDOM',
+        ...peerDependencyGlobals,
       },
       name: module.globalName,
     },
     external: [
       ...module.externals.map((external) => modules[external].name),
-      ...(module.peerDependencies ?? []),
+      ...peerDependencies,
     ],
     plugins: [
       resolve({
