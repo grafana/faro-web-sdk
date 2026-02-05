@@ -1,4 +1,6 @@
 import type { Attributes, Span, Tracer } from '@opentelemetry/api';
+// React is required in scope for JSX transformation with the classic transform
+// @ts-expect-error - TS6133: React appears unused but is required for JSX
 import React, { Component } from 'react';
 import type { ReactNode } from 'react';
 

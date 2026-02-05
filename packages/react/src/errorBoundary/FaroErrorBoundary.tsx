@@ -1,3 +1,5 @@
+// React is required in scope for JSX transformation with the classic transform
+// @ts-expect-error - TS6133: React appears unused but is required for JSX
 import React, { Component, isValidElement } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 
