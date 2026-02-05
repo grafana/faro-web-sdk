@@ -2,6 +2,10 @@
 
 ## Next
 
+- Feature (`@grafana/faro-react`): Add `createReactRouterV7Options` and
+  `createReactRouterV7DataOptions` helper functions for easier React Router v7
+  configuration (#1879).
+
 - Fix (`@grafana/faro-core`, `@grafana/faro-web-sdk`): SDK name
   (`meta.sdk.name`) is now included in payload metadata alongside
   version. The SDK name is set to `faro-web`
