@@ -13,7 +13,7 @@ export class FaroTraceExporter implements SpanExporter {
     const traceEvent = createExportTraceServiceRequest(spans, { useHex: true, useLongBits: false });
 
     this.config.api.pushTraces(traceEvent);
-    sendFaroEvents(traceEvent.resourceSpans);
+    sendFaroEvents(traceEvent.resourceSpans, this.config.api);
 
     resultCallback({ code: ExportResultCode.SUCCESS });
   }
