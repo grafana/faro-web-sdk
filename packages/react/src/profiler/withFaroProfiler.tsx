@@ -1,5 +1,5 @@
-import React from 'react';
 import hoistNonReactStatics from 'hoist-non-react-statics';
+import React from 'react';
 import type { ComponentType, FC } from 'react';
 
 import { unknownString } from '@grafana/faro-core';
