@@ -1,6 +1,6 @@
 import hoistNonReactStatics from 'hoist-non-react-statics';
 
-import type { ReactRouterV6Config, ReactRouterV6DataRouterConfig } from '../../types';
+import type { ReactRouterV6Config, ReactRouterV6DataRouterConfig, ReactRouterV7Config } from '../../types';
 import { ReactRouterVersion } from '../types';
 
 import { FaroRoutes } from './FaroRoutes';
@@ -35,4 +35,17 @@ export function createReactRouterV6DataOptions(
     version: ReactRouterVersion.V6_data_router,
     dependencies,
   };
+}
+
+export function createReactRouterV7Options(dependencies: ReactRouterV6Dependencies): ReactRouterV7Config {
+  return {
+    version: ReactRouterVersion.V7,
+    dependencies,
+  };
+}
+
+export function createReactRouterV7DataOptions(
+  dependencies: ReactRouterV6DataRouterDependencies
+): ReactRouterV6DataRouterConfig {
+  return createReactRouterV6DataOptions(dependencies);
 }

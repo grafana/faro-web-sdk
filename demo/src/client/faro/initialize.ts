@@ -1,3 +1,4 @@
+import { create } from 'node:domain';
 import { matchRoutes } from 'react-router';
 
 import {
@@ -24,10 +25,9 @@ export function initializeFaro(): Faro {
       new TracingInstrumentation(),
       new ReactIntegration({
         router: {
-          version: ReactRouterVersion.V7_data_router,
-          dependencies: {
+          version: createReactRouterV7DataOptions({
             matchRoutes,
-          },
+          }),
         },
       }),
     ],
