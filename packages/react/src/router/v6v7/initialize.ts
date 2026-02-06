@@ -9,15 +9,12 @@ import type {
 import { ReactRouterVersion } from '../types';
 
 import { FaroRoutes } from './FaroRoutes';
-import {
-  setReactRouterV6V7DataRouterDependencies,
-  setReactRouterV6V7Dependencies,
-} from './routerDependencies';
+import { setReactRouterV6DataRouterDependencies, setReactRouterV6Dependencies } from './routerDependencies';
 import type { ReactRouterV6DataRouterDependencies, ReactRouterV6Dependencies } from './types';
 
 export function initializeReactRouterV6Instrumentation(dependencies: ReactRouterV6Dependencies): void {
   hoistNonReactStatics(FaroRoutes, dependencies.Routes);
-  setReactRouterV6V7Dependencies(dependencies);
+  setReactRouterV6Dependencies(dependencies);
 }
 
 export function createReactRouterV6Options(dependencies: ReactRouterV6Dependencies): ReactRouterV6Config {
@@ -30,7 +27,7 @@ export function createReactRouterV6Options(dependencies: ReactRouterV6Dependenci
 export function initializeReactRouterV6DataRouterInstrumentation(
   dependencies: ReactRouterV6DataRouterDependencies
 ): void {
-  setReactRouterV6V7DataRouterDependencies(dependencies);
+  setReactRouterV6DataRouterDependencies(dependencies);
 }
 
 export function createReactRouterV6DataOptions(
