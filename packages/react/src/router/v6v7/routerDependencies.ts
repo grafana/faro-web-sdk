@@ -15,7 +15,7 @@ export let Routes: ReactRouterV6RoutesShape;
 export let useLocation: ReactRouterV6UseLocation;
 export let useNavigationType: ReactRouterV6UseNavigationType;
 
-export function setReactRouterV6Dependencies(newDependencies: ReactRouterV6Dependencies): void {
+export function setReactRouterV6V7Dependencies(newDependencies: ReactRouterV6Dependencies): void {
   isInitialized = true;
 
   createRoutesFromChildren = newDependencies.createRoutesFromChildren;
@@ -25,11 +25,11 @@ export function setReactRouterV6Dependencies(newDependencies: ReactRouterV6Depen
   useNavigationType = newDependencies.useNavigationType;
 }
 
-export function setReactRouterV6SSRDependencies(newDependencies: Pick<ReactRouterV6Dependencies, 'Routes'>): void {
+export function setReactRouterV6V7SSRDependencies(newDependencies: Pick<ReactRouterV6Dependencies, 'Routes'>): void {
   Routes = newDependencies.Routes;
 }
 
-export function setReactRouterV6DataRouterDependencies(newDependencies: ReactRouterV6DataRouterDependencies): void {
+export function setReactRouterV6V7DataRouterDependencies(newDependencies: ReactRouterV6DataRouterDependencies): void {
   isInitialized = true;
   matchRoutes = newDependencies.matchRoutes;
 }
