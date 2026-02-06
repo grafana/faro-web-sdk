@@ -1,5 +1,8 @@
 import type { Attributes, Span, Tracer } from '@opentelemetry/api';
-import { Component } from 'react';
+// React is required in scope for JSX transformation with the classic transform
+// @ts-expect-error - TS6133: React appears unused but is required for JSX
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import React, { Component } from 'react';
 import type { ReactNode } from 'react';
 
 import { VERSION } from '@grafana/faro-web-sdk';

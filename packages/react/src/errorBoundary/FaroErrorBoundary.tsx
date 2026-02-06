@@ -1,4 +1,7 @@
-import { Component, isValidElement } from 'react';
+// React is required in scope for JSX transformation with the classic transform
+// @ts-expect-error - TS6133: React appears unused but is required for JSX
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import React, { Component, isValidElement } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 
 import { isFunction } from '@grafana/faro-web-sdk';

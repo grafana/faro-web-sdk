@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 
 import { EVENT_ROUTE_CHANGE, globalObject } from '@grafana/faro-web-sdk';
 
