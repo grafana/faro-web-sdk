@@ -16,6 +16,7 @@ export {
   createReactRouterV6Options,
   createReactRouterV6DataOptions,
   setReactRouterV6SSRDependencies,
+  setReactRouterV7SSRDependencies,
   withFaroRouterInstrumentation,
   createReactRouterV7Options,
   createReactRouterV7DataOptions,
