@@ -1,8 +1,14 @@
-import { matchRoutes } from 'react-router';
+import {
+  createRoutesFromChildren,
+  matchRoutes,
+  Routes,
+  useLocation,
+  useNavigationType,
+} from 'react-router-dom';
 
 import {
   initializeFaro as coreInit,
-  createReactRouterV7DataOptions,
+  createReactRouterV6Options,
   getWebInstrumentations,
   ReactIntegration,
 } from '@grafana/faro-react';
@@ -23,8 +29,12 @@ export function initializeFaro(): Faro {
 
       new TracingInstrumentation(),
       new ReactIntegration({
-        router: createReactRouterV7DataOptions({
+        router: createReactRouterV6Options({
+          createRoutesFromChildren,
           matchRoutes,
+          Routes,
+          useLocation,
+          useNavigationType,
         }),
       }),
     ],
