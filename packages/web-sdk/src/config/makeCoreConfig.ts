@@ -73,6 +73,16 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     excludeItem: browserConfig.userActionsInstrumentation?.excludeItem,
   };
 
+  // Extract error uniqueness configuration with defaults
+  const errorUniqueness = browserConfig.errorUniqueness?.enabled
+    ? {
+        enabled: true,
+        maxCacheSize: browserConfig.errorUniqueness.maxCacheSize ?? 500,
+        stackFrameDepth: browserConfig.errorUniqueness.stackFrameDepth ?? 5,
+        includeContextKeys: browserConfig.errorUniqueness.includeContextKeys ?? true,
+      }
+    : undefined;
+
   return {
     ...restProperties,
 
@@ -109,6 +119,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
       }),
     },
     userActionsInstrumentation,
+    errorUniqueness,
     experimental: {
       trackNavigation,
     },

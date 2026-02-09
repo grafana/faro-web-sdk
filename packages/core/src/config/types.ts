@@ -260,6 +260,32 @@ export interface Config<P = APIEvent> {
   preserveOriginalError?: boolean;
 
   /**
+   * Configuration for error uniqueness tracking across page reloads.
+   * Prevents duplicate errors from being sent within the same session.
+   */
+  errorUniqueness?: {
+    /**
+     * Enable uniqueness tracking (default: false).
+     */
+    enabled?: boolean;
+
+    /**
+     * Maximum number of error signatures to store in cache (default: 500).
+     */
+    maxCacheSize?: number;
+
+    /**
+     * Number of stack frames to include in error signature (default: 5).
+     */
+    stackFrameDepth?: number;
+
+    /**
+     * Include context keys in error signature (default: true).
+     */
+    includeContextKeys?: boolean;
+  };
+
+  /**
    * Configuration for experimental features.
    * These features have been tested thoroughly, but it is possible that they might not work as expected in all cases.
    */

@@ -22,6 +22,9 @@ import { addItemToUserActionBuffer } from '../userActions/initialize';
 import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
+import { createErrorSignature } from './errorSignature';
+import { hashErrorSignature } from './errorHash';
+import { ErrorUniquenessTracker } from './errorUniquenessTracker';
 import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
 
 let stacktraceParser: StacktraceParser | undefined;
@@ -48,6 +51,12 @@ export function initializeExceptionsAPI({
 
   stacktraceParser = config.parseStacktrace ?? stacktraceParser;
 
+  // Initialize uniqueness tracker
+  const uniquenessTracker =
+    config.errorUniqueness?.enabled
+      ? new ErrorUniquenessTracker(metas, config.errorUniqueness.maxCacheSize)
+      : null;
+
   const changeStacktraceParser: ExceptionsAPI['changeStacktraceParser'] = (newStacktraceParser) => {
     internalLogger.debug('Changing stacktrace parser');
 
@@ -60,7 +69,16 @@ export function initializeExceptionsAPI({
 
   const pushError: ExceptionsAPI['pushError'] = (
     error,
-    { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs, originalError } = {}
+    {
+      skipDedupe,
+      stackFrames,
+      type,
+      context,
+      spanContext,
+      timestampOverwriteMs,
+      originalError,
+      skipUniquenessCheck,
+    } = {}
   ) => {
     if (isErrorIgnored(ignoreErrors, originalError ?? error)) {
       return;
@@ -111,6 +129,23 @@ export function initializeExceptionsAPI({
       }
 
       lastPayload = testingPayload;
+
+      // Uniqueness check (session-wide)
+      if (!skipUniquenessCheck && uniquenessTracker) {
+        const signature = createErrorSignature(item.payload, {
+          stackFrameDepth: config.errorUniqueness?.stackFrameDepth,
+          includeContextKeys: config.errorUniqueness?.includeContextKeys,
+        });
+        const errorHash = hashErrorSignature(signature);
+
+        if (!uniquenessTracker.isUnique(errorHash)) {
+          internalLogger.debug('Skipping error push because it was already seen in this session\n', item.payload);
+          return;
+        }
+
+        // Mark as seen for future checks
+        uniquenessTracker.markAsSeen(errorHash);
+      }
 
       internalLogger.debug('Pushing exception\n', item);
 
