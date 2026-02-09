@@ -35,6 +35,7 @@ describe('ReplayInstrumentation', () => {
 
       const expectedDefaults: ReplayInstrumentationOptions = {
         recordCrossOriginIframes: false,
+        recordAfter: 'load',
         maskAllInputs: false,
         maskInputOptions: {
           password: true,
@@ -65,6 +66,7 @@ describe('ReplayInstrumentation', () => {
         inlineImages: true,
         inlineStylesheet: true,
         recordCanvas: true,
+        recordAfter: 'DOMContentLoaded',
         maskTextSelector: '.mask-me',
         blockSelector: '.block-me',
         ignoreSelector: '.ignore-me',
@@ -90,6 +92,7 @@ describe('ReplayInstrumentation', () => {
       // Defaults should still be present
       const expected: ReplayInstrumentationOptions = {
         recordCrossOriginIframes: false,
+        recordAfter: 'load',
         maskAllInputs: true, // Overridden by partial options
         maskInputOptions: {
           password: true,

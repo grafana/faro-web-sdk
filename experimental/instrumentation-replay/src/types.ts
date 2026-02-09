@@ -67,8 +67,8 @@ export interface ReplayInstrumentationOptions {
   /**
    * When to start recording.
    * - 'DOMContentLoaded': Start recording after DOM is ready (earlier, before all resources load)
-   * - 'load': Start recording after page load event (default rrweb behavior)
-   * @default undefined (rrweb defaults to 'load')
+   * - 'load': Start recording after the page load event
+   * @default 'load'
    */
   recordAfter?: 'DOMContentLoaded' | 'load';
 }
