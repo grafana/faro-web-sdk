@@ -22,8 +22,8 @@ import { addItemToUserActionBuffer } from '../userActions/initialize';
 import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
-import { createErrorSignature } from './errorSignature';
 import { hashErrorSignature } from './errorHash';
+import { createErrorSignature } from './errorSignature';
 import { ErrorUniquenessTracker } from './errorUniquenessTracker';
 import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
 
@@ -52,10 +52,9 @@ export function initializeExceptionsAPI({
   stacktraceParser = config.parseStacktrace ?? stacktraceParser;
 
   // Initialize uniqueness tracker
-  const uniquenessTracker =
-    config.errorUniqueness?.enabled
-      ? new ErrorUniquenessTracker(metas, config.errorUniqueness.maxCacheSize)
-      : null;
+  const uniquenessTracker = config.errorUniqueness?.enabled
+    ? new ErrorUniquenessTracker(metas, config.errorUniqueness.maxCacheSize)
+    : null;
 
   const changeStacktraceParser: ExceptionsAPI['changeStacktraceParser'] = (newStacktraceParser) => {
     internalLogger.debug('Changing stacktrace parser');
@@ -132,11 +131,12 @@ export function initializeExceptionsAPI({
 
       // Uniqueness check (session-wide)
       if (!skipUniquenessCheck && uniquenessTracker) {
-        const signature = createErrorSignature(item.payload, {
-          stackFrameDepth: config.errorUniqueness?.stackFrameDepth,
-          includeContextKeys: config.errorUniqueness?.includeContextKeys,
-        });
-        const errorHash = hashErrorSignature(signature);
+        const errorHash = hashErrorSignature(
+          createErrorSignature(item.payload, {
+            stackFrameDepth: config.errorUniqueness?.stackFrameDepth,
+            includeContextKeys: config.errorUniqueness?.includeContextKeys,
+          })
+        );
 
         if (!uniquenessTracker.isUnique(errorHash)) {
           internalLogger.debug('Skipping error push because it was already seen in this session\n', item.payload);

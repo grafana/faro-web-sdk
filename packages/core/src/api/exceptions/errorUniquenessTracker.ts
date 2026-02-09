@@ -5,7 +5,7 @@
 
 import type { Metas } from '../../metas';
 import { stringifyExternalJson } from '../../utils/json';
-import { getItem, isLocalStorageAvailable, removeItem, setItem, webStorageType } from '../../utils/webStorage';
+import { getItem, isWebStorageAvailable, removeItem, setItem, webStorageType } from '../../utils/webStorage';
 
 interface ErrorCacheEntry {
   hash: number;
@@ -40,8 +40,8 @@ export class ErrorUniquenessTracker {
     const sessionId = this.metas.value.session?.id ?? 'default';
     this.storageKey = `com.grafana.faro.error-signatures.${sessionId}`;
 
-    // Check localStorage availability once at construction
-    this.hasLocalStorage = isLocalStorageAvailable;
+    // Check localStorage availability once at construction using webStorage utility
+    this.hasLocalStorage = isWebStorageAvailable(webStorageType.local);
 
     // Try to load from storage or initialize new cache
     this.cache = this.loadCache() || this.createEmptyCache(maxSize);
@@ -59,24 +59,16 @@ export class ErrorUniquenessTracker {
       return true; // Always unique if disabled
     }
 
-    const index = this.cache.entries.findIndex((entry) => entry.hash === errorHash);
+    const entry = this.cache.entries.find((entry) => entry.hash === errorHash);
 
-    if (index === -1) {
+    if (!entry) {
       // Not found - it's unique
       return true;
     }
 
     // Found - update lastSeen and move to end (most recently used)
-    const entry = this.cache.entries[index];
-    if (!entry) {
-      return true; // Safety check
-    }
-
     entry.lastSeen = Date.now();
-
-    // Move to end for LRU
-    this.cache.entries.splice(index, 1);
-    this.cache.entries.push(entry);
+    this.moveToEnd(entry);
     this.saveCache();
 
     return false; // Not unique (duplicate)
@@ -96,16 +88,12 @@ export class ErrorUniquenessTracker {
     const now = Date.now();
 
     // Check if already in cache (shouldn't be if isUnique was called first)
-    const existingIndex = this.cache.entries.findIndex((entry) => entry.hash === errorHash);
-    if (existingIndex !== -1) {
-      // Already tracked, just update timestamps
-      const entry = this.cache.entries[existingIndex];
-      if (entry) {
-        entry.lastSeen = now;
-        this.cache.entries.splice(existingIndex, 1);
-        this.cache.entries.push(entry);
-        this.saveCache();
-      }
+    const existingEntry = this.cache.entries.find((entry) => entry.hash === errorHash);
+    if (existingEntry) {
+      // Already tracked, just update timestamps and move to end
+      existingEntry.lastSeen = now;
+      this.moveToEnd(existingEntry);
+      this.saveCache();
       return;
     }
 
@@ -150,21 +138,13 @@ export class ErrorUniquenessTracker {
       size: this.cache.entries.length,
       maxSize: this.cache.maxSize,
       disabled: this.disabled,
-      oldestTimestamp: this.cache.entries[0]?.timestamp,
-      newestTimestamp: this.cache.entries[this.cache.entries.length - 1]?.timestamp,
     };
   }
 
   /**
-   * Load cache from localStorage.
+   * Load cache from localStorage using webStorage utility.
    */
   private loadCache(): ErrorSignatureCache | null {
-    if (!this.hasLocalStorage) {
-      console.warn('[Faro] Error uniqueness tracking disabled: localStorage not available');
-      this.disabled = true;
-      return null;
-    }
-
     try {
       const stored = getItem(this.storageKey, webStorageType.local);
       if (!stored) {
@@ -176,15 +156,13 @@ export class ErrorUniquenessTracker {
       // Validate cache structure
       if (parsed.version !== CACHE_VERSION || !Array.isArray(parsed.entries) || typeof parsed.maxSize !== 'number') {
         // Invalid cache, discard
-        console.warn('[Faro] Invalid error uniqueness cache, discarding');
         this.clearStorage();
         return null;
       }
 
       return parsed;
-    } catch (error) {
+    } catch (_error) {
       // localStorage not available or corrupted
-      console.warn('[Faro] Error uniqueness tracking disabled due to corrupted cache:', error);
       this.clearStorage();
       this.disabled = true;
       return null;
@@ -216,7 +194,7 @@ export class ErrorUniquenessTracker {
   }
 
   /**
-   * Actually write to localStorage (called by debounced saveCache).
+   * Actually write to localStorage using webStorage utility (called by debounced saveCache).
    */
   private performSave(): void {
     if (this.disabled || !this.hasLocalStorage) {
@@ -226,9 +204,8 @@ export class ErrorUniquenessTracker {
     try {
       const serialized = stringifyExternalJson(this.cache);
       setItem(this.storageKey, serialized, webStorageType.local);
-    } catch (error) {
+    } catch (_error) {
       // localStorage write failed - disable tracking and log warning
-      console.warn('[Faro] Error uniqueness tracking disabled due to localStorage error:', error);
       this.disabled = true;
     }
   }
@@ -245,17 +222,22 @@ export class ErrorUniquenessTracker {
   }
 
   /**
-   * Clear storage key.
+   * Clear storage key using webStorage utility.
    */
   private clearStorage(): void {
-    if (!this.hasLocalStorage) {
-      return;
-    }
-
     try {
       removeItem(this.storageKey, webStorageType.local);
     } catch {
       // Ignore errors
     }
+  }
+
+  /**
+   * Move an entry to the end of the cache (mark as most recently used).
+   * Uses filter to remove and push to add - more modern and avoids double search.
+   */
+  private moveToEnd(entry: ErrorCacheEntry): void {
+    this.cache.entries = this.cache.entries.filter((e) => e !== entry);
+    this.cache.entries.push(entry);
   }
 }
