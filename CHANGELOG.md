@@ -2,6 +2,8 @@
 
 ## Next
 
+## 2.2.3
+
 - Feature (`@grafana/faro-react`): Add `createReactRouterV7Options` and
   `createReactRouterV7DataOptions` helper functions for easier React Router v7
   configuration (#1879).
@@ -11,7 +13,12 @@
   with React 19 and older React versions where bundled JSX runtime could cause breakage. React and
   react-dom are now properly treated as external peer dependencies in all bundle formats (#1878).
 
-- Fix (`@grafana/faro-core`, `@grafana/faro-web-sdk`): SDK name
+- Fix (`@grafana/faro-web-tracing`): Fixed a race condition where `faro.tracing.*` events were
+  always sent via the global Faro instance instead of the SDK instance associated with the
+  FaroTraceExporter. This caused events to be incorrectly attributed in multi-instance setups
+  (#1874).
+
+- Chore (`@grafana/faro-core`, `@grafana/faro-web-sdk`): SDK name
   (`meta.sdk.name`) is now included in payload metadata alongside
   version. The SDK name is set to `faro-web`
   in web-sdk configuration. If web sdk meta was included manually previously,
