@@ -1,77 +1,77 @@
 import type { ExceptionEvent, ExceptionStackFrame } from '@grafana/faro-core';
 
-import { createErrorSignature, createStackSignature, normalizeMessage } from './errorSignature';
+import { createErrorSignature, createStackSignature, normalizeErrorMessage } from './errorSignature';
 
 describe('errorSignature', () => {
   describe('normalizeMessage', () => {
     it('normalizes UUIDs', () => {
       const message = 'User 123e4567-e89b-12d3-a456-426614174000 not found';
-      const normalized = normalizeMessage(message);
+      const normalized = normalizeErrorMessage(message);
       expect(normalized).toBe('User <UUID> not found');
     });
 
     it('normalizes multiple UUIDs', () => {
       const message = 'Linking 550e8400-e29b-41d4-a716-446655440000 to a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-      const normalized = normalizeMessage(message);
+      const normalized = normalizeErrorMessage(message);
       expect(normalized).toBe('Linking <UUID> to <UUID>');
     });
 
     it('normalizes URLs', () => {
       const message = 'Failed to fetch https://api.example.com/users/123';
-      const normalized = normalizeMessage(message);
+      const normalized = normalizeErrorMessage(message);
       expect(normalized).toBe('Failed to fetch <URL>');
     });
 
     it('normalizes file paths', () => {
       const message = 'Error in /app/src/components/Button.tsx';
-      const normalized = normalizeMessage(message);
+      const normalized = normalizeErrorMessage(message);
       expect(normalized).toBe('Error in <PATH>');
     });
 
     it('normalizes timestamps', () => {
       const message = 'Event at 1234567890123 failed';
-      const normalized = normalizeMessage(message);
+      const normalized = normalizeErrorMessage(message);
       expect(normalized).toBe('Event at <TIMESTAMP> failed');
     });
 
     it('normalizes numeric IDs', () => {
       const message = 'User 123456 not found';
-      const normalized = normalizeMessage(message);
+      const normalized = normalizeErrorMessage(message);
       expect(normalized).toBe('User <ID> not found');
     });
 
     it('does not normalize short numbers', () => {
       const message = 'Expected 5 arguments but got 3';
-      const normalized = normalizeMessage(message);
+      const normalized = normalizeErrorMessage(message);
       expect(normalized).toBe('Expected 5 arguments but got 3');
     });
 
     it('normalizes quoted strings', () => {
       const message = 'Cannot read property "foo" of undefined';
-      const normalized = normalizeMessage(message);
+      const normalized = normalizeErrorMessage(message);
       expect(normalized).toBe('Cannot read property <STRING> of undefined');
     });
 
     it('normalizes single-quoted strings', () => {
       const message = "Cannot access 'bar' before initialization";
-      const normalized = normalizeMessage(message);
+      const normalized = normalizeErrorMessage(message);
       expect(normalized).toBe('Cannot access <STRING> before initialization');
     });
 
     it('handles messages with multiple patterns', () => {
       const message = 'User 123456 at https://example.com failed with error "timeout"';
-      const normalized = normalizeMessage(message);
+      const normalized = normalizeErrorMessage(message);
       expect(normalized).toBe('User <ID> at <URL> failed with error <STRING>');
     });
 
     it('handles empty messages', () => {
-      const normalized = normalizeMessage('');
+      const normalized = normalizeErrorMessage('');
       expect(normalized).toBe('');
     });
 
     it('truncates very long messages', () => {
       const longMessage = 'a'.repeat(1000);
-      const normalized = normalizeMessage(longMessage);
+      const normalized = normalizeErrorMessage(longMessage);
       expect(normalized.length).toBeLessThanOrEqual(503); // 500 + "..."
       expect(normalized.endsWith('...')).toBe(true);
     });
@@ -79,8 +79,8 @@ describe('errorSignature', () => {
     it('preserves structure for similar errors', () => {
       const msg1 = 'User 123456 not found';
       const msg2 = 'User 789012 not found';
-      const normalized1 = normalizeMessage(msg1);
-      const normalized2 = normalizeMessage(msg2);
+      const normalized1 = normalizeErrorMessage(msg1);
+      const normalized2 = normalizeErrorMessage(msg2);
       expect(normalized1).toBe(normalized2);
       expect(normalized1).toBe('User <ID> not found');
     });
@@ -97,9 +97,7 @@ describe('errorSignature', () => {
     });
 
     it('uses only basename from full paths', () => {
-      const frames: ExceptionStackFrame[] = [
-        { filename: '/path/to/app.js', function: 'handleClick', lineno: 23 },
-      ];
+      const frames: ExceptionStackFrame[] = [{ filename: '/path/to/app.js', function: 'handleClick', lineno: 23 }];
       const signature = createStackSignature(frames);
       expect(signature).toBe('app.js:handleClick:23');
     });
@@ -113,17 +111,13 @@ describe('errorSignature', () => {
     });
 
     it('handles frames without function names', () => {
-      const frames: ExceptionStackFrame[] = [
-        { filename: 'app.js', function: '', lineno: 23, colno: 4 },
-      ];
+      const frames: ExceptionStackFrame[] = [{ filename: 'app.js', function: '', lineno: 23, colno: 4 }];
       const signature = createStackSignature(frames);
       expect(signature).toBe('app.js:23:4');
     });
 
     it('handles frames without line numbers', () => {
-      const frames: ExceptionStackFrame[] = [
-        { filename: 'app.js', function: 'handleClick' },
-      ];
+      const frames: ExceptionStackFrame[] = [{ filename: 'app.js', function: 'handleClick' }];
       const signature = createStackSignature(frames);
       expect(signature).toBe('app.js:handleClick');
     });
@@ -152,17 +146,13 @@ describe('errorSignature', () => {
     });
 
     it('handles frames with only filename', () => {
-      const frames: ExceptionStackFrame[] = [
-        { filename: 'app.js', function: '' },
-      ];
+      const frames: ExceptionStackFrame[] = [{ filename: 'app.js', function: '' }];
       const signature = createStackSignature(frames);
       expect(signature).toBe('app.js');
     });
 
     it('includes colno only when lineno is present', () => {
-      const frames: ExceptionStackFrame[] = [
-        { filename: 'app.js', function: 'foo', lineno: 10, colno: 5 },
-      ];
+      const frames: ExceptionStackFrame[] = [{ filename: 'app.js', function: 'foo', lineno: 10, colno: 5 }];
       const signature = createStackSignature(frames);
       expect(signature).toBe('app.js:foo:10:5');
     });
@@ -175,9 +165,7 @@ describe('errorSignature', () => {
         type: 'TypeError',
         value: 'Cannot read property "foo" of undefined',
         stacktrace: {
-          frames: [
-            { filename: 'app.js', function: 'handleClick', lineno: 23 },
-          ],
+          frames: [{ filename: 'app.js', function: 'handleClick', lineno: 23 }],
         },
         context: { userId: '123' },
       };

@@ -1,25 +1,17 @@
-/**
- * Error signature generation for uniqueness tracking.
- * Creates normalized fingerprints from error events.
- */
-
 import type { ExceptionEvent, ExceptionStackFrame } from '../types';
 
 export interface ErrorSignatureOptions {
-  /** Number of stack frames to include in signature (default: 5) */
   stackFrameDepth?: number;
-  /** Include context keys in signature (default: true) */
   includeContextKeys?: boolean;
 }
 
 /**
  * Normalize an error message by replacing dynamic values with placeholders.
- * This ensures errors with similar structure but different values get the same signature.
  *
- * @param message - Original error message
+ * @param message - error message
  * @returns Normalized message with placeholders
  */
-export function normalizeMessage(message: string): string {
+export function normalizeErrorMessage(message: string): string {
   if (!message) {
     return '';
   }
@@ -68,23 +60,23 @@ export function createStackSignature(frames: ExceptionStackFrame[] | undefined, 
 
   const topFrames = frames.slice(0, depth);
   const frameSignatures = topFrames.map((frame) => {
+    const { filename, function: functionName, lineno, colno } = frame;
+
     const parts: string[] = [];
 
     // Use filename (basename only, not full path for resilience)
     // Handle both Unix (/) and Windows (\) path separators
-    if (frame.filename) {
-      const basename = frame.filename.split(/[/\\]/).pop() || frame.filename;
+    if (filename) {
+      const basename = filename.split(/[/\\]/).pop() || filename;
       parts.push(basename);
     }
 
-    // Add function name if available
-    if (frame.function) {
-      parts.push(frame.function);
+    if (functionName) {
+      parts.push(functionName);
     }
 
-    // Add line and column if available
-    if (frame.lineno !== undefined) {
-      const lineCol = frame.colno !== undefined ? `${frame.lineno}:${frame.colno}` : String(frame.lineno);
+    if (lineno !== undefined) {
+      const lineCol = colno !== undefined ? `${lineno}:${colno}` : String(lineno);
       parts.push(lineCol);
     }
 
@@ -98,35 +90,34 @@ export function createStackSignature(frames: ExceptionStackFrame[] | undefined, 
  * Create a unique signature for an error event.
  * The signature identifies errors with the same root cause.
  *
- * @param event - Exception event to create signature for
+ * @param error - Exception event to create signature for
  * @param options - Signature generation options
  * @returns Signature string for hashing
  */
-export function createErrorSignature(event: ExceptionEvent, options: ErrorSignatureOptions = {}): string {
+export function createErrorSignature(error: ExceptionEvent, options: ErrorSignatureOptions = {}): string {
   const { stackFrameDepth = 5, includeContextKeys = true } = options;
+  const { type, value, stacktrace, context } = error;
 
   const parts: string[] = [];
 
-  // 1. Error type (if available)
-  if (event.type) {
-    parts.push(event.type);
+  if (type) {
+    parts.push(type);
   }
 
-  // 2. Normalized message
-  const normalizedMsg = normalizeMessage(event.value || '');
+  const normalizedMsg = normalizeErrorMessage(value || '');
   if (normalizedMsg) {
     parts.push(normalizedMsg);
   }
 
   // 3. Stack signature
-  const stackSig = createStackSignature(event.stacktrace?.frames, stackFrameDepth);
+  const stackSig = createStackSignature(stacktrace?.frames, stackFrameDepth);
   if (stackSig) {
     parts.push(stackSig);
   }
 
   // 4. Context keys (optional)
-  if (includeContextKeys && event.context) {
-    const contextKeys = Object.keys(event.context).sort();
+  if (includeContextKeys && context) {
+    const contextKeys = Object.keys(context).sort();
     if (contextKeys.length > 0) {
       parts.push(`context:${contextKeys.join(',')}`);
     }
