@@ -80,6 +80,7 @@ describe('ReplayInstrumentation', () => {
 
     it('should merge partial custom options with defaults', () => {
       const partialOptions: ReplayInstrumentationOptions = {
+        recordAfter: 'DOMContentLoaded',
         maskAllInputs: true,
         recordCanvas: true,
       };
@@ -92,7 +93,7 @@ describe('ReplayInstrumentation', () => {
       // Defaults should still be present
       const expected: ReplayInstrumentationOptions = {
         recordCrossOriginIframes: false,
-        recordAfter: 'load',
+        recordAfter: 'DOMContentLoaded',
         maskAllInputs: true, // Overridden by partial options
         maskInputOptions: {
           password: true,
