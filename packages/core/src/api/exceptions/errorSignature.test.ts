@@ -1,0 +1,314 @@
+import type { ExceptionEvent, ExceptionStackFrame } from '@grafana/faro-core';
+
+import { createErrorSignature, createStackSignature, normalizeMessage } from './errorSignature';
+
+describe('errorSignature', () => {
+  describe('normalizeMessage', () => {
+    it('normalizes UUIDs', () => {
+      const message = 'User 123e4567-e89b-12d3-a456-426614174000 not found';
+      const normalized = normalizeMessage(message);
+      expect(normalized).toBe('User <UUID> not found');
+    });
+
+    it('normalizes multiple UUIDs', () => {
+      const message = 'Linking 550e8400-e29b-41d4-a716-446655440000 to a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+      const normalized = normalizeMessage(message);
+      expect(normalized).toBe('Linking <UUID> to <UUID>');
+    });
+
+    it('normalizes URLs', () => {
+      const message = 'Failed to fetch https://api.example.com/users/123';
+      const normalized = normalizeMessage(message);
+      expect(normalized).toBe('Failed to fetch <URL>');
+    });
+
+    it('normalizes file paths', () => {
+      const message = 'Error in /app/src/components/Button.tsx';
+      const normalized = normalizeMessage(message);
+      expect(normalized).toBe('Error in <PATH>');
+    });
+
+    it('normalizes timestamps', () => {
+      const message = 'Event at 1234567890123 failed';
+      const normalized = normalizeMessage(message);
+      expect(normalized).toBe('Event at <TIMESTAMP> failed');
+    });
+
+    it('normalizes numeric IDs', () => {
+      const message = 'User 123456 not found';
+      const normalized = normalizeMessage(message);
+      expect(normalized).toBe('User <ID> not found');
+    });
+
+    it('does not normalize short numbers', () => {
+      const message = 'Expected 5 arguments but got 3';
+      const normalized = normalizeMessage(message);
+      expect(normalized).toBe('Expected 5 arguments but got 3');
+    });
+
+    it('normalizes quoted strings', () => {
+      const message = 'Cannot read property "foo" of undefined';
+      const normalized = normalizeMessage(message);
+      expect(normalized).toBe('Cannot read property <STRING> of undefined');
+    });
+
+    it('normalizes single-quoted strings', () => {
+      const message = "Cannot access 'bar' before initialization";
+      const normalized = normalizeMessage(message);
+      expect(normalized).toBe('Cannot access <STRING> before initialization');
+    });
+
+    it('handles messages with multiple patterns', () => {
+      const message = 'User 123456 at https://example.com failed with error "timeout"';
+      const normalized = normalizeMessage(message);
+      expect(normalized).toBe('User <ID> at <URL> failed with error <STRING>');
+    });
+
+    it('handles empty messages', () => {
+      const normalized = normalizeMessage('');
+      expect(normalized).toBe('');
+    });
+
+    it('truncates very long messages', () => {
+      const longMessage = 'a'.repeat(1000);
+      const normalized = normalizeMessage(longMessage);
+      expect(normalized.length).toBeLessThanOrEqual(503); // 500 + "..."
+      expect(normalized.endsWith('...')).toBe(true);
+    });
+
+    it('preserves structure for similar errors', () => {
+      const msg1 = 'User 123456 not found';
+      const msg2 = 'User 789012 not found';
+      const normalized1 = normalizeMessage(msg1);
+      const normalized2 = normalizeMessage(msg2);
+      expect(normalized1).toBe(normalized2);
+      expect(normalized1).toBe('User <ID> not found');
+    });
+  });
+
+  describe('createStackSignature', () => {
+    it('creates signature from stack frames', () => {
+      const frames: ExceptionStackFrame[] = [
+        { filename: 'app.js', function: 'handleClick', lineno: 23, colno: 4 },
+        { filename: 'utils.js', function: 'parseData', lineno: 52, colno: 10 },
+      ];
+      const signature = createStackSignature(frames);
+      expect(signature).toBe('app.js:handleClick:23:4|utils.js:parseData:52:10');
+    });
+
+    it('uses only basename from full paths', () => {
+      const frames: ExceptionStackFrame[] = [
+        { filename: '/path/to/app.js', function: 'handleClick', lineno: 23 },
+      ];
+      const signature = createStackSignature(frames);
+      expect(signature).toBe('app.js:handleClick:23');
+    });
+
+    it('handles frames without function names', () => {
+      const frames: ExceptionStackFrame[] = [
+        { filename: 'app.js', function: '', lineno: 23, colno: 4 },
+      ];
+      const signature = createStackSignature(frames);
+      expect(signature).toBe('app.js:23:4');
+    });
+
+    it('handles frames without line numbers', () => {
+      const frames: ExceptionStackFrame[] = [
+        { filename: 'app.js', function: 'handleClick' },
+      ];
+      const signature = createStackSignature(frames);
+      expect(signature).toBe('app.js:handleClick');
+    });
+
+    it('limits to specified depth', () => {
+      const frames: ExceptionStackFrame[] = [
+        { filename: 'a.js', function: 'fn1', lineno: 1 },
+        { filename: 'b.js', function: 'fn2', lineno: 2 },
+        { filename: 'c.js', function: 'fn3', lineno: 3 },
+        { filename: 'd.js', function: 'fn4', lineno: 4 },
+        { filename: 'e.js', function: 'fn5', lineno: 5 },
+        { filename: 'f.js', function: 'fn6', lineno: 6 },
+      ];
+      const signature = createStackSignature(frames, 3);
+      expect(signature).toBe('a.js:fn1:1|b.js:fn2:2|c.js:fn3:3');
+    });
+
+    it('handles empty frames array', () => {
+      const signature = createStackSignature([]);
+      expect(signature).toBe('');
+    });
+
+    it('handles undefined frames', () => {
+      const signature = createStackSignature(undefined);
+      expect(signature).toBe('');
+    });
+
+    it('handles frames with only filename', () => {
+      const frames: ExceptionStackFrame[] = [
+        { filename: 'app.js', function: '' },
+      ];
+      const signature = createStackSignature(frames);
+      expect(signature).toBe('app.js');
+    });
+
+    it('includes colno only when lineno is present', () => {
+      const frames: ExceptionStackFrame[] = [
+        { filename: 'app.js', function: 'foo', lineno: 10, colno: 5 },
+      ];
+      const signature = createStackSignature(frames);
+      expect(signature).toBe('app.js:foo:10:5');
+    });
+  });
+
+  describe('createErrorSignature', () => {
+    it('creates signature with all components', () => {
+      const event: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'TypeError',
+        value: 'Cannot read property "foo" of undefined',
+        stacktrace: {
+          frames: [
+            { filename: 'app.js', function: 'handleClick', lineno: 23 },
+          ],
+        },
+        context: { userId: '123' },
+      };
+      const signature = createErrorSignature(event);
+      expect(signature).toContain('TypeError');
+      expect(signature).toContain('Cannot read property <STRING> of undefined');
+      expect(signature).toContain('app.js:handleClick:23');
+      expect(signature).toContain('context:userId');
+    });
+
+    it('creates same signature for similar errors with different IDs', () => {
+      const event1: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'TypeError',
+        value: 'User 123456 not found',
+        stacktrace: {
+          frames: [{ filename: 'app.js', function: 'fn', lineno: 23 }],
+        },
+      };
+      const event2: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'TypeError',
+        value: 'User 789012 not found',
+        stacktrace: {
+          frames: [{ filename: 'app.js', function: 'fn', lineno: 23 }],
+        },
+      };
+      const sig1 = createErrorSignature(event1);
+      const sig2 = createErrorSignature(event2);
+      expect(sig1).toBe(sig2);
+    });
+
+    it('creates different signatures for different error types', () => {
+      const event1: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'TypeError',
+        value: 'foo is not defined',
+      };
+      const event2: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'ReferenceError',
+        value: 'foo is not defined',
+      };
+      const sig1 = createErrorSignature(event1);
+      const sig2 = createErrorSignature(event2);
+      expect(sig1).not.toBe(sig2);
+    });
+
+    it('creates different signatures for different stack traces', () => {
+      const event1: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'TypeError',
+        value: 'Error',
+        stacktrace: {
+          frames: [{ filename: 'app.js', function: 'fn', lineno: 23 }],
+        },
+      };
+      const event2: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'TypeError',
+        value: 'Error',
+        stacktrace: {
+          frames: [{ filename: 'utils.js', function: 'fn', lineno: 45 }],
+        },
+      };
+      const sig1 = createErrorSignature(event1);
+      const sig2 = createErrorSignature(event2);
+      expect(sig1).not.toBe(sig2);
+    });
+
+    it('handles errors without stack traces', () => {
+      const event: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'Error',
+        value: 'Something went wrong',
+      };
+      const signature = createErrorSignature(event);
+      expect(signature).toBe('Error::Something went wrong');
+    });
+
+    it('respects stackFrameDepth option', () => {
+      const event: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'Error',
+        value: 'test',
+        stacktrace: {
+          frames: [
+            { filename: 'a.js', function: 'fn1', lineno: 1 },
+            { filename: 'b.js', function: 'fn2', lineno: 2 },
+            { filename: 'c.js', function: 'fn3', lineno: 3 },
+          ],
+        },
+      };
+      const signature = createErrorSignature(event, { stackFrameDepth: 2 });
+      expect(signature).toContain('a.js:fn1:1|b.js:fn2:2');
+      expect(signature).not.toContain('c.js:fn3:3');
+    });
+
+    it('excludes context keys when includeContextKeys is false', () => {
+      const event: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'Error',
+        value: 'test',
+        context: { userId: '123', page: 'home' },
+      };
+      const signature = createErrorSignature(event, { includeContextKeys: false });
+      expect(signature).not.toContain('context');
+    });
+
+    it('includes sorted context keys when includeContextKeys is true', () => {
+      const event: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'Error',
+        value: 'test',
+        context: { zoo: '1', apple: '2', banana: '3' },
+      };
+      const signature = createErrorSignature(event, { includeContextKeys: true });
+      expect(signature).toContain('context:apple,banana,zoo');
+    });
+
+    it('handles events with empty context', () => {
+      const event: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'Error',
+        value: 'test',
+        context: {},
+      };
+      const signature = createErrorSignature(event);
+      expect(signature).toBe('Error::test');
+    });
+
+    it('handles minimal error event', () => {
+      const event: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'Error',
+        value: 'Error',
+      };
+      const signature = createErrorSignature(event);
+      expect(signature).toBe('Error::Error');
+    });
+  });
+});
