@@ -63,6 +63,14 @@ export interface ReplayInstrumentationOptions {
    * Custom hook to transform events before they are sent
    */
   beforeSend?: (event: any) => any;
+
+  /**
+   * When to start recording.
+   * - 'DOMContentLoaded': Start recording after DOM is ready (earlier, before all resources load)
+   * - 'load': Start recording after page load event (default rrweb behavior)
+   * @default undefined (rrweb defaults to 'load')
+   */
+  recordAfter?: 'DOMContentLoaded' | 'load';
 }
 
 export type MaskInputOptions = Partial<{
