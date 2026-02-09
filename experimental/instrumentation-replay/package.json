@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-instrumentation-replay",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Faro instrumentation for session replay with rrweb",
   "keywords": [
     "observability",
@@ -49,7 +49,7 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-core": "^2.2.2",
+    "@grafana/faro-core": "^2.2.3",
     "rrweb": "^2.0.0-alpha.18"
   },
   "publishConfig": {

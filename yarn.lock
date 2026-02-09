@@ -862,7 +862,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grafana/faro-core@npm:^2.2.2, @grafana/faro-core@workspace:packages/core":
+"@grafana/faro-core@npm:^2.2.3, @grafana/faro-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-core@workspace:packages/core"
   dependencies:
@@ -876,10 +876,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@grafana/faro-demo@workspace:demo"
   dependencies:
-    "@grafana/faro-core": "npm:^2.2.2"
-    "@grafana/faro-react": "npm:^2.2.2"
-    "@grafana/faro-web-sdk": "npm:^2.2.2"
-    "@grafana/faro-web-tracing": "npm:^2.2.2"
+    "@grafana/faro-core": "npm:^2.2.3"
+    "@grafana/faro-react": "npm:^2.2.3"
+    "@grafana/faro-web-sdk": "npm:^2.2.3"
+    "@grafana/faro-web-tracing": "npm:^2.2.3"
     "@grpc/grpc-js": "npm:^1.9.0"
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/core": "npm:^2.0.0"
@@ -944,17 +944,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay"
   dependencies:
-    "@grafana/faro-core": "npm:^2.2.2"
+    "@grafana/faro-core": "npm:^2.2.3"
     rrweb: "npm:^2.0.0-alpha.18"
   languageName: unknown
   linkType: soft
 
-"@grafana/faro-react@npm:^2.2.2, @grafana/faro-react@workspace:packages/react":
+"@grafana/faro-react@npm:^2.2.3, @grafana/faro-react@workspace:packages/react":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-react@workspace:packages/react"
   dependencies:
-    "@grafana/faro-web-sdk": "npm:^2.2.2"
-    "@grafana/faro-web-tracing": "npm:^2.2.2"
+    "@grafana/faro-web-sdk": "npm:^2.2.3"
+    "@grafana/faro-web-tracing": "npm:^2.2.3"
     "@types/hoist-non-react-statics": "npm:3.3.7"
     "@types/react": "npm:19.2.13"
     hoist-non-react-statics: "npm:^3.3.2"
@@ -980,17 +980,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http"
   dependencies:
-    "@grafana/faro-core": "npm:^2.2.2"
+    "@grafana/faro-core": "npm:^2.2.3"
     "@opentelemetry/otlp-transformer": "npm:^0.211.0"
     "@opentelemetry/semantic-conventions": "npm:^1.28.0"
   languageName: unknown
   linkType: soft
 
-"@grafana/faro-web-sdk@npm:^2.2.2, @grafana/faro-web-sdk@workspace:packages/web-sdk":
+"@grafana/faro-web-sdk@npm:^2.2.3, @grafana/faro-web-sdk@workspace:packages/web-sdk":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-web-sdk@workspace:packages/web-sdk"
   dependencies:
-    "@grafana/faro-core": "npm:^2.2.2"
+    "@grafana/faro-core": "npm:^2.2.3"
     "@types/node": "npm:24.10.11"
     "@types/ua-parser-js": "npm:0.7.39"
     ua-parser-js: "npm:1.0.41"
@@ -999,11 +999,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@grafana/faro-web-tracing@npm:^2.2.2, @grafana/faro-web-tracing@workspace:packages/web-tracing":
+"@grafana/faro-web-tracing@npm:^2.2.3, @grafana/faro-web-tracing@workspace:packages/web-tracing":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-web-tracing@workspace:packages/web-tracing"
   dependencies:
-    "@grafana/faro-web-sdk": "npm:^2.2.2"
+    "@grafana/faro-web-sdk": "npm:^2.2.3"
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/core": "npm:^2.0.0"
     "@opentelemetry/exporter-trace-otlp-http": "npm:^0.211.0"
