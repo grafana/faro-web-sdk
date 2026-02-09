@@ -1,3 +1,4 @@
+import type { Config } from '../../../config';
 import type { ExceptionEvent, ExceptionStackFrame } from '../types';
 
 export interface ErrorSignatureOptions {
@@ -91,11 +92,12 @@ export function createStackSignature(frames: ExceptionStackFrame[] | undefined, 
  * The signature identifies errors with the same root cause.
  *
  * @param error - Exception event to create signature for
- * @param options - Signature generation options
+ * @param config - Faro configuration object
  * @returns Signature string for hashing
  */
-export function createErrorSignature(error: ExceptionEvent, options: ErrorSignatureOptions = {}): string {
-  const { stackFrameDepth = 5, includeContextKeys = true } = options;
+export function createErrorSignature(error: ExceptionEvent, config: Config): string {
+  const stackFrameDepth = config.errorUniqueness?.stackFrameDepth ?? 5;
+  const includeContextKeys = config.errorUniqueness?.includeContextKeys ?? true;
   const { type, value, stacktrace, context } = error;
 
   const parts: string[] = [];

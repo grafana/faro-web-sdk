@@ -79,13 +79,15 @@ export class ErrorUniquenessTracker {
    * Adds to cache with LRU eviction if at capacity.
    *
    * @param errorHash - Hash of error signature
+   * @param timestampMs - Optional timestamp in milliseconds (defaults to Date.now())
    */
-  markAsSeen(errorHash: number): void {
+  markAsSeen(errorHash: number, timestampMs?: number): void {
     if (this.disabled) {
       return;
     }
 
     const now = Date.now();
+    const firstSeenTime = timestampMs ?? now;
 
     // Check if already in cache (shouldn't be if isUnique was called first)
     const existingEntry = this.cache.entries.find((entry) => entry.hash === errorHash);
@@ -100,7 +102,7 @@ export class ErrorUniquenessTracker {
     // Add new entry
     const newEntry: ErrorCacheEntry = {
       hash: errorHash,
-      timestamp: now,
+      timestamp: firstSeenTime,
       lastSeen: now,
     };
 
@@ -139,6 +141,19 @@ export class ErrorUniquenessTracker {
       maxSize: this.cache.maxSize,
       disabled: this.disabled,
     };
+  }
+
+  /**
+   * Get the first seen timestamp for an error hash.
+   * Returns null if not found or disabled.
+   */
+  getFirstSeen(errorHash: number): number | null {
+    if (this.disabled) {
+      return null;
+    }
+
+    const entry = this.cache.entries.find((entry) => entry.hash === errorHash);
+    return entry ? entry.timestamp : null;
   }
 
   /**

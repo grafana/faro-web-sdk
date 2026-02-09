@@ -22,10 +22,10 @@ import { addItemToUserActionBuffer } from '../userActions/initialize';
 import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
+import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
 import { hashErrorSignature } from './uniqueness/errorHash';
 import { createErrorSignature } from './uniqueness/errorSignature';
 import { ErrorUniquenessTracker } from './uniqueness/errorUniquenessTracker';
-import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
 
 let stacktraceParser: StacktraceParser | undefined;
 
@@ -129,22 +129,21 @@ export function initializeExceptionsAPI({
 
       lastPayload = testingPayload;
 
-      // Uniqueness check (session-wide)
+      // Uniqueness tracking (session-wide)
       if (!skipUniquenessCheck && uniquenessTracker) {
-        const errorHash = hashErrorSignature(
-          createErrorSignature(item.payload, {
-            stackFrameDepth: config.errorUniqueness?.stackFrameDepth,
-            includeContextKeys: config.errorUniqueness?.includeContextKeys,
-          })
-        );
+        const errorHash = hashErrorSignature(createErrorSignature(item.payload, config));
+        const errorTimestamp = new Date(item.payload.timestamp).getTime();
+        const isUnique = uniquenessTracker.isUnique(errorHash);
 
-        if (!uniquenessTracker.isUnique(errorHash)) {
-          internalLogger.debug('Skipping error push because it was already seen in this session\n', item.payload);
-          return;
+        if (!isUnique) {
+          const firstSeen = uniquenessTracker.getFirstSeen(errorHash);
+          if (firstSeen) {
+            addErrorFirstSeenToContext(item, firstSeen);
+          }
+        } else {
+          addErrorFirstSeenToContext(item, errorTimestamp);
+          uniquenessTracker.markAsSeen(errorHash, errorTimestamp);
         }
-
-        // Mark as seen for future checks
-        uniquenessTracker.markAsSeen(errorHash);
       }
 
       internalLogger.debug('Pushing exception\n', item);
@@ -185,4 +184,11 @@ function parseCause(error: ErrorWithIndexProperties): {} | { cause: string } {
 function isErrorIgnored(ignoreErrors: Patterns, error: ErrorWithIndexProperties): boolean {
   const { message, name, stack } = error;
   return shouldIgnoreEvent(ignoreErrors, message + ' ' + name + ' ' + stack);
+}
+
+function addErrorFirstSeenToContext(item: TransportItem<ExceptionEvent>, timestampMs: number): void {
+  item.payload.context = {
+    ...item.payload.context,
+    errorFirstSeen: String(timestampMs),
+  };
 }
