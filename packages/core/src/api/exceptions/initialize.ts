@@ -22,9 +22,9 @@ import { addItemToUserActionBuffer } from '../userActions/initialize';
 import { shouldIgnoreEvent } from '../utils';
 
 import { defaultExceptionType } from './const';
-import { hashErrorSignature } from './errorHash';
-import { createErrorSignature } from './errorSignature';
-import { ErrorUniquenessTracker } from './errorUniquenessTracker';
+import { hashErrorSignature } from './uniqueness/errorHash';
+import { createErrorSignature } from './uniqueness/errorSignature';
+import { ErrorUniquenessTracker } from './uniqueness/errorUniquenessTracker';
 import type { ErrorWithIndexProperties, ExceptionEvent, ExceptionsAPI, StacktraceParser } from './types';
 
 let stacktraceParser: StacktraceParser | undefined;

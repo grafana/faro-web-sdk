@@ -3,7 +3,7 @@
  * Creates normalized fingerprints from error events.
  */
 
-import type { ExceptionEvent, ExceptionStackFrame } from './types';
+import type { ExceptionEvent, ExceptionStackFrame } from '../types';
 
 export interface ErrorSignatureOptions {
   /** Number of stack frames to include in signature (default: 5) */

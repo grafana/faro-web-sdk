@@ -3,9 +3,9 @@
  * Uses localStorage for persistence within a session.
  */
 
-import type { Metas } from '../../metas';
-import { stringifyExternalJson } from '../../utils/json';
-import { getItem, isWebStorageAvailable, removeItem, setItem, webStorageType } from '../../utils/webStorage';
+import type { Metas } from '../../../metas';
+import { stringifyExternalJson } from '../../../utils/json';
+import { getItem, isWebStorageAvailable, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
 interface ErrorCacheEntry {
   hash: number;
