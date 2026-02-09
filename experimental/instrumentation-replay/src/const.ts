@@ -14,4 +14,5 @@ export const defaultReplayInstrumentationOptions: ReplayInstrumentationOptions =
   recordCanvas: false,
   recordCrossOriginIframes: false,
   beforeSend: undefined,
+  recordAfter: 'load',
 };

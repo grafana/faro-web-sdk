@@ -35,6 +35,7 @@ describe('ReplayInstrumentation', () => {
 
       const expectedDefaults: ReplayInstrumentationOptions = {
         recordCrossOriginIframes: false,
+        recordAfter: 'load',
         maskAllInputs: false,
         maskInputOptions: {
           password: true,
@@ -65,6 +66,7 @@ describe('ReplayInstrumentation', () => {
         inlineImages: true,
         inlineStylesheet: true,
         recordCanvas: true,
+        recordAfter: 'DOMContentLoaded',
         maskTextSelector: '.mask-me',
         blockSelector: '.block-me',
         ignoreSelector: '.ignore-me',
@@ -78,6 +80,7 @@ describe('ReplayInstrumentation', () => {
 
     it('should merge partial custom options with defaults', () => {
       const partialOptions: ReplayInstrumentationOptions = {
+        recordAfter: 'DOMContentLoaded',
         maskAllInputs: true,
         recordCanvas: true,
       };
@@ -90,6 +93,7 @@ describe('ReplayInstrumentation', () => {
       // Defaults should still be present
       const expected: ReplayInstrumentationOptions = {
         recordCrossOriginIframes: false,
+        recordAfter: 'DOMContentLoaded',
         maskAllInputs: true, // Overridden by partial options
         maskInputOptions: {
           password: true,
@@ -128,6 +132,17 @@ describe('ReplayInstrumentation', () => {
       expect(logWarnSpy).toHaveBeenCalledWith('Session replay is already running');
     });
 
+    it('should pass default recordAfter option to rrweb record', () => {
+      instrumentation = new ReplayInstrumentation();
+      instrumentation.initialize();
+
+      expect(mockRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recordAfter: 'load',
+        })
+      );
+    });
+
     it('should pass correct options to rrweb record', () => {
       const customOptions: ReplayInstrumentationOptions = {
         maskAllInputs: true,
@@ -140,6 +155,7 @@ describe('ReplayInstrumentation', () => {
         maskTextSelector: '.mask',
         ignoreSelector: '.ignore',
         maskInputOptions: { password: true, email: true },
+        recordAfter: 'DOMContentLoaded',
       };
 
       instrumentation = new ReplayInstrumentation(customOptions);
@@ -157,6 +173,7 @@ describe('ReplayInstrumentation', () => {
           maskTextSelector: '.mask',
           ignoreSelector: '.ignore',
           maskInputOptions: { password: true, email: true },
+          recordAfter: 'DOMContentLoaded',
           recordDOM: true,
           checkoutEveryNms: 300_000,
         })

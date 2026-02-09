@@ -2,6 +2,10 @@
 
 ## Next
 
+- Feature (`@grafana/faro-instrumentation-replay` [experimental]): Add `recordAfter` option
+  to configure replay recording start timing (`DOMContentLoaded` or `load`), with `load`
+  as the default.
+
 ## 2.2.3
 
 - Feature (`@grafana/faro-react`): Add `createReactRouterV7Options` and

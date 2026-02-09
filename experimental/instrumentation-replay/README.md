@@ -24,6 +24,7 @@ initializeFaro({
         email: true,
       },
       maskAllInputs: false,
+      recordAfter: 'load',
       recordCrossOriginIframes: false,
     }),
   ],
@@ -55,6 +56,9 @@ initializeFaro({
 
 ### Recording Options
 
+- **`recordAfter`** (default: `load`): When to start recording.
+  - `load` - Start recording after the page load event
+  - `DOMContentLoaded` - Start recording once the DOM is ready
 - **`recordCrossOriginIframes`** (default: `false`): Whether to record cross-origin iframes
 - **`recordCanvas`** (default: `false`): Whether to record canvas elements
 - **`collectFonts`** (default: `false`): Whether to collect font files

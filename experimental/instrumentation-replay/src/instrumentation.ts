@@ -52,6 +52,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
         inlineImages: this.options.inlineImages,
         recordDOM: true,
         inlineStylesheet: this.options.inlineStylesheet,
+        recordAfter: this.options.recordAfter,
         errorHandler: (err) => {
           this.logError('Error occurred during session replay', err);
         },
