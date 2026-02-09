@@ -132,6 +132,17 @@ describe('ReplayInstrumentation', () => {
       expect(logWarnSpy).toHaveBeenCalledWith('Session replay is already running');
     });
 
+    it('should pass default recordAfter option to rrweb record', () => {
+      instrumentation = new ReplayInstrumentation();
+      instrumentation.initialize();
+
+      expect(mockRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recordAfter: 'load',
+        })
+      );
+    });
+
     it('should pass correct options to rrweb record', () => {
       const customOptions: ReplayInstrumentationOptions = {
         maskAllInputs: true,
@@ -144,6 +155,7 @@ describe('ReplayInstrumentation', () => {
         maskTextSelector: '.mask',
         ignoreSelector: '.ignore',
         maskInputOptions: { password: true, email: true },
+        recordAfter: 'DOMContentLoaded',
       };
 
       instrumentation = new ReplayInstrumentation(customOptions);
@@ -161,6 +173,7 @@ describe('ReplayInstrumentation', () => {
           maskTextSelector: '.mask',
           ignoreSelector: '.ignore',
           maskInputOptions: { password: true, email: true },
+          recordAfter: 'DOMContentLoaded',
           recordDOM: true,
           checkoutEveryNms: 300_000,
         })
