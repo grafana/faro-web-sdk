@@ -13,25 +13,6 @@ export interface ErrorSignatureOptions {
 }
 
 /**
- * Normalization patterns to remove dynamic values from error messages.
- * Converts specific values to placeholders for consistent signatures.
- */
-const NORMALIZATION_PATTERNS = [
-  // UUIDs: "123e4567-e89b-12d3-a456-426614174000" -> "<UUID>"
-  { pattern: /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, replacement: '<UUID>' },
-  // URLs: "https://example.com/path" -> "<URL>"
-  { pattern: /https?:\/\/[^\s]+/g, replacement: '<URL>' },
-  // File paths: "/path/to/file.js" -> "<PATH>"
-  { pattern: /\/[^\s]+\.(js|ts|jsx|tsx|css|html|json)\b/g, replacement: '<PATH>' },
-  // Timestamps (13 digits): "1234567890123" -> "<TIMESTAMP>"
-  { pattern: /\b\d{13}\b/g, replacement: '<TIMESTAMP>' },
-  // Numeric IDs (6+ digits): "123456" -> "<ID>"
-  { pattern: /\b\d{6,}\b/g, replacement: '<ID>' },
-  // Quoted strings: "foo" or 'bar' -> "<STRING>"
-  { pattern: /'[^']+'|"[^"]+"/g, replacement: '<STRING>' },
-];
-
-/**
  * Normalize an error message by replacing dynamic values with placeholders.
  * This ensures errors with similar structure but different values get the same signature.
  *
@@ -44,9 +25,24 @@ export function normalizeMessage(message: string): string {
   }
 
   let normalized = message;
-  for (const { pattern, replacement } of NORMALIZATION_PATTERNS) {
-    normalized = normalized.replace(pattern, replacement);
-  }
+
+  // UUIDs: "123e4567-e89b-12d3-a456-426614174000" -> "<UUID>"
+  normalized = normalized.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '<UUID>');
+
+  // URLs: "https://example.com/path" -> "<URL>"
+  normalized = normalized.replace(/https?:\/\/[^\s]+/g, '<URL>');
+
+  // File paths: "/path/to/file.js" -> "<PATH>"
+  normalized = normalized.replace(/\/[^\s]+\.(js|ts|jsx|tsx|css|html|json)\b/g, '<PATH>');
+
+  // Timestamps (13 digits): "1234567890123" -> "<TIMESTAMP>"
+  normalized = normalized.replace(/\b\d{13}\b/g, '<TIMESTAMP>');
+
+  // Numeric IDs (6+ digits): "123456" -> "<ID>"
+  normalized = normalized.replace(/\b\d{6,}\b/g, '<ID>');
+
+  // Quoted strings: "foo" or 'bar' -> "<STRING>"
+  normalized = normalized.replace(/'[^']+'|"[^"]+"/g, '<STRING>');
 
   // Truncate very long messages to prevent excessive storage
   const MAX_MESSAGE_LENGTH = 500;
@@ -75,8 +71,9 @@ export function createStackSignature(frames: ExceptionStackFrame[] | undefined, 
     const parts: string[] = [];
 
     // Use filename (basename only, not full path for resilience)
+    // Handle both Unix (/) and Windows (\) path separators
     if (frame.filename) {
-      const basename = frame.filename.split('/').pop() || frame.filename;
+      const basename = frame.filename.split(/[/\\]/).pop() || frame.filename;
       parts.push(basename);
     }
 

@@ -104,6 +104,14 @@ describe('errorSignature', () => {
       expect(signature).toBe('app.js:handleClick:23');
     });
 
+    it('handles Windows paths with backslashes', () => {
+      const frames: ExceptionStackFrame[] = [
+        { filename: 'C:\\Users\\app\\src\\index.js', function: 'main', lineno: 10 },
+      ];
+      const signature = createStackSignature(frames);
+      expect(signature).toBe('index.js:main:10');
+    });
+
     it('handles frames without function names', () => {
       const frames: ExceptionStackFrame[] = [
         { filename: 'app.js', function: '', lineno: 23, colno: 4 },

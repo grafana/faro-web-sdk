@@ -32,6 +32,8 @@ export class ErrorUniquenessTracker {
   private metas: Metas;
   private disabled: boolean = false;
   private hasLocalStorage: boolean;
+  private saveScheduled: boolean = false;
+  private saveTimeout?: number;
 
   constructor(metas: Metas, maxSize: number = DEFAULT_MAX_SIZE) {
     this.metas = metas;
@@ -145,8 +147,16 @@ export class ErrorUniquenessTracker {
    * Removes from localStorage.
    */
   clear(): void {
+    // Cancel any pending save
+    if (this.saveTimeout) {
+      window.clearTimeout(this.saveTimeout);
+      this.saveScheduled = false;
+    }
+
     this.cache.entries = [];
-    this.saveCache();
+
+    // Clear immediately (not debounced)
+    this.performSave();
   }
 
   /**
@@ -167,6 +177,7 @@ export class ErrorUniquenessTracker {
    */
   private loadCache(): ErrorSignatureCache | null {
     if (!this.hasLocalStorage) {
+      console.warn('[Faro] Error uniqueness tracking disabled: localStorage not available');
       this.disabled = true;
       return null;
     }
@@ -186,13 +197,15 @@ export class ErrorUniquenessTracker {
         typeof parsed.maxSize !== 'number'
       ) {
         // Invalid cache, discard
+        console.warn('[Faro] Invalid error uniqueness cache, discarding');
         this.clearStorage();
         return null;
       }
 
       return parsed;
-    } catch (_error) {
+    } catch (error) {
       // localStorage not available or corrupted
+      console.warn('[Faro] Error uniqueness tracking disabled due to corrupted cache:', error);
       this.clearStorage();
       this.disabled = true;
       return null;
@@ -200,9 +213,33 @@ export class ErrorUniquenessTracker {
   }
 
   /**
-   * Save cache to localStorage.
+   * Save cache to localStorage (debounced to avoid blocking main thread).
+   * Multiple rapid calls are batched into a single write.
    */
   private saveCache(): void {
+    if (this.disabled || !this.hasLocalStorage) {
+      return;
+    }
+
+    // Already scheduled, skip
+    if (this.saveScheduled) {
+      return;
+    }
+
+    this.saveScheduled = true;
+
+    // Debounce: batch multiple saves into one write
+    // 100ms is enough to batch rapid errors, short enough to feel instant
+    this.saveTimeout = window.setTimeout(() => {
+      this.saveScheduled = false;
+      this.performSave();
+    }, 100);
+  }
+
+  /**
+   * Actually write to localStorage (called by debounced saveCache).
+   */
+  private performSave(): void {
     if (this.disabled || !this.hasLocalStorage) {
       return;
     }
@@ -210,8 +247,9 @@ export class ErrorUniquenessTracker {
     try {
       const serialized = stringifyExternalJson(this.cache);
       window.localStorage.setItem(this.storageKey, serialized);
-    } catch (_error) {
-      // localStorage write failed - disable tracking
+    } catch (error) {
+      // localStorage write failed - disable tracking and log warning
+      console.warn('[Faro] Error uniqueness tracking disabled due to localStorage error:', error);
       this.disabled = true;
     }
   }
