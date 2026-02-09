@@ -917,7 +917,7 @@ __metadata:
     jsonwebtoken: "npm:^9.0.0"
     mkdirp: "npm:3.0.1"
     nodemon: "npm:3.1.11"
-    npm-run-all: "npm:^4.1.5"
+    npm-run-all: "npm:4.1.5"
     path-to-regexp: "npm:^8.2.0"
     pg: "npm:^8.8.0"
     pg-hstore: "npm:^2.3.4"
@@ -6454,9 +6454,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cypress@npm:15.9.0":
-  version: 15.9.0
-  resolution: "cypress@npm:15.9.0"
+"cypress@npm:15.10.0":
+  version: 15.10.0
+  resolution: "cypress@npm:15.10.0"
   dependencies:
     "@cypress/request": "npm:^3.0.10"
     "@cypress/xvfb": "npm:^1.2.4"
@@ -6486,7 +6486,7 @@ __metadata:
     hasha: "npm:5.2.2"
     is-installed-globally: "npm:~0.4.0"
     listr2: "npm:^3.8.3"
-    lodash: "npm:^4.17.21"
+    lodash: "npm:^4.17.23"
     log-symbols: "npm:^4.0.0"
     minimist: "npm:^1.2.8"
     ospath: "npm:^1.2.2"
@@ -6502,7 +6502,7 @@ __metadata:
     yauzl: "npm:^2.10.0"
   bin:
     cypress: bin/cypress
-  checksum: 10c0/3626f778d32741262dfe34b810b3ac91ba7c4f66202154512f72bab4cce8c59dc184b76bb627ee3027c4ef6e81439c23b2459f902f05a704050e04329720101c
+  checksum: 10c0/0041a6baad4ce3a70c1bb5d872636eb1dd4d49a199a322162b79f11e7cef41dc1e53c7002ee55d7d2c59a5587f36aa015989803e912074f54fe13a94fe7c574d
   languageName: node
   linkType: hard
 
@@ -7998,7 +7998,7 @@ __metadata:
     "@types/jest": "npm:30.0.0"
     "@typescript-eslint/eslint-plugin": "npm:8.54.0"
     "@typescript-eslint/parser": "npm:8.54.0"
-    cypress: "npm:15.9.0"
+    cypress: "npm:15.10.0"
     eslint: "npm:9.39.2"
     eslint-config-prettier: "npm:10.1.8"
     eslint-plugin-import: "npm:2.32.0"
@@ -11074,7 +11074,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.21":
+"lodash@npm:^4.17.21, lodash@npm:^4.17.23":
   version: 4.17.23
   resolution: "lodash@npm:4.17.23"
   checksum: 10c0/1264a90469f5bb95d4739c43eb6277d15b6d9e186df4ac68c3620443160fc669e2f14c11e7d8b2ccf078b81d06147c01a8ccced9aab9f9f63d50dcf8cace6bf6
@@ -12517,7 +12517,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"npm-run-all@npm:^4.1.5":
+"npm-run-all@npm:4.1.5":
   version: 4.1.5
   resolution: "npm-run-all@npm:4.1.5"
   dependencies:
