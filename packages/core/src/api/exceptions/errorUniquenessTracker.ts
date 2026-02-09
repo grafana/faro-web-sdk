@@ -3,9 +3,9 @@
  * Uses localStorage for persistence within a session.
  */
 
-import type { Metas } from '@grafana/faro-core';
-
+import type { Metas } from '../../metas';
 import { stringifyExternalJson } from '../../utils/json';
+import { getItem, isLocalStorageAvailable, removeItem, setItem, webStorageType } from '../../utils/webStorage';
 
 interface ErrorCacheEntry {
   hash: number;
@@ -41,27 +41,10 @@ export class ErrorUniquenessTracker {
     this.storageKey = `com.grafana.faro.error-signatures.${sessionId}`;
 
     // Check localStorage availability once at construction
-    this.hasLocalStorage = this.checkLocalStorage();
+    this.hasLocalStorage = isLocalStorageAvailable;
 
     // Try to load from storage or initialize new cache
     this.cache = this.loadCache() || this.createEmptyCache(maxSize);
-  }
-
-  /**
-   * Check if localStorage is available (one-time check at construction).
-   */
-  private checkLocalStorage(): boolean {
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) {
-        return false;
-      }
-      const testKey = '__faro_storage_test__';
-      window.localStorage.setItem(testKey, testKey);
-      window.localStorage.removeItem(testKey);
-      return true;
-    } catch {
-      return false;
-    }
   }
 
   /**
@@ -183,7 +166,7 @@ export class ErrorUniquenessTracker {
     }
 
     try {
-      const stored = window.localStorage.getItem(this.storageKey);
+      const stored = getItem(this.storageKey, webStorageType.local);
       if (!stored) {
         return null;
       }
@@ -191,11 +174,7 @@ export class ErrorUniquenessTracker {
       const parsed: ErrorSignatureCache = JSON.parse(stored);
 
       // Validate cache structure
-      if (
-        parsed.version !== CACHE_VERSION ||
-        !Array.isArray(parsed.entries) ||
-        typeof parsed.maxSize !== 'number'
-      ) {
+      if (parsed.version !== CACHE_VERSION || !Array.isArray(parsed.entries) || typeof parsed.maxSize !== 'number') {
         // Invalid cache, discard
         console.warn('[Faro] Invalid error uniqueness cache, discarding');
         this.clearStorage();
@@ -246,7 +225,7 @@ export class ErrorUniquenessTracker {
 
     try {
       const serialized = stringifyExternalJson(this.cache);
-      window.localStorage.setItem(this.storageKey, serialized);
+      setItem(this.storageKey, serialized, webStorageType.local);
     } catch (error) {
       // localStorage write failed - disable tracking and log warning
       console.warn('[Faro] Error uniqueness tracking disabled due to localStorage error:', error);
@@ -274,7 +253,7 @@ export class ErrorUniquenessTracker {
     }
 
     try {
-      window.localStorage.removeItem(this.storageKey);
+      removeItem(this.storageKey, webStorageType.local);
     } catch {
       // Ignore errors
     }

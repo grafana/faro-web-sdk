@@ -54,3 +54,13 @@ export { getCircularDependencyReplacer, stringifyExternalJson, stringifyObjectVa
 
 export { Observable } from './reactive';
 export type { Subscription } from './reactive';
+
+export {
+  getItem,
+  isLocalStorageAvailable,
+  isSessionStorageAvailable,
+  isWebStorageAvailable,
+  removeItem,
+  setItem,
+  webStorageType,
+} from './webStorage';
