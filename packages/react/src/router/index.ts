@@ -16,8 +16,11 @@ export {
   createReactRouterV6Options,
   createReactRouterV6DataOptions,
   setReactRouterV6SSRDependencies,
+  setReactRouterV7SSRDependencies,
   withFaroRouterInstrumentation,
-} from './v6';
+  createReactRouterV7Options,
+  createReactRouterV7DataOptions,
+} from './v6v7';
 export type {
   ReactRouterV6CreateRoutesFromChildren,
   ReactRouterV6Dependencies,
@@ -30,4 +33,4 @@ export type {
   ReactRouterV6UseLocation,
   ReactRouterV6UseNavigationType,
   ReactRouterV6DataRouterDependencies,
-} from './v6';
+} from './v6v7';

@@ -33,3 +33,7 @@ export function setReactRouterV6DataRouterDependencies(newDependencies: ReactRou
   isInitialized = true;
   matchRoutes = newDependencies.matchRoutes;
 }
+
+export function setReactRouterV7SSRDependencies(newDependencies: Pick<ReactRouterV6Dependencies, 'Routes'>): void {
+  Routes = newDependencies.Routes;
+}

@@ -2,6 +2,10 @@
 
 ## Next
 
+- Feature (`@grafana/faro-react`): Add `createReactRouterV7Options` and
+  `createReactRouterV7DataOptions` helper functions for easier React Router v7
+  configuration (#1879).
+
 - Fix (`@grafana/faro-react`): Migrated from new JSX transform (`react-jsx`) to classic JSX transform
   (`react`) to prevent bundling `react/jsx-runtime` with the package. This fixes compatibility issues
   with React 19 and older React versions where bundled JSX runtime could cause breakage. React and

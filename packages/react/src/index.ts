@@ -21,8 +21,11 @@ export {
   createReactRouterV5Options,
   createReactRouterV6Options,
   createReactRouterV6DataOptions,
+  createReactRouterV7Options,
+  createReactRouterV7DataOptions,
   setReactRouterV4V5SSRDependencies,
   setReactRouterV6SSRDependencies,
+  setReactRouterV7SSRDependencies,
   withFaroRouterInstrumentation,
 } from './router';
 export type {

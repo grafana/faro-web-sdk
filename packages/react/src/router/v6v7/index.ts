@@ -5,9 +5,11 @@ export {
   createReactRouterV6DataOptions,
   initializeReactRouterV6Instrumentation,
   initializeReactRouterV6DataRouterInstrumentation,
+  createReactRouterV7DataOptions,
+  createReactRouterV7Options,
 } from './initialize';
 
-export { setReactRouterV6SSRDependencies } from './routerDependencies';
+export { setReactRouterV6SSRDependencies, setReactRouterV7SSRDependencies } from './routerDependencies';
 
 export { withFaroRouterInstrumentation } from './withFaroRouterInstrumentation';
 

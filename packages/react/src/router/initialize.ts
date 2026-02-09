@@ -3,7 +3,7 @@ import type { ReactIntegrationConfig } from '../types';
 
 import { ReactRouterVersion } from './types';
 import { initializeReactRouterV4V5Instrumentation } from './v4v5';
-import { initializeReactRouterV6DataRouterInstrumentation, initializeReactRouterV6Instrumentation } from './v6';
+import { initializeReactRouterV6DataRouterInstrumentation, initializeReactRouterV6Instrumentation } from './v6v7';
 
 export function initializeReactRouterInstrumentation(options: ReactIntegrationConfig): void {
   const initMessage = 'Initializing React Router';

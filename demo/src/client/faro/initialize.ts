@@ -2,9 +2,9 @@ import { matchRoutes } from 'react-router';
 
 import {
   initializeFaro as coreInit,
+  createReactRouterV7DataOptions,
   getWebInstrumentations,
   ReactIntegration,
-  ReactRouterVersion,
 } from '@grafana/faro-react';
 import type { Faro } from '@grafana/faro-react';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
@@ -23,12 +23,9 @@ export function initializeFaro(): Faro {
 
       new TracingInstrumentation(),
       new ReactIntegration({
-        router: {
-          version: ReactRouterVersion.V7_data_router,
-          dependencies: {
-            matchRoutes,
-          },
-        },
+        router: createReactRouterV7DataOptions({
+          matchRoutes,
+        }),
       }),
     ],
     app: {
