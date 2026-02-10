@@ -69,15 +69,7 @@ export function initializeExceptionsAPI({
 
   const pushError: ExceptionsAPI['pushError'] = (
     error,
-    {
-      skipDedupe,
-      stackFrames,
-      type,
-      context,
-      spanContext,
-      timestampOverwriteMs,
-      originalError,
-    } = {}
+    { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs, originalError } = {}
   ) => {
     if (isErrorIgnored(ignoreErrors, originalError ?? error)) {
       return;
