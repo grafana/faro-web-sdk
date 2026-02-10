@@ -159,6 +159,15 @@ describe('ReplayInstrumentation', () => {
 
     it('should pass default recordAfter option to rrweb record', () => {
       instrumentation = new ReplayInstrumentation();
+
+      // Mock sampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
       instrumentation.initialize();
 
       expect(mockRecord).toHaveBeenCalledWith(
