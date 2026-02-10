@@ -158,7 +158,10 @@ describe('ErrorUniquenessTracker', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
       // Should log warning but continue operating
-      expect(internalLogger.warn).toHaveBeenCalledWith('Error uniqueness cache corrupted, recreating', expect.any(SyntaxError));
+      expect(internalLogger.warn).toHaveBeenCalledWith(
+        'Error uniqueness cache corrupted, recreating',
+        expect.any(SyntaxError)
+      );
 
       // Verify tracker is still functional
       expect(tracker.isUnique(12345)).toBe(true);
@@ -446,7 +449,7 @@ describe('ErrorUniquenessTracker', () => {
       mockMetas.value.session = undefined;
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
-      expect(getItemMock).toHaveBeenCalledWith('com.grafana.faro.error-signatures.default');
+      expect(getItemMock).toHaveBeenCalledWith('com.grafana.faro.error-signatures.__pending-initialization__');
 
       tracker.markAsSeen(12345);
       expect(tracker.isUnique(12345)).toBe(false);
@@ -488,8 +491,8 @@ describe('ErrorUniquenessTracker', () => {
       expect(tracker.getStats().size).toBe(0);
     });
 
-    it('handles session change from default to actual session ID', () => {
-      // Start with no session (uses 'default')
+    it('handles session change from pending initialization to actual session ID', () => {
+      // Start with no session (uses '__pending-initialization__')
       mockMetas.value.session = undefined;
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
@@ -498,7 +501,6 @@ describe('ErrorUniquenessTracker', () => {
 
       const metasListener = (mockMetas.addListener as jest.Mock).mock.calls[0][0];
 
-      // Session tracking is initialized
       metasListener({
         session: {
           id: 'actual-session-id',
@@ -506,7 +508,6 @@ describe('ErrorUniquenessTracker', () => {
         },
       });
 
-      // Should be unique in the new session
       expect(tracker.isUnique(11111)).toBe(true);
     });
 
@@ -524,7 +525,7 @@ describe('ErrorUniquenessTracker', () => {
       // Trigger listener with same session ID
       metasListener({
         session: {
-          id: 'test-session-123', // Same as initial
+          id: 'test-session-123',
           attributes: {},
         },
       });
@@ -535,6 +536,5 @@ describe('ErrorUniquenessTracker', () => {
       // Error should still be in cache
       expect(tracker.isUnique(12345)).toBe(false);
     });
-
   });
 });

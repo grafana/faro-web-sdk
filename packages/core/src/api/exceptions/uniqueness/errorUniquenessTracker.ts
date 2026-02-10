@@ -17,6 +17,7 @@ interface ErrorSignatureCache {
 
 const CACHE_VERSION = 1;
 const DEFAULT_MAX_SIZE = 500;
+const PENDING_SESSION_ID = '__pending-initialization__';
 
 /**
  * Manages session-scoped unique error tracking with LRU eviction.
@@ -48,15 +49,14 @@ export class ErrorUniquenessTracker {
   constructor(metas: Metas, maxSize: number = DEFAULT_MAX_SIZE) {
     this.metas = metas;
     this.maxSize = maxSize;
-    this.currentSessionId = this.metas.value.session?.id ?? 'default';
+    this.currentSessionId = this.metas.value.session?.id ?? PENDING_SESSION_ID;
 
     this.storageKey = `com.grafana.faro.error-signatures.${this.currentSessionId}`;
     this.hasLocalStorage = isWebStorageAvailable(webStorageType.local);
     this.cache = this.loadCache() ?? this.createEmptyCache(maxSize);
 
-    // Listen for session changes to invalidate cache
     this.metas.addListener((meta) => {
-      const newSessionId = meta.session?.id ?? 'default';
+      const newSessionId = meta.session?.id ?? PENDING_SESSION_ID;
       if (newSessionId !== this.currentSessionId) {
         this.handleSessionChange(newSessionId);
       }
