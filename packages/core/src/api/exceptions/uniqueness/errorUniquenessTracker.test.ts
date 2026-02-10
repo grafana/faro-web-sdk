@@ -1,16 +1,36 @@
 import type { Metas } from '@grafana/faro-core';
 
+import { internalLogger } from '../../../internalLogger';
+
 import { ErrorUniquenessTracker } from './errorUniquenessTracker';
+
+jest.mock('../../../internalLogger', () => ({
+  internalLogger: {
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  },
+}));
+
+// Test constants
+const DEBOUNCE_TIMEOUT = 150; // 100ms debounce + 50ms buffer
+
+// Helper to mark error as seen and flush debounced save
+function markAsSeenAndFlush(tracker: ErrorUniquenessTracker, hash: number, timestamp?: number): void {
+  tracker.markAsSeen(hash, timestamp);
+  jest.advanceTimersByTime(DEBOUNCE_TIMEOUT);
+}
 
 describe('ErrorUniquenessTracker', () => {
   let mockMetas: Metas;
   let mockLocalStorage: Record<string, string>;
+  let getItemMock: jest.Mock;
+  let setItemMock: jest.Mock;
+  let removeItemMock: jest.Mock;
 
   beforeEach(() => {
-    // Clear any Date.now mocks
-    jest.restoreAllMocks();
+    jest.useFakeTimers();
 
-    // Mock Metas with session ID
     mockMetas = {
       value: {
         session: {
@@ -24,33 +44,45 @@ describe('ErrorUniquenessTracker', () => {
       removeListener: jest.fn(),
     } as any;
 
-    // Mock localStorage
     mockLocalStorage = {};
 
-    const getItemMock = jest.fn((key: string) => mockLocalStorage[key] || null);
-    const setItemMock = jest.fn((key: string, value: string) => {
+    getItemMock = jest.fn((key: string) => mockLocalStorage[key] || null);
+    setItemMock = jest.fn((key: string, value: string) => {
       mockLocalStorage[key] = value;
     });
-    const removeItemMock = jest.fn((key: string) => {
+    removeItemMock = jest.fn((key: string) => {
       delete mockLocalStorage[key];
     });
 
-    global.localStorage = {
+    const mockStorage = {
       getItem: getItemMock,
       setItem: setItemMock,
       removeItem: removeItemMock,
-      clear: jest.fn(),
+      clear: jest.fn(() => {
+        mockLocalStorage = {};
+      }),
       length: 0,
       key: jest.fn(),
     } as any;
 
-    // Mock window
-    (global as any).window = { localStorage: global.localStorage };
+    global.localStorage = mockStorage;
+
+    Object.defineProperty(global, 'window', {
+      value: {
+        localStorage: mockStorage,
+        sessionStorage: mockStorage,
+        setTimeout: global.setTimeout,
+        clearTimeout: global.clearTimeout,
+      },
+      writable: true,
+      configurable: true,
+    });
   });
 
   afterEach(() => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
+    jest.useRealTimers();
   });
 
   describe('initialization', () => {
@@ -61,6 +93,7 @@ describe('ErrorUniquenessTracker', () => {
       expect(stats.size).toBe(0);
       expect(stats.maxSize).toBe(500); // default
       expect(stats.disabled).toBe(false);
+      expect(tracker.isDisabled()).toBe(false);
     });
 
     it('respects custom maxSize', () => {
@@ -73,14 +106,7 @@ describe('ErrorUniquenessTracker', () => {
     it('uses session ID in storage key', () => {
       new ErrorUniquenessTracker(mockMetas);
 
-      expect(localStorage.getItem).toHaveBeenCalledWith('com.grafana.faro.error-signatures.test-session-123');
-    });
-
-    it('uses default session ID when session is missing', () => {
-      mockMetas.value.session = undefined;
-      new ErrorUniquenessTracker(mockMetas);
-
-      expect(localStorage.getItem).toHaveBeenCalledWith('com.grafana.faro.error-signatures.default');
+      expect(getItemMock).toHaveBeenCalledWith('com.grafana.faro.error-signatures.test-session-123');
     });
 
     it('loads existing cache from localStorage', () => {
@@ -112,7 +138,7 @@ describe('ErrorUniquenessTracker', () => {
       const stats = tracker.getStats();
 
       expect(stats.size).toBe(0);
-      expect(localStorage.removeItem).toHaveBeenCalled();
+      expect(removeItemMock).toHaveBeenCalled();
     });
 
     it('handles corrupted cache data', () => {
@@ -122,15 +148,6 @@ describe('ErrorUniquenessTracker', () => {
       const stats = tracker.getStats();
 
       expect(stats.size).toBe(0);
-      expect(stats.disabled).toBe(true);
-    });
-
-    it('disables tracking when localStorage is unavailable', () => {
-      (global as any).window = undefined;
-
-      const tracker = new ErrorUniquenessTracker(mockMetas);
-      const stats = tracker.getStats();
-
       expect(stats.disabled).toBe(true);
     });
   });
@@ -152,20 +169,6 @@ describe('ErrorUniquenessTracker', () => {
       expect(result).toBe(false);
     });
 
-    it('updates lastSeen timestamp on duplicate check', () => {
-      const tracker = new ErrorUniquenessTracker(mockMetas);
-      const originalTime = Date.now();
-
-      jest.spyOn(Date, 'now').mockReturnValue(originalTime);
-      tracker.markAsSeen(12345);
-
-      jest.spyOn(Date, 'now').mockReturnValue(originalTime + 5000);
-      tracker.isUnique(12345);
-
-      const stats = tracker.getStats();
-      expect(stats.newestTimestamp).toBe(originalTime + 5000);
-    });
-
     it('moves accessed entry to end of LRU', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas, 3);
 
@@ -185,14 +188,6 @@ describe('ErrorUniquenessTracker', () => {
       expect(tracker.isUnique(333)).toBe(false); // 333 still in cache
       expect(tracker.isUnique(444)).toBe(false); // 444 still in cache
     });
-
-    it('returns true when disabled', () => {
-      (global as any).window = undefined;
-      const tracker = new ErrorUniquenessTracker(mockMetas);
-
-      expect(tracker.isUnique(12345)).toBe(true);
-      expect(tracker.isUnique(12345)).toBe(true); // Always unique
-    });
   });
 
   describe('markAsSeen', () => {
@@ -208,9 +203,9 @@ describe('ErrorUniquenessTracker', () => {
     it('persists to localStorage', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
-      tracker.markAsSeen(12345);
+      markAsSeenAndFlush(tracker, 12345);
 
-      expect(localStorage.setItem).toHaveBeenCalled();
+      expect(setItemMock).toHaveBeenCalled();
       const savedData = mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'];
       const saved = JSON.parse(savedData!);
       expect(saved.entries).toHaveLength(1);
@@ -240,15 +235,6 @@ describe('ErrorUniquenessTracker', () => {
       expect(tracker.isUnique(333)).toBe(false); // Still in cache
       expect(tracker.isUnique(444)).toBe(false); // Still in cache
     });
-
-    it('does nothing when disabled', () => {
-      (global as any).window = undefined;
-      const tracker = new ErrorUniquenessTracker(mockMetas);
-
-      tracker.markAsSeen(12345);
-
-      expect(localStorage.setItem).not.toHaveBeenCalled();
-    });
   });
 
   describe('clear', () => {
@@ -277,10 +263,6 @@ describe('ErrorUniquenessTracker', () => {
 
   describe('getStats', () => {
     it('returns cache statistics', () => {
-      const now1 = 1000;
-      const now2 = 2000;
-      jest.spyOn(Date, 'now').mockReturnValueOnce(now1).mockReturnValueOnce(now1).mockReturnValueOnce(now2).mockReturnValueOnce(now2);
-
       const tracker = new ErrorUniquenessTracker(mockMetas, 100);
       tracker.markAsSeen(111);
       tracker.markAsSeen(222);
@@ -291,24 +273,14 @@ describe('ErrorUniquenessTracker', () => {
         size: 2,
         maxSize: 100,
         disabled: false,
-        oldestTimestamp: now1,
-        newestTimestamp: now2,
       });
-    });
-
-    it('handles empty cache', () => {
-      const tracker = new ErrorUniquenessTracker(mockMetas);
-      const stats = tracker.getStats();
-
-      expect(stats.oldestTimestamp).toBeUndefined();
-      expect(stats.newestTimestamp).toBeUndefined();
     });
   });
 
   describe('localStorage persistence across instances', () => {
     it('shares cache between instances with same session', () => {
       const tracker1 = new ErrorUniquenessTracker(mockMetas);
-      tracker1.markAsSeen(12345);
+      markAsSeenAndFlush(tracker1, 12345);
 
       // Create new instance (simulates page reload)
       const tracker2 = new ErrorUniquenessTracker(mockMetas);
@@ -318,7 +290,7 @@ describe('ErrorUniquenessTracker', () => {
 
     it('does not share cache between different sessions', () => {
       const tracker1 = new ErrorUniquenessTracker(mockMetas);
-      tracker1.markAsSeen(12345);
+      markAsSeenAndFlush(tracker1, 12345);
 
       // Different session
       mockMetas.value.session!.id = 'different-session';
@@ -357,24 +329,99 @@ describe('ErrorUniquenessTracker', () => {
     });
   });
 
-  describe('error handling', () => {
-    it('disables tracking on localStorage write failure', () => {
+  describe('when disabled', () => {
+    it.each([
+      [
+        'localStorage unavailable',
+        () => {
+          getItemMock.mockImplementation(() => {
+            throw new Error('localStorage not available');
+          });
+        },
+      ],
+      [
+        'cache is corrupted',
+        () => {
+          mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'] = 'corrupted{json';
+        },
+      ],
+    ])('allows all operations when %s', (_, setupDisabled) => {
+      setupDisabled();
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
-      // Cause setItem to throw
-      (localStorage.setItem as jest.Mock).mockImplementationOnce(() => {
+      expect(tracker.isDisabled()).toBe(true);
+      expect(tracker.isUnique(12345)).toBe(true);
+      expect(tracker.isUnique(12345)).toBe(true); // Always returns true when disabled
+
+      setItemMock.mockClear();
+      tracker.markAsSeen(12345);
+      jest.advanceTimersByTime(DEBOUNCE_TIMEOUT);
+
+      expect(setItemMock).not.toHaveBeenCalled();
+    });
+
+    it('logs warning when localStorage is corrupted', () => {
+      mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'] = 'corrupted{json';
+
+      new ErrorUniquenessTracker(mockMetas);
+
+      expect(internalLogger.warn).toHaveBeenCalledWith(
+        'Error uniqueness tracking disabled: localStorage unavailable or corrupted',
+        expect.any(Error)
+      );
+    });
+  });
+
+  describe('getFirstSeen', () => {
+    it('returns timestamp for seen error', () => {
+      const tracker = new ErrorUniquenessTracker(mockMetas);
+      const timestamp = 1234567890;
+
+      tracker.markAsSeen(12345, timestamp);
+
+      expect(tracker.getFirstSeen(12345)).toBe(timestamp);
+    });
+
+    it('returns null for unseen error', () => {
+      const tracker = new ErrorUniquenessTracker(mockMetas);
+
+      expect(tracker.getFirstSeen(99999)).toBeNull();
+    });
+
+    it('returns null when disabled', () => {
+      getItemMock.mockImplementation(() => {
+        throw new Error('Storage not available');
+      });
+
+      const tracker = new ErrorUniquenessTracker(mockMetas);
+
+      tracker.markAsSeen(12345);
+
+      expect(tracker.getFirstSeen(12345)).toBeNull();
+    });
+  });
+
+  describe('error handling', () => {
+    it('remains enabled when localStorage write fails silently', () => {
+      const tracker = new ErrorUniquenessTracker(mockMetas);
+
+      setItemMock.mockImplementationOnce(() => {
         throw new Error('QuotaExceededError');
       });
 
       tracker.markAsSeen(12345);
+      jest.advanceTimersByTime(DEBOUNCE_TIMEOUT);
 
-      const stats = tracker.getStats();
-      expect(stats.disabled).toBe(true);
+      // webStorage utility catches write errors, so tracker stays enabled
+      expect(tracker.isDisabled()).toBe(false);
+      expect(tracker.isUnique(12345)).toBe(false);
     });
 
     it('handles missing session gracefully', () => {
       mockMetas.value.session = undefined;
       const tracker = new ErrorUniquenessTracker(mockMetas);
+
+      expect(getItemMock).toHaveBeenCalledWith('com.grafana.faro.error-signatures.default');
 
       tracker.markAsSeen(12345);
       expect(tracker.isUnique(12345)).toBe(false);

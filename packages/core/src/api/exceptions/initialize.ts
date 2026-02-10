@@ -172,7 +172,7 @@ function recordErrorOccurrence({
 }) {
   let isUniqueError = true;
 
-  if (!skipUniquenessCheck && uniquenessTracker) {
+  if (!skipUniquenessCheck && uniquenessTracker && !uniquenessTracker.isDisabled()) {
     const errorHash = hashErrorSignature(createErrorSignature(item.payload, config));
     const errorTimestamp = new Date(item.payload.timestamp).getTime();
     const isUnique = uniquenessTracker.isUnique(errorHash);

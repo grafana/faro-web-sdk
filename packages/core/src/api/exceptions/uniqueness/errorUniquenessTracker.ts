@@ -1,8 +1,4 @@
-/**
- * LRU cache for tracking unique error signatures across page reloads.
- * Uses localStorage for persistence within a session.
- */
-
+import { internalLogger } from '../../../internalLogger';
 import type { Metas } from '../../../metas';
 import { stringifyExternalJson } from '../../../utils/json';
 import { getItem, isWebStorageAvailable, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
@@ -84,17 +80,14 @@ export class ErrorUniquenessTracker {
     const now = Date.now();
     const firstSeenTime = timestampMs ?? now;
 
-    // Check if already in cache (shouldn't be if isUnique was called first)
     const existingEntry = this.cache.entries.find((entry) => entry.hash === errorHash);
     if (existingEntry) {
-      // Already tracked, just update timestamps and move to end
       existingEntry.lastSeen = now;
       this.moveToEnd(existingEntry);
       this.saveCache();
       return;
     }
 
-    // Add new entry
     const newEntry: ErrorCacheEntry = {
       hash: errorHash,
       timestamp: firstSeenTime,
@@ -103,19 +96,14 @@ export class ErrorUniquenessTracker {
 
     // LRU eviction: remove oldest if at capacity
     if (this.cache.entries.length >= this.cache.maxSize) {
-      this.cache.entries.shift(); // Remove first (oldest)
+      this.cache.entries.shift();
     }
 
     this.cache.entries.push(newEntry);
     this.saveCache();
   }
 
-  /**
-   * Clear all cached error signatures.
-   * Removes from localStorage.
-   */
   clear(): void {
-    // Cancel any pending save
     if (this.saveTimeout) {
       window.clearTimeout(this.saveTimeout);
       this.saveScheduled = false;
@@ -123,13 +111,9 @@ export class ErrorUniquenessTracker {
 
     this.cache.entries = [];
 
-    // Clear immediately (not debounced)
     this.performSave();
   }
 
-  /**
-   * Get cache statistics for debugging.
-   */
   getStats() {
     return {
       size: this.cache.entries.length,
@@ -138,10 +122,10 @@ export class ErrorUniquenessTracker {
     };
   }
 
-  /**
-   * Get the first seen timestamp for an error hash.
-   * Returns null if not found or disabled.
-   */
+  isDisabled(): boolean {
+    return this.disabled;
+  }
+
   getFirstSeen(errorHash: number): number | null {
     if (this.disabled) {
       return null;
@@ -151,9 +135,6 @@ export class ErrorUniquenessTracker {
     return entry ? entry.timestamp : null;
   }
 
-  /**
-   * Load cache from localStorage using webStorage utility.
-   */
   private loadCache(): ErrorSignatureCache | null {
     try {
       const stored = getItem(this.storageKey, webStorageType.local);
@@ -163,7 +144,6 @@ export class ErrorUniquenessTracker {
 
       const parsed: ErrorSignatureCache = JSON.parse(stored);
 
-      // Validate cache structure
       if (parsed.version !== CACHE_VERSION || !Array.isArray(parsed.entries) || typeof parsed.maxSize !== 'number') {
         // Invalid cache, discard
         this.clearStorage();
@@ -171,24 +151,20 @@ export class ErrorUniquenessTracker {
       }
 
       return parsed;
-    } catch (_error) {
+    } catch (error) {
       // localStorage not available or corrupted
+      internalLogger.warn('Error uniqueness tracking disabled: localStorage unavailable or corrupted', error);
       this.clearStorage();
       this.disabled = true;
       return null;
     }
   }
 
-  /**
-   * Save cache to localStorage (debounced to avoid blocking main thread).
-   * Multiple rapid calls are batched into a single write.
-   */
   private saveCache(): void {
     if (this.disabled || !this.hasLocalStorage) {
       return;
     }
 
-    // Already scheduled, skip
     if (this.saveScheduled) {
       return;
     }
@@ -196,16 +172,12 @@ export class ErrorUniquenessTracker {
     this.saveScheduled = true;
 
     // Debounce: batch multiple saves into one write
-    // 100ms is enough to batch rapid errors, short enough to feel instant
     this.saveTimeout = window.setTimeout(() => {
       this.saveScheduled = false;
       this.performSave();
     }, 100);
   }
 
-  /**
-   * Actually write to localStorage using webStorage utility (called by debounced saveCache).
-   */
   private performSave(): void {
     if (this.disabled || !this.hasLocalStorage) {
       return;
@@ -214,15 +186,13 @@ export class ErrorUniquenessTracker {
     try {
       const serialized = stringifyExternalJson(this.cache);
       setItem(this.storageKey, serialized, webStorageType.local);
-    } catch (_error) {
+    } catch (error) {
       // localStorage write failed - disable tracking and log warning
+      internalLogger.warn('Error uniqueness tracking disabled: localStorage write failed', error);
       this.disabled = true;
     }
   }
 
-  /**
-   * Create empty cache structure.
-   */
   private createEmptyCache(maxSize: number): ErrorSignatureCache {
     return {
       version: CACHE_VERSION,
@@ -231,9 +201,6 @@ export class ErrorUniquenessTracker {
     };
   }
 
-  /**
-   * Clear storage key using webStorage utility.
-   */
   private clearStorage(): void {
     try {
       removeItem(this.storageKey, webStorageType.local);
@@ -242,10 +209,6 @@ export class ErrorUniquenessTracker {
     }
   }
 
-  /**
-   * Move an entry to the end of the cache (mark as most recently used).
-   * Uses filter to remove and push to add - more modern and avoids double search.
-   */
   private moveToEnd(entry: ErrorCacheEntry): void {
     this.cache.entries = this.cache.entries.filter((e) => e !== entry);
     this.cache.entries.push(entry);
