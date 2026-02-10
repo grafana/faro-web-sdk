@@ -186,9 +186,9 @@ function isErrorIgnored(ignoreErrors: Patterns, error: ErrorWithIndexProperties)
   return shouldIgnoreEvent(ignoreErrors, message + ' ' + name + ' ' + stack);
 }
 
-function addErrorFirstSeenToContext(item: TransportItem<ExceptionEvent>, timestampMs: number): void {
+function addErrorFirstSeenToContext(item: TransportItem<ExceptionEvent>, timestamp: number): void {
   item.payload.context = {
     ...item.payload.context,
-    errorFirstSeen: String(timestampMs),
+    firstSeenInSession: String(timestamp),
   };
 }
