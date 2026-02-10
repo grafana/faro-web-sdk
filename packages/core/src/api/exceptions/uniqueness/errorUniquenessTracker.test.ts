@@ -88,19 +88,28 @@ describe('ErrorUniquenessTracker', () => {
   describe('initialization', () => {
     it('creates empty cache when localStorage is empty', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
-      const stats = tracker.getStats();
 
-      expect(stats.size).toBe(0);
-      expect(stats.maxSize).toBe(500); // default
-      expect(stats.disabled).toBe(false);
+      // Verify cache is empty by checking that errors are unique
+      expect(tracker.isUnique(12345)).toBe(true);
       expect(tracker.isDisabled()).toBe(false);
     });
 
     it('respects custom maxSize', () => {
-      const tracker = new ErrorUniquenessTracker(mockMetas, 100);
-      const stats = tracker.getStats();
+      const tracker = new ErrorUniquenessTracker(mockMetas, 2);
 
-      expect(stats.maxSize).toBe(100);
+      // Fill to capacity
+      tracker.markAsSeen(111);
+      tracker.markAsSeen(222);
+
+      // Both should be cached
+      expect(tracker.isUnique(111)).toBe(false);
+      expect(tracker.isUnique(222)).toBe(false);
+
+      // Add one more - should evict the oldest (111)
+      tracker.markAsSeen(333);
+      expect(tracker.isUnique(111)).toBe(true); // evicted
+      expect(tracker.isUnique(222)).toBe(false); // still cached
+      expect(tracker.isUnique(333)).toBe(false); // newly added
     });
 
     it('uses session ID in storage key', () => {
@@ -121,9 +130,13 @@ describe('ErrorUniquenessTracker', () => {
       mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'] = JSON.stringify(existingCache);
 
       const tracker = new ErrorUniquenessTracker(mockMetas);
-      const stats = tracker.getStats();
 
-      expect(stats.size).toBe(2);
+      // Verify both errors are loaded (not unique)
+      expect(tracker.isUnique(12345)).toBe(false);
+      expect(tracker.isUnique(67890)).toBe(false);
+      // Verify timestamps are preserved
+      expect(tracker.getFirstSeen(12345)).toBe(1000);
+      expect(tracker.getFirstSeen(67890)).toBe(2000);
     });
 
     it('discards invalid cache version', () => {
@@ -135,9 +148,9 @@ describe('ErrorUniquenessTracker', () => {
       mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'] = JSON.stringify(invalidCache);
 
       const tracker = new ErrorUniquenessTracker(mockMetas);
-      const stats = tracker.getStats();
 
-      expect(stats.size).toBe(0);
+      // Verify cache was discarded (errors are unique)
+      expect(tracker.isUnique(12345)).toBe(true);
       expect(removeItemMock).toHaveBeenCalled();
     });
 
@@ -145,10 +158,9 @@ describe('ErrorUniquenessTracker', () => {
       mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'] = 'corrupted{json';
 
       const tracker = new ErrorUniquenessTracker(mockMetas);
-      const stats = tracker.getStats();
 
-      expect(stats.size).toBe(0);
-      expect(stats.disabled).toBe(false);
+      // Verify cache is empty (errors are unique)
+      expect(tracker.isUnique(12345)).toBe(true);
       expect(tracker.isDisabled()).toBe(false);
     });
 
@@ -216,10 +228,13 @@ describe('ErrorUniquenessTracker', () => {
     it('adds error hash to cache', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
+      // Error is unique before marking as seen
+      expect(tracker.isUnique(12345)).toBe(true);
+
       tracker.markAsSeen(12345);
 
-      const stats = tracker.getStats();
-      expect(stats.size).toBe(1);
+      // Error is now not unique (cached)
+      expect(tracker.isUnique(12345)).toBe(false);
     });
 
     it('persists to localStorage', () => {
@@ -240,8 +255,11 @@ describe('ErrorUniquenessTracker', () => {
       tracker.markAsSeen(12345);
       tracker.markAsSeen(12345);
 
-      const stats = tracker.getStats();
-      expect(stats.size).toBe(1);
+      // Verify only one entry by checking localStorage
+      jest.advanceTimersByTime(DEBOUNCE_TIMEOUT);
+      const savedData = mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'];
+      const saved = JSON.parse(savedData!);
+      expect(saved.entries).toHaveLength(1);
     });
 
     it('evicts oldest entry when at capacity', () => {
@@ -259,45 +277,6 @@ describe('ErrorUniquenessTracker', () => {
     });
   });
 
-  describe('clear', () => {
-    it('removes all entries', () => {
-      const tracker = new ErrorUniquenessTracker(mockMetas);
-
-      tracker.markAsSeen(111);
-      tracker.markAsSeen(222);
-      tracker.clear();
-
-      const stats = tracker.getStats();
-      expect(stats.size).toBe(0);
-    });
-
-    it('persists cleared state to localStorage', () => {
-      const tracker = new ErrorUniquenessTracker(mockMetas);
-
-      tracker.markAsSeen(111);
-      tracker.clear();
-
-      const savedData = mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'];
-      const saved = JSON.parse(savedData!);
-      expect(saved.entries).toHaveLength(0);
-    });
-  });
-
-  describe('getStats', () => {
-    it('returns cache statistics', () => {
-      const tracker = new ErrorUniquenessTracker(mockMetas, 100);
-      tracker.markAsSeen(111);
-      tracker.markAsSeen(222);
-
-      const stats = tracker.getStats();
-
-      expect(stats).toEqual({
-        size: 2,
-        maxSize: 100,
-        disabled: false,
-      });
-    });
-  });
 
   describe('localStorage persistence across instances', () => {
     it('shares cache between instances with same session', () => {
@@ -486,9 +465,6 @@ describe('ErrorUniquenessTracker', () => {
       // Previously seen errors should now be unique in fresh cache
       expect(tracker.isUnique(12345)).toBe(true);
       expect(tracker.isUnique(67890)).toBe(true);
-
-      // Cache should be empty (size 0)
-      expect(tracker.getStats().size).toBe(0);
     });
 
     it('loads persisted cache when transitioning from pending initialization to real session', () => {
@@ -518,9 +494,6 @@ describe('ErrorUniquenessTracker', () => {
 
       // Error should still be not unique (cache should have persisted)
       expect(tracker.isUnique(12345)).toBe(false);
-
-      // Cache size should be 1 (not 0)
-      expect(tracker.getStats().size).toBe(1);
 
       // First seen timestamp should be preserved
       expect(tracker.getFirstSeen(12345)).toBe(timestamp);
@@ -568,9 +541,6 @@ describe('ErrorUniquenessTracker', () => {
       // Both errors should still be not unique (cache persisted across reload)
       expect(tracker2.isUnique(11111)).toBe(false);
       expect(tracker2.isUnique(22222)).toBe(false);
-
-      // Cache should contain both entries
-      expect(tracker2.getStats().size).toBe(2);
 
       // First seen timestamps should be preserved
       expect(tracker2.getFirstSeen(11111)).toBe(timestamp1);

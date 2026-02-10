@@ -126,25 +126,6 @@ export class ErrorUniquenessTracker {
     this.saveCache();
   }
 
-  clear(): void {
-    if (this.saveTimeout) {
-      window.clearTimeout(this.saveTimeout);
-      this.saveScheduled = false;
-    }
-
-    this.cache.entries = [];
-
-    this.performSave();
-  }
-
-  getStats() {
-    return {
-      size: this.cache.entries.length,
-      maxSize: this.cache.maxSize,
-      disabled: this.disabled,
-    };
-  }
-
   isDisabled(): boolean {
     return this.disabled;
   }
@@ -298,15 +279,13 @@ export class ErrorUniquenessTracker {
         // No persisted cache, but we have errors tracked during initialization
         // Migrate them to the new session key
         this.performSave();
-        internalLogger.debug(`Migrated ${this.cache.entries.length} pre-initialization errors to session ${newSessionId}`);
+        internalLogger.debug(
+          `Migrated ${this.cache.entries.length} pre-initialization errors to session ${newSessionId}`
+        );
       } else {
-        // No persisted cache and no errors tracked yet
-        // Keep the empty cache from initialization
         internalLogger.debug('No cache to load or migrate, starting with empty cache');
       }
     } catch (error) {
-      // loadCache() and performSave() handle their own errors,
-      // but catch any unexpected errors to prevent session transition failure
       internalLogger.warn('Unexpected error during cache initialization transition', error);
     }
   }
