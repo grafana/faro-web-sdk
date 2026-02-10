@@ -38,12 +38,9 @@ export class ErrorUniquenessTracker {
   constructor(metas: Metas, maxSize: number = DEFAULT_MAX_SIZE) {
     this.metas = metas;
     const sessionId = this.metas.value.session?.id ?? 'default';
+
     this.storageKey = `com.grafana.faro.error-signatures.${sessionId}`;
-
-    // Check localStorage availability once at construction using webStorage utility
     this.hasLocalStorage = isWebStorageAvailable(webStorageType.local);
-
-    // Try to load from storage or initialize new cache
     this.cache = this.loadCache() || this.createEmptyCache(maxSize);
   }
 
@@ -62,16 +59,14 @@ export class ErrorUniquenessTracker {
     const entry = this.cache.entries.find((entry) => entry.hash === errorHash);
 
     if (!entry) {
-      // Not found - it's unique
       return true;
     }
 
-    // Found - update lastSeen and move to end (most recently used)
     entry.lastSeen = Date.now();
     this.moveToEnd(entry);
     this.saveCache();
 
-    return false; // Not unique (duplicate)
+    return false;
   }
 
   /**
