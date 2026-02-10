@@ -17,6 +17,7 @@ import {
 } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
+import { APIEvent } from '../types';
 import type { UserActionsAPI } from '../userActions';
 import { addItemToUserActionBuffer } from '../userActions/initialize';
 import { shouldIgnoreEvent } from '../utils';
@@ -129,22 +130,13 @@ export function initializeExceptionsAPI({
 
       lastPayload = testingPayload;
 
-      // Uniqueness tracking (session-wide)
-      if (!skipUniquenessCheck && uniquenessTracker) {
-        const errorHash = hashErrorSignature(createErrorSignature(item.payload, config));
-        const errorTimestamp = new Date(item.payload.timestamp).getTime();
-        const isUnique = uniquenessTracker.isUnique(errorHash);
-
-        if (!isUnique) {
-          const firstSeen = uniquenessTracker.getFirstSeen(errorHash);
-          if (firstSeen) {
-            addErrorFirstSeenToContext(item, firstSeen);
-          }
-        } else {
-          addErrorFirstSeenToContext(item, errorTimestamp);
-          uniquenessTracker.markAsSeen(errorHash, errorTimestamp);
-        }
-      }
+      recordErrorOccurrence({
+        skipUniquenessCheck,
+        uniquenessTracker,
+        item,
+        config,
+        metas,
+      });
 
       internalLogger.debug('Pushing exception\n', item);
 
@@ -163,6 +155,55 @@ export function initializeExceptionsAPI({
     getStacktraceParser,
     pushError,
   };
+}
+
+function recordErrorOccurrence({
+  skipUniquenessCheck,
+  uniquenessTracker,
+  item,
+  config,
+  metas,
+}: {
+  skipUniquenessCheck: boolean | undefined;
+  uniquenessTracker: ErrorUniquenessTracker | null;
+  item: TransportItem<ExceptionEvent<boolean | undefined>>;
+  config: Config<APIEvent>;
+  metas: Metas;
+}) {
+  let isUniqueError = true;
+
+  if (!skipUniquenessCheck && uniquenessTracker) {
+    const errorHash = hashErrorSignature(createErrorSignature(item.payload, config));
+    const errorTimestamp = new Date(item.payload.timestamp).getTime();
+    const isUnique = uniquenessTracker.isUnique(errorHash);
+
+    isUniqueError = isUnique;
+
+    if (!isUnique) {
+      const firstSeen = uniquenessTracker.getFirstSeen(errorHash);
+      if (firstSeen) {
+        addErrorFirstSeenToContext(item, firstSeen);
+      }
+    } else {
+      addErrorFirstSeenToContext(item, errorTimestamp);
+      uniquenessTracker.markAsSeen(errorHash, errorTimestamp);
+    }
+  }
+
+  const sessionAttributes = metas.value.session?.attributes;
+  const currentTotalErrors = parseInt(sessionAttributes?.['totalErrors'] ?? '0', 10);
+  const currentUniqueErrors = parseInt(sessionAttributes?.['uniqueErrors'] ?? '0', 10);
+
+  metas.add({
+    session: {
+      ...metas.value.session,
+      attributes: {
+        ...sessionAttributes,
+        totalErrors: String(currentTotalErrors + 1),
+        uniqueErrors: String(currentUniqueErrors + (isUniqueError ? 1 : 0)),
+      },
+    },
+  });
 }
 
 function parseCause(error: ErrorWithIndexProperties): {} | { cause: string } {
