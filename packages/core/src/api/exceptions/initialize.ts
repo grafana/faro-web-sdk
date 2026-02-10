@@ -171,7 +171,7 @@ function recordErrorOccurrence({
   if (uniquenessTracker && !uniquenessTracker.isDisabled()) {
     const errorHash = hashErrorSignature(createErrorSignature(item.payload, config));
     const errorTimestamp = new Date(item.payload.timestamp).getTime();
-    isUniqueError = uniquenessTracker.isUnique(errorHash);
+    isUniqueError = uniquenessTracker.shouldCountAsUnique(errorHash);
 
     if (!isUniqueError) {
       const firstSeen = uniquenessTracker.getFirstSeen(errorHash);

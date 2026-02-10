@@ -64,15 +64,19 @@ export class ErrorUniquenessTracker {
   }
 
   /**
-   * Check if an error hash has been seen before.
-   * Updates lastSeen timestamp and moves to end of LRU if found.
+   * Determines whether an error should be counted as unique for session statistics.
+   * Updates lastSeen timestamp and moves to end of LRU if found in cache.
    *
    * @param errorHash - Hash of error signature
-   * @returns true if error is unique (not seen before), false if duplicate
+   * @returns true if error should be counted as unique, false if it's a known duplicate
+   *
+   * Note: Returns true when tracking is disabled (fail-open behavior).
+   * This ensures errors are still reported when tracking is unavailable due to
+   * localStorage failures, quota exceeded, or other issues.
    */
-  isUnique(errorHash: number): boolean {
+  shouldCountAsUnique(errorHash: number): boolean {
     if (this.disabled) {
-      return true; // Always unique if disabled
+      return true; // Fail-open: treat all errors as unique when tracking unavailable
     }
 
     const entry = this.cache.entries.find((entry) => entry.hash === errorHash);
@@ -132,7 +136,7 @@ export class ErrorUniquenessTracker {
 
   getFirstSeen(errorHash: number): number | null {
     if (this.disabled) {
-      return null;
+      return null; // No timestamp available when tracking unavailable
     }
 
     const entry = this.cache.entries.find((entry) => entry.hash === errorHash);

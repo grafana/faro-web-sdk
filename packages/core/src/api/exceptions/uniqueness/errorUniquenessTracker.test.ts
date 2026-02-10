@@ -90,7 +90,7 @@ describe('ErrorUniquenessTracker', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
       // Verify cache is empty by checking that errors are unique
-      expect(tracker.isUnique(12345)).toBe(true);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(true);
       expect(tracker.isDisabled()).toBe(false);
     });
 
@@ -102,14 +102,14 @@ describe('ErrorUniquenessTracker', () => {
       tracker.markAsSeen(222);
 
       // Both should be cached
-      expect(tracker.isUnique(111)).toBe(false);
-      expect(tracker.isUnique(222)).toBe(false);
+      expect(tracker.shouldCountAsUnique(111)).toBe(false);
+      expect(tracker.shouldCountAsUnique(222)).toBe(false);
 
       // Add one more - should evict the oldest (111)
       tracker.markAsSeen(333);
-      expect(tracker.isUnique(111)).toBe(true); // evicted
-      expect(tracker.isUnique(222)).toBe(false); // still cached
-      expect(tracker.isUnique(333)).toBe(false); // newly added
+      expect(tracker.shouldCountAsUnique(111)).toBe(true); // evicted
+      expect(tracker.shouldCountAsUnique(222)).toBe(false); // still cached
+      expect(tracker.shouldCountAsUnique(333)).toBe(false); // newly added
     });
 
     it('uses session ID in storage key', () => {
@@ -132,8 +132,8 @@ describe('ErrorUniquenessTracker', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
       // Verify both errors are loaded (not unique)
-      expect(tracker.isUnique(12345)).toBe(false);
-      expect(tracker.isUnique(67890)).toBe(false);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(false);
+      expect(tracker.shouldCountAsUnique(67890)).toBe(false);
       // Verify timestamps are preserved
       expect(tracker.getFirstSeen(12345)).toBe(1000);
       expect(tracker.getFirstSeen(67890)).toBe(2000);
@@ -150,7 +150,7 @@ describe('ErrorUniquenessTracker', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
       // Verify cache was discarded (errors are unique)
-      expect(tracker.isUnique(12345)).toBe(true);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(true);
       expect(removeItemMock).toHaveBeenCalled();
     });
 
@@ -160,7 +160,7 @@ describe('ErrorUniquenessTracker', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
       // Verify cache is empty (errors are unique)
-      expect(tracker.isUnique(12345)).toBe(true);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(true);
       expect(tracker.isDisabled()).toBe(false);
     });
 
@@ -176,9 +176,9 @@ describe('ErrorUniquenessTracker', () => {
       );
 
       // Verify tracker is still functional
-      expect(tracker.isUnique(12345)).toBe(true);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(true);
       tracker.markAsSeen(12345);
-      expect(tracker.isUnique(12345)).toBe(false);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(false);
 
       // Verify it can save to localStorage
       markAsSeenAndFlush(tracker, 67890);
@@ -186,10 +186,10 @@ describe('ErrorUniquenessTracker', () => {
     });
   });
 
-  describe('isUnique', () => {
+  describe('shouldCountAsUnique', () => {
     it('returns true for first occurrence of error', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
-      const result = tracker.isUnique(12345);
+      const result = tracker.shouldCountAsUnique(12345);
 
       expect(result).toBe(true);
     });
@@ -198,7 +198,7 @@ describe('ErrorUniquenessTracker', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
       tracker.markAsSeen(12345);
-      const result = tracker.isUnique(12345);
+      const result = tracker.shouldCountAsUnique(12345);
 
       expect(result).toBe(false);
     });
@@ -212,15 +212,15 @@ describe('ErrorUniquenessTracker', () => {
       tracker.markAsSeen(333);
 
       // Access first entry (should move to end)
-      tracker.isUnique(111);
+      tracker.shouldCountAsUnique(111);
 
       // Add fourth entry (should evict 222, not 111)
       tracker.markAsSeen(444);
 
-      expect(tracker.isUnique(222)).toBe(true); // 222 was evicted
-      expect(tracker.isUnique(111)).toBe(false); // 111 still in cache
-      expect(tracker.isUnique(333)).toBe(false); // 333 still in cache
-      expect(tracker.isUnique(444)).toBe(false); // 444 still in cache
+      expect(tracker.shouldCountAsUnique(222)).toBe(true); // 222 was evicted
+      expect(tracker.shouldCountAsUnique(111)).toBe(false); // 111 still in cache
+      expect(tracker.shouldCountAsUnique(333)).toBe(false); // 333 still in cache
+      expect(tracker.shouldCountAsUnique(444)).toBe(false); // 444 still in cache
     });
   });
 
@@ -229,12 +229,12 @@ describe('ErrorUniquenessTracker', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
       // Error is unique before marking as seen
-      expect(tracker.isUnique(12345)).toBe(true);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(true);
 
       tracker.markAsSeen(12345);
 
       // Error is now not unique (cached)
-      expect(tracker.isUnique(12345)).toBe(false);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(false);
     });
 
     it('persists to localStorage', () => {
@@ -270,10 +270,10 @@ describe('ErrorUniquenessTracker', () => {
       tracker.markAsSeen(333);
       tracker.markAsSeen(444); // Should evict 111
 
-      expect(tracker.isUnique(111)).toBe(true); // Evicted
-      expect(tracker.isUnique(222)).toBe(false); // Still in cache
-      expect(tracker.isUnique(333)).toBe(false); // Still in cache
-      expect(tracker.isUnique(444)).toBe(false); // Still in cache
+      expect(tracker.shouldCountAsUnique(111)).toBe(true); // Evicted
+      expect(tracker.shouldCountAsUnique(222)).toBe(false); // Still in cache
+      expect(tracker.shouldCountAsUnique(333)).toBe(false); // Still in cache
+      expect(tracker.shouldCountAsUnique(444)).toBe(false); // Still in cache
     });
   });
 
@@ -286,7 +286,7 @@ describe('ErrorUniquenessTracker', () => {
       // Create new instance (simulates page reload)
       const tracker2 = new ErrorUniquenessTracker(mockMetas);
 
-      expect(tracker2.isUnique(12345)).toBe(false);
+      expect(tracker2.shouldCountAsUnique(12345)).toBe(false);
     });
 
     it('does not share cache between different sessions', () => {
@@ -297,7 +297,7 @@ describe('ErrorUniquenessTracker', () => {
       mockMetas.value.session!.id = 'different-session';
       const tracker2 = new ErrorUniquenessTracker(mockMetas);
 
-      expect(tracker2.isUnique(12345)).toBe(true);
+      expect(tracker2.shouldCountAsUnique(12345)).toBe(true);
     });
   });
 
@@ -313,20 +313,20 @@ describe('ErrorUniquenessTracker', () => {
       tracker.markAsSeen(5);
 
       // Access items 2 and 4 (moves them to end)
-      tracker.isUnique(2);
-      tracker.isUnique(4);
+      tracker.shouldCountAsUnique(2);
+      tracker.shouldCountAsUnique(4);
 
       // Add two more items (should evict 1 and 3)
       tracker.markAsSeen(6);
       tracker.markAsSeen(7);
 
-      expect(tracker.isUnique(1)).toBe(true); // Evicted
-      expect(tracker.isUnique(3)).toBe(true); // Evicted
-      expect(tracker.isUnique(2)).toBe(false); // Still in cache
-      expect(tracker.isUnique(4)).toBe(false); // Still in cache
-      expect(tracker.isUnique(5)).toBe(false); // Still in cache
-      expect(tracker.isUnique(6)).toBe(false); // Still in cache
-      expect(tracker.isUnique(7)).toBe(false); // Still in cache
+      expect(tracker.shouldCountAsUnique(1)).toBe(true); // Evicted
+      expect(tracker.shouldCountAsUnique(3)).toBe(true); // Evicted
+      expect(tracker.shouldCountAsUnique(2)).toBe(false); // Still in cache
+      expect(tracker.shouldCountAsUnique(4)).toBe(false); // Still in cache
+      expect(tracker.shouldCountAsUnique(5)).toBe(false); // Still in cache
+      expect(tracker.shouldCountAsUnique(6)).toBe(false); // Still in cache
+      expect(tracker.shouldCountAsUnique(7)).toBe(false); // Still in cache
     });
   });
 
@@ -339,8 +339,8 @@ describe('ErrorUniquenessTracker', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
       expect(tracker.isDisabled()).toBe(true);
-      expect(tracker.isUnique(12345)).toBe(true);
-      expect(tracker.isUnique(12345)).toBe(true); // Always returns true when disabled
+      expect(tracker.shouldCountAsUnique(12345)).toBe(true);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(true); // Always returns true when disabled
 
       setItemMock.mockClear();
       tracker.markAsSeen(12345);
@@ -421,7 +421,7 @@ describe('ErrorUniquenessTracker', () => {
 
       // webStorage utility catches write errors, so tracker stays enabled
       expect(tracker.isDisabled()).toBe(false);
-      expect(tracker.isUnique(12345)).toBe(false);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(false);
     });
 
     it('handles missing session gracefully', () => {
@@ -431,7 +431,7 @@ describe('ErrorUniquenessTracker', () => {
       expect(getItemMock).toHaveBeenCalledWith('com.grafana.faro.error-signatures.__pending-initialization__');
 
       tracker.markAsSeen(12345);
-      expect(tracker.isUnique(12345)).toBe(false);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(false);
     });
   });
 
@@ -442,8 +442,8 @@ describe('ErrorUniquenessTracker', () => {
       // Mark errors as seen in the first session
       markAsSeenAndFlush(tracker, 12345);
       markAsSeenAndFlush(tracker, 67890);
-      expect(tracker.isUnique(12345)).toBe(false);
-      expect(tracker.isUnique(67890)).toBe(false);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(false);
+      expect(tracker.shouldCountAsUnique(67890)).toBe(false);
 
       const oldSessionKey = 'com.grafana.faro.error-signatures.test-session-123';
       expect(mockLocalStorage[oldSessionKey]).toBeDefined();
@@ -463,8 +463,8 @@ describe('ErrorUniquenessTracker', () => {
       expect(mockLocalStorage[oldSessionKey]).toBeUndefined();
 
       // Previously seen errors should now be unique in fresh cache
-      expect(tracker.isUnique(12345)).toBe(true);
-      expect(tracker.isUnique(67890)).toBe(true);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(true);
+      expect(tracker.shouldCountAsUnique(67890)).toBe(true);
     });
 
     it('loads persisted cache when transitioning from pending initialization to real session', () => {
@@ -475,7 +475,7 @@ describe('ErrorUniquenessTracker', () => {
       // Mark error as seen and flush to localStorage
       const timestamp = Date.now();
       markAsSeenAndFlush(tracker, 12345, timestamp);
-      expect(tracker.isUnique(12345)).toBe(false);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(false);
 
       // Verify cache was saved (even though to __pending-initialization__ key initially)
       const pendingKey = 'com.grafana.faro.error-signatures.__pending-initialization__';
@@ -493,7 +493,7 @@ describe('ErrorUniquenessTracker', () => {
       });
 
       // Error should still be not unique (cache should have persisted)
-      expect(tracker.isUnique(12345)).toBe(false);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(false);
 
       // First seen timestamp should be preserved
       expect(tracker.getFirstSeen(12345)).toBe(timestamp);
@@ -512,8 +512,8 @@ describe('ErrorUniquenessTracker', () => {
       const timestamp2 = Date.now() + 1000;
       markAsSeenAndFlush(tracker1, 11111, timestamp1);
       markAsSeenAndFlush(tracker1, 22222, timestamp2);
-      expect(tracker1.isUnique(11111)).toBe(false);
-      expect(tracker1.isUnique(22222)).toBe(false);
+      expect(tracker1.shouldCountAsUnique(11111)).toBe(false);
+      expect(tracker1.shouldCountAsUnique(22222)).toBe(false);
 
       // Verify cache was saved to localStorage
       const sessionKey = 'com.grafana.faro.error-signatures.test-session-123';
@@ -539,8 +539,8 @@ describe('ErrorUniquenessTracker', () => {
       });
 
       // Both errors should still be not unique (cache persisted across reload)
-      expect(tracker2.isUnique(11111)).toBe(false);
-      expect(tracker2.isUnique(22222)).toBe(false);
+      expect(tracker2.shouldCountAsUnique(11111)).toBe(false);
+      expect(tracker2.shouldCountAsUnique(22222)).toBe(false);
 
       // First seen timestamps should be preserved
       expect(tracker2.getFirstSeen(11111)).toBe(timestamp1);
@@ -551,7 +551,7 @@ describe('ErrorUniquenessTracker', () => {
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
       markAsSeenAndFlush(tracker, 12345);
-      expect(tracker.isUnique(12345)).toBe(false);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(false);
 
       const metasListener = (mockMetas.addListener as jest.Mock).mock.calls[0][0];
 
@@ -570,7 +570,7 @@ describe('ErrorUniquenessTracker', () => {
       expect(removeItemMock).not.toHaveBeenCalled();
 
       // Error should still be in cache
-      expect(tracker.isUnique(12345)).toBe(false);
+      expect(tracker.shouldCountAsUnique(12345)).toBe(false);
     });
   });
 });
