@@ -491,24 +491,90 @@ describe('ErrorUniquenessTracker', () => {
       expect(tracker.getStats().size).toBe(0);
     });
 
-    it('handles session change from pending initialization to actual session ID', () => {
-      // Start with no session (uses '__pending-initialization__')
+    it('loads persisted cache when transitioning from pending initialization to real session', () => {
+      // Start with no session (simulates pre-initialization)
       mockMetas.value.session = undefined;
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
-      markAsSeenAndFlush(tracker, 11111);
-      expect(tracker.isUnique(11111)).toBe(false);
+      // Mark error as seen and flush to localStorage
+      const timestamp = Date.now();
+      markAsSeenAndFlush(tracker, 12345, timestamp);
+      expect(tracker.isUnique(12345)).toBe(false);
 
+      // Verify cache was saved (even though to __pending-initialization__ key initially)
+      const pendingKey = 'com.grafana.faro.error-signatures.__pending-initialization__';
+      expect(mockLocalStorage[pendingKey]).toBeDefined();
+
+      // Get the listener that was registered
       const metasListener = (mockMetas.addListener as jest.Mock).mock.calls[0][0];
 
+      // Simulate session initialization with real session ID
       metasListener({
         session: {
-          id: 'actual-session-id',
+          id: 'actual-session-456',
           attributes: {},
         },
       });
 
-      expect(tracker.isUnique(11111)).toBe(true);
+      // Error should still be not unique (cache should have persisted)
+      expect(tracker.isUnique(12345)).toBe(false);
+
+      // Cache size should be 1 (not 0)
+      expect(tracker.getStats().size).toBe(1);
+
+      // First seen timestamp should be preserved
+      expect(tracker.getFirstSeen(12345)).toBe(timestamp);
+
+      // Cache should now be at the real session key
+      const actualKey = 'com.grafana.faro.error-signatures.actual-session-456';
+      expect(mockLocalStorage[actualKey]).toBeDefined();
+    });
+
+    it('simulates page reload with same session - cache persists', () => {
+      // First page load: create tracker with real session
+      const tracker1 = new ErrorUniquenessTracker(mockMetas);
+
+      // Mark errors as seen and flush to localStorage
+      const timestamp1 = Date.now();
+      const timestamp2 = Date.now() + 1000;
+      markAsSeenAndFlush(tracker1, 11111, timestamp1);
+      markAsSeenAndFlush(tracker1, 22222, timestamp2);
+      expect(tracker1.isUnique(11111)).toBe(false);
+      expect(tracker1.isUnique(22222)).toBe(false);
+
+      // Verify cache was saved to localStorage
+      const sessionKey = 'com.grafana.faro.error-signatures.test-session-123';
+      expect(mockLocalStorage[sessionKey]).toBeDefined();
+      const savedCache = JSON.parse(mockLocalStorage[sessionKey]!);
+      expect(savedCache.entries).toHaveLength(2);
+
+      // Simulate page reload: reset session to undefined (pre-initialization state)
+      mockMetas.value.session = undefined;
+
+      // Create new tracker instance (simulates page reload)
+      const tracker2 = new ErrorUniquenessTracker(mockMetas);
+
+      // Get the listener for tracker2
+      const metasListener = (mockMetas.addListener as jest.Mock).mock.calls[1][0];
+
+      // Simulate session instrumentation initializing with same session ID
+      metasListener({
+        session: {
+          id: 'test-session-123',
+          attributes: {},
+        },
+      });
+
+      // Both errors should still be not unique (cache persisted across reload)
+      expect(tracker2.isUnique(11111)).toBe(false);
+      expect(tracker2.isUnique(22222)).toBe(false);
+
+      // Cache should contain both entries
+      expect(tracker2.getStats().size).toBe(2);
+
+      // First seen timestamps should be preserved
+      expect(tracker2.getFirstSeen(11111)).toBe(timestamp1);
+      expect(tracker2.getFirstSeen(22222)).toBe(timestamp2);
     });
 
     it('does not invalidate cache if session ID stays the same', () => {

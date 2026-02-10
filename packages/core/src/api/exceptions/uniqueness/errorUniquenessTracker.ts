@@ -49,10 +49,10 @@ export class ErrorUniquenessTracker {
   constructor(metas: Metas, maxSize: number = DEFAULT_MAX_SIZE) {
     this.metas = metas;
     this.maxSize = maxSize;
-    this.currentSessionId = this.metas.value.session?.id ?? PENDING_SESSION_ID;
-
-    this.storageKey = `com.grafana.faro.error-signatures.${this.currentSessionId}`;
     this.hasLocalStorage = isWebStorageAvailable(webStorageType.local);
+
+    this.currentSessionId = this.metas.value.session?.id ?? PENDING_SESSION_ID;
+    this.storageKey = `com.grafana.faro.error-signatures.${this.currentSessionId}`;
     this.cache = this.loadCache() ?? this.createEmptyCache(maxSize);
 
     this.metas.addListener((meta) => {
@@ -243,30 +243,71 @@ export class ErrorUniquenessTracker {
   }
 
   /**
-   * Handle session ID change by deleting old error cache and switching to new session cache.
-   * This ensures error uniqueness is properly scoped to each session and prevents
-   * localStorage bloat from accumulating old session error caches.
+   * Handle session ID change by managing cache persistence and cleanup.
    *
-   * Note: This only deletes the error cache, NOT the Faro session object in web storage.
+   * When transitioning from initialization (__pending-initialization__) to a real session ID:
+   * - Attempts to load persisted cache for the real session from localStorage
+   * - Preserves error tracking across page reloads within the same session
+   *
+   * When transitioning between real session IDs (session expiration):
+   * - Deletes the old session's error cache from localStorage
+   * - Starts with fresh empty cache for the new session
+   *
+   * Note: This only manages the error cache, NOT the Faro session object in web storage.
    */
   private handleSessionChange(newSessionId: string): void {
-    internalLogger.debug(`Session changed from ${this.currentSessionId} to ${newSessionId}, invalidating error cache`);
-
     // Clear any pending saves for the old session
     if (this.saveTimeout) {
       window.clearTimeout(this.saveTimeout);
       this.saveScheduled = false;
     }
 
-    // Delete the old session's error cache from localStorage
-    // Note: This only removes the error cache, not the Faro session object
-    this.clearStorage();
+    const isTransitioningFromInit = this.currentSessionId === PENDING_SESSION_ID;
 
-    // Update to new session
+    if (isTransitioningFromInit) {
+      this.handleInitializationTransition(newSessionId);
+    } else {
+      // Handle session expiration: clear old cache and start fresh
+      internalLogger.debug(`Session expired: ${this.currentSessionId} → ${newSessionId}, starting fresh cache`);
+
+      this.clearStorage();
+      this.currentSessionId = newSessionId;
+      this.storageKey = `com.grafana.faro.error-signatures.${newSessionId}`;
+      this.cache = this.createEmptyCache(this.maxSize);
+    }
+  }
+
+  /**
+   * Handle transition from initialization state to real session.
+   * Attempts to load persisted cache or migrate pre-initialization errors.
+   */
+  private handleInitializationTransition(newSessionId: string): void {
+    internalLogger.debug(`Session initialized: ${newSessionId}, loading persisted cache`);
+
     this.currentSessionId = newSessionId;
     this.storageKey = `com.grafana.faro.error-signatures.${newSessionId}`;
 
-    // Start with fresh cache for new session
-    this.cache = this.createEmptyCache(this.maxSize);
+    try {
+      const loadedCache = this.loadCache();
+
+      if (loadedCache) {
+        // Found persisted cache for this session (page reload scenario)
+        this.cache = loadedCache;
+        internalLogger.debug(`Loaded ${loadedCache.entries.length} error entries from persisted cache`);
+      } else if (this.cache.entries.length > 0) {
+        // No persisted cache, but we have errors tracked during initialization
+        // Migrate them to the new session key
+        this.performSave();
+        internalLogger.debug(`Migrated ${this.cache.entries.length} pre-initialization errors to session ${newSessionId}`);
+      } else {
+        // No persisted cache and no errors tracked yet
+        // Keep the empty cache from initialization
+        internalLogger.debug('No cache to load or migrate, starting with empty cache');
+      }
+    } catch (error) {
+      // loadCache() and performSave() handle their own errors,
+      // but catch any unexpected errors to prevent session transition failure
+      internalLogger.warn('Unexpected error during cache initialization transition', error);
+    }
   }
 }
