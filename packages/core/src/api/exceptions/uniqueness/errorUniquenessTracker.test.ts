@@ -141,14 +141,33 @@ describe('ErrorUniquenessTracker', () => {
       expect(removeItemMock).toHaveBeenCalled();
     });
 
-    it('handles corrupted cache data', () => {
+    it('recreates cache when data is corrupted', () => {
       mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'] = 'corrupted{json';
 
       const tracker = new ErrorUniquenessTracker(mockMetas);
       const stats = tracker.getStats();
 
       expect(stats.size).toBe(0);
-      expect(stats.disabled).toBe(true);
+      expect(stats.disabled).toBe(false);
+      expect(tracker.isDisabled()).toBe(false);
+    });
+
+    it('continues operating after cache corruption', () => {
+      mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'] = 'corrupted{json';
+
+      const tracker = new ErrorUniquenessTracker(mockMetas);
+
+      // Should log warning but continue operating
+      expect(internalLogger.warn).toHaveBeenCalledWith('Error uniqueness cache corrupted, recreating', expect.any(SyntaxError));
+
+      // Verify tracker is still functional
+      expect(tracker.isUnique(12345)).toBe(true);
+      tracker.markAsSeen(12345);
+      expect(tracker.isUnique(12345)).toBe(false);
+
+      // Verify it can save to localStorage
+      markAsSeenAndFlush(tracker, 67890);
+      expect(setItemMock).toHaveBeenCalled();
     });
   });
 
@@ -330,23 +349,11 @@ describe('ErrorUniquenessTracker', () => {
   });
 
   describe('when disabled', () => {
-    it.each([
-      [
-        'localStorage unavailable',
-        () => {
-          getItemMock.mockImplementation(() => {
-            throw new Error('localStorage not available');
-          });
-        },
-      ],
-      [
-        'cache is corrupted',
-        () => {
-          mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'] = 'corrupted{json';
-        },
-      ],
-    ])('allows all operations when %s', (_, setupDisabled) => {
-      setupDisabled();
+    it('allows all operations when localStorage unavailable', () => {
+      getItemMock.mockImplementation(() => {
+        throw new Error('localStorage not available');
+      });
+
       const tracker = new ErrorUniquenessTracker(mockMetas);
 
       expect(tracker.isDisabled()).toBe(true);
@@ -360,13 +367,31 @@ describe('ErrorUniquenessTracker', () => {
       expect(setItemMock).not.toHaveBeenCalled();
     });
 
-    it('logs warning when localStorage is corrupted', () => {
-      mockLocalStorage['com.grafana.faro.error-signatures.test-session-123'] = 'corrupted{json';
+    it('logs warning when localStorage is unavailable', () => {
+      getItemMock.mockImplementation(() => {
+        throw new Error('Storage error');
+      });
 
       new ErrorUniquenessTracker(mockMetas);
 
       expect(internalLogger.warn).toHaveBeenCalledWith(
-        'Error uniqueness tracking disabled: localStorage unavailable or corrupted',
+        'Error uniqueness tracking disabled: localStorage unavailable',
+        expect.any(Error)
+      );
+    });
+
+    it('disables tracker when storage access throws SecurityError', () => {
+      getItemMock.mockImplementation(() => {
+        const error = new Error('Security error: access denied');
+        error.name = 'SecurityError';
+        throw error;
+      });
+
+      const tracker = new ErrorUniquenessTracker(mockMetas);
+
+      expect(tracker.isDisabled()).toBe(true);
+      expect(internalLogger.warn).toHaveBeenCalledWith(
+        'Error uniqueness tracking disabled: localStorage unavailable',
         expect.any(Error)
       );
     });

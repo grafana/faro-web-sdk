@@ -37,7 +37,7 @@ export class ErrorUniquenessTracker {
 
     this.storageKey = `com.grafana.faro.error-signatures.${sessionId}`;
     this.hasLocalStorage = isWebStorageAvailable(webStorageType.local);
-    this.cache = this.loadCache() || this.createEmptyCache(maxSize);
+    this.cache = this.loadCache() ?? this.createEmptyCache(maxSize);
   }
 
   /**
@@ -136,26 +136,32 @@ export class ErrorUniquenessTracker {
   }
 
   private loadCache(): ErrorSignatureCache | null {
+    let stored: string | null;
     try {
-      const stored = getItem(this.storageKey, webStorageType.local);
-      if (!stored) {
-        return null;
-      }
+      stored = getItem(this.storageKey, webStorageType.local);
+    } catch (error) {
+      internalLogger.warn('Error uniqueness tracking disabled: localStorage unavailable', error);
+      this.clearStorage();
+      this.disabled = true;
+      return null;
+    }
 
+    if (!stored) {
+      return null;
+    }
+
+    try {
       const parsed: ErrorSignatureCache = JSON.parse(stored);
 
       if (parsed.version !== CACHE_VERSION || !Array.isArray(parsed.entries) || typeof parsed.maxSize !== 'number') {
-        // Invalid cache, discard
         this.clearStorage();
         return null;
       }
 
       return parsed;
     } catch (error) {
-      // localStorage not available or corrupted
-      internalLogger.warn('Error uniqueness tracking disabled: localStorage unavailable or corrupted', error);
+      internalLogger.warn('Error uniqueness cache corrupted, recreating', error);
       this.clearStorage();
-      this.disabled = true;
       return null;
     }
   }
@@ -187,7 +193,6 @@ export class ErrorUniquenessTracker {
       const serialized = stringifyExternalJson(this.cache);
       setItem(this.storageKey, serialized, webStorageType.local);
     } catch (error) {
-      // localStorage write failed - disable tracking and log warning
       internalLogger.warn('Error uniqueness tracking disabled: localStorage write failed', error);
       this.disabled = true;
     }
