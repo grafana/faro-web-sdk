@@ -175,11 +175,9 @@ function recordErrorOccurrence({
   if (!skipUniquenessCheck && uniquenessTracker && !uniquenessTracker.isDisabled()) {
     const errorHash = hashErrorSignature(createErrorSignature(item.payload, config));
     const errorTimestamp = new Date(item.payload.timestamp).getTime();
-    const isUnique = uniquenessTracker.isUnique(errorHash);
+    isUniqueError = uniquenessTracker.isUnique(errorHash);
 
-    isUniqueError = isUnique;
-
-    if (!isUnique) {
+    if (!isUniqueError) {
       const firstSeen = uniquenessTracker.getFirstSeen(errorHash);
       if (firstSeen) {
         addErrorFirstSeenToContext(item, firstSeen);
@@ -192,16 +190,22 @@ function recordErrorOccurrence({
 
   const sessionAttributes = metas.value.session?.attributes;
   const currentTotalErrors = parseInt(sessionAttributes?.['totalErrors'] ?? '0', 10);
-  const currentUniqueErrors = parseInt(sessionAttributes?.['uniqueErrors'] ?? '0', 10);
+
+  const shouldTrackUniqueErrors = !skipUniquenessCheck && uniquenessTracker && !uniquenessTracker.isDisabled();
+  const newAttributes: Record<string, string> = {
+    ...sessionAttributes,
+    totalErrors: String(currentTotalErrors + 1),
+  };
+
+  if (shouldTrackUniqueErrors && isUniqueError) {
+    const currentUniqueErrors = parseInt(sessionAttributes?.['uniqueErrors'] ?? '0', 10);
+    newAttributes['uniqueErrors'] = String(currentUniqueErrors + 1);
+  }
 
   metas.add({
     session: {
       ...metas.value.session,
-      attributes: {
-        ...sessionAttributes,
-        totalErrors: String(currentTotalErrors + 1),
-        uniqueErrors: String(currentUniqueErrors + (isUniqueError ? 1 : 0)),
-      },
+      attributes: newAttributes,
     },
   });
 }

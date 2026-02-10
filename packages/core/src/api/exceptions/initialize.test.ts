@@ -566,5 +566,113 @@ describe('api.exceptions', () => {
       // Should send both (uniqueness tracking disabled)
       expect(mockTransports.execute).toHaveBeenCalledTimes(2);
     });
+
+    it('does not increment uniqueErrors when tracker is not enabled', () => {
+      const sessionState = {
+        id: 'test-session',
+        attributes: {} as Record<string, string>,
+      };
+
+      const metasMock = {
+        value: {
+          session: sessionState,
+        },
+        add: jest.fn((updates: any) => {
+          // Update the internal state like the real metas would
+          if (updates.session?.attributes) {
+            sessionState.attributes = { ...sessionState.attributes, ...updates.session.attributes };
+          }
+        }),
+        remove: jest.fn(),
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+      };
+
+      const config = mockConfig({
+        // errorUniqueness NOT enabled
+      });
+
+      const api = initializeExceptionsAPI({
+        unpatchedConsole: console,
+        internalLogger: mockInternalLogger,
+        config,
+        metas: metasMock as any,
+        transports: mockTransports,
+        tracesApi: mockTracesApi,
+        userActionsApi: mockUserActionsApi,
+      });
+
+      // Push multiple errors
+      api.pushError(new Error('Error 1'), { skipDedupe: true });
+      api.pushError(new Error('Error 2'), { skipDedupe: true });
+      api.pushError(new Error('Error 3'), { skipDedupe: true });
+
+      // Should send all errors (tracking disabled doesn't drop errors)
+      expect(mockTransports.execute).toHaveBeenCalledTimes(3);
+
+      // Check session attributes - should only have totalErrors, NOT uniqueErrors
+      expect(metasMock.add).toHaveBeenCalledTimes(3);
+
+      // Verify final state - should only have totalErrors
+      expect(sessionState.attributes).toEqual({
+        totalErrors: '3',
+        // uniqueErrors should NOT be present
+      });
+      expect(sessionState.attributes['uniqueErrors']).toBeUndefined();
+    });
+
+    it('increments both totalErrors and uniqueErrors when tracker is enabled', () => {
+      const sessionState = {
+        id: 'test-session',
+        attributes: {} as Record<string, string>,
+      };
+
+      const metasMock = {
+        value: {
+          session: sessionState,
+        },
+        add: jest.fn((updates: any) => {
+          // Update the internal state like the real metas would
+          if (updates.session?.attributes) {
+            sessionState.attributes = { ...sessionState.attributes, ...updates.session.attributes };
+          }
+        }),
+        remove: jest.fn(),
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+      };
+
+      const config = mockConfig({
+        errorUniqueness: {
+          enabled: true,
+        },
+      });
+
+      const api = initializeExceptionsAPI({
+        unpatchedConsole: console,
+        internalLogger: mockInternalLogger,
+        config,
+        metas: metasMock as any,
+        transports: mockTransports,
+        tracesApi: mockTracesApi,
+        userActionsApi: mockUserActionsApi,
+      });
+
+      // Push different errors
+      api.pushError(new Error('Error 1'), { skipDedupe: true });
+      api.pushError(new Error('Error 2'), { skipDedupe: true });
+
+      // Should send all errors
+      expect(mockTransports.execute).toHaveBeenCalledTimes(2);
+
+      // Check session attributes - should have BOTH totalErrors and uniqueErrors
+      expect(metasMock.add).toHaveBeenCalledTimes(2);
+
+      // Verify final state - should have both counters
+      expect(sessionState.attributes).toEqual({
+        totalErrors: '2',
+        uniqueErrors: '2',
+      });
+    });
   });
 });
