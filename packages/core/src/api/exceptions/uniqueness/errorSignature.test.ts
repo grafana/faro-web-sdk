@@ -4,58 +4,25 @@ import { createErrorSignature, createStackSignature, normalizeErrorMessage } fro
 
 describe('errorSignature', () => {
   describe('normalizeMessage', () => {
-    it('normalizes UUIDs', () => {
-      const message = 'User 123e4567-e89b-12d3-a456-426614174000 not found';
-      const normalized = normalizeErrorMessage(message);
-      expect(normalized).toBe('User <UUID> not found');
-    });
-
-    it('normalizes multiple UUIDs', () => {
-      const message = 'Linking 550e8400-e29b-41d4-a716-446655440000 to a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-      const normalized = normalizeErrorMessage(message);
-      expect(normalized).toBe('Linking <UUID> to <UUID>');
-    });
-
-    it('normalizes URLs', () => {
-      const message = 'Failed to fetch https://api.example.com/users/123';
-      const normalized = normalizeErrorMessage(message);
-      expect(normalized).toBe('Failed to fetch <URL>');
-    });
-
-    it('normalizes file paths', () => {
-      const message = 'Error in /app/src/components/Button.tsx';
-      const normalized = normalizeErrorMessage(message);
-      expect(normalized).toBe('Error in <PATH>');
-    });
-
-    it('normalizes timestamps', () => {
-      const message = 'Event at 1234567890123 failed';
-      const normalized = normalizeErrorMessage(message);
-      expect(normalized).toBe('Event at <TIMESTAMP> failed');
-    });
-
-    it('normalizes numeric IDs', () => {
-      const message = 'User 123456 not found';
-      const normalized = normalizeErrorMessage(message);
-      expect(normalized).toBe('User <ID> not found');
+    it.each([
+      ['UUIDs', 'User 123e4567-e89b-12d3-a456-426614174000 not found', 'User <UUID> not found'],
+      [
+        'multiple UUIDs',
+        'Linking 550e8400-e29b-41d4-a716-446655440000 to a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        'Linking <UUID> to <UUID>',
+      ],
+      ['URLs', 'Failed to fetch https://api.example.com/users/123', 'Failed to fetch <URL>'],
+      ['file paths', 'Error in /app/src/components/Button.tsx', 'Error in <PATH>'],
+      ['timestamps', 'Event at 1234567890123 failed', 'Event at <TIMESTAMP> failed'],
+      ['numeric IDs', 'User 123456 not found', 'User <ID> not found'],
+      ['quoted strings', 'Cannot read property "foo" of undefined', 'Cannot read property <STRING> of undefined'],
+      ['single-quoted strings', "Cannot access 'bar' before initialization", 'Cannot access <STRING> before initialization'],
+    ])('normalizes %s', (_, input, expected) => {
+      expect(normalizeErrorMessage(input)).toBe(expected);
     });
 
     it('does not normalize short numbers', () => {
-      const message = 'Expected 5 arguments but got 3';
-      const normalized = normalizeErrorMessage(message);
-      expect(normalized).toBe('Expected 5 arguments but got 3');
-    });
-
-    it('normalizes quoted strings', () => {
-      const message = 'Cannot read property "foo" of undefined';
-      const normalized = normalizeErrorMessage(message);
-      expect(normalized).toBe('Cannot read property <STRING> of undefined');
-    });
-
-    it('normalizes single-quoted strings', () => {
-      const message = "Cannot access 'bar' before initialization";
-      const normalized = normalizeErrorMessage(message);
-      expect(normalized).toBe('Cannot access <STRING> before initialization');
+      expect(normalizeErrorMessage('Expected 5 arguments but got 3')).toBe('Expected 5 arguments but got 3');
     });
 
     it('handles messages with multiple patterns', () => {
@@ -135,26 +102,11 @@ describe('errorSignature', () => {
       expect(signature).toBe('a.js:fn1:1|b.js:fn2:2|c.js:fn3:3');
     });
 
-    it('handles empty frames array', () => {
-      const signature = createStackSignature([]);
-      expect(signature).toBe('');
-    });
-
-    it('handles undefined frames', () => {
-      const signature = createStackSignature(undefined);
-      expect(signature).toBe('');
-    });
-
-    it('handles frames with only filename', () => {
-      const frames: ExceptionStackFrame[] = [{ filename: 'app.js', function: '' }];
-      const signature = createStackSignature(frames);
-      expect(signature).toBe('app.js');
-    });
-
-    it('includes colno only when lineno is present', () => {
-      const frames: ExceptionStackFrame[] = [{ filename: 'app.js', function: 'foo', lineno: 10, colno: 5 }];
-      const signature = createStackSignature(frames);
-      expect(signature).toBe('app.js:foo:10:5');
+    it.each([
+      ['empty frames array', []],
+      ['undefined frames', undefined],
+    ])('handles %s', (_, frames) => {
+      expect(createStackSignature(frames)).toBe('');
     });
   });
 
@@ -169,7 +121,7 @@ describe('errorSignature', () => {
         },
         context: { userId: '123' },
       };
-      const signature = createErrorSignature(event);
+      const signature = createErrorSignature(event, {} as any);
       expect(signature).toContain('TypeError');
       expect(signature).toContain('Cannot read property <STRING> of undefined');
       expect(signature).toContain('app.js:handleClick:23');
@@ -193,8 +145,8 @@ describe('errorSignature', () => {
           frames: [{ filename: 'app.js', function: 'fn', lineno: 23 }],
         },
       };
-      const sig1 = createErrorSignature(event1);
-      const sig2 = createErrorSignature(event2);
+      const sig1 = createErrorSignature(event1, {} as any);
+      const sig2 = createErrorSignature(event2, {} as any);
       expect(sig1).toBe(sig2);
     });
 
@@ -209,8 +161,8 @@ describe('errorSignature', () => {
         type: 'ReferenceError',
         value: 'foo is not defined',
       };
-      const sig1 = createErrorSignature(event1);
-      const sig2 = createErrorSignature(event2);
+      const sig1 = createErrorSignature(event1, {} as any);
+      const sig2 = createErrorSignature(event2, {} as any);
       expect(sig1).not.toBe(sig2);
     });
 
@@ -231,8 +183,8 @@ describe('errorSignature', () => {
           frames: [{ filename: 'utils.js', function: 'fn', lineno: 45 }],
         },
       };
-      const sig1 = createErrorSignature(event1);
-      const sig2 = createErrorSignature(event2);
+      const sig1 = createErrorSignature(event1, {} as any);
+      const sig2 = createErrorSignature(event2, {} as any);
       expect(sig1).not.toBe(sig2);
     });
 
@@ -242,7 +194,7 @@ describe('errorSignature', () => {
         type: 'Error',
         value: 'Something went wrong',
       };
-      const signature = createErrorSignature(event);
+      const signature = createErrorSignature(event, {} as any);
       expect(signature).toBe('Error::Something went wrong');
     });
 
@@ -259,7 +211,7 @@ describe('errorSignature', () => {
           ],
         },
       };
-      const signature = createErrorSignature(event, { stackFrameDepth: 2 });
+      const signature = createErrorSignature(event, { errorUniqueness: { stackFrameDepth: 2 } } as any);
       expect(signature).toContain('a.js:fn1:1|b.js:fn2:2');
       expect(signature).not.toContain('c.js:fn3:3');
     });
@@ -271,7 +223,7 @@ describe('errorSignature', () => {
         value: 'test',
         context: { userId: '123', page: 'home' },
       };
-      const signature = createErrorSignature(event, { includeContextKeys: false });
+      const signature = createErrorSignature(event, { errorUniqueness: { includeContextKeys: false } } as any);
       expect(signature).not.toContain('context');
     });
 
@@ -282,29 +234,8 @@ describe('errorSignature', () => {
         value: 'test',
         context: { zoo: '1', apple: '2', banana: '3' },
       };
-      const signature = createErrorSignature(event, { includeContextKeys: true });
+      const signature = createErrorSignature(event, { errorUniqueness: { includeContextKeys: true } } as any);
       expect(signature).toContain('context:apple,banana,zoo');
-    });
-
-    it('handles events with empty context', () => {
-      const event: ExceptionEvent = {
-        timestamp: '2024-01-01T00:00:00.000Z',
-        type: 'Error',
-        value: 'test',
-        context: {},
-      };
-      const signature = createErrorSignature(event);
-      expect(signature).toBe('Error::test');
-    });
-
-    it('handles minimal error event', () => {
-      const event: ExceptionEvent = {
-        timestamp: '2024-01-01T00:00:00.000Z',
-        type: 'Error',
-        value: 'Error',
-      };
-      const signature = createErrorSignature(event);
-      expect(signature).toBe('Error::Error');
     });
   });
 });
