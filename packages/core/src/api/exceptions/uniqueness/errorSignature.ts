@@ -54,7 +54,7 @@ export function normalizeErrorMessage(message: string): string {
  * @param depth - Number of frames to include (default: 5)
  * @returns Stack signature string
  */
-export function createStackSignature(frames: ExceptionStackFrame[] | undefined, depth: number = 5): string {
+function createStackSignature(frames: ExceptionStackFrame[] | undefined, depth: number = 5): string {
   if (!frames || frames.length === 0) {
     return '';
   }
@@ -96,8 +96,7 @@ export function createStackSignature(frames: ExceptionStackFrame[] | undefined, 
  * @returns Signature string for hashing
  */
 export function createErrorSignature(error: ExceptionEvent, config: Config): string {
-  const stackFrameDepth = config.errorUniqueness?.stackFrameDepth ?? 5;
-  const includeContextKeys = config.errorUniqueness?.includeContextKeys ?? true;
+  const { stackFrameDepth, includeContextKeys } = config.errorUniqueness ?? {};
   const { type, value, stacktrace, context } = error;
 
   const parts: string[] = [];
@@ -106,18 +105,17 @@ export function createErrorSignature(error: ExceptionEvent, config: Config): str
     parts.push(type);
   }
 
-  const normalizedMsg = normalizeErrorMessage(value || '');
+  const normalizedMsg = normalizeErrorMessage(value);
   if (normalizedMsg) {
     parts.push(normalizedMsg);
   }
 
-  // 3. Stack signature
   const stackSig = createStackSignature(stacktrace?.frames, stackFrameDepth);
   if (stackSig) {
     parts.push(stackSig);
   }
 
-  // 4. Context keys (optional)
+  // Faro error context keys (optional)
   if (includeContextKeys && context) {
     const contextKeys = Object.keys(context).sort();
     if (contextKeys.length > 0) {

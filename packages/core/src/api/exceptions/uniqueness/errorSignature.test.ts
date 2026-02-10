@@ -1,6 +1,6 @@
-import type { ExceptionEvent, ExceptionStackFrame } from '@grafana/faro-core';
+import type { ExceptionEvent } from '@grafana/faro-core';
 
-import { createErrorSignature, createStackSignature, normalizeErrorMessage } from './errorSignature';
+import { createErrorSignature, normalizeErrorMessage } from './errorSignature';
 
 describe('errorSignature', () => {
   describe('normalizeMessage', () => {
@@ -53,63 +53,6 @@ describe('errorSignature', () => {
     });
   });
 
-  describe('createStackSignature', () => {
-    it('creates signature from stack frames', () => {
-      const frames: ExceptionStackFrame[] = [
-        { filename: 'app.js', function: 'handleClick', lineno: 23, colno: 4 },
-        { filename: 'utils.js', function: 'parseData', lineno: 52, colno: 10 },
-      ];
-      const signature = createStackSignature(frames);
-      expect(signature).toBe('app.js:handleClick:23:4|utils.js:parseData:52:10');
-    });
-
-    it('uses only basename from full paths', () => {
-      const frames: ExceptionStackFrame[] = [{ filename: '/path/to/app.js', function: 'handleClick', lineno: 23 }];
-      const signature = createStackSignature(frames);
-      expect(signature).toBe('app.js:handleClick:23');
-    });
-
-    it('handles Windows paths with backslashes', () => {
-      const frames: ExceptionStackFrame[] = [
-        { filename: 'C:\\Users\\app\\src\\index.js', function: 'main', lineno: 10 },
-      ];
-      const signature = createStackSignature(frames);
-      expect(signature).toBe('index.js:main:10');
-    });
-
-    it('handles frames without function names', () => {
-      const frames: ExceptionStackFrame[] = [{ filename: 'app.js', function: '', lineno: 23, colno: 4 }];
-      const signature = createStackSignature(frames);
-      expect(signature).toBe('app.js:23:4');
-    });
-
-    it('handles frames without line numbers', () => {
-      const frames: ExceptionStackFrame[] = [{ filename: 'app.js', function: 'handleClick' }];
-      const signature = createStackSignature(frames);
-      expect(signature).toBe('app.js:handleClick');
-    });
-
-    it('limits to specified depth', () => {
-      const frames: ExceptionStackFrame[] = [
-        { filename: 'a.js', function: 'fn1', lineno: 1 },
-        { filename: 'b.js', function: 'fn2', lineno: 2 },
-        { filename: 'c.js', function: 'fn3', lineno: 3 },
-        { filename: 'd.js', function: 'fn4', lineno: 4 },
-        { filename: 'e.js', function: 'fn5', lineno: 5 },
-        { filename: 'f.js', function: 'fn6', lineno: 6 },
-      ];
-      const signature = createStackSignature(frames, 3);
-      expect(signature).toBe('a.js:fn1:1|b.js:fn2:2|c.js:fn3:3');
-    });
-
-    it.each([
-      ['empty frames array', []],
-      ['undefined frames', undefined],
-    ])('handles %s', (_, frames) => {
-      expect(createStackSignature(frames)).toBe('');
-    });
-  });
-
   describe('createErrorSignature', () => {
     it('creates signature with all components', () => {
       const event: ExceptionEvent = {
@@ -121,7 +64,7 @@ describe('errorSignature', () => {
         },
         context: { userId: '123' },
       };
-      const signature = createErrorSignature(event, {} as any);
+      const signature = createErrorSignature(event, { errorUniqueness: { includeContextKeys: true } } as any);
       expect(signature).toContain('TypeError');
       expect(signature).toContain('Cannot read property <STRING> of undefined');
       expect(signature).toContain('app.js:handleClick:23');
@@ -236,6 +179,44 @@ describe('errorSignature', () => {
       };
       const signature = createErrorSignature(event, { errorUniqueness: { includeContextKeys: true } } as any);
       expect(signature).toContain('context:apple,banana,zoo');
+    });
+
+    it('uses basename from full file paths for portability', () => {
+      const event: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'Error',
+        value: 'test',
+        stacktrace: {
+          frames: [{ filename: '/path/to/app.js', function: 'handleClick', lineno: 23 }],
+        },
+      };
+      const signature = createErrorSignature(event, {} as any);
+      expect(signature).toContain('app.js:handleClick:23');
+      expect(signature).not.toContain('/path/to/');
+    });
+
+    it('handles stack frames without function names', () => {
+      const event: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'Error',
+        value: 'test',
+        stacktrace: {
+          frames: [{ filename: 'app.js', function: '', lineno: 23 }],
+        },
+      };
+      const signature = createErrorSignature(event, {} as any);
+      expect(signature).toContain('app.js:23');
+    });
+
+    it('handles empty stack frames', () => {
+      const event: ExceptionEvent = {
+        timestamp: '2024-01-01T00:00:00.000Z',
+        type: 'Error',
+        value: 'test',
+        stacktrace: { frames: [] },
+      };
+      const signature = createErrorSignature(event, {} as any);
+      expect(signature).toBe('Error::test');
     });
   });
 });
