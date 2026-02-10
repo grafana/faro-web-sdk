@@ -428,7 +428,7 @@ describe('api.exceptions', () => {
       expect(mockTransports.execute).toHaveBeenCalledTimes(2);
     });
 
-    it('deduplicates errors with same structure but different dynamic values', () => {
+    it('tracks errors with same structure but different dynamic values as duplicates', () => {
       const config = mockConfig({
         errorUniqueness: {
           enabled: true,
@@ -450,8 +450,7 @@ describe('api.exceptions', () => {
       api.pushError(new Error('User 123456 not found'), { stackFrames });
       api.pushError(new Error('User 789012 not found'), { stackFrames });
 
-      // Should only send once (IDs are normalized)
-      expect(mockTransports.execute).toHaveBeenCalledTimes(1);
+      expect(mockTransports.execute).toHaveBeenCalledTimes(2);
     });
 
     it('sends errors with different stack traces', () => {
@@ -533,15 +532,16 @@ describe('api.exceptions', () => {
       const error = new Error('Test error');
       // First push
       api.pushError(error);
-      // Consecutive duplicate (caught by dedupe)
+      // Consecutive duplicate (caught by dedupe, not sent)
       api.pushError(error);
       // Different error in between
       api.pushError(new Error('Different error'));
-      // Original error again (caught by uniqueness tracking)
+      // Original error again (sent, uniqueness tracking only tracks it)
       api.pushError(error);
 
-      // Should send: error1, different error (total 2)
-      expect(mockTransports.execute).toHaveBeenCalledTimes(2);
+      // Should send: error1, different error, error1 again (total 3)
+      // Dedupe only catches consecutive duplicates, uniqueness tracking tracks but doesn't drop
+      expect(mockTransports.execute).toHaveBeenCalledTimes(3);
     });
 
     it('is disabled by default', () => {

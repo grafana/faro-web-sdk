@@ -20,7 +20,19 @@ const DEFAULT_MAX_SIZE = 500;
 
 /**
  * Manages session-scoped unique error tracking with LRU eviction.
- * Persists to localStorage to survive page reloads.
+ * Persists to localStorage to survive page reloads within the same session.
+ *
+ * Each session has its own isolated error cache stored in localStorage.
+ * When the session ID changes (e.g., session expiration, inactivity timeout),
+ * the tracker automatically deletes the old cache and starts fresh with an empty cache,
+ * ensuring error uniqueness is properly scoped per session.
+ *
+ * Cache invalidation scenarios:
+ * - During user session: Listens for session ID changes via metas, deletes old cache, starts fresh
+ * - On page reload: Reads current session ID and loads existing cache from localStorage if available
+ * - Session expiration: New session ID triggers deletion of old cache and creates fresh empty cache
+ *
+ * Note: Only the error cache is managed here. The Faro session object in web storage is never touched.
  */
 export class ErrorUniquenessTracker {
   private cache: ErrorSignatureCache;
@@ -30,14 +42,25 @@ export class ErrorUniquenessTracker {
   private hasLocalStorage: boolean;
   private saveScheduled: boolean = false;
   private saveTimeout?: number;
+  private currentSessionId: string;
+  private maxSize: number;
 
   constructor(metas: Metas, maxSize: number = DEFAULT_MAX_SIZE) {
     this.metas = metas;
-    const sessionId = this.metas.value.session?.id ?? 'default';
+    this.maxSize = maxSize;
+    this.currentSessionId = this.metas.value.session?.id ?? 'default';
 
-    this.storageKey = `com.grafana.faro.error-signatures.${sessionId}`;
+    this.storageKey = `com.grafana.faro.error-signatures.${this.currentSessionId}`;
     this.hasLocalStorage = isWebStorageAvailable(webStorageType.local);
     this.cache = this.loadCache() ?? this.createEmptyCache(maxSize);
+
+    // Listen for session changes to invalidate cache
+    this.metas.addListener((meta) => {
+      const newSessionId = meta.session?.id ?? 'default';
+      if (newSessionId !== this.currentSessionId) {
+        this.handleSessionChange(newSessionId);
+      }
+    });
   }
 
   /**
@@ -217,5 +240,33 @@ export class ErrorUniquenessTracker {
   private moveToEnd(entry: ErrorCacheEntry): void {
     this.cache.entries = this.cache.entries.filter((e) => e !== entry);
     this.cache.entries.push(entry);
+  }
+
+  /**
+   * Handle session ID change by deleting old error cache and switching to new session cache.
+   * This ensures error uniqueness is properly scoped to each session and prevents
+   * localStorage bloat from accumulating old session error caches.
+   *
+   * Note: This only deletes the error cache, NOT the Faro session object in web storage.
+   */
+  private handleSessionChange(newSessionId: string): void {
+    internalLogger.debug(`Session changed from ${this.currentSessionId} to ${newSessionId}, invalidating error cache`);
+
+    // Clear any pending saves for the old session
+    if (this.saveTimeout) {
+      window.clearTimeout(this.saveTimeout);
+      this.saveScheduled = false;
+    }
+
+    // Delete the old session's error cache from localStorage
+    // Note: This only removes the error cache, not the Faro session object
+    this.clearStorage();
+
+    // Update to new session
+    this.currentSessionId = newSessionId;
+    this.storageKey = `com.grafana.faro.error-signatures.${newSessionId}`;
+
+    // Start with fresh cache for new session
+    this.cache = this.createEmptyCache(this.maxSize);
   }
 }

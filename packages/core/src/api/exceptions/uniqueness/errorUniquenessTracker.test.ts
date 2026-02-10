@@ -452,4 +452,89 @@ describe('ErrorUniquenessTracker', () => {
       expect(tracker.isUnique(12345)).toBe(false);
     });
   });
+
+  describe('session change invalidation', () => {
+    it('deletes old cache from localStorage and starts with fresh empty cache on session change', () => {
+      const tracker = new ErrorUniquenessTracker(mockMetas);
+
+      // Mark errors as seen in the first session
+      markAsSeenAndFlush(tracker, 12345);
+      markAsSeenAndFlush(tracker, 67890);
+      expect(tracker.isUnique(12345)).toBe(false);
+      expect(tracker.isUnique(67890)).toBe(false);
+
+      const oldSessionKey = 'com.grafana.faro.error-signatures.test-session-123';
+      expect(mockLocalStorage[oldSessionKey]).toBeDefined();
+
+      // Get the listener that was registered
+      const metasListener = (mockMetas.addListener as jest.Mock).mock.calls[0][0];
+
+      // Simulate session change
+      metasListener({
+        session: {
+          id: 'new-session-456',
+          attributes: {},
+        },
+      });
+
+      // Old cache should be deleted from localStorage
+      expect(mockLocalStorage[oldSessionKey]).toBeUndefined();
+
+      // Previously seen errors should now be unique in fresh cache
+      expect(tracker.isUnique(12345)).toBe(true);
+      expect(tracker.isUnique(67890)).toBe(true);
+
+      // Cache should be empty (size 0)
+      expect(tracker.getStats().size).toBe(0);
+    });
+
+    it('handles session change from default to actual session ID', () => {
+      // Start with no session (uses 'default')
+      mockMetas.value.session = undefined;
+      const tracker = new ErrorUniquenessTracker(mockMetas);
+
+      markAsSeenAndFlush(tracker, 11111);
+      expect(tracker.isUnique(11111)).toBe(false);
+
+      const metasListener = (mockMetas.addListener as jest.Mock).mock.calls[0][0];
+
+      // Session tracking is initialized
+      metasListener({
+        session: {
+          id: 'actual-session-id',
+          attributes: {},
+        },
+      });
+
+      // Should be unique in the new session
+      expect(tracker.isUnique(11111)).toBe(true);
+    });
+
+    it('does not invalidate cache if session ID stays the same', () => {
+      const tracker = new ErrorUniquenessTracker(mockMetas);
+
+      markAsSeenAndFlush(tracker, 12345);
+      expect(tracker.isUnique(12345)).toBe(false);
+
+      const metasListener = (mockMetas.addListener as jest.Mock).mock.calls[0][0];
+
+      // Clear the remove mock to check if it gets called
+      removeItemMock.mockClear();
+
+      // Trigger listener with same session ID
+      metasListener({
+        session: {
+          id: 'test-session-123', // Same as initial
+          attributes: {},
+        },
+      });
+
+      // Cache should not be cleared
+      expect(removeItemMock).not.toHaveBeenCalled();
+
+      // Error should still be in cache
+      expect(tracker.isUnique(12345)).toBe(false);
+    });
+
+  });
 });
