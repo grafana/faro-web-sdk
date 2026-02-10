@@ -17,7 +17,7 @@ import {
 } from '../../utils';
 import { timestampToIsoString } from '../../utils/date';
 import type { TracesAPI } from '../traces';
-import { APIEvent } from '../types';
+import type { APIEvent } from '../types';
 import type { UserActionsAPI } from '../userActions';
 import { addItemToUserActionBuffer } from '../userActions/initialize';
 import { shouldIgnoreEvent } from '../utils';
