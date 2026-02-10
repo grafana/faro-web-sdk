@@ -16,7 +16,11 @@ describe('errorSignature', () => {
       ['timestamps', 'Event at 1234567890123 failed', 'Event at <TIMESTAMP> failed'],
       ['numeric IDs', 'User 123456 not found', 'User <ID> not found'],
       ['quoted strings', 'Cannot read property "foo" of undefined', 'Cannot read property <STRING> of undefined'],
-      ['single-quoted strings', "Cannot access 'bar' before initialization", 'Cannot access <STRING> before initialization'],
+      [
+        'single-quoted strings',
+        "Cannot access 'bar' before initialization",
+        'Cannot access <STRING> before initialization',
+      ],
     ])('normalizes %s', (_, input, expected) => {
       expect(normalizeErrorMessage(input)).toBe(expected);
     });

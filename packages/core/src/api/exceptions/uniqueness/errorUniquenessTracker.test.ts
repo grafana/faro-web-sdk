@@ -277,7 +277,6 @@ describe('ErrorUniquenessTracker', () => {
     });
   });
 
-
   describe('localStorage persistence across instances', () => {
     it('shares cache between instances with same session', () => {
       const tracker1 = new ErrorUniquenessTracker(mockMetas);
