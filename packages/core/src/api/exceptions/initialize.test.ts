@@ -377,7 +377,7 @@ describe('api.exceptions', () => {
       } as any;
     });
 
-    it('sends error only once when uniqueness tracking is enabled', () => {
+    it('sends all errors regardless of uniqueness (does not drop duplicates)', () => {
       const config = mockConfig({
         errorUniqueness: {
           enabled: true,
@@ -394,120 +394,13 @@ describe('api.exceptions', () => {
         userActionsApi: mockUserActionsApi,
       });
 
-      // Push same error twice
-      const error = new Error('Duplicate error');
-      api.pushError(error);
-      api.pushError(error);
-
-      // Should only send once
-      expect(mockTransports.execute).toHaveBeenCalledTimes(1);
-    });
-
-    it('sends different errors when uniqueness tracking is enabled', () => {
-      const config = mockConfig({
-        errorUniqueness: {
-          enabled: true,
-        },
-      });
-
-      const api = initializeExceptionsAPI({
-        unpatchedConsole: console,
-        internalLogger: mockInternalLogger,
-        config,
-        metas: mockMetas,
-        transports: mockTransports,
-        tracesApi: mockTracesApi,
-        userActionsApi: mockUserActionsApi,
-      });
-
-      // Push different errors
-      api.pushError(new Error('Error 1'));
-      api.pushError(new Error('Error 2'));
-
-      // Should send both
-      expect(mockTransports.execute).toHaveBeenCalledTimes(2);
-    });
-
-    it('tracks errors with same structure but different dynamic values as duplicates', () => {
-      const config = mockConfig({
-        errorUniqueness: {
-          enabled: true,
-        },
-      });
-
-      const api = initializeExceptionsAPI({
-        unpatchedConsole: console,
-        internalLogger: mockInternalLogger,
-        config,
-        metas: mockMetas,
-        transports: mockTransports,
-        tracesApi: mockTracesApi,
-        userActionsApi: mockUserActionsApi,
-      });
-
-      // Push errors with same structure but different IDs
+      // Push errors with same normalized signature (IDs get normalized to <ID>)
+      // These errors have the same hash after normalization, but both should still be sent
       const stackFrames = [{ filename: 'users.js', function: 'findUser', lineno: 42 }];
-      api.pushError(new Error('User 123456 not found'), { stackFrames });
-      api.pushError(new Error('User 789012 not found'), { stackFrames });
+      api.pushError(new Error('User 123456 not found'), { stackFrames, skipDedupe: true });
+      api.pushError(new Error('User 789012 not found'), { stackFrames, skipDedupe: true });
 
-      expect(mockTransports.execute).toHaveBeenCalledTimes(2);
-    });
-
-    it('sends errors with different stack traces', () => {
-      const config = mockConfig({
-        errorUniqueness: {
-          enabled: true,
-        },
-      });
-
-      const api = initializeExceptionsAPI({
-        unpatchedConsole: console,
-        internalLogger: mockInternalLogger,
-        config,
-        metas: mockMetas,
-        transports: mockTransports,
-        tracesApi: mockTracesApi,
-        userActionsApi: mockUserActionsApi,
-      });
-
-      // Create errors with different stacks
-      const error1 = new Error('Same message');
-      const error2 = new Error('Same message');
-
-      // Manually set different stack frames
-      api.pushError(error1, {
-        stackFrames: [{ filename: 'file1.js', function: 'fn1', lineno: 10 }],
-      });
-      api.pushError(error2, {
-        stackFrames: [{ filename: 'file2.js', function: 'fn2', lineno: 20 }],
-      });
-
-      // Should send both (different stacks)
-      expect(mockTransports.execute).toHaveBeenCalledTimes(2);
-    });
-
-    it('respects skipUniquenessCheck option', () => {
-      const config = mockConfig({
-        errorUniqueness: {
-          enabled: true,
-        },
-      });
-
-      const api = initializeExceptionsAPI({
-        unpatchedConsole: console,
-        internalLogger: mockInternalLogger,
-        config,
-        metas: mockMetas,
-        transports: mockTransports,
-        tracesApi: mockTracesApi,
-        userActionsApi: mockUserActionsApi,
-      });
-
-      const error = new Error('Bypass uniqueness check');
-      api.pushError(error, { skipUniquenessCheck: true, skipDedupe: true });
-      api.pushError(error, { skipUniquenessCheck: true, skipDedupe: true });
-
-      // Should send both times
+      // Both errors sent - uniqueness tracking does NOT drop duplicates
       expect(mockTransports.execute).toHaveBeenCalledTimes(2);
     });
 
@@ -542,29 +435,6 @@ describe('api.exceptions', () => {
       // Should send: error1, different error, error1 again (total 3)
       // Dedupe only catches consecutive duplicates, uniqueness tracking tracks but doesn't drop
       expect(mockTransports.execute).toHaveBeenCalledTimes(3);
-    });
-
-    it('is disabled by default', () => {
-      const config = mockConfig({
-        // errorUniqueness not specified
-      });
-
-      const api = initializeExceptionsAPI({
-        unpatchedConsole: console,
-        internalLogger: mockInternalLogger,
-        config,
-        metas: mockMetas,
-        transports: mockTransports,
-        tracesApi: mockTracesApi,
-        userActionsApi: mockUserActionsApi,
-      });
-
-      const error = new Error('Duplicate error');
-      api.pushError(error, { skipDedupe: true });
-      api.pushError(error, { skipDedupe: true });
-
-      // Should send both (uniqueness tracking disabled)
-      expect(mockTransports.execute).toHaveBeenCalledTimes(2);
     });
 
     it('does not increment uniqueErrors when tracker is not enabled', () => {

@@ -77,7 +77,6 @@ export function initializeExceptionsAPI({
       spanContext,
       timestampOverwriteMs,
       originalError,
-      skipUniquenessCheck,
     } = {}
   ) => {
     if (isErrorIgnored(ignoreErrors, originalError ?? error)) {
@@ -131,7 +130,6 @@ export function initializeExceptionsAPI({
       lastPayload = testingPayload;
 
       recordErrorOccurrence({
-        skipUniquenessCheck,
         uniquenessTracker,
         item,
         config,
@@ -158,13 +156,11 @@ export function initializeExceptionsAPI({
 }
 
 function recordErrorOccurrence({
-  skipUniquenessCheck,
   uniquenessTracker,
   item,
   config,
   metas,
 }: {
-  skipUniquenessCheck: boolean | undefined;
   uniquenessTracker: ErrorUniquenessTracker | null;
   item: TransportItem<ExceptionEvent<boolean | undefined>>;
   config: Config<APIEvent>;
@@ -172,7 +168,7 @@ function recordErrorOccurrence({
 }) {
   let isUniqueError = true;
 
-  if (!skipUniquenessCheck && uniquenessTracker && !uniquenessTracker.isDisabled()) {
+  if (uniquenessTracker && !uniquenessTracker.isDisabled()) {
     const errorHash = hashErrorSignature(createErrorSignature(item.payload, config));
     const errorTimestamp = new Date(item.payload.timestamp).getTime();
     isUniqueError = uniquenessTracker.isUnique(errorHash);
@@ -191,7 +187,7 @@ function recordErrorOccurrence({
   const sessionAttributes = metas.value.session?.attributes;
   const currentTotalErrors = parseInt(sessionAttributes?.['totalErrors'] ?? '0', 10);
 
-  const shouldTrackUniqueErrors = !skipUniquenessCheck && uniquenessTracker && !uniquenessTracker.isDisabled();
+  const shouldTrackUniqueErrors = uniquenessTracker && !uniquenessTracker.isDisabled();
   const newAttributes: Record<string, string> = {
     ...sessionAttributes,
     totalErrors: String(currentTotalErrors + 1),

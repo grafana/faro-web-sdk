@@ -64,11 +64,6 @@ export interface PushErrorOptions {
    * Faro users should not need to use this option.
    */
   originalError?: Error;
-  /**
-   * Skip session-wide uniqueness tracking for this error.
-   * When true, the error will be sent even if it was previously seen in this session.
-   */
-  skipUniquenessCheck?: boolean;
 }
 
 // ts type is missing the cause property
