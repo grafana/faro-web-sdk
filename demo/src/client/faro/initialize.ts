@@ -40,6 +40,11 @@ export function initializeFaro(): Faro {
     batching: {
       itemLimit: 100,
     },
+
+    errorUniqueness: {
+      enabled: true,
+      maxCacheSize: 500, // Optional: defaults to 500
+    },
   });
 
   faro.api.pushLog(['Faro was initialized']);
