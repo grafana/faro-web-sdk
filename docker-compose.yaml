@@ -76,13 +76,14 @@ services:
   database:
     env_file:
       - './.env'
-    image: 'postgres:17.7@sha256:7352e0c4d62bbac8aa69d95e40220a60967c4a19f9c4f65b4d118175f7ce9e3b'
+    image: 'postgres:18.1@sha256:1090bc3a8ccfb0b55f78a494d76f8d603434f7e4553543d6e807bc7bd6bbd17f'
     volumes:
       - 'db_data:/var/lib/postgresql/data'
     environment:
       POSTGRES_USER: '${DATABASE_USER}'
       POSTGRES_PASSWORD: '${DATABASE_PASSWORD}'
       POSTGRES_DB: '${DATABASE_NAME}'
+      PGDATA: '/var/lib/postgresql/data'
     ports:
       - '${DATABASE_PORT}:${DATABASE_PORT}'
 

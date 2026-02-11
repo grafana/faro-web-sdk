@@ -919,7 +919,7 @@ __metadata:
     nodemon: "npm:3.1.11"
     npm-run-all: "npm:4.1.5"
     path-to-regexp: "npm:^8.2.0"
-    pg: "npm:^8.8.0"
+    pg: "npm:^8.13.0"
     pg-hstore: "npm:^2.3.4"
     prom-client: "npm:^15.0.0"
     protobufjs: "npm:^8.0.0"
@@ -13331,7 +13331,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg@npm:^8.8.0":
+"pg@npm:^8.13.0":
   version: 8.18.0
   resolution: "pg@npm:8.18.0"
   dependencies:
