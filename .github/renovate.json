@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "schedule": ["before 5am on Monday", "before 5am on Wednesday", "before 5am on Friday"],
+  "schedule": ["before 5am on Monday"],
   "semanticCommits": "enabled",
   "separateMajorMinor": true,
   "separateMultipleMajor": true,
@@ -12,13 +12,13 @@
       "description": "Group npm dependencies",
       "matchManagers": ["npm"],
       "groupName": "npm-dependencies",
-      "schedule": ["before 5am on Monday", "before 5am on Wednesday", "before 5am on Friday"]
+      "schedule": ["before 5am on Monday"]
     },
     {
       "description": "Group GitHub Actions dependencies",
       "matchManagers": ["github-actions"],
       "groupName": "github-actions",
-      "schedule": ["before 5am on Monday", "before 5am on Wednesday", "before 5am on Friday"]
+      "schedule": ["before 5am on Monday"]
     },
     {
       "description": "Group patch updates together",
