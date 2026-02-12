@@ -26,12 +26,37 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   initialize(): void {
-    if (this.isRecording) {
-      this.logWarn('Session replay is already running');
-      return;
-    }
+    // Check if current session is sampled before starting recording
+    this.checkAndUpdateRecording();
 
-    this.startRecording();
+    // Listen for session changes
+    this.metas.addListener(() => {
+      this.checkAndUpdateRecording();
+    });
+  }
+
+  private checkAndUpdateRecording(): void {
+    const session = this.api.getSession();
+    const isSampled = session?.attributes?.['isSampled'] === 'true';
+
+    if (isSampled && !this.isRecording) {
+      this.logDebug('Session is sampled, starting recording');
+      this.startRecording();
+    } else if (!isSampled && this.isRecording) {
+      this.logDebug('Session is not sampled, stopping recording');
+      this.stopRecording();
+    } else if (!isSampled) {
+      this.logDebug('Session is not sampled, recording not started');
+    }
+  }
+
+  private stopRecording(): void {
+    if (this.stopFn) {
+      this.stopFn();
+      this.stopFn = null;
+    }
+    this.isRecording = false;
+    this.logDebug('Session replay stopped');
   }
 
   private startRecording(): void {
@@ -90,12 +115,6 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   destroy(): void {
-    if (this.stopFn) {
-      this.stopFn();
-      this.stopFn = null;
-    }
-
-    this.isRecording = false;
-    this.logDebug('Session replay stopped');
+    this.stopRecording();
   }
 }

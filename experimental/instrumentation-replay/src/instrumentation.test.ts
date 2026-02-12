@@ -9,11 +9,17 @@ jest.mock('rrweb', () => ({
 describe('ReplayInstrumentation', () => {
   let instrumentation: ReplayInstrumentation;
   let mockRecord: jest.Mock;
+  let mockGetSession: jest.Mock;
+  let mockAddListener: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockRecord = require('rrweb').record;
     mockRecord.mockReturnValue(jest.fn());
+
+    // Mock API and metas
+    mockGetSession = jest.fn();
+    mockAddListener = jest.fn();
   });
 
   afterEach(() => {
@@ -113,27 +119,55 @@ describe('ReplayInstrumentation', () => {
   });
 
   describe('initialize', () => {
-    it('should start recording when initialized', () => {
+    it('should start recording when session is sampled', () => {
       instrumentation = new ReplayInstrumentation();
+
+      // Mock sampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
       instrumentation.initialize();
 
+      expect(mockGetSession).toHaveBeenCalled();
+      expect(mockAddListener).toHaveBeenCalled();
       expect(mockRecord).toHaveBeenCalled();
       expect(instrumentation['isRecording']).toBe(true);
     });
 
-    it('should warn and not restart if already recording', () => {
+    it('should not start recording when session is not sampled', () => {
       instrumentation = new ReplayInstrumentation();
-      const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
+
+      // Mock unsampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'false' },
+      });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
 
       instrumentation.initialize();
-      instrumentation.initialize(); // Second call
 
-      expect(mockRecord).toHaveBeenCalledTimes(1);
-      expect(logWarnSpy).toHaveBeenCalledWith('Session replay is already running');
+      expect(mockGetSession).toHaveBeenCalled();
+      expect(mockAddListener).toHaveBeenCalled();
+      expect(mockRecord).not.toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(false);
     });
 
     it('should pass default recordAfter option to rrweb record', () => {
       instrumentation = new ReplayInstrumentation();
+
+      // Mock sampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
       instrumentation.initialize();
 
       expect(mockRecord).toHaveBeenCalledWith(
@@ -159,6 +193,15 @@ describe('ReplayInstrumentation', () => {
       };
 
       instrumentation = new ReplayInstrumentation(customOptions);
+
+      // Mock sampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
       instrumentation.initialize();
 
       expect(mockRecord).toHaveBeenCalledWith(
@@ -186,6 +229,15 @@ describe('ReplayInstrumentation', () => {
       });
 
       instrumentation = new ReplayInstrumentation();
+
+      // Mock sampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
       const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
 
       expect(() => instrumentation.initialize()).not.toThrow();
@@ -207,7 +259,15 @@ describe('ReplayInstrumentation', () => {
 
     it('should push events to the API', () => {
       instrumentation = new ReplayInstrumentation();
-      instrumentation['api'] = { pushEvent: mockPushEvent } as any;
+
+      // Mock sampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
       instrumentation.initialize();
 
       const testEvent = { type: 1, data: {}, timestamp: Date.now() };
@@ -222,7 +282,15 @@ describe('ReplayInstrumentation', () => {
       const beforeSend = jest.fn((event) => ({ ...event, modified: true }));
 
       instrumentation = new ReplayInstrumentation({ beforeSend });
-      instrumentation['api'] = { pushEvent: mockPushEvent } as any;
+
+      // Mock sampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
       instrumentation.initialize();
 
       const testEvent = { type: 1, data: {}, timestamp: Date.now() };
@@ -238,7 +306,15 @@ describe('ReplayInstrumentation', () => {
       const beforeSend = jest.fn(() => null);
 
       instrumentation = new ReplayInstrumentation({ beforeSend });
-      instrumentation['api'] = { pushEvent: mockPushEvent } as any;
+
+      // Mock sampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
       instrumentation.initialize();
 
       emitCallback({ type: 1, data: {}, timestamp: Date.now() });
@@ -251,7 +327,15 @@ describe('ReplayInstrumentation', () => {
       const beforeSend = jest.fn(() => undefined);
 
       instrumentation = new ReplayInstrumentation({ beforeSend });
-      instrumentation['api'] = { pushEvent: mockPushEvent } as any;
+
+      // Mock sampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
       instrumentation.initialize();
 
       emitCallback({ type: 1, data: {}, timestamp: Date.now() });
@@ -266,7 +350,15 @@ describe('ReplayInstrumentation', () => {
       });
 
       instrumentation = new ReplayInstrumentation();
-      instrumentation['api'] = { pushEvent: mockPushEvent } as any;
+
+      // Mock sampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
       const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
       instrumentation.initialize();
 
@@ -281,6 +373,15 @@ describe('ReplayInstrumentation', () => {
       mockRecord.mockReturnValue(stopFn);
 
       instrumentation = new ReplayInstrumentation();
+
+      // Mock sampled session
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
       instrumentation.initialize();
 
       expect(instrumentation['isRecording']).toBe(true);
