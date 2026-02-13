@@ -1,3 +1,5 @@
+import type { eventWithTime } from '@rrweb/types';
+
 export interface ReplayInstrumentationOptions {
   /**
    * Whether to mask all inputs
@@ -67,7 +69,7 @@ export interface ReplayInstrumentationOptions {
   /**
    * Custom hook to transform events before they are sent
    */
-  beforeSend?: (event: any) => any;
+  beforeSend?: (event: eventWithTime) => eventWithTime | null | undefined;
 
   /**
    * When to start recording.

@@ -99,7 +99,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private handleEvent(event: eventWithTime, _isCheckout?: boolean): void {
     try {
       // Apply beforeSend transformation if provided
-      let processedEvent = event;
+      let processedEvent: eventWithTime | null | undefined = event;
       if (this.options.beforeSend) {
         processedEvent = this.options.beforeSend(event);
         if (processedEvent === null || processedEvent === undefined) {
