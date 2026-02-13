@@ -1,5 +1,5 @@
 import { ReplayInstrumentation } from './instrumentation';
-import { ReplayInstrumentationOptions } from './types';
+import { MaskInputFn, ReplayInstrumentationOptions } from './types';
 
 // Mock rrweb
 jest.mock('rrweb', () => ({
@@ -62,7 +62,9 @@ describe('ReplayInstrumentation', () => {
 
     it('should use custom options when provided', () => {
       const beforeSendFn = jest.fn();
-      const maskInputFn = jest.fn((text) => '*'.repeat(text.length));
+      const maskInputFn: MaskInputFn = jest.fn((text, _element) =>
+        '*'.repeat(text.length)
+      );
       const customOptions: ReplayInstrumentationOptions = {
         recordCrossOriginIframes: true,
         maskAllInputs: true,
@@ -182,7 +184,9 @@ describe('ReplayInstrumentation', () => {
     });
 
     it('should pass correct options to rrweb record', () => {
-      const maskInputFn = jest.fn((text) => '*'.repeat(text.length));
+      const maskInputFn: MaskInputFn = jest.fn((text, _element) =>
+        '*'.repeat(text.length)
+      );
       const customOptions: ReplayInstrumentationOptions = {
         maskAllInputs: true,
         blockSelector: '.secret',
