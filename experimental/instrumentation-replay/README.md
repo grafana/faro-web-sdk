@@ -79,9 +79,9 @@ initializeFaro({
 
 ### Hooks
 
-| Key          | Type                                              | Default     | Description                                                                    |
-| ------------ | ------------------------------------------------- | ----------- | ------------------------------------------------------------------------------ |
-| `beforeSend` | `(event: eventWithTime) => eventWithTime \| null` | `undefined` | Transform or filter events before they are sent. Return `null` to skip sending |
+| Key          | Type                                                           | Default     | Description                                                                                   |
+| ------------ | -------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------- |
+| `beforeSend` | `(event: eventWithTime) => eventWithTime \| null \| undefined` | `undefined` | Transform or filter events before they are sent. Return `null` or `undefined` to skip sending |
 
 ## Privacy and Security
 
