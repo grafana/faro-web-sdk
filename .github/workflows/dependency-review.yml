@@ -24,4 +24,4 @@ jobs:
           # Common licenses in JavaScript/TypeScript npm ecosystem
           allow-licenses: Apache-2.0, MIT, ISC, BSD-2-Clause, BSD-3-Clause, 0BSD, Unlicense, CC0-1.0
           # Exception for internal Grafana shared workflows (AGPL-3.0)
-          allow-dependencies-licenses: 'pkg:githubactions/grafana/shared-workflows#actions/lint-pr-title'
+          allow-dependencies-licenses: 'pkg:githubactions/grafana/shared-workflows/actions/lint-pr-title'
