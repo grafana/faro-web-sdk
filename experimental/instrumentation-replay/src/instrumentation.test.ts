@@ -62,9 +62,7 @@ describe('ReplayInstrumentation', () => {
 
     it('should use custom options when provided', () => {
       const beforeSendFn = jest.fn();
-      const maskInputFn: MaskInputFn = jest.fn((text, _element) =>
-        '*'.repeat(text.length)
-      );
+      const maskInputFn: MaskInputFn = jest.fn((text, _element) => '*'.repeat(text.length));
       const customOptions: ReplayInstrumentationOptions = {
         recordCrossOriginIframes: true,
         maskAllInputs: true,
@@ -184,9 +182,7 @@ describe('ReplayInstrumentation', () => {
     });
 
     it('should pass correct options to rrweb record', () => {
-      const maskInputFn: MaskInputFn = jest.fn((text, _element) =>
-        '*'.repeat(text.length)
-      );
+      const maskInputFn: MaskInputFn = jest.fn((text, _element) => '*'.repeat(text.length));
       const customOptions: ReplayInstrumentationOptions = {
         maskAllInputs: true,
         blockSelector: '.secret',
