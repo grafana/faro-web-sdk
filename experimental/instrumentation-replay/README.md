@@ -51,7 +51,10 @@ initializeFaro({
   - `range` - Range inputs
   - `textarea` - Textarea elements
   - `select` - Select dropdowns
-- **`maskInputFn`**: Custom function to transform input values before they are recorded
+- **`maskInputFn`**: Custom function to transform input values before they are recorded.
+  Signature: `(value: string, element: HTMLElement) => string`
+  - `value` - Current input value to be masked
+  - `element` - The input element being masked
 - **`maskTextSelector`**: Custom CSS selector to mask specific elements
 - **`blockSelector`**: CSS selector to completely block elements from recording
 - **`ignoreSelector`**: CSS selector to ignore specific elements
