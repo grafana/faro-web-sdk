@@ -36,44 +36,52 @@ initializeFaro({
 
 ### Privacy & Masking Options
 
-- **`maskAllInputs`** (default: `false`): Whether to mask all input elements
-- **`maskInputOptions`** (default: `{ password: true }`): Fine-grained control over which input types to mask.
-  Available options:
-  - `password` - Password inputs
-  - `text` - Text inputs
-  - `email` - Email inputs
-  - `tel` - Telephone inputs
-  - `number` - Number inputs
-  - `search` - Search inputs
-  - `url` - URL inputs
-  - `date`, `datetime-local`, `month`, `week`, `time` - Date/time inputs
-  - `color` - Color inputs
-  - `range` - Range inputs
-  - `textarea` - Textarea elements
-  - `select` - Select dropdowns
-- **`maskInputFn`**: Custom function to transform input values before they are recorded.
-  Signature: `(value: string, element: HTMLElement) => string`
-  - `value` - Current input value to be masked
-  - `element` - The input element being masked
-- **`maskTextSelector`**: Custom CSS selector to mask specific elements
-- **`blockSelector`**: CSS selector to completely block elements from recording
-- **`ignoreSelector`**: CSS selector to ignore specific elements
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `maskAllInputs` | `boolean` | `false` | Mask all input content as `*` |
+| `maskInputOptions` | `MaskInputOptions` | `{ password: true }` | Selectively mask specific input types (see below) |
+| `maskInputFn` | `(value: string, element: HTMLElement) => string` | `undefined` | Customize mask input content recording logic |
+| `maskTextSelector` | `string` | `undefined` | CSS selector for elements whose text content should be masked |
+| `blockSelector` | `string` | `undefined` | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions |
+| `ignoreSelector` | `string` | `undefined` | CSS selector for elements whose input events should be ignored |
+
+#### `maskInputOptions`
+
+| Key | Type | Description |
+| --- | --- | --- |
+| `password` | `boolean` | Password inputs |
+| `text` | `boolean` | Text inputs |
+| `email` | `boolean` | Email inputs |
+| `tel` | `boolean` | Telephone inputs |
+| `number` | `boolean` | Number inputs |
+| `search` | `boolean` | Search inputs |
+| `url` | `boolean` | URL inputs |
+| `date` | `boolean` | Date inputs |
+| `datetime-local` | `boolean` | Datetime-local inputs |
+| `month` | `boolean` | Month inputs |
+| `week` | `boolean` | Week inputs |
+| `time` | `boolean` | Time inputs |
+| `color` | `boolean` | Color inputs |
+| `range` | `boolean` | Range inputs |
+| `textarea` | `boolean` | Textarea elements |
+| `select` | `boolean` | Select dropdowns |
 
 ### Recording Options
 
-- **`recordAfter`** (default: `load`): When to start recording.
-  - `load` - Start recording after the page load event
-  - `DOMContentLoaded` - Start recording once the DOM is ready
-- **`recordCrossOriginIframes`** (default: `false`): Whether to record cross-origin iframes
-- **`recordCanvas`** (default: `false`): Whether to record canvas elements
-- **`collectFonts`** (default: `false`): Whether to collect font files
-- **`inlineImages`** (default: `false`): Whether to inline images in the recording
-- **`inlineStylesheet`** (default: `false`): Whether to inline stylesheets
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `recordAfter` | `'load' \| 'DOMContentLoaded'` | `'load'` | When to start recording if the document is not ready yet |
+| `recordCrossOriginIframes` | `boolean` | `false` | Whether to record cross-origin iframes. rrweb must be injected in each child iframe for this to work |
+| `recordCanvas` | `boolean` | `false` | Whether to record canvas element content |
+| `collectFonts` | `boolean` | `false` | Whether to collect fonts used in the website |
+| `inlineImages` | `boolean` | `false` | Whether to record image content |
+| `inlineStylesheet` | `boolean` | `false` | Whether to inline stylesheets in the recording events |
 
 ### Hooks
 
-- **`beforeSend`**: Custom function to transform or filter events before they are sent.
-  Return the modified event or `null`/`undefined` to skip sending
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `beforeSend` | `(event: eventWithTime) => eventWithTime \| null` | `undefined` | Transform or filter events before they are sent. Return `null` to skip sending |
 
 ## Privacy and Security
 
