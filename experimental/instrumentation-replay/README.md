@@ -23,6 +23,7 @@ initializeFaro({
         password: true,
         email: true,
       },
+      maskInputFn: (value) => '*'.repeat(value.length),
       maskAllInputs: false,
       recordAfter: 'load',
       recordCrossOriginIframes: false,
@@ -50,6 +51,7 @@ initializeFaro({
   - `range` - Range inputs
   - `textarea` - Textarea elements
   - `select` - Select dropdowns
+- **`maskInputFn`**: Custom function to transform input values before they are recorded
 - **`maskTextSelector`**: Custom CSS selector to mask specific elements
 - **`blockSelector`**: CSS selector to completely block elements from recording
 - **`ignoreSelector`**: CSS selector to ignore specific elements

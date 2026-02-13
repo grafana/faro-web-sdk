@@ -12,6 +12,11 @@ export interface ReplayInstrumentationOptions {
   maskInputOptions?: MaskInputOptions;
 
   /**
+   * Custom function to transform input values before they are recorded.
+   */
+  maskInputFn?: MaskInputFn;
+
+  /**
    * Custom CSS selector to mask text elements
    * @default undefined
    */
@@ -91,3 +96,5 @@ export type MaskInputOptions = Partial<{
   select: boolean;
   password: boolean;
 }>;
+
+export type MaskInputFn = (text: string, element: HTMLElement) => string;

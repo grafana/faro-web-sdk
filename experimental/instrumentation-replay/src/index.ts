@@ -1,2 +1,2 @@
 export { ReplayInstrumentation } from './instrumentation';
-export type { ReplayInstrumentationOptions, MaskInputOptions } from './types';
+export type { ReplayInstrumentationOptions, MaskInputOptions, MaskInputFn } from './types';
