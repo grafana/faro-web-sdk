@@ -1,4 +1,4 @@
-import { eventWithTime } from 'rrweb';
+import type { eventWithTime } from 'rrweb';
 
 export interface ReplayInstrumentationOptions {
   /**
