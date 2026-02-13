@@ -36,6 +36,7 @@ initializeFaro({
 
 ### Privacy & Masking Options
 
+<<<<<<< improve-instrumentation-replay-readme
 | Key                | Type                                              | Default              | Description                                                                                                                              |
 | ------------------ | ------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `maskAllInputs`    | `boolean`                                         | `false`              | Mask all input content as `*`                                                                                                            |
@@ -65,6 +66,30 @@ initializeFaro({
 | `range`          | `boolean` | Range inputs          |
 | `textarea`       | `boolean` | Textarea elements     |
 | `select`         | `boolean` | Select dropdowns      |
+=======
+- **`maskAllInputs`** (default: `false`): Whether to mask all input elements
+- **`maskInputOptions`** (default: `{ password: true }`): Fine-grained control over which input types to mask.
+  Available options:
+  - `password` - Password inputs
+  - `text` - Text inputs
+  - `email` - Email inputs
+  - `tel` - Telephone inputs
+  - `number` - Number inputs
+  - `search` - Search inputs
+  - `url` - URL inputs
+  - `date`, `datetime-local`, `month`, `week`, `time` - Date/time inputs
+  - `color` - Color inputs
+  - `range` - Range inputs
+  - `textarea` - Textarea elements
+  - `select` - Select dropdowns
+- **`maskInputFn`**: Custom function to transform input values before they are recorded.
+  Signature: `(value: string, element: HTMLElement) => string`
+  - `value` - Current input value to be masked
+  - `element` - The input element being masked
+- **`maskTextSelector`**: Custom CSS selector to mask specific elements
+- **`blockSelector`**: CSS selector to completely block elements from recording
+- **`ignoreSelector`**: CSS selector to ignore specific elements
+>>>>>>> main
 
 ### Recording Options
 
