@@ -1,5 +1,5 @@
 import { ReplayInstrumentation } from './instrumentation';
-import { ReplayInstrumentationOptions } from './types';
+import { MaskInputFn, ReplayInstrumentationOptions } from './types';
 
 // Mock rrweb
 jest.mock('rrweb', () => ({
@@ -46,6 +46,7 @@ describe('ReplayInstrumentation', () => {
         maskInputOptions: {
           password: true,
         },
+        maskInputFn: undefined,
         collectFonts: false,
         inlineImages: false,
         inlineStylesheet: false,
@@ -61,6 +62,7 @@ describe('ReplayInstrumentation', () => {
 
     it('should use custom options when provided', () => {
       const beforeSendFn = jest.fn();
+      const maskInputFn: MaskInputFn = jest.fn((text, _element) => '*'.repeat(text.length));
       const customOptions: ReplayInstrumentationOptions = {
         recordCrossOriginIframes: true,
         maskAllInputs: true,
@@ -68,6 +70,7 @@ describe('ReplayInstrumentation', () => {
           password: true,
           email: true,
         },
+        maskInputFn,
         collectFonts: true,
         inlineImages: true,
         inlineStylesheet: true,
@@ -104,6 +107,7 @@ describe('ReplayInstrumentation', () => {
         maskInputOptions: {
           password: true,
         },
+        maskInputFn: undefined,
         collectFonts: false,
         inlineImages: false,
         inlineStylesheet: false,
@@ -178,6 +182,7 @@ describe('ReplayInstrumentation', () => {
     });
 
     it('should pass correct options to rrweb record', () => {
+      const maskInputFn: MaskInputFn = jest.fn((text, _element) => '*'.repeat(text.length));
       const customOptions: ReplayInstrumentationOptions = {
         maskAllInputs: true,
         blockSelector: '.secret',
@@ -189,6 +194,7 @@ describe('ReplayInstrumentation', () => {
         maskTextSelector: '.mask',
         ignoreSelector: '.ignore',
         maskInputOptions: { password: true, email: true },
+        maskInputFn,
         recordAfter: 'DOMContentLoaded',
       };
 
@@ -216,6 +222,7 @@ describe('ReplayInstrumentation', () => {
           maskTextSelector: '.mask',
           ignoreSelector: '.ignore',
           maskInputOptions: { password: true, email: true },
+          maskInputFn,
           recordAfter: 'DOMContentLoaded',
           recordDOM: true,
           checkoutEveryNms: 300_000,
