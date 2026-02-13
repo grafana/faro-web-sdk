@@ -36,51 +36,51 @@ initializeFaro({
 
 ### Privacy & Masking Options
 
-| Key | Type | Default | Description |
-| --- | --- | --- | --- |
-| `maskAllInputs` | `boolean` | `false` | Mask all input content as `*` |
-| `maskInputOptions` | `MaskInputOptions` | `{ password: true }` | Selectively mask specific input types (see below) |
-| `maskInputFn` | `(value: string, element: HTMLElement) => string` | `undefined` | Customize mask input content recording logic |
-| `maskTextSelector` | `string` | `undefined` | CSS selector for elements whose text content should be masked |
-| `blockSelector` | `string` | `undefined` | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions |
-| `ignoreSelector` | `string` | `undefined` | CSS selector for elements whose input events should be ignored |
+| Key                | Type                                              | Default              | Description                                                                                                                              |
+| ------------------ | ------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `maskAllInputs`    | `boolean`                                         | `false`              | Mask all input content as `*`                                                                                                            |
+| `maskInputOptions` | `MaskInputOptions`                                | `{ password: true }` | Selectively mask specific input types (see below)                                                                                        |
+| `maskInputFn`      | `(value: string, element: HTMLElement) => string` | `undefined`          | Customize mask input content recording logic                                                                                             |
+| `maskTextSelector` | `string`                                          | `undefined`          | CSS selector for elements whose text content should be masked                                                                            |
+| `blockSelector`    | `string`                                          | `undefined`          | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions |
+| `ignoreSelector`   | `string`                                          | `undefined`          | CSS selector for elements whose input events should be ignored                                                                           |
 
 #### `maskInputOptions`
 
-| Key | Type | Description |
-| --- | --- | --- |
-| `password` | `boolean` | Password inputs |
-| `text` | `boolean` | Text inputs |
-| `email` | `boolean` | Email inputs |
-| `tel` | `boolean` | Telephone inputs |
-| `number` | `boolean` | Number inputs |
-| `search` | `boolean` | Search inputs |
-| `url` | `boolean` | URL inputs |
-| `date` | `boolean` | Date inputs |
+| Key              | Type      | Description           |
+| ---------------- | --------- | --------------------- |
+| `password`       | `boolean` | Password inputs       |
+| `text`           | `boolean` | Text inputs           |
+| `email`          | `boolean` | Email inputs          |
+| `tel`            | `boolean` | Telephone inputs      |
+| `number`         | `boolean` | Number inputs         |
+| `search`         | `boolean` | Search inputs         |
+| `url`            | `boolean` | URL inputs            |
+| `date`           | `boolean` | Date inputs           |
 | `datetime-local` | `boolean` | Datetime-local inputs |
-| `month` | `boolean` | Month inputs |
-| `week` | `boolean` | Week inputs |
-| `time` | `boolean` | Time inputs |
-| `color` | `boolean` | Color inputs |
-| `range` | `boolean` | Range inputs |
-| `textarea` | `boolean` | Textarea elements |
-| `select` | `boolean` | Select dropdowns |
+| `month`          | `boolean` | Month inputs          |
+| `week`           | `boolean` | Week inputs           |
+| `time`           | `boolean` | Time inputs           |
+| `color`          | `boolean` | Color inputs          |
+| `range`          | `boolean` | Range inputs          |
+| `textarea`       | `boolean` | Textarea elements     |
+| `select`         | `boolean` | Select dropdowns      |
 
 ### Recording Options
 
-| Key | Type | Default | Description |
-| --- | --- | --- | --- |
-| `recordAfter` | `'load' \| 'DOMContentLoaded'` | `'load'` | When to start recording if the document is not ready yet |
-| `recordCrossOriginIframes` | `boolean` | `false` | Whether to record cross-origin iframes. rrweb must be injected in each child iframe for this to work |
-| `recordCanvas` | `boolean` | `false` | Whether to record canvas element content |
-| `collectFonts` | `boolean` | `false` | Whether to collect fonts used in the website |
-| `inlineImages` | `boolean` | `false` | Whether to record image content |
-| `inlineStylesheet` | `boolean` | `false` | Whether to inline stylesheets in the recording events |
+| Key                        | Type                           | Default  | Description                                                                                          |
+| -------------------------- | ------------------------------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| `recordAfter`              | `'load' \| 'DOMContentLoaded'` | `'load'` | When to start recording if the document is not ready yet                                             |
+| `recordCrossOriginIframes` | `boolean`                      | `false`  | Whether to record cross-origin iframes. rrweb must be injected in each child iframe for this to work |
+| `recordCanvas`             | `boolean`                      | `false`  | Whether to record canvas element content                                                             |
+| `collectFonts`             | `boolean`                      | `false`  | Whether to collect fonts used in the website                                                         |
+| `inlineImages`             | `boolean`                      | `false`  | Whether to record image content                                                                      |
+| `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                |
 
 ### Hooks
 
-| Key | Type | Default | Description |
-| --- | --- | --- | --- |
+| Key          | Type                                              | Default     | Description                                                                    |
+| ------------ | ------------------------------------------------- | ----------- | ------------------------------------------------------------------------------ |
 | `beforeSend` | `(event: eventWithTime) => eventWithTime \| null` | `undefined` | Transform or filter events before they are sent. Return `null` to skip sending |
 
 ## Privacy and Security
