@@ -1,5 +1,7 @@
 # Changelog
 
+## Next
+
 ## 2.2.4
 
 - Feature (`@grafana/faro-instrumentation-replay` [experimental]): Add `recordAfter` option
