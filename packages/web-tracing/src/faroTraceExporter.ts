@@ -1,5 +1,6 @@
 import { ExportResultCode } from '@opentelemetry/core';
 import type { ExportResult } from '@opentelemetry/core';
+import { JSON_ENCODER } from '@opentelemetry/otlp-transformer/build/src/common/utils';
 import { createExportTraceServiceRequest } from '@opentelemetry/otlp-transformer/build/src/trace/internal';
 import type { ReadableSpan, SpanExporter } from '@opentelemetry/sdk-trace-web';
 
@@ -10,7 +11,7 @@ export class FaroTraceExporter implements SpanExporter {
   constructor(private config: FaroTraceExporterConfig) {}
 
   export(spans: ReadableSpan[], resultCallback: (result: ExportResult) => void): void {
-    const traceEvent = createExportTraceServiceRequest(spans, { useHex: true, useLongBits: false });
+    const traceEvent = createExportTraceServiceRequest(spans, JSON_ENCODER);
 
     this.config.api.pushTraces(traceEvent);
     sendFaroEvents(traceEvent.resourceSpans, this.config.api);
