@@ -917,7 +917,7 @@ __metadata:
     jsonwebtoken: "npm:^9.0.0"
     mkdirp: "npm:3.0.1"
     nodemon: "npm:3.1.11"
-    npm-run-all2: "npm:5.0.0"
+    npm-run-all2: "npm:6.2.6"
     path-to-regexp: "npm:^8.2.0"
     pg: "npm:^8.13.0"
     pg-hstore: "npm:^2.3.4"
@@ -4907,7 +4907,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-styles@npm:^4.0.0, ansi-styles@npm:^4.1.0, ansi-styles@npm:^4.2.1":
+"ansi-styles@npm:^4.0.0, ansi-styles@npm:^4.1.0":
   version: 4.3.0
   resolution: "ansi-styles@npm:4.3.0"
   dependencies:
@@ -10476,6 +10476,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json-parse-even-better-errors@npm:^3.0.0":
+  version: 3.0.2
+  resolution: "json-parse-even-better-errors@npm:3.0.2"
+  checksum: 10c0/147f12b005768abe9fab78d2521ce2b7e1381a118413d634a40e6d907d7d10f5e9a05e47141e96d6853af7cc36d2c834d0a014251be48791e037ff2f13d2b94b
+  languageName: node
+  linkType: hard
+
 "json-parse-even-better-errors@npm:^4.0.0":
   version: 4.0.0
   resolution: "json-parse-even-better-errors@npm:4.0.0"
@@ -11812,7 +11819,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^9.0.4, minimatch@npm:^9.0.5":
+"minimatch@npm:^9.0.0, minimatch@npm:^9.0.4, minimatch@npm:^9.0.5":
   version: 9.0.5
   resolution: "minimatch@npm:9.0.5"
   dependencies:
@@ -12344,6 +12351,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"npm-normalize-package-bin@npm:^3.0.0":
+  version: 3.0.1
+  resolution: "npm-normalize-package-bin@npm:3.0.1"
+  checksum: 10c0/f1831a7f12622840e1375c785c3dab7b1d82dd521211c17ee5e9610cd1a34d8b232d3fdeebf50c170eddcb321d2c644bf73dbe35545da7d588c6b3fa488db0a5
+  languageName: node
+  linkType: hard
+
 "npm-normalize-package-bin@npm:^4.0.0":
   version: 4.0.0
   resolution: "npm-normalize-package-bin@npm:4.0.0"
@@ -12460,22 +12474,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"npm-run-all2@npm:5.0.0":
-  version: 5.0.0
-  resolution: "npm-run-all2@npm:5.0.0"
+"npm-run-all2@npm:6.2.6":
+  version: 6.2.6
+  resolution: "npm-run-all2@npm:6.2.6"
   dependencies:
-    ansi-styles: "npm:^4.2.1"
+    ansi-styles: "npm:^6.2.1"
     cross-spawn: "npm:^7.0.3"
     memorystream: "npm:^0.3.1"
-    minimatch: "npm:^3.0.4"
-    pidtree: "npm:^0.5.0"
-    read-pkg: "npm:^5.2.0"
-    shell-quote: "npm:^1.6.1"
+    minimatch: "npm:^9.0.0"
+    pidtree: "npm:^0.6.0"
+    read-package-json-fast: "npm:^3.0.2"
+    shell-quote: "npm:^1.7.3"
+    which: "npm:^3.0.1"
   bin:
     npm-run-all: bin/npm-run-all/index.js
+    npm-run-all2: bin/npm-run-all/index.js
     run-p: bin/run-p/index.js
     run-s: bin/run-s/index.js
-  checksum: 10c0/4bbc902d9791576c1c8af599bc10fcb34fc11c1dd52845a25273aff5ce0d3b19ba8839072cb0208001cfa24693921dda35f7e941607e5e88cafd3e553e545cd8
+  checksum: 10c0/043b0851958b22b1910002cacd996e2ee8d45fefd3aa0f6da2795c50f1eb1d520631f993f6c8c7d28aeca73882a95b35451024fcd796c26a7907e1a1dacb0a84
   languageName: node
   linkType: hard
 
@@ -13345,15 +13361,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pidtree@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "pidtree@npm:0.5.0"
-  bin:
-    pidtree: bin/pidtree.js
-  checksum: 10c0/4004b1c7429d02be941ad7ca2eac3bd93afa5cd59119633113013a33de52d76887de09a06a81943475bc1de3efe0a639515a5fee314f5ba074e6d849499e4b4f
-  languageName: node
-  linkType: hard
-
 "pidtree@npm:^0.6.0":
   version: 0.6.0
   resolution: "pidtree@npm:0.6.0"
@@ -13997,6 +14004,16 @@ __metadata:
   version: 5.0.0
   resolution: "read-cmd-shim@npm:5.0.0"
   checksum: 10c0/5688aea2742d928575a1dd87ee0ce691f57b344935fe87d6460067951e7a3bb3677501513316785e1e9ea43b0bb1635eacba3b00b81ad158f9b23512f1de26d2
+  languageName: node
+  linkType: hard
+
+"read-package-json-fast@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "read-package-json-fast@npm:3.0.2"
+  dependencies:
+    json-parse-even-better-errors: "npm:^3.0.0"
+    npm-normalize-package-bin: "npm:^3.0.0"
+  checksum: 10c0/37787e075f0260a92be0428687d9020eecad7ece3bda37461c2219e50d1ec183ab6ba1d9ada193691435dfe119a42c8a5b5b5463f08c8ddbc3d330800b265318
   languageName: node
   linkType: hard
 
@@ -14864,7 +14881,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"shell-quote@npm:^1.6.1, shell-quote@npm:^1.7.3":
+"shell-quote@npm:^1.7.3":
   version: 1.8.3
   resolution: "shell-quote@npm:1.8.3"
   checksum: 10c0/bee87c34e1e986cfb4c30846b8e6327d18874f10b535699866f368ade11ea4ee45433d97bf5eada22c4320c27df79c3a6a7eb1bf3ecfc47f2c997d9e5e2672fd
@@ -16749,6 +16766,17 @@ __metadata:
   bin:
     node-which: ./bin/node-which
   checksum: 10c0/66522872a768b60c2a65a57e8ad184e5372f5b6a9ca6d5f033d4b0dc98aff63995655a7503b9c0a2598936f532120e81dd8cc155e2e92ed662a2b9377cc4374f
+  languageName: node
+  linkType: hard
+
+"which@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "which@npm:3.0.1"
+  dependencies:
+    isexe: "npm:^2.0.0"
+  bin:
+    node-which: bin/which.js
+  checksum: 10c0/15263b06161a7c377328fd2066cb1f093f5e8a8f429618b63212b5b8847489be7bcab0ab3eb07f3ecc0eda99a5a7ea52105cf5fa8266bedd083cc5a9f6da24f1
   languageName: node
   linkType: hard
 
