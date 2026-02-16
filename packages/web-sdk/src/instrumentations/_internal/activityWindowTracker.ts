@@ -95,7 +95,7 @@ export class ActivityWindowTracker extends Observable {
     this._clearTimer(this._inactivityTid);
     this._clearTimer(this._drainTid);
 
-    let duration = 0;
+    let duration;
     if (this.hasActiveOperations()) {
       duration = Date.now() - this._startTime!;
     } else {

@@ -47,5 +47,4 @@ export function getUserActionNameFromElement(element: HTMLElement, dataAttribute
 
 export function unsubscribeAllMonitors(allMonitorsSub: Subscription | undefined) {
   allMonitorsSub?.unsubscribe();
-  allMonitorsSub = undefined;
 }
