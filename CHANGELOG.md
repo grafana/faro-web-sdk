@@ -2,9 +2,16 @@
 
 ## Next
 
+## 2.2.4
+
 - Feature (`@grafana/faro-instrumentation-replay` [experimental]): Add `recordAfter` option
   to configure replay recording start timing (`DOMContentLoaded` or `load`), with `load`
   as the default.
+
+- Chore (`@grafana/faro-*`): Updated multiple dependencies including OpenTelemetry v0.212.0 and
+  npm-run-all2 v7 (#1900, #1899, #1891, #1902).
+
+- Chore (demo): Updated dependency react-router to v7.12.0 to address security vulnerability (#1834).
 
 ## 2.2.3
 
