@@ -71,6 +71,12 @@ const modules = {
     globalName: 'GrafanaFaroInstrumentationK6Browser',
     externals: [],
   },
+  chromeExtension: {
+    name: '@grafana/faro-chrome-extension',
+    bundleName: 'faro-chrome-extension',
+    globalName: 'GrafanaFaroChromeExtension',
+    externals: ['webSdk'],
+  },
 };
 
 exports.getRollupConfigBase = (moduleName) => {

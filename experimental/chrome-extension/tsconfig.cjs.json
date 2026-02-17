@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.cjs.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/cjs",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.cache/tsc/chromeExtension.cjs.tsbuildinfo",
+    "types": ["jest", "node", "chrome"]
+  },
+  "include": ["./src"],
+  "exclude": ["**/*.test.ts"],
+  "references": [
+    { "path": "../../packages/core/tsconfig.cjs.json" },
+    { "path": "../../packages/web-sdk/tsconfig.cjs.json" }
+  ]
+}
