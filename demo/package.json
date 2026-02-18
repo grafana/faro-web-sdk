@@ -96,7 +96,7 @@
     "cross-env": "10.1.0",
     "mkdirp": "3.0.1",
     "nodemon": "3.1.11",
-    "npm-run-all2": "7.0.2",
+    "npm-run-all2": "8.0.4",
     "touch": "3.1.1",
     "vite": "7.3.1"
   }
