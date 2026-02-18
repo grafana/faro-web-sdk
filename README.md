@@ -40,6 +40,14 @@ the [README.md][faro-web-sdk-readme] for more information.
 [@grafana/faro-react][faro-react] is a package that enables easier integration in projects built with React. See the
 [README.md][faro-react-readme] for more information.
 
+### Chrome Extension Support (Experimental)
+
+[@grafana/faro-chrome-extension][faro-chrome-extension] provides instrumentations, metas and transports for use in
+Chrome extensions. It supports all extension contexts: background service workers, content scripts, and popup/options
+pages. See the [README.md][faro-chrome-extension-readme] for more information.
+
+> **Warning**: this package is experimental and may be subject to frequent and breaking changes. Use at your own risk.
+
 [faro-drone]: https://drone.grafana.net/grafana/faro-web-sdk
 [faro-drone-status]: https://drone.grafana.net/api/badges/grafana/faro-web-sdk/status.svg
 [grafana-alloy-docs]: https://grafana.com/docs/alloy/latest/
@@ -56,6 +64,8 @@ the [README.md][faro-web-sdk-readme] for more information.
 [faro-web-sdk-readme]: ./packages/web-sdk/README.md
 [faro-web-tracing]: ./packages/web-tracing
 [faro-web-tracing-readme]: ./packages/web-tracing/README.md
+[faro-chrome-extension]: ./experimental/chrome-extension
+[faro-chrome-extension-readme]: ./experimental/chrome-extension/README.md
 
 ## Releases
 

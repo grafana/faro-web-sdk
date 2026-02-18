@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.esm.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/bundle/types",
+    "outDir": "./dist/bundle",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "../../.cache/tsc/chromeExtension.esm.tsbuildinfo",
+    "types": ["jest", "node", "chrome"]
+  },
+  "include": ["./src"],
+  "exclude": ["./**/*.test.ts"]
+}

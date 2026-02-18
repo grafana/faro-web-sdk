@@ -2,7 +2,8 @@
   "packages": [
     "packages/*",
     "experimental/*",
-    "demo"
+    "demo",
+    "demo/chrome-extension"
   ],
   "version": "2.2.4",
   "npmClient": "yarn",

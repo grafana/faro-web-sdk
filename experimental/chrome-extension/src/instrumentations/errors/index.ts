@@ -1,0 +1,1 @@
+export { ExtensionErrorsInstrumentation } from './instrumentation';

@@ -13,7 +13,8 @@
   "workspaces": [
     "packages/**",
     "experimental/**",
-    "demo"
+    "demo",
+    "demo/chrome-extension"
   ],
   "main": "index.js",
   "scripts": {

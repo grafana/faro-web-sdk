@@ -1,0 +1,37 @@
+body {
+  width: 280px;
+  padding: 16px;
+  font-family: system-ui, sans-serif;
+  margin: 0;
+}
+
+h1 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+
+#session {
+  font-size: 12px;
+  color: #666;
+  word-break: break-all;
+  margin: 0 0 12px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+button {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+button:hover {
+  background: #e8e8e8;
+}
