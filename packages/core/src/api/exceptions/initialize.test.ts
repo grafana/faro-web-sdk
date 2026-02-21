@@ -131,6 +131,16 @@ describe('api.exceptions', () => {
     });
 
     describe('Filtering', () => {
+      it("doesn't filter events with same error but different fingerprints", () => {
+        const error = new Error('test');
+
+        api.pushError(error, { fingerprint: 'fingerprint-A' });
+        expect(transport.items).toHaveLength(1);
+
+        api.pushError(error, { fingerprint: 'fingerprint-B' });
+        expect(transport.items).toHaveLength(2);
+      });
+
       it('filters the same event', () => {
         const error = new Error('test');
 
