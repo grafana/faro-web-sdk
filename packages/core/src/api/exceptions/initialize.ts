@@ -44,7 +44,7 @@ export function initializeExceptionsAPI({
 }): ExceptionsAPI {
   internalLogger.debug('Initializing exceptions API');
 
-  let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace' | 'context'> | null = null;
+  let lastPayload: Pick<ExceptionEvent, 'type' | 'value' | 'stacktrace' | 'context' | 'fingerprint'> | null = null;
 
   stacktraceParser = config.parseStacktrace ?? stacktraceParser;
 
@@ -60,7 +60,7 @@ export function initializeExceptionsAPI({
 
   const pushError: ExceptionsAPI['pushError'] = (
     error,
-    { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs, originalError } = {}
+    { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs, originalError, fingerprint } = {}
   ) => {
     if (isErrorIgnored(ignoreErrors, originalError ?? error)) {
       return;
@@ -85,6 +85,7 @@ export function initializeExceptionsAPI({
             : tracesApi.getTraceContext(),
           ...(isEmpty(ctx) ? {} : { context: ctx }),
           ...(preserveOriginalError ? { originalError } : {}),
+          ...(fingerprint ? { fingerprint } : {}),
         },
         type: TransportItemType.EXCEPTION,
       };
@@ -102,6 +103,7 @@ export function initializeExceptionsAPI({
         value: item.payload.value,
         stackTrace: item.payload.stacktrace,
         context: item.payload.context,
+        fingerprint: item.payload.fingerprint,
       };
 
       if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
