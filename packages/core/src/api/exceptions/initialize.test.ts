@@ -116,6 +116,20 @@ describe('api.exceptions', () => {
       expect((transport.items[0]?.payload as ExceptionEventExtended).originalError).toEqual(error);
     });
 
+    it('includes fingerprint in payload when provided', () => {
+      api.pushError(new Error('test'), { fingerprint: 'my-custom-fingerprint' });
+      expect(transport.items).toHaveLength(1);
+      const evt = transport.items[0]?.payload as ExceptionEvent;
+      expect(evt.fingerprint).toEqual('my-custom-fingerprint');
+    });
+
+    it('does not include fingerprint in payload when not provided', () => {
+      api.pushError(new Error('test'));
+      expect(transport.items).toHaveLength(1);
+      const evt = transport.items[0]?.payload as ExceptionEvent;
+      expect(evt.fingerprint).toBeUndefined();
+    });
+
     describe('Filtering', () => {
       it('filters the same event', () => {
         const error = new Error('test');

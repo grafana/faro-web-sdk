@@ -60,7 +60,7 @@ export function initializeExceptionsAPI({
 
   const pushError: ExceptionsAPI['pushError'] = (
     error,
-    { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs, originalError } = {}
+    { skipDedupe, stackFrames, type, context, spanContext, timestampOverwriteMs, originalError, fingerprint } = {}
   ) => {
     if (isErrorIgnored(ignoreErrors, originalError ?? error)) {
       return;
@@ -85,6 +85,7 @@ export function initializeExceptionsAPI({
             : tracesApi.getTraceContext(),
           ...(isEmpty(ctx) ? {} : { context: ctx }),
           ...(preserveOriginalError ? { originalError } : {}),
+          ...(fingerprint ? { fingerprint } : {}),
         },
         type: TransportItemType.EXCEPTION,
       };
