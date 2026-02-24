@@ -2,6 +2,10 @@
 
 ## Next
 
+- Feature (`@grafana/faro-core`): Add optional `fingerprint` attribute to exception events for
+  custom error grouping. The fingerprint can be passed via `pushError` options or set in the
+  `beforeSend` hook.
+
 ## 2.2.4
 
 - Feature (`@grafana/faro-instrumentation-replay` [experimental]): Add `recordAfter` option
