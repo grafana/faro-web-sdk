@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Faro Chrome Extension Demo",
+  "version": "1.0.0",
+  "description": "Demo extension showcasing @grafana/faro-chrome-extension in all three extension contexts.",
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "dist/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["dist/content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

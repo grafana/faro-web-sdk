@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.spec.json",
+  "compilerOptions": {
+    "declarationDir": "./dist/types",
+    "outDir": "./dist/spec",
+    "rootDir": "../..",
+    "tsBuildInfoFile": "../../.cache/tsc/chromeExtension.spec.tsbuildinfo",
+    "types": ["jest", "node", "chrome"]
+  },
+  "include": ["./src"],
+  "references": [
+    { "path": "../../packages/core/tsconfig.spec.json" },
+    { "path": "../../packages/web-sdk/tsconfig.spec.json" }
+  ]
+}

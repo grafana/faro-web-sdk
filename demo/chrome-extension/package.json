@@ -1,0 +1,24 @@
+{
+  "name": "@grafana/faro-chrome-extension-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo Chrome extension for @grafana/faro-chrome-extension",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "rollup -c rollup.config.js",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@grafana/faro-chrome-extension": "^2.2.4",
+    "@grafana/faro-web-sdk": "^2.2.4"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-typescript": "^12.0.0",
+    "@types/chrome": "0.0.287",
+    "rollup": "^4.0.0",
+    "tslib": "^2.6.0",
+    "typescript": "^5.0.0"
+  }
+}

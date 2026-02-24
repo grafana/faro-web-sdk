@@ -1,0 +1,62 @@
+{
+  "name": "@grafana/faro-chrome-extension",
+  "version": "2.2.4",
+  "description": "Faro instrumentations, metas, transports for Chrome extensions.",
+  "keywords": [
+    "observability",
+    "apm",
+    "rum",
+    "logs",
+    "traces",
+    "metrics",
+    "chrome-extension"
+  ],
+  "license": "Apache-2.0",
+  "author": "Grafana Labs",
+  "homepage": "https://github.com/grafana/faro-web-sdk",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/faro-web-sdk.git",
+    "directory": "experimental/chrome-extension"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "yarn watch",
+    "build": "run-s 'build:*'",
+    "build:compile": "run-p 'build:compile:*'",
+    "build:compile:cjs": "tsc --build tsconfig.cjs.json",
+    "build:compile:esm": "tsc --build tsconfig.esm.json",
+    "build:compile:bundle": "run-s 'build:compile:bundle:*'",
+    "build:compile:bundle:create": "rollup -c ./rollup.config.js",
+    "build:compile:bundle:remove-extras": "rimraf dist/bundle/dist",
+    "watch": "run-p 'watch:compile:*'",
+    "watch:compile:cjs": "yarn build:compile:cjs -w",
+    "watch:compile:esm": "yarn build:compile:esm -w",
+    "clean": "rimraf dist/ yarn-error.log",
+    "quality": "run-s 'quality:*'",
+    "quality:test": "jest",
+    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/chromeExtension --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint": "run-s 'quality:lint:*'",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/chromeExtension \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/chromeExtension --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\""
+  },
+  "dependencies": {
+    "@grafana/faro-core": "^2.2.4",
+    "@grafana/faro-web-sdk": "^2.2.4"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.0.287",
+    "@types/node": "24.10.13"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

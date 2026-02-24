@@ -27,11 +27,13 @@ export class BatchExecutor {
 
     // Send batched/buffered data when user navigates to new page, switches or closes the tab, minimizes or closes the browser.
     // If on mobile, it also sends data if user switches from the browser to a different app.
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
-        this.flush();
-      }
-    });
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          this.flush();
+        }
+      });
+    }
   }
 
   addItem(item: TransportItem): void {
@@ -49,7 +51,7 @@ export class BatchExecutor {
   start(): void {
     this.paused = false;
     if (this.sendTimeout > 0) {
-      this.flushInterval = window.setInterval(() => this.flush(), this.sendTimeout);
+      this.flushInterval = globalThis.setInterval(() => this.flush(), this.sendTimeout) as unknown as number;
     }
   }
 
