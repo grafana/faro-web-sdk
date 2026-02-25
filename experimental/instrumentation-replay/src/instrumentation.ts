@@ -15,6 +15,8 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private stopFn: { (): void } | null = null;
   private isRecording: boolean = false;
   private options: ReplayInstrumentationOptions = defaultReplayInstrumentationOptions;
+  private sampledSessionId: string | null = null;
+  private isReplaySampledForSession: boolean = false;
 
   constructor(options: ReplayInstrumentationOptions = {}) {
     super();
@@ -39,15 +41,47 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     const session = this.api.getSession();
     const isSampled = session?.attributes?.['isSampled'] === 'true';
 
-    if (isSampled && !this.isRecording) {
-      this.logDebug('Session is sampled, starting recording');
-      this.startRecording();
-    } else if (!isSampled && this.isRecording) {
-      this.logDebug('Session is not sampled, stopping recording');
-      this.stopRecording();
-    } else if (!isSampled) {
-      this.logDebug('Session is not sampled, recording not started');
+    if (!isSampled) {
+      if (this.isRecording) {
+        this.logDebug('Session is not sampled, stopping recording');
+        this.stopRecording();
+      } else {
+        this.logDebug('Session is not sampled, recording not started');
+      }
+      return;
     }
+
+    // Globally sampled — apply replay sub-sampling, stable per session ID
+    const sessionId = session?.id ?? null;
+    if (sessionId !== this.sampledSessionId) {
+      this.sampledSessionId = sessionId;
+      this.isReplaySampledForSession = this.rollReplaySampling();
+    }
+
+    if (this.isReplaySampledForSession && !this.isRecording) {
+      this.logDebug('Session is sampled for replay, starting recording');
+      this.startRecording();
+    } else if (!this.isReplaySampledForSession && this.isRecording) {
+      this.logDebug('Session is not sampled for replay, stopping recording');
+      this.stopRecording();
+    } else if (!this.isReplaySampledForSession) {
+      this.logDebug('Session is not sampled for replay, recording not started');
+    }
+  }
+
+  private rollReplaySampling(): boolean {
+    let rate = this.options.samplingRate ?? 1;
+    if (rate < 0 || rate > 1) {
+      this.logDebug(`samplingRate ${rate} is out of range [0, 1], clamping`);
+      rate = Math.min(1, Math.max(0, rate));
+    }
+    if (rate === 0) {
+      return false;
+    }
+    if (rate === 1) {
+      return true;
+    }
+    return Math.random() < rate;
   }
 
   private stopRecording(): void {
