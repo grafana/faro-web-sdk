@@ -55,6 +55,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: undefined,
         ignoreSelector: undefined,
         beforeSend: undefined,
+        samplingRate: 1,
       };
 
       expect(instrumentation['options']).toEqual(expectedDefaults);
@@ -80,6 +81,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: '.block-me',
         ignoreSelector: '.ignore-me',
         beforeSend: beforeSendFn,
+        samplingRate: 1,
       };
 
       instrumentation = new ReplayInstrumentation(customOptions);
@@ -116,6 +118,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: undefined,
         ignoreSelector: undefined,
         beforeSend: undefined,
+        samplingRate: 1,
       };
 
       expect(instrumentation['options']).toEqual(expected);
@@ -405,6 +408,154 @@ describe('ReplayInstrumentation', () => {
 
       expect(() => instrumentation.destroy()).not.toThrow();
       expect(instrumentation['isRecording']).toBe(false);
+    });
+  });
+
+  describe('samplingRate', () => {
+    it('should record all sampled sessions when samplingRate is 1 (default)', () => {
+      instrumentation = new ReplayInstrumentation({ samplingRate: 1 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(true);
+    });
+
+    it('should never record when samplingRate is 0', () => {
+      instrumentation = new ReplayInstrumentation({ samplingRate: 0 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).not.toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(false);
+    });
+
+    it('should record when samplingRate is 0.5 and Math.random() is below threshold', () => {
+      jest.spyOn(Math, 'random').mockReturnValue(0.3);
+
+      instrumentation = new ReplayInstrumentation({ samplingRate: 0.5 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(true);
+
+      jest.spyOn(Math, 'random').mockRestore();
+    });
+
+    it('should not record when samplingRate is 0.5 and Math.random() is above threshold', () => {
+      jest.spyOn(Math, 'random').mockReturnValue(0.7);
+
+      instrumentation = new ReplayInstrumentation({ samplingRate: 0.5 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).not.toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(false);
+
+      jest.spyOn(Math, 'random').mockRestore();
+    });
+
+    it('should clamp negative samplingRate to 0 and log a debug warning', () => {
+      instrumentation = new ReplayInstrumentation({ samplingRate: -0.5 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      const logDebugSpy = jest.spyOn(instrumentation as any, 'logDebug');
+
+      instrumentation.initialize();
+
+      expect(logDebugSpy).toHaveBeenCalledWith(expect.stringContaining('out of range'));
+      expect(mockRecord).not.toHaveBeenCalled();
+    });
+
+    it('should clamp samplingRate > 1 to 1 and log a debug warning', () => {
+      instrumentation = new ReplayInstrumentation({ samplingRate: 1.5 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      const logDebugSpy = jest.spyOn(instrumentation as any, 'logDebug');
+
+      instrumentation.initialize();
+
+      expect(logDebugSpy).toHaveBeenCalledWith(expect.stringContaining('out of range'));
+      expect(mockRecord).toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(true);
+    });
+
+    it('should use a stable decision for the same session ID', () => {
+      jest.spyOn(Math, 'random').mockReturnValue(0.3);
+
+      instrumentation = new ReplayInstrumentation({ samplingRate: 0.5 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      // Capture the listener registered by initialize
+      let metaListener: () => void;
+      mockAddListener.mockImplementation((cb: () => void) => {
+        metaListener = cb;
+      });
+
+      instrumentation.initialize();
+      expect(mockRecord).toHaveBeenCalledTimes(1);
+
+      // Simulate meta change with the same session — Math.random should NOT be re-rolled
+      jest.spyOn(Math, 'random').mockReturnValue(0.9); // would exclude if re-rolled
+      metaListener!();
+
+      expect(mockRecord).toHaveBeenCalledTimes(1); // still recording, no new start
+      expect(instrumentation['isRecording']).toBe(true);
+
+      jest.spyOn(Math, 'random').mockRestore();
+    });
+
+    it('should re-roll the sampling decision for a new session ID', () => {
+      jest.spyOn(Math, 'random').mockReturnValue(0.3); // include
+
+      instrumentation = new ReplayInstrumentation({ samplingRate: 0.5 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      let metaListener: () => void;
+      mockAddListener.mockImplementation((cb: () => void) => {
+        metaListener = cb;
+      });
+
+      instrumentation.initialize();
+      expect(instrumentation['isRecording']).toBe(true);
+
+      // Session rotates — new ID, Math.random now excludes
+      jest.spyOn(Math, 'random').mockReturnValue(0.9);
+      mockGetSession.mockReturnValue({ id: 'session-2', attributes: { isSampled: 'true' } });
+      metaListener!();
+
+      expect(instrumentation['isRecording']).toBe(false);
+
+      jest.spyOn(Math, 'random').mockRestore();
     });
   });
 });
