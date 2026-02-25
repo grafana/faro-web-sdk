@@ -93,7 +93,7 @@ initializeFaro({
     }),
   ],
 });
-// Effective replay coverage: 1.0 × 0.1 = 10% of all sessions
+// Effective replay coverage: 1.0 × 0.1 = 10% of globally-sampled sessions
 ```
 
 ### Hooks

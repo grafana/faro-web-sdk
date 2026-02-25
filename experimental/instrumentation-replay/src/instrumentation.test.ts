@@ -483,7 +483,7 @@ describe('ReplayInstrumentation', () => {
 
       instrumentation.initialize();
 
-      expect(logDebugSpy).toHaveBeenCalledWith(expect.stringContaining('out of range'));
+      expect(logDebugSpy).toHaveBeenCalledWith(expect.stringContaining('clamping to'));
       expect(mockRecord).not.toHaveBeenCalled();
     });
 
@@ -498,7 +498,7 @@ describe('ReplayInstrumentation', () => {
 
       instrumentation.initialize();
 
-      expect(logDebugSpy).toHaveBeenCalledWith(expect.stringContaining('out of range'));
+      expect(logDebugSpy).toHaveBeenCalledWith(expect.stringContaining('clamping to'));
       expect(mockRecord).toHaveBeenCalled();
       expect(instrumentation['isRecording']).toBe(true);
     });

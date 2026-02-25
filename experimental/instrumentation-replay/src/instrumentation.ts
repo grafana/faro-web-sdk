@@ -48,6 +48,9 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       } else {
         this.logDebug('Session is not sampled, recording not started');
       }
+      // sampledSessionId is intentionally not reset here: if the same session ID
+      // later becomes sampled again (e.g. a transient attribute flip), the cached
+      // replay decision is preserved so the recording behaviour stays stable.
       return;
     }
 
@@ -72,8 +75,9 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private rollReplaySampling(): boolean {
     let rate = this.options.samplingRate ?? 1;
     if (rate < 0 || rate > 1) {
-      this.logDebug(`samplingRate ${rate} is out of range [0, 1], clamping`);
-      rate = Math.min(1, Math.max(0, rate));
+      const clamped = Math.min(1, Math.max(0, rate));
+      this.logDebug(`samplingRate ${rate} is out of range [0, 1], clamping to ${clamped}`);
+      rate = clamped;
     }
     if (rate === 0) {
       return false;
@@ -151,5 +155,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   destroy(): void {
     this.stopRecording();
+    this.sampledSessionId = null;
+    this.isReplaySampledForSession = false;
   }
 }
