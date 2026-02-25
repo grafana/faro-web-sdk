@@ -68,15 +68,15 @@ initializeFaro({
 
 ### Recording Options
 
-| Key                        | Type                           | Default  | Description                                                                                          |
-| -------------------------- | ------------------------------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| Key                        | Type                           | Default  | Description                                                                                                                                               |
+| -------------------------- | ------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `samplingRate`             | `number`                       | `1`      | Fraction of globally-sampled sessions that also record a replay (0–1). Applied on top of `sessionTracking.samplingRate`. Out-of-range values are clamped. |
-| `recordAfter`              | `'load' \| 'DOMContentLoaded'` | `'load'` | When to start recording if the document is not ready yet                                             |
-| `recordCrossOriginIframes` | `boolean`                      | `false`  | Whether to record cross-origin iframes. rrweb must be injected in each child iframe for this to work |
-| `recordCanvas`             | `boolean`                      | `false`  | Whether to record canvas element content                                                             |
-| `collectFonts`             | `boolean`                      | `false`  | Whether to collect fonts used in the website                                                         |
-| `inlineImages`             | `boolean`                      | `false`  | Whether to record image content                                                                      |
-| `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                |
+| `recordAfter`              | `'load' \| 'DOMContentLoaded'` | `'load'` | When to start recording if the document is not ready yet                                                                                                  |
+| `recordCrossOriginIframes` | `boolean`                      | `false`  | Whether to record cross-origin iframes. rrweb must be injected in each child iframe for this to work                                                      |
+| `recordCanvas`             | `boolean`                      | `false`  | Whether to record canvas element content                                                                                                                  |
+| `collectFonts`             | `boolean`                      | `false`  | Whether to collect fonts used in the website                                                                                                              |
+| `inlineImages`             | `boolean`                      | `false`  | Whether to record image content                                                                                                                           |
+| `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                                                                     |
 
 #### Sub-sampling example
 
