@@ -23,7 +23,8 @@ export function isWebStorageAvailable(type: StorageMechanism): boolean {
     return true;
   } catch (error) {
     // the above can throw
-    faro.internalLogger?.info(`Web storage of type ${type} is not available. Reason: ${error}`);
+    // this is called during module init, when the global instance may not be available
+    faro?.internalLogger?.info(`Web storage of type ${type} is not available. Reason: ${error}`);
     return false;
   }
 }
