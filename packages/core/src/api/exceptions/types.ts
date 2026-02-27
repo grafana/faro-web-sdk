@@ -3,8 +3,6 @@ import type { SpanContext } from '@opentelemetry/api';
 import type { TraceContext } from '../traces';
 import type { UserAction } from '../types';
 
-export type StacktraceParser = (err: ExtendedError) => Stacktrace;
-
 export interface ExceptionStackFrame {
   filename: string;
   function: string;
@@ -74,7 +72,6 @@ export type ErrorWithIndexProperties = Error & {
 };
 
 export interface ExceptionsAPI {
-  changeStacktraceParser: (stacktraceParser: StacktraceParser) => void;
-  getStacktraceParser: () => StacktraceParser | undefined;
+  parseStacktrace: ((err: ExtendedError) => Stacktrace) | undefined;
   pushError: (value: ErrorWithIndexProperties, options?: PushErrorOptions) => void;
 }

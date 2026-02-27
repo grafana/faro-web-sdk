@@ -1,4 +1,4 @@
-import type { APIEvent, LogArgsSerializer, StacktraceParser } from '../api';
+import type { APIEvent, ExtendedError, LogArgsSerializer, Stacktrace } from '../api';
 import type { Instrumentation } from '../instrumentations';
 import type { InternalLoggerLevel } from '../internalLogger';
 import type { Meta, MetaApp, MetaItem, MetaPage, MetaSession, MetaUser, MetaView } from '../metas';
@@ -57,9 +57,9 @@ export interface Config<P = APIEvent> {
   metas: MetaItem[];
 
   /**
-   * Custom function used to parse stack traces
+   * The stacktrace parser to use for parsing stack traces.
    */
-  parseStacktrace: StacktraceParser;
+  parseStacktrace?: (err: ExtendedError) => Stacktrace;
 
   /**
    * Pause sending data (default: false)

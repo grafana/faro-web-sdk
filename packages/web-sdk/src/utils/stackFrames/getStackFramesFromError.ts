@@ -16,8 +16,12 @@ import {
   webkitLineRegex,
 } from './const';
 import { getDataFromSafariExtensions } from './getDataFromSafariExtensions';
+import type { StackframeParserOptions } from './types';
 
-export function getStackFramesFromError(error: ExtendedError): ExceptionStackFrame[] {
+export function getStackFramesFromError(
+  error: ExtendedError,
+  options: StackframeParserOptions = {}
+): ExceptionStackFrame[] {
   let lines: string[] = [];
 
   if (error.stacktrace) {
@@ -32,6 +36,13 @@ export function getStackFramesFromError(error: ExtendedError): ExceptionStackFra
     let filename: string | undefined;
     let lineno: string | undefined;
     let colno: string | undefined;
+
+    // skip attempting to parse stack frames over the limit, if it is set and above 0
+    if (options.maximumLineLength !== undefined && options.maximumLineLength > 0) {
+      if (line.length > options.maximumLineLength) {
+        return acc;
+      }
+    }
 
     if ((parts = webkitLineRegex.exec(line))) {
       func = parts[1];
