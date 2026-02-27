@@ -18,8 +18,9 @@ From the repository root:
 # Install dependencies (includes workspace linking)
 yarn install
 
-# Build the chrome-extension package
-yarn workspace @grafana/faro-chrome-extension build
+# Build the chrome-extension package (ESM + CJS)
+npx tsc --build experimental/chrome-extension/tsconfig.esm.json
+npx tsc --build experimental/chrome-extension/tsconfig.cjs.json
 
 # Build the demo
 yarn workspace @grafana/faro-chrome-extension-demo build
@@ -42,28 +43,31 @@ The build produces three IIFE bundles in `demo/chrome-extension/dist/`:
 
 ## Verify
 
+All telemetry appears in the console as `New event` entries (from `ConsoleTransport`). Expand the object next to each entry to see the full payload.
+
 ### Background service worker
 
 1. On the `chrome://extensions` page, find "Faro Chrome Extension Demo".
-2. Click the **Inspect views: service worker** link.
-3. In the DevTools console you should see Faro initialization logs and an `extension-installed` event.
+2. Click the **Inspect views: service worker** link to open DevTools.
+3. Click the **reload** button on the extension card (the service worker logs on startup, so DevTools must be open first).
+4. In the console you should see `New event` entries for Faro initialization and an `extension-installed` event.
 
 ### Content script
 
 1. Navigate to any web page.
 2. Open DevTools on that page (F12).
-3. In the console, look for a log entry: `Content script loaded on <url>`.
-4. Click anywhere on the page — you should see `page-click` events logged with the element tag and id.
+3. In the console, look for `New event` entries — expand them to find the log payload containing `Content script loaded on <url>`.
+4. Click anywhere on the page — additional `New event` entries appear with `page-click` events containing the element tag and id.
 
 ### Popup
 
 1. Click the extension icon in the toolbar to open the popup.
 2. The popup displays the current Faro session ID.
 3. Right-click the popup and choose **Inspect** to open its DevTools.
-4. Click the three buttons and observe the corresponding telemetry in the console:
-   - **Push Log** — pushes `Hello from popup`
-   - **Push Error** — pushes a test `Error`
-   - **Push Event** — pushes a `button-clicked` event
+4. Click the three buttons and observe `New event` entries in the console:
+   - **Push Log** — payload contains `Hello from popup`
+   - **Push Error** — payload contains a test `Error`
+   - **Push Event** — payload contains a `button-clicked` event
 
 ## Sending to a real collector
 
