@@ -31,6 +31,7 @@ export interface ExceptionEventDefault {
   type: string;
   value: string;
 
+  fingerprint?: string;
   stacktrace?: Stacktrace;
   trace?: TraceContext;
   context?: ExceptionContext;
@@ -52,6 +53,7 @@ export type ExceptionEvent<EXTENDED = ExceptionEventDefault> = EXTENDED extends 
   : ExceptionEventDefault;
 
 export interface PushErrorOptions {
+  fingerprint?: string;
   skipDedupe?: boolean;
   stackFrames?: ExceptionStackFrame[];
   type?: string;

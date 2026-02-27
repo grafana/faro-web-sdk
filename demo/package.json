@@ -44,10 +44,10 @@
     "@opentelemetry/core": "^2.0.0",
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.212.0",
     "@opentelemetry/instrumentation": "^0.212.0",
-    "@opentelemetry/instrumentation-express": "^0.59.0",
+    "@opentelemetry/instrumentation-express": "^0.60.0",
     "@opentelemetry/instrumentation-http": "^0.212.0",
-    "@opentelemetry/instrumentation-pg": "^0.63.0",
-    "@opentelemetry/instrumentation-winston": "^0.55.0",
+    "@opentelemetry/instrumentation-pg": "^0.64.0",
+    "@opentelemetry/instrumentation-winston": "^0.56.0",
     "@opentelemetry/resources": "^2.0.0",
     "@opentelemetry/sdk-node": "^0.212.0",
     "@opentelemetry/sdk-trace-node": "^2.0.0",
@@ -96,7 +96,7 @@
     "cross-env": "10.1.0",
     "mkdirp": "3.0.1",
     "nodemon": "3.1.11",
-    "npm-run-all2": "7.0.2",
+    "npm-run-all2": "8.0.4",
     "touch": "3.1.1",
     "vite": "7.3.1"
   }
