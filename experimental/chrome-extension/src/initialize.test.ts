@@ -14,7 +14,7 @@ describe('detectExtensionContext', () => {
       },
     };
 
-    // In jsdom, document.location.protocol is about:, not chrome-extension:
+    // In jsdom, document.location.protocol is 'about:', not chrome-extension:
     // So we test that with the current setup it returns content-script (since protocol != chrome-extension:)
     const result = detectExtensionContext();
     // In jsdom, window exists and protocol is 'about:' so it should be content-script

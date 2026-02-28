@@ -11,6 +11,7 @@
   "exclude": ["**/*.test.ts"],
   "references": [
     { "path": "../../packages/core/tsconfig.esm.json" },
-    { "path": "../../packages/web-sdk/tsconfig.esm.json" }
+    { "path": "../../packages/web-sdk/tsconfig.esm.json" },
+    { "path": "../../packages/web-tracing/tsconfig.esm.json" }
   ]
 }

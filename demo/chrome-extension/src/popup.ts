@@ -35,3 +35,10 @@ document.getElementById('btn-error')?.addEventListener('click', () => {
 document.getElementById('btn-event')?.addEventListener('click', () => {
   faro.api.pushEvent('button-clicked', { source: 'popup' });
 });
+
+document.getElementById('btn-trace')?.addEventListener('click', () => {
+  // This fetch is auto-instrumented by TracingInstrumentation and produces a trace span
+  fetch('https://httpbin.org/get').catch(() => {
+    /* ignore errors — the span is still recorded */
+  });
+});

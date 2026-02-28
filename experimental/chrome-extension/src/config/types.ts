@@ -1,4 +1,5 @@
 import type { Config } from '@grafana/faro-core';
+import type { TracingInstrumentationOptions } from '@grafana/faro-web-tracing';
 
 export type ExtensionContext = 'background' | 'content-script' | 'popup';
 
@@ -6,4 +7,5 @@ export interface ChromeExtensionConfig extends Partial<Omit<Config, 'app' | 'par
   url?: string;
   apiKey?: string;
   extensionContext?: ExtensionContext;
+  tracingOptions?: TracingInstrumentationOptions;
 }

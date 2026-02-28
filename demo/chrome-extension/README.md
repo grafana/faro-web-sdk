@@ -69,19 +69,58 @@ All telemetry appears in the console as `New event` entries (from `ConsoleTransp
    - **Push Error** — payload contains a test `Error`
    - **Push Event** — payload contains a `button-clicked` event
 
-## Sending to a real collector
+## Sending to Grafana Cloud
 
-To send telemetry to a collector instead of the console, edit each source file in `src/` and replace the `transports` option with a `url`:
+To send telemetry to Grafana Cloud instead of the console, edit each source file in `src/` and replace the `transports` option with a `url`. There are two approaches:
+
+### Option 1: Direct to Grafana Cloud (Faro collector)
+
+If you have [Grafana Cloud](https://grafana.com/products/cloud/) with Frontend Observability enabled, you get a collector endpoint. Find your URL and app ID in **Grafana Cloud > Frontend Observability > Web SDK Configuration**.
+
+Update each source file in `src/`:
+
+```ts
+initializeFaroForExtension({
+  app: { name: 'faro-chrome-extension-demo', version: '1.0.0' },
+  url: 'https://faro-collector-prod-us-east-0.grafana.net/collect/<your-app-id>',
+  apiKey: '<your-api-key>',
+  // remove the transports line — the SDK creates a FetchTransport automatically
+});
+```
+
+The `apiKey` is sent as the `x-api-key` header with each request.
+
+You must also add the collector host permission in `manifest.json`:
+
+```json
+{
+  "host_permissions": ["https://faro-collector-prod-us-east-0.grafana.net/*"]
+}
+```
+
+### Option 2: Via Grafana Alloy
+
+Run [Grafana Alloy](https://grafana.com/docs/alloy/latest/) locally with the `faro.receiver` component enabled, then point the extension to it:
 
 ```ts
 initializeFaroForExtension({
   app: { name: 'faro-chrome-extension-demo', version: '1.0.0' },
   url: 'http://localhost:12345/collect',
-  // ...
+  // remove the transports line — the SDK creates a FetchTransport automatically
 });
 ```
 
-Then rebuild with `yarn workspace @grafana/faro-chrome-extension-demo build` and reload the extension.
+Alloy forwards the telemetry to your Grafana Cloud stack (Loki for logs, Tempo for traces).
+
+### After updating
+
+Rebuild and reload:
+
+```bash
+yarn workspace @grafana/faro-chrome-extension-demo build
+```
+
+Then reload the extension on `chrome://extensions`.
 
 ## Project structure
 

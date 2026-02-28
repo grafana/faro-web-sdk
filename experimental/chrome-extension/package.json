@@ -50,7 +50,8 @@
   },
   "dependencies": {
     "@grafana/faro-core": "^2.2.4",
-    "@grafana/faro-web-sdk": "^2.2.4"
+    "@grafana/faro-web-sdk": "^2.2.4",
+    "@grafana/faro-web-tracing": "^2.2.4"
   },
   "devDependencies": {
     "@types/chrome": "0.0.287",

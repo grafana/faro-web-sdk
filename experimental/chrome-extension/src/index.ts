@@ -11,6 +11,9 @@ export {
 
 export { extensionMeta, sdkMeta } from './metas';
 
+export { TracingInstrumentation } from '@grafana/faro-web-tracing';
+export type { TracingInstrumentationOptions } from '@grafana/faro-web-tracing';
+
 export {
   faro,
   allLogLevels,

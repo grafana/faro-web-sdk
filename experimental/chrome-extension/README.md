@@ -87,6 +87,9 @@ In addition to the above, content scripts and popup pages have DOM access, so th
 - **WebVitalsInstrumentation** - captures Core Web Vitals performance metrics
 - **PerformanceInstrumentation** - captures performance entries from the Performance API
 - **ViewInstrumentation** - sends view changed events
+- **TracingInstrumentation** - enables distributed tracing via OpenTelemetry. Instruments `fetch` and `XMLHttpRequest`
+  calls, creating spans exported through the Faro trace exporter. Uses `W3CTraceContextPropagator` by default.
+  Not available in background service workers (see [Tracing](#tracing) for details).
 
 ## Metas
 
@@ -104,13 +107,59 @@ Your extension's `manifest.json` must include the `storage` permission for sessi
 }
 ```
 
-If you are sending telemetry to an external collector, you may also need the host permission:
+If you are sending telemetry to an external collector, you also need the host permission:
 
 ```json
 {
   "host_permissions": ["https://collector.example.com/*"]
 }
 ```
+
+## Sending to Grafana Cloud
+
+### Direct to Grafana Cloud (Faro collector)
+
+If you have [Grafana Cloud](https://grafana.com/products/cloud/) with Frontend Observability enabled, point the SDK
+directly at your Faro collector endpoint. Find your URL and app ID in
+**Grafana Cloud > Frontend Observability > Web SDK Configuration**.
+
+```ts
+const faro = initializeFaroForExtension({
+  url: 'https://faro-collector-prod-us-east-0.grafana.net/collect/<your-app-id>',
+  apiKey: '<your-api-key>',
+  app: {
+    name: 'my-extension',
+    version: '1.0.0',
+  },
+});
+```
+
+The `apiKey` is sent as the `x-api-key` header with each request.
+
+Add the collector host permission in your `manifest.json`:
+
+```json
+{
+  "host_permissions": ["https://faro-collector-prod-us-east-0.grafana.net/*"]
+}
+```
+
+### Via Grafana Alloy
+
+Run [Grafana Alloy](https://grafana.com/docs/alloy/latest/) locally with the `faro.receiver` component enabled, then
+point the extension to it:
+
+```ts
+const faro = initializeFaroForExtension({
+  url: 'http://localhost:12345/collect',
+  app: {
+    name: 'my-extension',
+    version: '1.0.0',
+  },
+});
+```
+
+Alloy forwards the telemetry to your Grafana Cloud stack (Loki for logs, Tempo for traces).
 
 ## Usage examples
 
@@ -210,14 +259,64 @@ const faro = initializeFaroForExtension({
 | `url` | Collector endpoint URL | `string` | - |
 | `apiKey` | Optional API key for the collector | `string` | - |
 | `extensionContext` | The extension context to configure for | `'background' \| 'content-script' \| 'popup'` | Auto-detected |
+| `tracingOptions` | Options forwarded to `TracingInstrumentation` (content-script and popup only) | `TracingInstrumentationOptions` | `{}` |
 
-All other [core configuration options][faro-core-readme] are supported as well (e.g., `instrumentations`, `metas`,
-`transports`, `sessionTracking`, `dedupe`, `paused`, etc.).
+All other [core configuration options][faro-core-readme] are supported as well (e.g., `instrumentations`, `metas`, `transports`, `sessionTracking`, `dedupe`, `paused`, etc.).
+
+## Tracing
+
+Tracing is enabled automatically for content-script and popup contexts. It uses `TracingInstrumentation` from
+`@grafana/faro-web-tracing` internally, which instruments `fetch` and `XMLHttpRequest` calls and exports spans through the Faro trace exporter.
+
+### Background service worker limitation
+
+Tracing is **not** available in background service workers. The underlying `WebTracerProvider` (from
+`@opentelemetry/sdk-trace-web`) calls `document.createElement()` for URL normalization, and
+`XMLHttpRequestInstrumentation` patches `XMLHttpRequest` — neither `document` nor `XMLHttpRequest` exist in service worker contexts.
+
+### Customizing tracing
+
+Pass `tracingOptions` to customize the tracing behaviour:
+
+```ts
+const faro = initializeFaroForExtension({
+  url: 'https://collector.example.com/collect',
+  app: { name: 'my-extension', version: '1.0.0' },
+  tracingOptions: {
+    instrumentationOptions: {
+      propagateTraceHeaderCorsUrls: [/https:\/\/api\.example\.com/],
+    },
+  },
+});
+```
+
+### Disabling tracing
+
+To disable tracing, pass a custom `instrumentations` array that omits `TracingInstrumentation`:
+
+```ts
+import {
+  initializeFaroForExtension,
+  ExtensionErrorsInstrumentation,
+  ConsoleInstrumentation,
+  ExtensionSessionInstrumentation,
+} from '@grafana/faro-chrome-extension';
+
+const faro = initializeFaroForExtension({
+  url: 'https://collector.example.com/collect',
+  app: { name: 'my-extension', version: '1.0.0' },
+  instrumentations: [
+    new ExtensionErrorsInstrumentation(),
+    new ConsoleInstrumentation(),
+    new ExtensionSessionInstrumentation(),
+    // TracingInstrumentation intentionally omitted
+  ],
+});
+```
 
 ## API
 
-The Faro instance returned by `initializeFaroForExtension` provides the same API as the core SDK. See the
-[@grafana/faro-core documentation][faro-core-readme] for full API reference.
+The Faro instance returned by `initializeFaroForExtension` provides the same API as the core SDK. See the [@grafana/faro-core documentation][faro-core-readme] for full API reference.
 
 ```ts
 // Push a log
@@ -241,8 +340,6 @@ faro.api.setUser({ id: 'user-123', username: 'jane' });
 
 ## Demo
 
-A working Chrome extension demo is available at [`demo/chrome-extension/`](../../demo/chrome-extension/). It initializes
-Faro in all three contexts and logs telemetry to the browser console. See its
-[README](../../demo/chrome-extension/README.md) for build and usage instructions.
+A working Chrome extension demo is available at [`demo/chrome-extension/`](../../demo/chrome-extension/). It initializes Faro in all three contexts and logs telemetry to the browser console. See its [README](../../demo/chrome-extension/README.md) for build and usage instructions.
 
 [faro-core-readme]: https://github.com/grafana/faro-web-sdk/blob/main/packages/core/README.md

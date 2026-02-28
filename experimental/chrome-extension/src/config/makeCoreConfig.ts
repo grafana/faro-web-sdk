@@ -34,7 +34,7 @@ export function makeCoreConfig(extensionConfig: ChromeExtensionConfig): Config {
       })
     );
   } else {
-    internalLogger.error('either "url" or "transports" must be defined');
+    internalLogger.error('"url" or "transports" must be defined');
   }
 
   const context = extensionConfig.extensionContext ?? detectExtensionContext();
@@ -42,7 +42,7 @@ export function makeCoreConfig(extensionConfig: ChromeExtensionConfig): Config {
   const {
     dedupe = true,
     globalObjectKey = defaultGlobalObjectKey,
-    instrumentations = getExtensionInstrumentations(context),
+    instrumentations = getExtensionInstrumentations(context, extensionConfig.tracingOptions),
     internalLoggerLevel = defaultInternalLoggerLevel,
     isolate = false,
     logArgsSerializer = defaultLogArgsSerializer,
@@ -53,6 +53,7 @@ export function makeCoreConfig(extensionConfig: ChromeExtensionConfig): Config {
     url: extensionConfigUrl,
     extensionContext,
     apiKey,
+    tracingOptions: _tracingOptions,
     ...restProperties
   }: ChromeExtensionConfig = extensionConfig;
 

@@ -93,8 +93,8 @@ export class ExtensionSessionInstrumentation extends BaseInstrumentation {
       if (stored) {
         return JSON.parse(stored) as FaroUserSession;
       }
-    } catch {
-      // Storage unavailable
+    } catch (err) {
+      this.logWarn('Failed to fetch session from chrome.storage.local', err);
     }
     return null;
   }
@@ -102,8 +102,8 @@ export class ExtensionSessionInstrumentation extends BaseInstrumentation {
   private async storeSession(session: FaroUserSession): Promise<void> {
     try {
       await chrome.storage.local.set({ [STORAGE_KEY]: stringifyExternalJson(session) });
-    } catch {
-      // Storage unavailable
+    } catch (err) {
+      this.logWarn('Failed to store session in chrome.storage.local', err);
     }
   }
 }

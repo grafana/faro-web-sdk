@@ -872,6 +872,7 @@ __metadata:
   dependencies:
     "@grafana/faro-core": "npm:^2.2.4"
     "@grafana/faro-web-sdk": "npm:^2.2.4"
+    "@grafana/faro-web-tracing": "npm:^2.2.4"
     "@types/chrome": "npm:0.0.287"
     "@types/node": "npm:24.10.13"
   languageName: unknown

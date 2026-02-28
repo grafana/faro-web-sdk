@@ -4,12 +4,17 @@ import {
   ViewInstrumentation,
   WebVitalsInstrumentation,
 } from '@grafana/faro-web-sdk';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+import type { TracingInstrumentationOptions } from '@grafana/faro-web-tracing';
 
 import { ConsoleInstrumentation, ExtensionErrorsInstrumentation, ExtensionSessionInstrumentation } from '../instrumentations';
 
 import type { ExtensionContext } from './types';
 
-export function getExtensionInstrumentations(context: ExtensionContext): Instrumentation[] {
+export function getExtensionInstrumentations(
+  context: ExtensionContext,
+  tracingOptions?: TracingInstrumentationOptions
+): Instrumentation[] {
   const baseInstrumentations: Instrumentation[] = [
     new ExtensionErrorsInstrumentation(),
     new ConsoleInstrumentation(),
@@ -22,6 +27,7 @@ export function getExtensionInstrumentations(context: ExtensionContext): Instrum
       new WebVitalsInstrumentation(),
       new PerformanceInstrumentation(),
       new ViewInstrumentation(),
+      new TracingInstrumentation(tracingOptions),
     ];
   }
 
