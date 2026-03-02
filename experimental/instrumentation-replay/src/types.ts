@@ -8,7 +8,8 @@ export interface ReplayInstrumentationOptions {
   maskAllInputs?: boolean;
 
   /**
-   * Whether to mask text inputs; used when `maskAllInputs` is false
+   * Per-input-type masking configuration (e.g. text, email, tel, textarea, select).
+   * Only applied when `maskAllInputs` is false.
    * @default { password: true }
    */
   maskInputOptions?: MaskInputOptions;
