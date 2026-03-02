@@ -42,7 +42,7 @@ describe('ReplayInstrumentation', () => {
       const expectedDefaults: ReplayInstrumentationOptions = {
         recordCrossOriginIframes: false,
         recordAfter: 'load',
-        maskAllInputs: false,
+        maskAllInputs: true,
         maskInputOptions: {
           password: true,
         },
@@ -51,7 +51,7 @@ describe('ReplayInstrumentation', () => {
         inlineImages: false,
         inlineStylesheet: false,
         recordCanvas: false,
-        maskTextSelector: undefined,
+        maskTextSelector: '*',
         blockSelector: undefined,
         ignoreSelector: undefined,
         beforeSend: undefined,
@@ -90,20 +90,20 @@ describe('ReplayInstrumentation', () => {
     it('should merge partial custom options with defaults', () => {
       const partialOptions: ReplayInstrumentationOptions = {
         recordAfter: 'DOMContentLoaded',
-        maskAllInputs: true,
+        maskAllInputs: false,
         recordCanvas: true,
       };
 
       instrumentation = new ReplayInstrumentation(partialOptions);
 
-      expect(instrumentation['options'].maskAllInputs).toBe(true);
+      expect(instrumentation['options'].maskAllInputs).toBe(false);
       expect(instrumentation['options'].recordCanvas).toBe(true);
 
       // Defaults should still be present
       const expected: ReplayInstrumentationOptions = {
         recordCrossOriginIframes: false,
         recordAfter: 'DOMContentLoaded',
-        maskAllInputs: true, // Overridden by partial options
+        maskAllInputs: false,
         maskInputOptions: {
           password: true,
         },
@@ -111,8 +111,8 @@ describe('ReplayInstrumentation', () => {
         collectFonts: false,
         inlineImages: false,
         inlineStylesheet: false,
-        recordCanvas: true, // Overridden by partial options
-        maskTextSelector: undefined,
+        recordCanvas: true,
+        maskTextSelector: '*',
         blockSelector: undefined,
         ignoreSelector: undefined,
         beforeSend: undefined,
@@ -177,6 +177,8 @@ describe('ReplayInstrumentation', () => {
       expect(mockRecord).toHaveBeenCalledWith(
         expect.objectContaining({
           recordAfter: 'load',
+          maskAllInputs: true,
+          maskTextSelector: '*',
         })
       );
     });

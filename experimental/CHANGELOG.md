@@ -2,6 +2,9 @@
 
 ## Next
 
+- Change (`@grafana/faro-instrumentation-replay`): enable full input and text
+  masking by default (`maskAllInputs: true`, `maskTextSelector: '*'`).
+
 ## 2.2.0
 
 - Feature (`@grafana/faro-transport-otlp-http`): OLTP HTTP transport now supports
