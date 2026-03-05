@@ -15404,7 +15404,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"systeminformation@npm:^5.27.14":
+"systeminformation@npm:^5.31.0":
   version: 5.31.1
   resolution: "systeminformation@npm:5.31.1"
   bin:
