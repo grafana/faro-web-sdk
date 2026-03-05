@@ -281,7 +281,7 @@ describe('FetchTransport', () => {
     );
   });
 
-  it('will add dynamic header values from sync callbacks', () => {
+  it('will add dynamic header values from sync callbacks', async () => {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
       requestOptions: {
@@ -296,7 +296,7 @@ describe('FetchTransport', () => {
 
     transport.internalLogger = mockInternalLogger;
 
-    transport.send([item]);
+    await transport.send([item]);
 
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith(
@@ -310,7 +310,7 @@ describe('FetchTransport', () => {
     );
   });
 
-  it('will add static header values and dynamic header values from sync callbacks', () => {
+  it('will add static header values and dynamic header values from sync callbacks', async () => {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
       requestOptions: {
@@ -325,7 +325,7 @@ describe('FetchTransport', () => {
 
     transport.internalLogger = mockInternalLogger;
 
-    transport.send([item]);
+    await transport.send([item]);
 
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith(
@@ -334,6 +334,35 @@ describe('FetchTransport', () => {
         headers: expect.objectContaining({
           Authorization: `Bearer ${mockSessionId}-token`,
           'X-Static': 'static-value',
+        }),
+      })
+    );
+  });
+
+  it('will add dynamic header values from async callbacks', async () => {
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      requestOptions: {
+        headers: {
+          Authorization: async () => Promise.resolve('Bearer async-token'),
+          'X-Async': async () => Promise.resolve('async-value'),
+        },
+      },
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+
+    transport.internalLogger = mockInternalLogger;
+
+    await transport.send([item]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      'http://example.com/collect',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer async-token',
+          'X-Async': 'async-value',
         }),
       })
     );
