@@ -44,7 +44,7 @@ export class FetchTransport extends BaseTransport {
         return Promise.resolve();
       }
 
-      await this.promiseBuffer.add(() => {
+      await this.promiseBuffer.add(async () => {
         const body = JSON.stringify(getTransportBody(items));
 
         const { url, requestOptions, apiKey } = this.options;
@@ -59,7 +59,8 @@ export class FetchTransport extends BaseTransport {
 
         const resolvedHeaders: Record<string, string> = {};
         for (const [key, value] of Object.entries(headers)) {
-          resolvedHeaders[key] = typeof value === 'function' ? value() : value;
+          resolvedHeaders[key] =
+            typeof value === 'function' ? await Promise.resolve(value()) : value;
         }
 
         return fetch(url, {

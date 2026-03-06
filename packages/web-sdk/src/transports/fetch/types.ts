@@ -3,9 +3,10 @@ export interface FetchTransportRequestOptions extends Omit<RequestInit, 'body' |
    * Headers to include in every request.
    * Each value can be:
    * - a string (static value)
-   * - a function returning a string (dynamic value)
+   * - a function returning a string (dynamic value, sync)
+   * - a function returning a Promise of string (dynamic value, async)
    */
-  headers?: Record<string, string | (() => string)>;
+  headers?: Record<string, string | (() => string) | (() => Promise<string>)>;
 }
 
 export interface FetchTransportOptions {
