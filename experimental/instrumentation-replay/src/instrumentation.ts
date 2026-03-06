@@ -7,6 +7,7 @@ import { defaultReplayInstrumentationOptions } from './const';
 import type { ReplayInstrumentationOptions } from './types';
 
 const faroSessionReplayEventName = 'faro.session_recording.event';
+const faroSessionReplayStartedEventName = 'faro.session_recording.started';
 
 export class ReplayInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-instrumentation-replay';
@@ -91,6 +92,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
       this.isRecording = true;
       this.logDebug('Session replay started');
+      this.api.pushEvent(faroSessionReplayStartedEventName, {});
     } catch (err) {
       this.logWarn('Failed to start session replay', err);
     }
