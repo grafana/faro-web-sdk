@@ -3,12 +3,13 @@ import type { eventWithTime } from '@rrweb/types';
 export interface ReplayInstrumentationOptions {
   /**
    * Whether to mask all inputs
-   * @default false
+   * @default true
    */
   maskAllInputs?: boolean;
 
   /**
-   * Whether to mask text inputs
+   * Per-input-type masking configuration (e.g. text, email, tel, textarea, select).
+   * Only applied when `maskAllInputs` is false.
    * @default { password: true }
    */
   maskInputOptions?: MaskInputOptions;
@@ -20,7 +21,7 @@ export interface ReplayInstrumentationOptions {
 
   /**
    * Custom CSS selector to mask text elements
-   * @default undefined
+   * @default '*'
    */
   maskTextSelector?: string;
 

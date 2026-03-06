@@ -23,7 +23,6 @@ initializeFaro({
         password: true,
         email: true,
       },
-      maskInputFn: (value) => '*'.repeat(value.length),
       maskAllInputs: false,
       recordAfter: 'load',
       recordCrossOriginIframes: false,
@@ -38,10 +37,10 @@ initializeFaro({
 
 | Key                | Type                                              | Default              | Description                                                                                                                              |
 | ------------------ | ------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `maskAllInputs`    | `boolean`                                         | `false`              | Mask all input content as `*`                                                                                                            |
-| `maskInputOptions` | `MaskInputOptions`                                | `{ password: true }` | Selectively mask specific input types (see below)                                                                                        |
+| `maskAllInputs`    | `boolean`                                         | `true`               | Mask all input content as `*`                                                                                                            |
+| `maskInputOptions` | `MaskInputOptions`                                | `{ password: true }` | Selectively mask specific input types (used only when `maskAllInputs` is `false`)                                                        |
 | `maskInputFn`      | `(value: string, element: HTMLElement) => string` | `undefined`          | Customize mask input content recording logic                                                                                             |
-| `maskTextSelector` | `string`                                          | `undefined`          | CSS selector for elements whose text content should be masked                                                                            |
+| `maskTextSelector` | `string`                                          | `'*'`                | CSS selector for elements whose text content should be masked                                                                            |
 | `blockSelector`    | `string`                                          | `undefined`          | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions |
 | `ignoreSelector`   | `string`                                          | `undefined`          | CSS selector for elements whose input events should be ignored                                                                           |
 
@@ -87,8 +86,8 @@ initializeFaro({
 
 This instrumentation records user interactions on your website. Make sure to:
 
-1. **Enable appropriate masking options** - By default, only password inputs are masked.
-   Configure `maskInputOptions` to mask additional sensitive fields
+1. **Review masking options for your use case** - By default, all input values and text content are masked.
+   If needed, you can make masking more selective with `maskAllInputs`, `maskInputOptions`, and `maskTextSelector`
 2. **Use CSS selectors** - Use `maskTextSelector` to mask sensitive content, `blockSelector` to completely exclude elements
 3. **Implement filtering** - Use the `beforeSend` hook to filter or transform events before sending
 4. **Review your privacy policy** - Ensure you have proper user consent for session recording
@@ -98,6 +97,8 @@ This instrumentation records user interactions on your website. Make sure to:
 
 ```typescript
 new ReplayInstrumentation({
+  // Disable global input masking and use selective masking rules instead
+  maskAllInputs: false,
   // Mask all text and email inputs, but allow number inputs
   maskInputOptions: {
     password: true,
