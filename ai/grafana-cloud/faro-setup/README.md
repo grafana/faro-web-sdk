@@ -51,8 +51,8 @@ React, Next.js (App Router and Pages Router), Angular, Vue, Svelte, Vanilla JS, 
 Run these two commands once, from any directory:
 
 ```bash
-claude plugin marketplace add grafana/app-o11y-kwl
-claude plugin install faro-setup@app-o11y-kwl
+claude plugin marketplace add grafana/grafana-frontend-observability
+claude plugin install faro-setup@grafana-frontend-observability
 ```
 
 ### Cursor
@@ -82,7 +82,7 @@ To test changes without reinstalling:
 claude plugin marketplace add /path/to/faro-web-sdk
 
 # Then install the plugin from that marketplace
-claude plugin install faro-setup@app-o11y-kwl
+claude plugin install faro-setup@grafana-frontend-observability
 
 # Changes to SKILL.md take effect immediately — no reinstall needed
 ```
