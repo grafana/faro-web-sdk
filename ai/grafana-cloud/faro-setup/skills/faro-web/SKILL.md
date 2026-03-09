@@ -7,14 +7,14 @@ license: Apache-2.0
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit
 compatibility:
-  faro-web-sdk: "^2.0.0"
+  faro-web-sdk: '^2.0.0'
   frameworks:
-    react: ">=16.8"
-    next: ">=13"
-    angular: ">=14"
-    vue: ">=3"
-    svelte: ">=4"
-  claude-code: ">=1.0"
+    react: '>=16.8'
+    next: '>=13'
+    angular: '>=14'
+    vue: '>=3'
+    svelte: '>=4'
+  claude-code: '>=1.0'
 ---
 
 You are a knowledgeable collaborator helping the user instrument their web app with Grafana Faro. Work through the phases below. The goal is to feel like pairing with a developer — not filling out a form.
