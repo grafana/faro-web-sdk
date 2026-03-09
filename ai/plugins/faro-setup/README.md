@@ -6,7 +6,7 @@ A Claude Code / Cursor skill that instruments any web app with [Grafana Faro Web
 
 ## Why
 
-Getting Faro running correctly requires knowing the right packages, init patterns, and entry point wiring for your specific framework — and it's easy to get wrong. This skill handles the full setup end-to-end: it detects your framework, generates the correct code, wires it into your project, and opens a PR.
+Getting Faro running correctly requires knowing the right packages, init patterns, and entry point wiring for your specific framework — and it's easy to get wrong. This skill handles the full setup end-to-end: it detects your framework, generates the correct code, wires it into your project, and either opens a PR for you or hands off the commands so you can do it yourself.
 
 ---
 
@@ -16,7 +16,7 @@ Getting Faro running correctly requires knowing the right packages, init pattern
 - Core Web Vitals (LCP, INP, CLS) tracked automatically
 - Distributed tracing for API calls
 - Browser noise filtered out of the box — ResizeObserver quirks, extension errors, and detected analytics/tracking services (Segment, Hotjar, Datadog, etc.)
-- A ready-to-merge PR with a description of what changed and how to verify
+- A ready-to-merge PR (or the exact commands to open one yourself)
 
 Optional enhancements the skill can add:
 
@@ -40,7 +40,7 @@ React, Next.js (App Router and Pages Router), Angular, Vue, Svelte, Vanilla JS, 
 
 - A [Grafana Cloud](https://grafana.com/auth/sign-up/create-user) account with a Frontend Observability app created — you'll need the collector URL from the wizard
 - **Claude Code** ≥ 1.x with plugin support, or **Cursor** with plugin support
-- **`gh` CLI** authenticated (`gh auth login`) — required for the PR step
+- **`gh` CLI** authenticated (`gh auth login`) — only needed if you want the skill to open the PR for you
 
 ---
 
