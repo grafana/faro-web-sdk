@@ -396,7 +396,18 @@ Do not proceed to Step 6 until the user confirms data is flowing.
 
 # Step 6: Create a PR
 
-After all code changes are done:
+After all code changes are done, ask:
+
+> All changes are committed and ready. Should I open the PR for you, or would you prefer to do it yourself?
+>
+> - **y / open it** — I'll create the branch, commit, push, and open the PR via `gh`
+> - **n / I'll do it** — I'll show you the commands to run
+
+If the user chooses **n / I'll do it**, show the commands below and stop.
+
+If the user chooses **y / open it**, run the steps below.
+
+---
 
 1. Create a new branch:
 
