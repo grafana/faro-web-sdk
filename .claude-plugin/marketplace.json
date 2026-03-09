@@ -1,0 +1,23 @@
+{
+  "name": "app-o11y-kwl",
+  "owner": {
+    "name": "Grafana Labs",
+    "email": "frontend-observability@grafana.com"
+  },
+  "metadata": {
+    "description": "Grafana Cloud observability skills for Claude Code",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "faro-setup",
+      "source": "./ai/grafana-cloud/faro-setup",
+      "description": "Auto-instrument any web app with Grafana Faro Web SDK. Detects your framework, generates init code, wires it into your entry point, and opens a PR.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Grafana Labs",
+        "email": "frontend-observability@grafana.com"
+      }
+    }
+  ]
+}

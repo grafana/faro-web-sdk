@@ -78,8 +78,11 @@ The skill will ask for your collector URL (paste the snippet from **Grafana Clou
 To test changes without reinstalling:
 
 ```bash
-# Point Claude at your local checkout
-claude plugin marketplace add /path/to/app-o11y-kwl
+# Add the repo root as a local marketplace (contains .claude-plugin/marketplace.json)
+claude plugin marketplace add /path/to/faro-web-sdk
+
+# Then install the plugin from that marketplace
+claude plugin install faro-setup@app-o11y-kwl
 
 # Changes to SKILL.md take effect immediately — no reinstall needed
 ```
@@ -87,5 +90,5 @@ claude plugin marketplace add /path/to/app-o11y-kwl
 To validate manifests:
 
 ```bash
-claude plugin validate ai/plugins/faro-setup
+claude plugin validate ai/grafana-cloud/faro-setup
 ```
