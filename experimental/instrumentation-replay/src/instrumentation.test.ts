@@ -584,7 +584,7 @@ describe('ReplayInstrumentation', () => {
       // Critical value for df=9 at p=0.01 is 21.67.
       const expected = numSamples / numBuckets;
       const chiSquared = buckets.reduce((sum, observed) => {
-        return sum + ((observed - expected) ** 2) / expected;
+        return sum + (observed - expected) ** 2 / expected;
       }, 0);
 
       expect(chiSquared).toBeLessThan(21.67);
