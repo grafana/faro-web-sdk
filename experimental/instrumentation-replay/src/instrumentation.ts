@@ -83,6 +83,12 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   // Produces a deterministic float in [0, 1] from a session ID string so that the
   // replay sampling decision is stable across page reloads for the same session.
+  //
+  // The >>> 0 (unsigned right-shift by zero) coerces the intermediate value to an
+  // unsigned 32-bit integer. Without it, JS bitwise ops return signed 32-bit ints,
+  // so values above 2,147,483,647 flip negative (e.g. 3,389,167,832 → -905,799,464)
+  // and the final division would produce a negative number, breaking the comparison.
+
   private hashSessionId(sessionId: string): number {
     let hash = 0;
     for (let i = 0; i < sessionId.length; i++) {
