@@ -494,33 +494,33 @@ describe('ReplayInstrumentation', () => {
       expect(firstDecision).toBe(secondDecision);
     });
 
-    it('should clamp negative samplingRate to 0 and log a debug warning', () => {
+    it('should clamp negative samplingRate to 0 and log a warning', () => {
       instrumentation = new ReplayInstrumentation({ samplingRate: -0.5 });
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession } as any;
       instrumentation['metas'] = { addListener: mockAddListener } as any;
 
-      const logDebugSpy = jest.spyOn(instrumentation as any, 'logDebug');
+      const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
 
       instrumentation.initialize();
 
-      expect(logDebugSpy).toHaveBeenCalledWith(expect.stringContaining('clamping to'));
+      expect(logWarnSpy).toHaveBeenCalledWith(expect.stringContaining('clamping to'));
       expect(mockRecord).not.toHaveBeenCalled();
     });
 
-    it('should clamp samplingRate > 1 to 1 and log a debug warning', () => {
+    it('should clamp samplingRate > 1 to 1 and log a warning', () => {
       instrumentation = new ReplayInstrumentation({ samplingRate: 1.5 });
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession } as any;
       instrumentation['metas'] = { addListener: mockAddListener } as any;
 
-      const logDebugSpy = jest.spyOn(instrumentation as any, 'logDebug');
+      const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
 
       instrumentation.initialize();
 
-      expect(logDebugSpy).toHaveBeenCalledWith(expect.stringContaining('clamping to'));
+      expect(logWarnSpy).toHaveBeenCalledWith(expect.stringContaining('clamping to'));
       expect(mockRecord).toHaveBeenCalled();
       expect(instrumentation['isRecording']).toBe(true);
     });
@@ -557,6 +557,37 @@ describe('ReplayInstrumentation', () => {
 
       expect(mockRecord).not.toHaveBeenCalled();
       expect(instrumentation['isRecording']).toBe(false);
+    });
+
+    it('should produce a uniform distribution of hash values (chi-squared test)', () => {
+      // Generate session IDs the same way Faro does (see packages/core/src/utils/shortId.ts):
+      // 10 random chars from [a-km-zA-HJ-NP-Z0-9] (no l, I, O to avoid ambiguity).
+      const alphabet = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+      function genShortID(length = 10): string {
+        return Array.from(Array(length))
+          .map(() => alphabet[Math.floor(Math.random() * alphabet.length)]!)
+          .join('');
+      }
+
+      const numBuckets = 10;
+      const numSamples = 10_000;
+      const buckets = new Array(numBuckets).fill(0);
+
+      const inst = new ReplayInstrumentation();
+      for (let i = 0; i < numSamples; i++) {
+        const hash = inst['hashSessionId'](genShortID());
+        const bucket = Math.min(Math.floor(hash * numBuckets), numBuckets - 1);
+        buckets[bucket]++;
+      }
+
+      // Chi-squared test: for 10 buckets with 10,000 samples, expected count = 1,000 per bucket.
+      // Critical value for df=9 at p=0.01 is 21.67.
+      const expected = numSamples / numBuckets;
+      const chiSquared = buckets.reduce((sum, observed) => {
+        return sum + ((observed - expected) ** 2) / expected;
+      }, 0);
+
+      expect(chiSquared).toBeLessThan(21.67);
     });
 
     it('should not start recording when session ID is null', () => {
