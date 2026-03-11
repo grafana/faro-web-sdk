@@ -1,3 +1,5 @@
+import { genShortID } from '@grafana/faro-core';
+
 import { ReplayInstrumentation } from './instrumentation';
 import { MaskInputFn, ReplayInstrumentationOptions } from './types';
 
@@ -560,15 +562,6 @@ describe('ReplayInstrumentation', () => {
     });
 
     it('should produce a uniform distribution of hash values (chi-squared test)', () => {
-      // Generate session IDs the same way Faro does (see packages/core/src/utils/shortId.ts):
-      // 10 random chars from [a-km-zA-HJ-NP-Z0-9] (no l, I, O to avoid ambiguity).
-      const alphabet = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
-      function genShortID(length = 10): string {
-        return Array.from(Array(length))
-          .map(() => alphabet[Math.floor(Math.random() * alphabet.length)]!)
-          .join('');
-      }
-
       const numBuckets = 10;
       const numSamples = 10_000;
       const buckets = new Array(numBuckets).fill(0);
