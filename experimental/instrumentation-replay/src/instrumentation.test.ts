@@ -8,6 +8,15 @@ jest.mock('rrweb', () => ({
   record: jest.fn(),
 }));
 
+function createSeededRandom(seed: number): () => number {
+  let current = seed >>> 0;
+
+  return () => {
+    current = (Math.imul(current, 1_664_525) + 1_013_904_223) >>> 0;
+    return current / 0x1_0000_0000;
+  };
+}
+
 describe('ReplayInstrumentation', () => {
   let instrumentation: ReplayInstrumentation;
   let mockRecord: jest.Mock;
@@ -561,26 +570,34 @@ describe('ReplayInstrumentation', () => {
       expect(instrumentation['isRecording']).toBe(false);
     });
 
-    it('should produce a uniform distribution of hash values (chi-squared test)', () => {
+    it('should keep hash values evenly distributed across multiple genShortID seeds', () => {
       const numBuckets = 10;
-      const numSamples = 10_000;
+      const seeds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      const samplesPerSeed = 10_000;
+      const numSamples = seeds.length * samplesPerSeed;
       const buckets = new Array(numBuckets).fill(0);
+      const maxAllowedChiSquared = 21.67;
+      const randomSpy = jest.spyOn(Math, 'random');
 
       const inst = new ReplayInstrumentation();
-      for (let i = 0; i < numSamples; i++) {
-        const hash = inst['hashSessionId'](genShortID());
-        const bucket = Math.min(Math.floor(hash * numBuckets), numBuckets - 1);
-        buckets[bucket]++;
+      for (const seed of seeds) {
+        randomSpy.mockImplementation(createSeededRandom(seed));
+
+        for (let i = 0; i < samplesPerSeed; i++) {
+          const hash = inst['hashSessionId'](genShortID());
+          const bucket = Math.min(Math.floor(hash * numBuckets), numBuckets - 1);
+          buckets[bucket]++;
+        }
       }
 
-      // Chi-squared test: for 10 buckets with 10,000 samples, expected count = 1,000 per bucket.
-      // Critical value for df=9 at p=0.01 is 21.67.
+      // Seed Math.random with several fixed seeds so the real genShortID() exercises a broader,
+      // deterministic corpus. This uses chi-squared as a regression score, not as a p-value-based test.
       const expected = numSamples / numBuckets;
       const chiSquared = buckets.reduce((sum, observed) => {
         return sum + (observed - expected) ** 2 / expected;
       }, 0);
 
-      expect(chiSquared).toBeLessThan(21.67);
+      expect(chiSquared).toBeLessThan(maxAllowedChiSquared);
     });
 
     it('should not start recording when session ID is null', () => {
