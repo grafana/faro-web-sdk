@@ -12,7 +12,7 @@
   custom error grouping. The fingerprint can be passed via `pushError` options or set in the
   `beforeSend` hook.
 
-- Feature (`@grafana/faro-instrumentation-replay`): enable full input and text
+- Feature (`@grafana/faro-instrumentation-replay`): Enable full input and text
   masking by default (`maskAllInputs: true`, `maskTextSelector: '*'`) (#1926).
 
 - Chore (`@grafana/faro-*`): Updated multiple dependencies to address security vulnerabilities
