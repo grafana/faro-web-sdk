@@ -39,7 +39,7 @@
     "quality:format": "run-p quality:format:*",
     "quality:format:root": "prettier --cache --cache-location=.cache/prettier/root -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:format:packages": "lerna run --parallel quality:format",
-    "quality:lint": "run-s quality:lint:fix quality:lint:packages quality:lint:root",
+    "quality:lint": "run-s quality:lint:packages quality:lint:root",
     "quality:lint:packages": "lerna run --parallel quality:lint",
     "quality:lint:root": "run-p 'quality:lint:root:*'",
     "quality:lint:root:markdown": "markdownlint README.md CHANGELOG.md docs/**/*.md",

@@ -16,7 +16,6 @@ describe('initializeUserActionsAPI', () => {
 
   beforeEach(() => {
     transports = mockTransports;
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     config = mockConfig({
       userActionsInstrumentation: {
         excludeItem: jest.fn(),

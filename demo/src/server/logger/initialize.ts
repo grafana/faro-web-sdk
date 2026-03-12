@@ -34,7 +34,6 @@ export function initializeLogger(): Logger {
   console.info = (...args: any[]) => logger.info.call(logger, args as any);
   console.warn = (...args: any[]) => logger.warn.call(logger, args as any);
   console.error = (...args: any[]) => logger.error.call(logger, args as any);
-  // eslint-disable-next-line no-console
   console.debug = (...args: any[]) => logger.debug.call(logger, args as any);
 
   setLogger(logger);

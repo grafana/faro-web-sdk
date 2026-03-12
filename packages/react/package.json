@@ -45,11 +45,11 @@
     "quality": "run-s 'quality:*'",
     "quality:test": "jest --passWithNoTests",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
-    "quality:lint": "run-s quality:lint:fix quality:lint:eslint quality:lint:prettier quality:lint:md",
+    "quality:lint": "run-s quality:lint:eslint quality:lint:prettier quality:lint:md",
     "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/react \"./**/*.{js,jsx,ts,tsx}\"",
     "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
-    "quality:lint:fix": "run-p 'quality:lint:fix:*'",
+    "quality:lint:fix": "run-s 'quality:lint:fix:*'",
     "quality:lint:fix:eslint": "eslint --fix --cache --cache-location ../../.cache/eslint/react \"./**/*.{js,jsx,ts,tsx}\"",
     "quality:lint:fix:prettier": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:circular-deps": "madge --circular ."
