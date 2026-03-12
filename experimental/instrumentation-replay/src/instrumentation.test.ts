@@ -1,3 +1,5 @@
+import { genShortID } from '@grafana/faro-core';
+
 import { ReplayInstrumentation } from './instrumentation';
 import { MaskInputFn, ReplayInstrumentationOptions } from './types';
 
@@ -5,6 +7,15 @@ import { MaskInputFn, ReplayInstrumentationOptions } from './types';
 jest.mock('rrweb', () => ({
   record: jest.fn(),
 }));
+
+function createSeededRandom(seed: number): () => number {
+  let current = seed >>> 0;
+
+  return () => {
+    current = (Math.imul(current, 1_664_525) + 1_013_904_223) >>> 0;
+    return current / 0x1_0000_0000;
+  };
+}
 
 describe('ReplayInstrumentation', () => {
   let instrumentation: ReplayInstrumentation;
@@ -23,6 +34,7 @@ describe('ReplayInstrumentation', () => {
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     if (instrumentation) {
       instrumentation.destroy();
     }
@@ -55,6 +67,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: undefined,
         ignoreSelector: undefined,
         beforeSend: undefined,
+        samplingRate: 1,
       };
 
       expect(instrumentation['options']).toEqual(expectedDefaults);
@@ -80,6 +93,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: '.block-me',
         ignoreSelector: '.ignore-me',
         beforeSend: beforeSendFn,
+        samplingRate: 1,
       };
 
       instrumentation = new ReplayInstrumentation(customOptions);
@@ -116,6 +130,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: undefined,
         ignoreSelector: undefined,
         beforeSend: undefined,
+        samplingRate: 1,
       };
 
       expect(instrumentation['options']).toEqual(expected);
@@ -406,6 +421,195 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation();
 
       expect(() => instrumentation.destroy()).not.toThrow();
+      expect(instrumentation['isRecording']).toBe(false);
+    });
+  });
+
+  describe('samplingRate', () => {
+    // session-1 hashes to ≈ 0.142 — falls below 0.2 (included) and above 0.1 (excluded)
+    // session-100 hashes to ≈ 0.827 — falls above 0.5 (excluded)
+    // These values are derived from the djb2-style hash in hashSessionId().
+
+    it('should record all sampled sessions when samplingRate is 1 (default)', () => {
+      instrumentation = new ReplayInstrumentation({ samplingRate: 1 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(true);
+    });
+
+    it('should never record when samplingRate is 0', () => {
+      instrumentation = new ReplayInstrumentation({ samplingRate: 0 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).not.toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(false);
+    });
+
+    it('should record when session hash falls below samplingRate', () => {
+      // session-1 hash ≈ 0.142 which is below 0.2
+      instrumentation = new ReplayInstrumentation({ samplingRate: 0.2 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(true);
+    });
+
+    it('should not record when session hash falls above samplingRate', () => {
+      // session-1 hash ≈ 0.142 which is above 0.1
+      instrumentation = new ReplayInstrumentation({ samplingRate: 0.1 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).not.toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(false);
+    });
+
+    it('should produce the same decision across page reloads for the same session ID', () => {
+      // Simulates a page reload by creating a fresh instance with the same session ID.
+      // The hash-based approach must produce the same outcome both times.
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+
+      instrumentation = new ReplayInstrumentation({ samplingRate: 0.2 });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation.initialize();
+      const firstDecision = instrumentation['isRecording'];
+
+      const instrumentation2 = new ReplayInstrumentation({ samplingRate: 0.2 });
+      instrumentation2['api'] = { getSession: mockGetSession } as any;
+      instrumentation2['metas'] = { addListener: mockAddListener } as any;
+      instrumentation2.initialize();
+      const secondDecision = instrumentation2['isRecording'];
+      instrumentation2.destroy();
+
+      expect(firstDecision).toBe(secondDecision);
+    });
+
+    it('should clamp negative samplingRate to 0 and log a warning', () => {
+      instrumentation = new ReplayInstrumentation({ samplingRate: -0.5 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
+
+      instrumentation.initialize();
+
+      expect(logWarnSpy).toHaveBeenCalledWith(expect.stringContaining('clamping to'));
+      expect(mockRecord).not.toHaveBeenCalled();
+    });
+
+    it('should clamp samplingRate > 1 to 1 and log a warning', () => {
+      instrumentation = new ReplayInstrumentation({ samplingRate: 1.5 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
+
+      instrumentation.initialize();
+
+      expect(logWarnSpy).toHaveBeenCalledWith(expect.stringContaining('clamping to'));
+      expect(mockRecord).toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(true);
+    });
+
+    it('should re-evaluate the sampling decision when session ID changes', () => {
+      // session-1 hash ≈ 0.142 → included at 0.5; session-100 hash ≈ 0.827 → excluded at 0.5
+      let metaListener: () => void;
+      mockAddListener.mockImplementation((cb: () => void) => {
+        metaListener = cb;
+      });
+
+      instrumentation = new ReplayInstrumentation({ samplingRate: 0.5 });
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+      expect(instrumentation['isRecording']).toBe(true);
+
+      mockGetSession.mockReturnValue({ id: 'session-100', attributes: { isSampled: 'true' } });
+      metaListener!();
+
+      expect(instrumentation['isRecording']).toBe(false);
+    });
+
+    it('should not record when both global sampling and samplingRate are inactive', () => {
+      instrumentation = new ReplayInstrumentation({ samplingRate: 0 });
+
+      mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'false' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).not.toHaveBeenCalled();
+      expect(instrumentation['isRecording']).toBe(false);
+    });
+
+    it('should keep hash values evenly distributed across multiple genShortID seeds', () => {
+      const numBuckets = 10;
+      const seeds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      const samplesPerSeed = 10_000;
+      const numSamples = seeds.length * samplesPerSeed;
+      const buckets = new Array(numBuckets).fill(0);
+      const maxAllowedChiSquared = 21.67;
+      const randomSpy = jest.spyOn(Math, 'random');
+
+      const inst = new ReplayInstrumentation();
+      for (const seed of seeds) {
+        randomSpy.mockImplementation(createSeededRandom(seed));
+
+        for (let i = 0; i < samplesPerSeed; i++) {
+          const hash = inst['hashSessionId'](genShortID());
+          const bucket = Math.min(Math.floor(hash * numBuckets), numBuckets - 1);
+          buckets[bucket]++;
+        }
+      }
+
+      // Seed Math.random with several fixed seeds so the real genShortID() exercises a broader,
+      // deterministic corpus. This uses chi-squared as a regression score, not as a p-value-based test.
+      const expected = numSamples / numBuckets;
+      const chiSquared = buckets.reduce((sum, observed) => {
+        return sum + (observed - expected) ** 2 / expected;
+      }, 0);
+
+      expect(chiSquared).toBeLessThan(maxAllowedChiSquared);
+    });
+
+    it('should not start recording when session ID is null', () => {
+      instrumentation = new ReplayInstrumentation({ samplingRate: 1 });
+
+      mockGetSession.mockReturnValue({ id: undefined, attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).not.toHaveBeenCalled();
       expect(instrumentation['isRecording']).toBe(false);
     });
   });

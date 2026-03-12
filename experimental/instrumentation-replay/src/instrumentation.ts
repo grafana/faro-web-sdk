@@ -38,16 +38,63 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private checkAndUpdateRecording(): void {
     const session = this.api.getSession();
     const isSampled = session?.attributes?.['isSampled'] === 'true';
+    const sessionId = session?.id ?? null;
 
-    if (isSampled && !this.isRecording) {
-      this.logDebug('Session is sampled, starting recording');
-      this.startRecording();
-    } else if (!isSampled && this.isRecording) {
-      this.logDebug('Session is not sampled, stopping recording');
-      this.stopRecording();
-    } else if (!isSampled) {
-      this.logDebug('Session is not sampled, recording not started');
+    if (!isSampled || sessionId === null) {
+      if (this.isRecording) {
+        this.logDebug('Session is not sampled, stopping recording');
+        this.stopRecording();
+      } else {
+        this.logDebug('Session is not sampled, recording not started');
+      }
+      return;
     }
+
+    // Globally sampled — apply replay sub-sampling using a deterministic hash of the
+    // session ID so the decision is stable across page reloads within the same session.
+    const replaySampled = this.shouldReplaySample(sessionId);
+
+    if (replaySampled && !this.isRecording) {
+      this.logDebug('Session is sampled for replay, starting recording');
+      this.startRecording();
+    } else if (!replaySampled && this.isRecording) {
+      this.logDebug('Session is not sampled for replay, stopping recording');
+      this.stopRecording();
+    } else if (!replaySampled) {
+      this.logDebug('Session is not sampled for replay, recording not started');
+    }
+  }
+
+  private shouldReplaySample(sessionId: string): boolean {
+    let rate = this.options.samplingRate ?? 1;
+    if (rate < 0 || rate > 1) {
+      const clamped = Math.min(1, Math.max(0, rate));
+      this.logWarn(`samplingRate ${rate} is out of range [0, 1], clamping to ${clamped}`);
+      rate = clamped;
+    }
+    if (rate === 0) {
+      return false;
+    }
+    if (rate === 1) {
+      return true;
+    }
+    return this.hashSessionId(sessionId) < rate;
+  }
+
+  // Produces a deterministic float in [0, 1] from a session ID string so that the
+  // replay sampling decision is stable across page reloads for the same session.
+  //
+  // The >>> 0 (unsigned right-shift by zero) coerces the intermediate value to an
+  // unsigned 32-bit integer. Without it, JS bitwise ops return signed 32-bit ints,
+  // so values above 2,147,483,647 flip negative (e.g. 3,389,167,832 → -905,799,464)
+  // and the final division would produce a negative number, breaking the comparison.
+
+  private hashSessionId(sessionId: string): number {
+    let hash = 0;
+    for (let i = 0; i < sessionId.length; i++) {
+      hash = (hash * 31 + sessionId.charCodeAt(i)) >>> 0;
+    }
+    return hash / 0xffffffff;
   }
 
   private stopRecording(): void {
