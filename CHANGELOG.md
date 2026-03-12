@@ -15,6 +15,9 @@
 - Feature (`@grafana/faro-instrumentation-replay`): Enable full input and text
   masking by default (`maskAllInputs: true`, `maskTextSelector: '*'`) (#1926).
 
+- Feature (`@grafana/faro-instrumentation-replay`): Add `samplingRate` option to
+  `ReplayInstrumentationOptions` to decouple replay coverage from global session sampling (#1919).
+
 - Chore (`@grafana/faro-*`): Updated multiple dependencies to address security vulnerabilities
   (#1931, #1922, #1930).
 
