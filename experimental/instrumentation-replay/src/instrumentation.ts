@@ -69,7 +69,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     const samplingRate = this.options.samplingRate ?? 1;
     const clampedSamplingRate = clampSamplingRate(samplingRate);
 
-    if (samplingRate < 0 || samplingRate > 1) {
+    if (samplingRate !== clampedSamplingRate) {
       this.logWarn(`samplingRate ${samplingRate} is out of range [0, 1], clamping to ${clampedSamplingRate}`);
     }
 
