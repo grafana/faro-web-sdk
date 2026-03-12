@@ -38,6 +38,24 @@ describe('Sampling.', () => {
     expect(isSampled()).toBe(false);
   });
 
+  it('Clamps configured samplingRate to the valid range.', () => {
+    jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
+
+    const config = mockConfig({
+      sessionTracking: {
+        enabled: true,
+        samplingRate: -1,
+      },
+    });
+
+    initializeFaro(config);
+    expect(isSampled()).toBe(false);
+
+    config.sessionTracking!.samplingRate = 2;
+    initializeFaro(config);
+    expect(isSampled()).toBe(true);
+  });
+
   it('Returns proper sampling decision for rate returned by sampler function.', () => {
     let config = mockConfig({
       sessionTracking: {
@@ -66,6 +84,24 @@ describe('Sampling.', () => {
     expect(isSampled()).toBe(false);
 
     config.sessionTracking!.session = createSession({ location: 'mars' });
+    initializeFaro(config);
+    expect(isSampled()).toBe(true);
+  });
+
+  it('Clamps sampler rates to the valid range.', () => {
+    jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
+
+    const config = mockConfig({
+      sessionTracking: {
+        enabled: true,
+        sampler: () => -1,
+      },
+    });
+
+    initializeFaro(config);
+    expect(isSampled()).toBe(false);
+
+    config.sessionTracking!.sampler = () => 2;
     initializeFaro(config);
     expect(isSampled()).toBe(true);
   });

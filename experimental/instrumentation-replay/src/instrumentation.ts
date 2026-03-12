@@ -1,7 +1,7 @@
 import type { eventWithTime } from '@rrweb/types';
 import { record, type recordOptions } from 'rrweb';
 
-import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, clampSamplingRate, VERSION } from '@grafana/faro-core';
 
 import { defaultReplayInstrumentationOptions } from './const';
 import type { ReplayInstrumentationOptions } from './types';
@@ -66,19 +66,22 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   private shouldReplaySample(sessionId: string): boolean {
-    let rate = this.options.samplingRate ?? 1;
-    if (rate < 0 || rate > 1) {
-      const clamped = Math.min(1, Math.max(0, rate));
-      this.logWarn(`samplingRate ${rate} is out of range [0, 1], clamping to ${clamped}`);
-      rate = clamped;
+    const samplingRate = this.options.samplingRate ?? 1;
+    const clampedSamplingRate = clampSamplingRate(samplingRate);
+
+    if (samplingRate < 0 || samplingRate > 1) {
+      this.logWarn(`samplingRate ${samplingRate} is out of range [0, 1], clamping to ${clampedSamplingRate}`);
     }
-    if (rate === 0) {
+
+    if (clampedSamplingRate === 0) {
       return false;
     }
-    if (rate === 1) {
+
+    if (clampedSamplingRate === 1) {
       return true;
     }
-    return this.hashSessionId(sessionId) < rate;
+
+    return this.hashSessionId(sessionId) < clampedSamplingRate;
   }
 
   // Produces a deterministic float in [0, 1] from a session ID string so that the

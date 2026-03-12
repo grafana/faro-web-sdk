@@ -1,5 +1,7 @@
 export type { BaseObject, BaseObjectKey, BaseObjectPrimitiveValue, BaseObjectValue } from './baseObject';
 
+export { clampSamplingRate } from './sampling';
+
 export { deepEqual } from './deepEqual';
 
 export { getCurrentTimestamp } from './date';
