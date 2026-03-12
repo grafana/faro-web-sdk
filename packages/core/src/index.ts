@@ -101,6 +101,7 @@ export type { UnpatchedConsole } from './unpatchedConsole';
 
 export {
   allLogLevels,
+  clampSamplingRate,
   createPromiseBuffer,
   deepEqual,
   defaultLogLevel,

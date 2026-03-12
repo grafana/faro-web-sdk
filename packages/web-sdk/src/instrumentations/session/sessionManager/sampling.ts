@@ -1,15 +1,11 @@
-import { faro } from '@grafana/faro-core';
+import { clampSamplingRate, faro } from '@grafana/faro-core';
 
 export function isSampled(): boolean {
   const sendAllSignals = 1;
   const sessionTracking = faro.config.sessionTracking;
-  let samplingRate =
+  const rawSamplingRate =
     sessionTracking?.sampler?.({ metas: faro.metas.value }) ?? sessionTracking?.samplingRate ?? sendAllSignals;
-
-  if (typeof samplingRate !== 'number') {
-    const sendNoSignals = 0;
-    samplingRate = sendNoSignals;
-  }
+  const samplingRate = typeof rawSamplingRate === 'number' ? clampSamplingRate(rawSamplingRate) : 0;
 
   return Math.random() < samplingRate;
 }
