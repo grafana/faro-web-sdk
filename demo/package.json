@@ -28,10 +28,13 @@
     "quality": "run-s 'quality:*'",
     "quality:test": "exit 0",
     "quality:format": "prettier --cache --cache-location=../.cache/prettier/demo --ignore-path ../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
-    "quality:lint": "run-s 'quality:lint:*'",
+    "quality:lint": "run-s quality:lint:fix quality:lint:eslint quality:lint:prettier quality:lint:md",
     "quality:lint:eslint": "eslint --cache --cache-location ../.cache/eslint/demo \"./**/*.{js,jsx,ts,tsx}\"",
     "quality:lint:prettier": "prettier --cache --cache-location=../.cache/prettier/demo --ignore-path ../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md docs/**/*.md",
+    "quality:lint:fix": "run-p 'quality:lint:fix:*'",
+    "quality:lint:fix:eslint": "eslint --fix --cache --cache-location ../.cache/eslint/demo \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:fix:prettier": "prettier --cache --cache-location=../.cache/prettier/demo --ignore-path ../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
