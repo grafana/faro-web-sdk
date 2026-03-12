@@ -59,8 +59,7 @@ export class FetchTransport extends BaseTransport {
 
         const resolvedHeaders: Record<string, string> = {};
         for (const [key, value] of Object.entries(headers)) {
-          resolvedHeaders[key] =
-            typeof value === 'function' ? await Promise.resolve(value()) : value;
+          resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
         }
 
         return fetch(url, {
