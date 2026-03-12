@@ -2,6 +2,10 @@
 
 ## Next
 
+- Feature (`@grafana/faro-web-sdk`): Fetch transport now supports async dynamic header values.
+  Each header value can be a function returning `Promise<string>`, resolved at request time
+  (e.g. for token refresh). Sync dynamic headers (`() => string`) continue to work (#1490).
+
 - Feature (`@grafana/faro-core`): Add optional `fingerprint` attribute to exception events for
   custom error grouping. The fingerprint can be passed via `pushError` options or set in the
   `beforeSend` hook.
