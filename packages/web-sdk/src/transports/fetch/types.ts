@@ -6,7 +6,7 @@ export interface FetchTransportRequestOptions extends Omit<RequestInit, 'body' |
    * - a function returning a string (dynamic value, sync)
    * - a function returning a Promise of string (dynamic value, async)
    */
-  headers?: Record<string, string | (() => string) | (() => Promise<string>)>;
+  headers?: Record<string, string | (() => string | Promise<string>)>;
 }
 
 export interface FetchTransportOptions {
