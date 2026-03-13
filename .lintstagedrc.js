@@ -1,5 +1,5 @@
 module.exports = {
-  '*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}': ['prettier -w'],
-  '*.{js,jsx,ts,tsx}': ['eslint', 'madge --circular'],
+  '*.{css,scss,md,yaml,yml,json}': ['prettier -w'],
+  '*.{js,jsx,ts,tsx}': ['prettier -w', 'eslint --fix', 'madge --circular'],
   '*.md': ['markdownlint'],
 };

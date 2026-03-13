@@ -31,6 +31,18 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Auto-fix lint issues
+        run: yarn quality:lint:fix
+
+      - name: Check for unfixed lint issues
+        run: |
+          if ! git diff --exit-code; then
+            echo ""
+            echo "::error::The files above have auto-fixable lint issues that were not committed."
+            echo "::error::Run 'yarn quality:lint:fix' locally and commit the changes."
+            exit 1
+          fi
+
       - name: Build
         run: yarn build
 
