@@ -7,7 +7,7 @@ export function registerOnerror(api: API): void {
 
   window.onerror = (...args) => {
     try {
-      const { value, type, stackFrames } = getDetailsFromErrorArgs(args);
+      const { value, type, stackFrames } = getDetailsFromErrorArgs(args, api.parseStacktrace);
       const originalError = args[4];
 
       if (value) {

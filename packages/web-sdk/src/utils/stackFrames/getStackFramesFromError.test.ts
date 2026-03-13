@@ -181,6 +181,11 @@ describe('getStackFramesFromError', () => {
       buildStackFrame('http://path/to/file.js', 'bar', 108, 168),
     ]);
   });
+
+  it('should correctly skip lines if configured to', () => {
+    const result = getStackFramesFromError(CapturedExceptions.OPERA_25, { maximumLineLength: 36 });
+    expect(result).toEqual([buildStackFrame('http://path/to/file.js', undefined, 47, 22)]);
+  });
 });
 
 /* Taken from: https://github.com/stacktracejs/error-stack-parser/blob/master/spec/fixtures/captured-errors.js */
