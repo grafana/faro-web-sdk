@@ -1,0 +1,14 @@
+{
+  "name": "faro-setup",
+  "version": "1.0.0",
+  "description": "Auto-instrument any web app with Grafana Faro Web SDK. Detects your framework, generates init code, wires it into your entry point, and opens a PR.",
+  "author": {
+    "name": "Grafana Labs",
+    "email": "frontend-observability@grafana.com"
+  },
+  "homepage": "https://grafana.com/docs/grafana-cloud/frontend-observability/",
+  "repository": "https://github.com/grafana/app-o11y-kwl",
+  "license": "AGPL-3.0",
+  "keywords": ["grafana", "faro", "observability", "rum", "instrumentation", "frontend"],
+  "skills": "./skills"
+}
