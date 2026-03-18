@@ -658,12 +658,8 @@ describe('sessionManagerUtils', () => {
 
       // Trigger a session change — should complete without infinite recursion.
       // The handler should sync the session once and stabilize.
-      try {
-        faro.api.setSession({ id: 'new-session-id' });
-      } catch {
-        // The safety guard in storeUserSession throws after 50 calls to prevent
-        // a real stack overflow from crashing the test runner.
-      }
+      // If the recursion guard fails, storeUserSession throws after 10 calls.
+      faro.api.setSession({ id: 'new-session-id' });
 
       // The handler should store the session exactly once: it detects the ID change,
       // syncs to storage, and the re-entrant call should see meta and storage in sync.
