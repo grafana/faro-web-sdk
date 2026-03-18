@@ -128,7 +128,12 @@ export function getSessionMetaUpdateHandler({
   fetchUserSession,
   storeUserSession,
 }: GetUserSessionMetaUpdateHandlerParams) {
+  let isSyncing = false;
+
   return function syncSessionIfChangedExternally(meta: Meta) {
+    if (isSyncing) {
+      return;
+    }
     const session = meta.session;
     const sessionFromSessionStorage = fetchUserSession();
 
@@ -151,7 +156,13 @@ export function getSessionMetaUpdateHandler({
 
       storeUserSession(userSession);
       sendOverrideEvent(hasSessionOverridesChanged, sessionOverrides, storedSessionMetaOverrides);
-      faro.api.setSession(userSession.sessionMeta);
+
+      isSyncing = true;
+      try {
+        faro.api.setSession(userSession.sessionMeta);
+      } finally {
+        isSyncing = false;
+      }
     }
   };
 }
