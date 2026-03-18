@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-web-sdk`): Prevent infinite recursion in session meta sync when session
+  attributes contain values not surviving JSON serialization such as `undefined` (#1956).
+
 ## 2.3.0
 
 - Feature (`@grafana/faro-web-sdk`): Fetch transport now supports async dynamic header values.
