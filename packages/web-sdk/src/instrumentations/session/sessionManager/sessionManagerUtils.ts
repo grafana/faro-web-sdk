@@ -170,8 +170,9 @@ export function getSessionMetaUpdateHandler({
 function removeUndefinedValues(obj: Record<string, string | undefined>): Record<string, string> {
   const result: Record<string, string> = {};
   for (const key of Object.keys(obj)) {
-    if (obj[key] !== undefined) {
-      result[key] = obj[key] as string;
+    const value = obj[key];
+    if (value !== undefined) {
+      result[key] = value;
     }
   }
   return result;
