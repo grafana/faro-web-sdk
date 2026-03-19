@@ -609,6 +609,63 @@ describe('sessionManagerUtils', () => {
       );
     });
 
+    it('should not infinitely recurse when session attributes contain values dropped by JSON serialization', () => {
+      // Bug: undefined attribute values are dropped by JSON.stringify,
+      // creating a perpetual mismatch between in-memory meta and JSON-parsed storage.
+      // This causes syncSessionIfChangedExternally → setSession → notifyListeners →
+      // syncSessionIfChangedExternally to loop until stack overflow.
+
+      const config = mockConfig({
+        sessionTracking: {
+          enabled: true,
+          session: {
+            attributes: {
+              env: undefined as unknown as string, // undefined is dropped by JSON.stringify
+            },
+          },
+        },
+      });
+
+      const faro = initializeFaro(config);
+
+      // Simulate real web storage with JSON serialization (same as PersistentSessionsManager)
+      let stored: string | null = null;
+      let storeCallCount = 0;
+
+      const storeUserSession = (session: FaroUserSession) => {
+        storeCallCount++;
+        if (storeCallCount > 10) {
+          throw new Error('Infinite recursion detected: storeUserSession called more than 50 times');
+        }
+        stored = JSON.stringify(session); // undefined values are dropped here
+      };
+
+      const fetchUserSession = (): FaroUserSession | null => {
+        return stored ? (JSON.parse(stored) as FaroUserSession) : null;
+      };
+
+      // Store an initial session so fetchUserSession returns something
+      const initialSession = addSessionMetadataToNextSession(createUserSessionObject({ sessionId: 'initial' }), null);
+      storeUserSession(initialSession);
+      storeCallCount = 0; // reset after initial store
+
+      // Register the handler as a meta listener (same as PersistentSessionsManager.init)
+      const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
+        fetchUserSession,
+        storeUserSession,
+      });
+      faro.metas.addListener(handler);
+
+      // Trigger a session change — should complete without infinite recursion.
+      // The handler should sync the session once and stabilize.
+      // If the recursion guard fails, storeUserSession throws after 10 calls.
+      faro.api.setSession({ id: 'new-session-id' });
+
+      // The handler should store the session exactly once: it detects the ID change,
+      // syncs to storage, and the re-entrant call should see meta and storage in sync.
+      expect(storeCallCount).toBe(1);
+    });
+
     it('send a serviceName override event if the service name has changed the first time', () => {
       const faro = initializeFaro(
         mockConfig({

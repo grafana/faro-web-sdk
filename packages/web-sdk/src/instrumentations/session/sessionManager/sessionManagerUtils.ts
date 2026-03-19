@@ -98,11 +98,11 @@ export function addSessionMetadataToNextSession(newSession: FaroUserSession, pre
     ...newSession,
     sessionMeta: {
       id: newSession.sessionId,
-      attributes: {
+      attributes: removeUndefinedValues({
         ...faro.config.sessionTracking?.session?.attributes,
         ...(faro.metas.value.session?.attributes ?? {}),
         isSampled: newSession.isSampled.toString(),
-      },
+      }),
     },
   };
 
@@ -128,7 +128,12 @@ export function getSessionMetaUpdateHandler({
   fetchUserSession,
   storeUserSession,
 }: GetUserSessionMetaUpdateHandlerParams) {
+  let isSyncing = false;
+
   return function syncSessionIfChangedExternally(meta: Meta) {
+    if (isSyncing) {
+      return;
+    }
     const session = meta.session;
     const sessionFromSessionStorage = fetchUserSession();
 
@@ -151,9 +156,26 @@ export function getSessionMetaUpdateHandler({
 
       storeUserSession(userSession);
       sendOverrideEvent(hasSessionOverridesChanged, sessionOverrides, storedSessionMetaOverrides);
-      faro.api.setSession(userSession.sessionMeta);
+
+      isSyncing = true;
+      try {
+        faro.api.setSession(userSession.sessionMeta);
+      } finally {
+        isSyncing = false;
+      }
     }
   };
+}
+
+function removeUndefinedValues(obj: Record<string, string | undefined>): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const key of Object.keys(obj)) {
+    const value = obj[key];
+    if (value !== undefined) {
+      result[key] = value;
+    }
+  }
+  return result;
 }
 
 function sendOverrideEvent(
