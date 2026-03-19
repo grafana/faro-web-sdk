@@ -2,8 +2,13 @@
 
 ## Next
 
+## 2.3.1
+
 - Fix (`@grafana/faro-web-sdk`): Prevent infinite recursion in session meta sync when session
   attributes contain values not surviving JSON serialization such as `undefined` (#1956).
+
+- Chore (`@grafana/faro-*`): Updated multiple dependencies to address security vulnerabilities
+  (#1948, #1941).
 
 ## 2.3.0
 
