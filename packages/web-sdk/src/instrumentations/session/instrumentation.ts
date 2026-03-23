@@ -8,6 +8,8 @@ import {
 } from '@grafana/faro-core';
 import type { Config, Meta, MetaSession } from '@grafana/faro-core';
 
+import { _sdkPrefix } from '../../consts';
+
 import type { TransportItem } from '../..';
 import { createSession } from '../../metas';
 
@@ -19,7 +21,7 @@ import type { SessionManager } from './sessionManager/types';
 type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;
 
 export class SessionInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/faro-web-sdk:instrumentation-session';
+  readonly name = `${_sdkPrefix}instrumentation-session`;
   readonly version = VERSION;
 
   // previously notified session, to ensure we don't send session start

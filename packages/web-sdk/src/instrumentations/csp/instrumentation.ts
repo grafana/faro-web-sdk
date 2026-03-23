@@ -1,8 +1,10 @@
 import { BaseInstrumentation, stringifyObjectValues, VERSION } from '@grafana/faro-core';
 import type { Instrumentation } from '@grafana/faro-core';
 
+import { _sdkPrefix } from '../../consts';
+
 export class CSPInstrumentation extends BaseInstrumentation implements Instrumentation {
-  readonly name = '@grafana/faro-web-sdk:instrumentation-csp';
+  readonly name = `${_sdkPrefix}instrumentation-csp`;
   readonly version = VERSION;
 
   constructor() {

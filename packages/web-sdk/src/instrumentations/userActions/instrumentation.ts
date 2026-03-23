@@ -1,9 +1,11 @@
 import { BaseInstrumentation, faro, type Subscription, userActionsMessageBus, VERSION } from '@grafana/faro-core';
 
+import { _sdkPrefix } from '../../consts';
+
 import { getUserEventHandler } from './processUserActionEventHandler';
 
 export class UserActionInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/faro-web-sdk:instrumentation-user-action';
+  readonly name = `${_sdkPrefix}instrumentation-user-action`;
   readonly version = VERSION;
 
   private _userActionSub?: Subscription;

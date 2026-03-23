@@ -1,6 +1,8 @@
 import { BaseExtension, BaseTransport, createPromiseBuffer, getTransportBody, noop, VERSION } from '@grafana/faro-core';
 import type { Config, Patterns, PromiseBuffer, TransportItem } from '@grafana/faro-core';
 
+import { _sdkPrefix } from '../../consts';
+
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
 import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 
@@ -15,7 +17,7 @@ const TOO_MANY_REQUESTS = 429;
 const ACCEPTED = 202;
 
 export class FetchTransport extends BaseTransport {
-  readonly name = '@grafana/faro-web-sdk:transport-fetch';
+  readonly name = `${_sdkPrefix}transport-fetch`;
   readonly version = VERSION;
 
   promiseBuffer: PromiseBuffer<Response | void>;

@@ -1,10 +1,12 @@
 import { BaseTransport, getTransportBody, LogLevel, VERSION } from '@grafana/faro-core';
 import type { TransportItem } from '@grafana/faro-core';
 
+import { _sdkPrefix } from '../../consts';
+
 import type { ConsoleTransportOptions } from './types';
 
 export class ConsoleTransport extends BaseTransport {
-  readonly name = '@grafana/faro-web-sdk:transport-console';
+  readonly name = `${_sdkPrefix}transport-console`;
   readonly version = VERSION;
 
   constructor(private options: ConsoleTransportOptions = {}) {

@@ -1,10 +1,12 @@
 import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
 
+import { _sdkPrefix } from '../../consts';
+
 import { registerOnerror } from './registerOnerror';
 import { registerOnunhandledrejection } from './registerOnunhandledrejection';
 
 export class ErrorsInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/faro-web-sdk:instrumentation-errors';
+  readonly name = `${_sdkPrefix}instrumentation-errors`;
   readonly version = VERSION;
 
   initialize(): void {

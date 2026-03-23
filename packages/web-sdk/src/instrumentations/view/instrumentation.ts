@@ -1,9 +1,11 @@
 import { BaseInstrumentation, EVENT_VIEW_CHANGED, unknownString, VERSION } from '@grafana/faro-core';
 import type { Meta, MetaView } from '@grafana/faro-core';
 
+import { _sdkPrefix } from '../../consts';
+
 // all this does is send VIEW_CHANGED event
 export class ViewInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/faro-web-sdk:instrumentation-view';
+  readonly name = `${_sdkPrefix}instrumentation-view`;
   readonly version = VERSION;
 
   // previously notified view, to ensure we don't send view changed

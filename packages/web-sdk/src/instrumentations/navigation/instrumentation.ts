@@ -1,5 +1,7 @@
 import { BaseInstrumentation, faro, Observable, VERSION } from '@grafana/faro-core';
 
+import { _sdkPrefix } from '../../consts';
+
 import { ActivityWindowTracker, isRequestEndMessage, isRequestStartMessage } from '../_internal/activityWindowTracker';
 import { monitorDomMutations } from '../_internal/monitors/domMutationMonitor';
 import { monitorHttpRequests } from '../_internal/monitors/httpRequestMonitor';
@@ -7,7 +9,7 @@ import { monitorInteractions } from '../_internal/monitors/interactionMonitor';
 import { monitorUrlChanges } from '../_internal/monitors/urlChangeMonitor';
 
 export class NavigationInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/faro-web-sdk:instrumentation-navigation';
+  readonly name = `${_sdkPrefix}instrumentation-navigation`;
   readonly version = VERSION;
 
   override initialize(): void {

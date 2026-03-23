@@ -7,11 +7,13 @@ import {
 } from '@grafana/faro-core';
 import type { LogArgsSerializer, Subscription } from '@grafana/faro-core';
 
+import { _sdkPrefix } from '../../consts';
+
 import { monitorConsole } from '../_internal/monitors/consoleMonitor';
 import { getDetailsFromConsoleErrorArgs } from '../errors/getErrorDetails';
 
 export class ConsoleInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/faro-web-sdk:instrumentation-console';
+  readonly name = `${_sdkPrefix}instrumentation-console`;
   readonly version = VERSION;
 
   static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];

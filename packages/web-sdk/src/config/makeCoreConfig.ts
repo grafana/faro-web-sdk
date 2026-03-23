@@ -11,7 +11,7 @@ import {
 } from '@grafana/faro-core';
 import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
-import { defaultEventDomain } from '../consts';
+import { _sdkPrefix, defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
 import { userActionDataAttribute } from '../instrumentations/userActions/const';
@@ -122,7 +122,7 @@ function getFilteredInstrumentations(
   const trackNavigation = experimental?.trackNavigation ?? false;
 
   return instrumentations.filter((instr) => {
-    if (instr.name === '@grafana/faro-web-sdk:instrumentation-navigation' && !trackNavigation) {
+    if (instr.name === `${_sdkPrefix}instrumentation-navigation` && !trackNavigation) {
       return false;
     }
     return true;

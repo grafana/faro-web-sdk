@@ -1,5 +1,7 @@
 import { BaseInstrumentation, Observable, VERSION } from '@grafana/faro-core';
 
+import { _sdkPrefix } from '../../consts';
+
 import { getNavigationTimings } from './navigation';
 import { onDocumentReady, performanceObserverSupported } from './performanceUtils';
 import { observeResourceTimings } from './resource';
@@ -8,7 +10,7 @@ import type { ResourceEntryMessage } from './types';
 export const performanceEntriesSubscription = new Observable<ResourceEntryMessage>();
 
 export class PerformanceInstrumentation extends BaseInstrumentation {
-  readonly name = '@grafana/faro-web-sdk:instrumentation-performance';
+  readonly name = `${_sdkPrefix}instrumentation-performance`;
   readonly version = VERSION;
 
   initialize() {
