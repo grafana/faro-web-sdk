@@ -125,10 +125,11 @@ exports.getRollupConfigBase = (moduleName) => {
           unsafe_comps: true,
           unsafe_math: true,
           ecma: 2020,
-          toplevel: false,
+          toplevel: true,
         },
         mangle: {
           properties: false,
+          toplevel: true,
         },
         format: {
           ecma: 2020,
