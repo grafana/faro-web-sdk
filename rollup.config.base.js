@@ -119,9 +119,19 @@ exports.getRollupConfigBase = (moduleName) => {
       }),
       terser({
         compress: {
-          passes: 2,
+          passes: 3,
           pure_getters: true,
           unsafe_methods: true,
+          unsafe_comps: true,
+          unsafe_math: true,
+          ecma: 2020,
+          toplevel: false,
+        },
+        mangle: {
+          properties: false,
+        },
+        format: {
+          ecma: 2020,
         },
       }),
     ],
