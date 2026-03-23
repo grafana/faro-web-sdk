@@ -11,9 +11,7 @@ export function mergeResourceSpans(traces?: TraceEvent, resourceSpans?: IResourc
   }
 
   if (traces === undefined) {
-    return {
-      resourceSpans,
-    };
+    return { resourceSpans };
   }
 
   const currentResource = traces.resourceSpans?.[0];
@@ -21,22 +19,17 @@ export function mergeResourceSpans(traces?: TraceEvent, resourceSpans?: IResourc
     return traces;
   }
 
-  const currentSpans = currentResource?.scopeSpans || [];
   const newSpans = resourceSpans?.[0]?.scopeSpans || [];
+  const mergedSpans = (currentResource.scopeSpans || []).concat(newSpans);
 
   return {
     ...traces,
-    resourceSpans: [
-      {
-        ...currentResource,
-        scopeSpans: [...currentSpans, ...newSpans],
-      },
-    ],
+    resourceSpans: [{ ...currentResource, scopeSpans: mergedSpans }],
   };
 }
 
 export function getTransportBody(item: TransportItem[]): TransportBody {
-  let body: TransportBody = {
+  const body: TransportBody = {
     meta: {},
   };
 
@@ -44,30 +37,28 @@ export function getTransportBody(item: TransportItem[]): TransportBody {
     body.meta = item[0].meta;
   }
 
-  item.forEach((currentItem: TransportItem) => {
+  for (const currentItem of item) {
     switch (currentItem.type) {
       case TransportItemType.LOG:
       case TransportItemType.EVENT:
       case TransportItemType.EXCEPTION:
       case TransportItemType.MEASUREMENT: {
         const bk = transportItemTypeToBodyKey[currentItem.type];
-        const signals = body[bk] as LogEvent[] | EventEvent[] | ExceptionEvent[] | MeasurementEvent[];
+        const signals = body[bk] as LogEvent[] | EventEvent[] | ExceptionEvent[] | MeasurementEvent[] | undefined;
 
-        body = {
-          ...body,
-          [bk]: signals === undefined ? [currentItem.payload] : [...signals, currentItem.payload],
-        };
+        if (signals === undefined) {
+          (body as any)[bk] = [currentItem.payload];
+        } else {
+          signals.push(currentItem.payload as any);
+        }
         break;
       }
       case TransportItemType.TRACE: {
-        body = {
-          ...body,
-          traces: mergeResourceSpans(body.traces, (currentItem.payload as TraceEvent).resourceSpans),
-        };
+        body.traces = mergeResourceSpans(body.traces, (currentItem.payload as TraceEvent).resourceSpans);
         break;
       }
     }
-  });
+  }
 
   return body;
 }

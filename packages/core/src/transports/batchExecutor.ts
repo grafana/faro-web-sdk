@@ -60,18 +60,15 @@ export class BatchExecutor {
 
   groupItems(items: TransportItem[]): TransportItem[][] {
     const itemMap = new Map<string, TransportItem[]>();
-    items.forEach((item) => {
+    for (const item of items) {
       const metaKey = JSON.stringify(item.meta);
-
-      let currentItems = itemMap.get(metaKey);
+      const currentItems = itemMap.get(metaKey);
       if (currentItems === undefined) {
-        currentItems = [item];
+        itemMap.set(metaKey, [item]);
       } else {
-        currentItems = [...currentItems, item];
+        currentItems.push(item);
       }
-
-      itemMap.set(metaKey, currentItems);
-    });
+    }
     return Array.from(itemMap.values());
   }
 
