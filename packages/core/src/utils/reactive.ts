@@ -19,85 +19,61 @@ export class Observable<T = any> {
   }
 
   notify(value: T): void {
-    this.subscribers.forEach((subscriber) => subscriber(value));
+    for (const subscriber of this.subscribers) {
+      subscriber(value);
+    }
   }
 
   first(): Observable<T> {
     const result = new Observable<T>();
-
-    const internalSubscriber = (data: T): void => {
+    const sub = this.subscribe((data: T) => {
       result.notify(data);
-      subscription.unsubscribe();
-    };
-    const subscription = this.subscribe(internalSubscriber);
-    const resultUnsubscribeFn = result.unsubscribe.bind(result);
-    return this.withUnsubscribeOverride(result, resultUnsubscribeFn, internalSubscriber);
+      sub.unsubscribe();
+    });
+    return this._pipe(result, sub);
   }
 
   takeWhile(predicate: (value: T) => boolean): Observable<T> {
     const result = new Observable<T>();
-    const internalSubscriber = (value: T): void => {
+    const sub = this.subscribe((value: T) => {
       if (predicate(value)) {
         result.notify(value);
       } else {
-        result.unsubscribe(internalSubscriber);
+        sub.unsubscribe();
       }
-    };
-    this.subscribe(internalSubscriber);
-    const resultUnsubscribeFn = result.unsubscribe.bind(result);
-    return this.withUnsubscribeOverride(result, resultUnsubscribeFn, internalSubscriber);
+    });
+    return this._pipe(result, sub);
   }
 
   filter(predicate: (value: T) => boolean): Observable<T> {
     const result = new Observable<T>();
-
-    const internalSubscriber = (value: T): void => {
+    const sub = this.subscribe((value: T) => {
       if (predicate(value)) {
         result.notify(value);
       }
-    };
-    this.subscribe(internalSubscriber);
-
-    const resultUnsubscribeFn = result.unsubscribe.bind(result);
-    return this.withUnsubscribeOverride(result, resultUnsubscribeFn, internalSubscriber);
+    });
+    return this._pipe(result, sub);
   }
 
   merge(...observables: Array<Observable<T>>): Observable<T> {
-    const mergerObservable = new Observable<T>();
-    const subscriptions: Subscription[] = [];
+    const merged = new Observable<T>();
+    const subs = observables.map((o) => o.subscribe((v: T) => merged.notify(v)));
 
-    observables.forEach((observable) => {
-      const subscription = observable.subscribe((value: T) => {
-        mergerObservable.notify(value);
-      });
-
-      subscriptions.push(subscription);
-    });
-
-    const originalUnsubscribeAll = mergerObservable.unsubscribeAll.bind(mergerObservable);
-
-    mergerObservable.unsubscribe = () => {
-      subscriptions.forEach((subscription) => subscription.unsubscribe());
-      originalUnsubscribeAll();
+    merged.unsubscribe = () => {
+      for (const s of subs) s.unsubscribe();
+      merged.subscribers = [];
     };
 
-    return mergerObservable;
+    return merged;
   }
 
-  private withUnsubscribeOverride(
-    observable: Observable<T>,
-    resultUnsubscribeFn: (subscriber: Subscriber<T>) => void,
-    internalSubscriber: Subscriber<T>
-  ) {
-    observable.unsubscribe = (subscriber: Subscriber<T>) => {
-      resultUnsubscribeFn(subscriber);
-      this.unsubscribe(internalSubscriber);
+  /** @internal — wires up unsubscribe so downstream cleanup also removes the upstream subscription */
+  private _pipe(result: Observable<T>, upstreamSub: Subscription): Observable<T> {
+    const origUnsub = result.unsubscribe.bind(result);
+    result.unsubscribe = (subscriber: Subscriber<T>) => {
+      origUnsub(subscriber);
+      upstreamSub.unsubscribe();
     };
-
-    return observable;
-  }
-
-  private unsubscribeAll(): void {
-    this.subscribers = [];
+    return result;
   }
 }
