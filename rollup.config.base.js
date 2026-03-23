@@ -117,7 +117,13 @@ exports.getRollupConfigBase = (moduleName) => {
         sourceMap: false,
         tsconfig: './tsconfig.bundle.json',
       }),
-      terser(),
+      terser({
+        compress: {
+          passes: 2,
+          pure_getters: true,
+          unsafe_methods: true,
+        },
+      }),
     ],
   };
 };
