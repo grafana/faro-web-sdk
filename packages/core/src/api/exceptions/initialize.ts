@@ -71,22 +71,26 @@ export function initializeExceptionsAPI({
         ...(context ?? {}),
       });
 
+      const payload: ExceptionEvent<typeof preserveOriginalError> = {
+        type: type || error.name || defaultExceptionType,
+        value: error.message,
+        timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
+        trace: spanContext
+          ? { trace_id: spanContext.traceId, span_id: spanContext.spanId }
+          : tracesApi.getTraceContext(),
+      };
+      if (!isEmpty(ctx)) {
+        payload.context = ctx;
+      }
+      if (preserveOriginalError) {
+        (payload as any).originalError = originalError;
+      }
+      if (fingerprint) {
+        payload.fingerprint = fingerprint;
+      }
       const item: TransportItem<ExceptionEvent<typeof preserveOriginalError>> = {
         meta: metas.value,
-        payload: {
-          type: type || error.name || defaultExceptionType,
-          value: error.message,
-          timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
-          trace: spanContext
-            ? {
-                trace_id: spanContext.traceId,
-                span_id: spanContext.spanId,
-              }
-            : tracesApi.getTraceContext(),
-          ...(isEmpty(ctx) ? {} : { context: ctx }),
-          ...(preserveOriginalError ? { originalError } : {}),
-          ...(fingerprint ? { fingerprint } : {}),
-        },
+        payload,
         type: TransportItemType.EXCEPTION,
       };
 
