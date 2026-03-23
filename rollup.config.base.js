@@ -124,10 +124,7 @@ exports.getRollupConfigBase = (moduleName) => {
         compress: {
           passes: 4,
           pure_getters: true,
-          unsafe_methods: true,
-          unsafe_comps: true,
-          unsafe_math: true,
-          unsafe_proto: true,
+          unsafe: true,
           ecma: 2020,
           toplevel: true,
           module: true,
