@@ -49,30 +49,28 @@ export class FetchTransport extends BaseTransport {
 
         const { url, requestOptions, apiKey } = this.options;
 
-        const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
+        const { headers: rawHeaders, ...restOfRequestOptions } = requestOptions ?? {};
 
-        let sessionId;
-        const sessionMeta = this.metas.value.session;
-        if (sessionMeta != null) {
-          sessionId = sessionMeta.id;
+        const resolvedHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (rawHeaders) {
+          for (const [key, value] of Object.entries(rawHeaders)) {
+            resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
+          }
         }
-
-        const resolvedHeaders: Record<string, string> = {};
-        for (const [key, value] of Object.entries(headers)) {
-          resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
+        if (apiKey) {
+          resolvedHeaders['x-api-key'] = apiKey;
+        }
+        const sessionId = this.metas.value.session?.id;
+        if (sessionId) {
+          resolvedHeaders['x-faro-session-id'] = sessionId;
         }
 
         return fetch(url, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...resolvedHeaders,
-            ...(apiKey ? { 'x-api-key': apiKey } : {}),
-            ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
-          },
+          ...restOfRequestOptions,
+          headers: resolvedHeaders,
           body,
           keepalive: body.length <= BEACON_BODY_SIZE_LIMIT,
-          ...(restOfRequestOptions ?? {}),
         })
           .then(async (response) => {
             if (response.status === ACCEPTED) {
