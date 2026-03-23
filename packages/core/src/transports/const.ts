@@ -1,12 +1,14 @@
 import type { BodyKey } from './types';
 
-export enum TransportItemType {
-  EXCEPTION = 'exception',
-  LOG = 'log',
-  MEASUREMENT = 'measurement',
-  TRACE = 'trace',
-  EVENT = 'event',
-}
+export const TransportItemType = {
+  EXCEPTION: 'exception',
+  LOG: 'log',
+  MEASUREMENT: 'measurement',
+  TRACE: 'trace',
+  EVENT: 'event',
+} as const;
+
+export type TransportItemType = (typeof TransportItemType)[keyof typeof TransportItemType];
 
 export const transportItemTypeToBodyKey: Record<TransportItemType, BodyKey> = {
   [TransportItemType.EXCEPTION]: 'exceptions',

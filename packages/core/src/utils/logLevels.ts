@@ -1,11 +1,13 @@
-export enum LogLevel {
-  TRACE = 'trace',
-  DEBUG = 'debug',
-  INFO = 'info',
-  LOG = 'log',
-  WARN = 'warn',
-  ERROR = 'error',
-}
+export const LogLevel = {
+  TRACE: 'trace',
+  DEBUG: 'debug',
+  INFO: 'info',
+  LOG: 'log',
+  WARN: 'warn',
+  ERROR: 'error',
+} as const;
+
+export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
 
 export const defaultLogLevel = LogLevel.LOG;
 

@@ -2,13 +2,15 @@ import { noop } from '../utils';
 
 import type { InternalLogger } from './types';
 
-export enum InternalLoggerLevel {
-  OFF = 0,
-  ERROR = 1,
-  WARN = 2,
-  INFO = 3,
-  VERBOSE = 4,
-}
+export const InternalLoggerLevel = {
+  OFF: 0,
+  ERROR: 1,
+  WARN: 2,
+  INFO: 3,
+  VERBOSE: 4,
+} as const;
+
+export type InternalLoggerLevel = (typeof InternalLoggerLevel)[keyof typeof InternalLoggerLevel];
 
 export const defaultInternalLoggerPrefix = 'Faro';
 
