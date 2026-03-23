@@ -116,6 +116,9 @@ exports.getRollupConfigBase = (moduleName) => {
         outputToFilesystem: true,
         sourceMap: false,
         tsconfig: './tsconfig.bundle.json',
+        compilerOptions: {
+          target: 'ES2020',
+        },
       }),
       terser({
         compress: {
