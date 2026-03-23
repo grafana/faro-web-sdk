@@ -54,18 +54,11 @@ export function initializeInstrumentations(
     instrumentationsToRemove.forEach((instrumentationToRemove) => {
       internalLogger.debug(`Removing "${instrumentationToRemove.name}" instrumentation`);
 
-      const existingInstrumentationIndex = instrumentations.reduce<number | null>(
-        (acc, existingInstrumentation, existingTransportIndex) => {
-          if (acc === null && existingInstrumentation.name === instrumentationToRemove.name) {
-            return existingTransportIndex;
-          }
-
-          return null;
-        },
-        null
+      const existingInstrumentationIndex = instrumentations.findIndex(
+        (existing) => existing.name === instrumentationToRemove.name
       );
 
-      if (existingInstrumentationIndex === null) {
+      if (existingInstrumentationIndex === -1) {
         internalLogger.warn(`Instrumentation "${instrumentationToRemove.name}" is not added`);
 
         return;
