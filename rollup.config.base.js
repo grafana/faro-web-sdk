@@ -130,7 +130,9 @@ exports.getRollupConfigBase = (moduleName) => {
           module: true,
         },
         mangle: {
-          properties: false,
+          properties: {
+            regex: /^_/,
+          },
           toplevel: true,
         },
         format: {
