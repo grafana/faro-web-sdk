@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-react",
-  "version": "2.2.4",
+  "version": "2.3.1",
   "description": "Faro package that enables easier integration in projects built with React.",
   "keywords": [
     "observability",
@@ -45,15 +45,18 @@
     "quality": "run-s 'quality:*'",
     "quality:test": "jest --passWithNoTests",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
-    "quality:lint": "run-s 'quality:lint:*'",
+    "quality:lint": "run-s quality:lint:eslint quality:lint:prettier quality:lint:md",
     "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/react \"./**/*.{js,jsx,ts,tsx}\"",
     "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
+    "quality:lint:fix": "run-s 'quality:lint:fix:*'",
+    "quality:lint:fix:eslint": "eslint --fix --cache --cache-location ../../.cache/eslint/react \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:fix:prettier": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "^2.2.4",
-    "@grafana/faro-web-tracing": "^2.2.4",
+    "@grafana/faro-web-sdk": "^2.3.1",
+    "@grafana/faro-web-tracing": "^2.3.1",
     "hoist-non-react-statics": "^3.3.2"
   },
   "devDependencies": {

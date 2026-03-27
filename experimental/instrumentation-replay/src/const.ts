@@ -1,12 +1,12 @@
 import { type ReplayInstrumentationOptions } from './types';
 
 export const defaultReplayInstrumentationOptions: ReplayInstrumentationOptions = {
-  maskAllInputs: false,
+  maskAllInputs: true,
   maskInputOptions: {
     password: true,
   },
   maskInputFn: undefined,
-  maskTextSelector: undefined,
+  maskTextSelector: '*',
   blockSelector: undefined,
   ignoreSelector: undefined,
   collectFonts: false,
@@ -16,4 +16,5 @@ export const defaultReplayInstrumentationOptions: ReplayInstrumentationOptions =
   recordCrossOriginIframes: false,
   beforeSend: undefined,
   recordAfter: 'load',
+  samplingRate: 1,
 };

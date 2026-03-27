@@ -3,12 +3,13 @@ import type { eventWithTime } from '@rrweb/types';
 export interface ReplayInstrumentationOptions {
   /**
    * Whether to mask all inputs
-   * @default false
+   * @default true
    */
   maskAllInputs?: boolean;
 
   /**
-   * Whether to mask text inputs
+   * Per-input-type masking configuration (e.g. text, email, tel, textarea, select).
+   * Only applied when `maskAllInputs` is false.
    * @default { password: true }
    */
   maskInputOptions?: MaskInputOptions;
@@ -20,7 +21,7 @@ export interface ReplayInstrumentationOptions {
 
   /**
    * Custom CSS selector to mask text elements
-   * @default undefined
+   * @default '*'
    */
   maskTextSelector?: string;
 
@@ -78,6 +79,27 @@ export interface ReplayInstrumentationOptions {
    * @default 'load'
    */
   recordAfter?: 'DOMContentLoaded' | 'load';
+
+  /**
+   * The fraction of globally-sampled sessions that should also record a session replay.
+   * Expressed as a number between 0 and 1.
+   *
+   * This rate is applied on top of the global `sessionTracking.samplingRate`.
+   * The effective replay rate is:
+   *
+   *   effective = sessionTracking.samplingRate × samplingRate
+   *
+   * Examples (with sessionTracking.samplingRate = 1.0):
+   *   - 1.0  → replay 100% of sampled sessions (default, current behaviour)
+   *   - 0.5  → replay 50% of sampled sessions
+   *   - 0.1  → replay 10% of sampled sessions
+   *   - 0    → replay disabled
+   *
+   * Values outside [0, 1] are clamped and a debug warning is logged.
+   *
+   * @default 1
+   */
+  samplingRate?: number;
 }
 
 export type MaskInputOptions = Partial<{

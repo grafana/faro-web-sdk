@@ -7,7 +7,6 @@ export function ConsoleInstrumentation() {
   const [isApiMode, setIsApiMode] = useState(false);
 
   const printToConsole = (method: LogLevel) => {
-    // eslint-disable-next-line no-console
     console[method](`This is a console ${method} message`);
   };
 

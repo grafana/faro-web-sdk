@@ -4,7 +4,7 @@
     "declarationDir": "./dist/bundle/types",
     "outDir": "./dist/bundle",
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.cache/tsc/core.esm.tsbuildinfo"
+    "tsBuildInfoFile": "../../.cache/tsc/webTracing.bundle.tsbuildinfo"
   },
   "include": ["./src"],
   "exclude": ["./**/*.test.ts"]

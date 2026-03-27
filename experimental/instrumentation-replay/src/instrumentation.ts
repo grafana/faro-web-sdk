@@ -1,12 +1,13 @@
 import type { eventWithTime } from '@rrweb/types';
 import { record, type recordOptions } from 'rrweb';
 
-import { BaseInstrumentation, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, clampSamplingRate, VERSION } from '@grafana/faro-core';
 
 import { defaultReplayInstrumentationOptions } from './const';
 import type { ReplayInstrumentationOptions } from './types';
 
 const faroSessionReplayEventName = 'faro.session_recording.event';
+const faroSessionReplayStartedEventName = 'faro.session_recording.started';
 
 export class ReplayInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-instrumentation-replay';
@@ -38,16 +39,66 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private checkAndUpdateRecording(): void {
     const session = this.api.getSession();
     const isSampled = session?.attributes?.['isSampled'] === 'true';
+    const sessionId = session?.id ?? null;
 
-    if (isSampled && !this.isRecording) {
-      this.logDebug('Session is sampled, starting recording');
-      this.startRecording();
-    } else if (!isSampled && this.isRecording) {
-      this.logDebug('Session is not sampled, stopping recording');
-      this.stopRecording();
-    } else if (!isSampled) {
-      this.logDebug('Session is not sampled, recording not started');
+    if (!isSampled || sessionId === null) {
+      if (this.isRecording) {
+        this.logDebug('Session is not sampled, stopping recording');
+        this.stopRecording();
+      } else {
+        this.logDebug('Session is not sampled, recording not started');
+      }
+      return;
     }
+
+    // Globally sampled — apply replay sub-sampling using a deterministic hash of the
+    // session ID so the decision is stable across page reloads within the same session.
+    const replaySampled = this.shouldReplaySample(sessionId);
+
+    if (replaySampled && !this.isRecording) {
+      this.logDebug('Session is sampled for replay, starting recording');
+      this.startRecording();
+    } else if (!replaySampled && this.isRecording) {
+      this.logDebug('Session is not sampled for replay, stopping recording');
+      this.stopRecording();
+    } else if (!replaySampled) {
+      this.logDebug('Session is not sampled for replay, recording not started');
+    }
+  }
+
+  private shouldReplaySample(sessionId: string): boolean {
+    const samplingRate = this.options.samplingRate ?? 1;
+    const clampedSamplingRate = clampSamplingRate(samplingRate);
+
+    if (samplingRate !== clampedSamplingRate) {
+      this.logWarn(`samplingRate ${samplingRate} is out of range [0, 1], clamping to ${clampedSamplingRate}`);
+    }
+
+    if (clampedSamplingRate === 0) {
+      return false;
+    }
+
+    if (clampedSamplingRate === 1) {
+      return true;
+    }
+
+    return this.hashSessionId(sessionId) < clampedSamplingRate;
+  }
+
+  // Produces a deterministic float in [0, 1] from a session ID string so that the
+  // replay sampling decision is stable across page reloads for the same session.
+  //
+  // The >>> 0 (unsigned right-shift by zero) coerces the intermediate value to an
+  // unsigned 32-bit integer. Without it, JS bitwise ops return signed 32-bit ints,
+  // so values above 2,147,483,647 flip negative (e.g. 3,389,167,832 → -905,799,464)
+  // and the final division would produce a negative number, breaking the comparison.
+
+  private hashSessionId(sessionId: string): number {
+    let hash = 0;
+    for (let i = 0; i < sessionId.length; i++) {
+      hash = (hash * 31 + sessionId.charCodeAt(i)) >>> 0;
+    }
+    return hash / 0xffffffff;
   }
 
   private stopRecording(): void {
@@ -91,6 +142,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
       this.isRecording = true;
       this.logDebug('Session replay started');
+      this.api.pushEvent(faroSessionReplayStartedEventName, {});
     } catch (err) {
       this.logWarn('Failed to start session replay', err);
     }

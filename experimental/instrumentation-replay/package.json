@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-instrumentation-replay",
-  "version": "2.2.4",
+  "version": "2.3.1",
   "description": "Faro instrumentation for session replay with rrweb",
   "keywords": [
     "observability",
@@ -42,14 +42,17 @@
     "quality": "run-s 'quality:*'",
     "quality:test": "jest",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/webSessionReplay --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
-    "quality:lint": "run-s 'quality:lint:*'",
+    "quality:lint": "run-s quality:lint:eslint quality:lint:prettier quality:lint:md",
     "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/webSessionReplay \"./**/*.{js,jsx,ts,tsx}\"",
     "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/webSessionReplay --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint:md": "markdownlint README.md",
+    "quality:lint:fix": "run-s 'quality:lint:fix:*'",
+    "quality:lint:fix:eslint": "eslint --fix --cache --cache-location ../../.cache/eslint/webSessionReplay \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:fix:prettier": "prettier --cache --cache-location=../../.cache/prettier/webSessionReplay --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-core": "^2.2.4",
+    "@grafana/faro-core": "^2.3.1",
     "rrweb": "^2.0.0-alpha.18"
   },
   "publishConfig": {

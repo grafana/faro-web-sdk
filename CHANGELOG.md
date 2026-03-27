@@ -2,9 +2,32 @@
 
 ## Next
 
+## 2.3.1
+
+- Fix (`@grafana/faro-web-sdk`): Prevent infinite recursion in session meta sync when session
+  attributes contain values not surviving JSON serialization such as `undefined` (#1956).
+
+- Chore (`@grafana/faro-*`): Updated multiple dependencies to address security vulnerabilities
+  (#1948, #1941).
+
+## 2.3.0
+
+- Feature (`@grafana/faro-web-sdk`): Fetch transport now supports async dynamic header values.
+  Each header value can be a function returning `Promise<string>`, resolved at request time
+  (e.g. for token refresh). Sync dynamic headers (`() => string`) continue to work (#1490).
+
 - Feature (`@grafana/faro-core`): Add optional `fingerprint` attribute to exception events for
   custom error grouping. The fingerprint can be passed via `pushError` options or set in the
   `beforeSend` hook.
+
+- Feature (`@grafana/faro-instrumentation-replay`): Enable full input and text
+  masking by default (`maskAllInputs: true`, `maskTextSelector: '*'`) (#1926).
+
+- Feature (`@grafana/faro-instrumentation-replay`): Add `samplingRate` option to
+  `ReplayInstrumentationOptions` to decouple replay coverage from global session sampling (#1919).
+
+- Chore (`@grafana/faro-*`): Updated multiple dependencies to address security vulnerabilities
+  (#1931, #1922, #1930).
 
 ## 2.2.4
 
