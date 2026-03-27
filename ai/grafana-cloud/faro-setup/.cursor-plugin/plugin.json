@@ -7,8 +7,8 @@
     "email": "frontend-observability@grafana.com"
   },
   "homepage": "https://grafana.com/docs/grafana-cloud/frontend-observability/",
-  "repository": "https://github.com/grafana/app-o11y-kwl",
-  "license": "AGPL-3.0",
+  "repository": "https://github.com/grafana/faro-web-sdk",
+  "license": "Apache-2.0",
   "keywords": ["grafana", "faro", "observability", "rum", "instrumentation", "frontend"],
   "skills": "./skills"
 }

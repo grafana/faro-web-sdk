@@ -131,6 +131,7 @@ if (typeof window !== 'undefined' && !faro.api) {
 **Create `src/app/faro-initializer.ts`:**
 
 ```ts
+import { isDevMode } from '@angular/core';
 import { initializeFaro, getWebInstrumentations } from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
@@ -141,7 +142,7 @@ export function faroInitializer(): () => void {
       app: {
         name: '<APP_NAME>',
         version: '<VERSION>', // read from package.json version field
-        environment: process.env['NODE_ENV'],
+        environment: isDevMode() ? 'development' : 'production',
       },
       instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
     });

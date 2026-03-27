@@ -66,7 +66,7 @@ Add the plugin path to your Cursor settings. The `.cursor-plugin/plugin.json` ma
 Open a terminal in your frontend project root, then run:
 
 ```
-/faro-setup
+/faro-setup-web
 ```
 
 The skill will ask for your collector URL (paste the snippet from **Grafana Cloud → Observability → Frontend → Create new**) and handle everything else from there.
