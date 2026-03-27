@@ -1,5 +1,5 @@
 import type { SpanContext } from '@opentelemetry/api';
-import { ESpanKind, type IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
+import type { IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 
 import { unknownString } from '@grafana/faro-web-sdk';
 import type { API, EventAttributes as FaroEventAttributes } from '@grafana/faro-web-sdk';
@@ -14,7 +14,7 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = [], api: API) {
       const { scope, spans = [] } = scopeSpan;
 
       for (const span of spans) {
-        if (span.kind !== ESpanKind.SPAN_KIND_CLIENT) {
+        if (span.kind !== 3 /* SPAN_KIND_CLIENT */) {
           continue;
         }
 
