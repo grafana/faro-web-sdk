@@ -15,7 +15,7 @@ import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
 import { userActionDataAttribute } from '../instrumentations/userActions/const';
-import { browserMeta, sdkMeta } from '../metas';
+import { browserMeta, createSdkMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
@@ -45,16 +45,23 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     internalLogger.error('either "url" or "transports" must be defined');
   }
 
+  // Resolve filtered instrumentations early so sdk meta can include the active integration list
+  const filteredInstrumentations = getFilteredInstrumentations(
+    browserConfig.instrumentations ?? getWebInstrumentations(),
+    browserConfig
+  );
+
   const {
     // properties with default values
     dedupe = true,
     eventDomain = defaultEventDomain,
     globalObjectKey = defaultGlobalObjectKey,
-    instrumentations = getWebInstrumentations(),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    instrumentations: _,  // already resolved via filteredInstrumentations above; destructured to exclude from restProperties
     internalLoggerLevel = defaultInternalLoggerLevel,
     isolate = false,
     logArgsSerializer = defaultLogArgsSerializer,
-    metas = createDefaultMetas(browserConfig),
+    metas = createDefaultMetas(browserConfig, filteredInstrumentations),
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
@@ -82,7 +89,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations: getFilteredInstrumentations(instrumentations, browserConfig),
+    instrumentations: filteredInstrumentations,
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -129,14 +136,14 @@ function getFilteredInstrumentations(
   });
 }
 
-function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
+function createDefaultMetas(browserConfig: BrowserConfig, instrumentations: Instrumentation[]): MetaItem[] {
   const { page, generatePageId } = browserConfig?.pageTracking ?? {};
 
   const initialMetas: MetaItem[] = [
     browserMeta,
     createPageMeta({ generatePageId, initialPageMeta: page }),
     ...(browserConfig.metas ?? []),
-    sdkMeta,
+    createSdkMeta(instrumentations),
   ];
 
   const isK6BrowserSession = isObject((window as any)?.k6);
