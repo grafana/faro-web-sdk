@@ -4,7 +4,7 @@ services:
   mimir:
     env_file:
       - './.env'
-    image: 'grafana/mimir:3.0.3@sha256:2d097da545a71ea13c6bf061be4406fa6d4af60335c99cab389a718148ce4b2d'
+    image: 'grafana/mimir:3.0.4@sha256:686138d9f941508c99c931cc9e69bf9f6100dd4d2d623bf57b38d5c25ee645c1'
     volumes:
       - '${MIMIR_CONFIG_PATH_LOCAL}:${MIMIR_CONFIG_PATH}'
     entrypoint:
@@ -16,7 +16,7 @@ services:
   grafana:
     env_file:
       - './.env'
-    image: 'grafana/grafana:12.4.0@sha256:b0ae311af06228bcfd4a620504b653db80f5b91e94dc3dc2a5b7dab202bcde20'
+    image: 'grafana/grafana:12.4.1@sha256:e932bd6ed0e026595b08483cd0141e5103e1ab7ff8604839ff899b8dc54cabcb'
     volumes:
       - '${GRAFANA_CONFIG_PATH_LOCAL}:${GRAFANA_CONFIG_PATH}'
       - '${GRAFANA_DATASOURCES_PATH_LOCAL}:${GRAFANA_DATASOURCES_PATH}'
@@ -42,7 +42,7 @@ services:
   tempo:
     env_file:
       - './.env'
-    image: 'grafana/tempo:2.10.1@sha256:9371af1b75b4e057eb77f22dc4dd4d9176cd6985e29f181527be6723b7f29c41'
+    image: 'grafana/tempo:2.10.3@sha256:cac9de2ac9f6da8efca5b64b690a7cb8c786a0c49cac7b4517dd1b0089a6c703'
     volumes:
       - '${TEMPO_CONFIG_PATH_LOCAL}:${TEMPO_CONFIG_PATH}'
     command:
@@ -54,7 +54,7 @@ services:
   alloy:
     env_file:
       - './.env'
-    image: 'grafana/alloy:v1.13.2@sha256:8abcd0d97a97099cabb34be8dcfc448fca6c35931ae9291aaf74056105dedcca'
+    image: 'grafana/alloy:v1.14.1@sha256:8f5666aebb871ba43ee2d65159c5d1c26c903720efafaf2d9ed4e237afc3bc88'
     volumes:
       - '${ALLOY_CONFIG_PATH_LOCAL}:${ALLOY_CONFIG_PATH}'
     entrypoint:
