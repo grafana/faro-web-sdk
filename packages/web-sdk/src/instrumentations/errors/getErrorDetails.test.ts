@@ -32,6 +32,27 @@ describe('errors', () => {
     expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.value).toBe('console.error: boo');
   });
 
+  it('preserves TypeError type when passed to console.error', () => {
+    const transport = new MockTransport();
+    const { api } = initializeFaro(
+      mockConfig({
+        instrumentations: [new ConsoleInstrumentation()],
+        transports: [transport],
+        unpatchedConsole: {
+          error: jest.fn(),
+        } as unknown as Console,
+      })
+    );
+
+    registerOnerror(api);
+
+    console.error(new TypeError('Cannot read properties of undefined'));
+    expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.value).toBe(
+      'console.error: Cannot read properties of undefined'
+    );
+    expect((transport.items[0] as TransportItem<ExceptionEvent>).payload.type).toBe('TypeError');
+  });
+
   it('parses text values passed to console.error', () => {
     const transport = new MockTransport();
     const { api } = initializeFaro(
