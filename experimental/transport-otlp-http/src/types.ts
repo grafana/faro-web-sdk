@@ -6,8 +6,9 @@ export interface OtlpTransportRequestOptions extends Omit<RequestInit, 'body' | 
    * Each value can be:
    * - a string (static value)
    * - a function returning a string (dynamic value)
+   * - a function returning a Promise of string (dynamic value, async)
    */
-  headers?: Record<string, string | (() => string)>;
+  headers?: Record<string, string | (() => string | Promise<string>)>;
 }
 
 export interface OtlpHttpTransportOptions {
