@@ -4,7 +4,7 @@ services:
   mimir:
     env_file:
       - './.env'
-    image: 'grafana/mimir:3.0.4@sha256:686138d9f941508c99c931cc9e69bf9f6100dd4d2d623bf57b38d5c25ee645c1'
+    image: 'grafana/mimir:3.0.5@sha256:9559f3ecadab3a7e5b002ff58527e8f4b1ea4473f9e68f5e3f77dd8e7986c69c'
     volumes:
       - '${MIMIR_CONFIG_PATH_LOCAL}:${MIMIR_CONFIG_PATH}'
     entrypoint:
@@ -16,7 +16,7 @@ services:
   grafana:
     env_file:
       - './.env'
-    image: 'grafana/grafana:12.4.1@sha256:e932bd6ed0e026595b08483cd0141e5103e1ab7ff8604839ff899b8dc54cabcb'
+    image: 'grafana/grafana:12.4.2@sha256:83749231c3835e390a3144e5e940203e42b9589761f20ef3169c716e734ad505'
     volumes:
       - '${GRAFANA_CONFIG_PATH_LOCAL}:${GRAFANA_CONFIG_PATH}'
       - '${GRAFANA_DATASOURCES_PATH_LOCAL}:${GRAFANA_DATASOURCES_PATH}'
