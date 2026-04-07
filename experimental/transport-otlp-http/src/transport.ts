@@ -95,12 +95,12 @@ export class OtlpHttpTransport extends BaseTransport {
           continue;
         }
 
-        const resolvedHeaders: Record<string, string> = {};
-        for (const [key, value] of Object.entries(headers)) {
-          resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
-        }
+        await this.promiseBuffer.add(async () => {
+          const resolvedHeaders: Record<string, string> = {};
+          for (const [key, value] of Object.entries(headers)) {
+            resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
+          }
 
-        this.promiseBuffer.add(() => {
           return fetch(url, {
             method: 'POST',
             headers: {

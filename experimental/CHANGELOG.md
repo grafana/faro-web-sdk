@@ -2,7 +2,7 @@
 
 ## Next
 
-- Feature (`@grafana/faro-transport-otlp-http`): Fetch transport now supports async dynamic header values.
+- Feature (`@grafana/faro-transport-otlp-http`): OTLP HTTP transport now supports async dynamic header values.
   Each header value can be a function returning `Promise<string>`, resolved at request time
   (e.g. for token refresh). Sync dynamic headers (`() => string`) continue to work (#1490).
 - Change (`@grafana/faro-instrumentation-replay`): enable full input and text
