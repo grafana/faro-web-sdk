@@ -45,19 +45,16 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     internalLogger.error('either "url" or "transports" must be defined');
   }
 
-  // Resolve filtered instrumentations early so sdk meta can include the active integration list
-  const filteredInstrumentations = getFilteredInstrumentations(
-    browserConfig.instrumentations ?? getWebInstrumentations(),
-    browserConfig
-  );
+  // Resolve filtered instrumentations early so sdk meta can include the active integration list.
+  // Destructuring instrumentations here removes it from restProperties in the second destructure below.
+  const { instrumentations = getWebInstrumentations(), ...browserConfigWithoutInstrumentations } = browserConfig;
+  const filteredInstrumentations = getFilteredInstrumentations(instrumentations, browserConfig);
 
   const {
     // properties with default values
     dedupe = true,
     eventDomain = defaultEventDomain,
     globalObjectKey = defaultGlobalObjectKey,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    instrumentations: _,  // already resolved via filteredInstrumentations above; destructured to exclude from restProperties
     internalLoggerLevel = defaultInternalLoggerLevel,
     isolate = false,
     logArgsSerializer = defaultLogArgsSerializer,
@@ -69,7 +66,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     experimental,
     // Properties without default values or which aren't used to create derived config
     ...restProperties
-  }: BrowserConfig = browserConfig;
+  }: Omit<BrowserConfig, 'instrumentations'> = browserConfigWithoutInstrumentations;
 
   // Extract experimental features with defaults
   const trackNavigation = experimental?.trackNavigation ?? false;
