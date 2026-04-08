@@ -23,6 +23,7 @@ export function getErrorDetails(evt: ErrorEvent): [string | undefined, string | 
     type = name ?? (isDomErrorRes ? domErrorType : domExceptionType);
     value = message ? `${type}: ${message}` : type;
   } else if (isError(evt)) {
+    type = evt.name;
     value = evt.message;
     stackFrames = getStackFramesFromError(evt);
   } else if (isObject(evt) || (isEventRes = isEvent(evt))) {
