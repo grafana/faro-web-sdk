@@ -447,7 +447,7 @@ describe('OtlpHttpTransport', () => {
     );
   });
 
-  it('will add dynamic header values from sync callbacks', () => {
+  it('will add dynamic header values from sync callbacks', async () => {
     const transport = new OtlpHttpTransport({
       logsURL: 'https://www.example.com/v1/logs',
       requestOptions: {
@@ -460,7 +460,7 @@ describe('OtlpHttpTransport', () => {
 
     transport.internalLogger = mockInternalLogger;
 
-    transport.send([logTransportItem]);
+    await transport.send([logTransportItem]);
 
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith(
@@ -474,7 +474,7 @@ describe('OtlpHttpTransport', () => {
     );
   });
 
-  it('will add static header values and dynamic header values from sync callbacks', () => {
+  it('will add static header values and dynamic header values from sync callbacks', async () => {
     const transport = new OtlpHttpTransport({
       logsURL: 'https://www.example.com/v1/logs',
       requestOptions: {
@@ -487,7 +487,7 @@ describe('OtlpHttpTransport', () => {
 
     transport.internalLogger = mockInternalLogger;
 
-    transport.send([logTransportItem]);
+    await transport.send([logTransportItem]);
 
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith(
@@ -496,6 +496,33 @@ describe('OtlpHttpTransport', () => {
         headers: expect.objectContaining({
           Authorization: 'Bearer dynamic-token',
           'X-Static': 'static-value',
+        }),
+      })
+    );
+  });
+
+  it('will add dynamic header values from async callbacks', async () => {
+    const transport = new OtlpHttpTransport({
+      logsURL: 'https://www.example.com/v1/logs',
+      requestOptions: {
+        headers: {
+          Authorization: async () => Promise.resolve('Bearer dynamic-token'),
+          'X-Async': async () => Promise.resolve('async-value'),
+        },
+      },
+    });
+
+    transport.internalLogger = mockInternalLogger;
+
+    await transport.send([logTransportItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://www.example.com/v1/logs',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer dynamic-token',
+          'X-Async': 'async-value',
         }),
       })
     );
