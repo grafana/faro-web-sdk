@@ -54,7 +54,7 @@ services:
   alloy:
     env_file:
       - './.env'
-    image: 'grafana/alloy:v1.14.1@sha256:8f5666aebb871ba43ee2d65159c5d1c26c903720efafaf2d9ed4e237afc3bc88'
+    image: 'grafana/alloy:v1.15.0@sha256:579582bce40049f2e27bd1e445000689c907a41f0495cb0d0c7f65609316ba7c'
     volumes:
       - '${ALLOY_CONFIG_PATH_LOCAL}:${ALLOY_CONFIG_PATH}'
     entrypoint:
