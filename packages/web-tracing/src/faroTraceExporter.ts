@@ -1,7 +1,7 @@
 import { ExportResultCode } from '@opentelemetry/core';
 import type { ExportResult } from '@opentelemetry/core';
-import { JSON_ENCODER } from '@opentelemetry/otlp-transformer/build/src/common/utils';
-import { createExportTraceServiceRequest } from '@opentelemetry/otlp-transformer/build/src/trace/internal';
+import { JSON_ENCODER } from '@opentelemetry/otlp-transformer/build/esm/common/utils';
+import { createExportTraceServiceRequest } from '@opentelemetry/otlp-transformer/build/esm/trace/internal';
 import type { ReadableSpan, SpanExporter } from '@opentelemetry/sdk-trace-web';
 
 import { sendFaroEvents } from './faroTraceExporter.utils';
