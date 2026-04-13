@@ -17,7 +17,7 @@ export default defineConfig({
                 {
                   test: /\.ts$/,
                   exclude: /node_modules/,
-                  use: [{ loader: 'ts-loader', options: { transpileOnly: true, configFile: 'cypress/tsconfig.json' } }],
+                  use: [{ loader: 'esbuild-loader', options: { tsconfig: 'cypress/tsconfig.json' } }],
                 },
               ],
             },
