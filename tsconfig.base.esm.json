@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "ES6",
-    "target": "ES6"
+    "module": "ES2015",
+    "target": "ES2015"
   }
 }

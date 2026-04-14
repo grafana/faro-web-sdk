@@ -30,8 +30,9 @@ class MockTransport extends BaseTransport implements Transport {
 
   sentItems: TransportItem[] = [];
 
-  send(items: TransportItem[]): void | Promise<void> {
-    this.sentItems.push(...items);
+  send(items: TransportItem | TransportItem[]): void | Promise<void> {
+    const itemsArray = Array.isArray(items) ? items : [items];
+    this.sentItems.push(...itemsArray);
   }
 
   override isBatched(): boolean {
