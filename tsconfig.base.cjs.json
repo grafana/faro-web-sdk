@@ -2,7 +2,7 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "module": "CommonJS",
-    "target": "ES5",
+    "target": "ES2015",
     "verbatimModuleSyntax": false
   }
 }

@@ -61,9 +61,9 @@
     "web-vitals": "^5.1.0"
   },
   "devDependencies": {
-    "@types/node": "24.12.0",
+    "@types/node": "24.12.2",
     "@types/ua-parser-js": "0.7.39",
-    "user-agent-data-types": "0.4.2"
+    "user-agent-data-types": "0.4.3"
   },
   "publishConfig": {
     "access": "public"

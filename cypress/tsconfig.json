@@ -1,7 +1,6 @@
 {
   "extends": "../tsconfig.base.cjs.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "isolatedModules": false,
     "noEmit": true,
     "paths": {

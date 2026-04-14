@@ -45,14 +45,14 @@
     "@grpc/grpc-js": "^1.9.0",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/core": "^2.0.0",
-    "@opentelemetry/exporter-trace-otlp-grpc": "^0.213.0",
-    "@opentelemetry/instrumentation": "^0.213.0",
-    "@opentelemetry/instrumentation-express": "^0.61.0",
-    "@opentelemetry/instrumentation-http": "^0.213.0",
-    "@opentelemetry/instrumentation-pg": "^0.65.0",
-    "@opentelemetry/instrumentation-winston": "^0.57.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.214.0",
+    "@opentelemetry/instrumentation": "^0.214.0",
+    "@opentelemetry/instrumentation-express": "^0.62.0",
+    "@opentelemetry/instrumentation-http": "^0.214.0",
+    "@opentelemetry/instrumentation-pg": "^0.66.0",
+    "@opentelemetry/instrumentation-winston": "^0.58.0",
     "@opentelemetry/resources": "^2.0.0",
-    "@opentelemetry/sdk-node": "^0.213.0",
+    "@opentelemetry/sdk-node": "^0.214.0",
     "@opentelemetry/sdk-trace-node": "^2.0.0",
     "@opentelemetry/semantic-conventions": "^1.28.0",
     "@reduxjs/toolkit": "^2.3.0",
@@ -101,6 +101,6 @@
     "nodemon": "3.1.14",
     "npm-run-all2": "8.0.4",
     "touch": "3.1.1",
-    "vite": "7.3.1"
+    "vite": "8.0.8"
   }
 }

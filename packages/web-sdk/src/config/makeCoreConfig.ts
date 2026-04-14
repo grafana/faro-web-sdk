@@ -15,7 +15,7 @@ import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
 import { userActionDataAttribute } from '../instrumentations/userActions/const';
-import { browserMeta, sdkMeta } from '../metas';
+import { browserMeta, createSdkMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
@@ -45,16 +45,20 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     internalLogger.error('either "url" or "transports" must be defined');
   }
 
+  // Resolve filtered instrumentations early so sdk meta can include the active integration list.
+  // Destructuring instrumentations here removes it from restProperties in the second destructure below.
+  const { instrumentations = getWebInstrumentations(), ...browserConfigWithoutInstrumentations } = browserConfig;
+  const filteredInstrumentations = getFilteredInstrumentations(instrumentations, browserConfig);
+
   const {
     // properties with default values
     dedupe = true,
     eventDomain = defaultEventDomain,
     globalObjectKey = defaultGlobalObjectKey,
-    instrumentations = getWebInstrumentations(),
     internalLoggerLevel = defaultInternalLoggerLevel,
     isolate = false,
     logArgsSerializer = defaultLogArgsSerializer,
-    metas = createDefaultMetas(browserConfig),
+    metas = createDefaultMetas(browserConfig, filteredInstrumentations),
     paused = false,
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
@@ -62,7 +66,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     experimental,
     // Properties without default values or which aren't used to create derived config
     ...restProperties
-  }: BrowserConfig = browserConfig;
+  }: Omit<BrowserConfig, 'instrumentations'> = browserConfigWithoutInstrumentations;
 
   // Extract experimental features with defaults
   const trackNavigation = experimental?.trackNavigation ?? false;
@@ -82,7 +86,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations: getFilteredInstrumentations(instrumentations, browserConfig),
+    instrumentations: filteredInstrumentations,
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -129,14 +133,14 @@ function getFilteredInstrumentations(
   });
 }
 
-function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
+function createDefaultMetas(browserConfig: BrowserConfig, instrumentations: Instrumentation[]): MetaItem[] {
   const { page, generatePageId } = browserConfig?.pageTracking ?? {};
 
   const initialMetas: MetaItem[] = [
     browserMeta,
     createPageMeta({ generatePageId, initialPageMeta: page }),
     ...(browserConfig.metas ?? []),
-    sdkMeta,
+    createSdkMeta(instrumentations),
   ];
 
   const isK6BrowserSession = isObject((window as any)?.k6);
