@@ -22,7 +22,7 @@ export class FetchTransport extends BaseTransport {
 
   private readonly rateLimitBackoffMs: number;
   private readonly getNow: () => number;
-  private disabledUntil: Date = new Date();
+  private disabledUntil: Date = new Date(0);
 
   constructor(private options: FetchTransportOptions) {
     super();
