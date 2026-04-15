@@ -489,7 +489,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cypress/webpack-preprocessor@npm:^7.0.2":
+"@cypress/webpack-preprocessor@npm:7.0.2":
   version: 7.0.2
   resolution: "@cypress/webpack-preprocessor@npm:7.0.2"
   dependencies:
@@ -7589,7 +7589,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild-loader@npm:^4.4.3":
+"esbuild-loader@npm:4.4.3":
   version: 4.4.3
   resolution: "esbuild-loader@npm:4.4.3"
   dependencies:
@@ -8269,7 +8269,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "faro-web-sdk@workspace:."
   dependencies:
-    "@cypress/webpack-preprocessor": "npm:^7.0.2"
+    "@cypress/webpack-preprocessor": "npm:7.0.2"
     "@eslint/js": "npm:10.0.1"
     "@grafana/eslint-config": "npm:9.0.0"
     "@rollup/plugin-commonjs": "npm:29.0.2"
@@ -8281,7 +8281,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:8.58.1"
     "@typescript-eslint/parser": "npm:8.58.1"
     cypress: "npm:15.13.1"
-    esbuild-loader: "npm:^4.4.3"
+    esbuild-loader: "npm:4.4.3"
     eslint: "npm:10.2.0"
     eslint-config-prettier: "npm:10.1.8"
     eslint-plugin-import: "npm:2.32.0"
@@ -8308,7 +8308,7 @@ __metadata:
     ts-jest: "npm:29.4.9"
     ts-node: "npm:10.9.2"
     typescript: "npm:6.0.2"
-    webpack: "npm:^5.106.1"
+    webpack: "npm:5.106.1"
   languageName: unknown
   linkType: soft
 
@@ -16958,7 +16958,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.106.1":
+"webpack@npm:5.106.1":
   version: 5.106.1
   resolution: "webpack@npm:5.106.1"
   dependencies:
