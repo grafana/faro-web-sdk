@@ -42,7 +42,7 @@ services:
   tempo:
     env_file:
       - './.env'
-    image: 'grafana/tempo:2.10.3@sha256:cac9de2ac9f6da8efca5b64b690a7cb8c786a0c49cac7b4517dd1b0089a6c703'
+    image: 'grafana/tempo:2.10.4@sha256:a6616c9d224770c883a67b50e4941e99c5df81b076ef05f516bb7cce5a96cec0'
     volumes:
       - '${TEMPO_CONFIG_PATH_LOCAL}:${TEMPO_CONFIG_PATH}'
     command:
@@ -54,7 +54,7 @@ services:
   alloy:
     env_file:
       - './.env'
-    image: 'grafana/alloy:v1.15.0@sha256:579582bce40049f2e27bd1e445000689c907a41f0495cb0d0c7f65609316ba7c'
+    image: 'grafana/alloy:v1.15.1@sha256:1f40cf52adda8fab3e058f9347a5d165624ecb9fbc1527769cb744748961940d'
     volumes:
       - '${ALLOY_CONFIG_PATH_LOCAL}:${ALLOY_CONFIG_PATH}'
     entrypoint:
