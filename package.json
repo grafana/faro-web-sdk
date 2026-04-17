@@ -56,7 +56,7 @@
     "drone:sign": "drone --server https://drone.grafana.net sign --save grafana/faro-web-sdk .drone/drone.yml"
   },
   "devDependencies": {
-    "@cypress/webpack-preprocessor": "7.0.2",
+    "@cypress/webpack-preprocessor": "7.1.0",
     "@eslint/js": "10.0.1",
     "@grafana/eslint-config": "9.0.0",
     "@rollup/plugin-commonjs": "29.0.2",

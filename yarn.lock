@@ -489,20 +489,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cypress/webpack-preprocessor@npm:7.0.2":
-  version: 7.0.2
-  resolution: "@cypress/webpack-preprocessor@npm:7.0.2"
+"@cypress/webpack-preprocessor@npm:7.1.0":
+  version: 7.1.0
+  resolution: "@cypress/webpack-preprocessor@npm:7.1.0"
   dependencies:
     bluebird: "npm:3.7.1"
     debug: "npm:^4.3.4"
     lodash: "npm:^4.17.20"
-    semver: "npm:^7.3.2"
+    semver: "npm:^7.7.3"
   peerDependencies:
     "@babel/core": ^7.28.0
     "@babel/preset-env": ^7.26.0
     babel-loader: ^9 || ^10
     webpack: ^5
-  checksum: 10c0/824bc5e6651673f5d431d2410325ea67df6145a172fe88fbe32548560fa38123c8fd963816f07c3e8378fe6d317f1b3ed07a5068d9f72e06c3eddce5abc3c25c
+  checksum: 10c0/4453dc9025c54f0a96a58383eed0315b8a4260f308141bfba01d02d1d99f051fb64e9f17bdf84bcfaf8f0f1dde110c64105f963562ac3f02ee1e0a067982f36e
   languageName: node
   linkType: hard
 
@@ -8269,7 +8269,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "faro-web-sdk@workspace:."
   dependencies:
-    "@cypress/webpack-preprocessor": "npm:7.0.2"
+    "@cypress/webpack-preprocessor": "npm:7.1.0"
     "@eslint/js": "npm:10.0.1"
     "@grafana/eslint-config": "npm:9.0.0"
     "@rollup/plugin-commonjs": "npm:29.0.2"
@@ -15020,7 +15020,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.0.0, semver@npm:^7.1.1, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.3, semver@npm:^7.7.2, semver@npm:^7.7.3, semver@npm:^7.7.4":
+"semver@npm:^7.0.0, semver@npm:^7.1.1, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.3, semver@npm:^7.7.2, semver@npm:^7.7.3, semver@npm:^7.7.4":
   version: 7.7.4
   resolution: "semver@npm:7.7.4"
   bin:
