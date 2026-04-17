@@ -41,17 +41,17 @@ export class OtlpHttpTransport extends BaseTransport {
     return true;
   }
 
-  send(items: TransportItem[]): void {
+  async send(items: TransportItem[]): Promise<void> {
     const otelPayload = new OtelPayload({
       internalLogger: this.internalLogger,
       customOtlpTransform: this.options.otlpTransform,
     });
 
     items.forEach((item) => otelPayload.addResourceItem(item));
-    this.sendPayload(otelPayload.getPayload());
+    await this.sendPayload(otelPayload.getPayload());
   }
 
-  private sendPayload(payload: OtelTransportPayload): void {
+  private async sendPayload(payload: OtelTransportPayload): Promise<void> {
     try {
       const { tracesURL = '', logsURL = '' } = this.options;
 
@@ -95,12 +95,12 @@ export class OtlpHttpTransport extends BaseTransport {
           continue;
         }
 
-        const resolvedHeaders: Record<string, string> = {};
-        for (const [key, value] of Object.entries(headers)) {
-          resolvedHeaders[key] = typeof value === 'function' ? value() : value;
-        }
+        await this.promiseBuffer.add(async () => {
+          const resolvedHeaders: Record<string, string> = {};
+          for (const [key, value] of Object.entries(headers)) {
+            resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
+          }
 
-        this.promiseBuffer.add(() => {
           return fetch(url, {
             method: 'POST',
             headers: {
