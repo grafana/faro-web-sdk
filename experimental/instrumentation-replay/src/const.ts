@@ -17,4 +17,5 @@ export const defaultReplayInstrumentationOptions: ReplayInstrumentationOptions =
   beforeSend: undefined,
   recordAfter: 'load',
   samplingRate: 1,
+  pack: false,
 };

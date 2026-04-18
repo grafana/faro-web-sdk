@@ -8,6 +8,11 @@ jest.mock('rrweb', () => ({
   record: jest.fn(),
 }));
 
+// Mock @rrweb/packer
+jest.mock('@rrweb/packer', () => ({
+  pack: jest.fn(),
+}));
+
 function createSeededRandom(seed: number): () => number {
   let current = seed >>> 0;
 
@@ -24,10 +29,14 @@ describe('ReplayInstrumentation', () => {
   let mockAddListener: jest.Mock;
   let mockPushEvent: jest.Mock;
 
+  let mockPack: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockRecord = require('rrweb').record;
     mockRecord.mockReturnValue(jest.fn());
+    mockPack = require('@rrweb/packer').pack;
+    mockPack.mockImplementation((event: unknown) => `packed:${JSON.stringify(event)}`);
 
     // Mock API and metas
     mockGetSession = jest.fn();
@@ -70,6 +79,7 @@ describe('ReplayInstrumentation', () => {
         ignoreSelector: undefined,
         beforeSend: undefined,
         samplingRate: 1,
+        pack: false,
       };
 
       expect(instrumentation['options']).toEqual(expectedDefaults);
@@ -96,6 +106,7 @@ describe('ReplayInstrumentation', () => {
         ignoreSelector: '.ignore-me',
         beforeSend: beforeSendFn,
         samplingRate: 1,
+        pack: false,
       };
 
       instrumentation = new ReplayInstrumentation(customOptions);
@@ -133,6 +144,7 @@ describe('ReplayInstrumentation', () => {
         ignoreSelector: undefined,
         beforeSend: undefined,
         samplingRate: 1,
+        pack: false,
       };
 
       expect(instrumentation['options']).toEqual(expected);
@@ -304,17 +316,8 @@ describe('ReplayInstrumentation', () => {
   describe('handleEvent', () => {
     let emitCallback: (event: any, isCheckout?: boolean) => void;
 
-    beforeEach(() => {
-      mockRecord.mockImplementation((opts) => {
-        emitCallback = opts.emit;
-        return jest.fn();
-      });
-    });
-
-    it('should push events to the API', () => {
-      instrumentation = new ReplayInstrumentation();
-
-      // Mock sampled session
+    function startSampledRecording(options?: ReplayInstrumentationOptions): void {
+      instrumentation = new ReplayInstrumentation(options);
       mockGetSession.mockReturnValue({
         id: 'test-session',
         attributes: { isSampled: 'true' },
@@ -323,6 +326,17 @@ describe('ReplayInstrumentation', () => {
       instrumentation['metas'] = { addListener: mockAddListener } as any;
 
       instrumentation.initialize();
+    }
+
+    beforeEach(() => {
+      mockRecord.mockImplementation((opts) => {
+        emitCallback = opts.emit;
+        return jest.fn();
+      });
+    });
+
+    it('should push events to the API', () => {
+      startSampledRecording();
 
       const testEvent = { type: 1, data: {}, timestamp: Date.now() };
       emitCallback(testEvent);
@@ -334,18 +348,7 @@ describe('ReplayInstrumentation', () => {
 
     it('should apply beforeSend transformation to events', () => {
       const beforeSend = jest.fn((event) => ({ ...event, modified: true }));
-
-      instrumentation = new ReplayInstrumentation({ beforeSend });
-
-      // Mock sampled session
-      mockGetSession.mockReturnValue({
-        id: 'test-session',
-        attributes: { isSampled: 'true' },
-      });
-      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
-
-      instrumentation.initialize();
+      startSampledRecording({ beforeSend });
 
       const testEvent = { type: 1, data: {}, timestamp: Date.now() };
       emitCallback(testEvent);
@@ -358,18 +361,7 @@ describe('ReplayInstrumentation', () => {
 
     it('should skip sending event if beforeSend returns null', () => {
       const beforeSend = jest.fn(() => null);
-
-      instrumentation = new ReplayInstrumentation({ beforeSend });
-
-      // Mock sampled session
-      mockGetSession.mockReturnValue({
-        id: 'test-session',
-        attributes: { isSampled: 'true' },
-      });
-      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
-
-      instrumentation.initialize();
+      startSampledRecording({ beforeSend });
 
       emitCallback({ type: 1, data: {}, timestamp: Date.now() });
 
@@ -379,18 +371,7 @@ describe('ReplayInstrumentation', () => {
 
     it('should skip sending event if beforeSend returns undefined', () => {
       const beforeSend = jest.fn(() => undefined);
-
-      instrumentation = new ReplayInstrumentation({ beforeSend });
-
-      // Mock sampled session
-      mockGetSession.mockReturnValue({
-        id: 'test-session',
-        attributes: { isSampled: 'true' },
-      });
-      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
-
-      instrumentation.initialize();
+      startSampledRecording({ beforeSend });
 
       emitCallback({ type: 1, data: {}, timestamp: Date.now() });
 
@@ -404,22 +385,48 @@ describe('ReplayInstrumentation', () => {
           throw new Error('Push failed');
         }
       });
-
-      instrumentation = new ReplayInstrumentation();
-
-      // Mock sampled session
-      mockGetSession.mockReturnValue({
-        id: 'test-session',
-        attributes: { isSampled: 'true' },
-      });
-      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
-
+      startSampledRecording();
       const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
-      instrumentation.initialize();
 
       expect(() => emitCallback({ type: 1, data: {}, timestamp: Date.now() })).not.toThrow();
       expect(logWarnSpy).toHaveBeenCalledWith('Failed to push faro.session_recording.event event', expect.any(Error));
+    });
+
+    it('should use pack() when pack is true', () => {
+      startSampledRecording({ pack: true });
+
+      const testEvent = { type: 1, data: {}, timestamp: 1000 };
+      emitCallback(testEvent);
+
+      expect(mockPack).toHaveBeenCalledWith(testEvent);
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.event', {
+        event: `packed:${JSON.stringify(testEvent)}`,
+      });
+    });
+
+    it('should apply beforeSend before packing when both are set', () => {
+      const beforeSend = jest.fn((event: any) => ({ ...event, modified: true }));
+      startSampledRecording({ pack: true, beforeSend });
+
+      const testEvent = { type: 1, data: {}, timestamp: 1000 };
+      emitCallback(testEvent);
+
+      const transformedEvent = { ...testEvent, modified: true };
+      expect(beforeSend).toHaveBeenCalledWith(testEvent);
+      expect(mockPack).toHaveBeenCalledWith(transformedEvent);
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.event', {
+        event: `packed:${JSON.stringify(transformedEvent)}`,
+      });
+    });
+
+    it('should not call pack() when beforeSend drops the event', () => {
+      const beforeSend = jest.fn(() => null);
+      startSampledRecording({ pack: true, beforeSend });
+
+      emitCallback({ type: 1, data: {}, timestamp: 1000 });
+
+      expect(mockPack).not.toHaveBeenCalled();
+      expect(mockPushEvent).not.toHaveBeenCalledWith('faro.session_recording.event', expect.anything());
     });
   });
 

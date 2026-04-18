@@ -957,6 +957,7 @@ __metadata:
   resolution: "@grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay"
   dependencies:
     "@grafana/faro-core": "npm:^2.3.1"
+    "@rrweb/packer": "npm:^2.0.0-alpha.18"
     rrweb: "npm:^2.0.0-alpha.18"
   languageName: unknown
   linkType: soft
@@ -3545,6 +3546,16 @@ __metadata:
   version: 4.60.1
   resolution: "@rollup/rollup-win32-x64-msvc@npm:4.60.1"
   conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@rrweb/packer@npm:^2.0.0-alpha.18":
+  version: 2.0.0-alpha.20
+  resolution: "@rrweb/packer@npm:2.0.0-alpha.20"
+  dependencies:
+    "@rrweb/types": "npm:^2.0.0-alpha.20"
+    fflate: "npm:^0.4.4"
+  checksum: 10c0/a5d6b87239bd9a79b27280af081955c6832860bfdb2dbc3d29fd3a0a197df0c8bb8538db2f4144e0ac5bfe100397d7c73f56c296ff9f138352ebe659e9c726ff
   languageName: node
   linkType: hard
 
@@ -8381,6 +8392,13 @@ __metadata:
   version: 4.2.3
   resolution: "fecha@npm:4.2.3"
   checksum: 10c0/0e895965959cf6a22bb7b00f0bf546f2783836310f510ddf63f463e1518d4c96dec61ab33fdfd8e79a71b4856a7c865478ce2ee8498d560fe125947703c9b1cf
+  languageName: node
+  linkType: hard
+
+"fflate@npm:^0.4.4":
+  version: 0.4.8
+  resolution: "fflate@npm:0.4.8"
+  checksum: 10c0/29d1eddaaa5deab61b1c6b0d21282adacadbc4d2c01e94d8b1ee784398151673b9c563e53f97a801bc410a1ae55e8de5378114a743430e643e7a0644ba8e5a42
   languageName: node
   linkType: hard
 
