@@ -31,6 +31,7 @@ export interface ExceptionEventDefault {
   type: string;
   value: string;
 
+  fatal?: boolean;
   fingerprint?: string;
   stacktrace?: Stacktrace;
   trace?: TraceContext;

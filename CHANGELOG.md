@@ -2,9 +2,9 @@
 
 ## Next
 
-- Feature (`@grafana/faro-web-sdk`): Add structured `meta.os` populated from `ua-parser-js`
-  output, aligned with the Faro spec `OS` type and OTel `os.*` semconv. `meta.browser.os`
-  remains populated for backward compatibility.
+- Feature (`@grafana/faro-core`): Extend TS types to match new Faro spec fields — add
+  `MetaDevice` type and `meta.device`, `meta.app.installationId`, and `fatal` on
+  `ExceptionEventDefault`. Types only; these fields are not populated by the Web SDK.
 
 ## 2.4.0
 

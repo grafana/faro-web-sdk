@@ -32,6 +32,7 @@ export interface MetaApp {
   version?: string;
   environment?: string;
   bundleId?: string;
+  installationId?: string;
 }
 
 export interface MetaUser {
@@ -110,6 +111,15 @@ export interface MetaOS {
   detail?: string;
 }
 
+export interface MetaDevice {
+  manufacturer?: string;
+  model_identifier?: string;
+  model_name?: string;
+  brand?: string;
+  is_physical?: boolean;
+  type?: string;
+}
+
 export interface Meta {
   sdk?: MetaSDK;
   app?: MetaApp;
@@ -120,6 +130,7 @@ export interface Meta {
   view?: MetaView;
   k6?: MetaK6;
   os?: MetaOS;
+  device?: MetaDevice;
 }
 
 /**

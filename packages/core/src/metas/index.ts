@@ -7,6 +7,7 @@ export type {
   MetaApp,
   MetaAttributes,
   MetaBrowser,
+  MetaDevice,
   MetaGetter,
   MetaItem,
   MetaK6,
