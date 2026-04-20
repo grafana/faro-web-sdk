@@ -113,7 +113,7 @@ export function initializeExceptionsAPI({
       const testingPayload = {
         type: item.payload.type,
         value: item.payload.value,
-        stackTrace: item.payload.stacktrace,
+        stacktrace: item.payload.stacktrace,
         context: item.payload.context,
         fingerprint: item.payload.fingerprint,
         fatal: item.payload.fatal,

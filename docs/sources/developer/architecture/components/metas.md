@@ -51,7 +51,8 @@ Properties:
 
 ### Device
 
-The `device` meta holds information about the device the app is running on. It is primarily for mobile use cases; the Web SDK does not populate it.
+The `device` meta holds information about the device the app is running on. It is primarily for mobile
+use cases; the Web SDK does not populate it.
 
 Properties:
 

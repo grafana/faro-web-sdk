@@ -155,6 +155,26 @@ describe('api.exceptions', () => {
         expect(transport.items).toHaveLength(2);
       });
 
+      it("doesn't filter events with same error but different fatal values", () => {
+        const error = new Error('test');
+
+        api.pushError(error, { fatal: true });
+        expect(transport.items).toHaveLength(1);
+
+        api.pushError(error, { fatal: false });
+        expect(transport.items).toHaveLength(2);
+      });
+
+      it('filters events with same error and same fatal value', () => {
+        const error = new Error('test');
+
+        api.pushError(error, { fatal: true });
+        expect(transport.items).toHaveLength(1);
+
+        api.pushError(error, { fatal: true });
+        expect(transport.items).toHaveLength(1);
+      });
+
       it('filters the same event', () => {
         const error = new Error('test');
 
