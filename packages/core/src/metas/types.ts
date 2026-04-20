@@ -103,6 +103,13 @@ export interface MetaK6 {
   testRunId?: string;
 }
 
+export interface MetaOS {
+  name?: string;
+  version?: string;
+  build_id?: string;
+  detail?: string;
+}
+
 export interface Meta {
   sdk?: MetaSDK;
   app?: MetaApp;
@@ -112,6 +119,7 @@ export interface Meta {
   browser?: MetaBrowser;
   view?: MetaView;
   k6?: MetaK6;
+  os?: MetaOS;
 }
 
 /**

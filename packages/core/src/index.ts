@@ -64,6 +64,7 @@ export type {
   MetaBrowser,
   MetaGetter,
   MetaItem,
+  MetaOS,
   MetaPage,
   Metas,
   MetaSDK,

@@ -10,6 +10,7 @@ export type {
   MetaGetter,
   MetaItem,
   MetaK6,
+  MetaOS,
   MetaPage,
   MetaSDK,
   MetaSDKIntegration,

@@ -2,6 +2,10 @@
 
 ## Next
 
+- Feature (`@grafana/faro-web-sdk`): Add structured `meta.os` populated from `ua-parser-js`
+  output, aligned with the Faro spec `OS` type and OTel `os.*` semconv. `meta.browser.os`
+  remains populated for backward compatibility.
+
 ## 2.4.0
 
 - Feature (`@grafana/faro-transport-otlp-http` [experimental]): OTLP HTTP transport now supports async dynamic header values.
