@@ -26,9 +26,8 @@ Properties:
 - `release` - a release identifier for the app, like a commit hash, a build number or a Docker container tag
 - `environment` - the environment where the app is running, like `staging` or `production`
 - `bundleId` - bundle identifier, primarily used by mobile apps
-- `installationId` - per-installation identifier (OTel `app.installation.id`). Stable across launches of the
-  same installed app; resets on uninstall/reinstall. Primarily populated by mobile SDKs; type-only on the
-  Web SDK
+- `installationId` - per-installation identifier, for mobile use cases. Stable across launches of the
+  same installed app; resets on uninstall/reinstall.
 
 ### Browser
 
@@ -52,9 +51,7 @@ Properties:
 
 ### Device
 
-The `device` meta holds information about the device the app is running on. It is primarily populated by
-mobile SDKs (React Native, Flutter); the Web SDK does not populate it. Aligned with OpenTelemetry
-`device.*` semantic conventions, so property names use snake_case to match wire format.
+The `device` meta holds information about the device the app is running on. It is primarily for mobile use cases; the Web SDK does not populate it.
 
 Properties:
 
@@ -68,9 +65,7 @@ Properties:
 ### OS
 
 The `os` meta captures the operating system the app is running on. The Web SDK populates `name` and
-`version` from `ua-parser-js`; mobile SDKs populate richer fields. Aligned with OpenTelemetry `os.*`
-semantic conventions, so property names use snake_case to match wire format. When the user agent is
-unrecognised, the Web SDK omits this meta entirely rather than sending an empty object.
+`version`.
 
 Properties:
 
