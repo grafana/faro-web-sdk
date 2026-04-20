@@ -26,13 +26,13 @@ export interface MetaSDK {
 }
 
 export interface MetaApp {
+  bundleId?: string;
+  environment?: string;
+  installationId?: string;
   name?: string;
   namespace?: string;
   release?: string;
   version?: string;
-  environment?: string;
-  bundleId?: string;
-  installationId?: string;
 }
 
 export interface MetaUser {
@@ -104,6 +104,10 @@ export interface MetaK6 {
   testRunId?: string;
 }
 
+// Fields on MetaOS and MetaDevice use snake_case to mirror the Faro spec wire
+// format, which in turn mirrors OTel `os.*` and `device.*` semantic convention
+// attribute keys (e.g. os.build_id, device.model.identifier). Intentionally
+// inconsistent with the camelCase used elsewhere in Meta.
 export interface MetaOS {
   name?: string;
   version?: string;

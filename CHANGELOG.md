@@ -4,7 +4,9 @@
 
 - Feature (`@grafana/faro-core`): Extend TS types to match new Faro spec fields — add
   `MetaDevice` type and `meta.device`, `meta.app.installationId`, and `fatal` on
-  `ExceptionEventDefault`. Types only; these fields are not populated by the Web SDK.
+  `ExceptionEventDefault`. `meta.device` and `meta.app.installationId` are not populated
+  by the Web SDK. `fatal` can be set via `pushError(err, { fatal: true })` and
+  participates in dedupe.
 
 ## 2.4.0
 

@@ -130,6 +130,20 @@ describe('api.exceptions', () => {
       expect(evt.fingerprint).toBeUndefined();
     });
 
+    it('includes fatal in payload when provided', () => {
+      api.pushError(new Error('test'), { fatal: true });
+      expect(transport.items).toHaveLength(1);
+      const evt = transport.items[0]?.payload as ExceptionEvent;
+      expect(evt.fatal).toBe(true);
+    });
+
+    it('does not include fatal in payload when not provided', () => {
+      api.pushError(new Error('test'));
+      expect(transport.items).toHaveLength(1);
+      const evt = transport.items[0]?.payload as ExceptionEvent;
+      expect(evt.fatal).toBeUndefined();
+    });
+
     describe('Filtering', () => {
       it("doesn't filter events with same error but different fingerprints", () => {
         const error = new Error('test');

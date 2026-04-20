@@ -54,6 +54,7 @@ export type ExceptionEvent<EXTENDED = ExceptionEventDefault> = EXTENDED extends 
   : ExceptionEventDefault;
 
 export interface PushErrorOptions {
+  fatal?: boolean;
   fingerprint?: string;
   skipDedupe?: boolean;
   stackFrames?: ExceptionStackFrame[];

@@ -1,10 +1,9 @@
-import { UAParser } from 'ua-parser-js';
-
 import type { Meta, MetaItem } from '@grafana/faro-core';
 
+import { getUAResult } from '../shared';
+
 export const osMeta: MetaItem<Pick<Meta, 'os'>> = () => {
-  const parser = new UAParser();
-  const { name, version } = parser.getOS();
+  const { name, version } = getUAResult().os;
 
   const os: NonNullable<Meta['os']> = {};
 

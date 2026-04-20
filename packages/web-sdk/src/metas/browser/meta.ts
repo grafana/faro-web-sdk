@@ -1,13 +1,12 @@
-import { UAParser } from 'ua-parser-js';
-
 import { unknownString } from '@grafana/faro-core';
 import type { Meta, MetaBrowser, MetaItem } from '@grafana/faro-core';
 
+import { getUAResult } from '../shared';
+
 export const browserMeta: MetaItem<Pick<Meta, 'browser'>> = () => {
-  const parser = new UAParser();
-  const { name, version } = parser.getBrowser();
-  const { name: osName, version: osVersion } = parser.getOS();
-  const userAgent = parser.getUA();
+  const { browser, os, ua: userAgent } = getUAResult();
+  const { name, version } = browser;
+  const { name: osName, version: osVersion } = os;
   const language = navigator.language;
   const mobile = navigator.userAgent.includes('Mobi');
   const brands = getBrands();
