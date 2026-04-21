@@ -76,6 +76,7 @@ initializeFaro({
 | `collectFonts`             | `boolean`                      | `false`  | Whether to collect fonts used in the website                                                                                                    |
 | `inlineImages`             | `boolean`                      | `false`  | Whether to record image content                                                                                                                 |
 | `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                                                           |
+| `pack`                     | `boolean`                      | `false`  | Whether to compress each replay event with `@rrweb/packer` before sending. Applied after `beforeSend` so hooks still receive raw rrweb events |
 
 #### Sub-sampling example
 

@@ -81,6 +81,20 @@ export interface ReplayInstrumentationOptions {
   recordAfter?: 'DOMContentLoaded' | 'load';
 
   /**
+   * Whether to compress recorded events using @rrweb/packer (fflate/zlib) before sending.
+   *
+   * When enabled, each event is compressed individually after the optional `beforeSend`
+   * transform. The `event` field pushed to Faro will contain a compressed binary string
+   * instead of a JSON string.
+   *
+   * Compression is applied inside `handleEvent`, not via rrweb's built-in `packFn` option,
+   * so that `beforeSend` always receives the raw `eventWithTime` regardless of this setting.
+   *
+   * @default false
+   */
+  pack?: boolean;
+
+  /**
    * The fraction of globally-sampled sessions that should also record a session replay.
    * Expressed as a number between 0 and 1.
    *

@@ -1,4 +1,5 @@
 import type { eventWithTime } from '@rrweb/types';
+import { pack as packEvent } from '@rrweb/packer';
 import { record, type recordOptions } from 'rrweb';
 
 import { BaseInstrumentation, clampSamplingRate, VERSION } from '@grafana/faro-core';
@@ -159,8 +160,12 @@ export class ReplayInstrumentation extends BaseInstrumentation {
         }
       }
 
+      // Pack (compress) the event after beforeSend so that beforeSend always
+      // receives the raw eventWithTime regardless of the pack setting.
+      const serialized = this.options.pack ? packEvent(processedEvent) : JSON.stringify(processedEvent);
+
       this.api.pushEvent(faroSessionReplayEventName, {
-        event: JSON.stringify(processedEvent),
+        event: serialized,
       });
     } catch (err) {
       this.logWarn(`Failed to push ${faroSessionReplayEventName} event`, err);
