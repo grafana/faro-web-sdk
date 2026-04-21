@@ -22,7 +22,7 @@ export {
 } from './instrumentations';
 export type { ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
-export { browserMeta, createSession, createSdkMeta, sdkMeta } from './metas';
+export { browserMeta, createSession, sdkMeta } from './metas';
 
 export { ConsoleTransport, FetchTransport } from './transports';
 export type {
