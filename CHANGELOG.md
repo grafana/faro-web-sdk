@@ -8,10 +8,6 @@
   Each header value can be a function returning `Promise<string>`, resolved at request time
   (e.g. for token refresh). Sync dynamic headers (`() => string`) continue to work (#1490).
 
-- Feature (`@grafana/faro-web-sdk`): The SDK meta payload now includes the name and version of each
-  active instrumentation under `sdk.integrations`, so backends can track which instrumentations are
-  in use per app (#1972).
-
 - Feature (`@grafana/faro-instrumentation-replay`): Emit a `faro.session_recording.started` Faro
   event when rrweb session recording successfully starts, so backends can identify which sessions
   have an associated recording (#1925).
