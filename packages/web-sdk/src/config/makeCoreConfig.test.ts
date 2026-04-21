@@ -47,7 +47,7 @@ describe('defaultMetas', () => {
     delete (global as any).k6;
   });
 
-  it('includes sdkMeta with name, version, and active integrations in defaultMetas', () => {
+  it('includes sdkMeta with name and version in defaultMetas', () => {
     const browserConfig = {
       url: 'http://example.com/my-collector',
       app: {},
@@ -64,12 +64,6 @@ describe('defaultMetas', () => {
     expect(sdkMeta?.sdk?.name).toBe('faro-web');
     expect(sdkMeta?.sdk?.version).toBeDefined();
     expect(typeof sdkMeta?.sdk?.version).toBe('string');
-    expect(Array.isArray(sdkMeta?.sdk?.integrations)).toBe(true);
-    expect(sdkMeta?.sdk?.integrations?.length).toBeGreaterThan(0);
-    sdkMeta?.sdk?.integrations?.forEach((integration) => {
-      expect(typeof integration.name).toBe('string');
-      expect(typeof integration.version).toBe('string');
-    });
   });
 });
 

@@ -1,1 +1,1 @@
-export { createSdkMeta, sdkMeta } from './meta';
+export { sdkMeta } from './meta';
