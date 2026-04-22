@@ -2,9 +2,22 @@
 
 ## Next
 
-- Feature (`@grafana/faro-transport-otlp-http`): OTLP HTTP transport now supports async dynamic header values.
+## 2.4.0
+
+- Feature (`@grafana/faro-transport-otlp-http` [experimental]): OTLP HTTP transport now supports async dynamic header values.
   Each header value can be a function returning `Promise<string>`, resolved at request time
   (e.g. for token refresh). Sync dynamic headers (`() => string`) continue to work (#1490).
+
+- Feature (`@grafana/faro-instrumentation-replay`): Emit a `faro.session_recording.started` Faro
+  event when rrweb session recording successfully starts, so backends can identify which sessions
+  have an associated recording (#1925).
+
+- Fix (`@grafana/faro-web-sdk`): `getErrorDetails` now preserves the `type` field for `Error`
+  subclasses (e.g. `TypeError`, `RangeError`, `SyntaxError`) when captured via `console.error`
+  or the global error handler (#1971).
+
+- Chore (`@grafana/faro-*`): Updated multiple dependencies to address security vulnerabilities
+  (#1973, #1969, #1976, #1980, #1968, #1965).
 
 ## 2.3.1
 

@@ -2,11 +2,14 @@
 
 ## Next
 
+## 2.4.0
+
 - Feature (`@grafana/faro-transport-otlp-http`): OTLP HTTP transport now supports async dynamic header values.
   Each header value can be a function returning `Promise<string>`, resolved at request time
   (e.g. for token refresh). Sync dynamic headers (`() => string`) continue to work (#1490).
-- Change (`@grafana/faro-instrumentation-replay`): enable full input and text
-  masking by default (`maskAllInputs: true`, `maskTextSelector: '*'`).
+- Feature (`@grafana/faro-instrumentation-replay`): Emit a `faro.session_recording.started` Faro
+  event when rrweb session recording successfully starts, so backends can identify which sessions
+  have an associated recording (#1925).
 
 ## 2.2.0
 
