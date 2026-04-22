@@ -22,7 +22,7 @@ export class FaroUserActionSpanProcessor implements SpanProcessor {
   }
 
   onStart(span: Span, parentContext: Context): void {
-    const userAction = faro.api.getActiveUserAction();
+    const userAction = faro.api?.getActiveUserAction();
     if (
       userAction &&
       (userAction as unknown as UserActionInternalInterface)?.getState() === UserActionState.Started &&

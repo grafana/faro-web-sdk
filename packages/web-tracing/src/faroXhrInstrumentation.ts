@@ -34,7 +34,7 @@ export class FaroXhrInstrumentation extends XMLHttpRequestInstrumentation {
           faro.internalLogger.error(error);
         }
 
-        const currentAction = faro.api.getActiveUserAction();
+        const currentAction = faro.api?.getActiveUserAction();
         if (
           span &&
           currentAction &&
