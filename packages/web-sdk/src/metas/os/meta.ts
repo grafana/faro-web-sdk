@@ -1,8 +1,8 @@
-import type { Meta, MetaItem, MetaOS } from '@grafana/faro-core';
+import type { Meta, MetaGetter, MetaOS } from '@grafana/faro-core';
 
 import { getUAResult } from '../shared';
 
-export const osMeta: MetaItem<Pick<Meta, 'os'>> = () => {
+export const osMeta: MetaGetter<Pick<Meta, 'os'>> = () => {
   const { name, version } = getUAResult().os;
 
   if (!name && !version) {
