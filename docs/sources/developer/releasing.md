@@ -10,8 +10,10 @@ and your dependencies are up to date.
 
 - Do `git pull` the main branch
 - Check `git status` to double check if you have any unpushed changes
-- Run `yarn install` to make sure `node_modules` is in sync with `yarn.lock`
-  (a stale install can cause confusing build errors during the release commit)
+- Run `yarn install --immutable` to make sure `node_modules` is in sync with `yarn.lock`
+  without mutating the lockfile (a stale install can cause confusing build errors during
+  the release commit). If the command fails because the lockfile is out of sync, resolve
+  that drift in a separate PR before releasing.
 
 **Note 2:**
 You need special access privileges to be able push to the protected main branch.
