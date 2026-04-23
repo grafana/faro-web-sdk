@@ -8,6 +8,12 @@
   by the Web SDK. `fatal` can be set via `pushError(err, { fatal: true })` and
   participates in dedupe.
 
+- Fix (`@grafana/faro-core`): Exception dedupe now correctly considers the stacktrace.
+  Previously the dedupe key referenced a non-existent `stackTrace` field (camelCase
+  typo), so stacktraces were effectively ignored and two errors with identical
+  message/type but different stacks were deduped. Consumers relying on `config.dedupe`
+  may see an increase in reported exceptions.
+
 ## 2.4.0
 
 - Feature (`@grafana/faro-transport-otlp-http` [experimental]): OTLP HTTP transport now supports async dynamic header values.
