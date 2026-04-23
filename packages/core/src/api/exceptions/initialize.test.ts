@@ -175,6 +175,16 @@ describe('api.exceptions', () => {
         expect(transport.items).toHaveLength(1);
       });
 
+      it('filters events with omitted fatal against explicit fatal: false', () => {
+        const error = new Error('test');
+
+        api.pushError(error);
+        expect(transport.items).toHaveLength(1);
+
+        api.pushError(error, { fatal: false });
+        expect(transport.items).toHaveLength(1);
+      });
+
       it('filters the same event', () => {
         const error = new Error('test');
 

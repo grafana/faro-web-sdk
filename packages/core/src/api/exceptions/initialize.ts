@@ -116,7 +116,7 @@ export function initializeExceptionsAPI({
         stacktrace: item.payload.stacktrace,
         context: item.payload.context,
         fingerprint: item.payload.fingerprint,
-        fatal: item.payload.fatal,
+        fatal: item.payload.fatal ?? false,
       };
 
       if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
