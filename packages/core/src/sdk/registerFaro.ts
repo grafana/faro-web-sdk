@@ -1,4 +1,5 @@
 import type { API } from '../api';
+import { getNoopAPI } from '../api/noop';
 import type { Config } from '../config';
 import type { Instrumentations } from '../instrumentations';
 import type { InternalLogger } from '../internalLogger';
@@ -10,7 +11,7 @@ import { setFaroOnGlobalObject } from './faroGlobalObject';
 import { setInternalFaroOnGlobalObject } from './internalFaroGlobalObject';
 import type { Faro } from './types';
 
-export let faro: Faro = {} as Faro;
+export let faro: Faro = { api: getNoopAPI() } as Faro;
 
 export function registerFaro(
   unpatchedConsole: UnpatchedConsole,

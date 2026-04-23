@@ -1,4 +1,5 @@
 export { initializeAPI } from './initialize';
+export { getNoopAPI } from './noop';
 export type { API, APIEvent, UserAction } from './types';
 
 export type { EventAttributes, EventEvent, EventsAPI, PushEventOptions } from './events';

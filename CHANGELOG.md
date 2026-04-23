@@ -2,6 +2,11 @@
 
 ## Next
 
+- Fix (`@grafana/faro-core`): `faro.api` is now a no-op implementation before
+  `initializeFaro()` runs, preventing `TypeError: faro.api is undefined` errors
+  when the singleton is accessed pre-initialization or when a bundler produces
+  duplicate copies of the singleton (#1889).
+
 ## 2.4.0
 
 - Feature (`@grafana/faro-transport-otlp-http` [experimental]): OTLP HTTP transport now supports async dynamic header values.
