@@ -130,6 +130,20 @@ describe('api.exceptions', () => {
       expect(evt.fingerprint).toBeUndefined();
     });
 
+    it('includes fatal in payload when provided', () => {
+      api.pushError(new Error('test'), { fatal: true });
+      expect(transport.items).toHaveLength(1);
+      const evt = transport.items[0]?.payload as ExceptionEvent;
+      expect(evt.fatal).toBe(true);
+    });
+
+    it('does not include fatal in payload when not provided', () => {
+      api.pushError(new Error('test'));
+      expect(transport.items).toHaveLength(1);
+      const evt = transport.items[0]?.payload as ExceptionEvent;
+      expect(evt.fatal).toBeUndefined();
+    });
+
     describe('Filtering', () => {
       it("doesn't filter events with same error but different fingerprints", () => {
         const error = new Error('test');
@@ -139,6 +153,36 @@ describe('api.exceptions', () => {
 
         api.pushError(error, { fingerprint: 'fingerprint-B' });
         expect(transport.items).toHaveLength(2);
+      });
+
+      it("doesn't filter events with same error but different fatal values", () => {
+        const error = new Error('test');
+
+        api.pushError(error, { fatal: true });
+        expect(transport.items).toHaveLength(1);
+
+        api.pushError(error, { fatal: false });
+        expect(transport.items).toHaveLength(2);
+      });
+
+      it('filters events with same error and same fatal value', () => {
+        const error = new Error('test');
+
+        api.pushError(error, { fatal: true });
+        expect(transport.items).toHaveLength(1);
+
+        api.pushError(error, { fatal: true });
+        expect(transport.items).toHaveLength(1);
+      });
+
+      it('filters events with omitted fatal against explicit fatal: false', () => {
+        const error = new Error('test');
+
+        api.pushError(error);
+        expect(transport.items).toHaveLength(1);
+
+        api.pushError(error, { fatal: false });
+        expect(transport.items).toHaveLength(1);
       });
 
       it('filters the same event', () => {

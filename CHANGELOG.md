@@ -7,6 +7,22 @@
   when the singleton is accessed pre-initialization or when a bundler produces
   duplicate copies of the singleton (#1889).
 
+- Feature (`@grafana/faro-core`): Extend TS types to match new Faro spec fields — add
+  `MetaOS` and `MetaDevice` types and `meta.os`, `meta.device`, `meta.app.installationId`,
+  and `fatal` on `ExceptionEventDefault`. `meta.device` and `meta.app.installationId`
+  are not populated by the Web SDK. `fatal` can be set via
+  `pushError(err, { fatal: true })` and participates in dedupe.
+
+- Feature (`@grafana/faro-web-sdk`): New default `osMeta` provider populates `meta.os`
+  (`name`, `version`) from the user agent. Registered automatically in the default
+  metas list and re-exported from the package entrypoint for custom meta setups.
+
+- Fix (`@grafana/faro-core`): Exception dedupe now correctly considers the stacktrace.
+  Previously the dedupe key referenced a non-existent `stackTrace` field (camelCase
+  typo), so stacktraces were effectively ignored and two errors with identical
+  message/type but different stacks were deduped. Consumers relying on `config.dedupe`
+  may see an increase in reported exceptions.
+
 ## 2.4.0
 
 - Feature (`@grafana/faro-transport-otlp-http` [experimental]): OTLP HTTP transport now supports async dynamic header values.

@@ -1,0 +1,1 @@
+export { getUAResult } from './uaParser';
