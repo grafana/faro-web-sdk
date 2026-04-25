@@ -32,7 +32,7 @@ function createFetchInstrumentationOptions(
       fetchInstrumentationOptions?.applyCustomAttributesOnSpan
     ),
     requestHook: (span: Span, _: Request | RequestInit) => {
-      const currentAction = faro.api.getActiveUserAction();
+      const currentAction = faro.api?.getActiveUserAction();
       if (
         currentAction &&
         (currentAction as unknown as UserActionInternalInterface)?.getState() === UserActionState.Started
