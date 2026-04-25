@@ -2,6 +2,11 @@
 
 ## Next
 
+- Fix (`@grafana/faro-core`): `faro.api` is now a no-op implementation before
+  `initializeFaro()` runs, preventing `TypeError: faro.api is undefined` errors
+  when the singleton is accessed pre-initialization or when a bundler produces
+  duplicate copies of the singleton (#1889).
+
 - Feature (`@grafana/faro-core`): Extend TS types to match new Faro spec fields — add
   `MetaOS` and `MetaDevice` types and `meta.os`, `meta.device`, `meta.app.installationId`,
   and `fatal` on `ExceptionEventDefault`. `meta.device` and `meta.app.installationId`
