@@ -67,7 +67,7 @@
     "@types/jest": "30.0.0",
     "@typescript-eslint/eslint-plugin": "8.59.0",
     "@typescript-eslint/parser": "8.59.0",
-    "cypress": "15.14.0",
+    "cypress": "15.14.1",
     "esbuild-loader": "4.4.3",
     "eslint": "10.2.1",
     "eslint-config-prettier": "10.1.8",
