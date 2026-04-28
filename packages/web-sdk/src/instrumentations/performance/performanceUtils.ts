@@ -97,6 +97,7 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
 
   return {
     name: name,
+    'http.host': getHostFromUrl(name),
     duration: toFaroPerformanceTimingString(duration),
     tcpHandshakeTime: toFaroPerformanceTimingString(connectEnd - connectStart),
     dnsLookupTime: toFaroPerformanceTimingString(domainLookupEnd - domainLookupStart),
@@ -181,6 +182,14 @@ function getDocumentParsingTime(): number | null {
   }
 
   return null;
+}
+
+function getHostFromUrl(url: string): string {
+  try {
+    return new URL(url).host || unknownString;
+  } catch {
+    return unknownString;
+  }
 }
 
 function toFaroPerformanceTimingString(v: unknown): string {

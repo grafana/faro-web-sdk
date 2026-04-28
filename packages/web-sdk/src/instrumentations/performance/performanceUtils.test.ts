@@ -33,6 +33,7 @@ describe('performanceUtils', () => {
       type: 'navigate',
 
       name: 'http://example.com',
+      'http.host': 'example.com',
       tcpHandshakeTime: '53',
       dnsLookupTime: '139',
       tlsNegotiationTime: '33',
@@ -56,6 +57,7 @@ describe('performanceUtils', () => {
     const faroResourceTiming = createFaroResourceTiming(performanceResourceEntry);
     expect(faroResourceTiming).toStrictEqual({
       name: 'http://example.com/awesome-image',
+      'http.host': 'example.com',
       duration: '370',
       tcpHandshakeTime: '0',
       dnsLookupTime: '0',
@@ -76,6 +78,15 @@ describe('performanceUtils', () => {
       visibilityState: 'visible',
       transferSize: '11459',
     } as FaroResourceTiming);
+  });
+
+  it(`extracts http.host from the resource name`, () => {
+    expect(createFaroResourceTiming({ name: 'http://example.com/path' } as any)['http.host']).toBe('example.com');
+    expect(createFaroResourceTiming({ name: 'http://example.com:8080/path' } as any)['http.host']).toBe(
+      'example.com:8080'
+    );
+    expect(createFaroResourceTiming({ name: 'not a url' } as any)['http.host']).toBe('unknown');
+    expect(createFaroResourceTiming({} as any)['http.host']).toBe('unknown');
   });
 
   it(`calculates cacheHitStatus`, () => {
