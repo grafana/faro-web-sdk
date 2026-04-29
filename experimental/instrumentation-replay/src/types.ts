@@ -81,6 +81,19 @@ export interface ReplayInstrumentationOptions {
   recordAfter?: 'DOMContentLoaded' | 'load';
 
   /**
+   * Stop recording after this many milliseconds of no user interaction
+   * (mouse moves, clicks, scrolls, viewport resizes, or input).
+   *
+   * When the user interacts again, recording resumes automatically with a
+   * fresh rrweb checkpoint so the player has a complete DOM snapshot.
+   *
+   * Set to 0 or undefined to disable (record continuously).
+   *
+   * @default undefined (disabled)
+   */
+  inactivityThresholdMs?: number;
+
+  /**
    * The fraction of globally-sampled sessions that should also record a session replay.
    * Expressed as a number between 0 and 1.
    *

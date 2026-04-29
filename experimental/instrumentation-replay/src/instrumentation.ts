@@ -8,6 +8,20 @@ import type { ReplayInstrumentationOptions } from './types';
 
 const faroSessionReplayEventName = 'faro.session_recording.event';
 const faroSessionReplayStartedEventName = 'faro.session_recording.started';
+const faroSessionReplayPausedEventName = 'faro.session_recording.paused';
+const faroSessionReplayResumedEventName = 'faro.session_recording.resumed';
+
+// DOM events that signal a human is present.  Aligned with rrweb's
+// IncrementalSource 1-5 (MouseMove, MouseInteraction, Scroll,
+// ViewportResize, Input).  We use pointer* instead of mouse*/touch*
+// because modern browsers fire PointerEvents for all input devices.
+const USER_INTERACTION_EVENTS: readonly string[] = [
+  'pointermove', // MouseMove / TouchMove
+  'pointerdown', // MouseInteraction (click, dblclick, etc.)
+  'scroll', // Scroll
+  'keydown', // Input
+  'input', // Input (covers typing without keydown, e.g. autofill)
+];
 
 export class ReplayInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-instrumentation-replay';
@@ -15,7 +29,10 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   private stopFn: { (): void } | null = null;
   private isRecording: boolean = false;
+  private isPaused: boolean = false;
   private options: ReplayInstrumentationOptions = defaultReplayInstrumentationOptions;
+  private inactivityTimer: ReturnType<typeof setTimeout> | null = null;
+  private boundOnUserInteraction: (() => void) | null = null;
 
   constructor(options: ReplayInstrumentationOptions = {}) {
     super();
@@ -102,50 +119,149 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   private stopRecording(): void {
+    this.teardownInactivityTracking();
     if (this.stopFn) {
       this.stopFn();
       this.stopFn = null;
     }
     this.isRecording = false;
+    this.isPaused = false;
     this.logDebug('Session replay stopped');
+  }
+
+  private buildRecordOptions(): recordOptions<eventWithTime> {
+    return {
+      emit: (event: eventWithTime, isCheckout?: boolean): void => {
+        this.handleEvent(event, isCheckout);
+      },
+      checkoutEveryNms: 300_000, // 5 minutes
+      recordCrossOriginIframes: this.options.recordCrossOriginIframes,
+      maskAllInputs: this.options.maskAllInputs,
+      maskInputOptions: this.options.maskInputOptions,
+      maskInputFn: this.options.maskInputFn,
+      maskTextSelector: this.options.maskTextSelector,
+      blockSelector: this.options.blockSelector,
+      ignoreSelector: this.options.ignoreSelector,
+      recordCanvas: this.options.recordCanvas,
+      collectFonts: this.options.collectFonts,
+      inlineImages: this.options.inlineImages,
+      recordDOM: true,
+      inlineStylesheet: this.options.inlineStylesheet,
+      recordAfter: this.options.recordAfter,
+      errorHandler: (err) => {
+        this.logError('Error occurred during session replay', err);
+      },
+    };
+  }
+
+  private startRrweb(): boolean {
+    const stop = record(this.buildRecordOptions());
+    if (stop) {
+      this.stopFn = stop;
+      return true;
+    }
+    return false;
+  }
+
+  private stopRrweb(): void {
+    if (this.stopFn) {
+      this.stopFn();
+      this.stopFn = null;
+    }
   }
 
   private startRecording(): void {
     try {
-      const opts: recordOptions<eventWithTime> = {
-        emit: (event: eventWithTime, isCheckout?: boolean): void => {
-          this.handleEvent(event, isCheckout);
-        },
-        checkoutEveryNms: 300_000, // 5 minutes
-        recordCrossOriginIframes: this.options.recordCrossOriginIframes,
-        maskAllInputs: this.options.maskAllInputs,
-        maskInputOptions: this.options.maskInputOptions,
-        maskInputFn: this.options.maskInputFn,
-        maskTextSelector: this.options.maskTextSelector,
-        blockSelector: this.options.blockSelector,
-        ignoreSelector: this.options.ignoreSelector,
-        recordCanvas: this.options.recordCanvas,
-        collectFonts: this.options.collectFonts,
-        inlineImages: this.options.inlineImages,
-        recordDOM: true,
-        inlineStylesheet: this.options.inlineStylesheet,
-        recordAfter: this.options.recordAfter,
-        errorHandler: (err) => {
-          this.logError('Error occurred during session replay', err);
-        },
-      };
-
-      const stop = record(opts);
-      if (stop) {
-        this.stopFn = stop;
-      }
+      this.startRrweb();
 
       this.isRecording = true;
+      this.isPaused = false;
       this.logDebug('Session replay started');
       this.api.pushEvent(faroSessionReplayStartedEventName, {});
+
+      this.setupInactivityTracking();
     } catch (err) {
       this.logWarn('Failed to start session replay', err);
     }
+  }
+
+  private pauseRecording(): void {
+    if (!this.isRecording || this.isPaused) {
+      return;
+    }
+
+    this.stopRrweb();
+    this.isPaused = true;
+    this.logDebug('Session replay paused due to inactivity');
+    this.api.pushEvent(faroSessionReplayPausedEventName, {});
+  }
+
+  private resumeRecording(): void {
+    if (!this.isPaused) {
+      return;
+    }
+
+    try {
+      this.startRrweb();
+
+      this.isPaused = false;
+      this.logDebug('Session replay resumed after user interaction');
+      this.api.pushEvent(faroSessionReplayResumedEventName, {});
+
+      this.resetInactivityTimer();
+    } catch (err) {
+      this.logWarn('Failed to resume session replay', err);
+    }
+  }
+
+  private setupInactivityTracking(): void {
+    const threshold = this.options.inactivityThresholdMs;
+    if (!threshold || threshold <= 0) {
+      return;
+    }
+
+    this.boundOnUserInteraction = () => {
+      if (this.isPaused) {
+        this.resumeRecording();
+      } else {
+        this.resetInactivityTimer();
+      }
+    };
+
+    for (const eventName of USER_INTERACTION_EVENTS) {
+      document.addEventListener(eventName, this.boundOnUserInteraction, { capture: true, passive: true });
+    }
+
+    this.resetInactivityTimer();
+  }
+
+  private teardownInactivityTracking(): void {
+    if (this.inactivityTimer !== null) {
+      clearTimeout(this.inactivityTimer);
+      this.inactivityTimer = null;
+    }
+
+    if (this.boundOnUserInteraction) {
+      for (const eventName of USER_INTERACTION_EVENTS) {
+        document.removeEventListener(eventName, this.boundOnUserInteraction, { capture: true });
+      }
+      this.boundOnUserInteraction = null;
+    }
+  }
+
+  private resetInactivityTimer(): void {
+    const threshold = this.options.inactivityThresholdMs;
+    if (!threshold || threshold <= 0) {
+      return;
+    }
+
+    if (this.inactivityTimer !== null) {
+      clearTimeout(this.inactivityTimer);
+    }
+
+    this.inactivityTimer = setTimeout(() => {
+      this.pauseRecording();
+    }, threshold);
   }
 
   private handleEvent(event: eventWithTime, _isCheckout?: boolean): void {
