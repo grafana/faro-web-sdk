@@ -70,6 +70,7 @@ describe('ReplayInstrumentation', () => {
         ignoreSelector: undefined,
         beforeSend: undefined,
         samplingRate: 1,
+        inactivityThresholdMs: 60_000,
       };
 
       expect(instrumentation['options']).toEqual(expectedDefaults);
@@ -96,6 +97,7 @@ describe('ReplayInstrumentation', () => {
         ignoreSelector: '.ignore-me',
         beforeSend: beforeSendFn,
         samplingRate: 1,
+        inactivityThresholdMs: 30_000,
       };
 
       instrumentation = new ReplayInstrumentation(customOptions);
@@ -133,6 +135,7 @@ describe('ReplayInstrumentation', () => {
         ignoreSelector: undefined,
         beforeSend: undefined,
         samplingRate: 1,
+        inactivityThresholdMs: 60_000,
       };
 
       expect(instrumentation['options']).toEqual(expected);

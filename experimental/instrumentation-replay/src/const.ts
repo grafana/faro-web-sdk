@@ -17,4 +17,5 @@ export const defaultReplayInstrumentationOptions: ReplayInstrumentationOptions =
   beforeSend: undefined,
   recordAfter: 'load',
   samplingRate: 1,
+  inactivityThresholdMs: 60_000,
 };

@@ -89,7 +89,7 @@ export interface ReplayInstrumentationOptions {
    *
    * Set to 0 or undefined to disable (record continuously).
    *
-   * @default undefined (disabled)
+   * @default 60000 (1 minute)
    */
   inactivityThresholdMs?: number;
 
