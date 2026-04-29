@@ -50,7 +50,7 @@ export { genShortID } from './shortId';
 
 export { getBundleId } from './sourceMaps';
 
-export { dateNow } from './date';
+export { dateNow, monoNow } from './date';
 
 export { getCircularDependencyReplacer, stringifyExternalJson, stringifyObjectValues } from './json';
 

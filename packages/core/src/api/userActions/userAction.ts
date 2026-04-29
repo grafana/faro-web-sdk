@@ -1,5 +1,5 @@
 import { type TransportItem, TransportItemType, type Transports } from '../../transports';
-import { dateNow, genShortID, Observable, stringifyObjectValues } from '../../utils';
+import { dateNow, genShortID, monoNow, Observable, stringifyObjectValues } from '../../utils';
 import type { EventsAPI } from '../events/types';
 import { ItemBuffer } from '../ItemBuffer';
 import { type MeasurementEvent } from '../measurements/types';
@@ -19,6 +19,9 @@ export default class UserAction
   trigger: string;
   importance: UserActionImportanceType;
   startTime?: number;
+  // Monotonic counterpart to `startTime`, used to compute `duration` immune to wall-clock
+  // adjustments (NTP step, manual clock change, DST). Not exposed in telemetry — see `end()`.
+  private _startTimeMono?: number;
   trackUserActionsExcludeItem?: (item: TransportItem<APIEvent>) => boolean;
 
   private _state: UserActionState;
@@ -72,7 +75,12 @@ export default class UserAction
   private _start(): void {
     this._state = UserActionState.Started;
     if (this._state === UserActionState.Started) {
+      // `startTime` is wall-clock (Unix-epoch ms) so it can be used as the event's
+      // `timestampOverwriteMs` and emitted as `userActionStartTime` for consumers that
+      // correlate with other systems. `_startTimeMono` is the monotonic anchor used
+      // for the duration calculation in `end()`.
       this.startTime = dateNow();
+      this._startTimeMono = monoNow();
     }
   }
 
@@ -102,7 +110,11 @@ export default class UserAction
     }
 
     const endTime = dateNow();
-    const duration = endTime - this.startTime!;
+    // Compute duration from the monotonic clock so it is unaffected by wall-clock
+    // adjustments during the action. Note: `endTime - startTime` (both wall-clock) may
+    // disagree with `duration` if the system clock was adjusted between start and end;
+    // `duration` is authoritative.
+    const duration = monoNow() - this._startTimeMono!;
     this._state = UserActionState.Ended;
     this._itemBuffer.flushBuffer((item) => {
       if (isExcludeFromUserAction(item, this.trackUserActionsExcludeItem)) {

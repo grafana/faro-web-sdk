@@ -187,6 +187,38 @@ describe('ActivityWindowTracker', () => {
     expect(end.events).toEqual(expect.arrayContaining([domEvent]));
   });
 
+  it('duration is monotonic-clock based and not corrupted by wall-clock jumps', () => {
+    const events$ = new Observable<any>();
+    const tracker = new ActivityWindowTracker(events$, { inactivityMs: 10, drainTimeoutMs: 100 });
+    const notifications: any[] = [];
+    tracker.subscribe((n) => notifications.push(n));
+
+    tracker.startTracking();
+
+    // Advance fake timers by 5 ms (monotonic + wall both advance).
+    jest.advanceTimersByTime(5);
+
+    // Simulate the wall-clock jumping BACKWARD by 1 hour mid-window (NTP step / DST).
+    // `jest.setSystemTime` only affects Date.now() under modern fake timers; performance.now()
+    // continues forward.
+    jest.setSystemTime(-3600 * 1000);
+
+    // Emit an event AFTER the jump so `_lastEventTime` reflects the corrupted wall clock
+    // under the buggy implementation, but the correct monotonic +5 ms under the fix.
+    events$.notify({ id: 1 });
+
+    // Let the inactivity window elapse to trigger stop.
+    jest.advanceTimersByTime(10);
+
+    const end = notifications.find((n) => n.message === 'tracking-ended');
+    expect(end).toBeTruthy();
+    // Wall-clock-based code would emit a large negative number here
+    // (`_lastEventTime` ≈ -3_600_000 minus `_startTime` 0 = ~-3_600_000).
+    expect(end.duration).toBeGreaterThanOrEqual(0);
+    // Monotonic delta from start to last-event-time ≈ 5 ms.
+    expect(end.duration).toBe(5);
+  });
+
   it('type guards return correct booleans', () => {
     const startMsg = { type: MESSAGE_TYPE_HTTP_REQUEST_START } as any;
     const endMsg = { type: MESSAGE_TYPE_HTTP_REQUEST_END } as any;
