@@ -190,6 +190,11 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       return;
     }
 
+    if (this.inactivityTimer !== null) {
+      clearTimeout(this.inactivityTimer);
+      this.inactivityTimer = null;
+    }
+
     this.stopRrweb();
     this.isPaused = true;
     this.logDebug('Session replay paused due to inactivity');

@@ -460,6 +460,130 @@ describe('ReplayInstrumentation', () => {
     });
   });
 
+  describe('inactivity tracking', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    function initSampledInstrumentation(options: ReplayInstrumentationOptions = {}): ReplayInstrumentation {
+      const inst = new ReplayInstrumentation(options);
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      inst['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      inst['metas'] = { addListener: mockAddListener } as any;
+      inst.initialize();
+      return inst;
+    }
+
+    it('should pause recording after inactivity threshold elapses', () => {
+      const stopFn = jest.fn();
+      mockRecord.mockReturnValue(stopFn);
+
+      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 5_000 });
+      expect(instrumentation['isPaused']).toBe(false);
+
+      jest.advanceTimersByTime(5_000);
+
+      expect(stopFn).toHaveBeenCalled();
+      expect(instrumentation['isPaused']).toBe(true);
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.paused', {});
+    });
+
+    it('should resume recording with a fresh checkpoint when user interacts after pause', () => {
+      const stopFn = jest.fn();
+      mockRecord.mockReturnValue(stopFn);
+
+      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 5_000 });
+
+      jest.advanceTimersByTime(5_000);
+      expect(instrumentation['isPaused']).toBe(true);
+      expect(mockRecord).toHaveBeenCalledTimes(1);
+
+      mockRecord.mockReturnValue(jest.fn());
+      document.dispatchEvent(new Event('pointerdown'));
+
+      expect(instrumentation['isPaused']).toBe(false);
+      expect(mockRecord).toHaveBeenCalledTimes(2);
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.resumed', {});
+    });
+
+    it('should not pause when inactivityThresholdMs is 0', () => {
+      const stopFn = jest.fn();
+      mockRecord.mockReturnValue(stopFn);
+
+      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 0 });
+
+      jest.advanceTimersByTime(120_000);
+
+      expect(instrumentation['isPaused']).toBe(false);
+      expect(stopFn).not.toHaveBeenCalled();
+    });
+
+    it('should not pause when inactivityThresholdMs is undefined', () => {
+      const stopFn = jest.fn();
+      mockRecord.mockReturnValue(stopFn);
+
+      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: undefined });
+
+      jest.advanceTimersByTime(120_000);
+
+      expect(instrumentation['isPaused']).toBe(false);
+      expect(stopFn).not.toHaveBeenCalled();
+    });
+
+    it('should remove DOM listeners on stopRecording', () => {
+      const removeSpy = jest.spyOn(document, 'removeEventListener');
+
+      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 5_000 });
+      instrumentation.destroy();
+
+      const removedEvents = removeSpy.mock.calls.map((call) => call[0]);
+      expect(removedEvents).toContain('pointermove');
+      expect(removedEvents).toContain('pointerdown');
+      expect(removedEvents).toContain('scroll');
+      expect(removedEvents).toContain('keydown');
+      expect(removedEvents).toContain('input');
+    });
+
+    it('should keep DOM listeners attached across pauseRecording', () => {
+      const stopFn = jest.fn();
+      mockRecord.mockReturnValue(stopFn);
+      const removeSpy = jest.spyOn(document, 'removeEventListener');
+
+      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 5_000 });
+
+      jest.advanceTimersByTime(5_000);
+      expect(instrumentation['isPaused']).toBe(true);
+
+      const removedEvents = removeSpy.mock.calls.map((call) => call[0]);
+      expect(removedEvents).not.toContain('pointermove');
+      expect(removedEvents).not.toContain('pointerdown');
+
+      mockRecord.mockReturnValue(jest.fn());
+      document.dispatchEvent(new Event('scroll'));
+      expect(instrumentation['isPaused']).toBe(false);
+    });
+
+    it('should reset the inactivity timer on user interaction', () => {
+      const stopFn = jest.fn();
+      mockRecord.mockReturnValue(stopFn);
+
+      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 5_000 });
+
+      jest.advanceTimersByTime(4_000);
+      document.dispatchEvent(new Event('keydown'));
+
+      jest.advanceTimersByTime(4_000);
+      expect(instrumentation['isPaused']).toBe(false);
+
+      jest.advanceTimersByTime(1_000);
+      expect(instrumentation['isPaused']).toBe(true);
+    });
+  });
+
   describe('samplingRate', () => {
     // session-1 hashes to ≈ 0.142 — falls below 0.2 (included) and above 0.1 (excluded)
     // session-100 hashes to ≈ 0.827 — falls above 0.5 (excluded)
