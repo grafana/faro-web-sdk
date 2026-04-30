@@ -75,11 +75,19 @@ The `api` property on the Faro instance contains all the necessary methods to pu
 
 ## Errors
 
-- `pushError` - is a method to push an error/exception to the Faro instance. It accepts a mandatory `message` parameter
+- `pushError` - is a method to push an error/exception to the Faro instance. It accepts a mandatory `error` parameter
   and an optional one where you can set:
   - `skipDedupe` - a flag for enforcing error push even if the error is identical to the previous one.
   - `stackFrames` - an array of stack frames. Defaults to parsing `error.stack` if present.
   - `type` - the type of exception. Default value: `error.name` or `"error"`.
+  - `context` - a key-value object of additional context attached to the exception.
+  - `fingerprint` - a custom grouping fingerprint used for error aggregation.
+  - `fatal` - boolean flag marking the exception as fatal (e.g. crash / ANR). Participates in dedupe so a fatal
+    and non-fatal error with otherwise identical payload are reported as separate events.
+  - `spanContext` - `{ traceId, spanId }` to attach the exception to an explicit trace/span. Defaults to the
+    currently active trace context.
+  - `timestampOverwriteMs` - override the exception timestamp (milliseconds since epoch). Defaults to now.
+  - `originalError` - internal option for advanced use cases; most users should not set this.
 
   ```ts
   faro.api.pushError(new Error('This is an error'));
@@ -105,6 +113,10 @@ The `api` property on the Faro instance contains all the necessary methods to pu
       componentStackTrace: {...}
     },
   });
+
+  faro.api.pushError(new Error('Custom grouping'), { fingerprint: 'login-network-failure' });
+
+  faro.api.pushError(new Error('App crashed'), { fatal: true });
   ```
 
 ## Events

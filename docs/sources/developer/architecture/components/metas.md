@@ -25,6 +25,9 @@ Properties:
 - `namespace` - a namespace for `app.name`
 - `release` - a release identifier for the app, like a commit hash, a build number or a Docker container tag
 - `environment` - the environment where the app is running, like `staging` or `production`
+- `bundleId` - bundle identifier, primarily used by mobile apps
+- `installationId` - per-installation identifier, for mobile use cases. Stable across launches of the
+  same installed app; resets on uninstall/reinstall.
 
 ### Browser
 
@@ -37,13 +40,42 @@ Properties:
 
 - `name` - the name of the browser
 - `version` - the version of the browser
-- `os` - the operating system name and version where the browser is running
+- `os` - the operating system name and version where the browser is running as a single string. Kept for
+  backward compatibility; new consumers should prefer the structured `os` meta below
 - `mobile` - a flag indication if the browser is running on a mobile device
 - `userAgent` - details about the browser version, operating system, device type and other things
 - `language` - preferred language of the user. Usually this is language of the browser UI
 - `brands` - brands of the browser and its significant version numbers
 - `viewportWidth` - height of the layout viewport
 - `viewportHeight` - width of the layout viewport
+
+### Device
+
+The `device` meta holds information about the device the app is running on. It is primarily for mobile
+use cases; the Web SDK does not populate it.
+
+Properties:
+
+- `manufacturer` - device manufacturer (e.g. `Apple`, `Samsung`)
+- `model_identifier` - machine-readable model ID (e.g. `iPhone3,4`, `SM-G920F`)
+- `model_name` - human-readable model name (e.g. `iPhone 6s Plus`)
+- `brand` - consumer-facing brand (e.g. `Google Pixel`, `Samsung Galaxy`)
+- `is_physical` - whether this is a physical device (`true`) or an emulator/simulator (`false`)
+- `type` - device form factor (e.g. `mobile`, `tablet`)
+
+### OS
+
+The `os` meta captures the operating system the app is running on. The Web SDK populates `name` and
+`version`.
+
+Properties:
+
+- `name` - OS name (e.g. `iOS`, `Android`, `Windows`, `macOS`)
+- `version` - OS version string (e.g. `18.1`, `15`)
+- `build_id` - OS build identifier (e.g. `22G91`, `TQ3A.230901.001`). Not available from the browser user
+  agent; populated by mobile SDKs only
+- `detail` - human-readable OS version detail. Not populated by the Web SDK (would be redundant with
+  `name` + `version` on the wire)
 
 ### Page
 

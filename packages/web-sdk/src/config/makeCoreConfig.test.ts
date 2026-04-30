@@ -18,7 +18,7 @@ describe('defaultMetas', () => {
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.metas).toHaveLength(4);
+    expect(config?.metas).toHaveLength(5);
     expect(config?.metas.map((item) => (isFunction(item) ? item() : item))).toContainEqual({
       k6: {
         isK6Browser: true,
@@ -39,7 +39,7 @@ describe('defaultMetas', () => {
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
-    expect(config?.metas).toHaveLength(4);
+    expect(config?.metas).toHaveLength(5);
     expect(config?.metas.map((item) => (isFunction(item) ? item() : item))).toContainEqual({
       k6: { isK6Browser: true },
     });

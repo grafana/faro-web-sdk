@@ -22,6 +22,7 @@ Alternatively, you can use the CDN version of the library. See [use cdn library]
 ## Metas
 
 - browser - captures browser metadata: name, version, etc
+- os - captures OS name and version parsed from the user agent
 - page - captures current URL
 - view - the web SDK enforces a `default` value for the view meta
 
