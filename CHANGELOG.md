@@ -2,6 +2,23 @@
 
 ## Next
 
+- Fix (`@grafana/faro-core`, `@grafana/faro-web-sdk`, `@grafana/faro-react`): Duration
+  measurements now use the monotonic clock (`performance.now()`) instead of the wall
+  clock (`Date.now()`), making them immune to system clock adjustments (NTP step,
+  manual clock change, daylight-savings transitions) that previously could produce
+  negative or grossly inflated values. Affects:
+  - `userActionDuration` on `userActionEventName` events. Note: `userActionStartTime`
+    and `userActionEndTime` remain wall-clock Unix-epoch ms strings (unchanged for
+    backwards compatibility) and may disagree with `userActionDuration` if the system
+    clock is adjusted during the action — `userActionDuration` is authoritative.
+  - `duration` on `faro.navigation` events (soft-navigation activity windows).
+  - OTel spans emitted by `FaroProfiler` (`componentMount`, `componentRender`):
+    boundaries are now stamped from OTel's hrTime helper instead of mixing wall-clock
+    `Date.now()` with monotonic span starts.
+
+  New `monoNow()` helper exported from `@grafana/faro-core` for downstream code that
+  needs monotonic time.
+
 - Fix (`@grafana/faro-core`): `faro.api` is now a no-op implementation before
   `initializeFaro()` runs, preventing `TypeError: faro.api is undefined` errors
   when the singleton is accessed pre-initialization or when a bundler produces

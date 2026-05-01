@@ -140,6 +140,7 @@ export {
   LogLevel,
   noop,
   dateNow,
+  monoNow,
   isEmpty,
   getCircularDependencyReplacer,
   stringifyExternalJson,

@@ -1,4 +1,4 @@
-import { Observable } from '@grafana/faro-core';
+import { monoNow, Observable } from '@grafana/faro-core';
 
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './monitors/const';
 import type { HttpRequestEndMessage, HttpRequestStartMessage } from './monitors/types';
@@ -55,7 +55,9 @@ export class ActivityWindowTracker extends Observable {
         return this._tracking;
       })
       .subscribe((event) => {
-        this._lastEventTime = Date.now();
+        // Monotonic clock — used only for the duration delta in `stopTracking()`.
+        // Not exposed as an absolute timestamp anywhere.
+        this._lastEventTime = monoNow();
         this._currentEvents?.push(event);
 
         const startKey = this._options.isOperationStart(event as any);
@@ -78,8 +80,11 @@ export class ActivityWindowTracker extends Observable {
     }
 
     this._tracking = true;
-    this._startTime = Date.now();
-    this._lastEventTime = Date.now();
+    // Use a monotonic clock so the resulting `duration` (computed in `stopTracking()`)
+    // is immune to wall-clock adjustments (NTP step, manual change, DST) that may
+    // occur during the tracking window.
+    this._startTime = monoNow();
+    this._lastEventTime = this._startTime;
 
     this.notify({
       message: 'tracking-started',
@@ -97,7 +102,7 @@ export class ActivityWindowTracker extends Observable {
 
     let duration;
     if (this.hasActiveOperations()) {
-      duration = Date.now() - this._startTime!;
+      duration = monoNow() - this._startTime!;
     } else {
       duration = this._lastEventTime ? this._lastEventTime - this._startTime! : 0;
     }

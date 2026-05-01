@@ -18,7 +18,7 @@ export interface FaroProfilerProps {
 
 export class FaroProfiler extends Component<FaroProfilerProps> {
   protected mountSpan: Span | undefined = undefined;
-  protected mountSpanEndTime: number | undefined = undefined;
+  protected renderSpan: Span | undefined = undefined;
   protected updateSpan: Span | undefined = undefined;
 
   private get isOtelInitialized(): boolean {
@@ -82,8 +82,20 @@ export class FaroProfiler extends Component<FaroProfilerProps> {
 
   override componentDidMount(): void {
     if (this.isOtelInitialized && this.mountSpan) {
-      this.mountSpanEndTime = Date.now();
-      this.mountSpan.end(this.mountSpanEndTime);
+      // Let OTel stamp the end via its hrTime helper (`performance.timeOrigin +
+      // performance.now()`), which is monotonic. Passing `Date.now()` here would mix the
+      // wall clock with the mount span's start time (auto-stamped by OTel from hrTime),
+      // making `endTime - startTime` drift with NTP / DST / manual clock changes.
+      this.mountSpan.end();
+
+      // Start the `componentRender` span immediately. It covers the live, mounted lifetime
+      // of the component and is ended in `componentWillUnmount`. By starting and ending it
+      // without explicit timestamps, both boundaries are stamped from OTel hrTime
+      // (monotonic). This avoids the wall-clock issues of the previous implementation
+      // which captured `Date.now()` here and subtracted it from another `Date.now()` at
+      // unmount — a problem that compounded over a long-lived component (router/app
+      // shells can live for the entire session).
+      this.renderSpan = this.createChildSpan('componentRender', this.mountSpan);
     }
   }
 
@@ -111,11 +123,10 @@ export class FaroProfiler extends Component<FaroProfilerProps> {
   }
 
   override componentWillUnmount(): void {
-    if (this.isOtelInitialized && this.mountSpan) {
-      this.createChildSpan('componentRender', this.mountSpan, {
-        startTime: this.mountSpanEndTime,
-        endTime: Date.now(),
-      });
+    if (this.isOtelInitialized && this.renderSpan) {
+      // End via OTel hrTime (monotonic). See `componentDidMount` for rationale.
+      this.renderSpan.end();
+      this.renderSpan = undefined;
     }
   }
 
