@@ -1,7 +1,5 @@
 # Grafana Faro Web SDK
 
-[![Build Status][faro-drone-status]][faro-drone]
-
 <p align="left"><img src="docs/faro_logo.png" alt="Grafana Faro logo" width="400"></p>
 
 The Grafana Faro Web SDK can instrument frontend JavaScript applications to collect telemetry and forward it to the
@@ -40,8 +38,6 @@ the [README.md][faro-web-sdk-readme] for more information.
 [@grafana/faro-react][faro-react] is a package that enables easier integration in projects built with React. See the
 [README.md][faro-react-readme] for more information.
 
-[faro-drone]: https://drone.grafana.net/grafana/faro-web-sdk
-[faro-drone-status]: https://drone.grafana.net/api/badges/grafana/faro-web-sdk/status.svg
 [grafana-alloy-docs]: https://grafana.com/docs/alloy/latest/
 [grafana-logs]: https://grafana.com/logs/
 [grafana-traces]: https://grafana.com/traces/
