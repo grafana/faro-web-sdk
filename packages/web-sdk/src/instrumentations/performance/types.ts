@@ -16,7 +16,7 @@ export type FaroNavigationTiming = Readonly<
 
 export type FaroResourceTiming = Readonly<{
   name: string;
-  'http.host': string;
+  httpHost: string;
   duration: string;
   protocol: string;
   tcpHandshakeTime: string;

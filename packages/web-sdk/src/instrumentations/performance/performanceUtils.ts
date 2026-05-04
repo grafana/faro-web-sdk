@@ -97,7 +97,7 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
 
   return {
     name: name,
-    'http.host': getHostFromUrl(name),
+    httpHost: getHostFromUrl(name),
     duration: toFaroPerformanceTimingString(duration),
     tcpHandshakeTime: toFaroPerformanceTimingString(connectEnd - connectStart),
     dnsLookupTime: toFaroPerformanceTimingString(domainLookupEnd - domainLookupStart),
