@@ -2,6 +2,8 @@
 
 ## Next
 
+## 2.5.0
+
 - Fix (`@grafana/faro-core`, `@grafana/faro-web-sdk`, `@grafana/faro-react`): Duration
   measurements now use the monotonic clock (`performance.now()`) instead of the wall
   clock (`Date.now()`), making them immune to system clock adjustments (NTP step,
