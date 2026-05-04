@@ -31,9 +31,12 @@
 
 ## 2.4.0
 
-- Chore (`@grafana/faro-*`): Updated `protobufjs` to `^8.0.1` to remediate CVE-2026-41242,
-  Each header value can be a function returning `Promise<string>`, resolved at request time
-  (e.g. for token refresh). Sync dynamic headers (`() => string`) continue to work (#1490).
+- Chore (`@grafana/faro-*`): Updated `protobufjs` to `^8.0.1` to remediate CVE-2026-41242.
+
+- Feature (`@grafana/faro-transport-otlp-http`): Allow async dynamic header values for the OTLP
+  HTTP transport. Each header value can be a function returning `Promise<string>`, resolved at
+  request time (e.g. for token refresh). Sync dynamic headers (`() => string`) continue to work
+  (#1490).
 
 - Feature (`@grafana/faro-instrumentation-replay`): Emit a `faro.session_recording.started` Faro
   event when rrweb session recording successfully starts, so backends can identify which sessions
