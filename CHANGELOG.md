@@ -2,49 +2,41 @@
 
 ## Next
 
-- Fix (`@grafana/faro-core`, `@grafana/faro-web-sdk`, `@grafana/faro-react`): Duration
-  measurements now use the monotonic clock (`performance.now()`) instead of the wall
-  clock (`Date.now()`), making them immune to system clock adjustments (NTP step,
-  manual clock change, daylight-savings transitions) that previously could produce
-  negative or grossly inflated values. Affects:
-  - `userActionDuration` on `userActionEventName` events. Note: `userActionStartTime`
-    and `userActionEndTime` remain wall-clock Unix-epoch ms strings (unchanged for
-    backwards compatibility) and may disagree with `userActionDuration` if the system
-    clock is adjusted during the action — `userActionDuration` is authoritative.
-  - `duration` on `faro.navigation` events (soft-navigation activity windows).
-  - OTel spans emitted by `FaroProfiler` (`componentMount`, `componentRender`):
-    boundaries are now stamped from OTel's hrTime helper instead of mixing wall-clock
-    `Date.now()` with monotonic span starts.
+## 2.5.0
 
-  New `monoNow()` helper exported from `@grafana/faro-core` for downstream code that
-  needs monotonic time.
+- Fix (`@grafana/faro-web-sdk`): Use monotonic clock instead of wall clock for duration
+  measurements (#2016).
 
-- Fix (`@grafana/faro-core`): `faro.api` is now a no-op implementation before
-  `initializeFaro()` runs, preventing `TypeError: faro.api is undefined` errors
-  when the singleton is accessed pre-initialization or when a bundler produces
-  duplicate copies of the singleton (#1889).
+- Fix (`@grafana/faro-core`): `faro.api` is now a no-op before `initializeFaro()` runs,
+  preventing `TypeError: faro.api is undefined` when accessed pre-initialization or with
+  duplicate singleton copies (#1889).
 
-- Feature (`@grafana/faro-core`): Extend TS types to match new Faro spec fields — add
-  `MetaOS` and `MetaDevice` types and `meta.os`, `meta.device`, `meta.app.installationId`,
-  and `fatal` on `ExceptionEventDefault`. `meta.device` and `meta.app.installationId`
-  are not populated by the Web SDK. `fatal` can be set via
-  `pushError(err, { fatal: true })` and participates in dedupe.
+- Feature (`@grafana/faro-core`): Extend TS types for new Faro spec fields — `MetaOS`,
+  `MetaDevice`, `meta.os`, `meta.device`, `meta.app.installationId`, and `fatal` on
+  `ExceptionEventDefault`. `meta.device` and `meta.app.installationId` are not populated
+  by the Web SDK. `fatal` can be set via `pushError(err, { fatal: true })` and participates
+  in dedupe (#1997).
 
 - Feature (`@grafana/faro-web-sdk`): New default `osMeta` provider populates `meta.os`
-  (`name`, `version`) from the user agent. Registered automatically in the default
-  metas list and re-exported from the package entrypoint for custom meta setups.
+  (`name`, `version`) from the user agent. Registered automatically and re-exported for
+  custom meta setups (#1997).
 
-- Fix (`@grafana/faro-core`): Exception dedupe now correctly considers the stacktrace.
-  Previously the dedupe key referenced a non-existent `stackTrace` field (camelCase
-  typo), so stacktraces were effectively ignored and two errors with identical
-  message/type but different stacks were deduped. Consumers relying on `config.dedupe`
-  may see an increase in reported exceptions.
+- Fix (`@grafana/faro-core`): Exception dedupe now considers the stacktrace. The dedupe
+  key previously referenced a non-existent `stackTrace` field (camelCase typo), so errors
+  with the same message/type but different stacks were deduped. Consumers relying on
+  `config.dedupe` may see an increase in reported exceptions (#1997).
+
+- Chore (`@grafana/faro-*`): Pinned `protobufjs` to `^8.0.1` to remediate CVE-2026-41242,
+  and updated multiple other dependencies (#2008, #2010, #2011, #2012, #2017, #2019).
 
 ## 2.4.0
 
-- Feature (`@grafana/faro-transport-otlp-http` [experimental]): OTLP HTTP transport now supports async dynamic header values.
-  Each header value can be a function returning `Promise<string>`, resolved at request time
-  (e.g. for token refresh). Sync dynamic headers (`() => string`) continue to work (#1490).
+- Chore (`@grafana/faro-*`): Updated `protobufjs` to `^8.0.1` to remediate CVE-2026-41242.
+
+- Feature (`@grafana/faro-transport-otlp-http`): Allow async dynamic header values for the OTLP
+  HTTP transport. Each header value can be a function returning `Promise<string>`, resolved at
+  request time (e.g. for token refresh). Sync dynamic headers (`() => string`) continue to work
+  (#1490).
 
 - Feature (`@grafana/faro-instrumentation-replay`): Emit a `faro.session_recording.started` Faro
   event when rrweb session recording successfully starts, so backends can identify which sessions
