@@ -7,6 +7,7 @@ services:
     image: 'grafana/mimir:3.0.6@sha256:4508fd612969dfcf4b50276856fd05d5a971b15e494ad53da911b44781446f2b'
     volumes:
       - '${MIMIR_CONFIG_PATH_LOCAL}:${MIMIR_CONFIG_PATH}'
+      - 'mimir_rules:/tmp/mimir/rules'
     entrypoint:
       - '/bin/mimir'
       - '-config.file=${MIMIR_CONFIG_PATH}/${MIMIR_CONFIG_FILE}'
@@ -25,7 +26,8 @@ services:
       - '${GRAFANA_PLUGINS_PATH_LOCAL}:${GRAFANA_PLUGINS_PATH}'
       - '${GRAFANA_PLUGINS_PROVISIONING_PATH_LOCAL}:${GRAFANA_PLUGINS_PROVISIONING_PATH}'
     entrypoint:
-      - '${GRAFANA_HOME_PATH}/bin/grafana-server'
+      - '${GRAFANA_HOME_PATH}/bin/grafana'
+      - 'server'
       - '--homepath=${GRAFANA_HOME_PATH}'
       - '--config=${GRAFANA_CONFIG_PATH}/${GRAFANA_CONFIG_FILE}'
     ports:
@@ -131,6 +133,7 @@ services:
 
 volumes:
   db_data:
+  mimir_rules:
   demo_build_cache:
   demo_node_modules:
   demo_demo_dist:
