@@ -1,0 +1,45 @@
+name: Release please
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+
+    steps:
+      - id: get-secrets
+        name: get secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@c2f1df59dba624b3fd509e5181aa8da5217120c0
+        with:
+          repo_secrets: |
+            FARO_WEB_SDK_CI_APP_ID=github:app-id
+            FARO_WEB_SDK_CI_PRIVATE_KEY=github:private-key
+
+      - uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        name: get github app token
+        id: get-github-app-token
+        with:
+          app-id: ${{ env.FARO_WEB_SDK_CI_APP_ID }}
+          private-key: ${{ env.FARO_WEB_SDK_CI_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            faro-web-sdk
+
+      - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071
+        id: release
+        with:
+          token: ${{ steps.get-github-app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
