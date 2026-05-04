@@ -9,9 +9,12 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # All writes (commit, tag, release, PR) are performed using the dedicated
+    # FARO_WEB_SDK_CI GitHub App token, not GITHUB_TOKEN. The only permission
+    # the default GITHUB_TOKEN needs is `id-token: write` so that the
+    # get-vault-secrets step can authenticate to Vault via OIDC.
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
       id-token: write
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}

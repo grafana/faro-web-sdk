@@ -18,6 +18,22 @@ No manual `lerna version` runs and no direct pushes to `main` are required.
 All 6 publishable packages bump together (lockstep) via the `linked-versions`
 plugin in `release-please-config.json`.
 
+## Packages excluded from release-please
+
+The `demo/` workspace (`@grafana/faro-demo`) is **intentionally not listed** in
+`release-please-config.json` or `.release-please-manifest.json`. It is a private
+package (`"private": true` in `demo/package.json`) used only for local
+development and end-to-end tests; it is never published to npm.
+
+Demo's internal dependency ranges (e.g. on `@grafana/faro-web-sdk`) are still
+kept in sync automatically by the `node-workspace` plugin during every release
+bump, so the demo continues to build against the latest local versions.
+
+The legacy directories under `experimental/` (`instrumentation-fetch`,
+`instrumentation-xhr`, `instrumentation-performance-timeline`, `nextjs`, `vue`)
+have no `package.json` and are unmaintained. They are not part of the workspace
+set and are ignored.
+
 ## Triggering a release
 
 Land a PR with a conventional commit prefix:
