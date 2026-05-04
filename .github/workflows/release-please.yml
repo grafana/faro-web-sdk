@@ -9,10 +9,11 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    # All writes (commit, tag, release, PR) are performed using the dedicated
-    # FARO_WEB_SDK_CI GitHub App token, not GITHUB_TOKEN. The only permission
-    # the default GITHUB_TOKEN needs is `id-token: write` so that the
-    # get-vault-secrets step can authenticate to Vault via OIDC.
+    # All writes (commit, tag, release, PR) are performed using the
+    # `app-o11y-kwl-ci` GitHub App token (shared across the FE-Observability
+    # repos), not GITHUB_TOKEN. The only permission the default GITHUB_TOKEN
+    # needs is `id-token: write` so that the get-vault-secrets step can
+    # authenticate to Vault via OIDC.
     permissions:
       contents: read
       id-token: write
@@ -22,20 +23,24 @@ jobs:
       tag_name: ${{ steps.release.outputs.tag_name }}
 
     steps:
+      # The `app-o11y-kwl-ci` GitHub App credentials are mirrored into this
+      # repo's Vault namespace at ci/repo/grafana/faro-web-sdk/github (fields
+      # `app-id` and `private-key`). The same credentials live under
+      # ci/repo/grafana/app-o11y-kwl/github for that repo's workflows.
       - id: get-secrets
         name: get secrets
         uses: grafana/shared-workflows/actions/get-vault-secrets@c2f1df59dba624b3fd509e5181aa8da5217120c0
         with:
           repo_secrets: |
-            FARO_WEB_SDK_CI_APP_ID=github:app-id
-            FARO_WEB_SDK_CI_PRIVATE_KEY=github:private-key
+            APP_O11Y_KWL_CI_APP_ID=github:app-id
+            APP_O11Y_KWL_CI_PRIVATE_KEY=github:private-key
 
       - uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         name: get github app token
         id: get-github-app-token
         with:
-          app-id: ${{ env.FARO_WEB_SDK_CI_APP_ID }}
-          private-key: ${{ env.FARO_WEB_SDK_CI_PRIVATE_KEY }}
+          app-id: ${{ env.APP_O11Y_KWL_CI_APP_ID }}
+          private-key: ${{ env.APP_O11Y_KWL_CI_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: |
             faro-web-sdk
