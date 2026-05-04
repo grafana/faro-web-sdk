@@ -19,7 +19,7 @@
     `Date.now()` with monotonic span starts.
 
   New `monoNow()` helper exported from `@grafana/faro-core` for downstream code that
-  needs monotonic time.
+  needs monotonic time (#2016).
 
 - Fix (`@grafana/faro-core`): `faro.api` is now a no-op implementation before
   `initializeFaro()` runs, preventing `TypeError: faro.api is undefined` errors
@@ -30,17 +30,20 @@
   `MetaOS` and `MetaDevice` types and `meta.os`, `meta.device`, `meta.app.installationId`,
   and `fatal` on `ExceptionEventDefault`. `meta.device` and `meta.app.installationId`
   are not populated by the Web SDK. `fatal` can be set via
-  `pushError(err, { fatal: true })` and participates in dedupe.
+  `pushError(err, { fatal: true })` and participates in dedupe (#1997).
 
 - Feature (`@grafana/faro-web-sdk`): New default `osMeta` provider populates `meta.os`
   (`name`, `version`) from the user agent. Registered automatically in the default
-  metas list and re-exported from the package entrypoint for custom meta setups.
+  metas list and re-exported from the package entrypoint for custom meta setups (#1997).
 
 - Fix (`@grafana/faro-core`): Exception dedupe now correctly considers the stacktrace.
   Previously the dedupe key referenced a non-existent `stackTrace` field (camelCase
   typo), so stacktraces were effectively ignored and two errors with identical
   message/type but different stacks were deduped. Consumers relying on `config.dedupe`
-  may see an increase in reported exceptions.
+  may see an increase in reported exceptions (#1997).
+
+- Chore (`@grafana/faro-*`): Pinned `protobufjs` to `^8.0.1` to remediate CVE-2026-41242,
+  and updated multiple other dependencies (#2008, #2010, #2011, #2012, #2017, #2019).
 
 ## 2.4.0
 
