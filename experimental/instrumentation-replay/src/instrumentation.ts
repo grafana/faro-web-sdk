@@ -16,6 +16,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private stopFn: { (): void } | null = null;
   private isRecording: boolean = false;
   private options: ReplayInstrumentationOptions = defaultReplayInstrumentationOptions;
+  private packFn: ((event: eventWithTime) => string) | null = null;
 
   constructor(options: ReplayInstrumentationOptions = {}) {
     super();
@@ -110,8 +111,16 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.logDebug('Session replay stopped');
   }
 
-  private startRecording(): void {
+  private async startRecording(): Promise<void> {
     try {
+      if (this.options.pack && !this.packFn) {
+        try {
+          const { pack } = await import('@rrweb/packer');
+          this.packFn = pack;
+        } catch {
+          this.logWarn('@rrweb/packer is not installed. Install it to enable replay event compression.');
+        }
+      }
       const opts: recordOptions<eventWithTime> = {
         emit: (event: eventWithTime, isCheckout?: boolean): void => {
           this.handleEvent(event, isCheckout);
@@ -159,8 +168,10 @@ export class ReplayInstrumentation extends BaseInstrumentation {
         }
       }
 
+      const serialized = this.packFn ? this.packFn(processedEvent) : JSON.stringify(processedEvent);
+
       this.api.pushEvent(faroSessionReplayEventName, {
-        event: JSON.stringify(processedEvent),
+        event: serialized,
       });
     } catch (err) {
       this.logWarn(`Failed to push ${faroSessionReplayEventName} event`, err);

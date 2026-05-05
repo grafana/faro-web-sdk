@@ -69,6 +69,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: undefined,
         ignoreSelector: undefined,
         beforeSend: undefined,
+        pack: false,
         samplingRate: 1,
       };
 
@@ -95,6 +96,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: '.block-me',
         ignoreSelector: '.ignore-me',
         beforeSend: beforeSendFn,
+        pack: false,
         samplingRate: 1,
       };
 
@@ -132,6 +134,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: undefined,
         ignoreSelector: undefined,
         beforeSend: undefined,
+        pack: false,
         samplingRate: 1,
       };
 
@@ -420,6 +423,116 @@ describe('ReplayInstrumentation', () => {
 
       expect(() => emitCallback({ type: 1, data: {}, timestamp: Date.now() })).not.toThrow();
       expect(logWarnSpy).toHaveBeenCalledWith('Failed to push faro.session_recording.event event', expect.any(Error));
+    });
+  });
+
+  describe('pack', () => {
+    let emitCallback: (event: any, isCheckout?: boolean) => void;
+
+    beforeEach(() => {
+      mockRecord.mockImplementation((opts) => {
+        emitCallback = opts.emit;
+        return jest.fn();
+      });
+    });
+
+    it('should use packFn to serialize events when packFn is set', () => {
+      const mockPack = jest.fn((event) => `packed:${JSON.stringify(event)}`);
+      instrumentation = new ReplayInstrumentation({ pack: true });
+
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['packFn'] = mockPack;
+
+      instrumentation.initialize();
+
+      const testEvent = { type: 1, data: {}, timestamp: Date.now() };
+      emitCallback(testEvent);
+
+      expect(mockPack).toHaveBeenCalledWith(testEvent);
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.event', {
+        event: `packed:${JSON.stringify(testEvent)}`,
+      });
+    });
+
+    it('should warn and fall back to JSON.stringify when @rrweb/packer is not installed', async () => {
+      instrumentation = new ReplayInstrumentation({ pack: true });
+
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
+
+      instrumentation.initialize();
+      // startRecording is async when pack:true — wait for the dynamic import to resolve/reject
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(logWarnSpy).toHaveBeenCalledWith(
+        '@rrweb/packer is not installed. Install it to enable replay event compression.'
+      );
+
+      const testEvent = { type: 1, data: {}, timestamp: Date.now() };
+      emitCallback(testEvent);
+
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.event', {
+        event: JSON.stringify(testEvent),
+      });
+    });
+
+    it('should apply beforeSend before packing', () => {
+      const mockPack = jest.fn((event) => `packed:${JSON.stringify(event)}`);
+      const beforeSend = jest.fn((event) => ({ ...event, modified: true }));
+      instrumentation = new ReplayInstrumentation({ pack: true, beforeSend });
+
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['packFn'] = mockPack;
+
+      instrumentation.initialize();
+
+      const testEvent = { type: 1, data: {}, timestamp: Date.now() };
+      emitCallback(testEvent);
+
+      expect(beforeSend).toHaveBeenCalledWith(testEvent);
+      expect(mockPack).toHaveBeenCalledWith({ ...testEvent, modified: true });
+    });
+
+    it('should not send event when beforeSend returns null with pack enabled', () => {
+      const mockPack = jest.fn((event) => `packed:${JSON.stringify(event)}`);
+      const beforeSend = jest.fn(() => null);
+      instrumentation = new ReplayInstrumentation({ pack: true, beforeSend });
+
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['packFn'] = mockPack;
+
+      instrumentation.initialize();
+
+      emitCallback({ type: 1, data: {}, timestamp: Date.now() });
+
+      expect(mockPack).not.toHaveBeenCalled();
+      expect(mockPushEvent).not.toHaveBeenCalledWith('faro.session_recording.event', expect.anything());
+    });
+
+    it('should use JSON.stringify when pack is false (default)', () => {
+      instrumentation = new ReplayInstrumentation();
+
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      const testEvent = { type: 1, data: {}, timestamp: Date.now() };
+      emitCallback(testEvent);
+
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.event', {
+        event: JSON.stringify(testEvent),
+      });
     });
   });
 

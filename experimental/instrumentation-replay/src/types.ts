@@ -81,6 +81,13 @@ export interface ReplayInstrumentationOptions {
   recordAfter?: 'DOMContentLoaded' | 'load';
 
   /**
+   * Whether to compress replay events using @rrweb/packer before sending.
+   * Requires @rrweb/packer to be installed as a peer dependency.
+   * @default false
+   */
+  pack?: boolean;
+
+  /**
    * The fraction of globally-sampled sessions that should also record a session replay.
    * Expressed as a number between 0 and 1.
    *

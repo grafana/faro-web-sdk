@@ -16,5 +16,6 @@ export const defaultReplayInstrumentationOptions: ReplayInstrumentationOptions =
   recordCrossOriginIframes: false,
   beforeSend: undefined,
   recordAfter: 'load',
+  pack: false,
   samplingRate: 1,
 };

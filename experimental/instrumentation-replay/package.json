@@ -55,6 +55,14 @@
     "@grafana/faro-core": "^2.4.0",
     "rrweb": "^2.0.0-alpha.18"
   },
+  "peerDependencies": {
+    "@rrweb/packer": "^2.0.0-alpha.18"
+  },
+  "peerDependenciesMeta": {
+    "@rrweb/packer": {
+      "optional": true
+    }
+  },
   "publishConfig": {
     "access": "public"
   }
