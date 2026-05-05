@@ -35,7 +35,9 @@ export class FetchTransport extends BaseTransport {
 
     if (requestCompression && typeof CompressionStream === 'undefined') {
       this.compressionEnabled = false;
-      this.logWarn('requestCompression is enabled but CompressionStream is not available. Falling back to uncompressed.');
+      this.logWarn(
+        'requestCompression is enabled but CompressionStream is not available. Falling back to uncompressed.'
+      );
     } else {
       this.compressionEnabled = requestCompression;
     }
