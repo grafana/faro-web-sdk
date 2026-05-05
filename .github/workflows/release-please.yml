@@ -11,11 +11,14 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     # All writes (commit, tag, release, PR) are performed using the
     # `app-o11y-kwl-ci` GitHub App token (shared across the FE-Observability
-    # repos), not GITHUB_TOKEN. The only permission the default GITHUB_TOKEN
-    # needs is `id-token: write` so that the get-vault-secrets step can
-    # authenticate to Vault via OIDC.
+    # repos), not GITHUB_TOKEN. `id-token: write` lets get-vault-secrets
+    # authenticate to Vault via OIDC; `contents: write` and
+    # `pull-requests: write` mirror the reference workflow in
+    # grafana/app-o11y-kwl so release-please-action's own permission
+    # checks pass.
     permissions:
-      contents: read
+      contents: write
+      pull-requests: write
       id-token: write
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
