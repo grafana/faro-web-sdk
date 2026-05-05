@@ -31,7 +31,7 @@ export class FetchTransport extends BaseTransport {
     this.rateLimitBackoffMs = options.defaultRateLimitBackoffMs ?? DEFAULT_RATE_LIMIT_BACKOFF_MS;
     this.getNow = options.getNow ?? (() => Date.now());
 
-    const requestCompression = options.requestCompression ?? true;
+    const requestCompression = options.requestCompression ?? false;
 
     if (requestCompression && typeof CompressionStream === 'undefined') {
       this.compressionEnabled = false;

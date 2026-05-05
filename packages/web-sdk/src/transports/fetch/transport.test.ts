@@ -502,7 +502,7 @@ describe('FetchTransport', () => {
       expect((requestInit.headers as Record<string, string>)['Content-Type']).toBe('application/json');
     });
 
-    it('is enabled by default', async () => {
+    it('is disabled by default', async () => {
       const transport = new FetchTransport({
         url: 'http://example.com/collect',
       });
@@ -515,8 +515,8 @@ describe('FetchTransport', () => {
       const callArgs = fetch.mock.calls[0] as unknown[];
       const requestInit = callArgs[1] as RequestInit;
 
-      expect(requestInit.body).toBeInstanceOf(Blob);
-      expect((requestInit.headers as Record<string, string>)['Content-Encoding']).toBe('gzip');
+      expect(typeof requestInit.body).toBe('string');
+      expect((requestInit.headers as Record<string, string>)['Content-Encoding']).toBeUndefined();
     });
 
     it('sends uncompressed body when disabled', async () => {
