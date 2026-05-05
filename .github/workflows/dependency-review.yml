@@ -33,7 +33,7 @@ jobs:
           # - lightningcss: MPL-2.0, transitive dep via vite 8 (was optional peer in vite 7)
           allow-dependencies-licenses: >-
             pkg:githubactions/grafana/shared-workflows/actions/lint-pr-title,
-            pkg:githubactions/grafana/shared-workflows/actions/get-vault-secrets,
+            pkg:githubactions/grafana/shared-workflows/actions/create-github-app-token,
             pkg:npm/@ltd/j-toml,
             pkg:npm/lightningcss,
             pkg:npm/lightningcss-android-arm64,
