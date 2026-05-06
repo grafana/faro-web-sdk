@@ -19,8 +19,7 @@ jobs:
     # deployment_tools at terraform/repositories/faro-web-sdk/github-app-configs/config.yaml.
     # `id-token: write` lets that action authenticate to Vault via OIDC.
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
       id-token: write
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
