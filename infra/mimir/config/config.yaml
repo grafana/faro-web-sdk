@@ -37,15 +37,6 @@ limits:
   ingestion_burst_size: 500000
   ingestion_rate: 250000
 multitenancy_enabled: false
-ruler:
-  enable_api: true
-  rule_path: /rules
-ruler_storage:
-  backend: local
-  filesystem:
-    dir: ''
-  local:
-    directory: /tmp/mimir/rules
 server:
   grpc_server_max_concurrent_streams: 1000
   grpc_server_max_recv_msg_size: 104857600
