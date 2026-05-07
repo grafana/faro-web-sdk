@@ -53,6 +53,13 @@ Review and merge it when you're ready to ship.
   do not hand-edit unless recovering from a broken state).
 - `.github/workflows/release-please.yml` — the workflow itself.
 
+## Verifying the workflow
+
+After landing a `feat:` or `fix:` commit on `main`, the Release PR should
+appear or update within a couple of minutes. If it does not, check the
+`release-please.yml` run on the merge commit for token-mint or permission
+errors.
+
 ## Skipping a release
 
 If you want to merge changes without ever publishing them, use commit types that
