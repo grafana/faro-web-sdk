@@ -25,7 +25,8 @@ services:
       - '${GRAFANA_PLUGINS_PATH_LOCAL}:${GRAFANA_PLUGINS_PATH}'
       - '${GRAFANA_PLUGINS_PROVISIONING_PATH_LOCAL}:${GRAFANA_PLUGINS_PROVISIONING_PATH}'
     entrypoint:
-      - '${GRAFANA_HOME_PATH}/bin/grafana-server'
+      - '${GRAFANA_HOME_PATH}/bin/grafana'
+      - 'server'
       - '--homepath=${GRAFANA_HOME_PATH}'
       - '--config=${GRAFANA_CONFIG_PATH}/${GRAFANA_CONFIG_FILE}'
     ports:
