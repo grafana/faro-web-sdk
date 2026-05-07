@@ -1,5 +1,5 @@
 import type { Faro } from '../sdk';
-import { getBundleId } from '../utils/sourceMaps';
+import { getBundleId, getGitHash } from '../utils/sourceMaps';
 import { VERSION } from '../version';
 
 import type { Meta } from './types';
@@ -12,6 +12,7 @@ export function registerInitialMetas(faro: Faro): void {
     },
     app: {
       bundleId: faro.config.app.name && getBundleId(faro.config.app.name),
+      gitHash: faro.config.app.name && getGitHash(faro.config.app.name),
     },
   };
 
