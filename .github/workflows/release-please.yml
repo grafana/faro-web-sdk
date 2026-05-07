@@ -1,0 +1,42 @@
+name: Release please
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # release-please writes (commit, tag, release, PR) are performed using a
+    # token minted by `grafana/shared-workflows/actions/create-github-app-token`,
+    # which calls the Vault `vault-github-app-mount` permission set defined in
+    # deployment_tools at terraform/repositories/faro-web-sdk/github-app-configs/config.yaml.
+    # `id-token: write` lets that action authenticate to Vault via OIDC.
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+
+    steps:
+      - name: Mint GitHub App token
+        id: app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@259ba21cb3ff07724f331e26d926d655d24b317b # create-github-app-token/v0.2.3
+        with:
+          github_app: app-o11y-kwl-ci
+
+      - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
+        id: release
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          target-branch: main

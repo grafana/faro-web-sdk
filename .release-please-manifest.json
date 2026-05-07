@@ -1,0 +1,8 @@
+{
+  "packages/core": "2.5.0",
+  "packages/web-sdk": "2.5.0",
+  "packages/web-tracing": "2.5.0",
+  "packages/react": "2.5.0",
+  "experimental/instrumentation-replay": "2.5.0",
+  "experimental/transport-otlp-http": "2.5.0"
+}
