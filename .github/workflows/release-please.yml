@@ -85,9 +85,16 @@ jobs:
         run: |
           set -euo pipefail
           corepack enable
-          # Plain `yarn install` updates yarn.lock and installs deps so
-          # prettier/lerna are available for the lint:fix step below.
-          yarn install
+          # Yarn berry auto-enables hardened mode on public PR workflows,
+          # which forbids modifying yarn.lock with a plain `yarn install`.
+          # `--mode update-lockfile` writes the lockfile without installing
+          # node_modules, bypassing the hardened-mode check.
+          yarn install --mode update-lockfile
+          # Now that the lockfile matches package.json, do a real install
+          # so prettier/lerna are available for the lint:fix step.
+          # `--immutable` is allowed in hardened mode because the lockfile
+          # is already in sync.
+          yarn install --immutable
           yarn quality:lint:fix
           if git diff --quiet; then
             echo "No lockfile or formatting changes."
