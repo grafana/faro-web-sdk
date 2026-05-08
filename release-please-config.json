@@ -1,7 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "release-type": "node",
-  "changelog-path": "CHANGELOG.md",
   "include-v-in-tag": true,
   "include-component-in-tag": false,
   "separate-pull-requests": false,
@@ -10,37 +9,71 @@
   "draft": false,
   "prerelease": false,
   "pull-request-header": "Faro Web SDK Release - ${version}",
-  "plugins": [
-    {
-      "type": "linked-versions",
-      "groupName": "faro"
-    },
-    "node-workspace"
-  ],
   "packages": {
-    "packages/core": {
-      "package-name": "@grafana/faro-core",
-      "component": "@grafana/faro-core"
-    },
-    "packages/web-sdk": {
-      "package-name": "@grafana/faro-web-sdk",
-      "component": "@grafana/faro-web-sdk"
-    },
-    "packages/web-tracing": {
-      "package-name": "@grafana/faro-web-tracing",
-      "component": "@grafana/faro-web-tracing"
-    },
-    "packages/react": {
-      "package-name": "@grafana/faro-react",
-      "component": "@grafana/faro-react"
-    },
-    "experimental/instrumentation-replay": {
-      "package-name": "@grafana/faro-instrumentation-replay",
-      "component": "@grafana/faro-instrumentation-replay"
-    },
-    "experimental/transport-otlp-http": {
-      "package-name": "@grafana/faro-transport-otlp-http",
-      "component": "@grafana/faro-transport-otlp-http"
+    ".": {
+      "package-name": "faro-web-sdk",
+      "component": "faro-web-sdk",
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        { "type": "json", "path": "packages/core/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "packages/web-sdk/package.json", "jsonpath": "$.version" },
+        {
+          "type": "json",
+          "path": "packages/web-sdk/package.json",
+          "jsonpath": "$.dependencies.['@grafana/faro-core']"
+        },
+        { "type": "json", "path": "packages/web-tracing/package.json", "jsonpath": "$.version" },
+        {
+          "type": "json",
+          "path": "packages/web-tracing/package.json",
+          "jsonpath": "$.dependencies.['@grafana/faro-web-sdk']"
+        },
+        { "type": "json", "path": "packages/react/package.json", "jsonpath": "$.version" },
+        {
+          "type": "json",
+          "path": "packages/react/package.json",
+          "jsonpath": "$.dependencies.['@grafana/faro-web-sdk']"
+        },
+        {
+          "type": "json",
+          "path": "packages/react/package.json",
+          "jsonpath": "$.dependencies.['@grafana/faro-web-tracing']"
+        },
+        { "type": "json", "path": "experimental/instrumentation-replay/package.json", "jsonpath": "$.version" },
+        {
+          "type": "json",
+          "path": "experimental/instrumentation-replay/package.json",
+          "jsonpath": "$.dependencies.['@grafana/faro-core']"
+        },
+        { "type": "json", "path": "experimental/transport-otlp-http/package.json", "jsonpath": "$.version" },
+        {
+          "type": "json",
+          "path": "experimental/transport-otlp-http/package.json",
+          "jsonpath": "$.devDependencies.['@grafana/faro-core']"
+        },
+        { "type": "json", "path": "lerna.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "demo/package.json", "jsonpath": "$.version" },
+        {
+          "type": "json",
+          "path": "demo/package.json",
+          "jsonpath": "$.dependencies.['@grafana/faro-core']"
+        },
+        {
+          "type": "json",
+          "path": "demo/package.json",
+          "jsonpath": "$.dependencies.['@grafana/faro-react']"
+        },
+        {
+          "type": "json",
+          "path": "demo/package.json",
+          "jsonpath": "$.dependencies.['@grafana/faro-web-sdk']"
+        },
+        {
+          "type": "json",
+          "path": "demo/package.json",
+          "jsonpath": "$.dependencies.['@grafana/faro-web-tracing']"
+        }
+      ]
     }
   }
 }

@@ -128,5 +128,10 @@ jobs:
       - name: Install npm latest version #needed for Trusted Publishing
         run: npm install -g npm@latest
 
+      # `from-package` reads versions from each `package.json` and publishes
+      # any version not already present on npm. release-please tags the repo
+      # with a single `v<version>` tag, so the previous `from-git` flow (which
+      # expects per-package `<name>@<version>` tags from `lerna version`)
+      # would publish nothing.
       - name: Publish package to NPM
-        run: npm run publish -- from-git --yes
+        run: npm run publish -- from-package --yes
