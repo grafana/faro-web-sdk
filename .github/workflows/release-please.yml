@@ -70,21 +70,33 @@ jobs:
           node-version-file: .nvmrc
           package-manager-cache: false
 
-      - name: Refresh yarn.lock on release PR
+      # Two cleanups happen here:
+      #   1. Refresh yarn.lock — release-please rewrites cross-package dep
+      #      ranges in package.json but does not touch yarn.lock. The Pull
+      #      Request workflow runs `yarn install --frozen-lockfile`, which
+      #      fails on the release PR if the resolution would change.
+      #   2. Run `yarn quality:lint:fix` — the project's prettier config
+      #      normalizes markdown bullets to `-`, while release-please writes
+      #      `*`. The Pull Request workflow runs `yarn quality:lint:fix` and
+      #      then `git diff --exit-code`, which fails if CHANGELOG.md needs
+      #      reformatting. Pre-format here so CI is clean.
+      - name: Refresh yarn.lock and format release PR
         if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
         run: |
           set -euo pipefail
           corepack enable
-          # --mode update-lockfile rewrites yarn.lock without installing.
-          yarn install --mode update-lockfile
-          if git diff --quiet -- yarn.lock; then
-            echo "yarn.lock already in sync."
+          # Plain `yarn install` updates yarn.lock and installs deps so
+          # prettier/lerna are available for the lint:fix step below.
+          yarn install
+          yarn quality:lint:fix
+          if git diff --quiet; then
+            echo "No lockfile or formatting changes."
             exit 0
           fi
           # Match the identity the release-please-action uses for its commits
-          # on the same branch, so the lockfile commit appears as the same bot.
+          # on the same branch, so this commit appears as the same bot.
           git config user.name 'app-o11y-kwl-ci[bot]'
           git config user.email 'app-o11y-kwl-ci[bot]@users.noreply.github.com'
-          git add yarn.lock
-          git commit -m 'chore: update yarn.lock for release'
+          git add -A
+          git commit -m 'chore: refresh yarn.lock and format release files'
           git push
