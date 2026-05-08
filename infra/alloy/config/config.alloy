@@ -80,7 +80,12 @@ faro.receiver "integrations_app_agent_receiver" {
 		}
 	}
 
-	sourcemaps { }
+	sourcemaps {
+		location {
+			minified_path_prefix = format("http://localhost:%s/", env("DEMO_PORT"))
+			path                 = format("http://%s:%s", env("DEMO_HOST"), env("DEMO_PORT"))
+		}
+	}
 
 	output {
 		logs   = [loki.process.logs_process_client.receiver]

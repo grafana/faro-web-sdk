@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       minify: false,
+      sourcemap: true,
       rollupOptions: {
         output: {
           chunkFileNames(chunk) {
