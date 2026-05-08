@@ -40,3 +40,51 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           target-branch: main
+
+      # release-please rewrites cross-package dep ranges in package.json (e.g.
+      # `@grafana/faro-core` from `^2.5.0` to `^2.6.0`) but does not touch
+      # yarn.lock. CI runs `yarn install --frozen-lockfile`, which fails on the
+      # release PR because the resolution would change. Refresh yarn.lock on
+      # the release branch so CI passes.
+      - name: Resolve release PR branch
+        id: release-branch
+        if: ${{ steps.release.outputs.prs_created == 'true' }}
+        env:
+          PR_JSON: ${{ steps.release.outputs.pr }}
+        run: |
+          BRANCH="$(echo "$PR_JSON" | jq -r '.headBranchName')"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release PR branch
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ steps.release-branch.outputs.branch }}
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: true
+
+      - name: Setup Node.js
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Refresh yarn.lock on release PR
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        run: |
+          set -euo pipefail
+          corepack enable
+          # --mode update-lockfile rewrites yarn.lock without installing.
+          yarn install --mode update-lockfile
+          if git diff --quiet -- yarn.lock; then
+            echo "yarn.lock already in sync."
+            exit 0
+          fi
+          # Match the identity the release-please-action uses for its commits
+          # on the same branch, so the lockfile commit appears as the same bot.
+          git config user.name 'app-o11y-kwl-ci[bot]'
+          git config user.email 'app-o11y-kwl-ci[bot]@users.noreply.github.com'
+          git add yarn.lock
+          git commit -m 'chore: update yarn.lock for release'
+          git push
