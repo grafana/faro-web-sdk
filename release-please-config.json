@@ -20,58 +20,58 @@
         {
           "type": "json",
           "path": "packages/web-sdk/package.json",
-          "jsonpath": "$.dependencies.['@grafana/faro-core']"
+          "jsonpath": "$['dependencies']['@grafana/faro-core']"
         },
         { "type": "json", "path": "packages/web-tracing/package.json", "jsonpath": "$.version" },
         {
           "type": "json",
           "path": "packages/web-tracing/package.json",
-          "jsonpath": "$.dependencies.['@grafana/faro-web-sdk']"
+          "jsonpath": "$['dependencies']['@grafana/faro-web-sdk']"
         },
         { "type": "json", "path": "packages/react/package.json", "jsonpath": "$.version" },
         {
           "type": "json",
           "path": "packages/react/package.json",
-          "jsonpath": "$.dependencies.['@grafana/faro-web-sdk']"
+          "jsonpath": "$['dependencies']['@grafana/faro-web-sdk']"
         },
         {
           "type": "json",
           "path": "packages/react/package.json",
-          "jsonpath": "$.dependencies.['@grafana/faro-web-tracing']"
+          "jsonpath": "$['dependencies']['@grafana/faro-web-tracing']"
         },
         { "type": "json", "path": "experimental/instrumentation-replay/package.json", "jsonpath": "$.version" },
         {
           "type": "json",
           "path": "experimental/instrumentation-replay/package.json",
-          "jsonpath": "$.dependencies.['@grafana/faro-core']"
+          "jsonpath": "$['dependencies']['@grafana/faro-core']"
         },
         { "type": "json", "path": "experimental/transport-otlp-http/package.json", "jsonpath": "$.version" },
         {
           "type": "json",
           "path": "experimental/transport-otlp-http/package.json",
-          "jsonpath": "$.devDependencies.['@grafana/faro-core']"
+          "jsonpath": "$['devDependencies']['@grafana/faro-core']"
         },
         { "type": "json", "path": "lerna.json", "jsonpath": "$.version" },
         { "type": "json", "path": "demo/package.json", "jsonpath": "$.version" },
         {
           "type": "json",
           "path": "demo/package.json",
-          "jsonpath": "$.dependencies.['@grafana/faro-core']"
+          "jsonpath": "$['dependencies']['@grafana/faro-core']"
         },
         {
           "type": "json",
           "path": "demo/package.json",
-          "jsonpath": "$.dependencies.['@grafana/faro-react']"
+          "jsonpath": "$['dependencies']['@grafana/faro-react']"
         },
         {
           "type": "json",
           "path": "demo/package.json",
-          "jsonpath": "$.dependencies.['@grafana/faro-web-sdk']"
+          "jsonpath": "$['dependencies']['@grafana/faro-web-sdk']"
         },
         {
           "type": "json",
           "path": "demo/package.json",
-          "jsonpath": "$.dependencies.['@grafana/faro-web-tracing']"
+          "jsonpath": "$['dependencies']['@grafana/faro-web-tracing']"
         }
       ]
     }
