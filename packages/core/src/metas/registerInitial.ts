@@ -5,14 +5,17 @@ import { VERSION } from '../version';
 import type { Meta } from './types';
 
 export function registerInitialMetas(faro: Faro): void {
+  const appName = faro.config.app.name;
+  const gitHash = appName ? getGitHash(appName) : undefined;
+
   const initial: Meta = {
     sdk: {
       version: VERSION,
       name: 'faro',
     },
     app: {
-      bundleId: faro.config.app.name && getBundleId(faro.config.app.name),
-      gitHash: faro.config.app.name && getGitHash(faro.config.app.name),
+      bundleId: appName && getBundleId(appName),
+      ...(gitHash !== undefined ? { gitHash } : {}),
     },
   };
 
