@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "release-type": "node",
+  "changelog-path": "CHANGELOG.md",
   "include-v-in-tag": true,
   "include-component-in-tag": false,
   "separate-pull-requests": false,
@@ -12,48 +13,34 @@
   "plugins": [
     {
       "type": "linked-versions",
-      "groupName": "faro",
-      "components": [
-        "@grafana/faro-core",
-        "@grafana/faro-web-sdk",
-        "@grafana/faro-web-tracing",
-        "@grafana/faro-react",
-        "@grafana/faro-instrumentation-replay",
-        "@grafana/faro-transport-otlp-http"
-      ]
+      "groupName": "faro"
     },
     "node-workspace"
   ],
   "packages": {
     "packages/core": {
       "package-name": "@grafana/faro-core",
-      "component": "@grafana/faro-core",
-      "changelog-path": "../../CHANGELOG.md"
+      "component": "@grafana/faro-core"
     },
     "packages/web-sdk": {
       "package-name": "@grafana/faro-web-sdk",
-      "component": "@grafana/faro-web-sdk",
-      "changelog-path": "../../CHANGELOG.md"
+      "component": "@grafana/faro-web-sdk"
     },
     "packages/web-tracing": {
       "package-name": "@grafana/faro-web-tracing",
-      "component": "@grafana/faro-web-tracing",
-      "changelog-path": "../../CHANGELOG.md"
+      "component": "@grafana/faro-web-tracing"
     },
     "packages/react": {
       "package-name": "@grafana/faro-react",
-      "component": "@grafana/faro-react",
-      "changelog-path": "../../CHANGELOG.md"
+      "component": "@grafana/faro-react"
     },
     "experimental/instrumentation-replay": {
       "package-name": "@grafana/faro-instrumentation-replay",
-      "component": "@grafana/faro-instrumentation-replay",
-      "changelog-path": "../../CHANGELOG.md"
+      "component": "@grafana/faro-instrumentation-replay"
     },
     "experimental/transport-otlp-http": {
       "package-name": "@grafana/faro-transport-otlp-http",
-      "component": "@grafana/faro-transport-otlp-http",
-      "changelog-path": "../../CHANGELOG.md"
+      "component": "@grafana/faro-transport-otlp-http"
     }
   }
 }
