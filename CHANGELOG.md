@@ -2,6 +2,12 @@
 
 ## Next
 
+## [2.6.3](https://github.com/grafana/faro-web-sdk/compare/v2.6.2...v2.6.3) (2026-05-11)
+
+### Bug Fixes
+
+- **ci:** make release-please auto-tag on merge ([#2069](https://github.com/grafana/faro-web-sdk/issues/2069)) ([de9e2f0](https://github.com/grafana/faro-web-sdk/commit/de9e2f05c28ea5644a8f8647c41f8eb686e2736c))
+
 ## [2.6.2](https://github.com/grafana/faro-web-sdk/compare/v2.6.1...v2.6.2) (2026-05-11)
 
 ### Bug Fixes
