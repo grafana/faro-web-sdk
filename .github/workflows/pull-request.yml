@@ -61,7 +61,7 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: cypress/browsers:25.0.0@sha256:008da4da0a285b9695d3bfdd1c5c5acb540ada14080d5b90269b34fdf4b9ec6a
+      image: cypress/browsers:26.0.0@sha256:87a2e90f7d8c6531e6d834ad6354b9d59cf6eabe72022bd68a53c52ed5a247e0
       options: --user 1001
 
     services:
@@ -81,6 +81,20 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
+
+      # cypress/browsers:>=26 is based on Node.js 26 which no longer bundles
+      # Yarn v1 Classic, and the image does not ship the `corepack` binary on
+      # PATH either. Install Corepack from npm into a user-writable prefix
+      # (the container runs as `--user 1001`, which cannot write to
+      # /usr/local/bin) and enable it so the yarn shim — resolved via the
+      # `packageManager` field in package.json — is available for both
+      # setup-node's cache lookup and the subsequent yarn install/build steps.
+      - name: Enable Corepack
+        run: |
+          mkdir -p "$HOME/.local"
+          npm install -g --prefix "$HOME/.local" corepack
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/corepack" enable --install-directory "$HOME/.local/bin"
 
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
