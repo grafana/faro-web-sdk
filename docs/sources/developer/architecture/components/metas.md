@@ -135,7 +135,7 @@ Properties:
 
 ### View
 
-The `view` meta lets developers define a view to associate with signals that occured within that view. This makes it
+The `view` meta lets developers define a view to associate with signals that occurred within that view. This makes it
 easy to track specific sections in the UI which may dynamically change without any route changes. For example, a view
 can be a category called `auth` that contains sign in and sign up pages. The `view` meta is not changing automatically
 across a session and even though it is not handled automatically by the core package, wrapper packages like `web-sdk`
