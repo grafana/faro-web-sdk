@@ -9,8 +9,8 @@
   "draft": false,
   "prerelease": false,
   "pull-request-header": "Faro Web SDK Release - ${version}",
-  "pull-request-title-pattern": "chore: release ${version}",
-  "group-pull-request-title-pattern": "chore: release ${version}",
+  "pull-request-title-pattern": "chore${scope}: release${component} ${version}",
+  "group-pull-request-title-pattern": "chore${scope}: release${component} ${version}",
   "last-release-sha": "0c6603eacb286719e363ac0ad44d0712bbf81cb3",
   "packages": {
     ".": {
