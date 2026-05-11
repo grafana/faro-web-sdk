@@ -82,6 +82,18 @@ jobs:
         with:
           persist-credentials: false
 
+      # cypress/browsers:>=26 is based on Node.js 26 which no longer bundles
+      # Yarn v1 Classic. Enable Corepack so the yarn binary (resolved via the
+      # `packageManager` field in package.json) is available on PATH. The
+      # container runs as `--user 1001`, which cannot write to /usr/local/bin
+      # (the default corepack install directory), so install shims under
+      # $HOME and prepend that directory to PATH.
+      - name: Enable Corepack
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          corepack enable --install-directory "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
