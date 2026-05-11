@@ -2,6 +2,12 @@
 
 ## Next
 
+## [2.6.2](https://github.com/grafana/faro-web-sdk/compare/v2.6.1...v2.6.2) (2026-05-11)
+
+### Bug Fixes
+
+- **ci:** include ${component} in release-please PR title ([#2066](https://github.com/grafana/faro-web-sdk/issues/2066)) ([367aacc](https://github.com/grafana/faro-web-sdk/commit/367aacc76fbb4777a61da40652bbe891826e0039))
+
 ## [2.6.1](https://github.com/grafana/faro-web-sdk/compare/v2.6.0...v2.6.1) (2026-05-11)
 
 ### Bug Fixes
