@@ -2,6 +2,13 @@
 
 ## Next
 
+## [2.6.1](https://github.com/grafana/faro-web-sdk/compare/v2.6.0...v2.6.1) (2026-05-11)
+
+
+### Bug Fixes
+
+* **ci:** set release-please PR title pattern with version ([#2063](https://github.com/grafana/faro-web-sdk/issues/2063)) ([4310b16](https://github.com/grafana/faro-web-sdk/commit/4310b1685b4963de539919a15edd797aa21d032b))
+
 ## [2.6.0](https://github.com/grafana/faro-web-sdk/compare/v2.5.0...v2.6.0) (2026-05-11)
 
 ### Features
