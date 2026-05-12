@@ -4,28 +4,36 @@ context('Source maps', () => {
   it('serves a `.map` alongside the bundle chunk that Faro reports as the error origin', () => {
     let capturedFilename: string | undefined;
 
+    // `buildStackFrame` falls back to `document.location.href` when it cannot
+    // extract a filename, so we cannot rely on `frames[0].filename` — pick the
+    // first frame whose filename actually points at a JS chunk.
     cy.interceptCollector((body) => {
       const exception = body.exceptions?.find(
-        (item: ExceptionEvent) =>
-          item.type === 'Error' &&
-          item.value === 'This is a thrown error' &&
-          (item.stacktrace?.frames.length ?? 0) > 0
+        (item: ExceptionEvent) => item.type === 'Error' && item.value === 'This is a thrown error'
       );
 
-      const filename = exception?.stacktrace?.frames[0]?.filename;
-      if (filename) {
-        capturedFilename = filename;
-        return 'exception';
+      const chunkFilename = exception?.stacktrace?.frames
+        .map((frame) => frame.filename)
+        .find((filename): filename is string => typeof filename === 'string' && /\.js(\?|$)/.test(filename));
+
+      if (chunkFilename) {
+        capturedFilename = chunkFilename;
       }
 
       return undefined;
-    }).as('exception');
+    });
 
     cy.on('uncaught:exception', () => false);
 
     cy.visit('/features');
     cy.clickButton('btn-throw-error');
-    cy.wait('@exception');
+
+    // Retry until the interceptor has seen an exception whose stack points at a
+    // built chunk. The first POST `/collect` may carry unrelated telemetry, so
+    // a plain `cy.wait` on the interceptor alias would race the predicate.
+    cy.wrap(null).should(() => {
+      expect(capturedFilename, 'a Faro-reported stack frame should point at a JS chunk').to.be.a('string');
+    });
 
     // The captured frame points at a built JS chunk. Its matching `.map` must be
     // served by the demo so Alloy's faro.receiver can symbolicate stack frames
@@ -33,9 +41,7 @@ context('Source maps', () => {
     // `demo/vite.config.ts`, the `.map` would 404 and symbolication would silently
     // fail — see grafana/faro-web-sdk#2043.
     cy.then(() => {
-      expect(capturedFilename, 'first stack frame should have a filename').to.exist;
-
-      const sourceUrl = capturedFilename!.split('?')[0];
+      const sourceUrl = capturedFilename!.replace(/\?.*$/, '');
       const mapUrl = `${sourceUrl}.map`;
 
       cy.request(sourceUrl).its('status').should('eq', 200);
