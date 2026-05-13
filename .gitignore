@@ -13,6 +13,7 @@ e2e/smoke/playwright-report
 dist
 node_modules
 packages/core/src/version.ts
+packages/web-sdk/src/transports/fetch/workerScript.generated.ts
 
 # Logs
 *.log

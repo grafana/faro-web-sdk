@@ -33,7 +33,8 @@
   ],
   "scripts": {
     "start": "yarn watch",
-    "build": "run-s 'build:*'",
+    "build": "run-s build:worker 'build:compile:*'",
+    "build:worker": "node scripts/build-worker.mjs",
     "build:compile": "run-p 'build:compile:*'",
     "build:compile:cjs": "tsc --build tsconfig.cjs.json",
     "build:compile:esm": "tsc --build tsconfig.esm.json",
