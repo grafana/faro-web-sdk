@@ -1,13 +1,21 @@
 import { getBundleId, getGitHash } from './sourceMaps';
 
 describe('sourceMapUpload utils', () => {
+  const bundleKey = (appName: string) => `__faroBundleId_${appName}`;
+
+  const deleteBundleId = (appName: string): void => {
+    const key = bundleKey(appName);
+    delete (globalThis as any)[key];
+    delete (window as any)[key];
+  };
+
   beforeAll(() => {
-    delete (global as any).__faroBundleId_foo;
+    deleteBundleId('foo');
     delete (global as any).__faroGitHash_foo;
   });
 
   afterAll(() => {
-    delete (global as any).__faroBundleId_foo;
+    deleteBundleId('foo');
     delete (global as any).__faroGitHash_foo;
   });
 
@@ -25,5 +33,107 @@ describe('sourceMapUpload utils', () => {
   it('can get the git hash from the global object', () => {
     (global as any).__faroGitHash_foo = 'abc123def456abc123def456abc123def456abc1';
     expect(getGitHash('foo')).toEqual('abc123def456abc123def456abc123def456abc1');
+  });
+
+  it('returns undefined when neither globalObject nor window defines a usable bundle id', () => {
+    const app = 'missingBoth';
+    deleteBundleId(app);
+    expect(getBundleId(app)).toBeUndefined();
+  });
+
+  it('prefers globalObject over window when both define the bundle id', async () => {
+    const app = 'bothDefined';
+    const key = bundleKey(app);
+    deleteBundleId(app);
+
+    jest.resetModules();
+    const detachedGlobalObject: Record<string, unknown> = { [key]: 'from-global' };
+    jest.doMock('../globalObject', () => ({
+      globalObject: detachedGlobalObject,
+    }));
+
+    const { getBundleId: getBundleIdFresh } = await import('./sourceMaps');
+
+    try {
+      (window as any)[key] = 'from-window';
+      expect(getBundleIdFresh(app)).toBe('from-global');
+    } finally {
+      deleteBundleId(app);
+      jest.dontMock('../globalObject');
+      jest.resetModules();
+    }
+  });
+
+  it('ignores an empty string on globalObject and reads from window', async () => {
+    const app = 'emptyGlobalStr';
+    const key = bundleKey(app);
+    deleteBundleId(app);
+
+    jest.resetModules();
+    const detachedGlobalObject: Record<string, unknown> = { [key]: '' };
+    jest.doMock('../globalObject', () => ({
+      globalObject: detachedGlobalObject,
+    }));
+
+    const { getBundleId: getBundleIdFresh } = await import('./sourceMaps');
+
+    try {
+      (window as any)[key] = 'from-window';
+      expect(getBundleIdFresh(app)).toBe('from-window');
+    } finally {
+      deleteBundleId(app);
+      jest.dontMock('../globalObject');
+      jest.resetModules();
+    }
+  });
+
+  it('returns undefined when globalObject holds only an empty string', () => {
+    const app = 'onlyEmptyGlobal';
+    const key = bundleKey(app);
+    try {
+      deleteBundleId(app);
+      (globalThis as any)[key] = '';
+      expect(getBundleId(app)).toBeUndefined();
+    } finally {
+      deleteBundleId(app);
+    }
+  });
+
+  it('returns undefined when globalObject misses and window has an empty string', () => {
+    const app = 'emptyWindowStr';
+    const key = bundleKey(app);
+    try {
+      delete (globalThis as any)[key];
+      (window as any)[key] = '';
+      expect(getBundleId(app)).toBeUndefined();
+    } finally {
+      deleteBundleId(app);
+    }
+  });
+
+  it('reads the bundle ID from window when globalObject does not carry it', async () => {
+    const fooKey = bundleKey('foo');
+    delete (globalThis as any)[fooKey];
+    delete (window as any)[fooKey];
+
+    jest.resetModules();
+    const detachedGlobalObject: Record<string, unknown> = {};
+    jest.doMock('../globalObject', () => ({
+      globalObject: detachedGlobalObject,
+    }));
+
+    const { getBundleId: getBundleIdWithDetachedGlobal } = await import('./sourceMaps');
+
+    expect(getBundleIdWithDetachedGlobal('foo')).toBeUndefined();
+    expect(detachedGlobalObject[fooKey]).toBeUndefined();
+    expect((globalThis as any)[fooKey]).toBeUndefined();
+
+    (window as any)[fooKey] = 'from-window';
+
+    expect(getBundleIdWithDetachedGlobal('foo')).toEqual('from-window');
+
+    jest.dontMock('../globalObject');
+    jest.resetModules();
+    delete (window as any)[fooKey];
   });
 });
