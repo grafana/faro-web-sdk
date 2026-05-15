@@ -8,11 +8,12 @@ import { globalObject } from '../globalObject';
 export function getBundleId(appName: string): string | undefined {
   const key = `__faroBundleId_${appName}`;
   const fromGlobal = (globalObject as any)?.[key];
-  if (fromGlobal != null && fromGlobal !== '') {
-    return fromGlobal as string;
+  if (typeof fromGlobal === 'string' && fromGlobal !== '') {
+    return fromGlobal;
   }
-  if (typeof window !== 'undefined' && (window as any)[key] != null && (window as any)[key] !== '') {
-    return (window as any)[key] as string;
+  const fromWindow = typeof window !== 'undefined' ? (window as any)[key] : undefined;
+  if (typeof fromWindow === 'string' && fromWindow !== '') {
+    return fromWindow;
   }
   return undefined;
 }

@@ -112,9 +112,10 @@ describe('sourceMapUpload utils', () => {
   });
 
   it('reads the bundle ID from window when globalObject does not carry it', async () => {
-    const fooKey = bundleKey('foo');
-    delete (globalThis as any)[fooKey];
-    delete (window as any)[fooKey];
+    const app = 'windowOnlyDetached';
+    const key = bundleKey(app);
+    delete (globalThis as any)[key];
+    delete (window as any)[key];
 
     jest.resetModules();
     const detachedGlobalObject: Record<string, unknown> = {};
@@ -124,16 +125,42 @@ describe('sourceMapUpload utils', () => {
 
     const { getBundleId: getBundleIdWithDetachedGlobal } = await import('./sourceMaps');
 
-    expect(getBundleIdWithDetachedGlobal('foo')).toBeUndefined();
-    expect(detachedGlobalObject[fooKey]).toBeUndefined();
-    expect((globalThis as any)[fooKey]).toBeUndefined();
+    try {
+      expect(getBundleIdWithDetachedGlobal(app)).toBeUndefined();
+      expect(detachedGlobalObject[key]).toBeUndefined();
+      expect((globalThis as any)[key]).toBeUndefined();
 
-    (window as any)[fooKey] = 'from-window';
+      (window as any)[key] = 'from-window';
 
-    expect(getBundleIdWithDetachedGlobal('foo')).toEqual('from-window');
+      expect(getBundleIdWithDetachedGlobal(app)).toEqual('from-window');
+    } finally {
+      deleteBundleId(app);
+      jest.dontMock('../globalObject');
+      jest.resetModules();
+    }
+  });
 
-    jest.dontMock('../globalObject');
-    jest.resetModules();
-    delete (window as any)[fooKey];
+  it('returns undefined when globalObject holds a non-string bundle id', () => {
+    const app = 'nonStringGlobal';
+    const key = bundleKey(app);
+    try {
+      deleteBundleId(app);
+      (globalThis as any)[key] = 123 as any;
+      expect(getBundleId(app)).toBeUndefined();
+    } finally {
+      deleteBundleId(app);
+    }
+  });
+
+  it('returns undefined when window holds a non-string bundle id', () => {
+    const app = 'nonStringWindow';
+    const key = bundleKey(app);
+    try {
+      delete (globalThis as any)[key];
+      (window as any)[key] = true as any;
+      expect(getBundleId(app)).toBeUndefined();
+    } finally {
+      deleteBundleId(app);
+    }
   });
 });
