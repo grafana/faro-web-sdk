@@ -21,7 +21,9 @@ describe('metas', () => {
   it('preserves config.app.gitHash when global __faroGitHash is absent', () => {
     delete (global as any).__faroGitHash_test;
 
-    const { metas } = initializeFaro(mockConfig({ app: { name: 'test', version: '1.0.0', gitHash: 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef' } }));
+    const { metas } = initializeFaro(
+      mockConfig({ app: { name: 'test', version: '1.0.0', gitHash: 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef' } })
+    );
     expect(metas.value.app?.gitHash).toEqual('deadbeefdeadbeefdeadbeefdeadbeefdeadbeef');
   });
 
