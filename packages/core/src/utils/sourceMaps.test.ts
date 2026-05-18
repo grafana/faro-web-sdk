@@ -99,15 +99,22 @@ describe('sourceMapUpload utils', () => {
     }
   });
 
-  it('returns undefined when globalObject misses and window has an empty string', () => {
+  it('returns undefined when globalObject misses and window has an empty string', async () => {
     const app = 'emptyWindowStr';
     const key = bundleKey(app);
+    deleteBundleId(app);
+
+    jest.resetModules();
+    jest.doMock('../globalObject', () => ({ globalObject: {} }));
+    const { getBundleId: getBundleIdFresh } = await import('./sourceMaps');
+
     try {
-      delete (globalThis as any)[key];
       (window as any)[key] = '';
-      expect(getBundleId(app)).toBeUndefined();
+      expect(getBundleIdFresh(app)).toBeUndefined();
     } finally {
       deleteBundleId(app);
+      jest.dontMock('../globalObject');
+      jest.resetModules();
     }
   });
 
@@ -152,15 +159,22 @@ describe('sourceMapUpload utils', () => {
     }
   });
 
-  it('returns undefined when window holds a non-string bundle id', () => {
+  it('returns undefined when window holds a non-string bundle id', async () => {
     const app = 'nonStringWindow';
     const key = bundleKey(app);
+    deleteBundleId(app);
+
+    jest.resetModules();
+    jest.doMock('../globalObject', () => ({ globalObject: {} }));
+    const { getBundleId: getBundleIdFresh } = await import('./sourceMaps');
+
     try {
-      delete (globalThis as any)[key];
       (window as any)[key] = true as any;
-      expect(getBundleId(app)).toBeUndefined();
+      expect(getBundleIdFresh(app)).toBeUndefined();
     } finally {
       deleteBundleId(app);
+      jest.dontMock('../globalObject');
+      jest.resetModules();
     }
   });
 });
