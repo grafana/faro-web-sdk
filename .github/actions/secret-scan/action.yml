@@ -1,0 +1,64 @@
+name: Secret scan
+description: |
+  Scan first-party source folders for secrets with TruffleHog.
+  Avoids scanning node_modules, .yarn/cache, and other third-party trees that
+  produce noisy false positives from package test fixtures and READMEs.
+
+inputs:
+  trufflehog-version:
+    description: TruffleHog version to install.
+    required: false
+    default: '3.94.3'
+  exclude-detectors:
+    description: |
+      Comma-separated list of detector types to exclude (passed to TruffleHog
+      via --exclude-detectors).
+    required: false
+    default: 'SentryToken'
+
+runs:
+  using: composite
+  steps:
+    - name: install trufflehog
+      uses: grafana/plugin-ci-workflows/actions/internal/plugins/trufflehog@9bf555fa8e51759074babd212133911d63ad327d
+      with:
+        trufflehog-version: ${{ inputs.trufflehog-version }}
+        setup-only: 'true'
+
+    - name: scan first-party source folders
+      shell: bash
+      env:
+        EXCLUDE_DETECTORS: ${{ inputs.exclude-detectors }}
+      run: |
+        set -euo pipefail
+
+        FOLDERS=(
+          packages
+          demo
+          experimental
+          cypress
+          docs
+          infra
+          ai
+          dashboards
+        )
+
+        fail=0
+        for folder in "${FOLDERS[@]}"; do
+          if [[ ! -d "${folder}" ]]; then
+            echo "::notice title=Secret scan::Skipping ${folder} — directory does not exist."
+            continue
+          fi
+
+          echo "::group::trufflehog ${folder}"
+          if ! /usr/local/bin/trufflehog filesystem "${folder}" \
+              --no-update --fail --github-actions \
+              --results=verified,unknown \
+              --exclude-detectors="${EXCLUDE_DETECTORS}"; then
+            echo "::error title=Secret scan::Secrets found in ${folder}."
+            fail=1
+          fi
+          echo "::endgroup::"
+        done
+
+        exit "${fail}"

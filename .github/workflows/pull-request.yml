@@ -22,6 +22,15 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Secret scan
+        # Scans first-party source folders (packages, demo, experimental,
+        # cypress, docs, infra, ai, dashboards) to avoid noisy false positives
+        # from node_modules and .yarn/cache. TruffleHog flags minified webpack
+        # chunks as unverified Sentry DSN-style tokens; we do not ship Sentry
+        # auth tokens, so SentryToken is excluded. Runs before install/build
+        # to fail fast.
+        uses: ./.github/actions/secret-scan
+
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
