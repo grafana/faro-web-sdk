@@ -51,7 +51,7 @@ runs:
           fi
 
           echo "::group::trufflehog ${folder}"
-          if ! /usr/local/bin/trufflehog filesystem "${folder}" \
+          if ! trufflehog filesystem "${folder}" \
               --no-update --fail --github-actions \
               --results=verified,unknown \
               --exclude-detectors="${EXCLUDE_DETECTORS}"; then

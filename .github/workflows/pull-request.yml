@@ -8,7 +8,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  secret-scan:
+    permissions:
+      contents: read
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      # Scans first-party source folders (packages, demo, experimental,
+      # cypress, docs, infra, ai, dashboards) to avoid noisy false positives
+      # from node_modules and .yarn/cache. TruffleHog flags minified webpack
+      # chunks as unverified Sentry DSN-style tokens; we do not ship Sentry
+      # auth tokens, so SentryToken is excluded. Runs as its own job (rather
+      # than once per Node matrix entry) and gates downstream jobs so they
+      # fail fast on a finding without triplicating the scan.
+      - name: Run secret scan
+        uses: ./.github/actions/secret-scan
+
   test:
+    needs: secret-scan
     permissions:
       contents: read
     name: Testing with Node version (${{ matrix.node }})
@@ -21,15 +42,6 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-
-      - name: Secret scan
-        # Scans first-party source folders (packages, demo, experimental,
-        # cypress, docs, infra, ai, dashboards) to avoid noisy false positives
-        # from node_modules and .yarn/cache. TruffleHog flags minified webpack
-        # chunks as unverified Sentry DSN-style tokens; we do not ship Sentry
-        # auth tokens, so SentryToken is excluded. Runs before install/build
-        # to fail fast.
-        uses: ./.github/actions/secret-scan
 
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
@@ -65,6 +77,7 @@ jobs:
         run: yarn quality:test
 
   e2e:
+    needs: secret-scan
     permissions:
       contents: read
 
