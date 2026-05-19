@@ -7,6 +7,10 @@
   "separateMultipleMajor": true,
   "prHourlyLimit": 2,
   "prConcurrentLimit": 10,
+  "minimumReleaseAge": "7 days",
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": "0"
+  },
   "packageRules": [
     {
       "description": "Group npm dependencies",
