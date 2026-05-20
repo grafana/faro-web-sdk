@@ -4,19 +4,17 @@
 
 ## [2.7.0](https://github.com/grafana/faro-web-sdk/compare/v2.6.3...v2.7.0) (2026-05-20)
 
-
 ### Features
 
-* **core:** include git commit hash in app meta ([#2039](https://github.com/grafana/faro-web-sdk/issues/2039)) ([9c82ce4](https://github.com/grafana/faro-web-sdk/commit/9c82ce49bc6d02c8a9b9a83227f101ce224a79b8))
-
+- **core:** include git commit hash in app meta ([#2039](https://github.com/grafana/faro-web-sdk/issues/2039)) ([9c82ce4](https://github.com/grafana/faro-web-sdk/commit/9c82ce49bc6d02c8a9b9a83227f101ce224a79b8))
 
 ### Bug Fixes
 
-* **core:** fall back to window when resolving Metro bundle id ([#2079](https://github.com/grafana/faro-web-sdk/issues/2079)) ([3cfd620](https://github.com/grafana/faro-web-sdk/commit/3cfd6204b7bc83e5c440c523b6287993ccfbd728))
-* **demo:** bind Tempo OTLP receiver to 0.0.0.0 so Alloy can reach it ([#2038](https://github.com/grafana/faro-web-sdk/issues/2038)) ([7a0af53](https://github.com/grafana/faro-web-sdk/commit/7a0af536a4a7254bf62473b20d04cf937ecd246a))
-* **demo:** use `grafana server` subcommand for Grafana 13 image ([#2035](https://github.com/grafana/faro-web-sdk/issues/2035)) ([5d92107](https://github.com/grafana/faro-web-sdk/commit/5d9210769e5e0752f41a3f543089397d9fe8149a))
-* **deps:** update npm-dependencies ([#2077](https://github.com/grafana/faro-web-sdk/issues/2077)) ([8574f55](https://github.com/grafana/faro-web-sdk/commit/8574f5579b8c84a829269aa7e19e76238daa6b6e))
-* pin package manager and disable yarn/npm scripts ([#2075](https://github.com/grafana/faro-web-sdk/issues/2075)) ([ef2d248](https://github.com/grafana/faro-web-sdk/commit/ef2d248259f99e3e712bceff0f6fc99f6b0d81e1))
+- **core:** fall back to window when resolving Metro bundle id ([#2079](https://github.com/grafana/faro-web-sdk/issues/2079)) ([3cfd620](https://github.com/grafana/faro-web-sdk/commit/3cfd6204b7bc83e5c440c523b6287993ccfbd728))
+- **demo:** bind Tempo OTLP receiver to 0.0.0.0 so Alloy can reach it ([#2038](https://github.com/grafana/faro-web-sdk/issues/2038)) ([7a0af53](https://github.com/grafana/faro-web-sdk/commit/7a0af536a4a7254bf62473b20d04cf937ecd246a))
+- **demo:** use `grafana server` subcommand for Grafana 13 image ([#2035](https://github.com/grafana/faro-web-sdk/issues/2035)) ([5d92107](https://github.com/grafana/faro-web-sdk/commit/5d9210769e5e0752f41a3f543089397d9fe8149a))
+- **deps:** update npm-dependencies ([#2077](https://github.com/grafana/faro-web-sdk/issues/2077)) ([8574f55](https://github.com/grafana/faro-web-sdk/commit/8574f5579b8c84a829269aa7e19e76238daa6b6e))
+- pin package manager and disable yarn/npm scripts ([#2075](https://github.com/grafana/faro-web-sdk/issues/2075)) ([ef2d248](https://github.com/grafana/faro-web-sdk/commit/ef2d248259f99e3e712bceff0f6fc99f6b0d81e1))
 
 ## [2.6.3](https://github.com/grafana/faro-web-sdk/compare/v2.6.2...v2.6.3) (2026-05-11)
 
