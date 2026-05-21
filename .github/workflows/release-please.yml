@@ -55,13 +55,17 @@ jobs:
           BRANCH="$(echo "$PR_JSON" | jq -r '.headBranchName')"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
+      # `persist-credentials: false` keeps the App token out of `.git/config`
+      # for the duration of `yarn install` and prettier. Otherwise any binary
+      # in `node_modules/.bin` (or a transitive dep) could read it from the
+      # filesystem. The token is re-supplied to `git push` at the end via an
+      # explicit remote URL.
       - name: Checkout release PR branch
         if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ steps.release-branch.outputs.branch }}
-          token: ${{ steps.app-token.outputs.token }}
-          persist-credentials: true
+          persist-credentials: false
 
       - name: Setup Node.js
         if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
@@ -70,32 +74,54 @@ jobs:
           node-version-file: .nvmrc
           package-manager-cache: false
 
-      # Two cleanups happen here:
-      #   1. Refresh yarn.lock — release-please rewrites cross-package dep
-      #      ranges in package.json but does not touch yarn.lock. The Pull
-      #      Request workflow runs `yarn install --frozen-lockfile`, which
-      #      fails on the release PR if the resolution would change.
-      #   2. Run `yarn quality:lint:fix` — the project's prettier config
-      #      normalizes markdown bullets to `-`, while release-please writes
-      #      `*`. The Pull Request workflow runs `yarn quality:lint:fix` and
-      #      then `git diff --exit-code`, which fails if CHANGELOG.md needs
-      #      reformatting. Pre-format here so CI is clean.
-      - name: Refresh yarn.lock and format release PR
+      # Refresh yarn.lock and format CHANGELOG.md. Split into three steps
+      # so the GitHub App token is only in scope for the final push step,
+      # never while running `yarn install` or `prettier`.
+      #
+      # Step 1: refresh yarn.lock. release-please rewrites cross-package dep
+      # ranges in package.json but does not touch yarn.lock. The Pull Request
+      # workflow runs `yarn install --frozen-lockfile`, which fails on the
+      # release PR if the resolution would change.
+      #
+      # Yarn berry auto-enables hardened mode on public PR workflows, which
+      # forbids modifying yarn.lock with a plain `yarn install`.
+      # `--mode update-lockfile` writes the lockfile without installing
+      # node_modules and is permitted in hardened mode.
+      - name: Refresh yarn.lock
         if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
         run: |
           set -euo pipefail
           corepack enable
-          # Yarn berry auto-enables hardened mode on public PR workflows,
-          # which forbids modifying yarn.lock with a plain `yarn install`.
-          # `--mode update-lockfile` writes the lockfile without installing
-          # node_modules, bypassing the hardened-mode check.
           yarn install --mode update-lockfile
-          # Now that the lockfile matches package.json, do a real install
-          # so prettier/lerna are available for the lint:fix step.
+          # Real install so prettier is available for the format step.
           # `--immutable` is allowed in hardened mode because the lockfile
-          # is already in sync.
+          # is already in sync after the previous step.
           yarn install --immutable
-          yarn quality:lint:fix
+
+      # Step 2: format CHANGELOG.md. The project's prettier config normalizes
+      # markdown bullets to `-`, while release-please writes `*`. The Pull
+      # Request workflow runs `yarn quality:lint:fix` and then
+      # `git diff --exit-code`, which fails if CHANGELOG.md needs
+      # reformatting. We invoke prettier directly on the file release-please
+      # rewrites rather than `yarn quality:lint:fix`, which fans out via
+      # lerna to every workspace.
+      #
+      # The GitHub App token is intentionally NOT in this step's environment
+      # so a compromised prettier (or any node_modules/.bin entry) cannot
+      # read it.
+      - name: Format CHANGELOG.md
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        run: yarn prettier --write CHANGELOG.md
+
+      # Step 3: commit and push. The App token is only in scope here, after
+      # all third-party code has finished running.
+      - name: Commit and push lockfile and changelog updates
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        env:
+          GH_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          BRANCH: ${{ steps.release-branch.outputs.branch }}
+        run: |
+          set -euo pipefail
           if git diff --quiet; then
             echo "No lockfile or formatting changes."
             exit 0
@@ -104,6 +130,14 @@ jobs:
           # on the same branch, so this commit appears as the same bot.
           git config user.name 'app-o11y-kwl-ci[bot]'
           git config user.email 'app-o11y-kwl-ci[bot]@users.noreply.github.com'
-          git add -A
+          # Scope the commit to expected paths only, so generated artifacts
+          # (caches, logs) accidentally written outside .gitignore can't be
+          # pushed by the bot.
+          git add yarn.lock CHANGELOG.md \
+            package.json packages/*/package.json experimental/*/package.json \
+            demo/package.json lerna.json
           git commit -m 'chore: refresh yarn.lock and format release files'
-          git push
+          # Push via an explicit token-bearing URL so the App token is never
+          # written to `.git/config`. The URL is masked because $GH_APP_TOKEN
+          # is a secret.
+          git push "https://x-access-token:${GH_APP_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${BRANCH}"
