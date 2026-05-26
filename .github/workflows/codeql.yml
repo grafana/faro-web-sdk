@@ -2,7 +2,7 @@ name: CodeQL
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths-ignore:
       - '**.md'
   pull_request:
@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'actions', 'javascript-typescript' ]
+        language: ['actions', 'javascript-typescript']
 
     steps:
       - name: Checkout repository
@@ -48,7 +48,7 @@ jobs:
 
   codeql:
     if: ${{ !cancelled() }}
-    needs: [ analysis ]
+    needs: [analysis]
     runs-on: ubuntu-latest
 
     steps:
