@@ -42,7 +42,7 @@ jobs:
 
       # release-please rewrites cross-package dep ranges in package.json (e.g.
       # `@grafana/faro-core` from `^2.5.0` to `^2.6.0`) but does not touch
-      # yarn.lock. CI runs `yarn install --frozen-lockfile`, which fails on the
+      # yarn.lock. CI runs `yarn install --immutable`, which fails on the
       # release PR because the resolution would change. Refresh yarn.lock on
       # the release branch so CI passes.
       - name: Resolve release PR branch
@@ -72,7 +72,7 @@ jobs:
       # Two cleanups happen here:
       #   1. Refresh yarn.lock — release-please rewrites cross-package dep
       #      ranges in package.json but does not touch yarn.lock. The Pull
-      #      Request workflow runs `yarn install --frozen-lockfile`, which
+      #      Request workflow runs `yarn install --immutable`, which
       #      fails on the release PR if the resolution would change.
       #   2. Run `yarn quality:lint:fix` — the project's prettier config
       #      normalizes markdown bullets to `-`, while release-please writes
@@ -128,12 +128,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
-          node-version: 'lts/*'
+          node-version-file: .nvmrc
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Build
         run: yarn build
@@ -193,11 +193,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
-          node-version: 'lts/*'
+          node-version-file: .nvmrc
           package-manager-cache: false
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Build
         run: yarn build
@@ -244,12 +244,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
-          node-version: 'lts/*'
+          node-version-file: .nvmrc
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Build
         run: yarn build

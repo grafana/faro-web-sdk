@@ -10,6 +10,9 @@
     "url": "https://github.com/grafana/faro-web-sdk.git"
   },
   "private": true,
+  "engines": {
+    "node": ">=24.5.0"
+  },
   "workspaces": [
     "packages/**",
     "experimental/**",
