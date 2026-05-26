@@ -8202,7 +8202,6 @@ __metadata:
     lerna: "npm:9.0.7"
     lint-staged: "npm:17.0.4"
     madge: "npm:8.0.0"
-    markdownlint: "npm:0.40.0"
     markdownlint-cli: "npm:0.48.0"
     npm-run-all2: "npm:8.0.4"
     os-browserify: "npm:0.3.0"
@@ -11608,7 +11607,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdownlint@npm:0.40.0, markdownlint@npm:~0.40.0":
+"markdownlint@npm:~0.40.0":
   version: 0.40.0
   resolution: "markdownlint@npm:0.40.0"
   dependencies:
