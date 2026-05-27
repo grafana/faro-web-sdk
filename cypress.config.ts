@@ -4,6 +4,7 @@ import { defineConfig } from 'cypress';
 export default defineConfig({
   e2e: {
     baseUrl: 'http://localhost:5173',
+    specPattern: 'cypress/e2e/demo/**/*.cy.ts',
     video: false,
     requestTimeout: 3000,
     setupNodeEvents(on) {

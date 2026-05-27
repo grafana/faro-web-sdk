@@ -72,6 +72,17 @@
           "type": "json",
           "path": "demo/package.json",
           "jsonpath": "$['dependencies']['@grafana/faro-web-tracing']"
+        },
+        { "type": "json", "path": "e2e/smoke/package.json", "jsonpath": "$.version" },
+        {
+          "type": "json",
+          "path": "e2e/smoke/package.json",
+          "jsonpath": "$['devDependencies']['@grafana/faro-core']"
+        },
+        {
+          "type": "json",
+          "path": "e2e/smoke/package.json",
+          "jsonpath": "$['devDependencies']['@grafana/faro-react']"
         }
       ]
     }

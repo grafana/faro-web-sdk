@@ -987,6 +987,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@grafana/faro-smoke-harness@workspace:e2e/smoke":
+  version: 0.0.0-use.local
+  resolution: "@grafana/faro-smoke-harness@workspace:e2e/smoke"
+  dependencies:
+    "@grafana/faro-core": "npm:^2.7.0"
+    "@grafana/faro-react": "npm:^2.7.0"
+    "@types/react": "npm:19.2.14"
+    "@types/react-dom": "npm:19.2.3"
+    "@vitejs/plugin-react-swc": "npm:4.3.0"
+    cypress: "npm:15.15.0"
+    npm-run-all2: "npm:8.0.4"
+    react: "npm:19.2.6"
+    react-dom: "npm:19.2.6"
+    start-server-and-test: "npm:3.0.4"
+    vite: "npm:8.0.12"
+  languageName: unknown
+  linkType: soft
+
 "@grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http"
@@ -8184,11 +8202,8 @@ __metadata:
     "@rollup/plugin-typescript": "npm:12.3.0"
     "@stylistic/eslint-plugin-ts": "npm:4.4.1"
     "@types/jest": "npm:30.0.0"
-    "@types/react": "npm:19.2.14"
-    "@types/react-dom": "npm:19.2.3"
     "@typescript-eslint/eslint-plugin": "npm:8.59.3"
     "@typescript-eslint/parser": "npm:8.59.3"
-    "@vitejs/plugin-react-swc": "npm:4.3.0"
     cypress: "npm:15.15.0"
     esbuild-loader: "npm:4.4.3"
     eslint: "npm:10.3.0"
@@ -8209,15 +8224,12 @@ __metadata:
     markdownlint-cli: "npm:0.48.0"
     npm-run-all2: "npm:8.0.4"
     prettier: "npm:3.8.3"
-    react: "npm:19.2.6"
-    react-dom: "npm:19.2.6"
     rimraf: "npm:6.1.3"
     rollup: "npm:4.60.3"
     start-server-and-test: "npm:3.0.4"
     ts-jest: "npm:29.4.9"
     ts-node: "npm:10.9.2"
     typescript: "npm:6.0.3"
-    vite: "npm:8.0.12"
     webpack: "npm:5.106.2"
   languageName: unknown
   linkType: soft

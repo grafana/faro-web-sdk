@@ -157,5 +157,5 @@ jobs:
       - name: Smoke E2E tests
         uses: cypress-io/github-action@be9c221b90b2fb97daedfa8699d1f08b662efc70
         with:
-          command: yarn quality:e2e:smoke:ci
+          command: yarn workspace @grafana/faro-smoke-harness run e2e:ci
           install: false

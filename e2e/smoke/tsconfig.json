@@ -7,7 +7,7 @@
     "noEmit": true,
     "rootDir": ".",
     "target": "ES2022",
-    "types": ["node"]
+    "types": ["node", "vite/client", "cypress"]
   },
-  "include": ["./**/*.ts", "./**/*.tsx"]
+  "include": ["./src/**/*.ts", "./src/**/*.tsx", "./cypress/**/*.ts", "./vite.config.ts", "./cypress.config.ts"]
 }

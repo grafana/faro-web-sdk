@@ -191,7 +191,7 @@ export default [
 
   // Configuration for Cypress spec and support files
   {
-    files: ['cypress/**/*.{js,ts}'],
+    files: ['cypress/**/*.{js,ts}', 'e2e/smoke/cypress/**/*.{js,ts}'],
     languageOptions: {
       globals: {
         cy: 'readonly',
