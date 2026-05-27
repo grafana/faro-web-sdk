@@ -67,6 +67,7 @@ function mergeResourceSpans(
   const currentSpans = currentResource.scopeSpans ?? [];
   const newSpans = resourceSpans[0]?.scopeSpans ?? [];
   return {
+    ...traces,
     resourceSpans: [{ ...currentResource, scopeSpans: [...currentSpans, ...newSpans] }],
   };
 }

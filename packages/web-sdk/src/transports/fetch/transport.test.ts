@@ -10,6 +10,10 @@ import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils
 
 import * as sessionManagerUtilsMock from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 
+jest.mock('./workerScript', () => ({
+  getWorkerScript: () => 'self.onmessage = function() {}',
+}));
+
 import { FetchTransport } from './transport';
 
 const fetch = jest.fn(() =>
@@ -431,6 +435,7 @@ describe('FetchTransport', () => {
 
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
+      disableWorker: true,
     });
 
     transport.metas.value = { session: { id: mockSessionId } };
@@ -571,5 +576,231 @@ describe('FetchTransport', () => {
       expect(blob.size).toBeLessThan(60000);
       expect(requestInit.keepalive).toBe(true);
     });
+  });
+});
+
+describe('FetchTransport (Worker path)', () => {
+  let mockWorkerInstance: {
+    postMessage: jest.Mock;
+    terminate: jest.Mock;
+    onmessage: ((e: MessageEvent) => void) | null;
+    onerror: (() => void) | null;
+  };
+
+  let MockWorkerClass: jest.Mock;
+
+  beforeEach(() => {
+    fetch.mockClear();
+    jest.clearAllMocks();
+
+    mockWorkerInstance = {
+      postMessage: jest.fn(),
+      terminate: jest.fn(),
+      onmessage: null,
+      onerror: null,
+    };
+
+    MockWorkerClass = jest.fn(() => mockWorkerInstance);
+    (global as any).Worker = MockWorkerClass;
+    (global as any).Blob = class Blob {
+      constructor(
+        public parts: string[],
+        public options: object
+      ) {}
+    };
+    (global as any).URL.createObjectURL = jest.fn(() => 'blob:mock');
+    (global as any).URL.revokeObjectURL = jest.fn();
+
+    Object.defineProperty(document, 'visibilityState', {
+      value: 'visible',
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    delete (global as any).Worker;
+  });
+
+  function createWorkerTransport() {
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+    });
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+    return transport;
+  }
+
+  it('sends items via worker.postMessage when worker is available', async () => {
+    const transport = createWorkerTransport();
+
+    mockWorkerInstance.postMessage.mockImplementation(() => {
+      const msg = mockWorkerInstance.postMessage.mock.calls[0][0];
+      mockWorkerInstance.onmessage?.({ data: { type: 'send-result', id: msg.id, sessionExpired: false } } as any);
+    });
+
+    await transport.send([item]);
+
+    expect(mockWorkerInstance.postMessage).toHaveBeenCalledTimes(1);
+    const postedMsg = mockWorkerInstance.postMessage.mock.calls[0][0];
+    expect(postedMsg.type).toBe('send');
+    expect(postedMsg.items).toEqual([item]);
+    expect(postedMsg.url).toBe('http://example.com/collect');
+    expect(postedMsg.sessionId).toBe(mockSessionId);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('falls back to sendDirect when document is hidden', async () => {
+    const transport = createWorkerTransport();
+
+    Object.defineProperty(document, 'visibilityState', {
+      value: 'hidden',
+      writable: true,
+      configurable: true,
+    });
+
+    await transport.send([item]);
+
+    expect(mockWorkerInstance.postMessage).not.toHaveBeenCalled();
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to sendDirect when worker onerror fires', async () => {
+    const transport = createWorkerTransport();
+
+    mockWorkerInstance.postMessage.mockImplementation(() => {
+      mockWorkerInstance.onerror?.();
+    });
+
+    await transport.send([item]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('handles rate-limited response from worker', async () => {
+    const now = Date.now();
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      getNow: () => now,
+    });
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    mockWorkerInstance.postMessage.mockImplementation(() => {
+      const msg = mockWorkerInstance.postMessage.mock.calls[0][0];
+      mockWorkerInstance.onmessage?.({
+        data: { type: 'rate-limited', id: msg.id, disabledUntil: now + 5000 },
+      } as any);
+    });
+
+    await transport.send([item]);
+
+    expect(mockWorkerInstance.postMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('handles send-error response from worker', async () => {
+    const transport = createWorkerTransport();
+
+    mockWorkerInstance.postMessage.mockImplementation(() => {
+      const msg = mockWorkerInstance.postMessage.mock.calls[0][0];
+      mockWorkerInstance.onmessage?.({
+        data: { type: 'send-error', id: msg.id, error: 'Network failure' },
+      } as any);
+    });
+
+    await transport.send([item]);
+
+    expect(mockWorkerInstance.postMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to sendDirect when postMessage throws DataCloneError', async () => {
+    const transport = createWorkerTransport();
+
+    mockWorkerInstance.postMessage.mockImplementation(() => {
+      throw new DOMException('Failed to execute postMessage', 'DataCloneError');
+    });
+
+    await transport.send([item]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not use worker when disableWorker option is set', async () => {
+    delete (global as any).Worker;
+    (global as any).Worker = MockWorkerClass;
+
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      disableWorker: true,
+    });
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    await transport.send([item]);
+
+    expect(MockWorkerClass).not.toHaveBeenCalled();
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('bypasses worker when requestOptions.signal is present', async () => {
+    const controller = new AbortController();
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      requestOptions: { signal: controller.signal },
+    });
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    await transport.send([item]);
+
+    expect(mockWorkerInstance.postMessage).not.toHaveBeenCalled();
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('terminates worker and logs warning on worker error', () => {
+    createWorkerTransport();
+
+    mockWorkerInstance.onerror?.();
+
+    expect(mockWorkerInstance.terminate).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to sendDirect when worker terminates while send is queued', async () => {
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      concurrency: 1,
+      bufferSize: 5,
+    });
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    let firstSendResolve: (() => void) | undefined;
+    let postMessageCount = 0;
+    mockWorkerInstance.postMessage.mockImplementation(() => {
+      postMessageCount++;
+      if (postMessageCount === 1) {
+        // First send: hold it open, then crash the worker
+        const msg = mockWorkerInstance.postMessage.mock.calls[0][0];
+        firstSendResolve = () => {
+          mockWorkerInstance.onerror?.();
+          mockWorkerInstance.onmessage?.({
+            data: { type: 'send-result', id: msg.id, sessionExpired: false },
+          } as any);
+        };
+      }
+    });
+
+    const send1 = transport.send([item]);
+    const send2 = transport.send([item]);
+
+    // Resolve first send which triggers worker error
+    firstSendResolve?.();
+
+    await Promise.all([send1, send2]);
+
+    // Both sends should have fallen back to fetch:
+    // first because worker errored, second because worker was null when dequeued
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(mockWorkerInstance.postMessage).toHaveBeenCalledTimes(1);
   });
 });

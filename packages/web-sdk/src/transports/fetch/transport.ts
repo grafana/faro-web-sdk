@@ -17,6 +17,7 @@ const ACCEPTED = 202;
 
 interface PendingWorkerRequest {
   resolve: (value: Response | void) => void;
+  reject: (reason: unknown) => void;
 }
 
 interface WorkerMessage {
@@ -100,31 +101,36 @@ export class FetchTransport extends BaseTransport {
     }
     this.pendingWorkerRequests.delete(data.id);
 
-    switch (data.type) {
-      case 'send-result':
-        if (data.sessionExpired) {
-          this.extendFaroSession(this.config, this.logDebug);
-        }
-        break;
+    try {
+      switch (data.type) {
+        case 'send-result':
+          if (data.sessionExpired) {
+            this.extendFaroSession(this.config, this.logDebug);
+          }
+          break;
 
-      case 'rate-limited':
-        if (data.disabledUntil != null) {
-          this.disabledUntil = new Date(data.disabledUntil);
-          this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
-        }
-        break;
+        case 'rate-limited':
+          if (data.disabledUntil != null) {
+            this.disabledUntil = new Date(data.disabledUntil);
+            this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
+          }
+          break;
 
-      case 'send-error':
-        this.logError('Worker transport failed:', data.error);
-        break;
+        case 'send-error':
+          this.logError('Worker transport failed:', data.error);
+          break;
+      }
+    } finally {
+      pending.resolve(undefined);
     }
-
-    pending.resolve(undefined);
   }
 
   private handleWorkerError(): void {
+    this.logWarn('Faro transport Worker crashed — falling back to main-thread transport.');
+
+    const error = new Error('Worker terminated');
     for (const [, pending] of this.pendingWorkerRequests) {
-      pending.resolve(undefined);
+      pending.reject(error);
     }
     this.pendingWorkerRequests.clear();
     this.worker?.terminate();
@@ -141,7 +147,9 @@ export class FetchTransport extends BaseTransport {
       // Use worker when available and page is visible.
       // When the page is hidden (visibilitychange flush), send directly
       // so keepalive/sendBeacon can deliver before the page dies.
-      if (this.worker && document.visibilityState !== 'hidden') {
+      // Also bypass when an AbortSignal is present since it can't be cloned to a worker.
+      const hasSignal = !!(this.options.requestOptions as RequestInit | undefined)?.signal;
+      if (this.worker && document.visibilityState !== 'hidden' && !hasSignal) {
         try {
           return await this.sendViaWorker(items);
         } catch {
@@ -156,41 +164,54 @@ export class FetchTransport extends BaseTransport {
   }
 
   private async sendViaWorker(items: TransportItem[]): Promise<void> {
-    const { requestOptions, apiKey } = this.options;
-    // Resolve relative URLs against page origin — blob workers have no base URL
-    const url = new URL(this.options.url, document.baseURI).href;
-    const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
-
-    const resolvedHeaders: Record<string, string> = {};
-    for (const [key, value] of Object.entries(headers)) {
-      resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
+    if (!this.worker) {
+      throw new Error('Worker not available');
     }
 
-    let sessionId: string | undefined;
-    const sessionMeta = this.metas.value.session;
-    if (sessionMeta != null) {
-      sessionId = sessionMeta.id;
-    }
+    await this.promiseBuffer.add(async () => {
+      const worker = this.worker;
+      if (!worker) {
+        throw new Error('Worker terminated while queued');
+      }
 
-    // Strip non-cloneable properties (AbortSignal) before postMessage
-    const { signal: _signal, ...cloneableRequestOptions } = restOfRequestOptions as RequestInit;
+      const { requestOptions, apiKey } = this.options;
+      const url = new URL(this.options.url, document.baseURI).href;
+      const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
 
-    await this.promiseBuffer.add(() => {
-      return new Promise<void>((resolve) => {
+      const resolvedHeaders: Record<string, string> = {};
+      for (const [key, value] of Object.entries(headers)) {
+        resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
+      }
+
+      let sessionId: string | undefined;
+      const sessionMeta = this.metas.value.session;
+      if (sessionMeta != null) {
+        sessionId = sessionMeta.id;
+      }
+
+      return new Promise<void>((resolve, reject) => {
         const id = this.nextMessageId++;
-        this.pendingWorkerRequests.set(id, { resolve: resolve as (value: Response | void) => void });
-
-        this.worker!.postMessage({
-          type: 'send',
-          id,
-          items,
-          url,
-          apiKey,
-          headers: resolvedHeaders,
-          sessionId,
-          requestOptions: cloneableRequestOptions,
-          rateLimitBackoffMs: this.rateLimitBackoffMs,
+        this.pendingWorkerRequests.set(id, {
+          resolve: resolve as (value: Response | void) => void,
+          reject,
         });
+
+        try {
+          worker.postMessage({
+            type: 'send',
+            id,
+            items,
+            url,
+            apiKey,
+            headers: resolvedHeaders,
+            sessionId,
+            requestOptions: restOfRequestOptions,
+            rateLimitBackoffMs: this.rateLimitBackoffMs,
+          });
+        } catch (err) {
+          this.pendingWorkerRequests.delete(id);
+          reject(err);
+        }
       });
     });
   }
