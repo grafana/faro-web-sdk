@@ -24,9 +24,5 @@ yarn-error.log*
 # Misc
 .DS_Store
 
-# App plugin
-infra/grafana/plugins/
-infra/grafana/plugins-provisioning/*.yaml
-
 # Yarn 4
 install-state.gz

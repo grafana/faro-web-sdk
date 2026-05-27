@@ -39,9 +39,6 @@ export default [
       // Root config files that don't need linting
       '.lintstagedrc.js',
       '.prettierrc.js',
-      // App plugin
-      'infra/grafana/plugins/**',
-      'infra/grafana/plugins-provisioning/*.yaml',
     ],
   },
 
