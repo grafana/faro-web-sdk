@@ -33,15 +33,11 @@ range is listed explicitly in `extra-files`.
 
 ## Packages excluded from npm publish
 
-Two workspaces are tracked by `extra-files` (so their versions and internal-dep
-ranges stay in sync with the publishable packages) but are **never published**:
-
-- `demo/` (`@grafana/faro-demo`)
-- `e2e/smoke/` (`@grafana/faro-smoke-harness`)
-
-Both are private (`"private": true` in their `package.json`). `lerna publish`
-skips private packages regardless of subcommand, and `npm publish` would refuse
-them outright.
+The `e2e/smoke/` workspace (`@grafana/faro-smoke-harness`) is tracked by
+`extra-files` (so its version stays in sync with the publishable packages) but
+is **never published**. It is private (`"private": true` in its
+`package.json`). `lerna publish` skips private packages regardless of
+subcommand, and `npm publish` would refuse them outright.
 
 The legacy directories under `experimental/` (`instrumentation-fetch`,
 `instrumentation-xhr`, `instrumentation-performance-timeline`, `nextjs`, `vue`)

@@ -1,7 +1,8 @@
 # Get started with Grafana Faro Web SDK
 
-This document describes how to set up and use Grafana Faro Web SDK. For more information, refer to the
-[demo application][demo-app].
+This document describes how to set up and use Grafana Faro Web SDK. For a real-world reference instrumentation, see
+the [QuickPizza demo application][demo-app] — deployed live at
+[quickpizza.grafana-dev.com](https://quickpizza.grafana-dev.com) and instrumented with the current Faro packages.
 
 ## Before you begin
 
@@ -408,24 +409,9 @@ import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 ```
 
-## Dashboards
-
-Two example Grafana dashboards are included in this repository. Add them to your Grafana instance using the dashboard
-import function.
-
-[Web Application Dashboard][faro-app-dashboard]
-
-- monitor a web application using data collected by Faro Web SDK
-
-[Grafana Alloy app agent receiver dashboard][faro-agent-dashboard]
-
-- monitor Grafana Alloy app receiver integration
-
 [grafana-alloy-collect]: http://host:12345/collect
 [grafana-alloy-receiver-config]: https://grafana.com/docs/alloy/latest/reference/components/faro.receiver/
 [grafana-alloy-setup]: https://grafana.com/docs/alloy/latest/get-started/
 [opentelemetry-js]: https://opentelemetry.io/docs/instrumentation/js/
 [web-vitals]: https://github.com/GoogleChrome/web-vitals
-[demo-app]: ../../../demo
-[faro-agent-dashboard]: ../../../dashboards/app-agent-receiver.json
-[faro-app-dashboard]: ../../../dashboards/frontend-application.json
+[demo-app]: https://github.com/grafana/quickpizza

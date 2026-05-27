@@ -24,11 +24,8 @@ export default [
       '.eslintcache/**',
       '.husky/**',
       'coverage/**',
-      'cypress/videos/**',
-      'cypress/screenshots/**',
-      'demo/logs/**',
-      'demo/stats.html',
-      'demo/vite.config.ts.timestamp-*.mjs',
+      'e2e/smoke/cypress/videos/**',
+      'e2e/smoke/cypress/screenshots/**',
       '**/dist/**',
       '**/node_modules/**',
       // Logs
@@ -191,7 +188,7 @@ export default [
 
   // Configuration for Cypress spec and support files
   {
-    files: ['cypress/**/*.{js,ts}', 'e2e/smoke/cypress/**/*.{js,ts}'],
+    files: ['e2e/smoke/cypress/**/*.{js,ts}'],
     languageOptions: {
       globals: {
         cy: 'readonly',

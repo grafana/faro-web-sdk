@@ -2,7 +2,6 @@
   "packages": [
     "packages/*",
     "experimental/*",
-    "demo",
     "e2e/smoke"
   ],
   "version": "2.7.0",

@@ -1,1 +1,0 @@
-export { registerApiAuthRoutes } from './registerApiAuthRoutes';

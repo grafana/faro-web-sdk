@@ -52,27 +52,6 @@
           "jsonpath": "$['devDependencies']['@grafana/faro-core']"
         },
         { "type": "json", "path": "lerna.json", "jsonpath": "$.version" },
-        { "type": "json", "path": "demo/package.json", "jsonpath": "$.version" },
-        {
-          "type": "json",
-          "path": "demo/package.json",
-          "jsonpath": "$['dependencies']['@grafana/faro-core']"
-        },
-        {
-          "type": "json",
-          "path": "demo/package.json",
-          "jsonpath": "$['dependencies']['@grafana/faro-react']"
-        },
-        {
-          "type": "json",
-          "path": "demo/package.json",
-          "jsonpath": "$['dependencies']['@grafana/faro-web-sdk']"
-        },
-        {
-          "type": "json",
-          "path": "demo/package.json",
-          "jsonpath": "$['dependencies']['@grafana/faro-web-tracing']"
-        },
         { "type": "json", "path": "e2e/smoke/package.json", "jsonpath": "$.version" },
         {
           "type": "json",
