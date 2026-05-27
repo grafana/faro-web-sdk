@@ -8,6 +8,7 @@ import {
   LogLevel,
   ReactIntegration,
 } from '@grafana/faro-react';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
 const faro = initializeFaro({
   url: '/collect',
@@ -16,7 +17,7 @@ const faro = initializeFaro({
     version: '0.0.0',
     environment: 'test',
   },
-  instrumentations: [...getWebInstrumentations(), new ReactIntegration()],
+  instrumentations: [...getWebInstrumentations(), new ReactIntegration(), new TracingInstrumentation()],
 });
 
 function Thrower() {
@@ -39,6 +40,36 @@ function App() {
       <h1>Faro Web SDK smoke harness</h1>
       <button data-cy="btn-push-log" onClick={() => faro.api.pushLog(['smoke harness log'], { level: LogLevel.INFO })}>
         Push log
+      </button>
+      <button
+        data-cy="btn-push-event"
+        onClick={() => faro.api.pushEvent('smoke-harness-event', { source: 'smoke-harness' })}
+      >
+        Push event
+      </button>
+      <button
+        data-cy="btn-push-measurement"
+        onClick={() =>
+          faro.api.pushMeasurement({ type: 'smoke-harness-measurement', values: { duration: 42, count: 1 } })
+        }
+      >
+        Push measurement
+      </button>
+      <button data-cy="btn-push-error" onClick={() => faro.api.pushError(new Error('smoke harness pushError'))}>
+        Push error via API
+      </button>
+      <button
+        data-cy="btn-emit-span"
+        onClick={() => {
+          const otel = faro.api.getOTEL();
+          if (!otel) {
+            return;
+          }
+          const span = otel.trace.getTracer('smoke-harness').startSpan('smoke-harness-span');
+          span.end();
+        }}
+      >
+        Emit OTel span
       </button>
       <FaroErrorBoundary>
         <Thrower />

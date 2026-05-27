@@ -694,6 +694,7 @@ __metadata:
   dependencies:
     "@grafana/faro-core": "npm:^2.7.0"
     "@grafana/faro-react": "npm:^2.7.0"
+    "@grafana/faro-web-tracing": "npm:^2.7.0"
     "@types/react": "npm:19.2.14"
     "@types/react-dom": "npm:19.2.3"
     "@vitejs/plugin-react-swc": "npm:4.3.0"
