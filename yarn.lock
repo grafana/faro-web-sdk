@@ -987,6 +987,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@grafana/faro-smoke-harness@workspace:e2e/smoke":
+  version: 0.0.0-use.local
+  resolution: "@grafana/faro-smoke-harness@workspace:e2e/smoke"
+  dependencies:
+    "@grafana/faro-core": "npm:^2.7.0"
+    "@grafana/faro-react": "npm:^2.7.0"
+    "@types/react": "npm:19.2.14"
+    "@types/react-dom": "npm:19.2.3"
+    "@vitejs/plugin-react-swc": "npm:4.3.0"
+    cypress: "npm:15.15.0"
+    npm-run-all2: "npm:8.0.4"
+    react: "npm:19.2.6"
+    react-dom: "npm:19.2.6"
+    start-server-and-test: "npm:3.0.4"
+    vite: "npm:8.0.12"
+  languageName: unknown
+  linkType: soft
+
 "@grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http"

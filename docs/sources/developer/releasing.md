@@ -6,28 +6,42 @@ No manual `lerna version` runs and no direct pushes to `main` are required.
 ## How it works
 
 1. Every push to `main` triggers `.github/workflows/release-please.yml`.
-2. release-please scans conventional commits since the last release and either:
-   - opens a new "Release please" PR, or
-   - updates an existing one with the next version, regenerated CHANGELOG entries,
-     and bumped `package.json` / `lerna.json` versions across all publishable packages.
+2. release-please scans conventional commits since the last release and either
+   opens a new "chore: release …" PR or updates the existing one with the next
+   version, regenerated `CHANGELOG.md`, and bumped `package.json` / `lerna.json`
+   versions across all files listed in `release-please-config.json`.
 3. When a maintainer merges that Release PR, release-please creates the matching
-   `vX.Y.Z` git tag and a GitHub Release.
-4. The tag push triggers `.github/workflows/release.yml`, which runs the existing
-   test/e2e pipeline and publishes to npm via `lerna publish from-git` with provenance.
+   `vX.Y.Z` git tag and a GitHub Release. The merge commit (a push to `main`)
+   re-runs `release-please.yml`. Because `release-please` outputs
+   `releases_created: true` on this run, the chained `test`, `e2e`, and
+   `publish` jobs in the same workflow execute.
+4. The `publish` job runs `npm run publish -- from-package --yes` (which calls
+   `lerna publish from-package`), gated by the `publish` GitHub Environment
+   (manual approval, branch-restricted to `main`) and authenticated to npm via
+   Trusted Publishing (OIDC). npm-provenance is enabled via
+   `NPM_CONFIG_PROVENANCE=true`.
 
-All 6 publishable packages bump together (lockstep) via the `linked-versions`
-plugin in `release-please-config.json`.
+All publishable packages share one version because the config runs release-please
+in **single-component mode**: a single root entry in `packages` with an
+`extra-files` list that enumerates every workspace `package.json`'s `$.version`
+JSONPath. release-please rewrites each path with the new version on every
+release PR.
 
-## Packages excluded from release-please
+Internal cross-workspace dependency ranges (e.g. `@grafana/faro-web-tracing`
+depending on `@grafana/faro-web-sdk`) stay in sync by the same mechanism — each
+range is listed explicitly in `extra-files`.
 
-The `demo/` workspace (`@grafana/faro-demo`) is **intentionally not listed** in
-`release-please-config.json` or `.release-please-manifest.json`. It is a private
-package (`"private": true` in `demo/package.json`) used only for local
-development and end-to-end tests; it is never published to npm.
+## Packages excluded from npm publish
 
-Demo's internal dependency ranges (e.g. on `@grafana/faro-web-sdk`) are still
-kept in sync automatically by the `node-workspace` plugin during every release
-bump, so the demo continues to build against the latest local versions.
+Two workspaces are tracked by `extra-files` (so their versions and internal-dep
+ranges stay in sync with the publishable packages) but are **never published**:
+
+- `demo/` (`@grafana/faro-demo`)
+- `e2e/smoke/` (`@grafana/faro-smoke-harness`)
+
+Both are private (`"private": true` in their `package.json`). `lerna publish`
+skips private packages regardless of subcommand, and `npm publish` would refuse
+them outright.
 
 The legacy directories under `experimental/` (`instrumentation-fetch`,
 `instrumentation-xhr`, `instrumentation-performance-timeline`, `nextjs`, `vue`)

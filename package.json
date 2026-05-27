@@ -13,7 +13,8 @@
   "workspaces": [
     "packages/**",
     "experimental/**",
-    "demo"
+    "demo",
+    "e2e/*"
   ],
   "main": "index.js",
   "scripts": {
@@ -36,6 +37,7 @@
     "quality:e2e:ci:install": "cypress install",
     "quality:e2e:ci:run": "start-server-and-test start:demo:prod http://localhost:5173 quality:e2e",
     "quality:e2e:dev": "cypress open",
+    "quality:e2e:smoke:ci": "yarn workspace @grafana/faro-smoke-harness run e2e:ci",
     "quality:format": "run-p quality:format:*",
     "quality:format:root": "prettier --cache --cache-location=.cache/prettier/root -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:format:packages": "lerna run --parallel quality:format",
