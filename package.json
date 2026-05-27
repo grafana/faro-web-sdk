@@ -83,7 +83,6 @@
     "lerna": "9.0.7",
     "lint-staged": "17.0.4",
     "madge": "8.0.0",
-    "markdownlint": "0.40.0",
     "markdownlint-cli": "0.48.0",
     "npm-run-all2": "8.0.4",
     "prettier": "3.8.3",
