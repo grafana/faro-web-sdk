@@ -8,11 +8,8 @@
 .eslintcache
 .husky/_
 coverage
-cypress/videos
-cypress/screenshots
-demo/logs/*.log
-demo/stats.html
-demo/vite.config.ts.timestamp-*.mjs
+e2e/smoke/cypress/videos
+e2e/smoke/cypress/screenshots
 dist
 node_modules
 packages/core/src/version.ts
@@ -26,10 +23,6 @@ yarn-error.log*
 
 # Misc
 .DS_Store
-
-# App plugin
-infra/grafana/plugins/
-infra/grafana/plugins-provisioning/*.yaml
 
 # Yarn 4
 install-state.gz

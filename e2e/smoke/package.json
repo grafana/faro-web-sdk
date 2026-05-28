@@ -28,6 +28,7 @@
   "devDependencies": {
     "@grafana/faro-core": "^2.7.0",
     "@grafana/faro-react": "^2.7.0",
+    "@grafana/faro-web-tracing": "^2.7.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react-swc": "4.3.0",

@@ -1,1 +1,0 @@
-export { registerApiArticlesRoutes } from './registerApiArticlesRoutes';

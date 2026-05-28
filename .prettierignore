@@ -12,11 +12,8 @@
 .eslintcache
 .husky
 coverage
-cypress/videos
-cypress/screenshots
-demo/logs
-demo/stats.html
-demo/vite.config.ts.timestamp-*.mjs
+e2e/smoke/cypress/videos
+e2e/smoke/cypress/screenshots
 dist
 # Lerna reformats this as well
 lerna.json
@@ -32,9 +29,6 @@ yarn-error.log*
 # Misc
 .DS_Store
 
-# App plugin
-infra/grafana/plugins/
-infra/grafana/plugins-provisioning/*.yaml
 .yarn/releases/*.js
 
 /.nx/workspace-data
