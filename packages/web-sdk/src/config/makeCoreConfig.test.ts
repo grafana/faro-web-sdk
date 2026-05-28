@@ -277,4 +277,23 @@ describe('config', () => {
     );
     expect(navigationInstrumentation).toBeUndefined();
   });
+
+  it('disableSdkInitEvent defaults to false', () => {
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+    });
+
+    expect(config?.disableSdkInitEvent).toBe(false);
+  });
+
+  it('disableSdkInitEvent can be overridden via browser config', () => {
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      disableSdkInitEvent: true,
+    });
+
+    expect(config?.disableSdkInitEvent).toBe(true);
+  });
 });

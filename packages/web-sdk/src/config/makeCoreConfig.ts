@@ -48,6 +48,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   const {
     // properties with default values
     dedupe = true,
+    disableSdkInitEvent = false,
     eventDomain = defaultEventDomain,
     globalObjectKey = defaultGlobalObjectKey,
     instrumentations = getWebInstrumentations(),
@@ -81,6 +82,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
       ...browserConfig.batching,
     },
     dedupe: dedupe,
+    disableSdkInitEvent,
     globalObjectKey,
     instrumentations: getFilteredInstrumentations(instrumentations, browserConfig),
     internalLoggerLevel,

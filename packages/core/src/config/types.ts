@@ -67,6 +67,13 @@ export interface Config<P = APIEvent> {
   paused: boolean;
 
   /**
+   * When true, suppresses the one-time SDK init event that describes the active SDK
+   * configuration (name, version, active instrumentations and their versions).
+   * The init event is enabled by default. (default: false)
+   */
+  disableSdkInitEvent: boolean;
+
+  /**
    * Prevent Faro from exposing itself to the global object (default: false)
    */
   preventGlobalExposure: boolean;

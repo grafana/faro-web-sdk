@@ -5,6 +5,7 @@ import { initializeInternalLogger } from './internalLogger';
 import { initializeMetas, registerInitialMetas } from './metas';
 import { isInternalFaroOnGlobalObject, registerFaro } from './sdk';
 import type { Faro } from './sdk';
+import { pushSdkInitEvent } from './sdkInit';
 import { initializeTransports, registerInitialTransports } from './transports';
 import { initializeUnpatchedConsole } from './unpatchedConsole';
 
@@ -33,6 +34,8 @@ export function initializeFaro(config: Config): Faro {
   registerInitialMetas(faro);
   registerInitialTransports(faro);
   registerInitialInstrumentations(faro);
+
+  pushSdkInitEvent(faro);
 
   return faro;
 }

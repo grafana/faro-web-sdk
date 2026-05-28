@@ -9,6 +9,13 @@ export interface Instrumentation extends Extension {
   initialize: VoidFunction;
 
   destroy?: VoidFunction;
+
+  /**
+   * Optionally provide additional context to include in the one-time SDK init beacon.
+   * For example, the React integration can surface the detected react-router version here.
+   * Values are stringified before being sent.
+   */
+  getInitContext?: () => Record<string, unknown>;
 }
 
 export interface Instrumentations {
