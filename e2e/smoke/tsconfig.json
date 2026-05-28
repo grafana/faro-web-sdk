@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "rootDir": ".",
+    "target": "ES2022",
+    "types": ["node", "vite/client", "cypress"]
+  },
+  "include": ["./src/**/*.ts", "./src/**/*.tsx", "./cypress/**/*.ts", "./vite.config.ts", "./cypress.config.ts"]
+}

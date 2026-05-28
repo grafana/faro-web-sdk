@@ -27,6 +27,7 @@ export interface MetaSDK {
 
 export interface MetaApp {
   bundleId?: string;
+  gitHash?: string;
   environment?: string;
   installationId?: string;
   name?: string;

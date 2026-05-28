@@ -2,9 +2,10 @@
   "packages": [
     "packages/*",
     "experimental/*",
-    "demo"
+    "demo",
+    "e2e/smoke"
   ],
-  "version": "2.6.3",
+  "version": "2.7.0",
   "npmClient": "yarn",
   "$schema": "node_modules/lerna/schemas/lerna-schema.json"
 }

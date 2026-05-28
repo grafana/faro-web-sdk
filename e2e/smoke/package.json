@@ -1,0 +1,41 @@
+{
+  "name": "@grafana/faro-smoke-harness",
+  "packageManager": "yarn@4.14.1",
+  "version": "2.7.0",
+  "description": "Minimal Vite + React harness and Cypress smoke specs for Faro Web SDK",
+  "license": "Apache-2.0",
+  "author": "Grafana Labs",
+  "homepage": "https://github.com/grafana/faro-web-sdk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/faro-web-sdk.git",
+    "directory": "e2e/smoke"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "exit 0",
+    "quality:test": "exit 0",
+    "quality:lint": "eslint --cache --cache-location ../../.cache/eslint/smoke \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:fix": "eslint --fix --cache --cache-location ../../.cache/eslint/smoke \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:circular-deps": "exit 0",
+    "e2e": "cypress run --headless --browser chrome",
+    "e2e:ci": "run-s 'e2e:ci:*'",
+    "e2e:ci:install": "cypress install",
+    "e2e:ci:run": "start-server-and-test start http://127.0.0.1:5174 e2e"
+  },
+  "devDependencies": {
+    "@grafana/faro-core": "^2.7.0",
+    "@grafana/faro-react": "^2.7.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react-swc": "4.3.0",
+    "cypress": "15.15.0",
+    "npm-run-all2": "8.0.4",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "start-server-and-test": "3.0.4",
+    "vite": "8.0.12"
+  }
+}

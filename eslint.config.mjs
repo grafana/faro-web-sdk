@@ -189,6 +189,25 @@ export default [
     },
   },
 
+  // Configuration for Cypress spec and support files
+  {
+    files: ['cypress/**/*.{js,ts}', 'e2e/smoke/cypress/**/*.{js,ts}'],
+    languageOptions: {
+      globals: {
+        cy: 'readonly',
+        Cypress: 'readonly',
+        context: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        before: 'readonly',
+        beforeEach: 'readonly',
+        after: 'readonly',
+        afterEach: 'readonly',
+      },
+    },
+  },
+
   // Configuration for test files
   {
     files: [
