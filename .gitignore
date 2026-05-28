@@ -8,8 +8,8 @@
 .eslintcache
 .husky/_
 coverage
-e2e/smoke/cypress/videos
-e2e/smoke/cypress/screenshots
+e2e/smoke/test-results
+e2e/smoke/playwright-report
 dist
 node_modules
 packages/core/src/version.ts
