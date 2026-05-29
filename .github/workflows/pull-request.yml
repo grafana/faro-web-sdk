@@ -58,23 +58,13 @@ jobs:
   e2e-smoke:
     permissions:
       contents: read
-
+    timeout-minutes: 10
     runs-on: ubuntu-latest
-    container:
-      image: cypress/browsers:26.0.0@sha256:87a2e90f7d8c6531e6d834ad6354b9d59cf6eabe72022bd68a53c52ed5a247e0
-      options: --user 1001
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-
-      - name: Enable Corepack
-        run: |
-          mkdir -p "$HOME/.local"
-          npm install -g --prefix "$HOME/.local" corepack
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          "$HOME/.local/bin/corepack" enable --install-directory "$HOME/.local/bin"
 
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
@@ -83,13 +73,21 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
+
+      - name: Install Playwright browsers
+        run: yarn workspace @grafana/faro-smoke-harness exec playwright install --with-deps chromium
 
       - name: Build
         run: yarn build
 
       - name: Smoke E2E tests
-        uses: cypress-io/github-action@be9c221b90b2fb97daedfa8699d1f08b662efc70
+        run: yarn quality:e2e:smoke:ci
+
+      - name: Upload Playwright test results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
         with:
-          command: yarn workspace @grafana/faro-smoke-harness run e2e:ci
-          install: false
+          name: playwright-test-results
+          path: e2e/smoke/test-results/
+          retention-days: 7
