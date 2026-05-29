@@ -29,11 +29,9 @@
       "schedule": ["before 5am on Monday", "before 5am on Wednesday", "before 5am on Friday"]
     },
     {
-      "description": "Automerged patch updates get no human review, so hold them for an extended cooldown (Renovate recommends 14 days when automerging)",
+      "description": "Group patch updates together",
       "matchUpdateTypes": ["patch"],
-      "groupName": "patch updates",
-      "automerge": true,
-      "minimumReleaseAge": "14 days"
+      "groupName": "patch updates"
     },
     {
       "description": "Restrict ua-parser-js to version below 2.x.x as it changes licensing model with v2 onwards",
