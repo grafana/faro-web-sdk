@@ -10,6 +10,12 @@ permissions:
   id-token: write
 
 jobs:
+  # Create the release PR (or, on a merged release PR, tag the release). This
+  # job is privileged: it mints a GitHub App token via Vault OIDC and uses it
+  # to push commits/tags/PR. It MUST NOT execute untrusted code from the
+  # release-please branch — that happens in the unprivileged
+  # `refresh-release-pr` job, and `apply-refresh` only does pure-data
+  # operations (git apply + git push) against a path-allow-listed patch.
   release-please:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -23,7 +29,10 @@ jobs:
       id-token: write
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
+      prs_created: ${{ steps.release.outputs.prs_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+      pr_head_sha: ${{ steps.resolve-pr.outputs.sha }}
+      pr_head_ref: ${{ steps.resolve-pr.outputs.ref }}
 
     steps:
       - name: Mint GitHub App token
@@ -40,72 +49,176 @@ jobs:
           manifest-file: .release-please-manifest.json
           target-branch: main
 
-      # release-please rewrites cross-package dep ranges in package.json (e.g.
-      # `@grafana/faro-core` from `^2.5.0` to `^2.6.0`) but does not touch
-      # yarn.lock. CI runs `yarn install --immutable`, which fails on the
-      # release PR because the resolution would change. Refresh yarn.lock on
-      # the release branch so CI passes.
-      - name: Resolve release PR branch
-        id: release-branch
+      # Resolve the release PR's head commit SHA via the GitHub API, so the
+      # downstream refresh jobs pin their checkout to that SHA. Anyone with
+      # write access to the repo can push commits to the release-please
+      # branch; pinning to release-please's exact SHA ensures an attacker-
+      # pushed commit cannot enter the privileged `apply-refresh` job below.
+      - name: Resolve release PR head
+        id: resolve-pr
         if: ${{ steps.release.outputs.prs_created == 'true' }}
         env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           PR_JSON: ${{ steps.release.outputs.pr }}
         run: |
-          BRANCH="$(echo "$PR_JSON" | jq -r '.headBranchName')"
-          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          PR_NUMBER="$(echo "$PR_JSON" | jq -r '.number')"
+          PR_DATA="$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER")"
+          SHA="$(echo "$PR_DATA" | jq -r '.head.sha')"
+          REF="$(echo "$PR_DATA" | jq -r '.head.ref')"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout release PR branch
-        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+  # Refresh the release PR's yarn.lock and reformat its CHANGELOG in an
+  # unprivileged context. This job has no App token, no secrets, and only
+  # `contents: read`. If a malicious lifecycle script fires here (e.g. via a
+  # compromised transitive dev dep on main), it has nothing to steal — at
+  # worst it can tamper with the patch artifact, which `apply-refresh`
+  # validates against a strict path allow-list before applying.
+  #
+  # `yarn install --mode skip-build` further reduces surface by skipping all
+  # install/postinstall lifecycle scripts. prettier/lerna/eslint load as
+  # plain JS modules and don't need any script to fire.
+  refresh-release-pr:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.prs_created == 'true' && needs.release-please.outputs.pr_head_sha != '' && needs.release-please.outputs.pr_head_sha != 'null' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      has_changes: ${{ steps.gen-patch.outputs.has_changes }}
+
+    steps:
+      - name: Checkout release PR head commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ steps.release-branch.outputs.branch }}
-          token: ${{ steps.app-token.outputs.token }}
-          persist-credentials: true
+          ref: ${{ needs.release-please.outputs.pr_head_sha }}
+          persist-credentials: false
 
       - name: Setup Node.js
-        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
           node-version-file: .nvmrc
           package-manager-cache: false
 
-      # Two cleanups happen here:
+      # Two cleanups happen here on the release PR's content:
       #   1. Refresh yarn.lock — release-please rewrites cross-package dep
       #      ranges in package.json but does not touch yarn.lock. The Pull
-      #      Request workflow runs `yarn install --immutable`, which
-      #      fails on the release PR if the resolution would change.
-      #   2. Run `yarn quality:lint:fix` — the project's prettier config
-      #      normalizes markdown bullets to `-`, while release-please writes
-      #      `*`. The Pull Request workflow runs `yarn quality:lint:fix` and
-      #      then `git diff --exit-code`, which fails if CHANGELOG.md needs
-      #      reformatting. Pre-format here so CI is clean.
-      - name: Refresh yarn.lock and format release PR
-        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+      #      Request workflow runs `yarn install --immutable`, which fails on
+      #      the release PR if the resolution would change.
+      #   2. Reformat CHANGELOG — release-please writes markdown bullets as
+      #      `*`, while the project's prettier config normalizes to `-`. The
+      #      Pull Request workflow runs `yarn quality:lint:fix` and then
+      #      `git diff --exit-code`, which fails if CHANGELOG.md needs
+      #      reformatting.
+      - name: Refresh lockfile and format release files
         run: |
           set -euo pipefail
           corepack enable
-          # Yarn berry auto-enables hardened mode on public PR workflows,
-          # which forbids modifying yarn.lock with a plain `yarn install`.
-          # `--mode update-lockfile` writes the lockfile without installing
+          # Yarn berry auto-enables hardened mode on public PR workflows, which
+          # forbids modifying yarn.lock with a plain `yarn install`. `--mode
+          # update-lockfile` writes the lockfile without installing
           # node_modules, bypassing the hardened-mode check.
           yarn install --mode update-lockfile
-          # Now that the lockfile matches package.json, do a real install
-          # so prettier/lerna are available for the lint:fix step.
-          # `--immutable` is allowed in hardened mode because the lockfile
-          # is already in sync.
-          yarn install --immutable
+          # Now that the lockfile matches package.json, do a real install so
+          # prettier/lerna are available for the lint:fix step. `--immutable`
+          # is allowed in hardened mode because the lockfile is already in
+          # sync. `--mode skip-build` skips all install/postinstall lifecycle
+          # scripts — the lint:fix tooling doesn't need them.
+          yarn install --immutable --mode skip-build
           yarn quality:lint:fix
+
+      - name: Generate refresh patch
+        id: gen-patch
+        run: |
+          set -euo pipefail
           if git diff --quiet; then
             echo "No lockfile or formatting changes."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          git diff > refresh.patch
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload refresh patch artifact
+        if: ${{ steps.gen-patch.outputs.has_changes == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-pr-refresh-patch
+          path: refresh.patch
+          retention-days: 1
+          if-no-files-found: error
+
+  # Apply the refresh patch to the release PR branch using the App token. This
+  # job has the privileged token in scope but does NOT execute any code from
+  # the checked-out content — only `git apply` (a data operation, no code
+  # execution) and `git push`. The patch is validated against a strict path
+  # allow-list before apply: only `yarn.lock` and `**/CHANGELOG.md` are
+  # accepted, so even if `refresh-release-pr` were compromised, the worst it
+  # could push under the bot identity is content in those two files.
+  apply-refresh:
+    needs: [release-please, refresh-release-pr]
+    if: ${{ needs.refresh-release-pr.outputs.has_changes == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Mint GitHub App token
+        id: app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@259ba21cb3ff07724f331e26d926d655d24b317b # create-github-app-token/v0.2.3
+        with:
+          github_app: app-o11y-kwl-ci
+
+      - name: Checkout release PR head commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ needs.release-please.outputs.pr_head_sha }}
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: true
+
+      - name: Download refresh patch
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-pr-refresh-patch
+          path: .
+
+      # Strict path allow-list. The patch may only touch yarn.lock or any
+      # CHANGELOG.md (release-please writes one per package). Any other path
+      # causes this step to fail rather than push attacker-controlled content
+      # under the bot identity.
+      - name: Validate patch paths against allow-list
+        run: |
+          set -euo pipefail
+          TOUCHED="$(git apply --numstat refresh.patch | awk -F'\t' '{print $3}' | sort -u)"
+          echo "Patch touches:"
+          printf '%s\n' "$TOUCHED"
+          DISALLOWED="$(printf '%s\n' "$TOUCHED" | grep -vE '^(yarn\.lock|.*CHANGELOG\.md)$' || true)"
+          if [ -n "$DISALLOWED" ]; then
+            echo "Refusing to apply: patch touches paths outside the allow-list:"
+            printf '%s\n' "$DISALLOWED"
+            exit 1
+          fi
+
+      - name: Apply patch and push to release PR branch
+        env:
+          BRANCH: ${{ needs.release-please.outputs.pr_head_ref }}
+        run: |
+          set -euo pipefail
+          git apply refresh.patch
           # Match the identity the release-please-action uses for its commits
           # on the same branch, so this commit appears as the same bot.
           git config user.name 'app-o11y-kwl-ci[bot]'
           git config user.email 'app-o11y-kwl-ci[bot]@users.noreply.github.com'
           git add -A
           git commit -m 'chore: refresh yarn.lock and format release files'
-          git push
+          # actions/checkout above left us in detached HEAD on the pinned SHA.
+          # Push HEAD to the release-please branch by name. A plain push (no
+          # force) fails as non-fast-forward if anyone else moved the branch
+          # in the meantime — the desired safety: we never override an
+          # unexpected commit silently.
+          git push origin "HEAD:$BRANCH"
 
   # Gate publish on release-please actually cutting a release this run.
   # Triggering off `push: main` (instead of the previous `push: tags`) means
