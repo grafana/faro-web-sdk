@@ -195,9 +195,7 @@ describe('getStackFramesFromError', () => {
 
     const result = getStackFramesFromError(error);
 
-    expect(result).toEqual([
-      buildStackFrame('http://localhost:8080/file.js', 'HTMLButtonElement.onclick', 107, 146),
-    ]);
+    expect(result).toEqual([buildStackFrame('http://localhost:8080/file.js', 'HTMLButtonElement.onclick', 107, 146)]);
   });
 
   it('should still parse a stack line at exactly the max line length', () => {
