@@ -181,6 +181,42 @@ describe('getStackFramesFromError', () => {
       buildStackFrame('http://path/to/file.js', 'bar', 108, 168),
     ]);
   });
+
+  it('should skip stack lines that exceed the max line length', () => {
+    const longFilename = `http://localhost:8080/${'a'.repeat(1100)}.js`;
+    const error: any = {
+      message: 'Default error',
+      name: 'Error',
+      stack:
+        'Error: Default error\n' +
+        `    at longFrame (${longFilename}:41:27)\n` +
+        '    at HTMLButtonElement.onclick (http://localhost:8080/file.js:107:146)',
+    };
+
+    const result = getStackFramesFromError(error);
+
+    expect(result).toEqual([
+      buildStackFrame('http://localhost:8080/file.js', 'HTMLButtonElement.onclick', 107, 146),
+    ]);
+  });
+
+  it('should still parse a stack line at exactly the max line length', () => {
+    const prefix = '    at boundaryFrame (http://localhost:8080/';
+    const suffix = '.js:41:27)';
+    const filler = 'a'.repeat(1024 - prefix.length - suffix.length);
+    const line = `${prefix}${filler}${suffix}`;
+    expect(line.length).toBe(1024);
+
+    const error: any = {
+      message: 'Default error',
+      name: 'Error',
+      stack: `Error: Default error\n${line}`,
+    };
+
+    const result = getStackFramesFromError(error);
+
+    expect(result).toEqual([buildStackFrame(`http://localhost:8080/${filler}.js`, 'boundaryFrame', 41, 27)]);
+  });
 });
 
 /* Taken from: https://github.com/stacktracejs/error-stack-parser/blob/master/spec/fixtures/captured-errors.js */
