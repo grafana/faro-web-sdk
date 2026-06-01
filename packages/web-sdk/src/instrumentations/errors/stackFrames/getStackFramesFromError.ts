@@ -17,8 +17,8 @@ import {
 } from './const';
 import { getDataFromSafariExtensions } from './getDataFromSafariExtensions';
 
+// Cap individual stack lines to bound runtime of the stack parsing regexes (avoid pathological backtracking on crafted input).
 const MAX_STACK_LINE_LENGTH = 1024;
-
 export function getStackFramesFromError(error: ExtendedError): ExceptionStackFrame[] {
   let lines: string[] = [];
 
