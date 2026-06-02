@@ -7,6 +7,14 @@
   "separateMultipleMajor": true,
   "prHourlyLimit": 2,
   "prConcurrentLimit": 10,
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"],
+    "prPriority": 10
+  },
   "packageRules": [
     {
       "description": "Group npm dependencies",
@@ -23,17 +31,7 @@
     {
       "description": "Group patch updates together",
       "matchUpdateTypes": ["patch"],
-      "groupName": "patch updates",
-      "automerge": true
-    },
-    {
-      "description": "Prioritize security updates",
-      "matchDatasources": ["npm"],
-      "vulnerabilityAlerts": {
-        "enabled": true
-      },
-      "labels": ["security"],
-      "prPriority": 10
+      "groupName": "patch updates"
     },
     {
       "description": "Restrict ua-parser-js to version below 2.x.x as it changes licensing model with v2 onwards",

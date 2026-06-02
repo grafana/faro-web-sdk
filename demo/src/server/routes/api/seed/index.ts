@@ -1,1 +1,0 @@
-export { registerApiSeedRoutes } from './registerApiSeedRoutes';
