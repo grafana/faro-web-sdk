@@ -5,34 +5,39 @@ on:
     branches:
       - main
 
+# Hardening: default to read-only at the workflow level; jobs elevate id-token only where OIDC is needed.
 permissions:
   contents: read
-  id-token: write
+
+# Hardening: avoid concurrent release/publish runs (risk of double-publishing).
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    # release-please writes (commit, tag, release, PR) are performed using a
-    # token minted by `grafana/shared-workflows/actions/create-github-app-token`,
-    # which calls the Vault `vault-github-app-mount` permission set defined in
-    # deployment_tools at terraform/repositories/faro-web-sdk/github-app-configs/config.yaml.
-    # `id-token: write` lets that action authenticate to Vault via OIDC.
     permissions:
       contents: read
-      id-token: write
+      id-token: write # needed to mint the GitHub App token via OIDC (GATB)
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
 
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit # start with audit; switch to "block" + allowed-endpoints once traffic is mapped
+
       - name: Mint GitHub App token
         id: app-token
-        uses: grafana/shared-workflows/actions/create-github-app-token@259ba21cb3ff07724f331e26d926d655d24b317b # create-github-app-token/v0.2.3
+        uses: grafana/shared-workflows/actions/create-github-app-token@259ba21cb3ff07724f331e26d926d655d24b317b
         with:
           github_app: app-o11y-kwl-ci
 
-      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
         id: release
         with:
           token: ${{ steps.app-token.outputs.token }}
@@ -40,11 +45,6 @@ jobs:
           manifest-file: .release-please-manifest.json
           target-branch: main
 
-      # release-please rewrites cross-package dep ranges in package.json (e.g.
-      # `@grafana/faro-core` from `^2.5.0` to `^2.6.0`) but does not touch
-      # yarn.lock. CI runs `yarn install --immutable`, which fails on the
-      # release PR because the resolution would change. Refresh yarn.lock on
-      # the release branch so CI passes.
       - name: Resolve release PR branch
         id: release-branch
         if: ${{ steps.release.outputs.prs_created == 'true' }}
@@ -56,77 +56,69 @@ jobs:
 
       - name: Checkout release PR branch
         if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: ${{ steps.release-branch.outputs.branch }}
-          token: ${{ steps.app-token.outputs.token }}
-          persist-credentials: true
+          persist-credentials: false # Hardening: keep the token OUT of git config while yarn install
 
       - name: Setup Node.js
         if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
         with:
           node-version-file: .nvmrc
           package-manager-cache: false
 
-      # Two cleanups happen here:
-      #   1. Refresh yarn.lock — release-please rewrites cross-package dep
-      #      ranges in package.json but does not touch yarn.lock. The Pull
-      #      Request workflow runs `yarn install --immutable`, which
-      #      fails on the release PR if the resolution would change.
-      #   2. Run `yarn quality:lint:fix` — the project's prettier config
-      #      normalizes markdown bullets to `-`, while release-please writes
-      #      `*`. The Pull Request workflow runs `yarn quality:lint:fix` and
-      #      then `git diff --exit-code`, which fails if CHANGELOG.md needs
-      #      reformatting. Pre-format here so CI is clean.
       - name: Refresh yarn.lock and format release PR
+        id: refresh
         if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
         run: |
           set -euo pipefail
           corepack enable
-          # Yarn berry auto-enables hardened mode on public PR workflows,
-          # which forbids modifying yarn.lock with a plain `yarn install`.
-          # `--mode update-lockfile` writes the lockfile without installing
-          # node_modules, bypassing the hardened-mode check.
           yarn install --mode update-lockfile
-          # Now that the lockfile matches package.json, do a real install
-          # so prettier/lerna are available for the lint:fix step.
-          # `--immutable` is allowed in hardened mode because the lockfile
-          # is already in sync.
           yarn install --immutable
           yarn quality:lint:fix
           if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No lockfile or formatting changes."
             exit 0
           fi
-          # Match the identity the release-please-action uses for its commits
-          # on the same branch, so this commit appears as the same bot.
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # Hardening: the token is introduced only HERE (after the untrusted install code has run),
+      # as env in a dedicated push step — not persisted in git config for the whole job.
+      - name: Commit and push release fixes
+        if: ${{ steps.refresh.outputs.changed == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          BRANCH: ${{ steps.release-branch.outputs.branch }}
+        run: |
+          set -euo pipefail
           git config user.name 'app-o11y-kwl-ci[bot]'
           git config user.email 'app-o11y-kwl-ci[bot]@users.noreply.github.com'
           git add -A
           git commit -m 'chore: refresh yarn.lock and format release files'
-          git push
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${BRANCH}"
 
-  # Gate publish on release-please actually cutting a release this run.
-  # Triggering off `push: main` (instead of the previous `push: tags`) means
-  # the publish trigger is bound to the branch-protected main branch, not to
-  # tag creation — so a stray or malicious tag cannot kick off an npm publish.
   test:
     needs: release-please
     if: ${{ needs.release-please.outputs.releases_created == 'true' }}
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Harden the runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
         with:
           node-version-file: .nvmrc
           registry-url: 'https://registry.npmjs.org'
@@ -150,30 +142,30 @@ jobs:
   publish:
     permissions:
       contents: read
-      id-token: write
+      id-token: write # npm provenance / trusted publishing (OIDC)
 
     runs-on: ubuntu-latest
     needs: [release-please, test]
     if: ${{ needs.release-please.outputs.releases_created == 'true' }}
-    # Binds the job to the `publish` GitHub Environment. The environment's
-    # protection rules (required reviewers, deployment branch restricted to
-    # `main`) gate when this job actually runs, and its name is included in
-    # the OIDC token's `environment` claim so npm Trusted Publishing can pin
-    # against it.
-    environment: publish
+    environment: publish # Hardening: protect this environment with required reviewers + branch restriction
 
     env:
       NPM_CONFIG_ACCESS: public
       NPM_CONFIG_PROVENANCE: true
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Harden the runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
         with:
           node-version-file: .nvmrc
           registry-url: 'https://registry.npmjs.org'
@@ -185,10 +177,7 @@ jobs:
       - name: Build
         run: yarn build
 
-      # `from-package` reads versions from each `package.json` and publishes
-      # any version not already present on npm. release-please tags the repo
-      # with a single `v<version>` tag, so the previous `from-git` flow (which
-      # expects per-package `<name>@<version>` tags from `lerna version`)
-      # would publish nothing.
       - name: Publish package to NPM
         run: npm run publish -- from-package --yes
+        # Hardening: use npm trusted publishing (OIDC) instead of a long-lived NPM_TOKEN.
+        # id-token: write is already granted — then NODE_AUTH_TOKEN/NPM_TOKEN can be removed entirely.
