@@ -4,14 +4,13 @@
 
 ## [2.7.1](https://github.com/grafana/faro-web-sdk/compare/v2.7.0...v2.7.1) (2026-06-03)
 
-
 ### Bug Fixes
 
-* **core:** use crypto.getRandomValues in genShortID ([#2108](https://github.com/grafana/faro-web-sdk/issues/2108)) ([7f54972](https://github.com/grafana/faro-web-sdk/commit/7f549728a023b0ac22bcd5e141fad22dea0347d9))
-* **deps:** regenerate yarn.lock to drop stale semver descriptor ([#2107](https://github.com/grafana/faro-web-sdk/issues/2107)) ([9ada1a0](https://github.com/grafana/faro-web-sdk/commit/9ada1a06630b8b4aae0769f96d868453e1c57b5e))
-* **instrumentation:** incomplete regular expression for hostnames ([#2096](https://github.com/grafana/faro-web-sdk/issues/2096)) ([fc43fb5](https://github.com/grafana/faro-web-sdk/commit/fc43fb581820949d4a3eb8ce46e426d6c6582932))
-* **react:** import unknownString from declared @grafana/faro-web-sdk ([#2116](https://github.com/grafana/faro-web-sdk/issues/2116)) ([28e1efd](https://github.com/grafana/faro-web-sdk/commit/28e1efd1e3a07ec0f75e3ad28eec6f742191a000))
-* **web-sdk:** cap stack-frame line length to bound regex backtracking ([#2109](https://github.com/grafana/faro-web-sdk/issues/2109)) ([b484c31](https://github.com/grafana/faro-web-sdk/commit/b484c31ac1b6614eaea43802ef332322f9ab3716))
+- **core:** use crypto.getRandomValues in genShortID ([#2108](https://github.com/grafana/faro-web-sdk/issues/2108)) ([7f54972](https://github.com/grafana/faro-web-sdk/commit/7f549728a023b0ac22bcd5e141fad22dea0347d9))
+- **deps:** regenerate yarn.lock to drop stale semver descriptor ([#2107](https://github.com/grafana/faro-web-sdk/issues/2107)) ([9ada1a0](https://github.com/grafana/faro-web-sdk/commit/9ada1a06630b8b4aae0769f96d868453e1c57b5e))
+- **instrumentation:** incomplete regular expression for hostnames ([#2096](https://github.com/grafana/faro-web-sdk/issues/2096)) ([fc43fb5](https://github.com/grafana/faro-web-sdk/commit/fc43fb581820949d4a3eb8ce46e426d6c6582932))
+- **react:** import unknownString from declared @grafana/faro-web-sdk ([#2116](https://github.com/grafana/faro-web-sdk/issues/2116)) ([28e1efd](https://github.com/grafana/faro-web-sdk/commit/28e1efd1e3a07ec0f75e3ad28eec6f742191a000))
+- **web-sdk:** cap stack-frame line length to bound regex backtracking ([#2109](https://github.com/grafana/faro-web-sdk/issues/2109)) ([b484c31](https://github.com/grafana/faro-web-sdk/commit/b484c31ac1b6614eaea43802ef332322f9ab3716))
 
 ## [2.7.0](https://github.com/grafana/faro-web-sdk/compare/v2.6.3...v2.7.0) (2026-05-20)
 
