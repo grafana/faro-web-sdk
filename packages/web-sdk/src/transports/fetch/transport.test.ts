@@ -699,7 +699,7 @@ describe('FetchTransport (Worker path)', () => {
     expect(mockWorkerInstance.postMessage).toHaveBeenCalledTimes(1);
   });
 
-  it('handles send-error response from worker', async () => {
+  it('falls back to sendDirect when worker reports send-error', async () => {
     const transport = createWorkerTransport();
 
     mockWorkerInstance.postMessage.mockImplementation(() => {
@@ -712,6 +712,7 @@ describe('FetchTransport (Worker path)', () => {
     await transport.send([item]);
 
     expect(mockWorkerInstance.postMessage).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to sendDirect when postMessage throws DataCloneError', async () => {

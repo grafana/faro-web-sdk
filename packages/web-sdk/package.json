@@ -41,7 +41,7 @@
     "build:compile:bundle": "run-s 'build:compile:bundle:*'",
     "build:compile:bundle:create": "rollup -c ./rollup.config.js",
     "build:compile:bundle:remove-extras": "rimraf dist/bundle/dist",
-    "watch": "run-p 'watch:compile:*'",
+    "watch": "npm-run-all2 -s build:worker -p 'watch:compile:*'",
     "watch:compile:cjs": "yarn build:compile:cjs -w",
     "watch:compile:esm": "yarn build:compile:esm -w",
     "clean": "rimraf dist/ yarn-error.log",

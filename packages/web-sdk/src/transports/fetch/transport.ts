@@ -101,6 +101,12 @@ export class FetchTransport extends BaseTransport {
     }
     this.pendingWorkerRequests.delete(data.id);
 
+    if (data.type === 'send-error') {
+      this.logError('Worker transport failed:', data.error);
+      pending.reject(new Error(data.error ?? 'Worker send failed'));
+      return;
+    }
+
     try {
       switch (data.type) {
         case 'send-result':
@@ -114,10 +120,6 @@ export class FetchTransport extends BaseTransport {
             this.disabledUntil = new Date(data.disabledUntil);
             this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
           }
-          break;
-
-        case 'send-error':
-          this.logError('Worker transport failed:', data.error);
           break;
       }
     } finally {
