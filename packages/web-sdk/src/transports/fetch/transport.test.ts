@@ -24,8 +24,12 @@ const fetch = jest.fn(() =>
 
 (global as any).fetch = fetch;
 
-// jsdom doesn't provide web stream globals — use Node's implementations
-const { ReadableStream: NodeReadableStream, WritableStream: NodeWritableStream } = require('node:stream/web');
+// jsdom doesn't provide web stream globals or Response — use Node's implementations
+const {
+  ReadableStream: NodeReadableStream,
+  WritableStream: NodeWritableStream,
+  CompressionStream: NodeCompressionStream,
+} = require('node:stream/web');
 
 if (typeof globalThis.ReadableStream === 'undefined') {
   (globalThis as any).ReadableStream = NodeReadableStream;
@@ -33,30 +37,9 @@ if (typeof globalThis.ReadableStream === 'undefined') {
 if (typeof globalThis.WritableStream === 'undefined') {
   (globalThis as any).WritableStream = NodeWritableStream;
 }
-
-class MockCompressionStream {
-  readable: ReadableStream;
-  writable: WritableStream;
-
-  constructor(_format: string) {
-    let controller: ReadableStreamDefaultController;
-    this.readable = new ReadableStream({
-      start(c) {
-        controller = c;
-      },
-    });
-    this.writable = new WritableStream({
-      write(chunk) {
-        controller.enqueue(chunk);
-      },
-      close() {
-        controller.close();
-      },
-    });
-  }
+if (typeof globalThis.CompressionStream === 'undefined') {
+  (globalThis as any).CompressionStream = NodeCompressionStream;
 }
-
-(global as any).CompressionStream = MockCompressionStream;
 
 const mockSessionId = '123';
 
@@ -100,7 +83,6 @@ describe('FetchTransport', () => {
   it('will send event over fetch', () => {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
-      requestCompression: false,
     });
 
     transport.metas.value = { session: { id: mockSessionId } };
@@ -125,7 +107,6 @@ describe('FetchTransport', () => {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
       bufferSize: 3,
-      requestCompression: false,
     });
 
     transport.metas.value = { session: { id: mockSessionId } };
@@ -146,7 +127,6 @@ describe('FetchTransport', () => {
       url: 'http://example.com/collect',
       defaultRateLimitBackoffMs: 1000,
       getNow: () => now,
-      requestCompression: false,
     });
 
     transport.metas.value = { session: { id: mockSessionId } };
@@ -181,7 +161,6 @@ describe('FetchTransport', () => {
       url: 'http://example.com/collect',
       defaultRateLimitBackoffMs: 1000,
       getNow: () => now,
-      requestCompression: false,
     });
 
     transport.metas.value = { session: { id: mockSessionId } };
@@ -217,7 +196,6 @@ describe('FetchTransport', () => {
       url: 'http://example.com/collect',
       defaultRateLimitBackoffMs: 1000,
       getNow: () => now,
-      requestCompression: false,
     });
 
     transport.metas.value = { session: { id: mockSessionId } };
@@ -249,7 +227,6 @@ describe('FetchTransport', () => {
   it('will turn off keepalive if the payload length is over 60_000', async () => {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
-      requestCompression: false,
     });
 
     transport.metas.value = { session: { id: mockSessionId } };
@@ -295,7 +272,6 @@ describe('FetchTransport', () => {
   it('will add static header values', () => {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
-      requestCompression: false,
       requestOptions: {
         headers: {
           Authorization: 'Bearer static-token',
@@ -325,7 +301,6 @@ describe('FetchTransport', () => {
   it('will add dynamic header values from sync callbacks', async () => {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
-      requestCompression: false,
       requestOptions: {
         headers: {
           Authorization: () => `Bearer ${mockSessionId}-token`,
@@ -355,7 +330,6 @@ describe('FetchTransport', () => {
   it('will add static header values and dynamic header values from sync callbacks', async () => {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
-      requestCompression: false,
       requestOptions: {
         headers: {
           Authorization: () => `Bearer ${mockSessionId}-token`,
@@ -385,7 +359,6 @@ describe('FetchTransport', () => {
   it('will add dynamic header values from async callbacks', async () => {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
-      requestCompression: false,
       requestOptions: {
         headers: {
           Authorization: async () => Promise.resolve('Bearer async-token'),
@@ -430,7 +403,6 @@ describe('FetchTransport', () => {
 
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
-      requestCompression: false,
     });
 
     transport.metas.value = { session: { id: mockSessionId } };
@@ -459,7 +431,6 @@ describe('FetchTransport', () => {
 
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
-      requestCompression: false,
     });
 
     transport.metas.value = { session: { id: mockSessionId } };
@@ -502,27 +473,31 @@ describe('FetchTransport', () => {
       expect((requestInit.headers as Record<string, string>)['Content-Type']).toBe('application/json');
     });
 
+    it('produces valid gzip that decompresses to the original JSON', async () => {
+      const zlib = require('node:zlib');
+
+      const transport = new FetchTransport({
+        url: 'http://example.com/collect',
+        requestCompression: true,
+      });
+
+      const jsonBody = JSON.stringify(getTransportBody([item]));
+      const blob = await (transport as any).compress(jsonBody);
+
+      // jsdom's Blob lacks arrayBuffer/stream — use FileReader to extract bytes
+      const compressed = await new Promise<Buffer>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(Buffer.from(reader.result as ArrayBuffer));
+        reader.readAsArrayBuffer(blob);
+      });
+      const decompressed = zlib.gunzipSync(compressed).toString('utf-8');
+
+      expect(JSON.parse(decompressed)).toEqual(getTransportBody([item]));
+    });
+
     it('is disabled by default', async () => {
       const transport = new FetchTransport({
         url: 'http://example.com/collect',
-      });
-
-      transport.metas.value = { session: { id: mockSessionId } };
-      transport.internalLogger = mockInternalLogger;
-
-      await transport.send([item]);
-
-      const callArgs = fetch.mock.calls[0] as unknown[];
-      const requestInit = callArgs[1] as RequestInit;
-
-      expect(typeof requestInit.body).toBe('string');
-      expect((requestInit.headers as Record<string, string>)['Content-Encoding']).toBeUndefined();
-    });
-
-    it('sends uncompressed body when disabled', async () => {
-      const transport = new FetchTransport({
-        url: 'http://example.com/collect',
-        requestCompression: false,
       });
 
       transport.metas.value = { session: { id: mockSessionId } };
@@ -578,7 +553,7 @@ describe('FetchTransport', () => {
       }
     });
 
-    it('uses blob size for keepalive threshold when compressed', async () => {
+    it('enables keepalive for large payloads that compress below the threshold', async () => {
       const transport = new FetchTransport({
         url: 'http://example.com/collect',
         requestCompression: true,
@@ -593,7 +568,8 @@ describe('FetchTransport', () => {
       const requestInit = callArgs[1] as RequestInit;
       const blob = requestInit.body as Blob;
 
-      expect(requestInit.keepalive).toBe(blob.size <= 60000);
+      expect(blob.size).toBeLessThan(60000);
+      expect(requestInit.keepalive).toBe(true);
     });
   });
 });

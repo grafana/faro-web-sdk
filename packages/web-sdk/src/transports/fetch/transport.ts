@@ -154,27 +154,22 @@ export class FetchTransport extends BaseTransport {
   }
 
   private async compress(body: string): Promise<Blob> {
-    const encoder = new TextEncoder();
-    const inputStream = new ReadableStream({
+    const stream = new ReadableStream({
       start(controller) {
-        controller.enqueue(encoder.encode(body));
+        controller.enqueue(new TextEncoder().encode(body));
         controller.close();
       },
-    });
-    const compressedStream = inputStream.pipeThrough(new CompressionStream('gzip'));
-    const reader = compressedStream.getReader();
-    const chunks: BlobPart[] = [];
+    }).pipeThrough(new CompressionStream('gzip'));
 
+    const reader = stream.getReader();
+    const chunks: BlobPart[] = [];
     for (;;) {
       const { done, value } = await reader.read();
-
       if (done) {
         break;
       }
-
       chunks.push(value);
     }
-
     return new Blob(chunks);
   }
 
