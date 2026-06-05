@@ -435,7 +435,6 @@ describe('FetchTransport', () => {
 
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
-      disableWorker: true,
     });
 
     transport.metas.value = { session: { id: mockSessionId } };
@@ -625,6 +624,7 @@ describe('FetchTransport (Worker path)', () => {
   function createWorkerTransport() {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
+      enableWorker: true,
     });
     transport.metas.value = { session: { id: mockSessionId } };
     transport.internalLogger = mockInternalLogger;
@@ -681,6 +681,7 @@ describe('FetchTransport (Worker path)', () => {
     const now = Date.now();
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
+      enableWorker: true,
       getNow: () => now,
     });
     transport.metas.value = { session: { id: mockSessionId } };
@@ -725,13 +726,12 @@ describe('FetchTransport (Worker path)', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it('does not use worker when disableWorker option is set', async () => {
+  it('does not use worker when enableWorker option is not set', async () => {
     delete (global as any).Worker;
     (global as any).Worker = MockWorkerClass;
 
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
-      disableWorker: true,
     });
     transport.metas.value = { session: { id: mockSessionId } };
     transport.internalLogger = mockInternalLogger;
@@ -746,6 +746,7 @@ describe('FetchTransport (Worker path)', () => {
     const controller = new AbortController();
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
+      enableWorker: true,
       requestOptions: { signal: controller.signal },
     });
     transport.metas.value = { session: { id: mockSessionId } };
@@ -768,6 +769,7 @@ describe('FetchTransport (Worker path)', () => {
   it('falls back to sendDirect when worker terminates while send is queued', async () => {
     const transport = new FetchTransport({
       url: 'http://example.com/collect',
+      enableWorker: true,
       concurrency: 1,
       bufferSize: 5,
     });

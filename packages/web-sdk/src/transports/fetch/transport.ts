@@ -69,7 +69,7 @@ export class FetchTransport extends BaseTransport {
   }
 
   private initWorker(): void {
-    if (this.options.disableWorker) {
+    if (!this.options.enableWorker) {
       return;
     }
 

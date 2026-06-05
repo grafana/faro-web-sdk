@@ -30,8 +30,8 @@ export interface FetchTransportOptions {
   // compress request bodies with gzip using the native CompressionStream API.
   // falls back to uncompressed if CompressionStream is not available.
   requestCompression?: boolean;
-  // skip Worker creation and always use main-thread transport
-  disableWorker?: boolean;
+  // offload JSON serialization and fetch to a Web Worker
+  enableWorker?: boolean;
 }
 
 export type ClockFn = () => number;
