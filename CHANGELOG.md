@@ -4,10 +4,9 @@
 
 ## [2.8.0](https://github.com/grafana/faro-web-sdk/compare/v2.7.1...v2.8.0) (2026-06-09)
 
-
 ### Features
 
-* **web-sdk:** add gzip request compression to FetchTransport ([#2028](https://github.com/grafana/faro-web-sdk/issues/2028)) ([acf7e29](https://github.com/grafana/faro-web-sdk/commit/acf7e29121cf6f04d0719ad7eebd610909457c1a))
+- **web-sdk:** add gzip request compression to FetchTransport ([#2028](https://github.com/grafana/faro-web-sdk/issues/2028)) ([acf7e29](https://github.com/grafana/faro-web-sdk/commit/acf7e29121cf6f04d0719ad7eebd610909457c1a))
 
 ## [2.7.1](https://github.com/grafana/faro-web-sdk/compare/v2.7.0...v2.7.1) (2026-06-03)
 
