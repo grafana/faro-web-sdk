@@ -12,14 +12,13 @@ export class BatchExecutor {
   private signalBuffer: TransportItem[] = [];
   private sendFn: SendFn;
   private paused: boolean;
-  private flushInterval: number;
+  private flushInterval?: ReturnType<typeof setInterval>;
 
   constructor(sendFn: SendFn, options?: BatchExecutorOptions) {
     this.itemLimit = options?.itemLimit ?? DEFAULT_BATCH_ITEM_LIMIT;
     this.sendTimeout = options?.sendTimeout ?? DEFAULT_SEND_TIMEOUT_MS;
     this.paused = options?.paused || false;
     this.sendFn = sendFn;
-    this.flushInterval = -1;
 
     if (!this.paused) {
       this.start();
@@ -27,11 +26,13 @@ export class BatchExecutor {
 
     // Send batched/buffered data when user navigates to new page, switches or closes the tab, minimizes or closes the browser.
     // If on mobile, it also sends data if user switches from the browser to a different app.
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
-        this.flush();
-      }
-    });
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          this.flush();
+        }
+      });
+    }
   }
 
   addItem(item: TransportItem): void {
@@ -49,7 +50,7 @@ export class BatchExecutor {
   start(): void {
     this.paused = false;
     if (this.sendTimeout > 0) {
-      this.flushInterval = window.setInterval(() => this.flush(), this.sendTimeout);
+      this.flushInterval = setInterval(() => this.flush(), this.sendTimeout);
     }
   }
 
