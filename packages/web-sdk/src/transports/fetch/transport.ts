@@ -189,7 +189,7 @@ export class FetchTransport extends BaseTransport {
       }
 
       const { requestOptions, apiKey } = this.options;
-      const url = new URL(this.options.url, document.baseURI).href;
+      const url = this.resolveUrl();
       const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
 
       const resolvedHeaders: Record<string, string> = {};
@@ -230,12 +230,19 @@ export class FetchTransport extends BaseTransport {
     });
   }
 
+  private resolveUrl(): string {
+    if (typeof document !== 'undefined') {
+      return new URL(this.options.url, document.baseURI).href;
+    }
+    return this.options.url;
+  }
+
   private async sendDirect(items: TransportItem[]): Promise<void> {
     await this.promiseBuffer.add(async () => {
       const jsonBody = JSON.stringify(getTransportBody(items));
 
       const { requestOptions, apiKey } = this.options;
-      const url = new URL(this.options.url, document.baseURI).href;
+      const url = this.resolveUrl();
 
       const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
 
