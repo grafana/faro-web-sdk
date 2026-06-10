@@ -143,9 +143,7 @@ self.onmessage = (e: MessageEvent<WorkerSendMessage>) => {
 
   const fetchHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
   if (msg.headers) {
-    for (const key of Object.keys(msg.headers)) {
-      fetchHeaders[key] = msg.headers[key]!;
-    }
+    Object.assign(fetchHeaders, msg.headers);
   }
   if (msg.apiKey) {
     fetchHeaders['x-api-key'] = msg.apiKey;
