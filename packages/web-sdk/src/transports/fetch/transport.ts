@@ -73,15 +73,23 @@ export class FetchTransport extends BaseTransport {
       return;
     }
 
+    if (this.compressionEnabled) {
+      this.logWarn(
+        'enableWorker and requestCompression are both enabled. The worker transport does not support compression — ' +
+          'requests sent via the worker will be uncompressed. Disable one of these options to avoid this inconsistency.'
+      );
+    }
+
+    let blobUrl: string | undefined;
+
     try {
       if (typeof Worker === 'undefined') {
         return;
       }
 
       const blob = new Blob([getWorkerScript()], { type: 'application/javascript' });
-      const blobUrl = URL.createObjectURL(blob);
+      blobUrl = URL.createObjectURL(blob);
       this.worker = new Worker(blobUrl);
-      URL.revokeObjectURL(blobUrl);
 
       this.worker.onmessage = (e: MessageEvent<WorkerMessage>) => this.handleWorkerMessage(e.data);
       this.worker.onerror = () => this.handleWorkerError();
@@ -91,6 +99,10 @@ export class FetchTransport extends BaseTransport {
         'Faro transport Worker could not be created — falling back to main-thread transport. ' +
           'If your site uses a Content-Security-Policy, add "worker-src \'self\' blob:;" to enable the Worker transport.'
       );
+    } finally {
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
     }
   }
 
@@ -103,7 +115,7 @@ export class FetchTransport extends BaseTransport {
 
     if (data.type === 'send-error') {
       this.logError('Worker transport failed:', data.error);
-      pending.reject(new Error(data.error ?? 'Worker send failed'));
+      pending.resolve(undefined);
       return;
     }
 
@@ -172,8 +184,8 @@ export class FetchTransport extends BaseTransport {
 
     await this.promiseBuffer.add(async () => {
       const worker = this.worker;
-      if (!worker) {
-        throw new Error('Worker terminated while queued');
+      if (!worker || document.visibilityState === 'hidden') {
+        throw new Error(worker ? 'Page hidden while queued' : 'Worker terminated while queued');
       }
 
       const { requestOptions, apiKey } = this.options;
@@ -222,7 +234,8 @@ export class FetchTransport extends BaseTransport {
     await this.promiseBuffer.add(async () => {
       const jsonBody = JSON.stringify(getTransportBody(items));
 
-      const { url, requestOptions, apiKey } = this.options;
+      const { requestOptions, apiKey } = this.options;
+      const url = new URL(this.options.url, document.baseURI).href;
 
       const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
 

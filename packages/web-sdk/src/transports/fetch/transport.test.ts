@@ -699,7 +699,7 @@ describe('FetchTransport (Worker path)', () => {
     expect(mockWorkerInstance.postMessage).toHaveBeenCalledTimes(1);
   });
 
-  it('falls back to sendDirect when worker reports send-error', async () => {
+  it('does not retry via sendDirect when worker reports send-error from fetch failure', async () => {
     const transport = createWorkerTransport();
 
     mockWorkerInstance.postMessage.mockImplementation(() => {
@@ -712,7 +712,7 @@ describe('FetchTransport (Worker path)', () => {
     await transport.send([item]);
 
     expect(mockWorkerInstance.postMessage).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('falls back to sendDirect when postMessage throws DataCloneError', async () => {
@@ -756,6 +756,62 @@ describe('FetchTransport (Worker path)', () => {
     await transport.send([item]);
 
     expect(mockWorkerInstance.postMessage).not.toHaveBeenCalled();
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('triggers session extension when worker reports sessionExpired', async () => {
+    const transport = createWorkerTransport();
+    const extendSpy = jest.spyOn(transport as any, 'extendFaroSession').mockImplementation(() => {});
+
+    mockWorkerInstance.postMessage.mockImplementation(() => {
+      const msg = mockWorkerInstance.postMessage.mock.calls[0][0];
+      mockWorkerInstance.onmessage?.({
+        data: { type: 'send-result', id: msg.id, sessionExpired: true },
+      } as any);
+    });
+
+    await transport.send([item]);
+
+    expect(extendSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to sendDirect when page becomes hidden while queued', async () => {
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      enableWorker: true,
+      concurrency: 1,
+      bufferSize: 5,
+    });
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    let firstSendResolve: (() => void) | undefined;
+    let postMessageCount = 0;
+    mockWorkerInstance.postMessage.mockImplementation(() => {
+      postMessageCount++;
+      if (postMessageCount === 1) {
+        const msg = mockWorkerInstance.postMessage.mock.calls[0][0];
+        firstSendResolve = () => {
+          Object.defineProperty(document, 'visibilityState', {
+            value: 'hidden',
+            writable: true,
+            configurable: true,
+          });
+          mockWorkerInstance.onmessage?.({
+            data: { type: 'send-result', id: msg.id, sessionExpired: false },
+          } as any);
+        };
+      }
+    });
+
+    const send1 = transport.send([item]);
+    const send2 = transport.send([item]);
+
+    firstSendResolve?.();
+
+    await Promise.all([send1, send2]);
+
+    expect(mockWorkerInstance.postMessage).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
