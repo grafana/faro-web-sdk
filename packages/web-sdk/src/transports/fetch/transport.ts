@@ -73,13 +73,6 @@ export class FetchTransport extends BaseTransport {
       return;
     }
 
-    if (this.compressionEnabled) {
-      this.logWarn(
-        'enableWorker and requestCompression are both enabled. The worker transport does not support compression — ' +
-          'requests sent via the worker will be uncompressed. Disable one of these options to avoid this inconsistency.'
-      );
-    }
-
     let blobUrl: string | undefined;
 
     try {
@@ -221,6 +214,7 @@ export class FetchTransport extends BaseTransport {
             sessionId,
             requestOptions: restOfRequestOptions,
             rateLimitBackoffMs: this.rateLimitBackoffMs,
+            requestCompression: this.compressionEnabled,
           });
         } catch (err) {
           this.pendingWorkerRequests.delete(id);

@@ -32,6 +32,7 @@ interface WorkerSendMessage {
   sessionId?: string;
   requestOptions?: RequestInit;
   rateLimitBackoffMs?: number;
+  requestCompression?: boolean;
 }
 
 const TRANSPORT_ITEM_TYPE = {
@@ -50,6 +51,7 @@ const transportItemTypeToBodyKey: Record<string, string> = {
   [TRANSPORT_ITEM_TYPE.EVENT]: 'events',
 };
 
+// Duplicated from @grafana/faro-core/src/transports/utils.ts — must stay in sync.
 function mergeResourceSpans(
   traces: Traces | undefined,
   resourceSpans: ResourceSpans[] | undefined
@@ -104,6 +106,26 @@ const ACCEPTED = 202;
 
 let disabledUntil = 0;
 
+async function compress(body: string): Promise<Blob> {
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(body));
+      controller.close();
+    },
+  }).pipeThrough(new CompressionStream('gzip'));
+
+  const reader = stream.getReader();
+  const chunks: BlobPart[] = [];
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    chunks.push(value);
+  }
+  return new Blob(chunks);
+}
+
 function getRetryAfterTimestamp(headers: Headers, now: number, defaultBackoffMs: number): number {
   const retryAfter = headers.get('Retry-After');
   if (retryAfter) {
@@ -152,15 +174,26 @@ self.onmessage = (e: MessageEvent<WorkerSendMessage>) => {
     fetchHeaders['x-faro-session-id'] = msg.sessionId;
   }
 
-  const fetchOptions: RequestInit = {
-    method: 'POST',
-    headers: fetchHeaders,
-    body,
-    keepalive: body.length <= BEACON_BODY_SIZE_LIMIT,
-    ...msg.requestOptions,
-  };
+  const useCompression = msg.requestCompression && typeof CompressionStream !== 'undefined';
 
-  fetch(msg.url, fetchOptions)
+  (useCompression ? compress(body) : Promise.resolve(body))
+    .then((finalBody) => {
+      const bodySize = typeof finalBody === 'string' ? finalBody.length : finalBody.size;
+
+      if (useCompression) {
+        fetchHeaders['Content-Encoding'] = 'gzip';
+      }
+
+      const fetchOptions: RequestInit = {
+        method: 'POST',
+        headers: fetchHeaders,
+        body: finalBody,
+        keepalive: bodySize <= BEACON_BODY_SIZE_LIMIT,
+        ...msg.requestOptions,
+      };
+
+      return fetch(msg.url, fetchOptions);
+    })
     .then((response) => {
       let sessionExpired = false;
 
