@@ -269,8 +269,30 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     }, threshold);
   }
 
+  private sanitizeMetaHref(event: eventWithTime): void {
+    if (event.type !== 4 || this.options.sanitizeMetaHref === false) {
+      return;
+    }
+
+    const data = event.data as { href?: string };
+    if (typeof data.href !== 'string') {
+      return;
+    }
+
+    try {
+      const url = new URL(data.href);
+      url.search = '';
+      url.hash = '';
+      data.href = url.href;
+    } catch {
+      // Malformed URL — leave as-is rather than risk breaking the event.
+    }
+  }
+
   private handleEvent(event: eventWithTime, _isCheckout?: boolean): void {
     try {
+      this.sanitizeMetaHref(event);
+
       // Apply beforeSend transformation if provided
       let processedEvent: eventWithTime | null | undefined = event;
       if (this.options.beforeSend) {

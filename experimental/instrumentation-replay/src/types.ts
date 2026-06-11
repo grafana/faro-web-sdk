@@ -94,6 +94,17 @@ export interface ReplayInstrumentationOptions {
   inactivityThresholdMs?: number;
 
   /**
+   * Strip query string and fragment from `window.location.href` in rrweb Meta events
+   * before they are sent to the Faro transport.
+   *
+   * URLs routinely contain sensitive data (OAuth codes, tokens in fragments, PII in
+   * query parameters). This option removes `search` and `hash` from Meta event hrefs.
+   *
+   * @default true
+   */
+  sanitizeMetaHref?: boolean;
+
+  /**
    * The fraction of globally-sampled sessions that should also record a session replay.
    * Expressed as a number between 0 and 1.
    *
