@@ -69,7 +69,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: undefined,
         ignoreSelector: undefined,
         beforeSend: undefined,
-        stripMetaHrefQuery: true,
+        sanitizeMetaHref: true,
         samplingRate: 1,
         inactivityThresholdMs: 60_000,
       };
@@ -97,7 +97,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: '.block-me',
         ignoreSelector: '.ignore-me',
         beforeSend: beforeSendFn,
-        stripMetaHrefQuery: false,
+        sanitizeMetaHref: false,
         samplingRate: 1,
         inactivityThresholdMs: 30_000,
       };
@@ -136,7 +136,7 @@ describe('ReplayInstrumentation', () => {
         blockSelector: undefined,
         ignoreSelector: undefined,
         beforeSend: undefined,
-        stripMetaHrefQuery: true,
+        sanitizeMetaHref: true,
         samplingRate: 1,
         inactivityThresholdMs: 60_000,
       };
@@ -452,8 +452,8 @@ describe('ReplayInstrumentation', () => {
       expect(parsed.data.href).toBe('https://example.com/page?secret=value');
     });
 
-    it('should preserve Meta event href when stripMetaHrefQuery is false', () => {
-      instrumentation = new ReplayInstrumentation({ stripMetaHrefQuery: false });
+    it('should preserve Meta event href when sanitizeMetaHref is false', () => {
+      instrumentation = new ReplayInstrumentation({ sanitizeMetaHref: false });
 
       mockGetSession.mockReturnValue({
         id: 'test-session',
@@ -502,6 +502,78 @@ describe('ReplayInstrumentation', () => {
           data: expect.objectContaining({ href: 'https://example.com/path' }),
         })
       );
+    });
+
+    it('should leave malformed href untouched on Meta events', () => {
+      instrumentation = new ReplayInstrumentation();
+
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      const metaEvent = {
+        type: 4,
+        data: { href: 'not-a-valid-url', width: 1920, height: 1080 },
+        timestamp: Date.now(),
+      };
+      emitCallback(metaEvent);
+
+      const pushed = mockPushEvent.mock.calls.find((c: any[]) => c[0] === 'faro.session_recording.event');
+      const parsed = JSON.parse(pushed![1].event);
+      expect(parsed.data.href).toBe('not-a-valid-url');
+    });
+
+    it('should handle Meta event with missing href', () => {
+      instrumentation = new ReplayInstrumentation();
+
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      const metaEvent = {
+        type: 4,
+        data: { width: 1920, height: 1080 },
+        timestamp: Date.now(),
+      };
+      emitCallback(metaEvent);
+
+      const pushed = mockPushEvent.mock.calls.find((c: any[]) => c[0] === 'faro.session_recording.event');
+      const parsed = JSON.parse(pushed![1].event);
+      expect(parsed.data.href).toBeUndefined();
+    });
+
+    it('should handle file:// URLs without corrupting them', () => {
+      instrumentation = new ReplayInstrumentation();
+
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      const metaEvent = {
+        type: 4,
+        data: { href: 'file:///android_asset/www/index.html?token=secret#hash', width: 1920, height: 1080 },
+        timestamp: Date.now(),
+      };
+      emitCallback(metaEvent);
+
+      const pushed = mockPushEvent.mock.calls.find((c: any[]) => c[0] === 'faro.session_recording.event');
+      const parsed = JSON.parse(pushed![1].event);
+      expect(parsed.data.href).toBe('file:///android_asset/www/index.html');
     });
 
     it('should handle errors when pushing events gracefully', () => {

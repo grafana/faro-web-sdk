@@ -98,12 +98,11 @@ export interface ReplayInstrumentationOptions {
    * before they are sent to the Faro transport.
    *
    * URLs routinely contain sensitive data (OAuth codes, tokens in fragments, PII in
-   * query parameters). This option removes `search` and `hash` from Meta event hrefs,
-   * keeping only `origin + pathname`.
+   * query parameters). This option removes `search` and `hash` from Meta event hrefs.
    *
    * @default true
    */
-  stripMetaHrefQuery?: boolean;
+  sanitizeMetaHref?: boolean;
 
   /**
    * The fraction of globally-sampled sessions that should also record a session replay.

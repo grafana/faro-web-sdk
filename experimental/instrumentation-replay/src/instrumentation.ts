@@ -270,7 +270,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   private sanitizeMetaHref(event: eventWithTime): void {
-    if (event.type !== 4 || this.options.stripMetaHrefQuery === false) {
+    if (event.type !== 4 || this.options.sanitizeMetaHref === false) {
       return;
     }
 
@@ -281,7 +281,9 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
     try {
       const url = new URL(data.href);
-      data.href = url.origin + url.pathname;
+      url.search = '';
+      url.hash = '';
+      data.href = url.href;
     } catch {
       // Malformed URL — leave as-is rather than risk breaking the event.
     }
