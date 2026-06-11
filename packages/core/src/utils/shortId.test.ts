@@ -23,14 +23,16 @@ describe('genShortID', () => {
     }
   });
 
-  it('uses crypto.getRandomValues when available', () => {
+  it('uses crypto.getRandomValues when available and does not warn', () => {
     const spy = jest.spyOn(globalThis.crypto, 'getRandomValues');
+    const warnSpy = jest.spyOn(console, 'warn');
 
     genShortID(12);
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy.mock.calls[0]![0]).toBeInstanceOf(Uint32Array);
     expect((spy.mock.calls[0]![0] as Uint32Array).length).toBe(12);
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 
   it('generates distinct ids across many calls', () => {
@@ -65,10 +67,11 @@ describe('genShortID Math.random fallback', () => {
   it('falls back to Math.random when crypto is unavailable', async () => {
     const { genShortID: freshGenShortID } = await import('./shortId');
     const randomSpy = jest.spyOn(Math, 'random');
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     const id = freshGenShortID(15);
 
-    expect(randomSpy).toHaveBeenCalled();
+    expect(randomSpy).toHaveBeenCalledTimes(15);
     expect(id).toHaveLength(15);
     expect(id).toMatch(alphabetRegex);
   });
