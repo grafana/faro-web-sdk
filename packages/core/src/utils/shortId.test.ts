@@ -82,9 +82,7 @@ describe('genShortID Math.random fallback', () => {
 
     freshGenShortID(10);
     expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('crypto.getRandomValues() is not available')
-    );
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('crypto.getRandomValues() is not available'));
 
     freshGenShortID(10);
     expect(warnSpy).toHaveBeenCalledTimes(1);
