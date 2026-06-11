@@ -35,15 +35,15 @@ initializeFaro({
 
 ### Privacy & Masking Options
 
-| Key                  | Type                                              | Default              | Description                                                                                                                              |
-| -------------------- | ------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `sanitizeMetaHref`   | `boolean`                                         | `true`               | Strip query string and fragment from `window.location.href` in rrweb Meta events before sending. Prevents leaking OAuth codes, tokens, and PII from URLs |
-| `maskAllInputs`      | `boolean`                                         | `true`               | Mask all input content as `*`                                                                                                            |
-| `maskInputOptions`   | `MaskInputOptions`                                | `{ password: true }` | Selectively mask specific input types (used only when `maskAllInputs` is `false`)                                                        |
-| `maskInputFn`        | `(value: string, element: HTMLElement) => string` | `undefined`          | Customize mask input content recording logic                                                                                             |
-| `maskTextSelector`   | `string`                                          | `'*'`                | CSS selector for elements whose text content should be masked                                                                            |
-| `blockSelector`      | `string`                                          | `undefined`          | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions |
-| `ignoreSelector`     | `string`                                          | `undefined`          | CSS selector for elements whose input events should be ignored                                                                           |
+| Key                | Type                                              | Default              | Description                                                                                                                                              |
+| ------------------ | ------------------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sanitizeMetaHref` | `boolean`                                         | `true`               | Strip query string and fragment from `window.location.href` in rrweb Meta events before sending. Prevents leaking OAuth codes, tokens, and PII from URLs |
+| `maskAllInputs`    | `boolean`                                         | `true`               | Mask all input content as `*`                                                                                                                            |
+| `maskInputOptions` | `MaskInputOptions`                                | `{ password: true }` | Selectively mask specific input types (used only when `maskAllInputs` is `false`)                                                                        |
+| `maskInputFn`      | `(value: string, element: HTMLElement) => string` | `undefined`          | Customize mask input content recording logic                                                                                                             |
+| `maskTextSelector` | `string`                                          | `'*'`                | CSS selector for elements whose text content should be masked                                                                                            |
+| `blockSelector`    | `string`                                          | `undefined`          | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions                 |
+| `ignoreSelector`   | `string`                                          | `undefined`          | CSS selector for elements whose input events should be ignored                                                                                           |
 
 #### `maskInputOptions`
 
