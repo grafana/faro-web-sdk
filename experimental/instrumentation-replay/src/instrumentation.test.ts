@@ -153,6 +153,11 @@ describe('ReplayInstrumentation', () => {
       expect(short.length).toBe(long.length);
     });
 
+    it('should return an empty string for empty input', () => {
+      const empty = defaultMaskInputFn('', document.createElement('input'));
+      expect(empty).toBe('');
+    });
+
     it('should use the default fixed-length maskInputFn when none is provided', () => {
       instrumentation = new ReplayInstrumentation();
 
@@ -170,7 +175,7 @@ describe('ReplayInstrumentation', () => {
     });
 
     it('should allow a custom maskInputFn to override the default', () => {
-      const customMaskFn: MaskInputFn = (text) => 'X'.repeat(text.length);
+      const customMaskFn: MaskInputFn = () => 'CUSTOM_MASK';
 
       instrumentation = new ReplayInstrumentation({ maskInputFn: customMaskFn });
 
@@ -186,6 +191,12 @@ describe('ReplayInstrumentation', () => {
         })
       );
       expect(instrumentation['options'].maskInputFn).not.toBe(defaultMaskInputFn);
+    });
+
+    it('should fall back to the secure default when maskInputFn is explicitly undefined', () => {
+      instrumentation = new ReplayInstrumentation({ maskInputFn: undefined });
+
+      expect(instrumentation['options'].maskInputFn).toBe(defaultMaskInputFn);
     });
   });
 

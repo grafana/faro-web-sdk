@@ -3,7 +3,7 @@ import { record, type recordOptions } from 'rrweb';
 
 import { BaseInstrumentation, clampSamplingRate, VERSION } from '@grafana/faro-core';
 
-import { defaultReplayInstrumentationOptions } from './const';
+import { defaultMaskInputFn, defaultReplayInstrumentationOptions } from './const';
 import type { ReplayInstrumentationOptions } from './types';
 
 const faroSessionReplayEventName = 'faro.session_recording.event';
@@ -41,6 +41,8 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       ...defaultReplayInstrumentationOptions,
       ...options,
     };
+
+    this.options.maskInputFn ??= defaultMaskInputFn;
   }
 
   initialize(): void {

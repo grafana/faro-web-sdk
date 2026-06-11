@@ -2,7 +2,7 @@ import { type MaskInputFn, type ReplayInstrumentationOptions } from './types';
 
 const FIXED_LENGTH_MASK = '******';
 
-export const defaultMaskInputFn: MaskInputFn = () => FIXED_LENGTH_MASK;
+export const defaultMaskInputFn: MaskInputFn = (text) => (text.length > 0 ? FIXED_LENGTH_MASK : '');
 
 export const defaultReplayInstrumentationOptions: ReplayInstrumentationOptions = {
   maskAllInputs: true,

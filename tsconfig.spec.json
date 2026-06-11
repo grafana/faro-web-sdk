@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.base.spec.json",
   "compilerOptions": {
+    "incremental": false,
     "noPropertyAccessFromIndexSignature": false,
     "noImplicitAny": false,
     "moduleResolution": "node",
