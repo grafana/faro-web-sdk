@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-react",
-  "packageManager": "yarn@4.14.1",
+  "packageManager": "yarn@4.16.0",
   "version": "2.7.1",
   "description": "Faro package that enables easier integration in projects built with React.",
   "keywords": [
@@ -65,7 +65,7 @@
     "@types/react": "19.2.15",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "react-router": "7.15.1"
+    "react-router": "7.17.0"
   },
   "peerDependencies": {
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
