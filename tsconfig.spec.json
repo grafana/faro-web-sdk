@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.spec.json",
+  "compilerOptions": {
+    "noPropertyAccessFromIndexSignature": false,
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "paths": {
+      "@grafana/faro-core": ["./packages/core/src"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*.ts",
+    "experimental/*/src/**/*.ts"
+  ]
+}
