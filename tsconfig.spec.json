@@ -9,8 +9,5 @@
       "@grafana/faro-core": ["./packages/core/src"]
     }
   },
-  "include": [
-    "packages/*/src/**/*.ts",
-    "experimental/*/src/**/*.ts"
-  ]
+  "include": ["packages/*/src/**/*.ts", "experimental/*/src/**/*.ts"]
 }
