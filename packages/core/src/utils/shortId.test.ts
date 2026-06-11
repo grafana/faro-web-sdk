@@ -33,33 +33,57 @@ describe('genShortID', () => {
     expect((spy.mock.calls[0]![0] as Uint32Array).length).toBe(12);
   });
 
-  it('falls back to Math.random when crypto is unavailable', () => {
-    const originalCrypto = globalThis.crypto;
-    Object.defineProperty(globalThis, 'crypto', {
-      configurable: true,
-      value: {},
-    });
-    const randomSpy = jest.spyOn(Math, 'random');
-
-    try {
-      const id = genShortID(15);
-
-      expect(randomSpy).toHaveBeenCalled();
-      expect(id).toHaveLength(15);
-      expect(id).toMatch(alphabetRegex);
-    } finally {
-      Object.defineProperty(globalThis, 'crypto', {
-        configurable: true,
-        value: originalCrypto,
-      });
-    }
-  });
-
   it('generates distinct ids across many calls', () => {
     const ids = new Set<string>();
     for (let i = 0; i < 1000; i++) {
       ids.add(genShortID());
     }
     expect(ids.size).toBe(1000);
+  });
+});
+
+describe('genShortID Math.random fallback', () => {
+  let originalCrypto: Crypto;
+
+  beforeEach(() => {
+    originalCrypto = globalThis.crypto;
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: {},
+    });
+    jest.resetModules();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: originalCrypto,
+    });
+    jest.restoreAllMocks();
+  });
+
+  it('falls back to Math.random when crypto is unavailable', async () => {
+    const { genShortID: freshGenShortID } = await import('./shortId');
+    const randomSpy = jest.spyOn(Math, 'random');
+
+    const id = freshGenShortID(15);
+
+    expect(randomSpy).toHaveBeenCalled();
+    expect(id).toHaveLength(15);
+    expect(id).toMatch(alphabetRegex);
+  });
+
+  it('emits a console warning on first fallback to Math.random', async () => {
+    const { genShortID: freshGenShortID } = await import('./shortId');
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    freshGenShortID(10);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('crypto.getRandomValues() is not available')
+    );
+
+    freshGenShortID(10);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
   });
 });
