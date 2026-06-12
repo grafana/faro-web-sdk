@@ -39,6 +39,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
       new FetchTransport({
         url: browserConfig.url,
         apiKey: browserConfig.apiKey,
+        requestCompression: browserConfig.requestCompression,
       })
     );
   } else {

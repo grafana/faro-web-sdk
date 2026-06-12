@@ -22,6 +22,7 @@ export class FetchTransport extends BaseTransport {
 
   private readonly rateLimitBackoffMs: number;
   private readonly getNow: () => number;
+  private readonly compressionEnabled: boolean;
   private disabledUntil: Date = new Date(0);
 
   constructor(private options: FetchTransportOptions) {
@@ -29,6 +30,17 @@ export class FetchTransport extends BaseTransport {
 
     this.rateLimitBackoffMs = options.defaultRateLimitBackoffMs ?? DEFAULT_RATE_LIMIT_BACKOFF_MS;
     this.getNow = options.getNow ?? (() => Date.now());
+
+    const requestCompression = options.requestCompression ?? false;
+
+    if (requestCompression && typeof CompressionStream === 'undefined') {
+      this.compressionEnabled = false;
+      this.logWarn(
+        'requestCompression is enabled but CompressionStream is not available. Falling back to uncompressed.'
+      );
+    } else {
+      this.compressionEnabled = requestCompression;
+    }
 
     this.promiseBuffer = createPromiseBuffer({
       size: options.bufferSize ?? DEFAULT_BUFFER_SIZE,
@@ -45,7 +57,7 @@ export class FetchTransport extends BaseTransport {
       }
 
       await this.promiseBuffer.add(async () => {
-        const body = JSON.stringify(getTransportBody(items));
+        const jsonBody = JSON.stringify(getTransportBody(items));
 
         const { url, requestOptions, apiKey } = this.options;
 
@@ -62,16 +74,27 @@ export class FetchTransport extends BaseTransport {
           resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
         }
 
+        let body: string | Blob = jsonBody;
+        let bodySize = jsonBody.length;
+        const compressionHeaders: Record<string, string> = {};
+
+        if (this.compressionEnabled) {
+          body = await this.compress(jsonBody);
+          bodySize = body.size;
+          compressionHeaders['Content-Encoding'] = 'gzip';
+        }
+
         return fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...compressionHeaders,
             ...resolvedHeaders,
             ...(apiKey ? { 'x-api-key': apiKey } : {}),
             ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
           },
           body,
-          keepalive: body.length <= BEACON_BODY_SIZE_LIMIT,
+          keepalive: bodySize <= BEACON_BODY_SIZE_LIMIT,
           ...(restOfRequestOptions ?? {}),
         })
           .then(async (response) => {
@@ -93,7 +116,7 @@ export class FetchTransport extends BaseTransport {
             return response;
           })
           .catch((err) => {
-            this.logError('Failed sending payload to the receiver\n', JSON.parse(body), err);
+            this.logError('Failed sending payload to the receiver\n', JSON.parse(jsonBody), err);
           });
       });
     } catch (err) {
@@ -128,6 +151,26 @@ export class FetchTransport extends BaseTransport {
     }
 
     return new Date(now + this.rateLimitBackoffMs);
+  }
+
+  private async compress(body: string): Promise<Blob> {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(body));
+        controller.close();
+      },
+    }).pipeThrough(new CompressionStream('gzip'));
+
+    const reader = stream.getReader();
+    const chunks: BlobPart[] = [];
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      chunks.push(value);
+    }
+    return new Blob(chunks);
   }
 
   private extendFaroSession(config: Config, logDebug: BaseExtension['logDebug']) {
