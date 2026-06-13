@@ -23,3 +23,32 @@ Methods and properties:
 - `removeBeforeSendHooks()` - removes a specific hook
 - `transports` - accesses the current list of registered transports
 - `unpause()` - unpauses the transports
+
+## Customizing the fetch transport
+
+The `web-sdk` package provides `FetchTransport`, which sends collected data to a collector endpoint. You can replace the default transport when you need finer control over the request, such as adding custom headers, changing buffering, or enabling request compression.
+
+When you provide a custom fetch transport, define the collector URL on the transport itself and omit the top-level `url` option from `initializeFaro`.
+
+```ts
+import { initializeFaro, FetchTransport } from '@grafana/faro-web-sdk';
+
+initializeFaro({
+  app: {
+    name: 'my-app',
+    version: '1.0.0',
+  },
+  transports: [
+    new FetchTransport({
+      url: myCollectorUrl,
+      requestOptions: {
+        headers: {
+          'X-Scope-OrgID': myOrgId,
+        },
+      },
+    }),
+  ],
+});
+```
+
+`requestOptions.headers` also accepts functions, including async functions, when a header value needs to be resolved for each request.
