@@ -85,7 +85,7 @@ jobs:
         run: yarn quality:e2e:smoke:ci
 
       - name: Upload Playwright test results
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-test-results
