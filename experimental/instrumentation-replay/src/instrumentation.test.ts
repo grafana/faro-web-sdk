@@ -425,7 +425,9 @@ describe('ReplayInstrumentation', () => {
 
       const pushed = mockPushEvent.mock.calls.find((c: any[]) => c[0] === 'faro.session_recording.event');
       const parsed = JSON.parse(pushed![1].event);
-      expect(parsed.data.href).toBe('https://example.com/app/dashboard?code=**redacted**&token=**redacted**#**redacted**');
+      expect(parsed.data.href).toBe(
+        'https://example.com/app/dashboard?code=**redacted**&token=**redacted**#**redacted**'
+      );
     });
 
     it('should not modify non-Meta events', () => {
@@ -614,7 +616,11 @@ describe('ReplayInstrumentation', () => {
 
       const metaEvent = {
         type: 4,
-        data: { href: 'https://app.example/callback#access_token=eyJhbGci&token_type=bearer', width: 1920, height: 1080 },
+        data: {
+          href: 'https://app.example/callback#access_token=eyJhbGci&token_type=bearer',
+          width: 1920,
+          height: 1080,
+        },
         timestamp: Date.now(),
       };
       emitCallback(metaEvent);
