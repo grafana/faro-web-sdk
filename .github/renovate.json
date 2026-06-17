@@ -37,6 +37,11 @@
       "description": "Restrict ua-parser-js to version below 2.x.x as it changes licensing model with v2 onwards",
       "matchPackageNames": ["ua-parser-js"],
       "allowedVersions": "<2.0.0"
+    },
+    {
+      "description": "Enforce a 7-day release-age cooldown on ALL npm depTypes to match yarn's npmMinimalAgeGate (.yarnrc.yml). Placed last so it overrides the injected Grafana org preset rule (grafana-renovate-config//presets/npm) which only waits 3 days for runtime dependencies. Without this, Renovate proposes versions 3-7 days old that yarn then quarantines (YN0016), producing un-mergeable PRs.",
+      "matchDatasources": ["npm"],
+      "minimumReleaseAge": "7 days"
     }
   ]
 }
