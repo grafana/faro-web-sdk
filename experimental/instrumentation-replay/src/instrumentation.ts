@@ -281,8 +281,12 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
     try {
       const url = new URL(data.href);
-      url.search = '';
-      url.hash = '';
+      url.searchParams.forEach((_value, key) => {
+        url.searchParams.set(key, '**redacted**');
+      });
+      if (url.hash) {
+        url.hash = '**redacted**';
+      }
       data.href = url.href;
     } catch {
       // Malformed URL — leave as-is rather than risk breaking the event.

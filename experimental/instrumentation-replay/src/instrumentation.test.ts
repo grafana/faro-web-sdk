@@ -425,7 +425,7 @@ describe('ReplayInstrumentation', () => {
 
       const pushed = mockPushEvent.mock.calls.find((c: any[]) => c[0] === 'faro.session_recording.event');
       const parsed = JSON.parse(pushed![1].event);
-      expect(parsed.data.href).toBe('https://example.com/app/dashboard');
+      expect(parsed.data.href).toBe('https://example.com/app/dashboard?code=**redacted**&token=**redacted**#**redacted**');
     });
 
     it('should not modify non-Meta events', () => {
@@ -499,7 +499,7 @@ describe('ReplayInstrumentation', () => {
 
       expect(beforeSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ href: 'https://example.com/path' }),
+          data: expect.objectContaining({ href: 'https://example.com/path?token=**redacted**' }),
         })
       );
     });
@@ -573,7 +573,55 @@ describe('ReplayInstrumentation', () => {
 
       const pushed = mockPushEvent.mock.calls.find((c: any[]) => c[0] === 'faro.session_recording.event');
       const parsed = JSON.parse(pushed![1].event);
-      expect(parsed.data.href).toBe('file:///android_asset/www/index.html');
+      expect(parsed.data.href).toBe('file:///android_asset/www/index.html?token=**redacted**#**redacted**');
+    });
+
+    it('should not modify Meta event href with no query string or fragment', () => {
+      instrumentation = new ReplayInstrumentation();
+
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      const metaEvent = {
+        type: 4,
+        data: { href: 'https://example.com/app/dashboard', width: 1920, height: 1080 },
+        timestamp: Date.now(),
+      };
+      emitCallback(metaEvent);
+
+      const pushed = mockPushEvent.mock.calls.find((c: any[]) => c[0] === 'faro.session_recording.event');
+      const parsed = JSON.parse(pushed![1].event);
+      expect(parsed.data.href).toBe('https://example.com/app/dashboard');
+    });
+
+    it('should redact fragment-only URLs (OAuth implicit flow)', () => {
+      instrumentation = new ReplayInstrumentation();
+
+      mockGetSession.mockReturnValue({
+        id: 'test-session',
+        attributes: { isSampled: 'true' },
+      });
+      instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      const metaEvent = {
+        type: 4,
+        data: { href: 'https://app.example/callback#access_token=eyJhbGci&token_type=bearer', width: 1920, height: 1080 },
+        timestamp: Date.now(),
+      };
+      emitCallback(metaEvent);
+
+      const pushed = mockPushEvent.mock.calls.find((c: any[]) => c[0] === 'faro.session_recording.event');
+      const parsed = JSON.parse(pushed![1].event);
+      expect(parsed.data.href).toBe('https://app.example/callback#**redacted**');
     });
 
     it('should handle errors when pushing events gracefully', () => {

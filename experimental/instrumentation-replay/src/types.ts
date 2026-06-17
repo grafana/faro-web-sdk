@@ -94,11 +94,12 @@ export interface ReplayInstrumentationOptions {
   inactivityThresholdMs?: number;
 
   /**
-   * Strip query string and fragment from `window.location.href` in rrweb Meta events
-   * before they are sent to the Faro transport.
+   * Redact query parameter values and fragments in `window.location.href` in rrweb
+   * Meta events before they are sent to the Faro transport.
    *
    * URLs routinely contain sensitive data (OAuth codes, tokens in fragments, PII in
-   * query parameters). This option removes `search` and `hash` from Meta event hrefs.
+   * query parameters). This option replaces query parameter values and fragments with
+   * `**redacted**`, preserving parameter keys for debugging.
    *
    * @default true
    */
