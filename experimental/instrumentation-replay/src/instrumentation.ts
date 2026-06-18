@@ -1,5 +1,5 @@
-import type { eventWithTime } from '@rrweb/types';
-import { record, type recordOptions } from 'rrweb';
+import type { eventWithTime } from '@grafana/rrweb-types';
+import { record, type recordOptions } from '@grafana/rrweb';
 
 import { BaseInstrumentation, clampSamplingRate, VERSION } from '@grafana/faro-core';
 
