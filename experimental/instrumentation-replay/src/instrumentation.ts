@@ -1,7 +1,6 @@
-import type { eventWithTime } from '@grafana/rrweb-types';
-import { record, type recordOptions } from '@grafana/rrweb';
-
 import { BaseInstrumentation, clampSamplingRate, VERSION } from '@grafana/faro-core';
+import { record, type recordOptions } from '@grafana/rrweb';
+import type { eventWithTime } from '@grafana/rrweb-types';
 
 import { defaultReplayInstrumentationOptions } from './const';
 import type { ReplayInstrumentationOptions } from './types';
