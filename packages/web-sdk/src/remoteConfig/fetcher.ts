@@ -6,11 +6,10 @@ import type { CachedRemoteConfig, RemoteConfigResponse } from './types';
 /**
  * Outcome of a remote-config fetch.
  * - `updated`: the endpoint returned a fresh config (200).
- * - `not-modified`: the endpoint returned 304 (the cached config is still current).
- * - `error`: anything went wrong (network, timeout, parse, non-2xx/304). The caller falls back to
+ * - `error`: anything went wrong (network, timeout, parse, non-2xx). The caller falls back to
  *   the cached/bundled default; the SDK never throws out of init.
  */
-export type FetchResult = { kind: 'updated'; value: CachedRemoteConfig } | { kind: 'not-modified' } | { kind: 'error' };
+export type FetchResult = { kind: 'updated'; value: CachedRemoteConfig } | { kind: 'error' };
 
 /**
  * Validate the response DTO. `sampleRate`, when present, must be a finite number in `[0, 1]`.
@@ -74,34 +73,22 @@ export function buildConfigUrl(appKey: string, collectorUrl: string | undefined,
 }
 
 /**
- * Fetch the remote config with a hard timeout and conditional (`If-None-Match`) revalidation.
- * Never throws — all failures resolve to `{ kind: 'error' }`.
+ * Fetch the remote config with a hard timeout. Never throws — all failures resolve to
+ * `{ kind: 'error' }`.
  */
 export async function fetchRemoteConfig(
   url: string,
   timeoutMs: number,
-  internalLogger: InternalLogger,
-  etag?: string
+  internalLogger: InternalLogger
 ): Promise<FetchResult> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const headers: Record<string, string> = {};
-
-    if (etag) {
-      headers['If-None-Match'] = etag;
-    }
-
     const response = await fetch(url, {
       method: 'GET',
-      headers,
       signal: controller.signal,
     });
-
-    if (response.status === 304) {
-      return { kind: 'not-modified' };
-    }
 
     if (!response.ok) {
       internalLogger.debug(`Remote config fetch returned non-ok status ${response.status}`);
@@ -124,7 +111,6 @@ export async function fetchRemoteConfig(
       kind: 'updated',
       value: {
         config: body,
-        etag: response.headers.get('ETag') ?? undefined,
       },
     };
   } catch (err) {

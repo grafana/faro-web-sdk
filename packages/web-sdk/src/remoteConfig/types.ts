@@ -13,10 +13,8 @@ export interface RemoteConfigResponse {
 }
 
 /**
- * The shape persisted in `localStorage`. Holds the resolved response plus the `ETag` for
- * conditional revalidation on the next load.
+ * The shape persisted in `localStorage`. Holds the resolved response.
  */
 export interface CachedRemoteConfig {
   config: RemoteConfigResponse;
-  etag?: string;
 }

@@ -44,7 +44,7 @@ export function readCachedConfig(appKey: string, internalLogger: InternalLogger)
 }
 
 /**
- * Persist the resolved config (and its `ETag`) for the next page load.
+ * Persist the resolved config for the next page load.
  */
 export function writeCachedConfig(appKey: string, value: CachedRemoteConfig, internalLogger: InternalLogger): void {
   try {

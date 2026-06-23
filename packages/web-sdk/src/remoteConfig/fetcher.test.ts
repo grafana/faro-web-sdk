@@ -64,37 +64,20 @@ describe('remoteConfig fetcher', () => {
       jest.clearAllMocks();
     });
 
-    it('returns updated with the parsed config and ETag on 200', async () => {
+    it('returns updated with the parsed config on 200', async () => {
       global.fetch = jest.fn().mockResolvedValue({
         status: 200,
         ok: true,
         json: async () => ({ version: '1', sampleRate: 0.25 }),
-        headers: { get: (name: string) => (name === 'ETag' ? 'etag-1' : null) },
+        headers: { get: () => null },
       }) as any;
 
       const result = await fetchRemoteConfig('https://x/config/k', 1500, mockInternalLogger);
 
       expect(result).toEqual({
         kind: 'updated',
-        value: { config: { version: '1', sampleRate: 0.25 }, etag: 'etag-1' },
+        value: { config: { version: '1', sampleRate: 0.25 } },
       });
-    });
-
-    it('sends If-None-Match and returns not-modified on 304', async () => {
-      const fetchMock = jest.fn().mockResolvedValue({
-        status: 304,
-        ok: false,
-        headers: { get: () => null },
-      });
-      global.fetch = fetchMock as any;
-
-      const result = await fetchRemoteConfig('https://x/config/k', 1500, mockInternalLogger, 'etag-1');
-
-      expect(result).toEqual({ kind: 'not-modified' });
-      expect(fetchMock).toHaveBeenCalledWith(
-        'https://x/config/k',
-        expect.objectContaining({ headers: { 'If-None-Match': 'etag-1' } })
-      );
     });
 
     it('returns error on a non-ok status', async () => {

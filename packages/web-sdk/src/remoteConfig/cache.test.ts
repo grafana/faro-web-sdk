@@ -15,10 +15,10 @@ describe('remoteConfig cache', () => {
   });
 
   it('round-trips a written config', () => {
-    writeCachedConfig(appKey, { config: { version: '1', sampleRate: 0.5 }, etag: 'e1' }, mockInternalLogger);
+    writeCachedConfig(appKey, { config: { version: '1', sampleRate: 0.5 } }, mockInternalLogger);
 
     const read = readCachedConfig(appKey, mockInternalLogger);
-    expect(read).toEqual({ config: { version: '1', sampleRate: 0.5 }, etag: 'e1' });
+    expect(read).toEqual({ config: { version: '1', sampleRate: 0.5 } });
   });
 
   it('returns null on a cold cache', () => {

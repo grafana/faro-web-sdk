@@ -55,15 +55,10 @@ export interface PreInitResult {
   timeoutMs: number;
   maxBufferBytes: number;
   /**
-   * The cached `ETag`, when a cache entry exists. Sent as `If-None-Match` so the conditional fetch can
-   * yield a 304 (`not-modified`) and we defer to the cached rate.
-   */
-  cachedEtag?: string;
-  /**
-   * The rate to fall back to when the fetch does not yield a fresh rate (304, timeout, or error). It
+   * The rate to fall back to when the fetch does not yield a fresh rate (timeout or error). It
    * is the cached `sampleRate` when a cache entry exists, otherwise the local/bundled `samplingRate`
    * captured before it was overridden to keep-all (`1`) for the hold window. `finalize` uses this so a
-   * fetch failure or 304 honors the cache/local rate (not the temporary keep-all `1`).
+   * fetch failure honors the cache/local rate (not the temporary keep-all `1`).
    */
   fallbackRate?: number;
 }
@@ -76,8 +71,8 @@ interface PrepareParams {
 }
 
 /**
- * Synchronous pre-init phase. Resolves the app key + config URL, reads the cache for a fallback rate
- * and etag, and unconditionally arms the deferred hold.
+ * Synchronous pre-init phase. Resolves the app key + config URL, reads the cache for a fallback rate,
+ * and unconditionally arms the deferred hold.
  *
  * - A local custom `sampler` wins over the remote rate (documented escape hatch) → `disabled`.
  * - The config URL cannot be resolved → `disabled`.
@@ -86,7 +81,7 @@ interface PrepareParams {
  *   pre-drops, and we stash a `fallbackRate` (cached rate when present, else the original local/bundled
  *   rate). The single source of truth for the current session becomes the decision made in `finalize`,
  *   which always consults the LIVE remote rate. A warm cache no longer applies its rate instantly —
- *   under this model the cache only feeds the 304-conditional path and the fetch-failure fallback.
+ *   under this model the cache only feeds the fetch-failure fallback.
  *
  * Never throws.
  */
@@ -119,12 +114,12 @@ export function prepareRemoteConfig({ config, collectorUrl, options, internalLog
     // lifecycle still runs, but with no localStorage reads/writes.
     const cacheId = appKey ?? config.app?.name;
 
-    // Read the cache for a fallback rate + etag. The cached rate is NOT applied to the live config —
-    // it only serves the 304-conditional path (defer to cache) and the fetch-failure fallback.
+    // Read the cache for a fallback rate. The cached rate is NOT applied to the live config —
+    // it only serves the fetch-failure fallback.
     const cached = cacheId != null ? readCachedConfig(cacheId, internalLogger) : null;
 
     // Fallback rate: the cached rate when a cache entry exists, else the local/bundled rate captured
-    // before we override it. `finalize` falls back to this on a 304/timeout/error.
+    // before we override it. `finalize` falls back to this on a timeout/error.
     const originalSamplingRate = config.sessionTracking?.samplingRate;
     const fallbackRate = cached?.config.sampleRate ?? originalSamplingRate;
 
@@ -143,7 +138,6 @@ export function prepareRemoteConfig({ config, collectorUrl, options, internalLog
       configUrl,
       timeoutMs,
       maxBufferBytes,
-      cachedEtag: cached?.etag,
       fallbackRate,
     };
   } catch (err) {
@@ -154,12 +148,10 @@ export function prepareRemoteConfig({ config, collectorUrl, options, internalLog
 
 /**
  * Post-init phase. Drives the unified defer-and-buffer lifecycle for every session: hold outgoing
- * telemetry, conditionally fetch the live rate (sending `If-None-Match` when a cached etag exists),
- * and finalize the sampling decision exactly once.
+ * telemetry, fetch the live rate, and finalize the sampling decision exactly once.
  *
  * - `updated` (200) → write the fresh config to the cache + finalize against the FETCHED rate. A
  *   changed rate fetched here overrides any cached/local rate for the current session.
- * - `not-modified` (304) → finalize against the cached/fallback rate (defer to cache).
  * - timeout/error → finalize against the fallback rate (cached, else local/bundled).
  *
  * A one-shot unload listener finalizes immediately against the fallback rate (flushing the held
@@ -214,7 +206,7 @@ export function engageRemoteConfig(faro: RemoteConfigFaro, prep: PreInitResult):
       finalizeOnce(fallbackRate, true);
     });
 
-    fetchRemoteConfig(prep.configUrl, prep.timeoutMs, internalLogger, prep.cachedEtag)
+    fetchRemoteConfig(prep.configUrl, prep.timeoutMs, internalLogger)
       .then((result) => {
         if (result.kind === 'updated') {
           // Skip the write entirely when there is no cacheId (no-identity configEndpoint path).
@@ -226,8 +218,7 @@ export function engageRemoteConfig(faro: RemoteConfigFaro, prep: PreInitResult):
           return;
         }
 
-        // `not-modified` (304): the cached config is still current — defer to the cached rate (carried
-        // as `fallbackRate`). Any other non-update (`error`, timeout) also falls back to that rate.
+        // Any non-update (`error`, timeout) falls back to the cached/local rate.
         finalizeOnce(fallbackRate);
       })
       .catch((err) => {

@@ -185,7 +185,7 @@ describe('remoteConfig orchestrator', () => {
     it('forces keep-all and never applies a warm cached rate instantly (the warm path now defers)', () => {
       window.localStorage.setItem(
         getCacheKey(appKey),
-        JSON.stringify({ config: { version: '1', sampleRate: 0.1 }, etag: 'e1' })
+        JSON.stringify({ config: { version: '1', sampleRate: 0.1 } })
       );
       const config = mockSessionConfig({ samplingRate: 0.5 });
 
@@ -194,9 +194,8 @@ describe('remoteConfig orchestrator', () => {
       // Unified deferred path: even with a warm cache, the rate is NOT applied to the live config now.
       expect(prep.mode).toBe('deferred');
       expect(config.sessionTracking!.samplingRate).toBe(1);
-      // The cached rate becomes the fallback (for 304 / fetch-failure), plus the etag is carried.
+      // The cached rate becomes the fallback (for fetch-failure).
       expect(prep.fallbackRate).toBe(0.1);
-      expect(prep.cachedEtag).toBe('e1');
       expect(prep.cacheId).toBe(appKey);
     });
 
@@ -205,7 +204,7 @@ describe('remoteConfig orchestrator', () => {
       // The cached entry is keyed by the app ID (config.app.name), NOT the configEndpoint URL.
       window.localStorage.setItem(
         getCacheKey('my-app'),
-        JSON.stringify({ config: { version: '1', sampleRate: 0.2 }, etag: 'e9' })
+        JSON.stringify({ config: { version: '1', sampleRate: 0.2 } })
       );
       const config = mockSessionConfig({ samplingRate: 0.5 });
       (config as any).app = { name: 'my-app' };
@@ -222,7 +221,6 @@ describe('remoteConfig orchestrator', () => {
       // The cached rate is the fallback, not the live rate (live is forced to keep-all).
       expect(config.sessionTracking!.samplingRate).toBe(1);
       expect(prep.fallbackRate).toBe(0.2);
-      expect(prep.cachedEtag).toBe('e9');
     });
 
     it('cold cache (no entry) stashes the local rate as fallback and forces keep-all (1) before init', () => {
@@ -235,8 +233,6 @@ describe('remoteConfig orchestrator', () => {
       // ...and the live config is forced to keep-all so the session is created isSampled='true' and
       // its before-send hook never pre-drops before the remote decision lands.
       expect(config.sessionTracking!.samplingRate).toBe(1);
-      // No cache entry => no etag to revalidate against.
-      expect(prep.cachedEtag).toBeUndefined();
     });
 
     it('cold cache stashes undefined fallback when no local rate is set', () => {
@@ -259,17 +255,16 @@ describe('remoteConfig orchestrator', () => {
       maxBufferBytes: 64 * 1024,
     };
 
-    it('the warm path now HOLDS and conditionally fetches (sends If-None-Match)', () => {
+    it('the warm path now HOLDS and fetches the live rate', () => {
       // fetch stays pending so the hold is observable.
       fetchSpy.mockReturnValue(new Promise(() => {}));
       const faro = makeMockFaro(mockSessionConfig());
 
-      engageRemoteConfig(faro, { ...deferredPrep, cachedEtag: 'e1', fallbackRate: 0.2 });
+      engageRemoteConfig(faro, { ...deferredPrep, fallbackRate: 0.2 });
 
       // Warm no longer streams instantly — it holds while the live rate is fetched.
       expect(faro.transports.isHolding()).toBe(true);
-      // The cached etag is sent so the server can answer 304.
-      expect(fetchSpy).toHaveBeenCalledWith(expect.any(String), 1500, mockInternalLogger, 'e1');
+      expect(fetchSpy).toHaveBeenCalledWith(expect.any(String), 1500, mockInternalLogger);
     });
 
     it('buffers early telemetry then flushes when finalized as sampled', async () => {
@@ -323,8 +318,8 @@ describe('remoteConfig orchestrator', () => {
       fetchSpy.mockResolvedValue({ kind: 'updated', value: { config: { version: '1', sampleRate: 0 } } });
 
       const faro = makeMockFaro(mockSessionConfig());
-      // Warm: cached/fallback rate is 1.0, etag present.
-      engageRemoteConfig(faro, { ...deferredPrep, cachedEtag: 'e1', fallbackRate: 1 });
+      // Warm: cached/fallback rate is 1.0.
+      engageRemoteConfig(faro, { ...deferredPrep, fallbackRate: 1 });
 
       (faro as any).push('early');
       await Promise.resolve();
@@ -336,40 +331,6 @@ describe('remoteConfig orchestrator', () => {
       expect(faro.dropped).toBe(1);
       // The live config reflects the fetched rate.
       expect(faro.config.sessionTracking!.samplingRate).toBe(0);
-    });
-
-    it('304 (not-modified) finalizes against the cached/fallback rate — keep', async () => {
-      jest.spyOn(Math, 'random').mockReturnValue(0.3); // 0.3 < 0.5 => sampled
-      fetchSpy.mockResolvedValue({ kind: 'not-modified' });
-
-      const faro = makeMockFaro(mockSessionConfig());
-      // Warm cache: 304 means "your cache is current" → defer to the cached/fallback rate 0.5.
-      engageRemoteConfig(faro, { ...deferredPrep, cachedEtag: 'e1', fallbackRate: 0.5 });
-
-      (faro as any).push('early');
-      await Promise.resolve();
-      await Promise.resolve();
-
-      expect(faro.transports.isHolding()).toBe(false);
-      // 0.3 < 0.5 => sampled => flushed.
-      expect(faro.sent).toContain('early');
-      expect(faro.config.sessionTracking!.samplingRate).toBe(0.5);
-    });
-
-    it('304 (not-modified) finalizes against the cached/fallback rate — drop', async () => {
-      jest.spyOn(Math, 'random').mockReturnValue(0.7); // 0.7 !< 0.5 => not sampled
-      fetchSpy.mockResolvedValue({ kind: 'not-modified' });
-
-      const faro = makeMockFaro(mockSessionConfig());
-      engageRemoteConfig(faro, { ...deferredPrep, cachedEtag: 'e1', fallbackRate: 0.5 });
-
-      (faro as any).push('early');
-      await Promise.resolve();
-      await Promise.resolve();
-
-      expect(faro.transports.isHolding()).toBe(false);
-      expect(faro.sent).not.toContain('early');
-      expect(faro.dropped).toBe(1);
     });
 
     it('falls back to the fallback rate on fetch error — fallback keeps the session', async () => {
@@ -498,8 +459,8 @@ describe('remoteConfig orchestrator', () => {
       await Promise.resolve();
       await Promise.resolve();
 
-      // (a) the endpoint is fetched verbatim — not transformed (no etag on a cold cache).
-      expect(fetchSpy).toHaveBeenCalledWith(configEndpoint, 1500, mockInternalLogger, undefined);
+      // (a) the endpoint is fetched verbatim — not transformed.
+      expect(fetchSpy).toHaveBeenCalledWith(configEndpoint, 1500, mockInternalLogger);
       // (b) the resolved config is cached under the app-ID-derived key — never the endpoint URL.
       expect(window.localStorage.getItem(getCacheKey('my-app'))).not.toBeNull();
       expect(window.localStorage.getItem(getCacheKey(configEndpoint))).toBeNull();
@@ -527,7 +488,7 @@ describe('remoteConfig orchestrator', () => {
       await Promise.resolve();
 
       // The endpoint is still fetched verbatim — the fetch lifecycle is unaffected.
-      expect(fetchSpy).toHaveBeenCalledWith(configEndpoint, 1500, mockInternalLogger, undefined);
+      expect(fetchSpy).toHaveBeenCalledWith(configEndpoint, 1500, mockInternalLogger);
       // No write to localStorage — no missing/colliding key.
       expect(setItemSpy).not.toHaveBeenCalled();
       expect(faro.transports.isHolding()).toBe(false);
