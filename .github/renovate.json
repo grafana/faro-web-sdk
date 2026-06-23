@@ -39,6 +39,11 @@
       "allowedVersions": "<2.0.0"
     },
     {
+      "description": "Pin react-router to v7 — not ready for the v8 breaking change (ESM-only, removes react-router-dom, requires Node >=22.22 and React >=19.2.7).",
+      "matchPackageNames": ["react-router", "react-router-dom"],
+      "allowedVersions": "<8.0.0"
+    },
+    {
       "description": "Enforce a 3-day release-age cooldown on ALL npm depTypes (incl @grafana/*, which the org preset exempts) to match yarn's npmMinimalAgeGate (.yarnrc.yml). Placed last so it overrides the injected Grafana org preset rule (grafana-renovate-config//presets/npm). Without this, Renovate proposes versions younger than the gate that yarn then quarantines (YN0016), producing un-mergeable PRs.",
       "matchDatasources": ["npm"],
       "minimumReleaseAge": "3 days"
