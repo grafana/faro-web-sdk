@@ -170,7 +170,7 @@ export function getSessionMetaUpdateHandler({
 /**
  * Force the *current* session to be treated as not-sampled, in place.
  *
- * This is used by the remote-config cold-cache lifecycle: the session was created keep-all
+ * This is used by the remote-config defer-and-buffer lifecycle: the session was created keep-all
  * (`isSampled='true'`) so its before-send hook never pre-drops while the remote rate is resolving.
  * Once the remote decision lands as "not sampled", we flip the live session so the existing session
  * before-send hook drops all subsequent items for this session.

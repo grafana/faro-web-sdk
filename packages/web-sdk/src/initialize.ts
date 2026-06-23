@@ -14,8 +14,8 @@ export function initializeFaro(config: BrowserConfig): Faro {
 
   // Opt-in remote config. Synchronous: the network fetch + sampling decision happen internally via
   // the defer-and-buffer lifecycle, so the consumer never awaits. When `remoteConfig` is absent,
-  // initialization behavior is unchanged. The pre-init phase may apply a warm-cache rate to
-  // `coreConfig` before the session decision is made.
+  // initialization behavior is unchanged. The pre-init phase forces keep-all before the session
+  // decision is made; every new session then consults the live remote rate before finalizing.
   const remoteConfigPrep = config.remoteConfig
     ? prepareRemoteConfig({
         config: coreConfig,

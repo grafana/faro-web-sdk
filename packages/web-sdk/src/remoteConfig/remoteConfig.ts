@@ -15,7 +15,7 @@ export const DEFAULT_TIMEOUT_MS = 1500;
 export const DEFAULT_MAX_BUFFER_BYTES = 64 * 1024;
 
 /**
- * Minimal surface of the registered Faro instance the cold-cache lifecycle needs. Kept narrow to
+ * Minimal surface of the registered Faro instance the deferred lifecycle needs. Kept narrow to
  * avoid a hard dependency on the full `Faro` type and to ease testing.
  */
 export interface RemoteConfigFaro {
@@ -30,11 +30,18 @@ export interface RemoteConfigFaro {
 }
 
 /**
- * Result of the synchronous pre-init phase. When `mode === 'cold'`, the caller must invoke
- * {@link startColdLifecycle} after Faro is initialized to engage the hold + fetch.
+ * Result of the synchronous pre-init phase.
+ *
+ * - `mode === 'disabled'`: remote sampling does not apply (a local custom sampler wins, or the config
+ *   URL could not be resolved). The lifecycle is a no-op.
+ * - `mode === 'deferred'`: every new session holds telemetry and consults the LIVE remote rate before
+ *   its sampling decision is finalized. The caller must invoke {@link engageRemoteConfig} after Faro
+ *   is initialized to engage the hold + conditional fetch. This is the single path for BOTH a cold
+ *   cache (no prior entry) and a warm cache (prior entry exists) — the warm rate is only a fallback,
+ *   never applied instantly, so an operator's live change is reliably reflected.
  */
 export interface PreInitResult {
-  mode: 'disabled' | 'warm' | 'cold';
+  mode: 'disabled' | 'deferred';
   appKey?: string;
   /**
    * Cache discriminator used to scope `localStorage` reads/writes. Resolves to the extracted app key
@@ -47,13 +54,18 @@ export interface PreInitResult {
   configUrl?: string;
   timeoutMs: number;
   maxBufferBytes: number;
+  /**
+   * The cached `ETag`, when a cache entry exists. Sent as `If-None-Match` so the conditional fetch can
+   * yield a 304 (`not-modified`) and we defer to the cached rate.
+   */
   cachedEtag?: string;
   /**
-   * Cold path only: the local/bundled `samplingRate` captured before it was overridden to `1` for
-   * the keep-all hold window. `finalize` falls back to this when the fetch does not yield a rate, so
-   * a fetch failure honors the local rate (not the temporary keep-all `1`).
+   * The rate to fall back to when the fetch does not yield a fresh rate (304, timeout, or error). It
+   * is the cached `sampleRate` when a cache entry exists, otherwise the local/bundled `samplingRate`
+   * captured before it was overridden to keep-all (`1`) for the hold window. `finalize` uses this so a
+   * fetch failure or 304 honors the cache/local rate (not the temporary keep-all `1`).
    */
-  originalSamplingRate?: number;
+  fallbackRate?: number;
 }
 
 interface PrepareParams {
@@ -64,12 +76,17 @@ interface PrepareParams {
 }
 
 /**
- * Synchronous pre-init phase. Resolves the app key + config URL and reads the cache.
+ * Synchronous pre-init phase. Resolves the app key + config URL, reads the cache for a fallback rate
+ * and etag, and unconditionally arms the deferred hold.
  *
  * - A local custom `sampler` wins over the remote rate (documented escape hatch) → `disabled`.
- * - Warm cache → applies the cached rate to `config.sessionTracking.samplingRate` immediately
- *   (before the session decision is made by the session instrumentation) and returns `warm`.
- * - Cold cache → returns `cold`; the caller engages the hold lifecycle after init.
+ * - The config URL cannot be resolved → `disabled`.
+ * - Otherwise → `deferred`. We ALWAYS force keep-all (`config.sessionTracking.samplingRate = 1`)
+ *   before init so the session is created with `isSampled='true'` and its before-send hook never
+ *   pre-drops, and we stash a `fallbackRate` (cached rate when present, else the original local/bundled
+ *   rate). The single source of truth for the current session becomes the decision made in `finalize`,
+ *   which always consults the LIVE remote rate. A warm cache no longer applies its rate instantly —
+ *   under this model the cache only feeds the 304-conditional path and the fetch-failure fallback.
  *
  * Never throws.
  */
@@ -102,31 +119,33 @@ export function prepareRemoteConfig({ config, collectorUrl, options, internalLog
     // lifecycle still runs, but with no localStorage reads/writes.
     const cacheId = appKey ?? config.app?.name;
 
-    // With no cacheId we cannot read the cache, so the path is necessarily cold.
+    // Read the cache for a fallback rate + etag. The cached rate is NOT applied to the live config —
+    // it only serves the 304-conditional path (defer to cache) and the fetch-failure fallback.
     const cached = cacheId != null ? readCachedConfig(cacheId, internalLogger) : null;
 
-    if (cached != null) {
-      // Warm cache: apply the rate now so the session instrumentation samples with it. No buffering.
-      if (cached.config.sampleRate !== undefined && config.sessionTracking) {
-        config.sessionTracking.samplingRate = clampSamplingRate(cached.config.sampleRate);
-      }
-
-      return { mode: 'warm', appKey, cacheId, configUrl, timeoutMs, maxBufferBytes, cachedEtag: cached.etag };
-    }
-
-    // Cold cache: we have no rate yet, so we cannot let the session instrumentation make a sampling
-    // decision against the *local* rate now — that would gate the current session by both the local
-    // roll (via the session before-send hook) and the later remote roll (at finalize), and a remote
-    // rate could never override a local one. Instead, stash the local rate and force keep-all (`1`)
-    // before init so the session is created with `isSampled='true'` and its before-send hook never
-    // pre-drops. The single source of truth becomes the remote decision made in `finalize`.
+    // Fallback rate: the cached rate when a cache entry exists, else the local/bundled rate captured
+    // before we override it. `finalize` falls back to this on a 304/timeout/error.
     const originalSamplingRate = config.sessionTracking?.samplingRate;
+    const fallbackRate = cached?.config.sampleRate ?? originalSamplingRate;
 
+    // Unify warm + cold into a single deferred path: force keep-all (`1`) before init so the session
+    // is created with `isSampled='true'` and never pre-drops. The remote decision in `finalize` is the
+    // single source of truth, and it always consults the LIVE rate (so a stale warm rate cannot leak
+    // through). The cached rate, if any, survives as `fallbackRate`.
     if (config.sessionTracking) {
       config.sessionTracking.samplingRate = 1;
     }
 
-    return { mode: 'cold', appKey, cacheId, configUrl, timeoutMs, maxBufferBytes, originalSamplingRate };
+    return {
+      mode: 'deferred',
+      appKey,
+      cacheId,
+      configUrl,
+      timeoutMs,
+      maxBufferBytes,
+      cachedEtag: cached?.etag,
+      fallbackRate,
+    };
   } catch (err) {
     internalLogger.debug('Remote config: unexpected error during preparation\n', err);
     return disabled;
@@ -134,32 +153,36 @@ export function prepareRemoteConfig({ config, collectorUrl, options, internalLog
 }
 
 /**
- * Post-init phase. Drives the defer-and-buffer lifecycle for a cold cache, and triggers background
- * revalidation for a warm cache. Synchronous: never awaits. Never throws.
+ * Post-init phase. Drives the unified defer-and-buffer lifecycle for every session: hold outgoing
+ * telemetry, conditionally fetch the live rate (sending `If-None-Match` when a cached etag exists),
+ * and finalize the sampling decision exactly once.
+ *
+ * - `updated` (200) → write the fresh config to the cache + finalize against the FETCHED rate. A
+ *   changed rate fetched here overrides any cached/local rate for the current session.
+ * - `not-modified` (304) → finalize against the cached/fallback rate (defer to cache).
+ * - timeout/error → finalize against the fallback rate (cached, else local/bundled).
+ *
+ * A one-shot unload listener finalizes immediately against the fallback rate (flushing the held
+ * buffer) so a visitor who leaves during the hold window does not lose buffered telemetry.
+ *
+ * Synchronous: never awaits. Never throws.
  */
 export function engageRemoteConfig(faro: RemoteConfigFaro, prep: PreInitResult): void {
   const { internalLogger } = faro;
 
   try {
     // Note: a missing `cacheId` is NOT a reason to bail — the no-identity configEndpoint path runs
-    // the full cold lifecycle, it just skips localStorage caching. Only `configUrl` is required.
+    // the full lifecycle, it just skips localStorage caching. Only `configUrl` is required.
     if (prep.mode === 'disabled' || prep.configUrl == null) {
       return;
     }
 
-    if (prep.mode === 'warm') {
-      // A warm cache implies a `cacheId` existed (we read a cached entry), so revalidation is safe.
-      // Revalidate in the background so the cache is fresh for the next load.
-      backgroundRevalidate(faro, prep.cacheId, prep.configUrl, prep.timeoutMs, prep.cachedEtag);
-      return;
-    }
-
-    // Cold cache: hold outgoing telemetry while we resolve the rate, bounding memory by a byte cap.
-    // The local rate was stashed in `prep.originalSamplingRate` and the live config was forced to
-    // keep-all (`1`) before init, so the current session is keep-all and `finalize` is the single
-    // source of truth for its sampling decision.
+    // The local rate was stashed in `prep.fallbackRate` and the live config was forced to keep-all
+    // (`1`) before init, so the current session is keep-all and `finalize` is the single source of
+    // truth for its sampling decision.
     let finalized = false;
-    const fallbackRate = prep.originalSamplingRate;
+    const fallbackRate = prep.fallbackRate;
+    let removeUnloadListener: (() => void) | undefined;
 
     const finalizeOnce = (sampleRate: number | undefined, sampledOverride?: boolean) => {
       if (finalized) {
@@ -167,6 +190,9 @@ export function engageRemoteConfig(faro: RemoteConfigFaro, prep: PreInitResult):
       }
 
       finalized = true;
+      // Always remove the unload listener once the decision is made so it cannot fire after finalize
+      // and cannot leak across the page's lifetime.
+      removeUnloadListener?.();
       finalize(faro, sampleRate, fallbackRate, sampledOverride);
     };
 
@@ -179,26 +205,35 @@ export function engageRemoteConfig(faro: RemoteConfigFaro, prep: PreInitResult):
       },
     });
 
-    fetchRemoteConfig(prep.configUrl, prep.timeoutMs, internalLogger)
+    // Finalize-on-unload: if the visitor leaves while we are still holding, finalize immediately
+    // against the fallback rate and flush the held buffer so buffered telemetry is not lost. Covers
+    // the whole hold lifecycle. Guarded for non-browser/no-document environments.
+    removeUnloadListener = registerFinalizeOnUnload(() => {
+      internalLogger.debug('Remote config: page hidden while holding, finalizing against fallback');
+      // Flush (keep) on unload so the visitor's buffered telemetry survives the hold window.
+      finalizeOnce(fallbackRate, true);
+    });
+
+    fetchRemoteConfig(prep.configUrl, prep.timeoutMs, internalLogger, prep.cachedEtag)
       .then((result) => {
         if (result.kind === 'updated') {
           // Skip the write entirely when there is no cacheId (no-identity configEndpoint path).
           if (prep.cacheId != null) {
             writeCachedConfig(prep.cacheId, result.value, internalLogger);
           }
+          // A freshly fetched rate overrides any cached/local rate for the current session.
           finalizeOnce(result.value.config.sampleRate);
           return;
         }
 
-        // Any non-update falls back to the stashed local/bundled rate. This includes an unexpected
-        // 304 (`not-modified`): the cold path sends no `If-None-Match`, so a 304 is anomalous — we
-        // still finalize against the local rate rather than leaving the app permanently held.
-        finalizeOnce(undefined);
+        // `not-modified` (304): the cached config is still current — defer to the cached rate (carried
+        // as `fallbackRate`). Any other non-update (`error`, timeout) also falls back to that rate.
+        finalizeOnce(fallbackRate);
       })
       .catch((err) => {
         // fetchRemoteConfig never rejects, but guard anyway so we never leave the buffer held.
         internalLogger.debug('Remote config: fetch unexpectedly rejected\n', err);
-        finalizeOnce(undefined);
+        finalizeOnce(fallbackRate);
       });
   } catch (err) {
     internalLogger.debug('Remote config: unexpected error while engaging lifecycle\n', err);
@@ -209,9 +244,52 @@ export function engageRemoteConfig(faro: RemoteConfigFaro, prep: PreInitResult):
 }
 
 /**
- * Finalize the cold-cache sampling decision exactly once. This is the single source of truth for
- * the current session's sampling decision on the cold path:
- * - resolve the effective rate as remote rate ?? stashed local/bundled rate ?? keep-all,
+ * Register a one-shot listener that finalizes the hold when the page is being unloaded. Listens for
+ * `visibilitychange` → hidden and `pagehide` (the reliable mobile/bfcache signals), invokes the
+ * callback once, and removes BOTH listeners immediately so nothing leaks and the callback never fires
+ * twice. Returns a disposer the caller invokes on a normal finalize so the listeners are always
+ * removed exactly once.
+ *
+ * Guards for non-browser / no-document environments by returning a no-op disposer.
+ */
+function registerFinalizeOnUnload(onUnload: () => void): () => void {
+  if (typeof document === 'undefined' || typeof document.addEventListener !== 'function') {
+    return () => {};
+  }
+
+  let removed = false;
+
+  const remove = () => {
+    if (removed) {
+      return;
+    }
+    removed = true;
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    document.removeEventListener('pagehide', onPageHide);
+  };
+
+  const onVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') {
+      remove();
+      onUnload();
+    }
+  };
+
+  const onPageHide = () => {
+    remove();
+    onUnload();
+  };
+
+  document.addEventListener('visibilitychange', onVisibilityChange);
+  document.addEventListener('pagehide', onPageHide);
+
+  return remove;
+}
+
+/**
+ * Finalize the sampling decision exactly once. This is the single source of truth for the current
+ * session's sampling decision:
+ * - resolve the effective rate as the provided rate (fetched or fallback) ?? keep-all,
  * - apply it to the live config so any subsequent *new* session uses it (the live config currently
  *   holds the temporary keep-all `1` set before init),
  * - decide sampled-or-not once for the current session,
@@ -220,7 +298,7 @@ export function engageRemoteConfig(faro: RemoteConfigFaro, prep: PreInitResult):
  *   place so the existing session before-send hook drops all post-finalize items too — without
  *   creating a new session id or re-deriving the decision probabilistically.
  *
- * `sampledOverride` forces the decision (used by the buffer-cap path: keep).
+ * `sampledOverride` forces the decision (used by the buffer-cap path: keep, and the unload path: keep).
  */
 function finalize(
   faro: RemoteConfigFaro,
@@ -228,8 +306,8 @@ function finalize(
   fallbackRate: number | undefined,
   sampledOverride?: boolean
 ): void {
-  // Effective rate: remote wins, else the stashed local/bundled rate, else keep-all. Never read the
-  // live config here — it was forced to `1` before init for the hold window.
+  // Effective rate: the resolved (fetched or fallback) rate, else the fallback rate, else keep-all.
+  // Never read the live config here — it was forced to `1` before init for the hold window.
   const effectiveRate = clampSamplingRate(sampleRate ?? fallbackRate ?? 1);
 
   if (faro.config.sessionTracking) {
@@ -249,33 +327,4 @@ function finalize(
     // The session was created keep-all; flip it so post-finalize streaming is suppressed too.
     markSessionNotSampled(getSessionManagerByConfig(faro.config.sessionTracking));
   }
-}
-
-/**
- * Conditionally revalidate the cached config in the background and update the cache for the next
- * load. Does not affect the current session.
- */
-function backgroundRevalidate(
-  faro: RemoteConfigFaro,
-  cacheId: string | undefined,
-  configUrl: string,
-  timeoutMs: number,
-  etag?: string
-): void {
-  const { internalLogger } = faro;
-
-  // No cacheId => nothing to revalidate against (no cached entry could exist). No-op.
-  if (cacheId == null) {
-    return;
-  }
-
-  fetchRemoteConfig(configUrl, timeoutMs, internalLogger, etag)
-    .then((result) => {
-      if (result.kind === 'updated') {
-        writeCachedConfig(cacheId, result.value, internalLogger);
-      }
-    })
-    .catch((err) => {
-      internalLogger.debug('Remote config: background revalidation failed\n', err);
-    });
 }

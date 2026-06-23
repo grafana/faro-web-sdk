@@ -4,7 +4,7 @@ import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 import { getCacheKey } from './cache';
 import * as fetcher from './fetcher';
 import { engageRemoteConfig, prepareRemoteConfig } from './remoteConfig';
-import type { RemoteConfigFaro } from './remoteConfig';
+import type { PreInitResult, RemoteConfigFaro } from './remoteConfig';
 
 const collectorUrl = 'https://collector.example.com/collect/abc123';
 const appKey = 'abc123';
@@ -80,6 +80,15 @@ function makeMockFaro(config: Config): RemoteConfigFaro & { sent: string[]; drop
   return faro;
 }
 
+/**
+ * Drive the JSDOM `document.visibilityState` and fire a `visibilitychange` event so the
+ * finalize-on-unload listener runs.
+ */
+function fireVisibilityHidden(): void {
+  Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+  document.dispatchEvent(new Event('visibilitychange'));
+}
+
 describe('remoteConfig orchestrator', () => {
   let fetchSpy: jest.SpyInstance;
 
@@ -87,6 +96,8 @@ describe('remoteConfig orchestrator', () => {
     window.localStorage.clear();
     jest.restoreAllMocks();
     fetchSpy = jest.spyOn(fetcher, 'fetchRemoteConfig');
+    // Reset visibility between tests (a prior unload test may have left it 'hidden').
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
   });
 
   afterEach(() => {
@@ -125,7 +136,7 @@ describe('remoteConfig orchestrator', () => {
       });
 
       // No app key resolvable, but the explicit endpoint keeps remote config enabled.
-      expect(prep.mode).toBe('cold');
+      expect(prep.mode).toBe('deferred');
       expect(prep.appKey).toBeUndefined();
       // configUrl is the endpoint used verbatim — not transformed into a /config/{appKey} URL.
       expect(prep.configUrl).toBe(configEndpoint);
@@ -145,8 +156,8 @@ describe('remoteConfig orchestrator', () => {
         internalLogger: mockInternalLogger,
       });
 
-      // The fetch still proceeds (cold lifecycle), but with no identity to key the cache by.
-      expect(prep.mode).toBe('cold');
+      // The fetch still proceeds (deferred lifecycle), but with no identity to key the cache by.
+      expect(prep.mode).toBe('deferred');
       expect(prep.appKey).toBeUndefined();
       expect(prep.configUrl).toBe(configEndpoint);
       // No app key + no app ID => no cacheId. The endpoint URL is never used as a key.
@@ -171,7 +182,25 @@ describe('remoteConfig orchestrator', () => {
       expect(prep.cacheId).toBe(appKey);
     });
 
-    it('warm cache is keyed by the app ID when there is no app key', () => {
+    it('forces keep-all and never applies a warm cached rate instantly (the warm path now defers)', () => {
+      window.localStorage.setItem(
+        getCacheKey(appKey),
+        JSON.stringify({ config: { version: '1', sampleRate: 0.1 }, etag: 'e1' })
+      );
+      const config = mockSessionConfig({ samplingRate: 0.5 });
+
+      const prep = prepareRemoteConfig({ config, collectorUrl, options: {}, internalLogger: mockInternalLogger });
+
+      // Unified deferred path: even with a warm cache, the rate is NOT applied to the live config now.
+      expect(prep.mode).toBe('deferred');
+      expect(config.sessionTracking!.samplingRate).toBe(1);
+      // The cached rate becomes the fallback (for 304 / fetch-failure), plus the etag is carried.
+      expect(prep.fallbackRate).toBe(0.1);
+      expect(prep.cachedEtag).toBe('e1');
+      expect(prep.cacheId).toBe(appKey);
+    });
+
+    it('warm cache keyed by the app ID carries the cached rate as the fallback (no instant apply)', () => {
       const configEndpoint = 'https://oss.example.com/my/explicit/config';
       // The cached entry is keyed by the app ID (config.app.name), NOT the configEndpoint URL.
       window.localStorage.setItem(
@@ -188,70 +217,41 @@ describe('remoteConfig orchestrator', () => {
         internalLogger: mockInternalLogger,
       });
 
-      expect(prep.mode).toBe('warm');
+      expect(prep.mode).toBe('deferred');
       expect(prep.cacheId).toBe('my-app');
-      // The cached rate read via the app-ID-keyed entry is applied to the live config.
-      expect(config.sessionTracking!.samplingRate).toBe(0.2);
+      // The cached rate is the fallback, not the live rate (live is forced to keep-all).
+      expect(config.sessionTracking!.samplingRate).toBe(1);
+      expect(prep.fallbackRate).toBe(0.2);
+      expect(prep.cachedEtag).toBe('e9');
     });
 
-    it('warm cache applies the cached rate to the config before init', () => {
-      window.localStorage.setItem(
-        getCacheKey(appKey),
-        JSON.stringify({ config: { version: '1', sampleRate: 0.1 }, etag: 'e1' })
-      );
-      const config = mockSessionConfig({ samplingRate: 0.5 });
-
-      const prep = prepareRemoteConfig({ config, collectorUrl, options: {}, internalLogger: mockInternalLogger });
-
-      expect(prep.mode).toBe('warm');
-      expect(config.sessionTracking!.samplingRate).toBe(0.1);
-    });
-
-    it('cold cache stashes the local rate and forces keep-all (1) before init', () => {
+    it('cold cache (no entry) stashes the local rate as fallback and forces keep-all (1) before init', () => {
       const config = mockSessionConfig({ samplingRate: 0.5 });
       const prep = prepareRemoteConfig({ config, collectorUrl, options: {}, internalLogger: mockInternalLogger });
 
-      expect(prep.mode).toBe('cold');
-      // The local rate is stashed so finalize can fall back to it on fetch failure...
-      expect(prep.originalSamplingRate).toBe(0.5);
+      expect(prep.mode).toBe('deferred');
+      // With no cache entry the local rate is the fallback for fetch failure...
+      expect(prep.fallbackRate).toBe(0.5);
       // ...and the live config is forced to keep-all so the session is created isSampled='true' and
       // its before-send hook never pre-drops before the remote decision lands.
       expect(config.sessionTracking!.samplingRate).toBe(1);
+      // No cache entry => no etag to revalidate against.
+      expect(prep.cachedEtag).toBeUndefined();
     });
 
-    it('cold cache stashes undefined when no local rate is set', () => {
+    it('cold cache stashes undefined fallback when no local rate is set', () => {
       const config = mockSessionConfig({ samplingRate: undefined });
       const prep = prepareRemoteConfig({ config, collectorUrl, options: {}, internalLogger: mockInternalLogger });
 
-      expect(prep.mode).toBe('cold');
-      expect(prep.originalSamplingRate).toBeUndefined();
+      expect(prep.mode).toBe('deferred');
+      expect(prep.fallbackRate).toBeUndefined();
       expect(config.sessionTracking!.samplingRate).toBe(1);
     });
   });
 
-  describe('engageRemoteConfig - warm cache', () => {
-    it('triggers a background revalidation and does not hold', () => {
-      fetchSpy.mockResolvedValue({ kind: 'not-modified' });
-      const faro = makeMockFaro(mockSessionConfig());
-
-      engageRemoteConfig(faro, {
-        mode: 'warm',
-        appKey,
-        cacheId: appKey,
-        configUrl: 'https://collector.example.com/config/abc123',
-        timeoutMs: 1500,
-        maxBufferBytes: 64 * 1024,
-        cachedEtag: 'e1',
-      });
-
-      expect(faro.transports.isHolding()).toBe(false);
-      expect(fetchSpy).toHaveBeenCalledWith(expect.any(String), 1500, mockInternalLogger, 'e1');
-    });
-  });
-
-  describe('engageRemoteConfig - cold cache (defer-and-buffer)', () => {
-    const coldPrep = {
-      mode: 'cold' as const,
+  describe('engageRemoteConfig - unified deferred lifecycle', () => {
+    const deferredPrep: PreInitResult = {
+      mode: 'deferred',
       appKey,
       cacheId: appKey,
       configUrl: 'https://collector.example.com/config/abc123',
@@ -259,13 +259,26 @@ describe('remoteConfig orchestrator', () => {
       maxBufferBytes: 64 * 1024,
     };
 
+    it('the warm path now HOLDS and conditionally fetches (sends If-None-Match)', () => {
+      // fetch stays pending so the hold is observable.
+      fetchSpy.mockReturnValue(new Promise(() => {}));
+      const faro = makeMockFaro(mockSessionConfig());
+
+      engageRemoteConfig(faro, { ...deferredPrep, cachedEtag: 'e1', fallbackRate: 0.2 });
+
+      // Warm no longer streams instantly — it holds while the live rate is fetched.
+      expect(faro.transports.isHolding()).toBe(true);
+      // The cached etag is sent so the server can answer 304.
+      expect(fetchSpy).toHaveBeenCalledWith(expect.any(String), 1500, mockInternalLogger, 'e1');
+    });
+
     it('buffers early telemetry then flushes when finalized as sampled', async () => {
       jest.spyOn(Math, 'random').mockReturnValue(0); // 0 < 1 => sampled
       let resolveFetch: (v: fetcher.FetchResult) => void;
       fetchSpy.mockReturnValue(new Promise<fetcher.FetchResult>((resolve) => (resolveFetch = resolve)));
 
       const faro = makeMockFaro(mockSessionConfig());
-      engageRemoteConfig(faro, coldPrep);
+      engageRemoteConfig(faro, deferredPrep);
 
       // early error arrives while pending
       (faro as any).push('early-error');
@@ -290,7 +303,7 @@ describe('remoteConfig orchestrator', () => {
       fetchSpy.mockReturnValue(new Promise<fetcher.FetchResult>((resolve) => (resolveFetch = resolve)));
 
       const faro = makeMockFaro(mockSessionConfig());
-      engageRemoteConfig(faro, coldPrep);
+      engageRemoteConfig(faro, deferredPrep);
 
       (faro as any).push('early-error');
 
@@ -303,13 +316,68 @@ describe('remoteConfig orchestrator', () => {
       expect(faro.dropped).toBe(1);
     });
 
-    it('falls back to the stashed local rate on fetch error — local keeps the session', async () => {
+    it('a changed rate fetched on the WARM path overrides the cached rate (cached 1.0, fetch 0 => drop)', async () => {
+      // The visitor's warm cache says keep-all (1.0). The operator just set the live rate to 0%.
+      // The freshly fetched 0 must win for THIS session: drop + flip the session to not-sampled.
+      jest.spyOn(Math, 'random').mockReturnValue(0); // 0 < 0 is false => not sampled
+      fetchSpy.mockResolvedValue({ kind: 'updated', value: { config: { version: '1', sampleRate: 0 } } });
+
+      const faro = makeMockFaro(mockSessionConfig());
+      // Warm: cached/fallback rate is 1.0, etag present.
+      engageRemoteConfig(faro, { ...deferredPrep, cachedEtag: 'e1', fallbackRate: 1 });
+
+      (faro as any).push('early');
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(faro.transports.isHolding()).toBe(false);
+      // The fetched 0 overrode the cached 1.0 — buffer dropped (not-sampled), not sent.
+      expect(faro.sent).not.toContain('early');
+      expect(faro.dropped).toBe(1);
+      // The live config reflects the fetched rate.
+      expect(faro.config.sessionTracking!.samplingRate).toBe(0);
+    });
+
+    it('304 (not-modified) finalizes against the cached/fallback rate — keep', async () => {
+      jest.spyOn(Math, 'random').mockReturnValue(0.3); // 0.3 < 0.5 => sampled
+      fetchSpy.mockResolvedValue({ kind: 'not-modified' });
+
+      const faro = makeMockFaro(mockSessionConfig());
+      // Warm cache: 304 means "your cache is current" → defer to the cached/fallback rate 0.5.
+      engageRemoteConfig(faro, { ...deferredPrep, cachedEtag: 'e1', fallbackRate: 0.5 });
+
+      (faro as any).push('early');
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(faro.transports.isHolding()).toBe(false);
+      // 0.3 < 0.5 => sampled => flushed.
+      expect(faro.sent).toContain('early');
+      expect(faro.config.sessionTracking!.samplingRate).toBe(0.5);
+    });
+
+    it('304 (not-modified) finalizes against the cached/fallback rate — drop', async () => {
+      jest.spyOn(Math, 'random').mockReturnValue(0.7); // 0.7 !< 0.5 => not sampled
+      fetchSpy.mockResolvedValue({ kind: 'not-modified' });
+
+      const faro = makeMockFaro(mockSessionConfig());
+      engageRemoteConfig(faro, { ...deferredPrep, cachedEtag: 'e1', fallbackRate: 0.5 });
+
+      (faro as any).push('early');
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(faro.transports.isHolding()).toBe(false);
+      expect(faro.sent).not.toContain('early');
+      expect(faro.dropped).toBe(1);
+    });
+
+    it('falls back to the fallback rate on fetch error — fallback keeps the session', async () => {
       jest.spyOn(Math, 'random').mockReturnValue(0.5);
       fetchSpy.mockResolvedValue({ kind: 'error' });
 
-      // Live config was forced to keep-all in prepare; the *stashed* local rate (1) is the fallback.
-      const faro = makeMockFaro(mockSessionConfig({ samplingRate: 1 }));
-      engageRemoteConfig(faro, { ...coldPrep, originalSamplingRate: 1 });
+      const faro = makeMockFaro(mockSessionConfig());
+      engageRemoteConfig(faro, { ...deferredPrep, fallbackRate: 1 });
 
       (faro as any).push('early');
       await Promise.resolve();
@@ -320,31 +388,29 @@ describe('remoteConfig orchestrator', () => {
       expect(faro.sent).toContain('early');
     });
 
-    it('falls back to the stashed local rate on fetch error — local drops the session', async () => {
+    it('falls back to the fallback rate on fetch error — fallback drops the session', async () => {
       jest.spyOn(Math, 'random').mockReturnValue(0.7); // 0.7 < 0.5 is false => not sampled
       fetchSpy.mockResolvedValue({ kind: 'error' });
 
-      const faro = makeMockFaro(mockSessionConfig({ samplingRate: 1 }));
-      // Stashed local rate is 0.5 even though the live config was forced to keep-all (1).
-      engageRemoteConfig(faro, { ...coldPrep, originalSamplingRate: 0.5 });
+      const faro = makeMockFaro(mockSessionConfig());
+      engageRemoteConfig(faro, { ...deferredPrep, fallbackRate: 0.5 });
 
       (faro as any).push('early');
       await Promise.resolve();
       await Promise.resolve();
 
-      // fallback honors the *local* 0.5 (not the keep-all 1) => 0.7 !< 0.5 => dropped
       expect(faro.transports.isHolding()).toBe(false);
       expect(faro.sent).not.toContain('early');
       expect(faro.dropped).toBe(1);
     });
 
-    it('remote rate is the single source of truth: local 0.5 + remote 0.1 gates solely by 0.1', async () => {
-      // random in [0.1, 0.5): local 0.5 would KEEP, remote 0.1 must DROP. Proves remote-only gating.
+    it('a fetched rate is the single source of truth: cached/local 0.5 + fetched 0.1 gates by 0.1', async () => {
+      // random in [0.1, 0.5): fallback 0.5 would KEEP, fetched 0.1 must DROP. Proves fetch-only gating.
       jest.spyOn(Math, 'random').mockReturnValue(0.3);
       fetchSpy.mockResolvedValue({ kind: 'updated', value: { config: { version: '1', sampleRate: 0.1 } } });
 
-      const faro = makeMockFaro(mockSessionConfig({ samplingRate: 1 }));
-      engageRemoteConfig(faro, { ...coldPrep, originalSamplingRate: 0.5 });
+      const faro = makeMockFaro(mockSessionConfig());
+      engageRemoteConfig(faro, { ...deferredPrep, fallbackRate: 0.5 });
 
       (faro as any).push('early');
       await Promise.resolve();
@@ -355,13 +421,13 @@ describe('remoteConfig orchestrator', () => {
       expect(faro.dropped).toBe(1);
     });
 
-    it('remote 1.0 keeps a session that local 0.5 would have dropped', async () => {
-      // random 0.7: local 0.5 would DROP, remote 1.0 must KEEP.
+    it('fetched 1.0 keeps a session that the fallback 0.5 would have dropped', async () => {
+      // random 0.7: fallback 0.5 would DROP, fetched 1.0 must KEEP.
       jest.spyOn(Math, 'random').mockReturnValue(0.7);
       fetchSpy.mockResolvedValue({ kind: 'updated', value: { config: { version: '1', sampleRate: 1 } } });
 
-      const faro = makeMockFaro(mockSessionConfig({ samplingRate: 1 }));
-      engageRemoteConfig(faro, { ...coldPrep, originalSamplingRate: 0.5 });
+      const faro = makeMockFaro(mockSessionConfig());
+      engageRemoteConfig(faro, { ...deferredPrep, fallbackRate: 0.5 });
 
       (faro as any).push('early');
       await Promise.resolve();
@@ -371,12 +437,12 @@ describe('remoteConfig orchestrator', () => {
       expect(faro.sent).toContain('early');
     });
 
-    it('remote 0 drops the session regardless of a permissive local rate', async () => {
+    it('fetched 0 drops the session regardless of a permissive fallback rate', async () => {
       jest.spyOn(Math, 'random').mockReturnValue(0); // 0 < 0 is false => not sampled
       fetchSpy.mockResolvedValue({ kind: 'updated', value: { config: { version: '1', sampleRate: 0 } } });
 
-      const faro = makeMockFaro(mockSessionConfig({ samplingRate: 1 }));
-      engageRemoteConfig(faro, { ...coldPrep, originalSamplingRate: 1 });
+      const faro = makeMockFaro(mockSessionConfig());
+      engageRemoteConfig(faro, { ...deferredPrep, fallbackRate: 1 });
 
       (faro as any).push('early');
       await Promise.resolve();
@@ -387,28 +453,12 @@ describe('remoteConfig orchestrator', () => {
       expect(faro.dropped).toBe(1);
     });
 
-    it('finalizes against the local rate on an unexpected 304 (no etag sent on cold path)', async () => {
-      jest.spyOn(Math, 'random').mockReturnValue(0.7); // 0.7 !< 0.5 => not sampled
-      fetchSpy.mockResolvedValue({ kind: 'not-modified' });
-
-      const faro = makeMockFaro(mockSessionConfig({ samplingRate: 1 }));
-      engageRemoteConfig(faro, { ...coldPrep, originalSamplingRate: 0.5 });
-
-      (faro as any).push('early');
-      await Promise.resolve();
-      await Promise.resolve();
-
-      // Does not leave the app held; finalizes against the stashed local 0.5.
-      expect(faro.transports.isHolding()).toBe(false);
-      expect(faro.dropped).toBe(1);
-    });
-
     it('finalizes early as sampled (keep) when the buffer cap is reached', async () => {
       // fetch stays pending so only the cap can finalize
       fetchSpy.mockReturnValue(new Promise(() => {}));
 
       const faro = makeMockFaro(mockSessionConfig());
-      engageRemoteConfig(faro, { ...coldPrep, maxBufferBytes: 5 });
+      engageRemoteConfig(faro, { ...deferredPrep, maxBufferBytes: 5 });
 
       (faro as any).push('aaaaaa'); // exceeds 5-byte cap
 
@@ -416,13 +466,13 @@ describe('remoteConfig orchestrator', () => {
       expect(faro.sent).toContain('aaaaaa');
     });
 
-    it('applies the remote rate to the config (remote overrides local)', async () => {
+    it('applies the fetched rate to the config (fetch overrides local/cache)', async () => {
       jest.spyOn(Math, 'random').mockReturnValue(0);
       fetchSpy.mockResolvedValue({ kind: 'updated', value: { config: { version: '1', sampleRate: 0.2 } } });
 
       const config = mockSessionConfig({ samplingRate: 0.9 });
       const faro = makeMockFaro(config);
-      engageRemoteConfig(faro, coldPrep);
+      engageRemoteConfig(faro, { ...deferredPrep, fallbackRate: 0.9 });
 
       await Promise.resolve();
       await Promise.resolve();
@@ -438,7 +488,7 @@ describe('remoteConfig orchestrator', () => {
       const faro = makeMockFaro(mockSessionConfig());
       // No appKey: the cache is keyed by the app ID (config.app.name), NOT the endpoint URL.
       engageRemoteConfig(faro, {
-        mode: 'cold',
+        mode: 'deferred',
         cacheId: 'my-app',
         configUrl: configEndpoint,
         timeoutMs: 1500,
@@ -448,8 +498,8 @@ describe('remoteConfig orchestrator', () => {
       await Promise.resolve();
       await Promise.resolve();
 
-      // (a) the endpoint is fetched verbatim — not transformed.
-      expect(fetchSpy).toHaveBeenCalledWith(configEndpoint, 1500, mockInternalLogger);
+      // (a) the endpoint is fetched verbatim — not transformed (no etag on a cold cache).
+      expect(fetchSpy).toHaveBeenCalledWith(configEndpoint, 1500, mockInternalLogger, undefined);
       // (b) the resolved config is cached under the app-ID-derived key — never the endpoint URL.
       expect(window.localStorage.getItem(getCacheKey('my-app'))).not.toBeNull();
       expect(window.localStorage.getItem(getCacheKey(configEndpoint))).toBeNull();
@@ -461,13 +511,12 @@ describe('remoteConfig orchestrator', () => {
       jest.spyOn(Math, 'random').mockReturnValue(0); // 0 < 1 => sampled
       fetchSpy.mockResolvedValue({ kind: 'updated', value: { config: { version: '1', sampleRate: 1 } } });
 
-      const getItemSpy = jest.spyOn(Storage.prototype, 'getItem');
       const setItemSpy = jest.spyOn(Storage.prototype, 'setItem');
 
       const faro = makeMockFaro(mockSessionConfig());
-      // No appKey AND no app ID => no cacheId. The full cold lifecycle still runs.
+      // No appKey AND no app ID => no cacheId. The full deferred lifecycle still runs.
       engageRemoteConfig(faro, {
-        mode: 'cold',
+        mode: 'deferred',
         cacheId: undefined,
         configUrl: configEndpoint,
         timeoutMs: 1500,
@@ -478,10 +527,9 @@ describe('remoteConfig orchestrator', () => {
       await Promise.resolve();
 
       // The endpoint is still fetched verbatim — the fetch lifecycle is unaffected.
-      expect(fetchSpy).toHaveBeenCalledWith(configEndpoint, 1500, mockInternalLogger);
-      // But localStorage is never touched (no read, no write) — no missing/colliding key.
+      expect(fetchSpy).toHaveBeenCalledWith(configEndpoint, 1500, mockInternalLogger, undefined);
+      // No write to localStorage — no missing/colliding key.
       expect(setItemSpy).not.toHaveBeenCalled();
-      expect(getItemSpy).not.toHaveBeenCalled();
       expect(faro.transports.isHolding()).toBe(false);
     });
 
@@ -493,7 +541,7 @@ describe('remoteConfig orchestrator', () => {
       const dropSpy = jest.spyOn(faro.transports, 'dropHeld');
       const flushSpy = jest.spyOn(faro.transports, 'flushHeld');
 
-      engageRemoteConfig(faro, { ...coldPrep, maxBufferBytes: 1 });
+      engageRemoteConfig(faro, { ...deferredPrep, maxBufferBytes: 1 });
 
       // cap fires first (keep), then fetch resolves — finalize must be a no-op the second time
       (faro as any).push('x');
@@ -502,6 +550,85 @@ describe('remoteConfig orchestrator', () => {
 
       expect(flushSpy).toHaveBeenCalledTimes(1);
       expect(dropSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('engageRemoteConfig - finalize-on-unload', () => {
+    const deferredPrep: PreInitResult = {
+      mode: 'deferred',
+      appKey,
+      cacheId: appKey,
+      configUrl: 'https://collector.example.com/config/abc123',
+      timeoutMs: 1500,
+      maxBufferBytes: 64 * 1024,
+    };
+
+    it('finalizes against the fallback + flushes the held buffer when the page hides mid-hold (no loss)', () => {
+      // fetch never resolves — only the unload path can finalize.
+      fetchSpy.mockReturnValue(new Promise(() => {}));
+
+      const faro = makeMockFaro(mockSessionConfig());
+      engageRemoteConfig(faro, { ...deferredPrep, fallbackRate: 0.5 });
+
+      // telemetry buffered while holding
+      (faro as any).push('early');
+      expect(faro.transports.isHolding()).toBe(true);
+
+      // visitor leaves the page mid-hold
+      fireVisibilityHidden();
+
+      // buffered telemetry is flushed (not dropped) so nothing is lost
+      expect(faro.transports.isHolding()).toBe(false);
+      expect(faro.sent).toContain('early');
+      expect(faro.dropped).toBe(0);
+    });
+
+    it('removes the unload listeners after a normal finalize (no leak, no double-fire)', async () => {
+      const addSpy = jest.spyOn(document, 'addEventListener');
+      const removeSpy = jest.spyOn(document, 'removeEventListener');
+      jest.spyOn(Math, 'random').mockReturnValue(0);
+      fetchSpy.mockResolvedValue({ kind: 'updated', value: { config: { version: '1', sampleRate: 1 } } });
+
+      const faro = makeMockFaro(mockSessionConfig());
+      engageRemoteConfig(faro, deferredPrep);
+
+      await Promise.resolve();
+      await Promise.resolve();
+
+      // both listeners (visibilitychange + pagehide) were registered then removed on finalize.
+      const visAdds = addSpy.mock.calls.filter(([type]) => type === 'visibilitychange');
+      const visRemoves = removeSpy.mock.calls.filter(([type]) => type === 'visibilitychange');
+      const pageAdds = addSpy.mock.calls.filter(([type]) => type === 'pagehide');
+      const pageRemoves = removeSpy.mock.calls.filter(([type]) => type === 'pagehide');
+      expect(visAdds).toHaveLength(1);
+      expect(visRemoves).toHaveLength(1);
+      expect(pageAdds).toHaveLength(1);
+      expect(pageRemoves).toHaveLength(1);
+
+      // A later page-hide must NOT re-finalize (already removed + finalize is one-shot).
+      const flushSpy = jest.spyOn(faro.transports, 'flushHeld');
+      fireVisibilityHidden();
+      expect(flushSpy).not.toHaveBeenCalled();
+    });
+
+    it('an unload after the fetch already finalized is a no-op', async () => {
+      jest.spyOn(Math, 'random').mockReturnValue(0);
+      fetchSpy.mockResolvedValue({ kind: 'updated', value: { config: { version: '1', sampleRate: 0 } } });
+
+      const faro = makeMockFaro(mockSessionConfig());
+      engageRemoteConfig(faro, { ...deferredPrep, fallbackRate: 0 });
+
+      (faro as any).push('early');
+      await Promise.resolve();
+      await Promise.resolve();
+
+      // fetched 0 dropped the buffer already.
+      expect(faro.dropped).toBe(1);
+
+      const flushSpy = jest.spyOn(faro.transports, 'flushHeld');
+      fireVisibilityHidden();
+      // unload must not flush after the decision is finalized.
+      expect(flushSpy).not.toHaveBeenCalled();
     });
   });
 });
