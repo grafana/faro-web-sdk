@@ -13,6 +13,7 @@ e2e/smoke/playwright-report
 dist
 node_modules
 packages/core/src/version.ts
+experimental/instrumentation-replay/src/rrwebVersion.ts
 
 # Logs
 *.log

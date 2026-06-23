@@ -101,6 +101,41 @@ initializeFaro({
 | ------------ | -------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------- |
 | `beforeSend` | `(event: eventWithTime) => eventWithTime \| null \| undefined` | `undefined` | Transform or filter events before they are sent. Return `null` or `undefined` to skip sending |
 
+## Versions Custom event
+
+When recording starts, the instrumentation emits a single rrweb Custom event
+(`type: 5`) into the recording stream carrying the SDK and rrweb versions. This
+lets backend consumers label recordings by version without any Faro `Meta`
+plumbing or transport schema changes, because the event flows through the normal
+`faro.session_recording.event` pipeline.
+
+The event has this exact shape (the `tag` is a stable contract key — do not
+change it):
+
+```json
+{
+  "type": 5,
+  "timestamp": 1700000000000,
+  "data": {
+    "tag": "grafana.faro.versions",
+    "payload": {
+      "rrweb": "2.0.0-grafana.1",
+      "faroWebSdk": "2.7.1",
+      "faroInstrumentationReplay": "2.7.1"
+    }
+  }
+}
+```
+
+- `rrweb` is the version of the bundled `rrweb` package, injected at build time
+  (see `bin/genRrwebVersion.js`, which generates `src/rrwebVersion.ts`).
+- `faroWebSdk` is read from `Meta.SDK.version` (empty string if unavailable).
+- `faroInstrumentationReplay` is this package's version.
+
+The event is re-emitted on each fresh `record()` start (for example, after a
+resume following inactivity). A few duplicates across segments are harmless;
+consumers read the first one they see.
+
 ## Privacy and Security
 
 This instrumentation records user interactions on your website. Make sure to:
