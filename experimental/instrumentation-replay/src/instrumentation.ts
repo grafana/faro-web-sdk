@@ -4,9 +4,14 @@ import { record, type recordOptions } from 'rrweb';
 import { BaseInstrumentation, clampSamplingRate, VERSION } from '@grafana/faro-core';
 
 import { defaultReplayInstrumentationOptions } from './const';
+import { RRWEB_VERSION } from './rrwebVersion';
 import type { ReplayInstrumentationOptions } from './types';
 
 const faroSessionReplayEventName = 'faro.session_recording.event';
+// rrweb Custom event tag used to embed the SDK/rrweb versions directly into the
+// recording stream. The backend session-replay worker keys off this exact
+// string, so it must not change. See README for the contract.
+const faroVersionsCustomEventTag = 'grafana.faro.versions';
 const faroSessionReplayStartedEventName = 'faro.session_recording.started';
 const faroSessionReplayPausedEventName = 'faro.session_recording.paused';
 const faroSessionReplayResumedEventName = 'faro.session_recording.resumed';
@@ -158,9 +163,29 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     const stop = record(this.buildRecordOptions());
     if (stop) {
       this.stopFn = stop;
+      this.emitVersionsEvent();
       return true;
     }
     return false;
+  }
+
+  // Emits a single rrweb Custom event (type 5) carrying the SDK and rrweb
+  // versions into the recording stream, so the backend can label metrics by
+  // version without any Faro Meta plumbing or Kafka schema change.
+  //
+  // Called on every fresh record() start (initial start and resume-after-pause).
+  // A couple of duplicates across segments are harmless; the backend reads the
+  // first one it sees. Failures here must never break recording.
+  private emitVersionsEvent(): void {
+    try {
+      record.addCustomEvent(faroVersionsCustomEventTag, {
+        rrweb: RRWEB_VERSION,
+        faroWebSdk: this.metas?.value?.sdk?.version ?? '',
+        faroInstrumentationReplay: VERSION,
+      });
+    } catch (err) {
+      this.logWarn('Failed to emit session replay versions event', err);
+    }
   }
 
   private stopRrweb(): void {

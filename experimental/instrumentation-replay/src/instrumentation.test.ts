@@ -1,12 +1,16 @@
-import { genShortID } from '@grafana/faro-core';
+import { genShortID, VERSION } from '@grafana/faro-core';
 
 import { ReplayInstrumentation } from './instrumentation';
+import { RRWEB_VERSION } from './rrwebVersion';
 import { MaskInputFn, ReplayInstrumentationOptions } from './types';
 
-// Mock rrweb
-jest.mock('rrweb', () => ({
-  record: jest.fn(),
-}));
+// Mock rrweb. `record` is a function with an `addCustomEvent` method; the mock
+// mirrors that shape so the instrumentation can emit the versions Custom event.
+jest.mock('rrweb', () => {
+  const record = jest.fn();
+  (record as unknown as { addCustomEvent: jest.Mock }).addCustomEvent = jest.fn();
+  return { record };
+});
 
 function createSeededRandom(seed: number): () => number {
   let current = seed >>> 0;
@@ -19,7 +23,8 @@ function createSeededRandom(seed: number): () => number {
 
 describe('ReplayInstrumentation', () => {
   let instrumentation: ReplayInstrumentation;
-  let mockRecord: jest.Mock;
+  let mockRecord: jest.Mock & { addCustomEvent: jest.Mock };
+  let mockAddCustomEvent: jest.Mock;
   let mockGetSession: jest.Mock;
   let mockAddListener: jest.Mock;
   let mockPushEvent: jest.Mock;
@@ -28,6 +33,7 @@ describe('ReplayInstrumentation', () => {
     jest.clearAllMocks();
     mockRecord = require('rrweb').record;
     mockRecord.mockReturnValue(jest.fn());
+    mockAddCustomEvent = mockRecord.addCustomEvent;
 
     // Mock API and metas
     mockGetSession = jest.fn();
@@ -301,6 +307,105 @@ describe('ReplayInstrumentation', () => {
 
       expect(() => instrumentation.initialize()).not.toThrow();
       expect(logWarnSpy).toHaveBeenCalledWith('Failed to start session replay', expect.any(Error));
+    });
+  });
+
+  describe('versions custom event', () => {
+    function initSampledWithSdkVersion(sdkVersion: string | undefined): void {
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      instrumentation['metas'] = {
+        addListener: mockAddListener,
+        value: { sdk: sdkVersion === undefined ? undefined : { version: sdkVersion } },
+      } as any;
+      instrumentation.initialize();
+    }
+
+    it('should emit a grafana.faro.versions Custom event when recording starts', () => {
+      instrumentation = new ReplayInstrumentation();
+
+      initSampledWithSdkVersion('2.7.1');
+
+      expect(mockAddCustomEvent).toHaveBeenCalledTimes(1);
+      expect(mockAddCustomEvent).toHaveBeenCalledWith('grafana.faro.versions', {
+        rrweb: RRWEB_VERSION,
+        faroWebSdk: '2.7.1',
+        faroInstrumentationReplay: VERSION,
+      });
+    });
+
+    it('should populate all three version fields as strings', () => {
+      instrumentation = new ReplayInstrumentation();
+
+      initSampledWithSdkVersion('2.7.1');
+
+      const [tag, payload] = mockAddCustomEvent.mock.calls[0]!;
+      expect(tag).toBe('grafana.faro.versions');
+      expect(typeof payload.rrweb).toBe('string');
+      expect(typeof payload.faroWebSdk).toBe('string');
+      expect(typeof payload.faroInstrumentationReplay).toBe('string');
+      expect(payload.rrweb.length).toBeGreaterThan(0);
+      expect(payload.faroInstrumentationReplay.length).toBeGreaterThan(0);
+    });
+
+    it('should fall back to an empty faroWebSdk string when the SDK version is unavailable', () => {
+      instrumentation = new ReplayInstrumentation();
+
+      initSampledWithSdkVersion(undefined);
+
+      expect(mockAddCustomEvent).toHaveBeenCalledWith(
+        'grafana.faro.versions',
+        expect.objectContaining({ faroWebSdk: '' })
+      );
+    });
+
+    it('should not emit the versions event when the session is not sampled', () => {
+      instrumentation = new ReplayInstrumentation();
+
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'false' } });
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockAddCustomEvent).not.toHaveBeenCalled();
+    });
+
+    it('should emit the versions event again on a fresh start after resume', () => {
+      jest.useFakeTimers();
+      try {
+        const stopFn = jest.fn();
+        mockRecord.mockReturnValue(stopFn);
+
+        instrumentation = new ReplayInstrumentation({ inactivityThresholdMs: 5_000 });
+        initSampledWithSdkVersion('2.7.1');
+        expect(mockAddCustomEvent).toHaveBeenCalledTimes(1);
+
+        jest.advanceTimersByTime(5_000);
+        expect(instrumentation['isPaused']).toBe(true);
+
+        mockRecord.mockReturnValue(jest.fn());
+        document.dispatchEvent(new Event('pointerdown'));
+
+        expect(instrumentation['isPaused']).toBe(false);
+        expect(mockAddCustomEvent).toHaveBeenCalledTimes(2);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('should not break recording if addCustomEvent throws', () => {
+      mockAddCustomEvent.mockImplementation(() => {
+        throw new Error('addCustomEvent failed');
+      });
+
+      instrumentation = new ReplayInstrumentation();
+
+      const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
+
+      expect(() => initSampledWithSdkVersion('2.7.1')).not.toThrow();
+      expect(instrumentation['isRecording']).toBe(true);
+      expect(logWarnSpy).toHaveBeenCalledWith('Failed to emit session replay versions event', expect.any(Error));
     });
   });
 
