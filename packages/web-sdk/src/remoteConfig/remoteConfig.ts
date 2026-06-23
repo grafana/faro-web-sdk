@@ -2,9 +2,12 @@ import { clampSamplingRate } from '@grafana/faro-core';
 import type { Config, InternalLogger } from '@grafana/faro-core';
 
 import type { RemoteConfigOptions } from '../config';
-import { getSessionManagerByConfig, markSessionNotSampled } from '../instrumentations/session/sessionManager';
+import {
+  getSessionManagerByConfig,
+  isSampled,
+  markSessionNotSampled,
+} from '../instrumentations/session/sessionManager';
 
-import { decideSampled } from './applySampling';
 import { readCachedConfig, writeCachedConfig } from './cache';
 import { buildConfigUrl, extractAppKey, fetchRemoteConfig } from './fetcher';
 
@@ -33,6 +36,14 @@ export interface RemoteConfigFaro {
 export interface PreInitResult {
   mode: 'disabled' | 'warm' | 'cold';
   appKey?: string;
+  /**
+   * Cache discriminator used to scope `localStorage` reads/writes. Resolves to the extracted app key
+   * when available, otherwise to the app ID (`config.app?.name`). It is NEVER the `configEndpoint`
+   * URL — that is a manual fetch target and must not become a cache key. When neither an app key nor
+   * an app ID is available, this is `undefined` and all cache operations are skipped (no-ops), so the
+   * lifecycle still runs but never reads/writes a missing or colliding key.
+   */
+  cacheId?: string;
   configUrl?: string;
   timeoutMs: number;
   maxBufferBytes: number;
@@ -73,21 +84,26 @@ export function prepareRemoteConfig({ config, collectorUrl, options, internalLog
       return disabled;
     }
 
-    const appKey = extractAppKey(collectorUrl);
+    const appKey = extractAppKey(collectorUrl) ?? undefined;
 
-    if (appKey == null) {
-      internalLogger.debug('Remote config: could not resolve app key, using bundled default');
-      return disabled;
-    }
-
-    const configUrl = buildConfigUrl(appKey, collectorUrl, options.url);
+    // Resolve the config URL. An explicit `configEndpoint` wins and is used verbatim (no app key
+    // required). Otherwise we need a resolvable app key to derive the Grafana `/config/{appKey}` URL.
+    const configUrl =
+      options.configEndpoint ?? (appKey != null ? buildConfigUrl(appKey, collectorUrl, options.url) : null);
 
     if (configUrl == null) {
       internalLogger.debug('Remote config: could not resolve config URL, using bundled default');
       return disabled;
     }
 
-    const cached = readCachedConfig(appKey, internalLogger);
+    // Cache discriminator: the app key when present, else the app ID (`config.app?.name`). The
+    // `configEndpoint` URL is a manual fetch target and must NEVER be used as a cache key. When
+    // neither is available `cacheId` is undefined and all cache operations are skipped — the
+    // lifecycle still runs, but with no localStorage reads/writes.
+    const cacheId = appKey ?? config.app?.name;
+
+    // With no cacheId we cannot read the cache, so the path is necessarily cold.
+    const cached = cacheId != null ? readCachedConfig(cacheId, internalLogger) : null;
 
     if (cached != null) {
       // Warm cache: apply the rate now so the session instrumentation samples with it. No buffering.
@@ -95,7 +111,7 @@ export function prepareRemoteConfig({ config, collectorUrl, options, internalLog
         config.sessionTracking.samplingRate = clampSamplingRate(cached.config.sampleRate);
       }
 
-      return { mode: 'warm', appKey, configUrl, timeoutMs, maxBufferBytes, cachedEtag: cached.etag };
+      return { mode: 'warm', appKey, cacheId, configUrl, timeoutMs, maxBufferBytes, cachedEtag: cached.etag };
     }
 
     // Cold cache: we have no rate yet, so we cannot let the session instrumentation make a sampling
@@ -110,7 +126,7 @@ export function prepareRemoteConfig({ config, collectorUrl, options, internalLog
       config.sessionTracking.samplingRate = 1;
     }
 
-    return { mode: 'cold', appKey, configUrl, timeoutMs, maxBufferBytes, originalSamplingRate };
+    return { mode: 'cold', appKey, cacheId, configUrl, timeoutMs, maxBufferBytes, originalSamplingRate };
   } catch (err) {
     internalLogger.debug('Remote config: unexpected error during preparation\n', err);
     return disabled;
@@ -125,13 +141,16 @@ export function engageRemoteConfig(faro: RemoteConfigFaro, prep: PreInitResult):
   const { internalLogger } = faro;
 
   try {
-    if (prep.mode === 'disabled' || prep.appKey == null || prep.configUrl == null) {
+    // Note: a missing `cacheId` is NOT a reason to bail — the no-identity configEndpoint path runs
+    // the full cold lifecycle, it just skips localStorage caching. Only `configUrl` is required.
+    if (prep.mode === 'disabled' || prep.configUrl == null) {
       return;
     }
 
     if (prep.mode === 'warm') {
+      // A warm cache implies a `cacheId` existed (we read a cached entry), so revalidation is safe.
       // Revalidate in the background so the cache is fresh for the next load.
-      backgroundRevalidate(faro, prep.appKey, prep.configUrl, prep.timeoutMs, prep.cachedEtag);
+      backgroundRevalidate(faro, prep.cacheId, prep.configUrl, prep.timeoutMs, prep.cachedEtag);
       return;
     }
 
@@ -163,7 +182,10 @@ export function engageRemoteConfig(faro: RemoteConfigFaro, prep: PreInitResult):
     fetchRemoteConfig(prep.configUrl, prep.timeoutMs, internalLogger)
       .then((result) => {
         if (result.kind === 'updated') {
-          writeCachedConfig(prep.appKey!, result.value, internalLogger);
+          // Skip the write entirely when there is no cacheId (no-identity configEndpoint path).
+          if (prep.cacheId != null) {
+            writeCachedConfig(prep.cacheId, result.value, internalLogger);
+          }
           finalizeOnce(result.value.config.sampleRate);
           return;
         }
@@ -218,7 +240,7 @@ function finalize(
     return;
   }
 
-  const sampled = sampledOverride ?? decideSampled(effectiveRate);
+  const sampled = sampledOverride ?? isSampled(effectiveRate);
 
   if (sampled) {
     faro.transports.flushHeld();
@@ -235,17 +257,22 @@ function finalize(
  */
 function backgroundRevalidate(
   faro: RemoteConfigFaro,
-  appKey: string,
+  cacheId: string | undefined,
   configUrl: string,
   timeoutMs: number,
   etag?: string
 ): void {
   const { internalLogger } = faro;
 
+  // No cacheId => nothing to revalidate against (no cached entry could exist). No-op.
+  if (cacheId == null) {
+    return;
+  }
+
   fetchRemoteConfig(configUrl, timeoutMs, internalLogger, etag)
     .then((result) => {
       if (result.kind === 'updated') {
-        writeCachedConfig(appKey, result.value, internalLogger);
+        writeCachedConfig(cacheId, result.value, internalLogger);
       }
     })
     .catch((err) => {

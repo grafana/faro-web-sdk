@@ -20,6 +20,13 @@ export interface RemoteConfigOptions {
    */
   url?: string;
   /**
+   * Full, explicit remote-config endpoint URL, used verbatim (no app key is appended and no path is
+   * derived from it). Intended for OSS users whose backend does not follow the Grafana Cloud
+   * `/collect/{appKey}` → `/config/{appKey}` pattern. When set, it takes precedence over both `url`
+   * and the collector-derived URL, and a resolvable app key is not required.
+   */
+  configEndpoint?: string;
+  /**
    * Hard timeout (ms) for the cold-cache fetch before the SDK finalizes the sampling decision with
    * the cached/bundled default (default: 1500).
    */

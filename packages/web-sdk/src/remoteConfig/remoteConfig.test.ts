@@ -111,6 +111,89 @@ describe('remoteConfig orchestrator', () => {
       expect(prep.mode).toBe('disabled');
     });
 
+    it('proceeds with a configEndpoint, keying the cache by the app ID when there is no app key', () => {
+      const configEndpoint = 'https://oss.example.com/my/explicit/config';
+      const config = mockSessionConfig();
+      // No resolvable app key, but an app ID (config.app.name) is available for cache scoping.
+      (config as any).app = { name: 'my-app' };
+
+      const prep = prepareRemoteConfig({
+        config,
+        collectorUrl: 'https://example.com/no-key',
+        options: { configEndpoint },
+        internalLogger: mockInternalLogger,
+      });
+
+      // No app key resolvable, but the explicit endpoint keeps remote config enabled.
+      expect(prep.mode).toBe('cold');
+      expect(prep.appKey).toBeUndefined();
+      // configUrl is the endpoint used verbatim — not transformed into a /config/{appKey} URL.
+      expect(prep.configUrl).toBe(configEndpoint);
+      // The cache is keyed by the app ID — NEVER the configEndpoint URL.
+      expect(prep.cacheId).toBe('my-app');
+    });
+
+    it('proceeds with a configEndpoint but skips caching when neither an app key nor an app ID exists', () => {
+      const configEndpoint = 'https://oss.example.com/my/explicit/config';
+      const config = mockSessionConfig();
+      // No app key (collector has no key) and no app ID (config.app is absent).
+
+      const prep = prepareRemoteConfig({
+        config,
+        collectorUrl: 'https://example.com/no-key',
+        options: { configEndpoint },
+        internalLogger: mockInternalLogger,
+      });
+
+      // The fetch still proceeds (cold lifecycle), but with no identity to key the cache by.
+      expect(prep.mode).toBe('cold');
+      expect(prep.appKey).toBeUndefined();
+      expect(prep.configUrl).toBe(configEndpoint);
+      // No app key + no app ID => no cacheId. The endpoint URL is never used as a key.
+      expect(prep.cacheId).toBeUndefined();
+    });
+
+    it('uses the configEndpoint verbatim (precedence over url and collector-derived URL)', () => {
+      const configEndpoint = 'https://oss.example.com/my/explicit/config';
+      const config = mockSessionConfig();
+
+      const prep = prepareRemoteConfig({
+        config,
+        collectorUrl,
+        options: { configEndpoint, url: 'https://ignored.example.com' },
+        internalLogger: mockInternalLogger,
+      });
+
+      // Endpoint wins over both `url` and the collector-derived `/config/{appKey}` URL.
+      expect(prep.configUrl).toBe(configEndpoint);
+      // The app key is still extracted (kept on the result), and wins for cache scoping.
+      expect(prep.appKey).toBe(appKey);
+      expect(prep.cacheId).toBe(appKey);
+    });
+
+    it('warm cache is keyed by the app ID when there is no app key', () => {
+      const configEndpoint = 'https://oss.example.com/my/explicit/config';
+      // The cached entry is keyed by the app ID (config.app.name), NOT the configEndpoint URL.
+      window.localStorage.setItem(
+        getCacheKey('my-app'),
+        JSON.stringify({ config: { version: '1', sampleRate: 0.2 }, etag: 'e9' })
+      );
+      const config = mockSessionConfig({ samplingRate: 0.5 });
+      (config as any).app = { name: 'my-app' };
+
+      const prep = prepareRemoteConfig({
+        config,
+        collectorUrl: 'https://example.com/no-key',
+        options: { configEndpoint },
+        internalLogger: mockInternalLogger,
+      });
+
+      expect(prep.mode).toBe('warm');
+      expect(prep.cacheId).toBe('my-app');
+      // The cached rate read via the app-ID-keyed entry is applied to the live config.
+      expect(config.sessionTracking!.samplingRate).toBe(0.2);
+    });
+
     it('warm cache applies the cached rate to the config before init', () => {
       window.localStorage.setItem(
         getCacheKey(appKey),
@@ -154,6 +237,7 @@ describe('remoteConfig orchestrator', () => {
       engageRemoteConfig(faro, {
         mode: 'warm',
         appKey,
+        cacheId: appKey,
         configUrl: 'https://collector.example.com/config/abc123',
         timeoutMs: 1500,
         maxBufferBytes: 64 * 1024,
@@ -169,6 +253,7 @@ describe('remoteConfig orchestrator', () => {
     const coldPrep = {
       mode: 'cold' as const,
       appKey,
+      cacheId: appKey,
       configUrl: 'https://collector.example.com/config/abc123',
       timeoutMs: 1500,
       maxBufferBytes: 64 * 1024,
@@ -343,6 +428,61 @@ describe('remoteConfig orchestrator', () => {
       await Promise.resolve();
 
       expect(config.sessionTracking!.samplingRate).toBe(0.2);
+    });
+
+    it('fetches the configEndpoint verbatim and keys the cache by the app ID when there is no app key', async () => {
+      const configEndpoint = 'https://oss.example.com/my/explicit/config';
+      jest.spyOn(Math, 'random').mockReturnValue(0); // 0 < 1 => sampled
+      fetchSpy.mockResolvedValue({ kind: 'updated', value: { config: { version: '1', sampleRate: 1 } } });
+
+      const faro = makeMockFaro(mockSessionConfig());
+      // No appKey: the cache is keyed by the app ID (config.app.name), NOT the endpoint URL.
+      engageRemoteConfig(faro, {
+        mode: 'cold',
+        cacheId: 'my-app',
+        configUrl: configEndpoint,
+        timeoutMs: 1500,
+        maxBufferBytes: 64 * 1024,
+      });
+
+      await Promise.resolve();
+      await Promise.resolve();
+
+      // (a) the endpoint is fetched verbatim — not transformed.
+      expect(fetchSpy).toHaveBeenCalledWith(configEndpoint, 1500, mockInternalLogger);
+      // (b) the resolved config is cached under the app-ID-derived key — never the endpoint URL.
+      expect(window.localStorage.getItem(getCacheKey('my-app'))).not.toBeNull();
+      expect(window.localStorage.getItem(getCacheKey(configEndpoint))).toBeNull();
+      expect(faro.transports.isHolding()).toBe(false);
+    });
+
+    it('fetches the configEndpoint verbatim but reads/writes nothing when there is no cacheId', async () => {
+      const configEndpoint = 'https://oss.example.com/my/explicit/config';
+      jest.spyOn(Math, 'random').mockReturnValue(0); // 0 < 1 => sampled
+      fetchSpy.mockResolvedValue({ kind: 'updated', value: { config: { version: '1', sampleRate: 1 } } });
+
+      const getItemSpy = jest.spyOn(Storage.prototype, 'getItem');
+      const setItemSpy = jest.spyOn(Storage.prototype, 'setItem');
+
+      const faro = makeMockFaro(mockSessionConfig());
+      // No appKey AND no app ID => no cacheId. The full cold lifecycle still runs.
+      engageRemoteConfig(faro, {
+        mode: 'cold',
+        cacheId: undefined,
+        configUrl: configEndpoint,
+        timeoutMs: 1500,
+        maxBufferBytes: 64 * 1024,
+      });
+
+      await Promise.resolve();
+      await Promise.resolve();
+
+      // The endpoint is still fetched verbatim — the fetch lifecycle is unaffected.
+      expect(fetchSpy).toHaveBeenCalledWith(configEndpoint, 1500, mockInternalLogger);
+      // But localStorage is never touched (no read, no write) — no missing/colliding key.
+      expect(setItemSpy).not.toHaveBeenCalled();
+      expect(getItemSpy).not.toHaveBeenCalled();
+      expect(faro.transports.isHolding()).toBe(false);
     });
 
     it('does not re-resolve after the decision is finalized once', async () => {
