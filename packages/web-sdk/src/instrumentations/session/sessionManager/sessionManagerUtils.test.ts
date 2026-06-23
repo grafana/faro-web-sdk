@@ -13,6 +13,7 @@ import {
   createUserSessionObject,
   getUserSessionUpdater,
   isUserSessionValid,
+  markSessionNotSampled,
 } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 import { VolatileSessionsManager } from './VolatileSessionManager';
@@ -750,6 +751,67 @@ describe('sessionManagerUtils', () => {
         serviceName: 'my-new-service',
         previousServiceName: 'my-service',
       });
+    });
+  });
+
+  describe('markSessionNotSampled', () => {
+    // Seed a live keep-all session into both faro.metas and storage, mirroring what the cold-cache
+    // remote-config lifecycle does before init (force keep-all so the session is isSampled='true').
+    function seedKeepAllSession(faro: ReturnType<typeof initializeFaro>) {
+      const sessionMeta: MetaSession = { id: mockSessionId, attributes: { isSampled: 'true', foo: 'bar' } };
+      faro.api.setSession(sessionMeta);
+      VolatileSessionsManager.storeUserSession(
+        createUserSessionObjectWithMeta(sessionMeta, { isSampled: true, sessionId: mockSessionId })
+      );
+      return sessionMeta;
+    }
+
+    function createUserSessionObjectWithMeta(
+      sessionMeta: MetaSession,
+      { isSampled, sessionId }: { isSampled: boolean; sessionId: string }
+    ): FaroUserSession {
+      return { ...createUserSessionObject({ sessionId, isSampled }), sessionMeta };
+    }
+
+    it('flips the live session meta isSampled to "false" in place without changing the id', () => {
+      const faro = initializeFaro(mockConfig({}));
+      seedKeepAllSession(faro);
+
+      // pre-condition: keep-all session
+      expect(faro.metas.value.session?.attributes?.['isSampled']).toBe('true');
+
+      markSessionNotSampled(VolatileSessionsManager);
+
+      expect(faro.metas.value.session?.id).toBe(mockSessionId);
+      expect(faro.metas.value.session?.attributes?.['isSampled']).toBe('false');
+      // unrelated attributes are preserved
+      expect(faro.metas.value.session?.attributes?.['foo']).toBe('bar');
+    });
+
+    it('does NOT re-derive the decision probabilistically (never calls isSampled)', () => {
+      const faro = initializeFaro(mockConfig({}));
+      seedKeepAllSession(faro);
+
+      const isSampledSpy = jest.spyOn(samplingModule, 'isSampled');
+
+      markSessionNotSampled(VolatileSessionsManager);
+
+      expect(isSampledSpy).not.toHaveBeenCalled();
+    });
+
+    it('persists isSampled=false to the stored session, keeping the same id', () => {
+      const faro = initializeFaro(mockConfig({}));
+      seedKeepAllSession(faro);
+
+      const stored = VolatileSessionsManager.fetchUserSession();
+      expect(stored?.isSampled).toBe(true);
+
+      markSessionNotSampled(VolatileSessionsManager);
+
+      const afterFlip = VolatileSessionsManager.fetchUserSession();
+      expect(afterFlip?.sessionId).toBe(stored?.sessionId);
+      expect(afterFlip?.isSampled).toBe(false);
+      expect(afterFlip?.sessionMeta?.attributes?.['isSampled']).toBe('false');
     });
   });
 });

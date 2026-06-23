@@ -6,7 +6,9 @@ import type { UnpatchedConsole } from '../unpatchedConsole';
 
 import { BatchExecutor } from './batchExecutor';
 import { TransportItemType } from './const';
-import type { BeforeSendHook, Transport, TransportItem, Transports } from './types';
+import type { BeforeSendHook, HoldOptions, Transport, TransportItem, Transports } from './types';
+
+const defaultMaxBufferBytes = 64 * 1024;
 
 export function initializeTransports(
   unpatchedConsole: UnpatchedConsole,
@@ -21,6 +23,25 @@ export function initializeTransports(
   let paused = config.paused;
 
   let beforeSendHooks: BeforeSendHook[] = [];
+
+  // Pre-decision hold buffer. While holding, outgoing signals are buffered in-memory instead of
+  // being sent or dropped, so an opt-in feature (e.g. remote config) can defer the send/drop
+  // decision without losing early telemetry. Bounded by a byte cap to keep host-page memory safe.
+  let holding = false;
+  let heldItems: TransportItem[] = [];
+  let heldBytes = 0;
+  let maxHeldBytes = defaultMaxBufferBytes;
+  let bufferFullNotified = false;
+  let onBufferFull: HoldOptions['onBufferFull'];
+
+  const estimateItemBytes = (item: TransportItem): number => {
+    try {
+      return JSON.stringify(item).length;
+    } catch (err) {
+      internalLogger.debug('Failed to estimate held item size\n', err);
+      return 0;
+    }
+  };
 
   const add: Transports['add'] = (...newTransports) => {
     internalLogger.debug('Adding transports');
@@ -128,12 +149,69 @@ export function initializeTransports(
       return;
     }
 
+    if (holding) {
+      heldItems.push(item);
+      heldBytes += estimateItemBytes(item);
+
+      if (!bufferFullNotified && heldBytes > maxHeldBytes) {
+        bufferFullNotified = true;
+        onBufferFull?.();
+      }
+
+      return;
+    }
+
     if (config.batching?.enabled) {
       batchExecutor?.addItem(item);
     }
 
     instantSend(item);
   };
+
+  const hold: Transports['hold'] = (options) => {
+    if (holding) {
+      return;
+    }
+
+    internalLogger.debug('Holding transports');
+    holding = true;
+    heldItems = [];
+    heldBytes = 0;
+    bufferFullNotified = false;
+    maxHeldBytes = options?.maxBufferBytes ?? defaultMaxBufferBytes;
+    onBufferFull = options?.onBufferFull;
+  };
+
+  const releaseHold = (): TransportItem[] => {
+    const buffered = heldItems;
+    holding = false;
+    heldItems = [];
+    heldBytes = 0;
+    bufferFullNotified = false;
+    onBufferFull = undefined;
+    return buffered;
+  };
+
+  const flushHeld: Transports['flushHeld'] = () => {
+    if (!holding) {
+      return;
+    }
+
+    internalLogger.debug('Flushing held transports buffer');
+    const buffered = releaseHold();
+    buffered.forEach((item) => execute(item));
+  };
+
+  const dropHeld: Transports['dropHeld'] = () => {
+    if (!holding) {
+      return;
+    }
+
+    internalLogger.debug('Dropping held transports buffer');
+    releaseHold();
+  };
+
+  const isHolding: Transports['isHolding'] = () => holding;
 
   const getBeforeSendHooks: Transports['getBeforeSendHooks'] = () => [...beforeSendHooks];
 
@@ -188,6 +266,10 @@ export function initializeTransports(
       return [...transports];
     },
     unpause,
+    hold,
+    flushHeld,
+    dropHeld,
+    isHolding,
   };
 }
 /**

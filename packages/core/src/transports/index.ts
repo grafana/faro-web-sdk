@@ -9,6 +9,7 @@ export { registerInitialTransports } from './registerInitial';
 export type {
   BatchExecutorOptions,
   BeforeSendHook,
+  HoldOptions,
   SendFn,
   Transport,
   TransportBody,
