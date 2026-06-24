@@ -183,10 +183,7 @@ describe('remoteConfig orchestrator', () => {
     });
 
     it('forces keep-all and never applies a warm cached rate instantly (the warm path now defers)', () => {
-      window.localStorage.setItem(
-        getCacheKey(appKey),
-        JSON.stringify({ config: { version: '1', sampleRate: 0.1 } })
-      );
+      window.localStorage.setItem(getCacheKey(appKey), JSON.stringify({ config: { version: '1', sampleRate: 0.1 } }));
       const config = mockSessionConfig({ samplingRate: 0.5 });
 
       const prep = prepareRemoteConfig({ config, collectorUrl, options: {}, internalLogger: mockInternalLogger });
@@ -202,10 +199,7 @@ describe('remoteConfig orchestrator', () => {
     it('warm cache keyed by the app ID carries the cached rate as the fallback (no instant apply)', () => {
       const configEndpoint = 'https://oss.example.com/my/explicit/config';
       // The cached entry is keyed by the app ID (config.app.name), NOT the configEndpoint URL.
-      window.localStorage.setItem(
-        getCacheKey('my-app'),
-        JSON.stringify({ config: { version: '1', sampleRate: 0.2 } })
-      );
+      window.localStorage.setItem(getCacheKey('my-app'), JSON.stringify({ config: { version: '1', sampleRate: 0.2 } }));
       const config = mockSessionConfig({ samplingRate: 0.5 });
       (config as any).app = { name: 'my-app' };
 
