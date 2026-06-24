@@ -622,8 +622,8 @@ __metadata:
   resolution: "@grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay"
   dependencies:
     "@grafana/faro-core": "npm:^2.7.1"
-    "@grafana/rrweb": "npm:2.0.0-grafana.1"
-    "@grafana/rrweb-types": "npm:2.0.0-grafana.1"
+    "@grafana/rrweb": "npm:2.0.0-grafana.2"
+    "@grafana/rrweb-types": "npm:2.0.0-grafana.2"
   languageName: unknown
   linkType: soft
 
@@ -713,51 +713,51 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@grafana/rrdom@npm:^2.0.0-grafana.1":
-  version: 2.0.0-grafana.1
-  resolution: "@grafana/rrdom@npm:2.0.0-grafana.1"
+"@grafana/rrdom@npm:^2.0.0-grafana.2":
+  version: 2.0.0-grafana.2
+  resolution: "@grafana/rrdom@npm:2.0.0-grafana.2"
   dependencies:
-    "@grafana/rrweb-snapshot": "npm:^2.0.0-grafana.1"
-  checksum: 10c0/8ca4c10f6eb74edb165fbd33e5f0252b6b0c1e902cc3647a92f3e848b3f9e079e8e7a71b655cabf792823140bd265f125cd8716a73fc801d158a9232ab05798b
+    "@grafana/rrweb-snapshot": "npm:^2.0.0-grafana.2"
+  checksum: 10c0/708de959122986042287a88b834fff116461a00694cd2c90c509fb3077cbe5d77c24d8c02eb65a8727f03d3a74f2c6649c76454b1a3444ad05fe6bc522db4149
   languageName: node
   linkType: hard
 
-"@grafana/rrweb-snapshot@npm:^2.0.0-grafana.1":
-  version: 2.0.0-grafana.1
-  resolution: "@grafana/rrweb-snapshot@npm:2.0.0-grafana.1"
+"@grafana/rrweb-snapshot@npm:^2.0.0-grafana.2":
+  version: 2.0.0-grafana.2
+  resolution: "@grafana/rrweb-snapshot@npm:2.0.0-grafana.2"
   dependencies:
     postcss: "npm:^8.4.38"
-  checksum: 10c0/3eeee668c8bf84b567de1482b1a3195d08d62c4651cb0b5e43d1d46ac80259ba0aa8a253f01c1b5735af46e3b2e1333125d66dab5b9d8ca20c802d881d050fe8
+  checksum: 10c0/be6a923cdcf1a2b611e47c2c8c7575d80ed4ab24a155228516b053d0fff8da5a7db524a2c47be76874c6cfc496b3539a01a62c8f6361d3a0782a735e253dda33
   languageName: node
   linkType: hard
 
-"@grafana/rrweb-types@npm:2.0.0-grafana.1, @grafana/rrweb-types@npm:^2.0.0-grafana.1":
-  version: 2.0.0-grafana.1
-  resolution: "@grafana/rrweb-types@npm:2.0.0-grafana.1"
-  checksum: 10c0/28df3bc205a9a44cd8e5ae9154a7950ab4cdcd65d6fddf0f66a5a37fa4d6070416c1567d2fa02ace97dfbfa5c5e29e6f629d9b371bf4edbce3b2bc963ebb54c9
+"@grafana/rrweb-types@npm:2.0.0-grafana.2, @grafana/rrweb-types@npm:^2.0.0-grafana.2":
+  version: 2.0.0-grafana.2
+  resolution: "@grafana/rrweb-types@npm:2.0.0-grafana.2"
+  checksum: 10c0/a024ecb19321045f7993fb7d98c347d0f0228190448e4a5e0613bfec83b56bffd5314c6e95d12e78b9698e0d8417b9c9e758daf43078256cb7f3438e9add3edc
   languageName: node
   linkType: hard
 
-"@grafana/rrweb-utils@npm:^2.0.0-grafana.1":
-  version: 2.0.0-grafana.1
-  resolution: "@grafana/rrweb-utils@npm:2.0.0-grafana.1"
-  checksum: 10c0/055dd46ef8e2c7cfd43677fcc21a302f9ec1156e4f6f65cbf5c7ae2774b270a26331c19ed80db74dcd703c64e15b3cc1a08c7a538fae65f9a1edd73b22d9f617
+"@grafana/rrweb-utils@npm:^2.0.0-grafana.2":
+  version: 2.0.0-grafana.2
+  resolution: "@grafana/rrweb-utils@npm:2.0.0-grafana.2"
+  checksum: 10c0/8be866a99fa4912142b83a118c7a743427b5251e2007fe1a145c3ab54769576ea5b427874e81fa67d142200dd3d000a8d4f8059b4b142128c58a459b9487c552
   languageName: node
   linkType: hard
 
-"@grafana/rrweb@npm:2.0.0-grafana.1":
-  version: 2.0.0-grafana.1
-  resolution: "@grafana/rrweb@npm:2.0.0-grafana.1"
+"@grafana/rrweb@npm:2.0.0-grafana.2":
+  version: 2.0.0-grafana.2
+  resolution: "@grafana/rrweb@npm:2.0.0-grafana.2"
   dependencies:
-    "@grafana/rrdom": "npm:^2.0.0-grafana.1"
-    "@grafana/rrweb-snapshot": "npm:^2.0.0-grafana.1"
-    "@grafana/rrweb-types": "npm:^2.0.0-grafana.1"
-    "@grafana/rrweb-utils": "npm:^2.0.0-grafana.1"
+    "@grafana/rrdom": "npm:^2.0.0-grafana.2"
+    "@grafana/rrweb-snapshot": "npm:^2.0.0-grafana.2"
+    "@grafana/rrweb-types": "npm:^2.0.0-grafana.2"
+    "@grafana/rrweb-utils": "npm:^2.0.0-grafana.2"
     "@types/css-font-loading-module": "npm:0.0.7"
     "@xstate/fsm": "npm:^1.4.0"
     base64-arraybuffer: "npm:^1.0.1"
     mitt: "npm:^3.0.0"
-  checksum: 10c0/622723f0df1e339754b6dfdf9cf27180558553d12612cd88be58116af8db3b4f9dd4f5b6bcdce2ca1369d1364a535d77fbda9555481a5aaf59bc30d1968e420c
+  checksum: 10c0/9a2ecbbfb4929d3a9e0e3f300d59cc78a1c77a6a8580b7c3a6b6cc7c41b55e9741974dea4d3412712b13c8dad4b5930a9b892f05af80638f5be15956d4515d8a
   languageName: node
   linkType: hard
 

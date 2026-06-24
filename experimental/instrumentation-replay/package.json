@@ -54,8 +54,8 @@
   },
   "dependencies": {
     "@grafana/faro-core": "^2.7.1",
-    "@grafana/rrweb": "2.0.0-grafana.1",
-    "@grafana/rrweb-types": "2.0.0-grafana.1"
+    "@grafana/rrweb": "2.0.0-grafana.2",
+    "@grafana/rrweb-types": "2.0.0-grafana.2"
   },
   "publishConfig": {
     "access": "public"
