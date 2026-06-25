@@ -1,7 +1,7 @@
 {
   "name": "@grafana/faro-react",
   "packageManager": "yarn@4.17.0",
-  "version": "2.7.1",
+  "version": "2.8.0",
   "description": "Faro package that enables easier integration in projects built with React.",
   "keywords": [
     "observability",
@@ -58,8 +58,8 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "^2.7.1",
-    "@grafana/faro-web-tracing": "^2.7.1",
+    "@grafana/faro-web-sdk": "^2.8.0",
+    "@grafana/faro-web-tracing": "^2.8.0",
     "hoist-non-react-statics": "^3.3.2"
   },
   "devDependencies": {
