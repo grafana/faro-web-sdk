@@ -685,7 +685,8 @@ __metadata:
   resolution: "@grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay"
   dependencies:
     "@grafana/faro-core": "npm:^2.7.1"
-    rrweb: "npm:^2.0.0-alpha.18"
+    "@grafana/rrweb": "npm:2.0.0-grafana.2"
+    "@grafana/rrweb-types": "npm:2.0.0-grafana.2"
   languageName: unknown
   linkType: soft
 
@@ -774,6 +775,54 @@ __metadata:
     "@opentelemetry/semantic-conventions": "npm:^1.32.0"
   languageName: unknown
   linkType: soft
+
+"@grafana/rrdom@npm:^2.0.0-grafana.2":
+  version: 2.0.0-grafana.2
+  resolution: "@grafana/rrdom@npm:2.0.0-grafana.2"
+  dependencies:
+    "@grafana/rrweb-snapshot": "npm:^2.0.0-grafana.2"
+  checksum: 10c0/708de959122986042287a88b834fff116461a00694cd2c90c509fb3077cbe5d77c24d8c02eb65a8727f03d3a74f2c6649c76454b1a3444ad05fe6bc522db4149
+  languageName: node
+  linkType: hard
+
+"@grafana/rrweb-snapshot@npm:^2.0.0-grafana.2":
+  version: 2.0.0-grafana.2
+  resolution: "@grafana/rrweb-snapshot@npm:2.0.0-grafana.2"
+  dependencies:
+    postcss: "npm:^8.4.38"
+  checksum: 10c0/be6a923cdcf1a2b611e47c2c8c7575d80ed4ab24a155228516b053d0fff8da5a7db524a2c47be76874c6cfc496b3539a01a62c8f6361d3a0782a735e253dda33
+  languageName: node
+  linkType: hard
+
+"@grafana/rrweb-types@npm:2.0.0-grafana.2, @grafana/rrweb-types@npm:^2.0.0-grafana.2":
+  version: 2.0.0-grafana.2
+  resolution: "@grafana/rrweb-types@npm:2.0.0-grafana.2"
+  checksum: 10c0/a024ecb19321045f7993fb7d98c347d0f0228190448e4a5e0613bfec83b56bffd5314c6e95d12e78b9698e0d8417b9c9e758daf43078256cb7f3438e9add3edc
+  languageName: node
+  linkType: hard
+
+"@grafana/rrweb-utils@npm:^2.0.0-grafana.2":
+  version: 2.0.0-grafana.2
+  resolution: "@grafana/rrweb-utils@npm:2.0.0-grafana.2"
+  checksum: 10c0/8be866a99fa4912142b83a118c7a743427b5251e2007fe1a145c3ab54769576ea5b427874e81fa67d142200dd3d000a8d4f8059b4b142128c58a459b9487c552
+  languageName: node
+  linkType: hard
+
+"@grafana/rrweb@npm:2.0.0-grafana.2":
+  version: 2.0.0-grafana.2
+  resolution: "@grafana/rrweb@npm:2.0.0-grafana.2"
+  dependencies:
+    "@grafana/rrdom": "npm:^2.0.0-grafana.2"
+    "@grafana/rrweb-snapshot": "npm:^2.0.0-grafana.2"
+    "@grafana/rrweb-types": "npm:^2.0.0-grafana.2"
+    "@grafana/rrweb-utils": "npm:^2.0.0-grafana.2"
+    "@types/css-font-loading-module": "npm:0.0.7"
+    "@xstate/fsm": "npm:^1.4.0"
+    base64-arraybuffer: "npm:^1.0.1"
+    mitt: "npm:^3.0.0"
+  checksum: 10c0/9a2ecbbfb4929d3a9e0e3f300d59cc78a1c77a6a8580b7c3a6b6cc7c41b55e9741974dea4d3412712b13c8dad4b5930a9b892f05af80638f5be15956d4515d8a
+  languageName: node
+  linkType: hard
 
 "@hapi/address@npm:^5.1.1":
   version: 5.1.1
@@ -2643,20 +2692,6 @@ __metadata:
   version: 4.62.2
   resolution: "@rollup/rollup-win32-x64-msvc@npm:4.62.2"
   conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@rrweb/types@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "@rrweb/types@npm:2.0.1"
-  checksum: 10c0/1704060805af3a262f616333760b2345a5a7e5f0640f4b834ae383c33e15a1e20eeb14c16e99c4a9861c3695cd1b805def2df37093576c7a9162908d6e8c7650
-  languageName: node
-  linkType: hard
-
-"@rrweb/utils@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "@rrweb/utils@npm:2.0.1"
-  checksum: 10c0/5c0ec25f45d3af8ccfc22978699427335e8a51d2ca7a681222443695648de151c6a224fe70eabbfa1394a0cc3abf471a7b12acbc0c8c4729fd93ddfea183d4cc
   languageName: node
   linkType: hard
 
@@ -11593,44 +11628,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rrdom@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "rrdom@npm:2.0.1"
-  dependencies:
-    rrweb-snapshot: "npm:^2.0.1"
-  checksum: 10c0/df9b8b92ece349b2a64337b3ccfb323b149706fbef92d95be58562eb6809fede37661b56fc76819abd15cc897e9b5b1b1e9903941e94ce3f88060a39f329980c
-  languageName: node
-  linkType: hard
-
 "rrweb-cssom@npm:^0.8.0":
   version: 0.8.0
   resolution: "rrweb-cssom@npm:0.8.0"
   checksum: 10c0/56f2bfd56733adb92c0b56e274c43f864b8dd48784d6fe946ef5ff8d438234015e59ad837fc2ad54714b6421384141c1add4eb569e72054e350d1f8a50b8ac7b
-  languageName: node
-  linkType: hard
-
-"rrweb-snapshot@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "rrweb-snapshot@npm:2.0.1"
-  dependencies:
-    postcss: "npm:^8.4.38"
-  checksum: 10c0/8c5622eeafe81b62f53b1cabe6137499e087ee1dde41b004ca61bd8356b8521c68e0018d8e44825529f7192e9e232fa7279ee4e9c01c3e658f2a254909879fc6
-  languageName: node
-  linkType: hard
-
-"rrweb@npm:^2.0.0-alpha.18":
-  version: 2.0.1
-  resolution: "rrweb@npm:2.0.1"
-  dependencies:
-    "@rrweb/types": "npm:^2.0.1"
-    "@rrweb/utils": "npm:^2.0.1"
-    "@types/css-font-loading-module": "npm:0.0.7"
-    "@xstate/fsm": "npm:^1.4.0"
-    base64-arraybuffer: "npm:^1.0.1"
-    mitt: "npm:^3.0.0"
-    rrdom: "npm:^2.0.1"
-    rrweb-snapshot: "npm:^2.0.1"
-  checksum: 10c0/dcaa4aa812fcb57d76001854650fe576fa4df0d283f3166a9c008505be942510b95dcdd7005b75dea876ee18620edef61846432a52ecb56ec9cfae1050714aa8
   languageName: node
   linkType: hard
 

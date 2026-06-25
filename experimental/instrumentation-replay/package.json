@@ -9,7 +9,7 @@
     "rum",
     "dem",
     "session-replay",
-    "rrweb",
+    "@grafana/rrweb",
     "browser"
   ],
   "license": "Apache-2.0",
@@ -54,7 +54,8 @@
   },
   "dependencies": {
     "@grafana/faro-core": "^2.7.1",
-    "rrweb": "^2.0.0-alpha.18"
+    "@grafana/rrweb": "2.0.0-grafana.2",
+    "@grafana/rrweb-types": "2.0.0-grafana.2"
   },
   "publishConfig": {
     "access": "public"
