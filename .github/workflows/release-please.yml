@@ -86,6 +86,12 @@ jobs:
 
       # Hardening: the token is introduced only HERE (after the untrusted install code has run),
       # as env in a dedicated push step — not persisted in git config for the whole job.
+      #
+      # The commit is created via the GitHub API (createCommitOnBranch), NOT a runner-side
+      # `git commit`/`git push`. API-created commits are automatically signed by GitHub and
+      # therefore satisfy the "Commits must have verified signatures" branch ruleset. A plain
+      # runner commit is unsigned and gets rejected (GH013), which previously left the refreshed
+      # yarn.lock unpushed and broke `yarn install --immutable` on the release PR.
       - name: Commit and push release fixes
         if: ${{ steps.refresh.outputs.changed == 'true' }}
         env:
@@ -93,11 +99,50 @@ jobs:
           BRANCH: ${{ steps.release-branch.outputs.branch }}
         run: |
           set -euo pipefail
-          git config user.name 'app-o11y-kwl-ci[bot]'
-          git config user.email 'app-o11y-kwl-ci[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'chore: refresh yarn.lock and format release files'
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${BRANCH}"
+
+          MESSAGE='chore: refresh yarn.lock and format release files'
+          HEAD_OID="$(git rev-parse HEAD)"
+
+          # Build the list of added/modified files (base64-encoded contents) and deleted files
+          # from the working tree relative to HEAD. The refresh step left these changes unstaged.
+          additions="$(
+            git -c core.quotepath=false diff --name-only --diff-filter=ACMRT \
+              | while IFS= read -r f; do
+                  [ -z "$f" ] && continue
+                  jq -n --arg p "$f" --arg c "$(base64 -w0 "$f")" '{path: $p, contents: $c}'
+                done | jq -s '.'
+          )"
+          deletions="$(
+            git -c core.quotepath=false diff --name-only --diff-filter=D \
+              | jq -Rn '[inputs | select(length > 0) | {path: .}]'
+          )"
+
+          jq -n \
+            --arg owner "$GITHUB_REPOSITORY" \
+            --arg branch "$BRANCH" \
+            --arg message "$MESSAGE" \
+            --arg oid "$HEAD_OID" \
+            --argjson additions "$additions" \
+            --argjson deletions "$deletions" \
+            '{
+              query: "mutation($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }",
+              variables: {
+                input: {
+                  branch: { repositoryNameWithOwner: $owner, branchName: $branch },
+                  message: { headline: $message },
+                  expectedHeadOid: $oid,
+                  fileChanges: { additions: $additions, deletions: $deletions }
+                }
+              }
+            }' > payload.json
+
+          response="$(gh api graphql --input payload.json)"
+          echo "$response"
+          # gh exits 0 even when GraphQL returns an errors array, so check explicitly.
+          if echo "$response" | jq -e '.errors' > /dev/null; then
+            echo "::error::createCommitOnBranch returned errors"
+            exit 1
+          fi
 
   test:
     needs: release-please
