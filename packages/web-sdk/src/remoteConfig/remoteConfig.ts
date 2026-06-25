@@ -256,7 +256,7 @@ function registerFinalizeOnUnload(onUnload: () => void): () => void {
     }
     removed = true;
     document.removeEventListener('visibilitychange', onVisibilityChange);
-    document.removeEventListener('pagehide', onPageHide);
+    window.removeEventListener('pagehide', onPageHide);
   };
 
   const onVisibilityChange = () => {
@@ -272,7 +272,7 @@ function registerFinalizeOnUnload(onUnload: () => void): () => void {
   };
 
   document.addEventListener('visibilitychange', onVisibilityChange);
-  document.addEventListener('pagehide', onPageHide);
+  window.addEventListener('pagehide', onPageHide);
 
   return remove;
 }

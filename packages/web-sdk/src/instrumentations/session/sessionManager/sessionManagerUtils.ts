@@ -192,7 +192,7 @@ export function markSessionNotSampled(SessionManager: SessionManager): void {
 
   if (liveSession != null) {
     liveSession.attributes = {
-      ...liveSession.attributes,
+      ...(liveSession.attributes ?? {}),
       isSampled: 'false',
     };
   }
@@ -214,7 +214,7 @@ export function markSessionNotSampled(SessionManager: SessionManager): void {
         ? {
             ...storedSession.sessionMeta,
             attributes: {
-              ...storedSession.sessionMeta.attributes,
+              ...(storedSession.sessionMeta.attributes ?? {}),
               isSampled: 'false',
             },
           }
