@@ -2,6 +2,10 @@
 
 ## Next
 
+### Features
+
+- **web-sdk:** add opt-in `remoteConfig` option for a remotely-configured session sampling rate. When provided, the SDK initializes instrumentation immediately, buffers outgoing telemetry in a bounded in-memory queue, resolves the per-app sampling rate (cache-first, with a hard timeout and ETag-based background revalidation), finalizes the session sampling decision exactly once, then flushes-or-drops the buffer. `initializeFaro()` remains synchronous; when `remoteConfig` is absent, behavior is unchanged.
+
 ## [2.7.1](https://github.com/grafana/faro-web-sdk/compare/v2.7.0...v2.7.1) (2026-06-03)
 
 ### Bug Fixes

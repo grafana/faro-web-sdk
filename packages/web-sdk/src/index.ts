@@ -1,5 +1,8 @@
 export { getWebInstrumentations, makeCoreConfig } from './config';
-export type { BrowserConfig } from './config';
+export type { BrowserConfig, RemoteConfigOptions } from './config';
+
+export { REMOTE_CONFIG_SCHEMA_VERSION } from './remoteConfig';
+export type { CachedRemoteConfig, RemoteConfigResponse } from './remoteConfig';
 
 export { defaultEventDomain } from './consts';
 

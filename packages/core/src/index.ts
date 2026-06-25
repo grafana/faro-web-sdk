@@ -90,6 +90,7 @@ export * from './semantic';
 export { BaseTransport, getTransportBody, TransportItemType, transportItemTypeToBodyKey } from './transports';
 export type {
   BeforeSendHook,
+  HoldOptions,
   SendFn,
   Transport,
   TransportBody,

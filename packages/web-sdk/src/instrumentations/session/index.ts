@@ -10,6 +10,7 @@ export {
   VolatileSessionsManager,
   defaultSessionTrackingConfig,
   isSampled,
+  markSessionNotSampled,
 } from './sessionManager';
 
 export type { FaroUserSession } from './sessionManager';

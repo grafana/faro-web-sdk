@@ -48,6 +48,36 @@ export interface Transports {
   transports: Transport[];
   pause: () => void;
   unpause: () => void;
+  /**
+   * Start holding (buffering) outgoing signals in a bounded in-memory queue instead of sending them.
+   * Used by opt-in features (e.g. remote config) that need to defer a send/drop decision without
+   * losing early telemetry. While holding, `execute` enqueues items rather than transporting them.
+   *
+   * `onBufferFull` is invoked once if the buffered byte size exceeds `maxBufferBytes` before the
+   * hold is released, allowing the caller to finalize early.
+   */
+  hold: (options?: HoldOptions) => void;
+  /**
+   * Release the hold and send all buffered items through the normal `execute` path, then resume
+   * streaming. No-op if not currently holding.
+   */
+  flushHeld: () => void;
+  /**
+   * Release the hold and discard all buffered items, then resume streaming. No-op if not currently
+   * holding.
+   */
+  dropHeld: () => void;
+  /**
+   * Whether the transports are currently holding (buffering) outgoing signals.
+   */
+  isHolding: () => boolean;
+}
+
+export interface HoldOptions {
+  // Maximum total byte size of buffered items before `onBufferFull` fires (default: 65536 / 64KB).
+  maxBufferBytes?: number;
+  // Invoked once when the buffered byte size first exceeds `maxBufferBytes`.
+  onBufferFull?: () => void;
 }
 
 export interface BatchExecutorOptions {

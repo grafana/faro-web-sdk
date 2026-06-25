@@ -5,7 +5,7 @@ import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../uti
 
 import { isSampled } from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
-import type { FaroUserSession } from './types';
+import type { FaroUserSession, SessionManager } from './types';
 
 type CreateUserSessionObjectParams = {
   sessionId?: string;
@@ -165,6 +165,62 @@ export function getSessionMetaUpdateHandler({
       }
     }
   };
+}
+
+/**
+ * Force the *current* session to be treated as not-sampled, in place.
+ *
+ * This is used by the remote-config defer-and-buffer lifecycle: the session was created keep-all
+ * (`isSampled='true'`) so its before-send hook never pre-drops while the remote rate is resolving.
+ * Once the remote decision lands as "not sampled", we flip the live session so the existing session
+ * before-send hook drops all subsequent items for this session.
+ *
+ * Critically this does NOT:
+ * - create a new session id (the current session continues), or
+ * - go through `faro.api.setSession` (which would trigger the meta update handler and re-derive the
+ *   sampling decision probabilistically via `isSampled()`, undoing the forced value).
+ *
+ * Instead it mutates the live session meta attributes in place (items snapshot `metas.value` at send
+ * time, so subsequent items observe the change) and persists `isSampled=false` to the stored session
+ * so resumes/updates keep the same decision.
+ *
+ * The active `SessionManager` (volatile or persistent) is passed in by the caller to avoid a circular
+ * dependency between this module and `getSessionManagerByConfig`.
+ */
+export function markSessionNotSampled(SessionManager: SessionManager): void {
+  const liveSession = faro.metas?.value?.session;
+
+  if (liveSession != null) {
+    liveSession.attributes = {
+      ...liveSession.attributes,
+      isSampled: 'false',
+    };
+  }
+
+  const sessionTrackingConfig = faro.config?.sessionTracking;
+  const isPersistentSessions = sessionTrackingConfig?.persistent;
+
+  if ((isPersistentSessions && !isLocalStorageAvailable) || (!isPersistentSessions && !isSessionStorageAvailable)) {
+    return;
+  }
+
+  const storedSession = SessionManager.fetchUserSession();
+
+  if (storedSession != null) {
+    SessionManager.storeUserSession({
+      ...storedSession,
+      isSampled: false,
+      sessionMeta: storedSession.sessionMeta
+        ? {
+            ...storedSession.sessionMeta,
+            attributes: {
+              ...storedSession.sessionMeta.attributes,
+              isSampled: 'false',
+            },
+          }
+        : storedSession.sessionMeta,
+    });
+  }
 }
 
 function removeUndefinedValues(obj: Record<string, string | undefined>): Record<string, string> {

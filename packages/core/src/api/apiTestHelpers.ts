@@ -28,6 +28,10 @@ export const mockTransports: Transports = {
   unpause: function (): void {
     throw new Error('Function not implemented.');
   },
+  hold: jest.fn(),
+  flushHeld: jest.fn(),
+  dropHeld: jest.fn(),
+  isHolding: jest.fn(),
 };
 
 export const mockTracesApi: TracesAPI = {
