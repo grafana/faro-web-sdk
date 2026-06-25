@@ -83,10 +83,16 @@ module.exports = {
       setupFilesAfterEnv: [setupFile],
       testMatch: [`${matrixDir}/v8.test.tsx`],
       extensionsToTreatAsEsm: ['.ts', '.tsx'],
+      // NOTE: unlike the CJS projects, this project does NOT map @grafana/faro-core
+      // to its TS source. In ESM mode the built (CommonJS) @grafana/faro-web-sdk
+      // `require()`s faro-core, and requiring an ESM-transformed .ts source throws
+      // "Must use import to load ES Module" on Node 22. Letting faro-core resolve to
+      // its built CJS dist keeps that chain consistently CommonJS. Requires faro-core
+      // and faro-web-sdk to be built first (CI builds before testing).
+      //
       // react-router v8 is exports-only (no main/module field), which jest's ESM
       // resolver can't resolve from a bare directory, so map to the dist entries.
       moduleNameMapper: {
-        ...baseMapper,
         '^react-router$': '<rootDir>/node_modules/react-router-v8/dist/production/index.js',
         '^react-router/dom$': '<rootDir>/node_modules/react-router-v8/dist/production/dom-export.js',
       },
