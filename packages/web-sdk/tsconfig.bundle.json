@@ -7,5 +7,5 @@
     "tsBuildInfoFile": "../../.cache/tsc/webSdk.bundle.tsbuildinfo"
   },
   "include": ["./src"],
-  "exclude": ["./**/*.test.ts"]
+  "exclude": ["./**/*.test.ts", "./**/transportWorker.ts"]
 }

@@ -7,6 +7,6 @@
     "tsBuildInfoFile": "../../.cache/tsc/webSdk.cjs.tsbuildinfo"
   },
   "include": ["./src"],
-  "exclude": ["**/*.test.ts"],
+  "exclude": ["**/*.test.ts", "**/transportWorker.ts"],
   "references": [{ "path": "../core/tsconfig.cjs.json" }]
 }
