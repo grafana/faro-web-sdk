@@ -85,64 +85,83 @@ jobs:
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       # Hardening: the token is introduced only HERE (after the untrusted install code has run),
-      # as env in a dedicated push step — not persisted in git config for the whole job.
+      # via the github-script `github-token` input — not persisted in git config for the whole job.
       #
-      # The commit is created via the GitHub API (createCommitOnBranch), NOT a runner-side
-      # `git commit`/`git push`. API-created commits are automatically signed by GitHub and
-      # therefore satisfy the "Commits must have verified signatures" branch ruleset. A plain
-      # runner commit is unsigned and gets rejected (GH013), which previously left the refreshed
-      # yarn.lock unpushed and broke `yarn install --immutable` on the release PR.
+      # The commit is created via the GitHub API (createCommitOnBranch, called through Octokit in
+      # actions/github-script), NOT a runner-side `git commit`/`git push`. API-created commits are
+      # automatically signed by GitHub and therefore satisfy the "Commits must have verified
+      # signatures" branch ruleset. A plain runner commit is unsigned and gets rejected (GH013),
+      # which previously left the refreshed yarn.lock unpushed and broke `yarn install --immutable`
+      # on the release PR.
       - name: Commit and push release fixes
         if: ${{ steps.refresh.outputs.changed == 'true' }}
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          # Hardening: pass inputs through env (read via process.env) instead of interpolating
+          # ${{ }} expressions into the script body, which avoids expression injection.
           BRANCH: ${{ steps.release-branch.outputs.branch }}
-        run: |
-          set -euo pipefail
+          MESSAGE: 'chore: refresh yarn.lock and format release files'
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const { execSync } = require('node:child_process');
+            const fs = require('node:fs');
 
-          MESSAGE='chore: refresh yarn.lock and format release files'
-          HEAD_OID="$(git rev-parse HEAD)"
+            const expectedHeadOid = execSync('git rev-parse HEAD').toString().trim();
 
-          # Build the list of added/modified files (base64-encoded contents) and deleted files
-          # from the working tree relative to HEAD. The refresh step left these changes unstaged.
-          additions="$(
-            git -c core.quotepath=false diff --name-only --diff-filter=ACMRT \
-              | while IFS= read -r f; do
-                  [ -z "$f" ] && continue
-                  jq -n --arg p "$f" --arg c "$(base64 -w0 "$f")" '{path: $p, contents: $c}'
-                done | jq -s '.'
-          )"
-          deletions="$(
-            git -c core.quotepath=false diff --name-only --diff-filter=D \
-              | jq -Rn '[inputs | select(length > 0) | {path: .}]'
-          )"
+            // Commit only modifications/deletions of already-tracked files (working-tree diff vs
+            // HEAD). Untracked files are intentionally excluded: the refresh step (yarn.lock update
+            // + lint:fix) only ever modifies tracked files, so not staging untracked output shrinks
+            // the set of bytes an untrusted `yarn install` could fold into this GitHub-signed commit.
+            //
+            // `--name-status -z` emits STATUS\0PATH\0 pairs; `--no-renames` keeps statuses to
+            // single-letter M/T/D (no R/C rename or copy records) so parsing stays a simple 2-field
+            // pairing. Reading contents via fs (base64 in-process) avoids the ARG_MAX limit a
+            // shelled `base64` would hit on a large yarn.lock.
+            const entries = execSync('git diff -z --no-renames --name-status')
+              .toString()
+              .split('\0')
+              .filter(Boolean);
 
-          jq -n \
-            --arg owner "$GITHUB_REPOSITORY" \
-            --arg branch "$BRANCH" \
-            --arg message "$MESSAGE" \
-            --arg oid "$HEAD_OID" \
-            --argjson additions "$additions" \
-            --argjson deletions "$deletions" \
-            '{
-              query: "mutation($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }",
-              variables: {
-                input: {
-                  branch: { repositoryNameWithOwner: $owner, branchName: $branch },
-                  message: { headline: $message },
-                  expectedHeadOid: $oid,
-                  fileChanges: { additions: $additions, deletions: $deletions }
-                }
+            const additions = [];
+            const deletions = [];
+            for (let i = 0; i < entries.length; i += 2) {
+              const status = entries[i];
+              const path = entries[i + 1];
+              if (status === 'D') {
+                deletions.push({ path });
+                continue;
               }
-            }' > payload.json
+              // createCommitOnBranch can only represent regular file blobs. Skip symlinks and other
+              // non-regular entries: lstat inspects the link itself (not its target), so a symlink
+              // is not dereferenced — otherwise fs.readFileSync would commit the target's contents
+              // (a possible exfiltration of runner-local files into a public branch).
+              if (!fs.lstatSync(path).isFile()) {
+                core.warning(`Skipping non-regular file: ${path}`);
+                continue;
+              }
+              additions.push({ path, contents: fs.readFileSync(path).toString('base64') });
+            }
 
-          response="$(gh api graphql --input payload.json)"
-          echo "$response"
-          # gh exits 0 even when GraphQL returns an errors array, so check explicitly.
-          if echo "$response" | jq -e '.errors' > /dev/null; then
-            echo "::error::createCommitOnBranch returned errors"
-            exit 1
-          fi
+            const mutation = `
+              mutation($input: CreateCommitOnBranchInput!) {
+                createCommitOnBranch(input: $input) { commit { oid } }
+              }`;
+
+            // Octokit rejects on GraphQL-level errors, so no manual error inspection is needed.
+            const result = await github.graphql(mutation, {
+              input: {
+                branch: {
+                  repositoryNameWithOwner: process.env.GITHUB_REPOSITORY,
+                  branchName: process.env.BRANCH,
+                },
+                message: { headline: process.env.MESSAGE },
+                expectedHeadOid,
+                fileChanges: { additions, deletions },
+              },
+            });
+
+            core.info(`Created signed commit ${result.createCommitOnBranch.commit.oid}`);
 
   test:
     needs: release-please
