@@ -7,7 +7,7 @@
   "separateMultipleMajor": true,
   "prHourlyLimit": 2,
   "prConcurrentLimit": 10,
-  "minimumReleaseAge": "7 days",
+  "minimumReleaseAge": "3 days",
   "internalChecksFilter": "strict",
   "osvVulnerabilityAlerts": true,
   "vulnerabilityAlerts": {
@@ -37,6 +37,11 @@
       "description": "Restrict ua-parser-js to version below 2.x.x as it changes licensing model with v2 onwards",
       "matchPackageNames": ["ua-parser-js"],
       "allowedVersions": "<2.0.0"
+    },
+    {
+      "description": "Enforce a 3-day release-age cooldown on ALL npm depTypes (incl @grafana/*, which the org preset exempts) to match yarn's npmMinimalAgeGate (.yarnrc.yml). Placed last so it overrides the injected Grafana org preset rule (grafana-renovate-config//presets/npm). Without this, Renovate proposes versions younger than the gate that yarn then quarantines (YN0016), producing un-mergeable PRs.",
+      "matchDatasources": ["npm"],
+      "minimumReleaseAge": "3 days"
     }
   ]
 }

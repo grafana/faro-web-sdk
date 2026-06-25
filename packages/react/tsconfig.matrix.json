@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.spec.json",
+  "compilerOptions": {
+    "composite": false,
+    "isolatedModules": true,
+    "jsx": "react",
+    "esModuleInterop": true,
+    "verbatimModuleSyntax": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  }
+}

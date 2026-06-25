@@ -42,7 +42,7 @@ describe('performanceUtils', () => {
       responseTime: '0',
       responseStatus: '200',
       fetchTime: '305',
-      serviceWorkerTime: '237',
+      serviceWorkerTime: '0',
       decodedBodySize: '530675',
       encodedBodySize: '126111',
       cacheHitStatus: 'fullLoad',
@@ -67,7 +67,7 @@ describe('performanceUtils', () => {
       responseTime: '0',
       responseStatus: '200',
       fetchTime: '370',
-      serviceWorkerTime: '778',
+      serviceWorkerTime: '0',
       decodedBodySize: '10526',
       encodedBodySize: '10526',
       cacheHitStatus: 'fullLoad',
@@ -225,5 +225,12 @@ describe('performanceUtils', () => {
     expect(createFaroResourceTiming({ initiatorType: 'initiatorType-test' } as any).initiatorType).toBe(
       'initiatorType-test'
     );
+  });
+
+  it('reports serviceWorkerTime as 0 when the request is not intercepted by a service worker (workerStart === 0)', () => {
+    // Per the W3C Resource Timing spec, workerStart is 0 when no service worker handles the request.
+    // fetchStart is a timeOrigin-relative timestamp (page age), not a duration, so fetchStart - 0
+    // must not be reported as the service worker time.
+    expect(createFaroResourceTiming({ fetchStart: 179315969, workerStart: 0 } as any).serviceWorkerTime).toBe('0');
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-smoke-harness",
-  "packageManager": "yarn@4.14.1",
+  "packageManager": "yarn@4.17.0",
   "version": "2.7.1",
   "description": "Minimal Vite + React harness and Playwright smoke specs for Faro Web SDK",
   "license": "Apache-2.0",
@@ -27,13 +27,13 @@
     "@grafana/faro-core": "^2.7.1",
     "@grafana/faro-react": "^2.7.1",
     "@grafana/faro-web-tracing": "^2.7.1",
-    "@playwright/test": "1.60.0",
-    "@types/react": "19.2.15",
+    "@playwright/test": "1.61.0",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react-swc": "4.3.1",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "start-server-and-test": "3.0.5",
-    "vite": "8.0.14"
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "start-server-and-test": "3.0.11",
+    "vite": "8.0.16"
   }
 }
