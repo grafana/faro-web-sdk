@@ -107,7 +107,10 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
     requestTime: toFaroPerformanceTimingString(responseStart - requestStart),
     responseTime: toFaroPerformanceTimingString(responseEnd - responseStart),
     fetchTime: toFaroPerformanceTimingString(responseEnd - fetchStart),
-    serviceWorkerTime: toFaroPerformanceTimingString(fetchStart - workerStart),
+    // workerStart is 0 when the request is not intercepted by a service worker (W3C Resource Timing spec).
+    // fetchStart is a timeOrigin-relative timestamp, not a duration, so guard against reporting it as the
+    // service worker time when no service worker handled the request.
+    serviceWorkerTime: toFaroPerformanceTimingString(workerStart > 0 ? fetchStart - workerStart : 0),
     decodedBodySize: toFaroPerformanceTimingString(decodedBodySize),
     encodedBodySize: toFaroPerformanceTimingString(encodedBodySize),
     cacheHitStatus: getCacheType(),
