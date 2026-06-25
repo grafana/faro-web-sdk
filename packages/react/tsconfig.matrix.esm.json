@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.matrix.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ES2022"
+  }
+}
