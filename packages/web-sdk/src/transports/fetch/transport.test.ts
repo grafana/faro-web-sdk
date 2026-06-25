@@ -12,15 +12,15 @@ import * as sessionManagerUtilsMock from '../../instrumentations/session/session
 
 import { FetchTransport } from './transport';
 
-const fetch = jest.fn(() =>
-  Promise.resolve({
-    status: 202,
-    headers: {
-      get: (_name: string): string | undefined => undefined,
-    },
-    text: () => Promise.resolve(),
-  })
-);
+const createAcceptedResponse = () => ({
+  status: 202,
+  headers: {
+    get: (_name: string): string | undefined => undefined,
+  },
+  text: () => Promise.resolve(),
+});
+
+const fetch = jest.fn(() => Promise.resolve(createAcceptedResponse()));
 
 (global as any).fetch = fetch;
 
@@ -69,10 +69,24 @@ const largeItem: TransportItem<LogEvent> = {
   },
 };
 
+const mediumItem: TransportItem<LogEvent> = {
+  type: TransportItemType.LOG,
+  payload: {
+    context: {},
+    level: LogLevel.INFO,
+    message: Buffer.alloc(40_000, 'I').toString('utf-8'),
+    timestamp: new Date().toISOString(),
+  },
+  meta: {
+    session: { id: mockSessionId },
+  },
+};
+
 describe('FetchTransport', () => {
   beforeEach(() => {
-    fetch.mockClear();
     jest.clearAllMocks();
+    fetch.mockReset();
+    fetch.mockImplementation(() => Promise.resolve(createAcceptedResponse()));
     jest.clearAllTimers();
   });
 
@@ -245,6 +259,65 @@ describe('FetchTransport', () => {
       keepalive: false,
       method: 'POST',
     });
+  });
+
+  it('will turn off keepalive if pending keepalive requests would exceed the body size limit', async () => {
+    const pendingResponses: Array<(response: ReturnType<typeof createAcceptedResponse>) => void> = [];
+    fetch.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          pendingResponses.push(resolve);
+        })
+    );
+
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      concurrency: 2,
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    const firstSend = transport.send([mediumItem]);
+    const secondSend = transport.send([mediumItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    const firstCallArgs = fetch.mock.calls[0] as unknown[];
+    const secondCallArgs = fetch.mock.calls[1] as unknown[];
+    const firstRequestInit = firstCallArgs[1] as RequestInit;
+    const secondRequestInit = secondCallArgs[1] as RequestInit;
+
+    expect(firstRequestInit.keepalive).toBe(true);
+    expect(secondRequestInit.keepalive).toBe(false);
+
+    pendingResponses.forEach((resolve) => resolve(createAcceptedResponse()));
+    await Promise.all([firstSend, secondSend]);
+  });
+
+  it('will retry a failed keepalive request with keepalive disabled', async () => {
+    fetch
+      .mockImplementationOnce(() => Promise.reject(new TypeError('Failed to fetch')))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    await transport.send([item]);
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    const firstCallArgs = fetch.mock.calls[0] as unknown[];
+    const secondCallArgs = fetch.mock.calls[1] as unknown[];
+    const firstRequestInit = firstCallArgs[1] as RequestInit;
+    const secondRequestInit = secondCallArgs[1] as RequestInit;
+
+    expect(firstRequestInit.keepalive).toBe(true);
+    expect(secondRequestInit.keepalive).toBe(false);
   });
 
   it('will add global ignoredURLs to the ignoredUrls list ', async () => {
