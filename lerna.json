@@ -4,7 +4,7 @@
     "experimental/*",
     "e2e/smoke"
   ],
-  "version": "2.7.1",
+  "version": "2.8.0",
   "npmClient": "yarn",
   "$schema": "node_modules/lerna/schemas/lerna-schema.json"
 }

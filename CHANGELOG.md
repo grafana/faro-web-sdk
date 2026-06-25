@@ -2,6 +2,23 @@
 
 ## Next
 
+## [2.8.0](https://github.com/grafana/faro-web-sdk/compare/v2.7.1...v2.8.0) (2026-06-25)
+
+### Features
+
+- **web-sdk:** add gzip request compression to FetchTransport ([#2028](https://github.com/grafana/faro-web-sdk/issues/2028)) ([acf7e29](https://github.com/grafana/faro-web-sdk/commit/acf7e29121cf6f04d0719ad7eebd610909457c1a))
+
+### Bug Fixes
+
+- **ci:** align Renovate npm cooldown with yarn 7-day age gate ([#2133](https://github.com/grafana/faro-web-sdk/issues/2133)) ([62be84c](https://github.com/grafana/faro-web-sdk/commit/62be84cb0acad9ac7e2b46741d4a3df4176c5b80))
+- **ci:** sign release-please lockfile-refresh commit via GitHub API ([#2150](https://github.com/grafana/faro-web-sdk/issues/2150)) ([d662d78](https://github.com/grafana/faro-web-sdk/commit/d662d78fdc815ddd246fffe2000579408ad123b2))
+- **core:** allow BatchExecutor to run in worker scopes ([#2122](https://github.com/grafana/faro-web-sdk/issues/2122)) ([07d5282](https://github.com/grafana/faro-web-sdk/commit/07d5282962df56f1a194be120891720591704e1d))
+- **deps:** update npm-dependencies past 7-day cooldown ([#2138](https://github.com/grafana/faro-web-sdk/issues/2138)) ([f8ef28e](https://github.com/grafana/faro-web-sdk/commit/f8ef28e8e130b0c1a663ea5f49a0345ae4453999))
+- **security/high/e2e/smoke:** update security e2e/smoke vite to v8.0.16 [security] ([#2129](https://github.com/grafana/faro-web-sdk/issues/2129)) ([f52baee](https://github.com/grafana/faro-web-sdk/commit/f52baeeb407126b4cc3f732e863c7da04ec86c8d))
+- **security/medium/:** update security tar to v7.5.16 [security] ([#2130](https://github.com/grafana/faro-web-sdk/issues/2130)) ([cec1026](https://github.com/grafana/faro-web-sdk/commit/cec1026a1e64151f13a7814c214a2cb51f455e19))
+- **web-sdk:** report service worker time as 0 when no service worker is used ([#2149](https://github.com/grafana/faro-web-sdk/issues/2149)) ([13ab0a4](https://github.com/grafana/faro-web-sdk/commit/13ab0a4cf95f4d325c3c352bd7bddb3c3fc4324d))
+- **web-tracing:** update @opentelemetry/core to v2.8.0 [security] ([#2136](https://github.com/grafana/faro-web-sdk/issues/2136)) ([a73fb1f](https://github.com/grafana/faro-web-sdk/commit/a73fb1f50ac906110f6e059438c46a4c823e8b8c))
+
 ## [2.7.1](https://github.com/grafana/faro-web-sdk/compare/v2.7.0...v2.7.1) (2026-06-03)
 
 ### Bug Fixes
