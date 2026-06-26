@@ -79,6 +79,14 @@ export function getUserSessionUpdater({
 
     if (forceSessionExtend === false && isUserSessionValid(sessionFromStorage)) {
       storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
+
+      const storedSessionId = sessionFromStorage?.sessionId;
+      const inMemorySessionId = sessionFromStorage?.sessionMeta?.id;
+
+      if (sessionFromStorage && storedSessionId !== inMemorySessionId) {
+        sessionFromStorage!.sessionMeta!.id = sessionFromStorage?.sessionId;
+        faro.api?.setSession(sessionFromStorage?.sessionMeta);
+      }
     } else {
       let newSession = addSessionMetadataToNextSession(
         createUserSessionObject({ isSampled: isSampled() }),
