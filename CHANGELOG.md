@@ -2,6 +2,13 @@
 
 ## Next
 
+## [2.8.1](https://github.com/grafana/faro-web-sdk/compare/v2.8.0...v2.8.1) (2026-06-26)
+
+
+### Bug Fixes
+
+* **web-sdk:** harden fetch keepalive handling ([#2151](https://github.com/grafana/faro-web-sdk/issues/2151)) ([29c6327](https://github.com/grafana/faro-web-sdk/commit/29c632710f48e2d9081468d09f8f04581797dd34))
+
 ## [2.8.0](https://github.com/grafana/faro-web-sdk/compare/v2.7.1...v2.8.0) (2026-06-25)
 
 ### Features
