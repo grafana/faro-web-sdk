@@ -101,9 +101,12 @@ test('a background tab converges to the rotated session instead of emitting the 
     expect(a1, 'Tab A rotates to a new session when the stored one is expired').not.toBe(s0);
     expect(await storageSessionId(tabB), 'shared storage now holds A1 for both tabs').toBe(a1);
 
-    // Tab B's first post-rotation send triggers adoption; its body is still
-    // stamped with the old id (see header), so assert on the next send instead.
-    await clickAndCapture(tabB, bIds, LOG_BTN);
+    // Tab B's first post-rotation send is stamped before beforeSend adopts, so it
+    // must still carry the stale S0 — proving B was genuinely stale and did NOT
+    // self-rotate (the race that previously made this test vacuous). It triggers
+    // adoption; convergence is asserted on the next send.
+    const bFirst = await clickAndCapture(tabB, bIds, LOG_BTN);
+    expect(bFirst, 'Tab B is still on the stale session (did not self-rotate)').toBe(s0);
 
     const bConverged = await clickAndCapture(tabB, bIds, MEASUREMENT_BTN);
     expect(bConverged, 'background tab converges to the shared session, not the expired one').toBe(a1);
