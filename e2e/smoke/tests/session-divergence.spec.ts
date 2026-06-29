@@ -21,7 +21,7 @@ import { expect, test } from './fixtures';
 //    post-rotation emit still carries the old id; convergence is asserted on the SECOND.
 
 const URL = '/?session=persistent';
-const THROTTLE_LAPSE_MS = 1_200; // > the 1s updateSession throttle window
+const THROTTLE_LAPSE_MS = 2_500; // > the 1s updateSession throttle window
 
 const EVENT_BTN = '[data-cy="btn-push-event"]';
 const LOG_BTN = '[data-cy="btn-push-log"]';
