@@ -13,19 +13,18 @@ import { expect, test } from './fixtures';
 // Non-obvious mechanics (don't "simplify" away):
 //  - ?session=persistent runs session signals only, so nothing rotates on its own.
 //  - We force expiry by ageing the stored session (not by waiting out the real
-//    lifetime cap), then let the 1s updateSession throttle lapse so the next send
-//    rotates synchronously.
+//    lifetime cap), then drain the ~2s updateSession throttle (leading+trailing)
+//    so Tab A's next send rotates synchronously and Tab B can't self-rotate first.
 //  - Each send uses a different signal type: faro won't re-send a duplicate, and
 //    rotation/adoption only happens on an actual send (updateSession in beforeSend).
-//  - Adoption runs in beforeSend after the item is stamped, so Tab B's FIRST
-//    post-rotation emit still carries the old id; convergence is asserted on the SECOND.
+//  - The rotation-triggering batch is re-stamped to the new session in beforeSend,
+//    so Tab B's first post-rotation send already carries the rotated id.
 
 const URL = '/?session=persistent';
-const THROTTLE_LAPSE_MS = 2_500; // > the 1s updateSession throttle window
+const THROTTLE_LAPSE_MS = 2_500; // > the ~2s updateSession throttle settle (leading+trailing)
 
 const EVENT_BTN = '[data-cy="btn-push-event"]';
 const LOG_BTN = '[data-cy="btn-push-log"]';
-const MEASUREMENT_BTN = '[data-cy="btn-push-measurement"]';
 const STORAGE_KEY = 'com.grafana.faro.session';
 
 // Capture the session id carried by every /collect payload this page sends.
@@ -101,14 +100,11 @@ test('a background tab converges to the rotated session instead of emitting the 
     expect(a1, 'Tab A rotates to a new session when the stored one is expired').not.toBe(s0);
     expect(await storageSessionId(tabB), 'shared storage now holds A1 for both tabs').toBe(a1);
 
-    // Tab B's first post-rotation send is stamped before beforeSend adopts, so it
-    // must still carry the stale S0 — proving B was genuinely stale and did NOT
-    // self-rotate (the race that previously made this test vacuous). It triggers
-    // adoption; convergence is asserted on the next send.
-    const bFirst = await clickAndCapture(tabB, bIds, LOG_BTN);
-    expect(bFirst, 'Tab B is still on the stale session (did not self-rotate)').toBe(s0);
-
-    const bConverged = await clickAndCapture(tabB, bIds, MEASUREMENT_BTN);
+    // The rotation-triggering batch is re-stamped to the new session in beforeSend,
+    // so Tab B's first post-rotation send already carries A1 — immediate
+    // convergence, no one-batch boundary smear. A missing adoption (stale S0) or a
+    // self-rotation (some other id) would surface here as a value other than A1.
+    const bConverged = await clickAndCapture(tabB, bIds, LOG_BTN);
     expect(bConverged, 'background tab converges to the shared session, not the expired one').toBe(a1);
   } finally {
     await context.close();
