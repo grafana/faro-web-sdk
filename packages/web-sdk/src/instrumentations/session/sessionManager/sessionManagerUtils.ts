@@ -55,6 +55,9 @@ export function isUserSessionValid(session: FaroUserSession | null): boolean {
 type GetUserSessionUpdaterParams = {
   storeUserSession: (session: FaroUserSession) => void;
   fetchUserSession: () => FaroUserSession | null;
+  // Silently adopt another tab's session into in-memory metas (cross-tab sync).
+  // Optional: only the valid (non-force-extend) branch uses it.
+  adoptSession?: (sessionMeta: NonNullable<FaroUserSession['sessionMeta']>) => void;
 };
 
 type UpdateSessionParams = { forceSessionExtend: boolean };
@@ -62,6 +65,7 @@ type UpdateSessionParams = { forceSessionExtend: boolean };
 export function getUserSessionUpdater({
   fetchUserSession,
   storeUserSession,
+  adoptSession,
 }: GetUserSessionUpdaterParams): (options?: UpdateSessionParams) => void {
   return function updateSession({ forceSessionExtend } = { forceSessionExtend: false }): void {
     if (!fetchUserSession || !storeUserSession) {
@@ -79,6 +83,16 @@ export function getUserSessionUpdater({
 
     if (forceSessionExtend === false && isUserSessionValid(sessionFromStorage)) {
       storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
+
+      // Another tab rotated the shared session; adopt it so we stop emitting the stale id.
+      const inMemorySessionId = faro.metas.value.session?.id;
+      if (
+        adoptSession != null &&
+        sessionFromStorage!.sessionMeta != null &&
+        sessionFromStorage!.sessionId !== inMemorySessionId
+      ) {
+        adoptSession(sessionFromStorage!.sessionMeta);
+      }
     } else {
       let newSession = addSessionMetadataToNextSession(
         createUserSessionObject({ isSampled: isSampled() }),

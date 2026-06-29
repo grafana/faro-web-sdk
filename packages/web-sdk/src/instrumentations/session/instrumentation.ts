@@ -26,10 +26,19 @@ export class SessionInstrumentation extends BaseInstrumentation {
   // event twice for the same session
   private notifiedSession: MetaSession | undefined;
 
+  // Reads the session manager's adoption flag (set once the manager exists).
+  private isAdoptingSession: () => boolean = () => false;
+
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
 
     if (session && session.id !== this.notifiedSession?.id) {
+      // Adopting another tab's session: track it but emit nothing (the creating tab already did).
+      if (this.isAdoptingSession()) {
+        this.notifiedSession = session;
+        return;
+      }
+
       if (this.notifiedSession && this.notifiedSession.id === session.attributes?.['previousSession']) {
         this.api.pushEvent(EVENT_SESSION_EXTEND, {}, undefined, { skipDedupe: true });
         this.notifiedSession = session;
@@ -121,7 +130,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   private registerBeforeSendHook(SessionManager: SessionManager) {
-    const { updateSession } = new SessionManager();
+    const sessionManager = new SessionManager();
+    this.isAdoptingSession = sessionManager.isAdopting;
+    const { updateSession } = sessionManager;
 
     this.transports?.addBeforeSendHooks((item) => {
       updateSession();

@@ -19,6 +19,7 @@ import {
   SESSION_EXPIRATION_TIME,
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,
+  STORAGE_UPDATE_DELAY,
 } from './sessionManager';
 import * as samplingModuleMock from './sessionManager/sampling';
 import { createUserSessionObject } from './sessionManager/sessionManagerUtils';
@@ -176,6 +177,49 @@ describe('SessionInstrumentation', () => {
     expect(transport.items).toHaveLength(4);
     event = transport.items[3]! as TransportItem<EventEvent>;
     expect(event.payload.name).toEqual(EVENT_SESSION_EXTEND);
+  });
+
+  it('silently adopts a session rotated by another tab without emitting a lifecycle event.', () => {
+    const transport = new MockTransport();
+
+    // this tab starts on S0 (resumed from shared storage)
+    mockStorage[STORAGE_KEY] = JSON.stringify(createUserSessionObject({ sessionId: 'S0' }));
+
+    const { api, metas } = initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          persistent: true,
+          samplingRate: 1,
+        },
+      })
+    );
+
+    expect(transport.items).toHaveLength(1);
+    expect((transport.items[0]! as TransportItem<EventEvent>).payload.name).toEqual(EVENT_SESSION_RESUME);
+    expect(metas.value.session?.id).toEqual('S0');
+
+    // clear the updateSession throttle, then another tab rotates the shared
+    // session: a different, still-valid session lands in storage
+    jest.advanceTimersByTime(STORAGE_UPDATE_DELAY + 1);
+    mockStorage[STORAGE_KEY] = JSON.stringify({
+      ...createUserSessionObject({ sessionId: 'A1' }),
+      sessionMeta: { id: 'A1', attributes: { isSampled: 'true', previousSession: 'S0' } },
+    });
+
+    // a send triggers updateSession, which adopts A1
+    api.pushLog(['trigger']);
+
+    // this tab converged to A1...
+    expect(metas.value.session?.id).toEqual('A1');
+    // ...silently: no session_start / session_extend event was emitted
+    const lifecycleEvents = transport.items.filter((item) => {
+      const name = (item as TransportItem<EventEvent>).payload.name;
+      return name === EVENT_SESSION_START || name === EVENT_SESSION_EXTEND;
+    });
+    expect(lifecycleEvents).toHaveLength(0);
   });
 
   it('Initialize session meta with user defined id and attributes provided via the initial session property.', () => {
