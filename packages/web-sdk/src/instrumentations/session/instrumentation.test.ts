@@ -179,6 +179,47 @@ describe('SessionInstrumentation', () => {
     expect(event.payload.name).toEqual(EVENT_SESSION_EXTEND);
   });
 
+  it('stamps the rotation-triggering signal with the new session id, not the expired one.', () => {
+    const transport = new MockTransport();
+    mockStorage[STORAGE_KEY] = JSON.stringify(createUserSessionObject({ sessionId: 'S0' }));
+
+    const { api } = initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          persistent: true,
+          samplingRate: 1,
+        },
+      })
+    );
+
+    // resume event from init
+    expect(transport.items).toHaveLength(1);
+
+    // the session's lifetime lapses with no activity
+    jest.advanceTimersByTime(SESSION_EXPIRATION_TIME + 1);
+
+    // the next signal both triggers the rotation (updateSession runs in beforeSend)
+    // and is itself sent — it must be attributed to the new session, not the
+    // expired one it was stamped with at pushEvent time
+    api.pushEvent('after-gap');
+
+    // the session rotated to a new id
+    const rotatedId = api.getSession()?.id;
+    expect(rotatedId).not.toEqual('S0');
+
+    const afterGap = transport.items.find(
+      (item) => (item as TransportItem<EventEvent>).payload.name === 'after-gap'
+    ) as TransportItem<EventEvent> | undefined;
+
+    // the rotation-triggering signal must carry the new session id, not the
+    // expired one it was stamped with at pushEvent time
+    expect(afterGap).toBeDefined();
+    expect(afterGap!.meta.session?.id).toEqual(rotatedId);
+  });
+
   it('silently adopts a session rotated by another tab without emitting a lifecycle event.', () => {
     const transport = new MockTransport();
 

@@ -135,12 +135,31 @@ export class SessionInstrumentation extends BaseInstrumentation {
     const { updateSession } = sessionManager;
 
     this.transports?.addBeforeSendHooks((item) => {
+      const previousSessionId = this.metas.value.session?.id;
       updateSession();
+      const currentSession = this.metas.value.session;
 
-      const attributes = item.meta.session?.attributes;
+      // If updateSession rotated the session in THIS call (the previous one
+      // expired), the item that triggered it was stamped with the now-expired
+      // session at pushEvent time. Re-attribute it to the new session so it isn't
+      // logged under the expired id while its request header already carries the
+      // new one. Only the triggering item is re-stamped — items stamped with a
+      // genuinely earlier session (e.g. before an explicit setSession) are left
+      // alone so their own sampling decision still applies.
+      const rotatedByUpdateSession =
+        currentSession != null &&
+        currentSession.id !== previousSessionId &&
+        item.meta.session?.id === previousSessionId;
+      const session = rotatedByUpdateSession ? currentSession : item.meta.session;
+
+      const attributes = session?.attributes;
 
       if (attributes && attributes?.['isSampled'] === 'true') {
         let newItem: TransportItem = JSON.parse(JSON.stringify(item));
+
+        if (rotatedByUpdateSession) {
+          newItem.meta.session = JSON.parse(JSON.stringify(currentSession));
+        }
 
         const newAttributes = newItem.meta.session?.attributes;
         delete newAttributes?.['isSampled'];
