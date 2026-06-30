@@ -1,5 +1,6 @@
 import { genShortID } from '@grafana/faro-core';
 
+import { defaultMaskInputFn } from './const';
 import { ReplayInstrumentation } from './instrumentation';
 import { MaskInputFn, ReplayInstrumentationOptions } from './types';
 
@@ -60,7 +61,7 @@ describe('ReplayInstrumentation', () => {
         maskInputOptions: {
           password: true,
         },
-        maskInputFn: undefined,
+        maskInputFn: defaultMaskInputFn,
         collectFonts: false,
         inlineImages: false,
         inlineStylesheet: false,
@@ -125,7 +126,7 @@ describe('ReplayInstrumentation', () => {
         maskInputOptions: {
           password: true,
         },
-        maskInputFn: undefined,
+        maskInputFn: defaultMaskInputFn,
         collectFonts: false,
         inlineImages: false,
         inlineStylesheet: false,
@@ -139,6 +140,63 @@ describe('ReplayInstrumentation', () => {
       };
 
       expect(instrumentation['options']).toEqual(expected);
+    });
+  });
+
+  describe('maskInputFn', () => {
+    it('should produce identical-length output for inputs of different lengths', () => {
+      const short = defaultMaskInputFn('1234', document.createElement('input'));
+      const long = defaultMaskInputFn('4111111111111111card', document.createElement('input'));
+
+      expect(short).toBe('******');
+      expect(long).toBe('******');
+      expect(short.length).toBe(long.length);
+    });
+
+    it('should return an empty string for empty input', () => {
+      const empty = defaultMaskInputFn('', document.createElement('input'));
+      expect(empty).toBe('');
+    });
+
+    it('should use the default fixed-length maskInputFn when none is provided', () => {
+      instrumentation = new ReplayInstrumentation();
+
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maskInputFn: defaultMaskInputFn,
+        })
+      );
+    });
+
+    it('should allow a custom maskInputFn to override the default', () => {
+      const customMaskFn: MaskInputFn = () => 'CUSTOM_MASK';
+
+      instrumentation = new ReplayInstrumentation({ maskInputFn: customMaskFn });
+
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+
+      instrumentation.initialize();
+
+      expect(mockRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maskInputFn: customMaskFn,
+        })
+      );
+      expect(instrumentation['options'].maskInputFn).not.toBe(defaultMaskInputFn);
+    });
+
+    it('should fall back to the secure default when maskInputFn is explicitly undefined', () => {
+      instrumentation = new ReplayInstrumentation({ maskInputFn: undefined });
+
+      expect(instrumentation['options'].maskInputFn).toBe(defaultMaskInputFn);
     });
   });
 
