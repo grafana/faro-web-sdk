@@ -2,6 +2,14 @@
 
 ## Next
 
+## [2.8.2](https://github.com/grafana/faro-web-sdk/compare/v2.8.1...v2.8.2) (2026-07-01)
+
+
+### Bug Fixes
+
+* **session:** attribute the rotation-triggering signal to the new session ([#2168](https://github.com/grafana/faro-web-sdk/issues/2168)) ([923d3b8](https://github.com/grafana/faro-web-sdk/commit/923d3b80cea70ebac284e805df7fdfd68975783b))
+* **session:** stop a background tab from emitting an expired session id ([#2167](https://github.com/grafana/faro-web-sdk/issues/2167)) ([eba5c2f](https://github.com/grafana/faro-web-sdk/commit/eba5c2fbc7d5341912b537ad518092489d82c68b))
+
 ## [2.8.1](https://github.com/grafana/faro-web-sdk/compare/v2.8.0...v2.8.1) (2026-06-26)
 
 ### Bug Fixes
