@@ -69,7 +69,7 @@
     "@types/hoist-non-react-statics": "3.3.7",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "history-v4": "npm:history@4.10.1",
+    "history-v4": "npm:history@5.3.0",
     "react": "19.2.7",
     "react-18": "npm:react@18.3.1",
     "react-dom": "19.2.7",
