@@ -134,13 +134,33 @@ export class SessionInstrumentation extends BaseInstrumentation {
     this.isAdoptingSession = sessionManager.isAdopting;
     const { updateSession } = sessionManager;
 
-    this.transports?.addBeforeSendHooks((item) => {
-      updateSession();
+    // Most recent rotation updateSession performed. A batch buffered before the
+    // rotation is all stamped with the now-expired id, not just the triggering item.
+    let lastRotation: { from: string; to: MetaSession } | undefined;
 
-      const attributes = item.meta.session?.attributes;
+    this.transports?.addBeforeSendHooks((item) => {
+      const previousSessionId = this.metas.value.session?.id;
+      updateSession();
+      const currentSession = this.metas.value.session;
+
+      if (currentSession != null && previousSessionId != null && currentSession.id !== previousSessionId) {
+        lastRotation = { from: previousSessionId, to: currentSession };
+      }
+
+      // Re-stamp items still carrying the rotated-from session. Keyed on that id,
+      // so items from a genuinely earlier session (explicit setSession, which
+      // updateSession never rotates) keep their own sampling decision.
+      const reStamp = lastRotation != null && item.meta.session?.id === lastRotation.from;
+      const session = reStamp ? lastRotation!.to : item.meta.session;
+
+      const attributes = session?.attributes;
 
       if (attributes && attributes?.['isSampled'] === 'true') {
         let newItem: TransportItem = JSON.parse(JSON.stringify(item));
+
+        if (reStamp) {
+          newItem.meta.session = JSON.parse(JSON.stringify(lastRotation!.to));
+        }
 
         const newAttributes = newItem.meta.session?.attributes;
         delete newAttributes?.['isSampled'];
