@@ -8,7 +8,7 @@
   "bump-patch-for-minor-pre-major": false,
   "draft": false,
   "prerelease": false,
-  "pull-request-header": "Faro Web SDK Release - ${version}",
+  "pull-request-header": "Faro Web SDK Release",
   "group-pull-request-title-pattern": "chore: release ${version}",
   "packages": {
     ".": {
