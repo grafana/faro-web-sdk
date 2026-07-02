@@ -27,7 +27,7 @@
     "@grafana/faro-core": "^2.8.2",
     "@grafana/faro-react": "^2.8.2",
     "@grafana/faro-web-tracing": "^2.8.2",
-    "@playwright/test": "1.61.0",
+    "@playwright/test": "1.61.1",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react-swc": "4.3.1",
