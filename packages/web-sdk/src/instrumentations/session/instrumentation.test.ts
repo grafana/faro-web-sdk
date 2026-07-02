@@ -24,6 +24,11 @@ import {
 import * as samplingModuleMock from './sessionManager/sampling';
 import { createUserSessionObject } from './sessionManager/sessionManagerUtils';
 
+// Tests that build config via makeCoreConfig get a session storage key namespaced by the app name
+// (mockConfig defaults app.name to 'test'). Tests that use mockConfig directly bypass that
+// derivation and keep the bare STORAGE_KEY.
+const NAMESPACED_STORAGE_KEY = `${STORAGE_KEY}_test`;
+
 describe('SessionInstrumentation', () => {
   let mockStorage: Record<string, string> = {};
   let setItemSpy: jest.SpyInstance<void, [key: string, value: string]>;
@@ -479,7 +484,7 @@ describe('SessionInstrumentation', () => {
       },
     };
 
-    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+    mockStorage[NAMESPACED_STORAGE_KEY] = JSON.stringify(mockUserSession);
 
     jest.advanceTimersByTime(SESSION_INACTIVITY_TIME - 1);
 
@@ -506,7 +511,7 @@ describe('SessionInstrumentation', () => {
       id: 'persisted-session',
     };
 
-    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+    mockStorage[NAMESPACED_STORAGE_KEY] = JSON.stringify(mockUserSession);
 
     jest.advanceTimersByTime(MAX_SESSION_PERSISTENCE_TIME);
 
@@ -526,7 +531,7 @@ describe('SessionInstrumentation', () => {
     expect(removeItemSpy).toHaveBeenCalledTimes(0);
     expect(metas.value.session?.id).not.toBe(mockUserSession.sessionId);
 
-    const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]);
+    const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[NAMESPACED_STORAGE_KEY]);
     // creates new started timestamp
     expect(sessionFromStorage.started).not.toBe(started);
   });
@@ -537,7 +542,7 @@ describe('SessionInstrumentation', () => {
       id: 'persisted-session',
     };
 
-    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+    mockStorage[NAMESPACED_STORAGE_KEY] = JSON.stringify(mockUserSession);
 
     jest.advanceTimersByTime(MAX_SESSION_PERSISTENCE_TIME + 1);
 
@@ -593,7 +598,7 @@ describe('SessionInstrumentation', () => {
       isSampled: initialIsSampled,
     });
 
-    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+    mockStorage[NAMESPACED_STORAGE_KEY] = JSON.stringify(mockUserSession);
 
     const config = makeCoreConfig(
       mockConfig({
@@ -610,7 +615,7 @@ describe('SessionInstrumentation', () => {
     const sessionMeta = api.getSession();
 
     expect(sessionMeta?.attributes?.['isSampled']).toBe(initialIsSampled.toString());
-    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).isSampled).toBe(initialIsSampled);
+    expect((JSON.parse(mockStorage[NAMESPACED_STORAGE_KEY]) as FaroUserSession).isSampled).toBe(initialIsSampled);
   });
 
   it('Will calculate new sampling decision if session from web storage is invalid.', () => {
@@ -622,7 +627,7 @@ describe('SessionInstrumentation', () => {
 
     mockUserSession.lastActivity = dateNow() - SESSION_EXPIRATION_TIME;
 
-    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+    mockStorage[NAMESPACED_STORAGE_KEY] = JSON.stringify(mockUserSession);
 
     const config = makeCoreConfig(
       mockConfig({
@@ -639,7 +644,7 @@ describe('SessionInstrumentation', () => {
     const sessionMeta = api.getSession();
 
     expect(sessionMeta?.attributes?.['isSampled']).toBe('false');
-    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).isSampled).toBe(false);
+    expect((JSON.parse(mockStorage[NAMESPACED_STORAGE_KEY]) as FaroUserSession).isSampled).toBe(false);
   });
 
   it('Will send 0% of the signals.', () => {

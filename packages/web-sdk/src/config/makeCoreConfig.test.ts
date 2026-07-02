@@ -1,9 +1,10 @@
 import { defaultLogArgsSerializer, isFunction } from '@grafana/faro-core';
 import type { LogArgsSerializer } from '@grafana/faro-core';
+import { MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { userActionDataAttribute } from '../instrumentations/userActions';
 
-import { makeCoreConfig } from './makeCoreConfig';
+import { getAppKeyFromUrl, makeCoreConfig } from './makeCoreConfig';
 
 describe('defaultMetas', () => {
   it('includes K6Meta in defaultMetas for k6 (lab) sessions configured K6 properties.', () => {
@@ -276,5 +277,63 @@ describe('config', () => {
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
     expect(navigationInstrumentation).toBeUndefined();
+  });
+});
+
+describe('getAppKeyFromUrl', () => {
+  it('returns the last path segment (app key) of a collector url', () => {
+    expect(getAppKeyFromUrl('https://faro-collector-prod-us-east-0.grafana.net/collect/abc123')).toBe('abc123');
+  });
+
+  it('ignores a trailing slash', () => {
+    expect(getAppKeyFromUrl('https://faro-collector-prod-us-east-0.grafana.net/collect/abc123/')).toBe('abc123');
+  });
+
+  it('strips query string and hash', () => {
+    expect(getAppKeyFromUrl('https://example.com/collect/abc123?foo=bar#baz')).toBe('abc123');
+  });
+
+  it('returns undefined for an empty or missing url', () => {
+    expect(getAppKeyFromUrl(undefined)).toBeUndefined();
+    expect(getAppKeyFromUrl('')).toBeUndefined();
+  });
+});
+
+describe('sessionTracking.storageKeyNamespace resolution', () => {
+  it('prefers an explicitly configured namespace over app name and url', () => {
+    const config = makeCoreConfig({
+      url: 'http://example.com/collect/url-app-key',
+      app: { name: 'my-app' },
+      sessionTracking: { storageKeyNamespace: 'explicit-namespace' },
+    });
+
+    expect(config?.sessionTracking?.storageKeyNamespace).toBe('explicit-namespace');
+  });
+
+  it('falls back to the app name when no explicit namespace is set', () => {
+    const config = makeCoreConfig({
+      url: 'http://example.com/collect/url-app-key',
+      app: { name: 'my-app' },
+    });
+
+    expect(config?.sessionTracking?.storageKeyNamespace).toBe('my-app');
+  });
+
+  it('falls back to the app key from the collector url when app name is absent', () => {
+    const config = makeCoreConfig({
+      url: 'http://example.com/collect/url-app-key',
+      app: {},
+    });
+
+    expect(config?.sessionTracking?.storageKeyNamespace).toBe('url-app-key');
+  });
+
+  it('is undefined when nothing can be resolved', () => {
+    const config = makeCoreConfig({
+      transports: [new MockTransport()],
+      app: {},
+    });
+
+    expect(config?.sessionTracking?.storageKeyNamespace).toBeUndefined();
   });
 });
