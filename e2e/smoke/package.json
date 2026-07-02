@@ -34,6 +34,6 @@
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "start-server-and-test": "3.0.11",
-    "vite": "8.0.16"
+    "vite": "8.1.0"
   }
 }
