@@ -3,7 +3,8 @@ import { faro, stringifyExternalJson } from '@grafana/faro-core';
 import { throttle } from '../../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
-import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
+import { getSessionStorageKey } from './getSessionStorageKey';
+import { STORAGE_UPDATE_DELAY } from './sessionConstants';
 import { getSessionMetaUpdateHandler, getUserSessionUpdater } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
@@ -25,15 +26,15 @@ export class VolatileSessionsManager {
   }
 
   static removeUserSession() {
-    removeItem(STORAGE_KEY, VolatileSessionsManager.storageTypeSession);
+    removeItem(getSessionStorageKey(), VolatileSessionsManager.storageTypeSession);
   }
 
   static storeUserSession(session: FaroUserSession): void {
-    setItem(STORAGE_KEY, stringifyExternalJson(session), VolatileSessionsManager.storageTypeSession);
+    setItem(getSessionStorageKey(), stringifyExternalJson(session), VolatileSessionsManager.storageTypeSession);
   }
 
   static fetchUserSession(): FaroUserSession | null {
-    const storedSession = getItem(STORAGE_KEY, VolatileSessionsManager.storageTypeSession);
+    const storedSession = getItem(getSessionStorageKey(), VolatileSessionsManager.storageTypeSession);
 
     if (storedSession) {
       return JSON.parse(storedSession) as FaroUserSession;

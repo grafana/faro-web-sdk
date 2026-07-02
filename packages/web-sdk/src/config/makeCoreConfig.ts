@@ -104,6 +104,13 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     sessionTracking: {
       ...defaultSessionTrackingConfig,
       ...browserConfig.sessionTracking,
+      // Isolate the session web-storage key per Faro instance so multiple instances on the same
+      // page (e.g. a micro-frontend setup) don't clobber each other's session. Precedence:
+      // explicit namespace > app name > app key parsed from the collector URL.
+      storageKeyNamespace:
+        browserConfig.sessionTracking?.storageKeyNamespace ??
+        browserConfig.app?.name ??
+        getAppKeyFromUrl(browserConfig.url),
       ...crateSessionMeta({
         trackGeolocation: browserConfig.trackGeolocation,
         sessionTracking: browserConfig.sessionTracking,
@@ -114,6 +121,24 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
       trackNavigation,
     },
   };
+}
+
+/**
+ * Parse the app key from a Faro collector URL to use as a session storage-key namespace.
+ *
+ * Collector URLs look like `https://faro-collector-<region>.grafana.net/collect/<appKey>`, so the
+ * app key is the last path segment. Any query string or hash is stripped first. Returns `undefined`
+ * when no url is provided or no segment can be extracted.
+ */
+export function getAppKeyFromUrl(url: string | undefined): string | undefined {
+  if (!url) {
+    return undefined;
+  }
+
+  const path = url.split('?')[0]!.split('#')[0]!;
+  const lastSegment = path.split('/').filter(Boolean).pop();
+
+  return lastSegment || undefined;
 }
 
 function getFilteredInstrumentations(

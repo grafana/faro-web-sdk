@@ -139,6 +139,13 @@ export interface Config<P = APIEvent> {
      * Custom function to generate session id. If available Faro uses this function instead of the internal one.
      */
     generateSessionId?: () => string;
+    /**
+     * Namespace appended to the session web-storage key to isolate this Faro instance from others
+     * sharing the same page (e.g. a micro-frontend setup). When omitted, the web SDK derives it from
+     * the app name, then from the app key in the collector URL. When nothing can be resolved, the
+     * bare key is used.
+     */
+    storageKeyNamespace?: string;
   };
 
   /**

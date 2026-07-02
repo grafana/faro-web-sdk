@@ -4,7 +4,8 @@ import type { MetaSession } from '@grafana/faro-core';
 import { throttle } from '../../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
-import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
+import { getSessionStorageKey } from './getSessionStorageKey';
+import { STORAGE_UPDATE_DELAY } from './sessionConstants';
 import { getSessionMetaUpdateHandler, getUserSessionUpdater } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
@@ -38,15 +39,15 @@ export class PersistentSessionsManager {
   }
 
   static removeUserSession() {
-    removeItem(STORAGE_KEY, PersistentSessionsManager.storageTypeLocal);
+    removeItem(getSessionStorageKey(), PersistentSessionsManager.storageTypeLocal);
   }
 
   static storeUserSession(session: FaroUserSession): void {
-    setItem(STORAGE_KEY, stringifyExternalJson(session), PersistentSessionsManager.storageTypeLocal);
+    setItem(getSessionStorageKey(), stringifyExternalJson(session), PersistentSessionsManager.storageTypeLocal);
   }
 
   static fetchUserSession(): FaroUserSession | null {
-    const storedSession = getItem(STORAGE_KEY, PersistentSessionsManager.storageTypeLocal);
+    const storedSession = getItem(getSessionStorageKey(), PersistentSessionsManager.storageTypeLocal);
 
     if (storedSession) {
       return JSON.parse(storedSession) as FaroUserSession;

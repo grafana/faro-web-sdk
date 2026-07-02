@@ -9,6 +9,7 @@ export {
   STORAGE_UPDATE_DELAY,
   VolatileSessionsManager,
   defaultSessionTrackingConfig,
+  getSessionStorageKey,
   isSampled,
 } from './sessionManager';
 
