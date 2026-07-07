@@ -46,24 +46,35 @@ initializeFaro({
 
 #### `maskInputOptions`
 
-| Key              | Type      | Description           |
-| ---------------- | --------- | --------------------- |
-| `password`       | `boolean` | Password inputs       |
-| `text`           | `boolean` | Text inputs           |
-| `email`          | `boolean` | Email inputs          |
-| `tel`            | `boolean` | Telephone inputs      |
-| `number`         | `boolean` | Number inputs         |
-| `search`         | `boolean` | Search inputs         |
-| `url`            | `boolean` | URL inputs            |
-| `date`           | `boolean` | Date inputs           |
-| `datetime-local` | `boolean` | Datetime-local inputs |
-| `month`          | `boolean` | Month inputs          |
-| `week`           | `boolean` | Week inputs           |
-| `time`           | `boolean` | Time inputs           |
-| `color`          | `boolean` | Color inputs          |
-| `range`          | `boolean` | Range inputs          |
-| `textarea`       | `boolean` | Textarea elements     |
-| `select`         | `boolean` | Select dropdowns      |
+| Key              | Type      | Description                                                                                                                                                                                        |
+| ---------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `password`       | `boolean` | Password inputs                                                                                                                                                                                    |
+| `text`           | `boolean` | Text inputs                                                                                                                                                                                        |
+| `email`          | `boolean` | Email inputs                                                                                                                                                                                       |
+| `tel`            | `boolean` | Telephone inputs                                                                                                                                                                                   |
+| `number`         | `boolean` | Number inputs                                                                                                                                                                                      |
+| `search`         | `boolean` | Search inputs                                                                                                                                                                                      |
+| `url`            | `boolean` | URL inputs                                                                                                                                                                                         |
+| `date`           | `boolean` | Date inputs                                                                                                                                                                                        |
+| `datetime-local` | `boolean` | Datetime-local inputs                                                                                                                                                                              |
+| `month`          | `boolean` | Month inputs                                                                                                                                                                                       |
+| `week`           | `boolean` | Week inputs                                                                                                                                                                                        |
+| `time`           | `boolean` | Time inputs                                                                                                                                                                                        |
+| `color`          | `boolean` | Color inputs                                                                                                                                                                                       |
+| `range`          | `boolean` | Range inputs                                                                                                                                                                                       |
+| `textarea`       | `boolean` | Textarea elements                                                                                                                                                                                  |
+| `select`         | `boolean` | Select dropdowns                                                                                                                                                                                   |
+| `ssn`            | `boolean` | Mask any input value matching a US Social Security Number shape (`XXX-XX-XXXX` or 9 contiguous digits). See [#2169](https://github.com/grafana/faro-web-sdk/issues/2169).                          |
+| `creditCard`     | `boolean` | Mask any input value matching a 13–19 digit credit-card PAN that passes a Luhn checksum (with or without dash/space separators). See [#2169](https://github.com/grafana/faro-web-sdk/issues/2169). |
+| `usAddress`      | `boolean` | Mask any input value matching a US street-address shape (`Number Street, City, ST, ZIP`). See [#2169](https://github.com/grafana/faro-web-sdk/issues/2169).                                        |
+
+> Unlike the input-_type_ keys above, `ssn` / `creditCard` / `usAddress` are
+> value-pattern matchers. When any of them is enabled the instrumentation
+> inspects every input's value and masks it if the value matches an enabled
+> pattern, regardless of the input's HTML type. Inputs whose values do not
+> match any enabled pattern are still masked when they would be under
+> `maskAllInputs` or the input-type keys above; otherwise they pass through
+> unchanged.
 
 ### Recording Options
 
@@ -126,6 +137,11 @@ new ReplayInstrumentation({
     email: true,
     tel: true,
     textarea: true,
+    // Value-pattern matchers — fire on any input whose value looks like
+    // an SSN, credit-card PAN, or US street address regardless of input type.
+    ssn: true,
+    creditCard: true,
+    usAddress: true,
   },
   // Mask elements with specific CSS classes
   maskTextSelector: '.sensitive-data, .pii',

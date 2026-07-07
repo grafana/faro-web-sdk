@@ -3,7 +3,8 @@ import { record, type recordOptions } from '@grafana/rrweb';
 import type { eventWithTime } from '@grafana/rrweb-types';
 
 import { defaultMaskInputFn, defaultReplayInstrumentationOptions } from './const';
-import type { ReplayInstrumentationOptions } from './types';
+import { hasAnyPatternEnabled, valueMatchesEnabledPattern } from './patterns';
+import { type MaskInputFn, type MaskInputOptions, PATTERN_MASK_KEYS, type ReplayInstrumentationOptions } from './types';
 
 const faroSessionReplayEventName = 'faro.session_recording.event';
 const faroSessionReplayStartedEventName = 'faro.session_recording.started';
@@ -131,15 +132,25 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   private buildRecordOptions(): recordOptions<eventWithTime> {
+    const patternsEnabled = hasAnyPatternEnabled(this.options.maskInputOptions);
+    const sanitizedMaskInputOptions = sanitizeMaskInputOptions(this.options.maskInputOptions);
+
+    // rrweb only invokes `maskInputFn` for inputs it has already decided to
+    // mask. When any value-pattern key is enabled we need our wrapper to see
+    // every input, so we force `maskAllInputs: true` to rrweb and re-implement
+    // the user's mask decision inside the wrapper (see #2169).
+    const effectiveMaskAllInputs = patternsEnabled ? true : this.options.maskAllInputs;
+    const maskInputFn = patternsEnabled ? this.buildPatternAwareMaskInputFn() : this.options.maskInputFn;
+
     return {
       emit: (event: eventWithTime, isCheckout?: boolean): void => {
         this.handleEvent(event, isCheckout);
       },
       checkoutEveryNms: 300_000, // 5 minutes
       recordCrossOriginIframes: this.options.recordCrossOriginIframes,
-      maskAllInputs: this.options.maskAllInputs,
-      maskInputOptions: this.options.maskInputOptions,
-      maskInputFn: this.options.maskInputFn,
+      maskAllInputs: effectiveMaskAllInputs,
+      maskInputOptions: sanitizedMaskInputOptions,
+      maskInputFn,
       maskTextSelector: this.options.maskTextSelector,
       blockSelector: this.options.blockSelector,
       ignoreSelector: this.options.ignoreSelector,
@@ -152,6 +163,33 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       errorHandler: (err) => {
         this.logError('Error occurred during session replay', err);
       },
+    };
+  }
+
+  /**
+   * Build a `maskInputFn` that masks values matching any enabled pattern key
+   * (`ssn` / `creditCard` / `usAddress`), and otherwise reproduces what rrweb
+   * would have done under the user's original `maskAllInputs` /
+   * `maskInputOptions` / `maskInputFn` configuration.
+   *
+   * Length-preserving asterisks are used when masking so the replay's visual
+   * layout doesn't shift, matching rrweb's own default.
+   */
+  private buildPatternAwareMaskInputFn(): MaskInputFn {
+    const userOptions = this.options.maskInputOptions;
+    const userMaskAllInputs = this.options.maskAllInputs;
+    const userFn = this.options.maskInputFn;
+
+    return (text, element) => {
+      const mask = (): string => (userFn ? userFn(text, element) : '*'.repeat(text.length));
+
+      if (valueMatchesEnabledPattern(text, userOptions)) {
+        return mask();
+      }
+      if (wouldRrwebMask(element, userMaskAllInputs, userOptions)) {
+        return mask();
+      }
+      return text;
     };
   }
 
@@ -292,4 +330,50 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   destroy(): void {
     this.stopRecording();
   }
+}
+
+/**
+ * Strip the pattern-detection keys (`ssn`, `creditCard`, `usAddress`) before
+ * forwarding `maskInputOptions` to rrweb, which only recognizes HTML input
+ * type keys.
+ */
+function sanitizeMaskInputOptions(options: MaskInputOptions | undefined): MaskInputOptions | undefined {
+  if (!options) {
+    return options;
+  }
+  const out: MaskInputOptions = { ...options };
+  for (const key of PATTERN_MASK_KEYS) {
+    delete out[key];
+  }
+  return out;
+}
+
+/**
+ * Recreate rrweb's decision about whether an element's value would be masked
+ * under `maskAllInputs` + `maskInputOptions`, so the pattern-aware wrapper can
+ * leave non-matching values untouched.
+ */
+function wouldRrwebMask(
+  element: HTMLElement,
+  maskAllInputs: boolean | undefined,
+  options: MaskInputOptions | undefined
+): boolean {
+  if (maskAllInputs) {
+    return true;
+  }
+  if (!options) {
+    return false;
+  }
+  const tag = element.tagName?.toLowerCase();
+  if (tag === 'textarea') {
+    return Boolean(options.textarea);
+  }
+  if (tag === 'select') {
+    return Boolean(options.select);
+  }
+  if (tag === 'input') {
+    const type = ((element as HTMLInputElement).type || 'text').toLowerCase();
+    return Boolean((options as Record<string, boolean | undefined>)[type]);
+  }
+  return false;
 }

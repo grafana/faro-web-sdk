@@ -362,6 +362,99 @@ describe('ReplayInstrumentation', () => {
     });
   });
 
+  describe('pattern-based maskInputOptions (ssn / creditCard / usAddress)', () => {
+    function startAndCaptureRecordOptions(options: ReplayInstrumentationOptions): Record<string, any> {
+      instrumentation = new ReplayInstrumentation(options);
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation.initialize();
+      return mockRecord.mock.calls[0][0];
+    }
+
+    it('strips ssn/creditCard/usAddress keys before forwarding maskInputOptions to rrweb', () => {
+      const recordOpts = startAndCaptureRecordOptions({
+        maskAllInputs: false,
+        maskInputOptions: { password: true, ssn: true, creditCard: true, usAddress: true },
+      });
+      expect(recordOpts.maskInputOptions).toEqual({ password: true });
+    });
+
+    it('forces maskAllInputs=true to rrweb when any pattern key is enabled so the wrapper sees every input', () => {
+      const recordOpts = startAndCaptureRecordOptions({
+        maskAllInputs: false,
+        maskInputOptions: { ssn: true },
+      });
+      expect(recordOpts.maskAllInputs).toBe(true);
+    });
+
+    it('does not install a wrapper when no pattern keys are enabled', () => {
+      const userFn: MaskInputFn = jest.fn();
+      const recordOpts = startAndCaptureRecordOptions({
+        maskAllInputs: false,
+        maskInputOptions: { password: true },
+        maskInputFn: userFn,
+      });
+      expect(recordOpts.maskInputFn).toBe(userFn);
+      expect(recordOpts.maskAllInputs).toBe(false);
+    });
+
+    it('masks values that match an enabled pattern even when the input type would not normally be masked', () => {
+      const recordOpts = startAndCaptureRecordOptions({
+        maskAllInputs: false,
+        maskInputOptions: { ssn: true, creditCard: true, usAddress: true },
+      });
+      const fn = recordOpts.maskInputFn as MaskInputFn;
+      const textInput = { tagName: 'INPUT', type: 'text' } as unknown as HTMLElement;
+
+      expect(fn('123-45-6789', textInput)).toBe('***********');
+      expect(fn('4111-1111-1111-1111', textInput)).toBe('*'.repeat('4111-1111-1111-1111'.length));
+      expect(fn('123 Main St, Springfield, IL, 62704', textInput)).toBe(
+        '*'.repeat('123 Main St, Springfield, IL, 62704'.length)
+      );
+    });
+
+    it('leaves non-matching values untouched when the input type would not normally be masked', () => {
+      const recordOpts = startAndCaptureRecordOptions({
+        maskAllInputs: false,
+        maskInputOptions: { ssn: true, creditCard: true, usAddress: true },
+      });
+      const fn = recordOpts.maskInputFn as MaskInputFn;
+      const textInput = { tagName: 'INPUT', type: 'text' } as unknown as HTMLElement;
+
+      expect(fn('hello world', textInput)).toBe('hello world');
+      expect(fn('1234567890123456', textInput)).toBe('1234567890123456'); // 16 digits, Luhn-invalid
+    });
+
+    it('still masks input types the user explicitly opted into', () => {
+      const recordOpts = startAndCaptureRecordOptions({
+        maskAllInputs: false,
+        maskInputOptions: { password: true, ssn: true },
+      });
+      const fn = recordOpts.maskInputFn as MaskInputFn;
+      const passwordInput = { tagName: 'INPUT', type: 'password' } as unknown as HTMLElement;
+
+      expect(fn('hunter2', passwordInput)).toBe('*******');
+    });
+
+    it('delegates to the user-supplied maskInputFn when masking is required', () => {
+      const userFn: MaskInputFn = jest.fn(() => 'REDACTED');
+      const recordOpts = startAndCaptureRecordOptions({
+        maskAllInputs: false,
+        maskInputOptions: { ssn: true },
+        maskInputFn: userFn,
+      });
+      const fn = recordOpts.maskInputFn as MaskInputFn;
+      const textInput = { tagName: 'INPUT', type: 'text' } as unknown as HTMLElement;
+
+      expect(fn('123-45-6789', textInput)).toBe('REDACTED');
+      expect(userFn).toHaveBeenCalledWith('123-45-6789', textInput);
+      // Non-matching values should still pass through unchanged when the
+      // input type isn't otherwise eligible for masking.
+      expect(fn('hello', textInput)).toBe('hello');
+    });
+  });
+
   describe('handleEvent', () => {
     let emitCallback: (event: any, isCheckout?: boolean) => void;
 
