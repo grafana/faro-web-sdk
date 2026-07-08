@@ -24,9 +24,9 @@ import {
 import * as samplingModuleMock from './sessionManager/sampling';
 import { createUserSessionObject } from './sessionManager/sessionManagerUtils';
 
-// Tests that build config via makeCoreConfig get a session storage key namespaced by the app name
-// (mockConfig defaults app.name to 'test'). Tests that use mockConfig directly bypass that
-// derivation and keep the bare STORAGE_KEY.
+// Tests that build config via makeCoreConfig get a session storage key namespaced by the app name,
+// because mockConfig sets `isolate: true` (which enables session isolation) and defaults app.name to
+// 'test'. Tests that use mockConfig directly bypass that derivation and keep the bare STORAGE_KEY.
 const NAMESPACED_STORAGE_KEY = `${STORAGE_KEY}_test`;
 
 describe('SessionInstrumentation', () => {

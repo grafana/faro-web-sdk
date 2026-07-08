@@ -104,13 +104,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     sessionTracking: {
       ...defaultSessionTrackingConfig,
       ...browserConfig.sessionTracking,
-      // Isolate the session web-storage key per Faro instance so multiple instances on the same
-      // page (e.g. a micro-frontend setup) don't clobber each other's session. Precedence:
-      // explicit namespace > app name > app key parsed from the collector URL.
-      storageKeyNamespace:
-        browserConfig.sessionTracking?.storageKeyNamespace ??
-        browserConfig.app?.name ??
-        getAppKeyFromUrl(browserConfig.url),
+      storageKeyNamespace: resolveSessionStorageKeyNamespace(browserConfig, isolate),
       ...crateSessionMeta({
         trackGeolocation: browserConfig.trackGeolocation,
         sessionTracking: browserConfig.sessionTracking,
@@ -121,6 +115,30 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
       trackNavigation,
     },
   };
+}
+
+/**
+ * Resolve the session web-storage key namespace.
+ *
+ * By default all Faro instances on a page share a single session under the bare storage key. When
+ * an instance opts into isolation — the whole instance is isolated (`isolate`), sessions are
+ * isolated (`sessionTracking.isolatedSessions`), or an explicit `sessionTracking.storageKeyNamespace`
+ * is provided — the session key is namespaced so co-located instances (e.g. a micro-frontend setup)
+ * don't clobber each other's session. Namespace precedence: explicit namespace > app name > app key
+ * parsed from the collector URL. Returns `undefined` (bare key) when isolation is off or nothing can
+ * be resolved.
+ */
+function resolveSessionStorageKeyNamespace(browserConfig: BrowserConfig, isolate: boolean): string | undefined {
+  const { sessionTracking } = browserConfig;
+
+  const shouldIsolateSession =
+    isolate || sessionTracking?.isolatedSessions === true || sessionTracking?.storageKeyNamespace != null;
+
+  if (!shouldIsolateSession) {
+    return undefined;
+  }
+
+  return sessionTracking?.storageKeyNamespace ?? browserConfig.app?.name ?? getAppKeyFromUrl(browserConfig.url);
 }
 
 /**

@@ -140,10 +140,18 @@ export interface Config<P = APIEvent> {
      */
     generateSessionId?: () => string;
     /**
-     * Namespace appended to the session web-storage key to isolate this Faro instance from others
-     * sharing the same page (e.g. a micro-frontend setup). When omitted, the web SDK derives it from
-     * the app name, then from the app key in the collector URL. When nothing can be resolved, the
-     * bare key is used.
+     * Isolate this instance's session in web storage from other Faro instances sharing the same page
+     * (e.g. a micro-frontend setup) instead of sharing one global session (default: false). Session
+     * isolation is also enabled implicitly when the whole instance is isolated (`isolate`) or an
+     * explicit `storageKeyNamespace` is set. When enabled, the web SDK derives a namespace for the
+     * session storage key from `storageKeyNamespace`, then the app name, then the app key in the
+     * collector URL.
+     */
+    isolatedSessions?: boolean;
+    /**
+     * Explicit namespace appended to the session web-storage key. Setting it enables session
+     * isolation (see `isolatedSessions`). Use it when co-located instances share the same app name
+     * and collector URL and therefore can't be told apart automatically.
      */
     storageKeyNamespace?: string;
   };
