@@ -153,10 +153,22 @@ export function getAppKeyFromUrl(url: string | undefined): string | undefined {
     return undefined;
   }
 
-  const path = url.split('?')[0]!.split('#')[0]!;
-  const lastSegment = path.split('/').filter(Boolean).pop();
+  try {
+    const { pathname } = new URL(url);
+    const segments = pathname.split('/').filter(Boolean);
+    const collectIndex = segments.lastIndexOf('collect');
+    const appKey = collectIndex >= 0 ? segments[collectIndex + 1] : undefined;
 
-  return lastSegment || undefined;
+    return appKey || undefined;
+  } catch {
+    // Fallback for non-standard/relative URLs
+    const path = url.split('?')[0]!.split('#')[0]!;
+    const segments = path.split('/').filter(Boolean);
+    const collectIndex = segments.lastIndexOf('collect');
+    const appKey = collectIndex >= 0 ? segments[collectIndex + 1] : undefined;
+
+    return appKey || undefined;
+  }
 }
 
 function getFilteredInstrumentations(
