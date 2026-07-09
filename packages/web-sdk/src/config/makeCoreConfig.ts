@@ -134,6 +134,11 @@ function resolveSessionStorageKeyNamespace(browserConfig: BrowserConfig, isolate
   const explicitNamespace = sessionTracking?.storageKeyNamespace;
   const hasExplicitNamespace = typeof explicitNamespace === 'string' && explicitNamespace.length > 0;
 
+  // Explicit false opt-out overrides instance-level isolation.
+  if (sessionTracking?.isolatedSessions === false) {
+    return undefined;
+  }
+
   const shouldIsolateSession = isolate || sessionTracking?.isolatedSessions === true || hasExplicitNamespace;
 
   if (!shouldIsolateSession) {
@@ -145,6 +150,7 @@ function resolveSessionStorageKeyNamespace(browserConfig: BrowserConfig, isolate
     browserConfig.app?.name ??
     getAppKeyFromUrl(browserConfig.url)
   );
+}
 
 /**
  * Parse the app key from a Faro collector URL to use as a session storage-key namespace.

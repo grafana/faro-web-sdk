@@ -358,4 +358,15 @@ describe('sessionTracking.storageKeyNamespace resolution', () => {
 
     expect(config?.sessionTracking?.storageKeyNamespace).toBeUndefined();
   });
+
+  it('is undefined when isolatedSessions is explicitly false, even if the instance is isolated', () => {
+    const config = makeCoreConfig({
+      transports: [new MockTransport()],
+      app: { name: 'my-app' },
+      isolate: true,
+      sessionTracking: { isolatedSessions: false },
+    });
+
+    expect(config?.sessionTracking?.storageKeyNamespace).toBeUndefined();
+  });
 });
