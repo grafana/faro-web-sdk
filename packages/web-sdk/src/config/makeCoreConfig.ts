@@ -131,15 +131,20 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 function resolveSessionStorageKeyNamespace(browserConfig: BrowserConfig, isolate: boolean): string | undefined {
   const { sessionTracking } = browserConfig;
 
-  const shouldIsolateSession =
-    isolate || sessionTracking?.isolatedSessions === true || sessionTracking?.storageKeyNamespace != null;
+  const explicitNamespace = sessionTracking?.storageKeyNamespace;
+  const hasExplicitNamespace = typeof explicitNamespace === 'string' && explicitNamespace.length > 0;
+
+  const shouldIsolateSession = isolate || sessionTracking?.isolatedSessions === true || hasExplicitNamespace;
 
   if (!shouldIsolateSession) {
     return undefined;
   }
 
-  return sessionTracking?.storageKeyNamespace ?? browserConfig.app?.name ?? getAppKeyFromUrl(browserConfig.url);
-}
+  return (
+    (hasExplicitNamespace ? explicitNamespace : undefined) ??
+    browserConfig.app?.name ??
+    getAppKeyFromUrl(browserConfig.url)
+  );
 
 /**
  * Parse the app key from a Faro collector URL to use as a session storage-key namespace.
