@@ -144,7 +144,7 @@ function resolveSessionStorageKeyNamespace(browserConfig: BrowserConfig): string
 
   return (
     (hasExplicitNamespace ? explicitNamespace : undefined) ??
-    browserConfig.app?.name ??
+    (browserConfig.app?.name?.trim() || undefined) ??
     getAppKeyFromUrl(browserConfig.url)
   );
 }
