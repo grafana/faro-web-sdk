@@ -24,9 +24,9 @@ import {
 import * as samplingModuleMock from './sessionManager/sampling';
 import { createUserSessionObject } from './sessionManager/sessionManagerUtils';
 
-// Tests that build config via makeCoreConfig get a session storage key namespaced by the app name,
-// because mockConfig sets `isolate: true` (which enables session isolation) and defaults app.name to
-// 'test'. Tests that use mockConfig directly bypass that derivation and keep the bare STORAGE_KEY.
+// Tests that explicitly opt into session isolation via `sessionTracking.isolatedSessions: true` use
+// a namespaced storage key derived from the app name. mockConfig defaults app.name to 'test', so the
+// namespaced key is `${STORAGE_KEY}_test`. Tests that do not opt in keep the bare STORAGE_KEY.
 const NAMESPACED_STORAGE_KEY = `${STORAGE_KEY}_test`;
 
 describe('SessionInstrumentation', () => {
@@ -494,6 +494,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          isolatedSessions: true,
           samplingRate: 1, // default
         },
       })
@@ -521,6 +522,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          isolatedSessions: true,
           samplingRate: 1, // default
         },
       })
@@ -552,6 +554,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          isolatedSessions: true,
           samplingRate: 1, // default
         },
       })
@@ -606,6 +609,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          isolatedSessions: true,
           samplingRate: 0,
         },
       })
@@ -635,6 +639,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          isolatedSessions: true,
           samplingRate: 0, // setting to zero so calculating sampling decision for new session will evaluate to false
         },
       })
