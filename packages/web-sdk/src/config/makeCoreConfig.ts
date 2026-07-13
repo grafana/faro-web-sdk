@@ -104,7 +104,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     sessionTracking: {
       ...defaultSessionTrackingConfig,
       ...browserConfig.sessionTracking,
-      storageKeyNamespace: resolveSessionStorageKeyNamespace(browserConfig, isolate),
+      storageKeyNamespace: resolveSessionStorageKeyNamespace(browserConfig),
       ...crateSessionMeta({
         trackGeolocation: browserConfig.trackGeolocation,
         sessionTracking: browserConfig.sessionTracking,
@@ -120,26 +120,23 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 /**
  * Resolve the session web-storage key namespace.
  *
- * By default all Faro instances on a page share a single session under the bare storage key. When
- * an instance opts into isolation — the whole instance is isolated (`isolate`), sessions are
- * isolated (`sessionTracking.isolatedSessions`), or an explicit `sessionTracking.storageKeyNamespace`
- * is provided — the session key is namespaced so co-located instances (e.g. a micro-frontend setup)
- * don't clobber each other's session. Namespace precedence: explicit namespace > app name > app key
- * parsed from the collector URL. Returns `undefined` (bare key) when isolation is off or nothing can
- * be resolved.
+ * By default all Faro instances on a page share a single session under the bare storage key.
+ * Namespacing is opt-in: set `sessionTracking.isolatedSessions: true` or provide an explicit
+ * `sessionTracking.storageKeyNamespace` to namespace the key so co-located instances (e.g. a
+ * micro-frontend setup) don't clobber each other's session. Namespace precedence: explicit
+ * namespace > app name > app key parsed from the collector URL. Returns `undefined` (bare key)
+ * when isolation is not opted into, or when nothing can be resolved.
+ *
+ * Note: the top-level `isolate` flag (which isolates the Faro global object) intentionally does
+ * not affect session storage — that would silently rename the storage key for existing users.
  */
-function resolveSessionStorageKeyNamespace(browserConfig: BrowserConfig, isolate: boolean): string | undefined {
+function resolveSessionStorageKeyNamespace(browserConfig: BrowserConfig): string | undefined {
   const { sessionTracking } = browserConfig;
 
   const explicitNamespace = sessionTracking?.storageKeyNamespace;
   const hasExplicitNamespace = typeof explicitNamespace === 'string' && explicitNamespace.length > 0;
 
-  // Explicit false opt-out overrides instance-level isolation.
-  if (sessionTracking?.isolatedSessions === false) {
-    return undefined;
-  }
-
-  const shouldIsolateSession = isolate || sessionTracking?.isolatedSessions === true || hasExplicitNamespace;
+  const shouldIsolateSession = sessionTracking?.isolatedSessions === true || hasExplicitNamespace;
 
   if (!shouldIsolateSession) {
     return undefined;

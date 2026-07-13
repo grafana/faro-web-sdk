@@ -309,14 +309,14 @@ describe('sessionTracking.storageKeyNamespace resolution', () => {
     expect(config?.sessionTracking?.storageKeyNamespace).toBeUndefined();
   });
 
-  it('namespaces by app name when the whole instance is isolated', () => {
+  it('does not namespace the session when only the instance is isolated (isolate: true)', () => {
     const config = makeCoreConfig({
       url: 'http://example.com/collect/url-app-key',
       app: { name: 'my-app' },
       isolate: true,
     });
 
-    expect(config?.sessionTracking?.storageKeyNamespace).toBe('my-app');
+    expect(config?.sessionTracking?.storageKeyNamespace).toBeUndefined();
   });
 
   it('namespaces by app name when sessionTracking.isolatedSessions is enabled', () => {
@@ -349,22 +349,11 @@ describe('sessionTracking.storageKeyNamespace resolution', () => {
     expect(config?.sessionTracking?.storageKeyNamespace).toBe('explicit-namespace');
   });
 
-  it('is undefined when isolated but nothing can be resolved', () => {
+  it('is undefined when isolatedSessions is enabled but nothing can be resolved', () => {
     const config = makeCoreConfig({
       transports: [new MockTransport()],
       app: {},
-      isolate: true,
-    });
-
-    expect(config?.sessionTracking?.storageKeyNamespace).toBeUndefined();
-  });
-
-  it('is undefined when isolatedSessions is explicitly false, even if the instance is isolated', () => {
-    const config = makeCoreConfig({
-      transports: [new MockTransport()],
-      app: { name: 'my-app' },
-      isolate: true,
-      sessionTracking: { isolatedSessions: false },
+      sessionTracking: { isolatedSessions: true },
     });
 
     expect(config?.sessionTracking?.storageKeyNamespace).toBeUndefined();
