@@ -20,6 +20,10 @@ import { VolatileSessionsManager } from './VolatileSessionManager';
 const fakeSystemTime = new Date('2023-01-01').getTime();
 const mockSessionId = '123';
 
+// Shared instance used where tests need VolatileSessionsManager method references.
+// Uses undefined namespace so it reads/writes the bare storage key.
+const volatileManager = new VolatileSessionsManager(undefined);
+
 describe('sessionManagerUtils', () => {
   beforeAll(() => {
     jest.useFakeTimers();
@@ -446,10 +450,10 @@ describe('sessionManagerUtils', () => {
 
   it('Returns the configured session manager', () => {
     let SessionManager = getSessionManagerByConfig({ persistent: false /* default */ });
-    expect(new SessionManager()).toBeInstanceOf(VolatileSessionsManager);
+    expect(new SessionManager(undefined)).toBeInstanceOf(VolatileSessionsManager);
 
     SessionManager = getSessionManagerByConfig({ persistent: true });
-    expect(new SessionManager()).toBeInstanceOf(PersistentSessionsManager);
+    expect(new SessionManager(undefined)).toBeInstanceOf(PersistentSessionsManager);
   });
 
   describe('sessionMetaUpdateHandler', () => {
@@ -458,13 +462,13 @@ describe('sessionManagerUtils', () => {
       jest.spyOn(samplingModule, 'isSampled').mockImplementationOnce(mockIsSampled);
 
       const mockStoreUserSession = jest.fn();
-      jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+      jest.spyOn(volatileManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
 
       initializeFaro(mockConfig({}));
 
       const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
-        fetchUserSession: VolatileSessionsManager.fetchUserSession,
-        storeUserSession: VolatileSessionsManager.storeUserSession,
+        fetchUserSession: volatileManager.fetchUserSession,
+        storeUserSession: volatileManager.storeUserSession,
       });
 
       const newSessionId = 'new-session-id';
@@ -484,7 +488,7 @@ describe('sessionManagerUtils', () => {
 
     it('Updates session attributes without creating a new Faro user session if only attributes have changed', () => {
       const mockStoreUserSession = jest.fn();
-      jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+      jest.spyOn(volatileManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
 
       const storedSession: FaroUserSession = {
         sessionId: mockSessionId,
@@ -499,11 +503,11 @@ describe('sessionManagerUtils', () => {
         },
       };
 
-      jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValueOnce(storedSession);
+      jest.spyOn(volatileManager, 'fetchUserSession').mockReturnValueOnce(storedSession);
 
       const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
-        fetchUserSession: VolatileSessionsManager.fetchUserSession,
-        storeUserSession: VolatileSessionsManager.storeUserSession,
+        fetchUserSession: volatileManager.fetchUserSession,
+        storeUserSession: volatileManager.storeUserSession,
       });
 
       const faro = initializeFaro(mockConfig({}));
@@ -536,7 +540,7 @@ describe('sessionManagerUtils', () => {
 
     it('Updates session overrides without creating a new Faro user session if only overrides have changed', () => {
       const mockStoreUserSession = jest.fn();
-      jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+      jest.spyOn(volatileManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
 
       const storedSession: FaroUserSession = {
         sessionId: mockSessionId,
@@ -552,11 +556,11 @@ describe('sessionManagerUtils', () => {
         },
       };
 
-      jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValueOnce(storedSession);
+      jest.spyOn(volatileManager, 'fetchUserSession').mockReturnValueOnce(storedSession);
 
       const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
-        fetchUserSession: VolatileSessionsManager.fetchUserSession,
-        storeUserSession: VolatileSessionsManager.storeUserSession,
+        fetchUserSession: volatileManager.fetchUserSession,
+        storeUserSession: volatileManager.storeUserSession,
       });
 
       const faro = initializeFaro(mockConfig({ sessionTracking: { session: storedSession.sessionMeta } }));
@@ -588,11 +592,11 @@ describe('sessionManagerUtils', () => {
 
     it('creates a new session with overrides if the session is empty and only overrides are available', () => {
       const mockStoreUserSession = jest.fn();
-      jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+      jest.spyOn(volatileManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
 
       const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
-        fetchUserSession: VolatileSessionsManager.fetchUserSession,
-        storeUserSession: VolatileSessionsManager.storeUserSession,
+        fetchUserSession: volatileManager.fetchUserSession,
+        storeUserSession: volatileManager.storeUserSession,
       });
 
       const faro = initializeFaro(mockConfig({}));
@@ -618,11 +622,11 @@ describe('sessionManagerUtils', () => {
 
     it('does not create a new session if overrides are added via the setView API', () => {
       const mockStoreUserSession = jest.fn();
-      jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
+      jest.spyOn(volatileManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
 
       const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
-        fetchUserSession: VolatileSessionsManager.fetchUserSession,
-        storeUserSession: VolatileSessionsManager.storeUserSession,
+        fetchUserSession: volatileManager.fetchUserSession,
+        storeUserSession: volatileManager.storeUserSession,
       });
 
       const initialSession: MetaSession = {
@@ -723,8 +727,8 @@ describe('sessionManagerUtils', () => {
       );
 
       const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
-        fetchUserSession: VolatileSessionsManager.fetchUserSession,
-        storeUserSession: VolatileSessionsManager.storeUserSession,
+        fetchUserSession: volatileManager.fetchUserSession,
+        storeUserSession: volatileManager.storeUserSession,
       });
 
       let newOverrides = { serviceName: 'my-service' };
@@ -766,7 +770,7 @@ describe('sessionManagerUtils', () => {
         })
       );
 
-      jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValueOnce({
+      jest.spyOn(volatileManager, 'fetchUserSession').mockReturnValueOnce({
         sessionId: mockSessionId,
         isSampled: true,
         lastActivity: fakeSystemTime,
@@ -775,8 +779,8 @@ describe('sessionManagerUtils', () => {
       });
 
       const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
-        fetchUserSession: VolatileSessionsManager.fetchUserSession,
-        storeUserSession: VolatileSessionsManager.storeUserSession,
+        fetchUserSession: volatileManager.fetchUserSession,
+        storeUserSession: volatileManager.storeUserSession,
       });
 
       const mockPushEvent = jest.fn();

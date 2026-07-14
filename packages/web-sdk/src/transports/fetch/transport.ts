@@ -267,9 +267,13 @@ export class FetchTransport extends BaseTransport {
     const sessionTrackingConfig = config.sessionTracking;
 
     if (sessionTrackingConfig?.enabled) {
-      const { fetchUserSession, storeUserSession } = getSessionManagerByConfig(sessionTrackingConfig);
+      const SessionManagerClass = getSessionManagerByConfig(sessionTrackingConfig);
+      const sessionManager = new SessionManagerClass(sessionTrackingConfig.storageKeyNamespace);
 
-      getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
+      getUserSessionUpdater({
+        fetchUserSession: sessionManager.fetchUserSession,
+        storeUserSession: sessionManager.storeUserSession,
+      })({ forceSessionExtend: true });
 
       logDebug(`${SessionExpiredString} created new session.`);
     } else {

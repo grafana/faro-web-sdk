@@ -65,7 +65,7 @@ describe('Volatile Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
 
-    const { updateSession } = new VolatileSessionsManager();
+    const { updateSession } = new VolatileSessionsManager(undefined);
 
     const nextActivityTimeAfterFiveSeconds = fakeSystemTime;
     jest.setSystemTime(nextActivityTimeAfterFiveSeconds);
@@ -93,7 +93,7 @@ describe('Volatile Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
 
-    const { updateSession } = new VolatileSessionsManager();
+    const { updateSession } = new VolatileSessionsManager(undefined);
 
     const mockNewSessionId = 'abcde';
     jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockNewSessionId);
@@ -144,7 +144,7 @@ describe('Volatile Sessions Manager.', () => {
       isSampled: true,
     };
 
-    const { updateSession } = new VolatileSessionsManager();
+    const { updateSession } = new VolatileSessionsManager(undefined);
 
     // overwrite auto created session
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -194,7 +194,7 @@ describe('Volatile Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
 
-    new VolatileSessionsManager();
+    new VolatileSessionsManager(undefined);
 
     const initialSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
     expect(initialSession.sessionId).toBe(mockInitialSessionId);
@@ -220,7 +220,7 @@ describe('Volatile Sessions Manager.', () => {
     };
 
     expect(() => {
-      VolatileSessionsManager.storeUserSession(storedSession);
+      new VolatileSessionsManager(undefined).storeUserSession(storedSession);
     }).not.toThrow();
   });
 
@@ -238,7 +238,7 @@ describe('Volatile Sessions Manager.', () => {
 
       mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
 
-      new VolatileSessionsManager();
+      new VolatileSessionsManager(undefined);
 
       const initialSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
       expect(initialSession.sessionId).toBe(mockInitialSessionId);
@@ -267,7 +267,7 @@ describe('Volatile Sessions Manager.', () => {
       };
 
       mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
-      new VolatileSessionsManager();
+      new VolatileSessionsManager(undefined);
 
       faro.api.setSession(storedSession.sessionMeta);
 
@@ -291,7 +291,7 @@ describe('Volatile Sessions Manager.', () => {
       };
 
       mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
-      new VolatileSessionsManager();
+      new VolatileSessionsManager(undefined);
 
       const newMetaAttributes = {
         id: mockInitialSessionId,

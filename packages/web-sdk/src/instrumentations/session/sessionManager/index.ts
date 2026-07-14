@@ -14,6 +14,6 @@ export { getSessionStorageKey } from './getSessionStorageKey';
 
 export { isSampled } from './sampling';
 
-export type { FaroUserSession } from './types';
+export type { FaroUserSession, SessionManagerInstance, SessionManagerClass } from './types';
 
 export { getSessionManagerByConfig } from './getSessionManagerByConfig';

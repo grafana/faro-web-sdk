@@ -1,8 +1,5 @@
 import type { MetaSession } from '@grafana/faro-core';
 
-import type { PersistentSessionsManager } from './PersistentSessionsManager';
-import type { VolatileSessionsManager } from './VolatileSessionManager';
-
 export interface FaroUserSession {
   sessionId: string;
   lastActivity: number;
@@ -11,4 +8,12 @@ export interface FaroUserSession {
   sessionMeta?: MetaSession;
 }
 
-export type SessionManager = typeof VolatileSessionsManager | typeof PersistentSessionsManager;
+export interface SessionManagerInstance {
+  isAdopting: () => boolean;
+  updateSession: () => void;
+  fetchUserSession: () => FaroUserSession | null;
+  storeUserSession: (session: FaroUserSession) => void;
+  removeUserSession: () => void;
+}
+
+export type SessionManagerClass = new (namespace: string | undefined) => SessionManagerInstance;

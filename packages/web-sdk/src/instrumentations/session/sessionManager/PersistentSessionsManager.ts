@@ -11,6 +11,7 @@ import type { FaroUserSession } from './types';
 
 export class PersistentSessionsManager {
   private static storageTypeLocal = webStorageType.local;
+  private readonly storageKey: string;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
 
   // Set only for the synchronous span of an adopting setSession(); the session
@@ -28,33 +29,35 @@ export class PersistentSessionsManager {
     }
   };
 
-  constructor() {
+  constructor(namespace: string | undefined) {
+    this.storageKey = getSessionStorageKey(namespace);
+
     this.updateUserSession = getUserSessionUpdater({
-      fetchUserSession: PersistentSessionsManager.fetchUserSession,
-      storeUserSession: PersistentSessionsManager.storeUserSession,
+      fetchUserSession: this.fetchUserSession,
+      storeUserSession: this.storeUserSession,
       adoptSession: this.adoptSession,
     });
 
     this.init();
   }
 
-  static removeUserSession() {
-    removeItem(getSessionStorageKey(), PersistentSessionsManager.storageTypeLocal);
-  }
+  removeUserSession = (): void => {
+    removeItem(this.storageKey, PersistentSessionsManager.storageTypeLocal);
+  };
 
-  static storeUserSession(session: FaroUserSession): void {
-    setItem(getSessionStorageKey(), stringifyExternalJson(session), PersistentSessionsManager.storageTypeLocal);
-  }
+  storeUserSession = (session: FaroUserSession): void => {
+    setItem(this.storageKey, stringifyExternalJson(session), PersistentSessionsManager.storageTypeLocal);
+  };
 
-  static fetchUserSession(): FaroUserSession | null {
-    const storedSession = getItem(getSessionStorageKey(), PersistentSessionsManager.storageTypeLocal);
+  fetchUserSession = (): FaroUserSession | null => {
+    const storedSession = getItem(this.storageKey, PersistentSessionsManager.storageTypeLocal);
 
     if (storedSession) {
       return JSON.parse(storedSession) as FaroUserSession;
     }
 
     return null;
-  }
+  };
 
   updateSession = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
 
@@ -65,11 +68,13 @@ export class PersistentSessionsManager {
       }
     });
 
-    // Users can call the setSession() method, so we need to sync this with the local storage session
-    faro.metas.addListener(
+    // Users can call the setSession() method, so we need to sync this with the local storage session.
+    // Guard: faro.metas is only available after initializeFaro(); construction before that is
+    // supported for testing (e.g. getting method refs) but skips the meta listener.
+    faro.metas?.addListener(
       getSessionMetaUpdateHandler({
-        fetchUserSession: PersistentSessionsManager.fetchUserSession,
-        storeUserSession: PersistentSessionsManager.storeUserSession,
+        fetchUserSession: this.fetchUserSession,
+        storeUserSession: this.storeUserSession,
       })
     );
   }
