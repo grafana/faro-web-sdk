@@ -149,9 +149,11 @@ export interface Config<P = APIEvent> {
      */
     isolatedSessions?: boolean;
     /**
-     * Explicit namespace appended to the session web-storage key. Setting it enables session
-     * isolation (see `isolatedSessions`). Use it when co-located instances share the same app name
-     * and collector URL and therefore can't be told apart automatically.
+     * Namespace appended to the session web-storage key.
+     *
+     * If provided explicitly, it enables session isolation (see `isolatedSessions`). When using the
+     * web SDK `makeCoreConfig`, this value may also be derived automatically (explicit namespace >
+     * app name > app key parsed from the collector URL).
      */
     storageKeyNamespace?: string;
   };
