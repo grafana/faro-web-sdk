@@ -133,7 +133,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 function resolveSessionStorageKeyNamespace(browserConfig: BrowserConfig): string | undefined {
   const { sessionTracking } = browserConfig;
 
-  const explicitNamespace = sessionTracking?.storageKeyNamespace;
+  const explicitNamespace = sessionTracking?.storageKeyNamespace?.trim();
   const hasExplicitNamespace = typeof explicitNamespace === 'string' && explicitNamespace.length > 0;
 
   const shouldIsolateSession = sessionTracking?.isolatedSessions === true || hasExplicitNamespace;
@@ -142,11 +142,7 @@ function resolveSessionStorageKeyNamespace(browserConfig: BrowserConfig): string
     return undefined;
   }
 
-  return (
-    (hasExplicitNamespace ? explicitNamespace : undefined) ??
-    (browserConfig.app?.name?.trim() || undefined) ??
-    getAppKeyFromUrl(browserConfig.url)
-  );
+  return explicitNamespace ?? (browserConfig.app?.name?.trim() || undefined) ?? getAppKeyFromUrl(browserConfig.url);
 }
 
 /**
