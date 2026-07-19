@@ -30,6 +30,7 @@ import {
   ATTR_TELEMETRY_DISTRO_NAME,
   ATTR_TELEMETRY_DISTRO_VERSION,
 } from './semconv';
+import { claimTracingOwner, getTracingOwner } from './tracingOwner';
 import type { TracingInstrumentationOptions } from './types';
 
 // the providing of app name here is not great
@@ -47,6 +48,27 @@ export class TracingInstrumentation extends BaseInstrumentation {
   }
 
   initialize(): void {
+    // OpenTelemetry allows only a single global tracer provider and patches global fetch/XHR once
+    // per browsing context. When multiple Faro instances run on the same page (micro-frontends),
+    // only the first to initialize owns tracing; later instances would otherwise re-register the
+    // provider (throwing "duplicate registration" errors) and re-patch fetch/XHR with their own
+    // config, leaving spans attributed to the first app but shaped by the last app's config.
+    if (!claimTracingOwner(this.config.app.name)) {
+      const owner = getTracingOwner();
+      this.logWarn(
+        `Tracing is already owned by another Faro instance${
+          owner?.appName ? ` ("${owner.appName}")` : ''
+        }. This instance will not register a tracer provider or instrument fetch/XHR. ` +
+          'Only one Faro instance can own tracing per page.'
+      );
+
+      // Still expose the global OTEL trace/context so manual tracing keeps working against the
+      // shared provider owned by the first instance.
+      this.api.initOTEL(trace, context);
+
+      return;
+    }
+
     const options = this.options;
     const attributes: Attributes = {};
 

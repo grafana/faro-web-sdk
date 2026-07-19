@@ -85,6 +85,22 @@ then the transports and finally the instrumentations.
 
 ## Tracing
 
+The `TracingInstrumentation` from `@grafana/faro-web-tracing` builds on OpenTelemetry, which allows
+only a single global tracer provider, propagator and context manager per browsing context. The
+fetch/XHR instrumentations also patch the global `fetch`/`XMLHttpRequest` only once.
+
+Because of these constraints, tracing has a single owner per page. The first Faro instance to
+initialize a `TracingInstrumentation` claims ownership (tracked on the global object so the claim is
+shared even across independently bundled micro-frontends). That owner registers the tracer provider
+and instruments fetch/XHR. Any later instance that adds a `TracingInstrumentation` detects the
+existing owner, logs a warning, and skips registration instead of registering a second provider
+(which OpenTelemetry would reject as a duplicate) or re-patching fetch/XHR with a different
+configuration.
+
+Consequently, all automatic spans are emitted by — and governed by the configuration of — the owning
+instance. This is independent of the `isolate` config option, because tracer-provider registration
+and fetch/XHR patching are inherently global.
+
 [initial-values]: #initial-values
 [components-api]: ./components/api.md
 [components-instrumentations]: ./components/instrumentations.md
