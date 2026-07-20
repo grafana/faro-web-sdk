@@ -7,11 +7,12 @@ import { getItem, removeItem, setItem, webStorageType } from '../../../utils/web
 import { getSessionStorageKey } from './getSessionStorageKey';
 import { STORAGE_UPDATE_DELAY } from './sessionConstants';
 import { getSessionMetaUpdateHandler, getUserSessionUpdater } from './sessionManagerUtils';
-import type { FaroUserSession } from './types';
+import type { FaroUserSession, SessionManagerDeps } from './types';
 
 export class PersistentSessionsManager {
   private static storageTypeLocal = webStorageType.local;
   private readonly storageKey: string;
+  private readonly faroApi: NonNullable<SessionManagerDeps['api']>;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
 
   // Set only for the synchronous span of an adopting setSession(); the session
@@ -23,21 +24,26 @@ export class PersistentSessionsManager {
   private adoptSession = (sessionMeta: MetaSession): void => {
     this.adopting = true;
     try {
-      faro.api?.setSession(sessionMeta);
+      this.faroApi?.setSession(sessionMeta);
     } finally {
       this.adopting = false;
     }
   };
 
-  constructor(namespace?: string) {
+  constructor(namespace?: string, deps?: SessionManagerDeps) {
+    const { config, metas, api } = deps ?? { config: faro.config, metas: faro.metas, api: faro.api };
     this.storageKey = getSessionStorageKey(namespace);
+    this.faroApi = api;
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: this.fetchUserSession,
       storeUserSession: this.storeUserSession,
       adoptSession: this.adoptSession,
+      config,
+      metas,
+      api,
     });
 
-    this.init();
+    this.init(metas, config, api);
   }
 
   removeUserSession = (): void => {
@@ -60,7 +66,11 @@ export class PersistentSessionsManager {
 
   updateSession = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
 
-  private init(): void {
+  private init(
+    metas: SessionManagerDeps['metas'],
+    config: SessionManagerDeps['config'],
+    api: SessionManagerDeps['api']
+  ): void {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.updateSession();
@@ -68,12 +78,15 @@ export class PersistentSessionsManager {
     });
 
     // Users can call the setSession() method, so we need to sync this with the local storage session.
-    // Guard: faro.metas is only available after initializeFaro(); construction before that is
+    // Guard: metas is only available after initializeFaro(); construction before that is
     // supported for testing (e.g. getting method refs) but skips the meta listener.
-    faro.metas?.addListener(
+    metas?.addListener(
       getSessionMetaUpdateHandler({
         fetchUserSession: this.fetchUserSession,
         storeUserSession: this.storeUserSession,
+        config,
+        metas,
+        api,
       })
     );
   }

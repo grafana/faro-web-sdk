@@ -1,4 +1,4 @@
-import type { MetaSession } from '@grafana/faro-core';
+import type { API, Config, Metas, MetaSession } from '@grafana/faro-core';
 
 export interface FaroUserSession {
   sessionId: string;
@@ -6,6 +6,12 @@ export interface FaroUserSession {
   started: number;
   isSampled: boolean;
   sessionMeta?: MetaSession;
+}
+
+export interface SessionManagerDeps {
+  config: Config;
+  metas: Metas;
+  api: API;
 }
 
 export interface SessionManagerInstance {
@@ -16,4 +22,4 @@ export interface SessionManagerInstance {
   removeUserSession: () => void;
 }
 
-export type SessionManagerClass = new (namespace?: string) => SessionManagerInstance;
+export type SessionManagerClass = new (namespace?: string, deps?: SessionManagerDeps) => SessionManagerInstance;

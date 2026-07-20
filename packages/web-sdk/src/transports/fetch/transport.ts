@@ -1,4 +1,12 @@
-import { BaseExtension, BaseTransport, createPromiseBuffer, getTransportBody, noop, VERSION } from '@grafana/faro-core';
+import {
+  BaseExtension,
+  BaseTransport,
+  createPromiseBuffer,
+  faro,
+  getTransportBody,
+  noop,
+  VERSION,
+} from '@grafana/faro-core';
 import type { Config, Patterns, PromiseBuffer, TransportItem } from '@grafana/faro-core';
 
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
@@ -268,11 +276,14 @@ export class FetchTransport extends BaseTransport {
 
     if (sessionTrackingConfig?.enabled) {
       const SessionManagerClass = getSessionManagerByConfig(sessionTrackingConfig);
-      const sessionManager = new SessionManagerClass(sessionTrackingConfig.storageKeyNamespace);
+      // BaseExtension only provides config and metas; fall back to faro.api for the session API ref.
+      const deps = { config: this.config, metas: this.metas, api: faro.api };
+      const sessionManager = new SessionManagerClass(sessionTrackingConfig.storageKeyNamespace, deps);
 
       getUserSessionUpdater({
         fetchUserSession: sessionManager.fetchUserSession,
         storeUserSession: sessionManager.storeUserSession,
+        ...deps,
       })({ forceSessionExtend: true });
 
       logDebug(`${SessionExpiredString} created new session.`);
