@@ -97,9 +97,13 @@ existing owner, logs a warning, and skips registration instead of registering a 
 (which OpenTelemetry would reject as a duplicate) or re-patching fetch/XHR with a different
 configuration.
 
-Consequently, all automatic spans are emitted by — and governed by the configuration of — the owning
-instance. This is independent of the `isolate` config option, because tracer-provider registration
-and fetch/XHR patching are inherently global.
+Consequently, all spans are exported by the owning instance — using its exporter, its resource
+(`service.name`), and its collector — no matter which instance created them, and only the owner
+produces automatic fetch/XHR spans. Later instances register no exporter of their own, so they never
+export spans directly; they can still create spans against the shared provider via
+`faro.api.getOTEL()` (for example, manual spans), but those spans are exported by the owning instance
+and attributed to it. This is independent of the `isolate` config option, because tracer-provider
+registration and fetch/XHR patching are inherently global.
 
 [initial-values]: #initial-values
 [components-api]: ./components/api.md

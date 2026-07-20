@@ -15,10 +15,13 @@ the tracer provider and instruments fetch/XHR. Any Faro instance that adds a `Tr
 afterwards detects the existing owner, logs a warning, and does not register a second provider or
 re-patch fetch/XHR (this also avoids OpenTelemetry "duplicate registration" errors).
 
-As a result, all spans are emitted by, and shaped by the configuration of, the owning instance. Later
-instances can still create manual spans against the shared provider via `faro.api.getOTEL()`, but do
-not emit their own automatic HTTP spans. This applies regardless of the `isolate` config option, since
-tracer-provider registration and fetch/XHR patching are inherently global.
+As a result, **all spans are exported by the owning instance** — using its exporter, its resource
+(`service.name`), and its collector — no matter which instance created them, and only the owner
+produces automatic fetch/XHR spans. Later instances register no exporter of their own, so they never
+export spans directly; they can still create spans against the shared provider via
+`faro.api.getOTEL()` (for example, manual spans), but those spans are exported by the owning instance
+and attributed to it. This applies regardless of the `isolate` config option, since tracer-provider
+registration and fetch/XHR patching are inherently global.
 
 [faro-web-sdk-package]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk
 [opentelemetry-js]: https://opentelemetry.io/docs/instrumentation/js/
