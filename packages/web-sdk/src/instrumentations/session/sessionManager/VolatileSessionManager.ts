@@ -17,9 +17,8 @@ export class VolatileSessionsManager {
   // session. Stubbed so the instrumentation can treat both managers uniformly.
   isAdopting = (): boolean => false;
 
-  constructor(namespace: string | undefined) {
+  constructor(namespace?: string) {
     this.storageKey = getSessionStorageKey(namespace);
-
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: this.fetchUserSession,
       storeUserSession: this.storeUserSession,

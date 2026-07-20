@@ -29,9 +29,8 @@ export class PersistentSessionsManager {
     }
   };
 
-  constructor(namespace: string | undefined) {
+  constructor(namespace?: string) {
     this.storageKey = getSessionStorageKey(namespace);
-
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: this.fetchUserSession,
       storeUserSession: this.storeUserSession,

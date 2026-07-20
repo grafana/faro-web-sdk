@@ -16,4 +16,4 @@ export interface SessionManagerInstance {
   removeUserSession: () => void;
 }
 
-export type SessionManagerClass = new (namespace: string | undefined) => SessionManagerInstance;
+export type SessionManagerClass = new (namespace?: string) => SessionManagerInstance;
