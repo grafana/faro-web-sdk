@@ -105,6 +105,12 @@ export spans directly; they can still create spans against the shared provider v
 and attributed to it. This is independent of the `isolate` config option, because tracer-provider
 registration and fetch/XHR patching are inherently global.
 
+To avoid regressing distributed traces, cross-origin trace-header propagation is unioned across
+instances: every instance's `propagateTraceHeaderCorsUrls` is merged into the owner (via the shared
+owner slot on the global object), so the owning instance keeps injecting W3C trace headers for URLs
+configured by any instance. Per-instance custom span attributes (`applyCustomAttributesOnSpan`) are
+not merged — only the owner's are applied.
+
 [initial-values]: #initial-values
 [components-api]: ./components/api.md
 [components-instrumentations]: ./components/instrumentations.md

@@ -23,6 +23,11 @@ export spans directly; they can still create spans against the shared provider v
 and attributed to it. This applies regardless of the `isolate` config option, since tracer-provider
 registration and fetch/XHR patching are inherently global.
 
+Cross-origin trace-header propagation is preserved across instances: every instance's
+`propagateTraceHeaderCorsUrls` is merged into the owner, so the owning instance still injects W3C
+trace headers for URLs configured by any instance. Per-instance custom span attributes
+(`applyCustomAttributesOnSpan`) are not merged — only the owner's are applied.
+
 [faro-web-sdk-package]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk
 [opentelemetry-js]: https://opentelemetry.io/docs/instrumentation/js/
 [quick-start]: https://github.com/grafana/faro-web-sdk/blob/main/docs/sources/tutorials/quick-start-browser.md

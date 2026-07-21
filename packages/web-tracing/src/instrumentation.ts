@@ -30,7 +30,7 @@ import {
   ATTR_TELEMETRY_DISTRO_NAME,
   ATTR_TELEMETRY_DISTRO_VERSION,
 } from './semconv';
-import { claimTracingOwner, getTracingOwner } from './tracingOwner';
+import { addPropagateTraceHeaderCorsUrls, claimTracingOwner, getTracingOwner } from './tracingOwner';
 import type { TracingInstrumentationOptions } from './types';
 
 // the providing of app name here is not great
@@ -55,6 +55,12 @@ export class TracingInstrumentation extends BaseInstrumentation {
     // config, leaving spans attributed to the first app but shaped by the last app's config.
     if (!claimTracingOwner(this.config.app.name)) {
       const owner = getTracingOwner();
+
+      // Contribute this instance's cross-origin propagation allowlist so the owning instance keeps
+      // injecting trace headers for URLs this instance configured. This preserves the previous
+      // behavior where header propagation was the union of every instance's config.
+      addPropagateTraceHeaderCorsUrls(this.options.instrumentationOptions?.propagateTraceHeaderCorsUrls);
+
       this.logWarn(
         `Tracing is already owned by another Faro instance${
           owner?.appName ? ` ("${owner.appName}")` : ''
@@ -152,8 +158,14 @@ export class TracingInstrumentation extends BaseInstrumentation {
       contextManager: options.contextManager,
     });
 
-    const { propagateTraceHeaderCorsUrls, fetchInstrumentationOptions, xhrInstrumentationOptions } =
-      this.options.instrumentationOptions ?? {};
+    const { fetchInstrumentationOptions, xhrInstrumentationOptions } = this.options.instrumentationOptions ?? {};
+
+    // Seed the shared allowlist with this (owning) instance's config and register with the shared
+    // array. Later instances append to it, and OpenTelemetry reads it live on each request, so the
+    // owner honors every instance's cross-origin propagation config.
+    const propagateTraceHeaderCorsUrls = addPropagateTraceHeaderCorsUrls(
+      this.options.instrumentationOptions?.propagateTraceHeaderCorsUrls
+    );
 
     registerInstrumentations({
       instrumentations:
