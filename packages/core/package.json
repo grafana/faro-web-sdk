@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-core",
-  "packageManager": "yarn@4.17.0",
+  "packageManager": "yarn@4.17.1",
   "version": "2.8.2",
   "description": "Core package of Faro.",
   "keywords": [
@@ -60,7 +60,7 @@
     "@opentelemetry/otlp-transformer": "^0.219.0"
   },
   "devDependencies": {
-    "@types/node": "24.13.2"
+    "@types/node": "24.13.3"
   },
   "publishConfig": {
     "access": "public"
