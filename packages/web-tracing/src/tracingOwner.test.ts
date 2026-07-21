@@ -38,9 +38,12 @@ describe('tracingOwner', () => {
       claimTracingOwner('app-a');
 
       const shared = addPropagateTraceHeaderCorsUrls(['https://a.example.com']);
-      addPropagateTraceHeaderCorsUrls([/b\.example\.com/]);
+      addPropagateTraceHeaderCorsUrls([/^https:\/\/b\.example\.com\//]);
 
-      expect(getTracingOwner()?.propagateTraceHeaderCorsUrls).toEqual(['https://a.example.com', /b\.example\.com/]);
+      expect(getTracingOwner()?.propagateTraceHeaderCorsUrls).toEqual([
+        'https://a.example.com',
+        /^https:\/\/b\.example\.com\//,
+      ]);
       // returns the same shared array the owner registered with, so OTel reads later additions live
       expect(shared).toBe(getTracingOwner()?.propagateTraceHeaderCorsUrls);
     });
