@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-web-tracing",
-  "packageManager": "yarn@4.17.0",
+  "packageManager": "yarn@4.17.1",
   "version": "2.8.2",
   "description": "Faro web tracing implementation.",
   "keywords": [
