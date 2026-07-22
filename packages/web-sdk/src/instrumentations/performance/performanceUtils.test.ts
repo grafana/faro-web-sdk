@@ -3,6 +3,7 @@ import {
   createFaroResourceTiming,
   getSpanContextFromServerTiming,
   includePerformanceEntry,
+  performanceEntryTimestampMs,
 } from './performanceUtils';
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
 import type { FaroNavigationTiming, FaroResourceTiming } from './types';
@@ -232,5 +233,45 @@ describe('performanceUtils', () => {
     // fetchStart is a timeOrigin-relative timestamp (page age), not a duration, so fetchStart - 0
     // must not be reported as the service worker time.
     expect(createFaroResourceTiming({ fetchStart: 179315969, workerStart: 0 } as any).serviceWorkerTime).toBe('0');
+  });
+});
+
+describe('performanceEntryTimestampMs', () => {
+  let dateNowSpy: jest.SpyInstance | undefined;
+
+  const setClocks = (wallNowMs: number, monoNowMs: number) => {
+    dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(wallNowMs);
+    (performance as any).now = () => monoNowMs;
+  };
+
+  afterEach(() => {
+    dateNowSpy?.mockRestore();
+    dateNowSpy = undefined;
+    delete (performance as any).now;
+  });
+
+  it('derives the timestamp from the current wall/monotonic offset (healthy case matches timeOrigin + startTime)', () => {
+    // When no drift has occurred, Date.now() === timeOrigin + performance.now(), so the result
+    // is identical to the previous `timeOrigin + startTime` computation — no behavioural change.
+    setClocks(1_000_000, 5_000);
+    expect(performanceEntryTimestampMs(778)).toBe(1_000_000 - (5_000 - 778));
+  });
+
+  it('does not backdate an entry after a system suspend (monotonic clock froze)', () => {
+    // After a multi-day sleep the monotonic clock lost the slept interval, so performance.now()
+    // is tiny relative to real elapsed time. `timeOrigin + startTime` would land days in the
+    // past; the entry must instead land near "now".
+    const wallNow = 1_700_000_000_000;
+    setClocks(wallNow, 12_000); // only 12s of monotonic time despite days of wall time
+    const ts = performanceEntryTimestampMs(500);
+    expect(ts).toBe(wallNow - (12_000 - 500));
+    // within the small monotonic window of "now", i.e. not backdated by the suspend
+    expect(wallNow - ts).toBeLessThan(12_000);
+  });
+
+  it('clamps to now for an entry that straddles a suspend (startTime ahead of current now)', () => {
+    const wallNow = 1_000_000;
+    setClocks(wallNow, 100); // performance.now() < startTime
+    expect(performanceEntryTimestampMs(778)).toBe(wallNow);
   });
 });
