@@ -250,23 +250,32 @@ describe('performanceEntryTimestampMs', () => {
     delete (performance as any).now;
   });
 
-  it('derives the timestamp from the current wall/monotonic offset (healthy case matches timeOrigin + startTime)', () => {
-    // When no drift has occurred, Date.now() === timeOrigin + performance.now(), so the result
-    // is identical to the previous `timeOrigin + startTime` computation — no behavioural change.
-    setClocks(1_000_000, 5_000);
-    expect(performanceEntryTimestampMs(778)).toBe(1_000_000 - (5_000 - 778));
+  it('equals timeOrigin + startTime when the clocks have not drifted (no regression)', () => {
+    // Healthy invariant: Date.now() === timeOrigin + performance.now(). The result must match the
+    // previous `timeOrigin + startTime` computation exactly, so there is no behavioural change.
+    const timeOrigin = 1_000_000;
+    const monoNow = 5_000;
+    const startTime = 778;
+    setClocks(timeOrigin + monoNow, monoNow);
+    expect(performanceEntryTimestampMs(startTime)).toBe(timeOrigin + startTime);
   });
 
-  it('does not backdate an entry after a system suspend (monotonic clock froze)', () => {
-    // After a multi-day sleep the monotonic clock lost the slept interval, so performance.now()
-    // is tiny relative to real elapsed time. `timeOrigin + startTime` would land days in the
-    // past; the entry must instead land near "now".
-    const wallNow = 1_700_000_000_000;
-    setClocks(wallNow, 12_000); // only 12s of monotonic time despite days of wall time
-    const ts = performanceEntryTimestampMs(500);
-    expect(ts).toBe(wallNow - (12_000 - 500));
-    // within the small monotonic window of "now", i.e. not backdated by the suspend
-    expect(wallNow - ts).toBeLessThan(12_000);
+  it('does not reproduce the timeOrigin + startTime backdating after a suspend', () => {
+    // Tab loaded at `timeOrigin`, then the machine slept ~7 days: the monotonic clock froze at 12s
+    // of accrued time while the wall clock advanced ~7 days. The old `timeOrigin + startTime` lands
+    // days in the past; the fixed value must land at ~now.
+    const dayMs = 24 * 60 * 60 * 1000;
+    const timeOrigin = 1_000_000;
+    const monoNow = 12_000; // only 12s of monotonic time accrued
+    const wallNow = timeOrigin + 7 * dayMs;
+    const startTime = 500;
+    setClocks(wallNow, monoNow);
+
+    const oldFormula = timeOrigin + startTime;
+    const fixed = performanceEntryTimestampMs(startTime);
+
+    expect(wallNow - oldFormula).toBeGreaterThan(6 * dayMs); // old: days in the past
+    expect(wallNow - fixed).toBeLessThan(monoNow); // fixed: within the monotonic window of "now"
   });
 
   it('clamps to now for an entry that straddles a suspend (startTime ahead of current now)', () => {
