@@ -7,6 +7,7 @@ import { monitorHttpRequests } from '../_internal/monitors/httpRequestMonitor';
 import { monitorPerformanceEntries } from '../_internal/monitors/performanceEntriesMonitor';
 import type { HttpRequestMessagePayload } from '../_internal/monitors/types';
 
+import { defaultInitialActivityTimeout } from './const';
 import { isRequestEndMessage, isRequestStartMessage, startTimeout } from './util';
 
 const defaultFollowUpActionTimeRange = 100;
@@ -19,13 +20,17 @@ export class UserActionController {
 
   private allMonitorsSub?: Subscription;
   private stateSub?: Subscription;
+  private startupTid?: number;
   private followUpTid?: number;
   private haltTid?: number;
 
   private isValid = false;
   private runningRequests = new Map<string, HttpRequestMessagePayload>();
 
-  constructor(private userAction: UserActionInternalInterface) {}
+  constructor(
+    private userAction: UserActionInternalInterface,
+    private initialActivityTimeout = defaultInitialActivityTimeout
+  ) {}
 
   attach(): void {
     // Subscribe to monitors while action is active/halting
@@ -59,6 +64,7 @@ export class UserActionController {
         if (!isRequestEndMessage(msg)) {
           if (!this.isValid) {
             this.isValid = true;
+            this.clearTimer(this.startupTid);
           }
           this.scheduleFollowUp();
         } else if (this.userAction.getState() === UserActionState.Halted && this.runningRequests.size === 0) {
@@ -72,8 +78,7 @@ export class UserActionController {
       .first()
       .subscribe(() => this.cleanup());
 
-    // initial follow-up window in case nothing else happens
-    this.scheduleFollowUp();
+    this.startupTid = setTimeout(() => this.cancelAction(), this.initialActivityTimeout) as any;
   }
 
   private scheduleFollowUp() {
@@ -129,6 +134,7 @@ export class UserActionController {
   }
 
   private cleanup() {
+    this.clearTimer(this.startupTid);
     this.clearTimer(this.followUpTid);
     this.clearTimer(this.haltTid);
     this.allMonitorsSub?.unsubscribe();
@@ -139,7 +145,7 @@ export class UserActionController {
   }
 
   private clearTimer(id?: number) {
-    if (id) {
+    if (id !== undefined) {
       clearTimeout(id);
     }
   }

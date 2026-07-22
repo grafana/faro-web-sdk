@@ -13,4 +13,4 @@ export {
   MESSAGE_TYPE_HTTP_REQUEST_START,
 } from '../_internal/monitors/const';
 
-export { userActionDataAttribute } from './const';
+export { userActionDataAttribute, userActionTimeoutDataAttribute } from './const';

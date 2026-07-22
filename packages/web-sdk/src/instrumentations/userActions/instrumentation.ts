@@ -7,24 +7,36 @@ export class UserActionInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   private _userActionSub?: Subscription;
+  private _processUserEvent?: (event: PointerEvent | KeyboardEvent) => void;
+  private _processKeydown?: (event: KeyboardEvent) => void;
 
   initialize(): void {
-    const { processUserEvent, processUserActionStarted } = getUserEventHandler(faro);
-    window.addEventListener('pointerdown', processUserEvent);
-    window.addEventListener('keydown', (ev: KeyboardEvent) => {
+    const { processUserEvent, processUserActionStarted } = getUserEventHandler(faro, (message) =>
+      this.logWarn(message)
+    );
+    this._processUserEvent = processUserEvent;
+    this._processKeydown = (ev: KeyboardEvent) => {
       if ([' ', 'Enter'].includes(ev.key)) {
         processUserEvent(ev);
       }
-    });
+    };
+    window.addEventListener('pointerdown', this._processUserEvent);
+    window.addEventListener('keydown', this._processKeydown);
 
-    this._userActionSub = userActionsMessageBus.subscribe(({ type, userAction }) => {
+    this._userActionSub = userActionsMessageBus.subscribe(({ type, userAction, initialActivityTimeout }) => {
       if (type === 'user_action_start') {
-        processUserActionStarted(userAction);
+        processUserActionStarted(userAction, initialActivityTimeout);
       }
     });
   }
 
   destroy() {
+    if (this._processUserEvent) {
+      window.removeEventListener('pointerdown', this._processUserEvent);
+    }
+    if (this._processKeydown) {
+      window.removeEventListener('keydown', this._processKeydown);
+    }
     this._userActionSub?.unsubscribe();
   }
 }
