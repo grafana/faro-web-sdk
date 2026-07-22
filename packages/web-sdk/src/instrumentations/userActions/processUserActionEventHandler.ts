@@ -1,3 +1,4 @@
+import { noop } from '@grafana/faro-core';
 import type { Faro, Subscription, UserActionInterface, UserActionInternalInterface } from '@grafana/faro-core';
 
 import { defaultInitialActivityTimeout, userActionDataAttribute } from './const';
@@ -9,7 +10,7 @@ import {
   type TimeoutWarning,
 } from './util';
 
-export function getUserEventHandler(faro: Faro, onTimeoutWarning: TimeoutWarning = () => undefined) {
+export function getUserEventHandler(faro: Faro, onTimeoutWarning: TimeoutWarning = noop) {
   const { api, config } = faro;
   const globalInitialActivityTimeout = normalizeInitialActivityTimeout(
     config.userActionsInstrumentation?.initialActivityTimeout,
@@ -28,14 +29,7 @@ export function getUserEventHandler(faro: Faro, onTimeoutWarning: TimeoutWarning
     }
 
     const initialActivityTimeout = getUserActionTimeoutFromElement(element, dataAttributeName);
-    api.startUserAction(
-      userActionName,
-      {},
-      {
-        triggerName: event.type,
-        ...(initialActivityTimeout === undefined ? {} : { initialActivityTimeout }),
-      }
-    );
+    api.startUserAction(userActionName, {}, { triggerName: event.type, initialActivityTimeout });
   }
 
   function processUserActionStarted(userAction: UserActionInterface, initialActivityTimeout?: number) {

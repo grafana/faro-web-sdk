@@ -7,21 +7,24 @@ export class UserActionInstrumentation extends BaseInstrumentation {
   readonly version = VERSION;
 
   private _userActionSub?: Subscription;
-  private _processUserEvent?: (event: PointerEvent | KeyboardEvent) => void;
-  private _processKeydown?: (event: KeyboardEvent) => void;
+  private _abortController?: AbortController;
 
   initialize(): void {
     const { processUserEvent, processUserActionStarted } = getUserEventHandler(faro, (message) =>
       this.logWarn(message)
     );
-    this._processUserEvent = processUserEvent;
-    this._processKeydown = (ev: KeyboardEvent) => {
-      if ([' ', 'Enter'].includes(ev.key)) {
-        processUserEvent(ev);
-      }
-    };
-    window.addEventListener('pointerdown', this._processUserEvent);
-    window.addEventListener('keydown', this._processKeydown);
+    this._abortController = new AbortController();
+    const { signal } = this._abortController;
+    window.addEventListener('pointerdown', processUserEvent, { signal });
+    window.addEventListener(
+      'keydown',
+      (ev: KeyboardEvent) => {
+        if ([' ', 'Enter'].includes(ev.key)) {
+          processUserEvent(ev);
+        }
+      },
+      { signal }
+    );
 
     this._userActionSub = userActionsMessageBus.subscribe(({ type, userAction, initialActivityTimeout }) => {
       if (type === 'user_action_start') {
@@ -31,12 +34,7 @@ export class UserActionInstrumentation extends BaseInstrumentation {
   }
 
   destroy() {
-    if (this._processUserEvent) {
-      window.removeEventListener('pointerdown', this._processUserEvent);
-    }
-    if (this._processKeydown) {
-      window.removeEventListener('keydown', this._processKeydown);
-    }
+    this._abortController?.abort();
     this._userActionSub?.unsubscribe();
   }
 }

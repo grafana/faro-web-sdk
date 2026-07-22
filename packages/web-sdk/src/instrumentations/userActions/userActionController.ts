@@ -78,7 +78,7 @@ export class UserActionController {
       .first()
       .subscribe(() => this.cleanup());
 
-    this.startupTid = setTimeout(() => this.cancelAction(), this.initialActivityTimeout) as any;
+    this.startupTid = startTimeout(this.startupTid, () => this.cancelAction(), this.initialActivityTimeout) as any;
   }
 
   private scheduleFollowUp() {

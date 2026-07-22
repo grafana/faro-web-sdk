@@ -1,3 +1,5 @@
+import { noop } from '@grafana/faro-core';
+
 import type { HttpRequestEndMessage, HttpRequestStartMessage } from '../_internal/monitors/types';
 
 import {
@@ -27,7 +29,7 @@ export function deriveUserActionTimeoutDataAttribute(dataAttributeName: string):
 export function normalizeInitialActivityTimeout(
   value: unknown,
   fallback = defaultInitialActivityTimeout,
-  warn: TimeoutWarning = () => undefined
+  warn: TimeoutWarning = noop
 ): number {
   if (value === undefined) {
     return fallback;
