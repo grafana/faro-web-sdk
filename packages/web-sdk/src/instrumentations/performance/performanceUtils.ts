@@ -46,9 +46,11 @@ export function getSpanContextFromServerTiming(serverTimings: PerformanceServerT
  * rare entry that straddles a suspend (started before sleep, observed on wake) so it
  * cannot land in the future.
  */
-export function performanceEntryTimestampMs(startTimeMs: number): number {
-  const wallNow = Date.now();
-  const monoNow = performance.now();
+export function performanceEntryTimestampMs(
+  startTimeMs: number,
+  clock: { wallNow: number; monoNow: number } = { wallNow: Date.now(), monoNow: performance.now() }
+): number {
+  const { wallNow, monoNow } = clock;
   return Math.min(wallNow, wallNow - (monoNow - startTimeMs));
 }
 

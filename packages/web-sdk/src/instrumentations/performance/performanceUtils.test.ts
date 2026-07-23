@@ -283,4 +283,18 @@ describe('performanceEntryTimestampMs', () => {
     setClocks(wallNow, 100); // performance.now() < startTime
     expect(performanceEntryTimestampMs(778)).toBe(wallNow);
   });
+
+  it('uses the provided clock snapshot instead of reading the live clocks', () => {
+    setClocks(9_999_999, 999_999);
+    const clock = { wallNow: 1_000_000, monoNow: 5_000 };
+    const startTime = 778;
+    expect(performanceEntryTimestampMs(startTime, clock)).toBe(clock.wallNow - (clock.monoNow - startTime));
+  });
+
+  it('anchors a batch of entries to one origin when the shared snapshot is reused', () => {
+    const clock = { wallNow: 1_000_000, monoNow: 5_000 };
+    const a = performanceEntryTimestampMs(500, clock);
+    const b = performanceEntryTimestampMs(900, clock);
+    expect(b - a).toBe(400);
+  });
 });

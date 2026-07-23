@@ -26,6 +26,8 @@ export function observeResourceTimings(
   const observer = new PerformanceObserver((observedEntries) => {
     const entries = observedEntries.getEntries();
 
+    const clock = { wallNow: Date.now(), monoNow: performance.now() };
+
     for (const resourceEntryRaw of entries) {
       if (isUrlIgnored(resourceEntryRaw.name)) {
         continue;
@@ -50,7 +52,7 @@ export function observeResourceTimings(
 
         pushEvent('faro.performance.resource', faroResourceEntry, undefined, {
           spanContext,
-          timestampOverwriteMs: performanceEntryTimestampMs(resourceEntryJson.startTime),
+          timestampOverwriteMs: performanceEntryTimestampMs(resourceEntryJson.startTime, clock),
         });
       }
     }
