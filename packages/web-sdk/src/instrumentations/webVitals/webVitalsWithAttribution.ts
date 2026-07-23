@@ -82,6 +82,11 @@ export class WebVitalsWithAttribution {
           loadState,
           interactionTarget,
           interactionType,
+          totalScriptDuration,
+          totalStyleAndLayoutDuration,
+          totalPaintDuration,
+          totalUnattributedDuration,
+          longestScript,
         } = metric.attribution;
 
         const values = this.buildInitialValues(metric);
@@ -90,11 +95,28 @@ export class WebVitalsWithAttribution {
         this.addIfPresent(values, 'input_delay', inputDelay);
         this.addIfPresent(values, 'processing_duration', processingDuration);
         this.addIfPresent(values, 'next_paint_time', nextPaintTime);
+        this.addIfPresent(values, 'total_script_duration', totalScriptDuration);
+        this.addIfPresent(values, 'total_style_and_layout_duration', totalStyleAndLayoutDuration);
+        this.addIfPresent(values, 'total_paint_duration', totalPaintDuration);
+        this.addIfPresent(values, 'total_unattributed_duration', totalUnattributedDuration);
+        this.addIfPresent(values, 'longest_script_intersecting_duration', longestScript?.intersectingDuration);
 
         const context = this.buildInitialContext(metric);
         this.addIfPresent(context, loadStateKey, loadState);
         this.addIfPresent(context, 'interaction_target', interactionTarget);
         this.addIfPresent(context, 'interaction_type', interactionType);
+        this.addIfPresent(context, 'longest_script_subpart', longestScript?.subpart);
+        this.addIfPresent(context, 'longest_script_invoker', longestScript?.entry.invoker);
+        this.addIfPresent(context, 'longest_script_invoker_type', longestScript?.entry.invokerType);
+        this.addIfPresent(context, 'longest_script_source_url', longestScript?.entry.sourceURL);
+        this.addIfPresent(context, 'longest_script_source_function_name', longestScript?.entry.sourceFunctionName);
+        this.addIfPresent(
+          context,
+          'longest_script_source_char_position',
+          longestScript?.entry.sourceCharPosition !== undefined
+            ? String(longestScript.entry.sourceCharPosition)
+            : undefined
+        );
 
         this.pushMeasurement(values, context);
       },
