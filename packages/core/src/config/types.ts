@@ -173,6 +173,14 @@ export interface Config<P = APIEvent> {
      * for measuring these metrics in production.
      */
     reportAllChanges?: boolean;
+
+    /**
+     * Track the URL and resource timing details (deliveryType, initiatorType) of the LCP resource.
+     * Since resource URLs may be considered sensitive, this is disabled by default,
+     * following the same approach as `trackResources`.
+     * @default false
+     */
+    trackLcpAttributionResource?: boolean;
   };
 
   /**

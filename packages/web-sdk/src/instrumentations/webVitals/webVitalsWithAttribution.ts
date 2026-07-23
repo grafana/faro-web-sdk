@@ -10,6 +10,10 @@ import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants';
 type Values = MeasurementEvent['values'];
 type Context = Required<PushMeasurementOptions>['context'];
 
+// `deliveryType` is part of the Resource Timing spec but is not yet included in TypeScript's DOM lib types.
+// refs: https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming/deliveryType
+type ResourceTimingWithDeliveryType = PerformanceResourceTiming & { deliveryType?: string };
+
 // duplicate keys saved in variables to save bundle size
 // refs: https://github.com/grafana/faro-web-sdk/pull/595#discussion_r1615833968
 const loadStateKey = 'load_state';
@@ -101,8 +105,15 @@ export class WebVitalsWithAttribution {
   private measureLCP(): void {
     onLCP(
       (metric) => {
-        const { elementRenderDelay, resourceLoadDelay, resourceLoadDuration, timeToFirstByte, target } =
-          metric.attribution;
+        const {
+          elementRenderDelay,
+          resourceLoadDelay,
+          resourceLoadDuration,
+          timeToFirstByte,
+          target,
+          url,
+          lcpResourceEntry,
+        } = metric.attribution;
 
         const values = this.buildInitialValues(metric);
         this.addIfPresent(values, 'element_render_delay', elementRenderDelay);
@@ -112,6 +123,16 @@ export class WebVitalsWithAttribution {
 
         const context = this.buildInitialContext(metric);
         this.addIfPresent(context, 'element', target);
+
+        if (this.webVitalConfig?.trackLcpAttributionResource) {
+          this.addIfPresent(context, 'resource_url', url);
+          this.addIfPresent(
+            context,
+            'resource_delivery_type',
+            (lcpResourceEntry as ResourceTimingWithDeliveryType | undefined)?.deliveryType
+          );
+          this.addIfPresent(context, 'resource_initiator_type', lcpResourceEntry?.initiatorType);
+        }
 
         this.pushMeasurement(values, context);
       },

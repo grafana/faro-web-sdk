@@ -1,3 +1,4 @@
+import { onLCP } from 'web-vitals/attribution';
 import type { MetricWithAttribution } from 'web-vitals/attribution';
 
 import { WebVitalsWithAttribution } from './webVitalsWithAttribution';
@@ -39,7 +40,7 @@ jest.mock('web-vitals/attribution', () => {
         })
       );
     },
-    onLCP: (cb: (metric: MetricWithAttribution) => void) => {
+    onLCP: jest.fn((cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('LCP', {
           elementRenderDelay: 0.1,
@@ -47,9 +48,11 @@ jest.mock('web-vitals/attribution', () => {
           resourceLoadDuration: 0.1,
           timeToFirstByte: 0.1,
           target: 'element',
+          url: 'https://example.com/hero.png',
+          lcpResourceEntry: { deliveryType: 'cache', initiatorType: 'img' } as unknown as PerformanceResourceTiming,
         })
       );
-    },
+    }),
     onTTFB: (cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('TTFB', {
@@ -161,34 +164,122 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
     );
   });
 
-  it('send lcp metrics correctly', () => {
-    const pushMeasurement = jest.fn();
-    new WebVitalsWithAttribution(pushMeasurement).initialize();
+  describe('lcp', () => {
+    afterEach(() => {
+      (onLCP as jest.Mock).mockClear();
+    });
 
-    const values = {
-      lcp: 0.1,
-      delta: 0.1,
-      element_render_delay: 0.1,
-      resource_load_delay: 0.1,
-      resource_load_duration: 0.1,
-      time_to_first_byte: 0.1,
-    };
+    it('send lcp metrics correctly', () => {
+      const pushMeasurement = jest.fn();
+      new WebVitalsWithAttribution(pushMeasurement).initialize();
 
-    const context = {
-      id: 'id',
-      navigation_entry_id: 'unknown',
-      navigation_type: 'navigate',
-      rating: 'good',
-      element: 'element',
-    };
+      const values = {
+        lcp: 0.1,
+        delta: 0.1,
+        element_render_delay: 0.1,
+        resource_load_delay: 0.1,
+        resource_load_duration: 0.1,
+        time_to_first_byte: 0.1,
+      };
 
-    expect(pushMeasurement).toHaveBeenCalledWith(
-      {
-        type: 'web-vitals',
-        values,
-      },
-      { context }
-    );
+      const context = {
+        id: 'id',
+        navigation_entry_id: 'unknown',
+        navigation_type: 'navigate',
+        rating: 'good',
+        element: 'element',
+      };
+
+      expect(pushMeasurement).toHaveBeenCalledWith(
+        {
+          type: 'web-vitals',
+          values,
+        },
+        { context }
+      );
+    });
+
+    it('does not include resource attribution by default (opt-in off)', () => {
+      const pushMeasurement = jest.fn();
+      new WebVitalsWithAttribution(pushMeasurement, {}).initialize();
+
+      const [, options] = pushMeasurement.mock.calls.find(([event]: [{ values: Record<string, unknown> }]) =>
+        Object.prototype.hasOwnProperty.call(event.values, 'lcp')
+      )!;
+
+      expect(options.context).not.toHaveProperty('resource_url');
+      expect(options.context).not.toHaveProperty('resource_delivery_type');
+      expect(options.context).not.toHaveProperty('resource_initiator_type');
+    });
+
+    it('includes resource attribution when trackLcpAttributionResource is enabled', () => {
+      const pushMeasurement = jest.fn();
+      new WebVitalsWithAttribution(pushMeasurement, { trackLcpAttributionResource: true }).initialize();
+
+      const values = {
+        lcp: 0.1,
+        delta: 0.1,
+        element_render_delay: 0.1,
+        resource_load_delay: 0.1,
+        resource_load_duration: 0.1,
+        time_to_first_byte: 0.1,
+      };
+
+      const context = {
+        id: 'id',
+        navigation_entry_id: 'unknown',
+        navigation_type: 'navigate',
+        rating: 'good',
+        element: 'element',
+        resource_url: 'https://example.com/hero.png',
+        resource_delivery_type: 'cache',
+        resource_initiator_type: 'img',
+      };
+
+      expect(pushMeasurement).toHaveBeenCalledWith(
+        {
+          type: 'web-vitals',
+          values,
+        },
+        { context }
+      );
+    });
+
+    it('omits resource_delivery_type when deliveryType is an empty string, even when opted in', () => {
+      (onLCP as jest.Mock).mockImplementationOnce((cb: (metric: MetricWithAttribution) => void) => {
+        cb({
+          name: 'LCP',
+          value: 0.1,
+          rating: 'good',
+          delta: 0.1,
+          id: 'id',
+          entries: [],
+          navigationType: 'navigate',
+          attribution: {
+            elementRenderDelay: 0.1,
+            resourceLoadDelay: 0.1,
+            resourceLoadDuration: 0.1,
+            timeToFirstByte: 0.1,
+            target: 'element',
+            url: 'https://example.com/hero.png',
+            lcpResourceEntry: { deliveryType: '', initiatorType: 'img' } as unknown as PerformanceResourceTiming,
+          },
+        } as unknown as MetricWithAttribution);
+      });
+
+      const pushMeasurement = jest.fn();
+      new WebVitalsWithAttribution(pushMeasurement, { trackLcpAttributionResource: true }).initialize();
+
+      const [, options] = pushMeasurement.mock.calls.find(([event]: [{ values: Record<string, unknown> }]) =>
+        Object.prototype.hasOwnProperty.call(event.values, 'lcp')
+      )!;
+
+      expect(options.context).toMatchObject({
+        resource_url: 'https://example.com/hero.png',
+        resource_initiator_type: 'img',
+      });
+      expect(options.context).not.toHaveProperty('resource_delivery_type');
+    });
   });
 
   it('send ttfb metrics correctly', () => {
