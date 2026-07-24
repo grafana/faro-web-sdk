@@ -242,6 +242,62 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
       );
     });
 
+    it('keeps zero-valued LoAF duration fields in the INP attribution values', () => {
+      (onINP as jest.Mock).mockImplementationOnce((cb: (metric: MetricWithAttribution) => void) => {
+        cb({
+          name: 'INP',
+          value: 0.1,
+          rating: 'good',
+          delta: 0.1,
+          id: 'id',
+          entries: [],
+          navigationType: 'navigate',
+          attribution: {
+            interactionTarget: 'target',
+            interactionType: 'pointer',
+            loadState: 'loading',
+            interactionTime: 0.1,
+            totalScriptDuration: 0,
+            totalStyleAndLayoutDuration: 0,
+            totalPaintDuration: 0,
+            totalUnattributedDuration: 0,
+            longestScript: {
+              subpart: 'processing-duration',
+              intersectingDuration: 0,
+              entry: {
+                invoker: 'https://example.com/app.js',
+                invokerType: 'classic-script',
+                sourceURL: 'https://example.com/app.js',
+                sourceFunctionName: 'handleClick',
+                sourceCharPosition: 0,
+              },
+            },
+          },
+        } as unknown as MetricWithAttribution);
+      });
+
+      const pushMeasurement = jest.fn();
+      new WebVitalsWithAttribution(pushMeasurement).initialize();
+
+      const [event] = pushMeasurement.mock.calls.find(([evt]: [{ values: Record<string, unknown> }]) =>
+        Object.prototype.hasOwnProperty.call(evt.values, 'inp')
+      )!;
+
+      expect(event.values).toMatchObject({
+        total_script_duration: 0,
+        total_style_and_layout_duration: 0,
+        total_paint_duration: 0,
+        total_unattributed_duration: 0,
+        longest_script_intersecting_duration: 0,
+      });
+
+      expect(event.values).toHaveProperty('total_script_duration');
+      expect(event.values).toHaveProperty('total_style_and_layout_duration');
+      expect(event.values).toHaveProperty('total_paint_duration');
+      expect(event.values).toHaveProperty('total_unattributed_duration');
+      expect(event.values).toHaveProperty('longest_script_intersecting_duration');
+    });
+
     it('does not send LoAF-based fields when longestScript is absent', () => {
       const pushMeasurement = jest.fn();
       new WebVitalsWithAttribution(pushMeasurement).initialize();

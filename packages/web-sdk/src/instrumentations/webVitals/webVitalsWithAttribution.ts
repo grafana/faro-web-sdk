@@ -95,11 +95,11 @@ export class WebVitalsWithAttribution {
         this.addIfPresent(values, 'input_delay', inputDelay);
         this.addIfPresent(values, 'processing_duration', processingDuration);
         this.addIfPresent(values, 'next_paint_time', nextPaintTime);
-        this.addIfPresent(values, 'total_script_duration', totalScriptDuration);
-        this.addIfPresent(values, 'total_style_and_layout_duration', totalStyleAndLayoutDuration);
-        this.addIfPresent(values, 'total_paint_duration', totalPaintDuration);
-        this.addIfPresent(values, 'total_unattributed_duration', totalUnattributedDuration);
-        this.addIfPresent(values, 'longest_script_intersecting_duration', longestScript?.intersectingDuration);
+        this.addNumberIfDefined(values, 'total_script_duration', totalScriptDuration);
+        this.addNumberIfDefined(values, 'total_style_and_layout_duration', totalStyleAndLayoutDuration);
+        this.addNumberIfDefined(values, 'total_paint_duration', totalPaintDuration);
+        this.addNumberIfDefined(values, 'total_unattributed_duration', totalUnattributedDuration);
+        this.addNumberIfDefined(values, 'longest_script_intersecting_duration', longestScript?.intersectingDuration);
 
         const context = this.buildInitialContext(metric);
         this.addIfPresent(context, loadStateKey, loadState);
@@ -209,6 +209,12 @@ export class WebVitalsWithAttribution {
   private addIfPresent(source: Values | Context, key: string, metric?: number | string): void {
     if (metric) {
       source[key] = metric;
+    }
+  }
+
+  private addNumberIfDefined(values: Values, key: string, metric?: number): void {
+    if (metric !== undefined) {
+      values[key] = metric;
     }
   }
 }
