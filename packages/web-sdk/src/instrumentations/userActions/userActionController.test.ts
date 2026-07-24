@@ -40,7 +40,7 @@ describe('UserActionController', () => {
   it('waits for the configured initial activity timeout before cancelling an action with no signals', () => {
     jest.useFakeTimers();
 
-    new UserActionController(fakeAction, 500).attach();
+    new UserActionController(fakeAction, jest.fn(), 500).attach();
 
     jest.advanceTimersByTime(499);
     expect(fakeAction.cancel).not.toHaveBeenCalled();
@@ -52,7 +52,7 @@ describe('UserActionController', () => {
   it('uses the fixed 100 ms inactivity window after the first signal', () => {
     jest.useFakeTimers();
 
-    new UserActionController(fakeAction, 500).attach();
+    new UserActionController(fakeAction, jest.fn(), 500).attach();
     jest.advanceTimersByTime(150);
     domObservable.notify({ type: 'dom-mutation' });
 
@@ -67,7 +67,7 @@ describe('UserActionController', () => {
   it('allows processing if there are running requests', () => {
     jest.useFakeTimers();
 
-    const controller = new UserActionController(fakeAction);
+    const controller = new UserActionController(fakeAction, jest.fn());
     controller.attach();
 
     httpObservable.notify({
@@ -105,7 +105,7 @@ describe('UserActionController', () => {
   it('does not allow processing if there are running requests but the request id is not pending', () => {
     jest.useFakeTimers();
 
-    const controller = new UserActionController(fakeAction);
+    const controller = new UserActionController(fakeAction, jest.fn());
     controller.attach();
 
     // Start a request with id 'foo'
@@ -141,7 +141,7 @@ describe('UserActionController', () => {
   it('keeps the fixed 10 second HTTP drain timeout', () => {
     jest.useFakeTimers();
 
-    new UserActionController(fakeAction, 500).attach();
+    new UserActionController(fakeAction, jest.fn(), 500).attach();
     httpObservable.notify({
       type: MESSAGE_TYPE_HTTP_REQUEST_START,
       request: { requestId: 'foo', url: '/bar', method: 'POST', apiType: 'xhr' },

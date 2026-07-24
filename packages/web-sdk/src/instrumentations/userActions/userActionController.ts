@@ -1,6 +1,6 @@
 // packages/web-sdk/src/instrumentations/userActions/userActionController.ts
 import { Observable, UserActionState } from '@grafana/faro-core';
-import type { Subscription, UserActionInternalInterface } from '@grafana/faro-core';
+import type { InternalLogger, Subscription, UserActionInternalInterface } from '@grafana/faro-core';
 
 import { monitorDomMutations } from '../_internal/monitors/domMutationMonitor';
 import { monitorHttpRequests } from '../_internal/monitors/httpRequestMonitor';
@@ -29,6 +29,7 @@ export class UserActionController {
 
   constructor(
     private userAction: UserActionInternalInterface,
+    private logDebug: InternalLogger['debug'],
     private initialActivityTimeout = defaultInitialActivityTimeout
   ) {}
 
@@ -78,7 +79,14 @@ export class UserActionController {
       .first()
       .subscribe(() => this.cleanup());
 
-    this.startupTid = startTimeout(this.startupTid, () => this.cancelAction(), this.initialActivityTimeout) as any;
+    this.startupTid = startTimeout(
+      this.startupTid,
+      () => {
+        this.logDebug('User action not sent; no DOM, resource, or HTTP activity:', this.userAction.name);
+        this.cancelAction();
+      },
+      this.initialActivityTimeout
+    ) as any;
   }
 
   private scheduleFollowUp() {

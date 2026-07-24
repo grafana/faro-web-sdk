@@ -1,4 +1,10 @@
-import { initializeFaro, Observable, UserActionInternalInterface } from '@grafana/faro-core';
+import {
+  initializeFaro,
+  InternalLoggerLevel,
+  Observable,
+  type UnpatchedConsole,
+  UserActionInternalInterface,
+} from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { MESSAGE_TYPE_DOM_MUTATION, MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
@@ -52,6 +58,30 @@ describe('UserActionInstrumentation output', () => {
     jest.advanceTimersByTime(200);
 
     expect(cancelSpy).toHaveBeenCalled();
+  });
+
+  it('logs when no user action event is sent because no initial activity is observed', () => {
+    const debug = jest.fn();
+    const faro = initializeFaro(
+      mockConfig({
+        internalLoggerLevel: InternalLoggerLevel.VERBOSE,
+        unpatchedConsole: { debug } as unknown as UnpatchedConsole,
+      })
+    );
+
+    inst = new UserActionInstrumentation();
+    inst.initialize();
+
+    faro.api.startUserAction('ua-no-activity');
+    debug.mockClear();
+
+    jest.advanceTimersByTime(100);
+
+    expect(debug).toHaveBeenCalledWith(
+      'Faro\n',
+      'User action not sent; no DOM, resource, or HTTP activity:',
+      'ua-no-activity'
+    );
   });
 
   it('registers only the pointerdown and keydown browser triggers', () => {

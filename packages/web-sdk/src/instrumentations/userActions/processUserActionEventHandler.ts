@@ -11,7 +11,7 @@ import {
 } from './util';
 
 export function getUserEventHandler(faro: Faro, onTimeoutWarning: TimeoutWarning = noop) {
-  const { api, config } = faro;
+  const { api, config, internalLogger } = faro;
   const globalInitialActivityTimeout = normalizeInitialActivityTimeout(
     config.userActionsInstrumentation?.initialActivityTimeout,
     defaultInitialActivityTimeout,
@@ -39,7 +39,7 @@ export function getUserEventHandler(faro: Faro, onTimeoutWarning: TimeoutWarning
       globalInitialActivityTimeout,
       onTimeoutWarning
     );
-    new UserActionController(internalUserAction, effectiveInitialActivityTimeout).attach();
+    new UserActionController(internalUserAction, internalLogger.debug, effectiveInitialActivityTimeout).attach();
   }
 
   return { processUserEvent, processUserActionStarted };
