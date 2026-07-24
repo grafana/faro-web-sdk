@@ -6,6 +6,7 @@ import {
   isRequestStartMessage,
   normalizeDataAttributeName,
   normalizeInitialActivityTimeout,
+  startTimeout,
 } from './util';
 
 describe('util', () => {
@@ -47,6 +48,16 @@ describe('util', () => {
 
     expect(normalizeInitialActivityTimeout(1001, 100, warn)).toBe(1000);
     expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears an existing timeout with an id of zero', () => {
+    const clearTimeoutSpy = jest.spyOn(window, 'clearTimeout');
+
+    const timeoutId = startTimeout(0, jest.fn(), 100);
+
+    expect(clearTimeoutSpy).toHaveBeenCalledWith(0);
+    clearTimeout(timeoutId);
+    clearTimeoutSpy.mockRestore();
   });
 
   it('isRequestStartMessage type guard', () => {

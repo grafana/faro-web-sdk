@@ -86,12 +86,12 @@ export class UserActionController {
         this.cancelAction();
       },
       this.initialActivityTimeout
-    ) as any;
+    );
   }
 
   private scheduleFollowUp() {
     this.clearTimer(this.followUpTid);
-    this.followUpTid = setTimeout(() => {
+    this.followUpTid = window.setTimeout(() => {
       // If action just started and there's pending work, go to halted
       if (this.userAction.getState() === UserActionState.Started && this.runningRequests.size > 0) {
         this.haltAction();
@@ -106,7 +106,7 @@ export class UserActionController {
 
       // Otherwise, no signals => cancel
       this.cancelAction();
-    }, defaultFollowUpActionTimeRange) as any;
+    }, defaultFollowUpActionTimeRange);
   }
 
   private haltAction() {
@@ -128,7 +128,7 @@ export class UserActionController {
         }
       },
       defaultHaltTimeout
-    ) as any;
+    );
   }
 
   private endAction() {
@@ -154,7 +154,7 @@ export class UserActionController {
 
   private clearTimer(id?: number) {
     if (id !== undefined) {
-      clearTimeout(id);
+      window.clearTimeout(id);
     }
   }
 }

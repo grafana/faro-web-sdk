@@ -55,7 +55,7 @@ export function normalizeInitialActivityTimeout(
  * the remaining string to camelCase.
  *
  * This is needed because the browser will remove the 'data-' prefix and the dashes from
- * data attributes and make then camelCase.
+ * data attributes and make them camelCase.
  */
 export function convertDataAttributeName(userActionDataAttribute: string) {
   const withoutData = normalizeDataAttributeName(userActionDataAttribute).slice(5);
@@ -63,16 +63,13 @@ export function convertDataAttributeName(userActionDataAttribute: string) {
 }
 
 export function startTimeout(timeoutId: number | undefined, cb: () => void, delay: number) {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
+  if (timeoutId !== undefined) {
+    window.clearTimeout(timeoutId);
   }
 
-  //@ts-expect-error for some reason vscode is using the node types
-  timeoutId = setTimeout(() => {
+  return window.setTimeout(() => {
     cb();
   }, delay);
-
-  return timeoutId;
 }
 
 export function isRequestStartMessage(msg: any): msg is HttpRequestStartMessage {
