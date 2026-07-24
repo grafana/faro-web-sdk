@@ -98,6 +98,33 @@ describe('UserActionInstrumentation output', () => {
     addEventListenerSpy.mockRestore();
   });
 
+  it('removes browser triggers without AbortController support', () => {
+    const faro = initializeFaro(
+      mockConfig({ userActionsInstrumentation: { dataAttributeName: 'data-faro-user-action-name' } })
+    );
+    const startUserActionSpy = jest.spyOn(faro.api, 'startUserAction');
+    const abortControllerDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'AbortController')!;
+    Object.defineProperty(globalThis, 'AbortController', { ...abortControllerDescriptor, value: undefined });
+    const element = document.createElement('button');
+    element.setAttribute('data-faro-user-action-name', 'ua-declarative');
+    document.body.appendChild(element);
+
+    try {
+      inst = new UserActionInstrumentation();
+      inst.initialize();
+      element.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+      expect(startUserActionSpy).toHaveBeenCalledTimes(1);
+
+      inst.destroy();
+      element.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+      expect(startUserActionSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(globalThis, 'AbortController', abortControllerDescriptor);
+      startUserActionSpy.mockRestore();
+      element.remove();
+    }
+  });
+
   it('calls end() when activity is observed via DOM mutations', () => {
     const faro = initializeFaro(mockConfig());
 

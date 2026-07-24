@@ -35,7 +35,13 @@ export function normalizeInitialActivityTimeout(
     return fallback;
   }
 
-  const timeout = typeof value === 'string' && value.trim() === '' ? Number.NaN : Number(value);
+  let timeout = Number.NaN;
+
+  try {
+    timeout = typeof value === 'string' && value.trim() === '' ? Number.NaN : Number(value);
+  } catch {
+    // Invalid values are handled below.
+  }
 
   if (!Number.isFinite(timeout) || timeout <= 0) {
     warn(`initialActivityTimeout must be a finite number greater than zero; using ${fallback} ms`);

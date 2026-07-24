@@ -39,6 +39,13 @@ describe('util', () => {
     }
   );
 
+  it('warns and falls back when the initial activity timeout cannot be converted to a number', () => {
+    const warn = jest.fn();
+
+    expect(normalizeInitialActivityTimeout(Symbol(), 250, warn)).toBe(250);
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
   it('accepts a valid initial activity timeout', () => {
     expect(normalizeInitialActivityTimeout(450)).toBe(450);
   });
