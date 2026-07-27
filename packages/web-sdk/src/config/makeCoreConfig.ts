@@ -14,7 +14,8 @@ import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
 import { defaultSessionTrackingConfig } from '../instrumentations/session';
-import { userActionDataAttribute } from '../instrumentations/userActions/const';
+import { defaultInitialActivityTimeout, userActionDataAttribute } from '../instrumentations/userActions/const';
+import { normalizeDataAttributeName, normalizeInitialActivityTimeout } from '../instrumentations/userActions/util';
 import { browserMeta, osMeta, sdkMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
@@ -70,8 +71,15 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 
   // Extract user actions instrumentation with defaults
   const userActionsInstrumentation = {
-    dataAttributeName: browserConfig.userActionsInstrumentation?.dataAttributeName ?? userActionDataAttribute,
+    dataAttributeName: normalizeDataAttributeName(
+      browserConfig.userActionsInstrumentation?.dataAttributeName ?? userActionDataAttribute
+    ),
     excludeItem: browserConfig.userActionsInstrumentation?.excludeItem,
+    initialActivityTimeout: normalizeInitialActivityTimeout(
+      browserConfig.userActionsInstrumentation?.initialActivityTimeout,
+      defaultInitialActivityTimeout,
+      (message) => internalLogger.warn(message)
+    ),
   };
 
   return {
