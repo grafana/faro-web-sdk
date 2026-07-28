@@ -169,7 +169,7 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
       );
     });
 
-    it('adds LoAF-based attribution fields when longestScript is present', () => {
+    const mockInpWithLongestScript = (attributionOverrides: Record<string, unknown> = {}) => {
       (onINP as jest.Mock).mockImplementationOnce((cb: (metric: MetricWithAttribution) => void) => {
         cb({
           name: 'INP',
@@ -199,9 +199,14 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
                 sourceCharPosition: 0,
               },
             },
+            ...attributionOverrides,
           },
         } as unknown as MetricWithAttribution);
       });
+    };
+
+    it('adds non-sensitive LoAF-based attribution fields when longestScript is present, but not the gated source fields (opt-in off)', () => {
+      mockInpWithLongestScript();
 
       const pushMeasurement = jest.fn();
       new WebVitalsWithAttribution(pushMeasurement).initialize();
@@ -226,8 +231,46 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
         interaction_type: 'pointer',
         load_state: 'loading',
         longest_script_subpart: 'processing-duration',
-        longest_script_invoker: 'https://example.com/app.js',
         longest_script_invoker_type: 'classic-script',
+      };
+
+      expect(pushMeasurement).toHaveBeenCalledWith(
+        {
+          type: 'web-vitals',
+          values,
+        },
+        { context }
+      );
+    });
+
+    it('adds the gated LoAF source attribution fields when trackAttributionSources is enabled', () => {
+      mockInpWithLongestScript();
+
+      const pushMeasurement = jest.fn();
+      new WebVitalsWithAttribution(pushMeasurement, { trackAttributionSources: true }).initialize();
+
+      const values = {
+        inp: 0.1,
+        delta: 0.1,
+        interaction_time: 0.1,
+        total_script_duration: 12,
+        total_style_and_layout_duration: 3,
+        total_paint_duration: 2,
+        total_unattributed_duration: 1,
+        longest_script_intersecting_duration: 8,
+      };
+
+      const context = {
+        id: 'id',
+        navigation_entry_id: 'unknown',
+        navigation_type: 'navigate',
+        rating: 'good',
+        interaction_target: 'target',
+        interaction_type: 'pointer',
+        load_state: 'loading',
+        longest_script_subpart: 'processing-duration',
+        longest_script_invoker_type: 'classic-script',
+        longest_script_invoker: 'https://example.com/app.js',
         longest_script_source_url: 'https://example.com/app.js',
         longest_script_source_function_name: 'handleClick',
         longest_script_source_char_position: '0',
@@ -363,9 +406,9 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
       expect(options.context).not.toHaveProperty('resource_initiator_type');
     });
 
-    it('includes resource attribution when trackLcpAttributionResource is enabled', () => {
+    it('includes resource attribution when trackAttributionSources is enabled', () => {
       const pushMeasurement = jest.fn();
-      new WebVitalsWithAttribution(pushMeasurement, { trackLcpAttributionResource: true }).initialize();
+      new WebVitalsWithAttribution(pushMeasurement, { trackAttributionSources: true }).initialize();
 
       const values = {
         lcp: 0.1,
@@ -419,7 +462,7 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
       });
 
       const pushMeasurement = jest.fn();
-      new WebVitalsWithAttribution(pushMeasurement, { trackLcpAttributionResource: true }).initialize();
+      new WebVitalsWithAttribution(pushMeasurement, { trackAttributionSources: true }).initialize();
 
       const [, options] = pushMeasurement.mock.calls.find(([event]: [{ values: Record<string, unknown> }]) =>
         Object.prototype.hasOwnProperty.call(event.values, 'lcp')

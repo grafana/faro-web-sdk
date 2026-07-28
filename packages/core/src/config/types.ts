@@ -175,12 +175,15 @@ export interface Config<P = APIEvent> {
     reportAllChanges?: boolean;
 
     /**
-     * Track the URL and resource timing details (deliveryType, initiatorType) of the LCP resource.
-     * Since resource URLs may be considered sensitive, this is disabled by default,
+     * Track attribution fields that identify the source behind a metric value: the LCP resource
+     * (`resource_url`, `resource_delivery_type`, `resource_initiator_type`) and the INP longest script
+     * (`longest_script_invoker`, `longest_script_source_url`, `longest_script_source_function_name`,
+     * `longest_script_source_char_position`).
+     * These fields may contain sensitive URLs or DOM identifiers, so this is disabled by default,
      * following the same approach as `trackResources`.
      * @default false
      */
-    trackLcpAttributionResource?: boolean;
+    trackAttributionSources?: boolean;
   };
 
   /**
