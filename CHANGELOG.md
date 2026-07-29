@@ -11,6 +11,20 @@
 
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
 
+## [2.9.0](https://github.com/grafana/faro-web-sdk/compare/v2.8.2...v2.9.0) (2026-07-29)
+
+
+### Features
+
+* **user-actions:** add configurable initial activity timeout ([#2183](https://github.com/grafana/faro-web-sdk/issues/2183)) ([dd10a3d](https://github.com/grafana/faro-web-sdk/commit/dd10a3da7a6f775cd2fe630d0de36ca42f8bee05))
+
+
+### Bug Fixes
+
+* **security/critical/:** update dependency tar to v7.5.21 [security] ([#2180](https://github.com/grafana/faro-web-sdk/issues/2180)) ([d4aac6d](https://github.com/grafana/faro-web-sdk/commit/d4aac6d757dbf86c91c4ed0de01fbeb9f8b86f2a))
+* **security/high/:** update dependency js-yaml to v4.3.0 [security] ([#2181](https://github.com/grafana/faro-web-sdk/issues/2181)) ([741dc5d](https://github.com/grafana/faro-web-sdk/commit/741dc5d1eddfa058265f71b3aa4e9d2750bb6347))
+* **web-sdk:** derive performance timestamps from wall clock to survive system suspend ([#2182](https://github.com/grafana/faro-web-sdk/issues/2182)) ([623efe2](https://github.com/grafana/faro-web-sdk/commit/623efe261a48adffff57a1e68616096366a2ad14))
+
 ## [2.8.2](https://github.com/grafana/faro-web-sdk/compare/v2.8.1...v2.8.2) (2026-07-01)
 
 ### Bug Fixes
