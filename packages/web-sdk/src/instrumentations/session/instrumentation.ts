@@ -180,10 +180,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
     const sessionTrackingConfig = this.config.sessionTracking;
 
     if (sessionTrackingConfig?.enabled) {
-      const SessionManagerClass = getSessionManagerByConfig(sessionTrackingConfig);
+      const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
       // Capture the namespace and per-instance deps at construction time so that
       // each Faro instance uses its own storage key and API refs regardless of global faro singleton state.
-      const sessionManager = new SessionManagerClass(sessionTrackingConfig.storageKeyNamespace, {
+      const sessionManager = new SessionManager(sessionTrackingConfig.storageKeyNamespace, {
         config: this.config,
         metas: this.metas,
         api: this.api,
