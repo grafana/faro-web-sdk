@@ -51,6 +51,8 @@ export type EndUserActionProps = {
 export type StartUserActionOptions = {
   triggerName?: string;
   importance?: UserActionImportanceType;
+  /** Time in milliseconds to wait for the first qualifying signal. Overrides the global setting for this action. */
+  initialActivityTimeout?: number;
 };
 
 export interface UserActionsAPI {
@@ -65,6 +67,7 @@ export interface UserActionsAPI {
 export type UserActionStart = {
   type: 'user_action_start';
   userAction: UserActionInterface;
+  initialActivityTimeout?: number;
 };
 
 // Union type
