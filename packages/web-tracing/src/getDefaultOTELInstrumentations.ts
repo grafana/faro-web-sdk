@@ -31,7 +31,8 @@ function createFetchInstrumentationOptions(
     applyCustomAttributesOnSpan: fetchCustomAttributeFunctionWithDefaults(
       fetchInstrumentationOptions?.applyCustomAttributesOnSpan
     ),
-    requestHook: (span: Span, _: Request | RequestInit) => {
+    // composed rather than assigned, so a caller supplied requestHook still runs
+    requestHook: (span: Span, request: Request | RequestInit) => {
       const currentAction = faro.api.getActiveUserAction();
       if (
         currentAction &&
@@ -40,6 +41,8 @@ function createFetchInstrumentationOptions(
         span.setAttribute('faro.action.user.name', currentAction.name);
         span.setAttribute('faro.action.user.parentId', currentAction.parentId);
       }
+
+      fetchInstrumentationOptions?.requestHook?.(span, request);
     },
   };
 }

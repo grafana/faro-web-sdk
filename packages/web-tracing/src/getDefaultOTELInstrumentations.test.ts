@@ -63,4 +63,55 @@ describe('getDefaultOTELInstrumentations', () => {
       applyCustomAttributesOnSpan: expect.any(Function),
     });
   });
+
+  // The option types used to expose only applyCustomAttributesOnSpan and ignoreNetworkEvents even
+  // though every key is spread onto the OTel instrumentation. See issue #1464.
+  it('forwards the full set of OTel instrumentation options', () => {
+    getDefaultOTELInstrumentations({
+      fetchInstrumentationOptions: {
+        clearTimingResources: true,
+        measureRequestSize: true,
+        semconvStabilityOptIn: 'http',
+        enabled: false,
+      },
+      xhrInstrumentationOptions: {
+        clearTimingResources: true,
+        measureRequestSize: true,
+        semconvStabilityOptIn: 'http',
+        enabled: false,
+      },
+    });
+
+    expect(FetchInstrumentation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clearTimingResources: true,
+        measureRequestSize: true,
+        semconvStabilityOptIn: 'http',
+        enabled: false,
+      })
+    );
+
+    expect(XMLHttpRequestInstrumentation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clearTimingResources: true,
+        measureRequestSize: true,
+        semconvStabilityOptIn: 'http',
+        enabled: false,
+      })
+    );
+  });
+
+  it('runs a caller supplied fetch requestHook alongside the Faro one', () => {
+    const requestHook = jest.fn();
+
+    getDefaultOTELInstrumentations({ fetchInstrumentationOptions: { requestHook } });
+
+    const [fetchOptions] = (FetchInstrumentation as jest.Mock).mock.calls[0] as [{ requestHook: Function }];
+    const span = { setAttribute: jest.fn() };
+    const request = {} as Request;
+
+    fetchOptions.requestHook(span, request);
+
+    expect(requestHook).toHaveBeenCalledWith(span, request);
+  });
 });
