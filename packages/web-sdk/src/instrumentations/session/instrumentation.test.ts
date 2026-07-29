@@ -652,6 +652,51 @@ describe('SessionInstrumentation', () => {
     expect((JSON.parse(mockStorage[NAMESPACED_STORAGE_KEY]) as FaroUserSession).isSampled).toBe(false);
   });
 
+  it('Keeps two isolated instances in separate storage keys and rotates with the owning instance config.', () => {
+    const instanceA = initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [new MockTransport()],
+          instrumentations: [new SessionInstrumentation()],
+          app: { name: 'app-a' },
+          sessionTracking: { enabled: true, persistent: true, isolatedSessions: true, samplingRate: 1 },
+        })
+      )!
+    );
+
+    initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [new MockTransport()],
+          instrumentations: [new SessionInstrumentation()],
+          app: { name: 'app-b' },
+          sessionTracking: { enabled: true, persistent: true, isolatedSessions: true, samplingRate: 0 },
+        })
+      )!
+    );
+
+    const keyA = `${STORAGE_KEY}_app-a`;
+    const keyB = `${STORAGE_KEY}_app-b`;
+
+    // each instance persists its own session under its own key
+    const initialSessionA: FaroUserSession = JSON.parse(mockStorage[keyA]!);
+    const initialSessionB: FaroUserSession = JSON.parse(mockStorage[keyB]!);
+    expect(initialSessionA.sessionId).not.toEqual(initialSessionB.sessionId);
+
+    // rotate instance A's session after expiry; the global faro singleton now points at instance B
+    jest.advanceTimersByTime(SESSION_EXPIRATION_TIME + 1);
+    instanceA.api.pushEvent('rotate-a');
+
+    const rotatedSessionA: FaroUserSession = JSON.parse(mockStorage[keyA]!);
+    expect(rotatedSessionA.sessionId).not.toEqual(initialSessionA.sessionId);
+
+    // the sampling decision must come from instance A's config (samplingRate 1), not B's (samplingRate 0)
+    expect(rotatedSessionA.isSampled).toBe(true);
+
+    // instance B's stored session is untouched by A's rotation
+    expect((JSON.parse(mockStorage[keyB]!) as FaroUserSession).sessionId).toEqual(initialSessionB.sessionId);
+  });
+
   it('Will send 0% of the signals.', () => {
     const transport = new MockTransport();
 

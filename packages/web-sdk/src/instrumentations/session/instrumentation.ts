@@ -107,7 +107,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       initialSession = createUserSessionObject({
         sessionId,
-        isSampled: isSampled(),
+        isSampled: isSampled({ config: this.config, metas: this.metas }),
       });
 
       const overrides = sessionsConfig.session?.overrides;

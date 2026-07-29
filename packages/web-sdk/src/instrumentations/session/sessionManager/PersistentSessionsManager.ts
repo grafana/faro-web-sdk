@@ -11,7 +11,7 @@ import type { FaroUserSession, SessionManagerDeps } from './types';
 
 export class PersistentSessionsManager {
   private static storageTypeLocal = webStorageType.local;
-  private readonly storageKey: string;
+  private readonly namespace?: string;
   private readonly faroApi: NonNullable<SessionManagerDeps['api']>;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
 
@@ -32,7 +32,7 @@ export class PersistentSessionsManager {
 
   constructor(namespace?: string, deps?: SessionManagerDeps) {
     const { config, metas, api } = deps ?? { config: faro.config, metas: faro.metas, api: faro.api };
-    this.storageKey = getSessionStorageKey(namespace);
+    this.namespace = namespace;
     this.faroApi = api;
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: this.fetchUserSession,
@@ -46,22 +46,41 @@ export class PersistentSessionsManager {
     this.init(metas, config, api);
   }
 
-  removeUserSession = (): void => {
-    removeItem(this.storageKey, PersistentSessionsManager.storageTypeLocal);
-  };
+  // Static helpers kept for backwards compatibility and for side-effect-free storage access
+  // (no listeners are registered). Zero-arg calls address the bare (non-namespaced) key,
+  // matching the historical behavior; pass a namespace to address an isolated instance's storage.
+  static removeUserSession(namespace?: string): void {
+    removeItem(getSessionStorageKey(namespace), PersistentSessionsManager.storageTypeLocal);
+  }
 
-  storeUserSession = (session: FaroUserSession): void => {
-    setItem(this.storageKey, stringifyExternalJson(session), PersistentSessionsManager.storageTypeLocal);
-  };
+  static storeUserSession(session: FaroUserSession, namespace?: string): void {
+    setItem(
+      getSessionStorageKey(namespace),
+      stringifyExternalJson(session),
+      PersistentSessionsManager.storageTypeLocal
+    );
+  }
 
-  fetchUserSession = (): FaroUserSession | null => {
-    const storedSession = getItem(this.storageKey, PersistentSessionsManager.storageTypeLocal);
+  static fetchUserSession(namespace?: string): FaroUserSession | null {
+    const storedSession = getItem(getSessionStorageKey(namespace), PersistentSessionsManager.storageTypeLocal);
 
     if (storedSession) {
       return JSON.parse(storedSession) as FaroUserSession;
     }
 
     return null;
+  }
+
+  removeUserSession = (): void => {
+    PersistentSessionsManager.removeUserSession(this.namespace);
+  };
+
+  storeUserSession = (session: FaroUserSession): void => {
+    PersistentSessionsManager.storeUserSession(session, this.namespace);
+  };
+
+  fetchUserSession = (): FaroUserSession | null => {
+    return PersistentSessionsManager.fetchUserSession(this.namespace);
   };
 
   updateSession = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);

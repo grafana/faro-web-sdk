@@ -22,4 +22,10 @@ export interface SessionManagerInstance {
   removeUserSession: () => void;
 }
 
-export type SessionManagerClass = new (namespace?: string, deps?: SessionManagerDeps) => SessionManagerInstance;
+export interface SessionManagerClass {
+  new (namespace?: string, deps?: SessionManagerDeps): SessionManagerInstance;
+  // Side-effect-free static storage helpers (no listeners registered); default to the bare key.
+  fetchUserSession(namespace?: string): FaroUserSession | null;
+  storeUserSession(session: FaroUserSession, namespace?: string): void;
+  removeUserSession(namespace?: string): void;
+}

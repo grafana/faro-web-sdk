@@ -104,7 +104,7 @@ export function getUserSessionUpdater({
     } else {
       let newSession = addSessionMetadataToNextSession(
         createUserSessionObject({
-          isSampled: isSampled(),
+          isSampled: isSampled({ config, metas }),
           generateSessionId: config.sessionTracking?.generateSessionId,
         }),
         sessionFromStorage,
@@ -193,7 +193,7 @@ export function getSessionMetaUpdateHandler({
       const userSession = addSessionMetadataToNextSession(
         createUserSessionObject({
           sessionId,
-          isSampled: isSampled(),
+          isSampled: isSampled({ config, metas }),
           generateSessionId: config.sessionTracking?.generateSessionId,
         }),
         sessionFromSessionStorage,

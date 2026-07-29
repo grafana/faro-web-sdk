@@ -9,7 +9,7 @@ import {
   isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, Instrumentation, InternalLogger, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
@@ -112,7 +112,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     sessionTracking: {
       ...defaultSessionTrackingConfig,
       ...browserConfig.sessionTracking,
-      storageKeyNamespace: resolveSessionStorageKeyNamespace(browserConfig),
+      storageKeyNamespace: resolveSessionStorageKeyNamespace(browserConfig, internalLogger),
       ...crateSessionMeta({
         trackGeolocation: browserConfig.trackGeolocation,
         sessionTracking: browserConfig.sessionTracking,
@@ -132,13 +132,18 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
  * Namespacing is opt-in: set `sessionTracking.isolatedSessions: true` or provide an explicit
  * `sessionTracking.storageKeyNamespace` to namespace the key so co-located instances (e.g. a
  * micro-frontend setup) don't clobber each other's session. Namespace precedence: explicit
- * namespace > app name > app key parsed from the collector URL. Returns `undefined` (bare key)
- * when isolation is not opted into, or when nothing can be resolved.
+ * namespace > app name > app key parsed from the collector URL. The namespace must be unique per
+ * instance to actually isolate. Returns `undefined` (bare key) when isolation is not opted into;
+ * when isolation is opted into but nothing can be resolved, a warning is logged and the shared
+ * bare key is kept.
  *
  * Note: the top-level `isolate` flag (which isolates the Faro global object) intentionally does
  * not affect session storage — that would silently rename the storage key for existing users.
  */
-function resolveSessionStorageKeyNamespace(browserConfig: BrowserConfig): string | undefined {
+function resolveSessionStorageKeyNamespace(
+  browserConfig: BrowserConfig,
+  internalLogger: InternalLogger
+): string | undefined {
   const { sessionTracking } = browserConfig;
 
   const explicitNamespace = sessionTracking?.storageKeyNamespace?.trim();
@@ -150,11 +155,18 @@ function resolveSessionStorageKeyNamespace(browserConfig: BrowserConfig): string
     return undefined;
   }
 
-  return (
+  const namespace =
     (hasExplicitNamespace ? explicitNamespace : undefined) ??
     (browserConfig.app?.name?.trim() || undefined) ??
-    getAppKeyFromUrl(browserConfig.url)
-  );
+    getAppKeyFromUrl(browserConfig.url);
+
+  if (namespace == null) {
+    internalLogger.warn(
+      'Session isolation is enabled but no storage key namespace could be resolved (no explicit storageKeyNamespace, app name, or app key in the collector url). Falling back to the shared session storage key, so this instance is NOT isolated.'
+    );
+  }
+
+  return namespace;
 }
 
 /**
