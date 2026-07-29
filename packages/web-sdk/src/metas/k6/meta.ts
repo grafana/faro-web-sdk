@@ -1,3 +1,4 @@
+import { globalObject } from '@grafana/faro-core';
 import type { Meta, MetaItem } from '@grafana/faro-core';
 
 type K6Properties = {
@@ -5,7 +6,7 @@ type K6Properties = {
 };
 
 export const k6Meta: MetaItem<Pick<Meta, 'k6'>> = () => {
-  const k6Properties: K6Properties = (window as any).k6;
+  const k6Properties: K6Properties = (globalObject as any)?.k6;
 
   return {
     k6: {

@@ -5,11 +5,12 @@ import {
   defaultInternalLoggerLevel,
   defaultLogArgsSerializer,
   defaultUnpatchedConsole,
+  globalObject,
   isBoolean,
   isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, Instrumentation, InternalLogger, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
@@ -20,9 +21,12 @@ import { browserMeta, osMeta, sdkMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
+import { isBrowserEnvironment } from '../utils';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
+
+const webInstrumentationNamePrefix = '@grafana/faro-web-sdk:instrumentation-';
 
 export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   const transports: Transport[] = [];
@@ -91,7 +95,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations: getFilteredInstrumentations(instrumentations, browserConfig),
+    instrumentations: getFilteredInstrumentations(instrumentations, browserConfig, internalLogger),
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -126,14 +130,28 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 
 function getFilteredInstrumentations(
   instrumentations: Instrumentation[],
-  { experimental }: BrowserConfig
+  { experimental }: BrowserConfig,
+  internalLogger: InternalLogger
 ): Instrumentation[] {
   const trackNavigation = experimental?.trackNavigation ?? false;
+  const isBrowser = isBrowserEnvironment();
+
+  if (!isBrowser) {
+    internalLogger.warn(
+      'no DOM detected, skipping the web instrumentations. Faro will only send signals reported via its API.'
+    );
+  }
 
   return instrumentations.filter((instr) => {
     if (instr.name === '@grafana/faro-web-sdk:instrumentation-navigation' && !trackNavigation) {
       return false;
     }
+
+    // the web instrumentations require DOM APIs which throw when they are not available
+    if (!isBrowser && instr.name.startsWith(webInstrumentationNamePrefix)) {
+      return false;
+    }
+
     return true;
   });
 }
@@ -141,15 +159,20 @@ function getFilteredInstrumentations(
 function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
   const { page, generatePageId } = browserConfig?.pageTracking ?? {};
 
+  // the browser and page metas read from the DOM, so they are only added where one exists
+  const isBrowser = isBrowserEnvironment();
+
   const initialMetas: MetaItem[] = [
-    browserMeta,
+    ...(isBrowser ? [browserMeta] : []),
     osMeta,
-    createPageMeta({ generatePageId, initialPageMeta: page }),
+    ...(isBrowser ? [createPageMeta({ generatePageId, initialPageMeta: page })] : []),
     ...(browserConfig.metas ?? []),
     sdkMeta,
   ];
 
-  const isK6BrowserSession = isObject((window as any)?.k6);
+  // `globalObject` instead of `window` because the latter throws a ReferenceError
+  // in environments where it is not declared at all (SSR, workers, extension tests)
+  const isK6BrowserSession = isObject((globalObject as any)?.k6);
   if (isK6BrowserSession) {
     return [...initialMetas, k6Meta];
   }
