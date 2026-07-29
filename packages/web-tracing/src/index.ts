@@ -12,4 +12,6 @@ export { setSpanStatusOnFetchError, fetchCustomAttributeFunctionWithDefaults } f
 
 export { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
 
+export { FaroPausablePropagator } from './faroPausablePropagator';
+
 export { FaroUserActionSpanProcessor } from './faroUserActionSpanProcessor';
