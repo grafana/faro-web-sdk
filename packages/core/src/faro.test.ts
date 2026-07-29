@@ -75,4 +75,36 @@ describe('faro', () => {
     expect(items[0]?.payload.message).toEqual('test1');
     expect(items[1]?.payload.message).toEqual('test3');
   });
+
+  it('reflects the paused state in config.paused', () => {
+    const faro = initializeFaro(
+      mockConfig({
+        isolate: true,
+        transports: [new MockTransport()],
+      })
+    );
+
+    expect(faro.config.paused).toBe(false);
+
+    faro.pause();
+    expect(faro.config.paused).toBe(true);
+    expect(faro.transports.isPaused()).toBe(true);
+
+    faro.unpause();
+    expect(faro.config.paused).toBe(false);
+    expect(faro.transports.isPaused()).toBe(false);
+  });
+
+  it('starts with config.paused set when initialized paused', () => {
+    const faro = initializeFaro(
+      mockConfig({
+        isolate: true,
+        paused: true,
+        transports: [new MockTransport()],
+      })
+    );
+
+    expect(faro.config.paused).toBe(true);
+    expect(faro.transports.isPaused()).toBe(true);
+  });
 });
