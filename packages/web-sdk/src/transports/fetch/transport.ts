@@ -275,19 +275,17 @@ export class FetchTransport extends BaseTransport {
     const sessionTrackingConfig = config.sessionTracking;
 
     if (sessionTrackingConfig?.enabled) {
-      const SessionManagerClass = getSessionManagerByConfig(sessionTrackingConfig);
+      const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
       const namespace = sessionTrackingConfig.storageKeyNamespace;
 
-      // Use the side-effect-free static helpers instead of constructing a manager: a manager
-      // instance registers visibilitychange/meta listeners, which would accumulate on every
-      // session-expired response.
+      // the statics are side-effect-free; constructing a manager here would leak listeners per response
       getUserSessionUpdater({
-        fetchUserSession: () => SessionManagerClass.fetchUserSession(namespace),
-        storeUserSession: (session) => SessionManagerClass.storeUserSession(session, namespace),
-        // BaseExtension only provides config and metas; fall back to faro.api for the session API ref.
+        fetchUserSession: () => SessionManager.fetchUserSession(namespace),
+        storeUserSession: (session) => SessionManager.storeUserSession(session, namespace),
         config: this.config,
         metas: this.metas,
-        api: faro.api,
+        // this.api is wired by transports.add(); fall back to the global for standalone transports
+        api: this.api ?? faro.api,
       })({ forceSessionExtend: true });
 
       logDebug(`${SessionExpiredString} created new session.`);

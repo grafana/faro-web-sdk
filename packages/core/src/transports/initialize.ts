@@ -1,4 +1,4 @@
-import type { APIEvent, ExceptionEvent } from '../api';
+import type { API, APIEvent, ExceptionEvent } from '../api';
 import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
@@ -12,7 +12,8 @@ export function initializeTransports(
   unpatchedConsole: UnpatchedConsole,
   internalLogger: InternalLogger,
   config: Config,
-  metas: Metas
+  metas: Metas,
+  getApi?: () => API
 ): Transports {
   internalLogger.debug('Initializing transports');
 
@@ -40,6 +41,7 @@ export function initializeTransports(
       newTransport.internalLogger = internalLogger;
       newTransport.config = config;
       newTransport.metas = metas;
+      newTransport.api = getApi?.();
 
       transports.push(newTransport);
     });
