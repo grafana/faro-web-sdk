@@ -7,5 +7,5 @@
     "tsBuildInfoFile": "../../.cache/tsc/react.bundle.tsbuildinfo"
   },
   "include": ["./src"],
-  "exclude": ["./**/*.test.ts"]
+  "exclude": ["./**/*.test.ts", "**/__matrix__/**"]
 }

@@ -1,1 +1,0 @@
-export { initializeApp } from './initialize';

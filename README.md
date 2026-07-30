@@ -6,8 +6,10 @@ The Grafana Faro Web SDK can instrument frontend JavaScript applications to coll
 [Grafana Alloy][grafana-alloy-docs] (with faro receiver integration enabled), to a Grafana Cloud instance or to a
 custom receiver. Grafana Alloy can then send this data to [Loki][grafana-logs] or [Tempo][grafana-traces].
 
-The repository consists of multiple packages that can be combined depending on your requirements, as well as a
-[demo][faro-demo], which can be run by following the [README.md file][faro-demo-readme].
+The repository consists of multiple packages that can be combined depending on your requirements. For a full reference
+instrumentation of a real-world app, see [grafana/quickpizza][faro-demo] — the canonical Frontend Observability demo,
+deployed live at [quickpizza.grafana-dev.com](https://quickpizza.grafana-dev.com) and instrumented with the current
+Faro Web SDK, Web Tracing, and Session Replay packages.
 
 ## Get started
 
@@ -15,6 +17,11 @@ The repository consists of multiple packages that can be combined depending on y
 > For more information, you can find the Faro documentation in the [Grafana Cloud docs for Faro](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/instrument/).
 
 See [quick start for web applications][faro-quick-start].
+
+## Local development
+
+Contributing to the SDK? See [local development][faro-local-dev] for the three supported paths:
+the in-repo smoke harness, your own Grafana Cloud free-tier stack, or a local Alloy install.
 
 ## Packages
 
@@ -43,8 +50,8 @@ the [README.md][faro-web-sdk-readme] for more information.
 [grafana-traces]: https://grafana.com/traces/
 [faro-core]: ./packages/core
 [faro-core-readme]: ./packages/core/README.md
-[faro-demo]: ./demo
-[faro-demo-readme]: ./demo/README.md
+[faro-demo]: https://github.com/grafana/quickpizza
+[faro-local-dev]: ./docs/sources/developer/local-development.md
 [faro-quick-start]: ./docs/sources/tutorials/quick-start-browser.md
 [faro-react]: ./packages/react
 [faro-react-readme]: ./packages/react/README.md

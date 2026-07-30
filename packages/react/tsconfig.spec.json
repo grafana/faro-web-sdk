@@ -7,6 +7,7 @@
     "tsBuildInfoFile": "../../.cache/tsc/react.spec.tsbuildinfo"
   },
   "include": ["./src"],
+  "exclude": ["**/__matrix__/**"],
   "references": [
     { "path": "../core/tsconfig.spec.json" },
     { "path": "../web-sdk/tsconfig.spec.json" },

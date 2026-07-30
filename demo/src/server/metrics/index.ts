@@ -1,1 +1,0 @@
-export { initializeMetrics } from './initialize';

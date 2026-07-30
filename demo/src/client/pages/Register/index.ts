@@ -1,1 +1,0 @@
-export { Register } from './Register';

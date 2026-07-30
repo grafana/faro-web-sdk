@@ -48,7 +48,7 @@ export type { BufferItem, PromiseBuffer, PromiseBufferOptions, PromiseProducer }
 
 export { genShortID } from './shortId';
 
-export { getBundleId } from './sourceMaps';
+export { getBundleId, getGitHash } from './sourceMaps';
 
 export { dateNow, monoNow } from './date';
 

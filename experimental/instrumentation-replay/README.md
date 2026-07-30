@@ -76,6 +76,7 @@ initializeFaro({
 | `collectFonts`             | `boolean`                      | `false`  | Whether to collect fonts used in the website                                                                                                    |
 | `inlineImages`             | `boolean`                      | `false`  | Whether to record image content                                                                                                                 |
 | `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                                                           |
+| `inactivityThresholdMs`    | `number`                       | `60000`  | Pause recording after this many milliseconds of inactivity; resumes automatically on the next interaction. Set to `0` to disable                |
 
 #### Sub-sampling example
 

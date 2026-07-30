@@ -8,11 +8,11 @@
   "bump-patch-for-minor-pre-major": false,
   "draft": false,
   "prerelease": false,
-  "pull-request-header": "Faro Web SDK Release - ${version}",
+  "pull-request-header": "Faro Web SDK Release",
+  "group-pull-request-title-pattern": "chore: release ${version}",
   "packages": {
     ".": {
-      "package-name": "faro-web-sdk",
-      "component": "faro-web-sdk",
+      "package-name": "",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         { "type": "json", "path": "packages/core/package.json", "jsonpath": "$.version" },
@@ -52,26 +52,21 @@
           "jsonpath": "$['devDependencies']['@grafana/faro-core']"
         },
         { "type": "json", "path": "lerna.json", "jsonpath": "$.version" },
-        { "type": "json", "path": "demo/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "e2e/smoke/package.json", "jsonpath": "$.version" },
         {
           "type": "json",
-          "path": "demo/package.json",
-          "jsonpath": "$['dependencies']['@grafana/faro-core']"
+          "path": "e2e/smoke/package.json",
+          "jsonpath": "$['devDependencies']['@grafana/faro-core']"
         },
         {
           "type": "json",
-          "path": "demo/package.json",
-          "jsonpath": "$['dependencies']['@grafana/faro-react']"
+          "path": "e2e/smoke/package.json",
+          "jsonpath": "$['devDependencies']['@grafana/faro-react']"
         },
         {
           "type": "json",
-          "path": "demo/package.json",
-          "jsonpath": "$['dependencies']['@grafana/faro-web-sdk']"
-        },
-        {
-          "type": "json",
-          "path": "demo/package.json",
-          "jsonpath": "$['dependencies']['@grafana/faro-web-tracing']"
+          "path": "e2e/smoke/package.json",
+          "jsonpath": "$['devDependencies']['@grafana/faro-web-tracing']"
         }
       ]
     }

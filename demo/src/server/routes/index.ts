@@ -1,1 +1,0 @@
-export { registerRoutes } from './registerRoutes';

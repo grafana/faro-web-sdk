@@ -64,6 +64,7 @@ export function initializeUserActionsAPI({
       userActionsMessageBus.notify({
         type: userActionStart,
         userAction: userAction,
+        initialActivityTimeout: options?.initialActivityTimeout,
       });
       activeUserAction = userAction;
 

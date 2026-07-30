@@ -1,1 +1,0 @@
-export { initializeFaro } from './initialize';

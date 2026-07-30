@@ -4,7 +4,7 @@ import { ReplayInstrumentation } from './instrumentation';
 import { MaskInputFn, ReplayInstrumentationOptions } from './types';
 
 // Mock rrweb
-jest.mock('rrweb', () => ({
+jest.mock('@grafana/rrweb', () => ({
   record: jest.fn(),
 }));
 
@@ -26,7 +26,7 @@ describe('ReplayInstrumentation', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockRecord = require('rrweb').record;
+    mockRecord = require('@grafana/rrweb').record;
     mockRecord.mockReturnValue(jest.fn());
 
     // Mock API and metas

@@ -1,0 +1,39 @@
+{
+  "name": "@grafana/faro-smoke-harness",
+  "packageManager": "yarn@4.17.1",
+  "version": "2.9.0",
+  "description": "Minimal Vite + React harness and Playwright smoke specs for Faro Web SDK",
+  "license": "Apache-2.0",
+  "author": "Grafana Labs",
+  "homepage": "https://github.com/grafana/faro-web-sdk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/faro-web-sdk.git",
+    "directory": "e2e/smoke"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "exit 0",
+    "quality:test": "exit 0",
+    "quality:lint": "eslint --cache --cache-location ../../.cache/eslint/smoke \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:fix": "eslint --fix --cache --cache-location ../../.cache/eslint/smoke \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:circular-deps": "exit 0",
+    "e2e": "playwright test",
+    "e2e:ci": "start-server-and-test start http://127.0.0.1:5174 e2e"
+  },
+  "devDependencies": {
+    "@grafana/faro-core": "^2.9.0",
+    "@grafana/faro-react": "^2.9.0",
+    "@grafana/faro-web-tracing": "^2.9.0",
+    "@playwright/test": "1.61.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react-swc": "4.3.1",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "start-server-and-test": "3.0.11",
+    "vite": "8.0.16"
+  }
+}

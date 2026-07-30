@@ -18,18 +18,18 @@ jobs:
       matrix:
         node: [22.x, 24.x, latest]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ matrix.node }}
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Auto-fix lint issues
         run: yarn quality:lint:fix
@@ -55,54 +55,39 @@ jobs:
       - name: Unit tests
         run: yarn quality:test
 
-  e2e:
+  e2e-smoke:
     permissions:
       contents: read
-
+    timeout-minutes: 10
     runs-on: ubuntu-latest
-    container:
-      image: cypress/browsers:25.0.0@sha256:008da4da0a285b9695d3bfdd1c5c5acb540ada14080d5b90269b34fdf4b9ec6a
-      options: --user 1001
-
-    services:
-      database:
-        image: postgres:18.1@sha256:5773fe724c49c42a7a9ca70202e11e1dff21fb7235b335a73f39297d200b73a2
-        env:
-          POSTGRES_DB: demo
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_USER: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 'lts/*'
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
+
+      - name: Install Playwright browsers
+        run: yarn workspace @grafana/faro-smoke-harness exec playwright install --with-deps chromium
 
       - name: Build
         run: yarn build
 
-      - name: E2E tests
-        uses: cypress-io/github-action@be9c221b90b2fb97daedfa8699d1f08b662efc70
-        env:
-          DATABASE_HOST: database
-          DATABASE_PORT: 5432
-          DATABASE_NAME: demo
-          DATABASE_USER: postgres
-          DATABASE_PASSWORD: postgres
-          IS_TEST: 1
+      - name: Smoke E2E tests
+        run: yarn quality:e2e:smoke:ci
+
+      - name: Upload Playwright test results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ !cancelled() }}
         with:
-          command: yarn quality:e2e:ci
-          install: false
+          name: playwright-test-results
+          path: e2e/smoke/test-results/
+          retention-days: 7
