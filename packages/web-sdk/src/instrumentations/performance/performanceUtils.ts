@@ -26,6 +26,34 @@ export function getSpanContextFromServerTiming(serverTimings: PerformanceServerT
   return undefined;
 }
 
+/**
+ * Absolute wall-clock timestamp (epoch ms) for a performance entry, given its
+ * `startTime` (ms relative to the document time origin).
+ *
+ * We intentionally avoid `performance.timeOrigin + startTime`: `timeOrigin` is a
+ * wall-clock value fixed at document creation, while `startTime` comes from the
+ * monotonic clock behind `performance.now()`, which does not advance while the OS is
+ * suspended (e.g. a sleeping laptop). After a suspend the two drift apart, so
+ * `timeOrigin + startTime` backdates the entry by the suspended duration — observed in
+ * the wild as hours to days, heavily concentrated on macOS. See
+ * https://github.com/grafana/faro-web-sdk/issues/2179.
+ *
+ * Instead we re-derive the origin from the wall clock at emit time:
+ * `Date.now() - performance.now()` is the current (drift-corrected) effective time
+ * origin, so `Date.now() - (performance.now() - startTime)` places the entry at its real
+ * wall-clock time. When no drift has occurred this equals `timeOrigin + startTime`, so
+ * there is no behavioural change in the normal case. `Math.min(wallNow, …)` clamps the
+ * rare entry that straddles a suspend (started before sleep, observed on wake) so it
+ * cannot land in the future.
+ */
+export function performanceEntryTimestampMs(
+  startTimeMs: number,
+  clock: { wallNow: number; monoNow: number } = { wallNow: Date.now(), monoNow: performance.now() }
+): number {
+  const { wallNow, monoNow } = clock;
+  return Math.min(wallNow, wallNow - (monoNow - startTimeMs));
+}
+
 export function performanceObserverSupported(): boolean {
   return 'PerformanceObserver' in window;
 }

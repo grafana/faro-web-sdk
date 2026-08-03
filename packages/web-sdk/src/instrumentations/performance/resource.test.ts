@@ -136,6 +136,13 @@ describe('Resource observer', () => {
     const mockResourceId = 'abc';
     jest.spyOn(faroCoreModule, 'genShortID').mockReturnValueOnce(mockResourceId);
 
+    // Timestamp is derived from the current wall/monotonic clocks, not the (frozen)
+    // performance.timeOrigin — see performanceEntryTimestampMs / issue #2179.
+    const mockWallNow = 1_700_000_000_000;
+    const mockMonoNow = 5_000;
+    const dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(mockWallNow);
+    const perfNowSpy = jest.spyOn(performance, 'now').mockReturnValue(mockMonoNow);
+
     initializeFaro(mockConfig({ trackResources: true }));
 
     observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
@@ -153,9 +160,12 @@ describe('Resource observer', () => {
       undefined,
       {
         spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' },
-        timestampOverwriteMs: mockTimeOriginValue + performanceResourceEntry.startTime,
+        timestampOverwriteMs: mockWallNow - (mockMonoNow - performanceResourceEntry.startTime),
       }
     );
+
+    dateNowSpy.mockRestore();
+    perfNowSpy.mockRestore();
   });
 
   it('Tracks default resource entries if trackResource is unset', () => {

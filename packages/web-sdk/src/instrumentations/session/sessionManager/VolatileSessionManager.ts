@@ -11,6 +11,10 @@ export class VolatileSessionsManager {
   private static storageTypeSession = webStorageType.session;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
 
+  // sessionStorage is tab-local, so this manager never adopts another tab's
+  // session. Stubbed so the instrumentation can treat both managers uniformly.
+  isAdopting = (): boolean => false;
+
   constructor() {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,

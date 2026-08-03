@@ -32,6 +32,7 @@ export type {
   PushMeasurementOptions,
   Stacktrace,
   StacktraceParser,
+  StartUserActionOptions,
   TraceContext,
   TraceEvent,
   TracesAPI,

@@ -3,6 +3,7 @@ import {
   createFaroResourceTiming,
   getSpanContextFromServerTiming,
   includePerformanceEntry,
+  performanceEntryTimestampMs,
 } from './performanceUtils';
 import { performanceNavigationEntry, performanceResourceEntry } from './performanceUtilsTestData';
 import type { FaroNavigationTiming, FaroResourceTiming } from './types';
@@ -232,5 +233,68 @@ describe('performanceUtils', () => {
     // fetchStart is a timeOrigin-relative timestamp (page age), not a duration, so fetchStart - 0
     // must not be reported as the service worker time.
     expect(createFaroResourceTiming({ fetchStart: 179315969, workerStart: 0 } as any).serviceWorkerTime).toBe('0');
+  });
+});
+
+describe('performanceEntryTimestampMs', () => {
+  let dateNowSpy: jest.SpyInstance | undefined;
+
+  const setClocks = (wallNowMs: number, monoNowMs: number) => {
+    dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(wallNowMs);
+    (performance as any).now = () => monoNowMs;
+  };
+
+  afterEach(() => {
+    dateNowSpy?.mockRestore();
+    dateNowSpy = undefined;
+    delete (performance as any).now;
+  });
+
+  it('equals timeOrigin + startTime when the clocks have not drifted (no regression)', () => {
+    // Healthy invariant: Date.now() === timeOrigin + performance.now(). The result must match the
+    // previous `timeOrigin + startTime` computation exactly, so there is no behavioural change.
+    const timeOrigin = 1_000_000;
+    const monoNow = 5_000;
+    const startTime = 778;
+    setClocks(timeOrigin + monoNow, monoNow);
+    expect(performanceEntryTimestampMs(startTime)).toBe(timeOrigin + startTime);
+  });
+
+  it('does not reproduce the timeOrigin + startTime backdating after a suspend', () => {
+    // Tab loaded at `timeOrigin`, then the machine slept ~7 days: the monotonic clock froze at 12s
+    // of accrued time while the wall clock advanced ~7 days. The old `timeOrigin + startTime` lands
+    // days in the past; the fixed value must land at ~now.
+    const dayMs = 24 * 60 * 60 * 1000;
+    const timeOrigin = 1_000_000;
+    const monoNow = 12_000; // only 12s of monotonic time accrued
+    const wallNow = timeOrigin + 7 * dayMs;
+    const startTime = 500;
+    setClocks(wallNow, monoNow);
+
+    const oldFormula = timeOrigin + startTime;
+    const fixed = performanceEntryTimestampMs(startTime);
+
+    expect(wallNow - oldFormula).toBeGreaterThan(6 * dayMs); // old: days in the past
+    expect(wallNow - fixed).toBeLessThan(monoNow); // fixed: within the monotonic window of "now"
+  });
+
+  it('clamps to now for an entry that straddles a suspend (startTime ahead of current now)', () => {
+    const wallNow = 1_000_000;
+    setClocks(wallNow, 100); // performance.now() < startTime
+    expect(performanceEntryTimestampMs(778)).toBe(wallNow);
+  });
+
+  it('uses the provided clock snapshot instead of reading the live clocks', () => {
+    setClocks(9_999_999, 999_999);
+    const clock = { wallNow: 1_000_000, monoNow: 5_000 };
+    const startTime = 778;
+    expect(performanceEntryTimestampMs(startTime, clock)).toBe(clock.wallNow - (clock.monoNow - startTime));
+  });
+
+  it('anchors a batch of entries to one origin when the shared snapshot is reused', () => {
+    const clock = { wallNow: 1_000_000, monoNow: 5_000 };
+    const a = performanceEntryTimestampMs(500, clock);
+    const b = performanceEntryTimestampMs(900, clock);
+    expect(b - a).toBe(400);
   });
 });
