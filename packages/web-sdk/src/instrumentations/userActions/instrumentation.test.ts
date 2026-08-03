@@ -1,7 +1,16 @@
-import { initializeFaro, Observable, UserActionInternalInterface } from '@grafana/faro-core';
+import {
+  initializeFaro,
+  InternalLoggerLevel,
+  Observable,
+  type UnpatchedConsole,
+  UserActionInternalInterface,
+} from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { MESSAGE_TYPE_DOM_MUTATION, MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
+import { UserActionInstrumentation } from './instrumentation';
+import { getUserEventHandler } from './processUserActionEventHandler';
+import { UserActionController } from './userActionController';
 
 let http$: Observable<any>;
 let dom$: Observable<any>;
@@ -22,6 +31,8 @@ jest.mock('../_internal/monitors/performanceEntriesMonitor', () => ({
 }));
 
 describe('UserActionInstrumentation output', () => {
+  let inst: UserActionInstrumentation;
+
   beforeEach(() => {
     http$ = new Observable();
     dom$ = new Observable();
@@ -30,6 +41,7 @@ describe('UserActionInstrumentation output', () => {
   });
 
   afterEach(() => {
+    inst?.destroy();
     jest.runOnlyPendingTimers();
     jest.clearAllTimers();
   });
@@ -37,8 +49,7 @@ describe('UserActionInstrumentation output', () => {
   it('calls cancel() when no activity is observed', () => {
     const faro = initializeFaro(mockConfig());
 
-    const { UserActionInstrumentation } = require('./instrumentation');
-    const inst = new UserActionInstrumentation();
+    inst = new UserActionInstrumentation();
     inst.initialize();
 
     const ua = faro.api.startUserAction('ua-dom');
@@ -49,11 +60,75 @@ describe('UserActionInstrumentation output', () => {
     expect(cancelSpy).toHaveBeenCalled();
   });
 
+  it('logs when no user action event is sent because no initial activity is observed', () => {
+    const debug = jest.fn();
+    const faro = initializeFaro(
+      mockConfig({
+        internalLoggerLevel: InternalLoggerLevel.VERBOSE,
+        unpatchedConsole: { debug } as unknown as UnpatchedConsole,
+      })
+    );
+
+    inst = new UserActionInstrumentation();
+    inst.initialize();
+
+    faro.api.startUserAction('ua-no-activity');
+    debug.mockClear();
+
+    jest.advanceTimersByTime(100);
+
+    expect(debug).toHaveBeenCalledWith(
+      'Faro\n',
+      'User action not sent; no DOM, resource, or HTTP activity:',
+      'ua-no-activity'
+    );
+  });
+
+  it('registers only the pointerdown and keydown browser triggers', () => {
+    initializeFaro(mockConfig());
+    const addEventListenerSpy = jest.spyOn(window, 'addEventListener');
+    inst = new UserActionInstrumentation();
+    inst.initialize();
+
+    const registeredEvents = addEventListenerSpy.mock.calls.map(([eventName]) => eventName);
+    expect(registeredEvents).toEqual(['pointerdown', 'keydown']);
+    expect(registeredEvents).not.toContain('click');
+    expect(registeredEvents).not.toContain('change');
+
+    addEventListenerSpy.mockRestore();
+  });
+
+  it('removes browser triggers without AbortController support', () => {
+    const faro = initializeFaro(
+      mockConfig({ userActionsInstrumentation: { dataAttributeName: 'data-faro-user-action-name' } })
+    );
+    const startUserActionSpy = jest.spyOn(faro.api, 'startUserAction');
+    const abortControllerDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'AbortController')!;
+    Object.defineProperty(globalThis, 'AbortController', { ...abortControllerDescriptor, value: undefined });
+    const element = document.createElement('button');
+    element.setAttribute('data-faro-user-action-name', 'ua-declarative');
+    document.body.appendChild(element);
+
+    try {
+      inst = new UserActionInstrumentation();
+      inst.initialize();
+      element.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+      expect(startUserActionSpy).toHaveBeenCalledTimes(1);
+
+      inst.destroy();
+      element.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+      expect(startUserActionSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(globalThis, 'AbortController', abortControllerDescriptor);
+      startUserActionSpy.mockRestore();
+      element.remove();
+    }
+  });
+
   it('calls end() when activity is observed via DOM mutations', () => {
     const faro = initializeFaro(mockConfig());
 
-    const { UserActionInstrumentation } = require('./instrumentation');
-    const inst = new UserActionInstrumentation();
+    inst = new UserActionInstrumentation();
     inst.initialize();
 
     const ua = faro.api.startUserAction('ua-dom');
@@ -69,8 +144,7 @@ describe('UserActionInstrumentation output', () => {
   it('calls end() when activity is observed via performance entries', () => {
     const faro = initializeFaro(mockConfig());
 
-    const { UserActionInstrumentation } = require('./instrumentation');
-    const inst = new UserActionInstrumentation();
+    inst = new UserActionInstrumentation();
     inst.initialize();
 
     const ua = faro.api.startUserAction('ua-perf');
@@ -86,8 +160,7 @@ describe('UserActionInstrumentation output', () => {
   it('calls end() when HTTP request is observed', () => {
     const faro = initializeFaro(mockConfig());
 
-    const { UserActionInstrumentation } = require('./instrumentation');
-    const inst = new UserActionInstrumentation();
+    inst = new UserActionInstrumentation();
     inst.initialize();
 
     const ua = faro.api.startUserAction('ua-http');
@@ -108,5 +181,122 @@ describe('UserActionInstrumentation output', () => {
     });
 
     expect(endSpy).toHaveBeenCalled();
+  });
+
+  it('uses an API timeout override in preference to the global timeout', () => {
+    const faro = initializeFaro(mockConfig({ userActionsInstrumentation: { initialActivityTimeout: 300 } }));
+    inst = new UserActionInstrumentation();
+    inst.initialize();
+
+    const ua = faro.api.startUserAction('ua-api', undefined, { initialActivityTimeout: 500 });
+    const cancelSpy = jest.spyOn(ua as unknown as UserActionInternalInterface, 'cancel');
+
+    jest.advanceTimersByTime(300);
+    expect(cancelSpy).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(200);
+    expect(cancelSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses an element timeout override in preference to the global timeout', () => {
+    const faro = initializeFaro(
+      mockConfig({
+        userActionsInstrumentation: {
+          dataAttributeName: 'data-faro-user-action-name',
+          initialActivityTimeout: 300,
+        },
+      })
+    );
+    inst = new UserActionInstrumentation();
+    inst.initialize();
+    const element = document.createElement('button');
+    element.setAttribute('data-faro-user-action-name', 'ua-element');
+    element.setAttribute('data-faro-user-action-timeout', '500');
+
+    getUserEventHandler(faro).processUserEvent({ type: 'pointerdown', target: element } as unknown as PointerEvent);
+    const ua = faro.api.getActiveUserAction();
+    const cancelSpy = jest.spyOn(ua as unknown as UserActionInternalInterface, 'cancel');
+
+    jest.advanceTimersByTime(300);
+    expect(cancelSpy).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(200);
+    expect(cancelSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to the global timeout for a malformed element override', () => {
+    const faro = initializeFaro(
+      mockConfig({
+        userActionsInstrumentation: {
+          dataAttributeName: 'data-faro-user-action-name',
+          initialActivityTimeout: 300,
+        },
+      })
+    );
+    inst = new UserActionInstrumentation();
+    inst.initialize();
+    const element = document.createElement('button');
+    element.setAttribute('data-faro-user-action-name', 'ua-element');
+    element.setAttribute('data-faro-user-action-timeout', 'invalid');
+
+    getUserEventHandler(faro).processUserEvent({ type: 'pointerdown', target: element } as unknown as PointerEvent);
+    const ua = faro.api.getActiveUserAction();
+    const cancelSpy = jest.spyOn(ua as unknown as UserActionInternalInterface, 'cancel');
+
+    jest.advanceTimersByTime(299);
+    expect(cancelSpy).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(1);
+    expect(cancelSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to the global timeout for an invalid API override', () => {
+    const faro = initializeFaro(mockConfig({ userActionsInstrumentation: { initialActivityTimeout: 300 } }));
+    inst = new UserActionInstrumentation();
+    inst.initialize();
+
+    const ua = faro.api.startUserAction('ua-api', undefined, { initialActivityTimeout: Number.POSITIVE_INFINITY });
+    const cancelSpy = jest.spyOn(ua as unknown as UserActionInternalInterface, 'cancel');
+
+    jest.advanceTimersByTime(299);
+    expect(cancelSpy).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(1);
+    expect(cancelSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('clamps an API timeout override to 1000 ms', () => {
+    const faro = initializeFaro(mockConfig());
+    inst = new UserActionInstrumentation();
+    inst.initialize();
+
+    const ua = faro.api.startUserAction('ua-api', undefined, { initialActivityTimeout: 1500 });
+    const cancelSpy = jest.spyOn(ua as unknown as UserActionInternalInterface, 'cancel');
+
+    jest.advanceTimersByTime(999);
+    expect(cancelSpy).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(1);
+    expect(cancelSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['manual', 'declarative'])('attaches exactly one controller for a %s start', (startType) => {
+    const faro = initializeFaro(
+      mockConfig({ userActionsInstrumentation: { dataAttributeName: 'data-faro-user-action-name' } })
+    );
+    const attachSpy = jest.spyOn(UserActionController.prototype, 'attach').mockImplementation(() => undefined);
+    inst = new UserActionInstrumentation();
+    inst.initialize();
+
+    if (startType === 'manual') {
+      faro.api.startUserAction('ua-manual');
+    } else {
+      const element = document.createElement('button');
+      element.setAttribute('data-faro-user-action-name', 'ua-declarative');
+      getUserEventHandler(faro).processUserEvent({ type: 'pointerdown', target: element } as unknown as PointerEvent);
+    }
+
+    expect(attachSpy).toHaveBeenCalledTimes(1);
+    attachSpy.mockRestore();
   });
 });

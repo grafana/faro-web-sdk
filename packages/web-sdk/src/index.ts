@@ -179,4 +179,4 @@ export {
 
 export { getIgnoreUrls, getUrlFromResource } from './utils/url';
 
-export { userActionDataAttribute } from './instrumentations/userActions';
+export { userActionDataAttribute, userActionTimeoutDataAttribute } from './instrumentations/userActions';

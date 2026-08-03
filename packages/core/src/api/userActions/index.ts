@@ -1,6 +1,7 @@
 export { UserActionImportance } from './const';
 export { type UserActionImportance as UserActionImportanceType } from './const';
 export {
+  type StartUserActionOptions,
   type UserActionsAPI,
   UserActionState,
   type UserActionInterface,
