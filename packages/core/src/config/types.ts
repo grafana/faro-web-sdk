@@ -250,6 +250,12 @@ export interface Config<P = APIEvent> {
     dataAttributeName?: string;
 
     /**
+     * Time in milliseconds to wait for the first qualifying signal after a user action starts.
+     * Values above 1000 ms are clamped. Default is 100 ms.
+     */
+    initialActivityTimeout?: number;
+
+    /**
      * Predicate function to exclude items from user actions.
      * If the function returns true, the item will be excluded from user actions.
      */

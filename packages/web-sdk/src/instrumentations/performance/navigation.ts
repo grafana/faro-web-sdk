@@ -6,7 +6,11 @@ import { isUrlIgnored } from '../../utils/url';
 import { NAVIGATION_ID_STORAGE_KEY } from '../instrumentationConstants';
 
 import { NAVIGATION_ENTRY } from './performanceConstants';
-import { createFaroNavigationTiming, getSpanContextFromServerTiming } from './performanceUtils';
+import {
+  createFaroNavigationTiming,
+  getSpanContextFromServerTiming,
+  performanceEntryTimestampMs,
+} from './performanceUtils';
 import type { FaroNavigationItem } from './types';
 
 type SpanContext = PushEventOptions['spanContext'];
@@ -40,7 +44,7 @@ export function getNavigationTimings(pushEvent: EventsAPI['pushEvent']): Promise
 
     pushEvent('faro.performance.navigation', faroNavigationEntry, undefined, {
       spanContext,
-      timestampOverwriteMs: performance.timeOrigin + navEntryJson.startTime,
+      timestampOverwriteMs: performanceEntryTimestampMs(navEntryJson.startTime),
     });
 
     faroNavigationEntryResolve(faroNavigationEntry);

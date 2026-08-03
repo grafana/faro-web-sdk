@@ -1,4 +1,4 @@
-import { defaultLogArgsSerializer, isFunction } from '@grafana/faro-core';
+import { defaultLogArgsSerializer, InternalLoggerLevel, isFunction } from '@grafana/faro-core';
 import type { LogArgsSerializer } from '@grafana/faro-core';
 
 import { userActionDataAttribute } from '../instrumentations/userActions';
@@ -189,6 +189,7 @@ describe('config', () => {
 
     expect(config).toBeTruthy();
     expect(config?.userActionsInstrumentation?.dataAttributeName).toBe(userActionDataAttribute);
+    expect(config?.userActionsInstrumentation?.initialActivityTimeout).toBe(100);
   });
 
   it('trackUserActions setting are added to the config as provided by the user', () => {
@@ -203,6 +204,44 @@ describe('config', () => {
 
     expect(config).toBeTruthy();
     expect(config?.userActionsInstrumentation?.dataAttributeName).toBe('data-test-action-name');
+  });
+
+  it('normalizes a camelCase user action attribute name', () => {
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      userActionsInstrumentation: { dataAttributeName: 'testActionName' },
+    });
+
+    expect(config.userActionsInstrumentation?.dataAttributeName).toBe('data-test-action-name');
+  });
+
+  it('falls back and warns for an invalid global initial activity timeout', () => {
+    const warn = jest.fn();
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      internalLoggerLevel: InternalLoggerLevel.WARN,
+      unpatchedConsole: { warn } as unknown as Console,
+      userActionsInstrumentation: { initialActivityTimeout: Number.NaN },
+    });
+
+    expect(config.userActionsInstrumentation?.initialActivityTimeout).toBe(100);
+    expect(warn).toHaveBeenCalled();
+  });
+
+  it('clamps and warns for a global initial activity timeout above 1000 ms', () => {
+    const warn = jest.fn();
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      internalLoggerLevel: InternalLoggerLevel.WARN,
+      unpatchedConsole: { warn } as unknown as Console,
+      userActionsInstrumentation: { initialActivityTimeout: 1001 },
+    });
+
+    expect(config.userActionsInstrumentation?.initialActivityTimeout).toBe(1000);
+    expect(warn).toHaveBeenCalled();
   });
 
   it('experimental settings defaults are applied', () => {

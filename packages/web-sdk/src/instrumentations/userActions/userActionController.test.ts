@@ -6,8 +6,9 @@ import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from '
 import { UserActionController } from './userActionController';
 
 let httpObservable = new Observable();
+let domObservable = new Observable();
 jest.mock('../_internal/monitors/httpRequestMonitor', () => ({ monitorHttpRequests: () => httpObservable }));
-jest.mock('../_internal/monitors/domMutationMonitor', () => ({ monitorDomMutations: () => new Observable() }));
+jest.mock('../_internal/monitors/domMutationMonitor', () => ({ monitorDomMutations: () => domObservable }));
 jest.mock('../_internal/monitors/performanceEntriesMonitor', () => ({
   monitorPerformanceEntries: () => new Observable(),
 }));
@@ -33,12 +34,40 @@ describe('UserActionController', () => {
     jest.clearAllMocks();
     jest.useRealTimers();
     httpObservable = new Observable();
+    domObservable = new Observable();
+  });
+
+  it('waits for the configured initial activity timeout before cancelling an action with no signals', () => {
+    jest.useFakeTimers();
+
+    new UserActionController(fakeAction, jest.fn(), 500).attach();
+
+    jest.advanceTimersByTime(499);
+    expect(fakeAction.cancel).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(1);
+    expect(fakeAction.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the fixed 100 ms inactivity window after the first signal', () => {
+    jest.useFakeTimers();
+
+    new UserActionController(fakeAction, jest.fn(), 500).attach();
+    jest.advanceTimersByTime(150);
+    domObservable.notify({ type: 'dom-mutation' });
+
+    jest.advanceTimersByTime(99);
+    expect(fakeAction.end).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(1);
+    expect(fakeAction.end).toHaveBeenCalledTimes(1);
+    expect(fakeAction.cancel).not.toHaveBeenCalled();
   });
 
   it('allows processing if there are running requests', () => {
     jest.useFakeTimers();
 
-    const controller = new UserActionController(fakeAction);
+    const controller = new UserActionController(fakeAction, jest.fn());
     controller.attach();
 
     httpObservable.notify({
@@ -76,7 +105,7 @@ describe('UserActionController', () => {
   it('does not allow processing if there are running requests but the request id is not pending', () => {
     jest.useFakeTimers();
 
-    const controller = new UserActionController(fakeAction);
+    const controller = new UserActionController(fakeAction, jest.fn());
     controller.attach();
 
     // Start a request with id 'foo'
@@ -107,5 +136,23 @@ describe('UserActionController', () => {
     // Action should not end or cancel because the pending request hasn't finished
     expect(fakeAction.end).not.toHaveBeenCalled();
     expect(fakeAction.cancel).not.toHaveBeenCalled();
+  });
+
+  it('keeps the fixed 10 second HTTP drain timeout', () => {
+    jest.useFakeTimers();
+
+    new UserActionController(fakeAction, jest.fn(), 500).attach();
+    httpObservable.notify({
+      type: MESSAGE_TYPE_HTTP_REQUEST_START,
+      request: { requestId: 'foo', url: '/bar', method: 'POST', apiType: 'xhr' },
+    });
+    jest.advanceTimersByTime(100);
+
+    expect(fakeAction.halt).toHaveBeenCalledTimes(1);
+    jest.advanceTimersByTime(9999);
+    expect(fakeAction.end).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(1);
+    expect(fakeAction.end).toHaveBeenCalledTimes(1);
   });
 });
