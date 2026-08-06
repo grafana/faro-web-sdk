@@ -178,9 +178,9 @@ describe('elementIndicatesSensitiveField', () => {
   });
 
   it('ignores unrelated autocomplete values', () => {
-    expect(
-      elementIndicatesSensitiveField(makeElement('email'), { creditCard: true, usAddress: true, ssn: true })
-    ).toBe(false);
+    expect(elementIndicatesSensitiveField(makeElement('email'), { creditCard: true, usAddress: true, ssn: true })).toBe(
+      false
+    );
     expect(elementIndicatesSensitiveField(makeElement('off'), { creditCard: true, usAddress: true, ssn: true })).toBe(
       false
     );
