@@ -1,7 +1,7 @@
 import type { Attributes, ContextManager, TextMapPropagator } from '@opentelemetry/api';
 import type { Instrumentation } from '@opentelemetry/instrumentation';
-import type { FetchCustomAttributeFunction } from '@opentelemetry/instrumentation-fetch';
-import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request';
+import type { FetchInstrumentationConfig } from '@opentelemetry/instrumentation-fetch';
+import type { XMLHttpRequestInstrumentationConfig } from '@opentelemetry/instrumentation-xml-http-request';
 import type { SpanProcessor } from '@opentelemetry/sdk-trace-web';
 
 import type { API, Patterns } from '@grafana/faro-web-sdk';
@@ -29,13 +29,18 @@ export type DefaultInstrumentationsOptions = {
   ignoreUrls?: MatchUrlDefinitions;
   propagateTraceHeaderCorsUrls?: MatchUrlDefinitions;
 
-  fetchInstrumentationOptions?: {
-    applyCustomAttributesOnSpan?: FetchCustomAttributeFunction;
-    ignoreNetworkEvents?: boolean;
-  };
+  /**
+   * Options forwarded to the underlying OTel fetch instrumentation.
+   *
+   * Derived from the OTel config so the two cannot drift. `ignoreUrls` is omitted because Faro
+   * derives it from the configured transports — overriding it here would let Faro trace its own
+   * collector endpoint. Use the `ignoreUrls` above instead, which is merged with Faro's own.
+   */
+  fetchInstrumentationOptions?: Omit<FetchInstrumentationConfig, 'ignoreUrls'>;
 
-  xhrInstrumentationOptions?: {
-    applyCustomAttributesOnSpan?: XHRCustomAttributeFunction;
-    ignoreNetworkEvents?: boolean;
-  };
+  /**
+   * Options forwarded to the underlying OTel XHR instrumentation. See
+   * `fetchInstrumentationOptions` for why `ignoreUrls` is omitted.
+   */
+  xhrInstrumentationOptions?: Omit<XMLHttpRequestInstrumentationConfig, 'ignoreUrls'>;
 };
