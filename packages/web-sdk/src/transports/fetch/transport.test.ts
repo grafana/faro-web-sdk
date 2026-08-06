@@ -295,6 +295,37 @@ describe('FetchTransport', () => {
     await Promise.all([firstSend, secondSend]);
   });
 
+  // The browser budget is a byte limit, so the reservation has to measure bytes rather than
+  // UTF-16 code units. A CJK message is three bytes per code unit. See issue #1898.
+  it('will turn off keepalive for a non-ASCII payload whose byte size is over 60_000', async () => {
+    const nonAsciiItem: TransportItem<LogEvent> = {
+      type: TransportItemType.LOG,
+      payload: {
+        context: {},
+        level: LogLevel.INFO,
+        // 25_000 code units, but 75_000 bytes once encoded as UTF-8
+        message: '错'.repeat(25_000),
+        timestamp: new Date().toISOString(),
+      },
+      meta: {
+        session: { id: mockSessionId },
+      },
+    };
+
+    const transport = new FetchTransport({ url: 'http://example.com/collect' });
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    const jsonBody = JSON.stringify(getTransportBody([nonAsciiItem]));
+    expect(jsonBody.length).toBeLessThan(60_000);
+    expect(new TextEncoder().encode(jsonBody).byteLength).toBeGreaterThan(60_000);
+
+    await transport.send([nonAsciiItem]);
+
+    const requestInit = (fetch.mock.calls[0] as unknown[])[1] as RequestInit;
+    expect(requestInit.keepalive).toBe(false);
+  });
+
   it('will retry a failed keepalive request with keepalive disabled', async () => {
     fetch
       .mockImplementationOnce(() => Promise.reject(new TypeError('Failed to fetch')))
