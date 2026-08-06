@@ -55,6 +55,11 @@
       "allowedVersions": "<8.0.0"
     },
     {
+      "description": "react-18 and react-dom-18 are pinned compatibility-matrix fixtures for packages/react. The rr-v5 jest project maps react and react-dom to them because react-router v5 does not run on React 19 (see packages/react/jest.config.js). A major bump points the alias at React 19, which makes that project test the wrong version and still report green. See the react-router-dom-v5 rule above.",
+      "matchDepNames": ["react-18", "react-dom-18"],
+      "allowedVersions": "<19.0.0"
+    },
+    {
       "description": "Enforce a 3-day release-age cooldown on ALL npm depTypes (incl @grafana/*, which the org preset exempts) to match yarn's npmMinimalAgeGate (.yarnrc.yml). Placed last so it overrides the injected Grafana org preset rule (grafana-renovate-config//presets/npm). Without this, Renovate proposes versions younger than the gate that yarn then quarantines (YN0016), producing un-mergeable PRs.",
       "matchDatasources": ["npm"],
       "minimumReleaseAge": "3 days"
