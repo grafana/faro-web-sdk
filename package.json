@@ -80,7 +80,7 @@
     "rollup": "4.62.4",
     "ts-jest": "29.4.12",
     "ts-node": "10.9.2",
-    "typescript": "6.0.3"
+    "typescript": "7.0.2"
   },
   "packageManager": "yarn@4.17.1",
   "resolutions": {
