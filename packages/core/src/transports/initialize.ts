@@ -18,8 +18,8 @@ export function initializeTransports(
 
   const transports: Transport[] = [];
 
-  let paused = config.paused;
-
+  // `config.paused` is the single source of truth so that the paused state stays
+  // observable through `faro.config.paused` after `faro.pause()` / `faro.unpause()`
   let beforeSendHooks: BeforeSendHook[] = [];
 
   const add: Transports['add'] = (...newTransports) => {
@@ -112,7 +112,7 @@ export function initializeTransports(
     batchExecutor = new BatchExecutor(batchedSend, {
       sendTimeout: config.batching.sendTimeout,
       itemLimit: config.batching.itemLimit,
-      paused,
+      paused: config.paused,
     });
   }
 
@@ -124,7 +124,7 @@ export function initializeTransports(
   // 3i. If batching is enabled, enqueue the signal
   // 3ii. Send the signal instantly to all un-batched transports
   const execute: Transports['execute'] = (item) => {
-    if (paused) {
+    if (config.paused) {
       return;
     }
 
@@ -137,13 +137,13 @@ export function initializeTransports(
 
   const getBeforeSendHooks: Transports['getBeforeSendHooks'] = () => [...beforeSendHooks];
 
-  const isPaused: Transports['isPaused'] = () => paused;
+  const isPaused: Transports['isPaused'] = () => config.paused;
 
   const pause: Transports['pause'] = () => {
     internalLogger.debug('Pausing transports');
     batchExecutor?.pause();
 
-    paused = true;
+    config.paused = true;
   };
 
   const remove: Transports['remove'] = (...transportsToRemove) => {
@@ -172,7 +172,7 @@ export function initializeTransports(
     internalLogger.debug('Unpausing transports');
     batchExecutor?.start();
 
-    paused = false;
+    config.paused = false;
   };
 
   return {
