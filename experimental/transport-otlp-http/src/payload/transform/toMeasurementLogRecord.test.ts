@@ -175,6 +175,10 @@ const matchMeasurementLogRecord = {
       key: 'measurement.value',
       value: { doubleValue: 213.7000000011176 },
     },
+    {
+      key: 'measurement.values.fcp',
+      value: { doubleValue: 213.7000000011176 },
+    },
   ],
 
   traceId: 'trace-id',
@@ -185,6 +189,55 @@ describe('toMeasurementLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const measurementLogRecord = getLogTransforms(mockInternalLogger).toScopeLog(item).logRecords[0];
     expect(measurementLogRecord).toStrictEqual(matchMeasurementLogRecord);
+  });
+
+  it('serializes all measurement values as attributes.', () => {
+    const measurementLogRecord = getLogTransforms(mockInternalLogger).toScopeLog({
+      ...item,
+      payload: {
+        ...item.payload,
+        values: {
+          inp: 24,
+          delta: 24,
+          input_delay: 5.3,
+          processing_duration: 0.3,
+          presentation_delay: 18.4,
+        },
+      },
+    }).logRecords[0]!;
+
+    expect(measurementLogRecord.attributes).toEqual(
+      expect.arrayContaining([
+        {
+          key: 'measurement.name',
+          value: { stringValue: 'inp' },
+        },
+        {
+          key: 'measurement.value',
+          value: { intValue: 24 },
+        },
+        {
+          key: 'measurement.values.inp',
+          value: { intValue: 24 },
+        },
+        {
+          key: 'measurement.values.delta',
+          value: { intValue: 24 },
+        },
+        {
+          key: 'measurement.values.input_delay',
+          value: { doubleValue: 5.3 },
+        },
+        {
+          key: 'measurement.values.processing_duration',
+          value: { doubleValue: 0.3 },
+        },
+        {
+          key: 'measurement.values.presentation_delay',
+          value: { doubleValue: 18.4 },
+        },
+      ])
+    );
   });
 
   it('Builds resource payload object for given transport item with custom body attached.', () => {

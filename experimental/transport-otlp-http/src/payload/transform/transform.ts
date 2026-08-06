@@ -174,7 +174,10 @@ export function getLogTransforms(
   function toMeasurementLogRecord(transportItem: TransportItem<MeasurementEvent>): LogRecord {
     const { meta, payload } = transportItem;
     const timeUnixNano = toTimeUnixNano(payload.timestamp);
-    const [measurementName, measurementValue] = Object.entries(payload.values).flat();
+    const [[measurementName, measurementValue] = []] = Object.entries(payload.values);
+    const measurementValueAttributes = Object.entries(payload.values)
+      .map(([name, value]) => toAttribute(`measurement.values.${name}`, value))
+      .filter(isAttribute);
 
     const body = getCustomLogBody(transportItem, customOtlpTransform?.createMeasurementLogBody);
 
@@ -186,6 +189,7 @@ export function getLogTransforms(
         toAttribute('measurement.type', payload.type),
         toAttribute('measurement.name', measurementName),
         toAttribute('measurement.value', measurementValue),
+        ...measurementValueAttributes,
         toAttribute('faro.measurement.context', payload.context),
       ].filter(isAttribute),
       traceId: payload.trace?.trace_id,
