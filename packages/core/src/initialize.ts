@@ -1,4 +1,5 @@
 import { initializeAPI } from './api';
+import type { API } from './api';
 import type { Config } from './config';
 import { initializeInstrumentations, registerInitialInstrumentations } from './instrumentations';
 import { initializeInternalLogger } from './internalLogger';
@@ -24,8 +25,11 @@ export function initializeFaro(config: Config): Faro {
 
   // Initializing the APIs
   const metas = initializeMetas(unpatchedConsole, internalLogger, config);
-  const transports = initializeTransports(unpatchedConsole, internalLogger, config, metas);
-  const api = initializeAPI(unpatchedConsole, internalLogger, config, metas, transports);
+  // the API is created after the transports (it sends through them), so transports receive it
+  // lazily; it exists by the time any transport is added via transports.add()
+  let api: API;
+  const transports = initializeTransports(unpatchedConsole, internalLogger, config, metas, () => api);
+  api = initializeAPI(unpatchedConsole, internalLogger, config, metas, transports);
   const instrumentations = initializeInstrumentations(unpatchedConsole, internalLogger, config, metas, transports, api);
   const faro = registerFaro(unpatchedConsole, internalLogger, config, metas, transports, api, instrumentations);
 

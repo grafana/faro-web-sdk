@@ -12,9 +12,8 @@ import type { TransportItem } from '../..';
 import { createSession } from '../../metas';
 
 import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
-import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
 import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
-import type { SessionManager } from './sessionManager/types';
+import type { SessionManagerInstance } from './sessionManager/types';
 
 type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;
 
@@ -53,13 +52,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   private createInitialSession(
-    SessionManager: SessionManager,
+    sessionManager: SessionManagerInstance,
     sessionsConfig: Required<Config>['sessionTracking']
   ): {
     initialSession: FaroUserSession;
     lifecycleType: LifecycleType;
   } {
-    let storedUserSession: FaroUserSession | null = SessionManager.fetchUserSession();
+    let storedUserSession: FaroUserSession | null = sessionManager.fetchUserSession();
 
     if (sessionsConfig.persistent && sessionsConfig.maxSessionPersistenceTime && storedUserSession) {
       const now = dateNow();
@@ -67,7 +66,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
         storedUserSession.lastActivity < now - sessionsConfig.maxSessionPersistenceTime;
 
       if (shouldClearPersistentSession) {
-        PersistentSessionsManager.removeUserSession();
+        sessionManager.removeUserSession();
         storedUserSession = null;
       }
     }
@@ -108,7 +107,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       initialSession = createUserSessionObject({
         sessionId,
-        isSampled: isSampled(),
+        isSampled: isSampled({ config: this.config, metas: this.metas }),
       });
 
       const overrides = sessionsConfig.session?.overrides;
@@ -129,8 +128,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     return { initialSession, lifecycleType };
   }
 
-  private registerBeforeSendHook(SessionManager: SessionManager) {
-    const sessionManager = new SessionManager();
+  private registerBeforeSendHook(sessionManager: SessionManagerInstance) {
     this.isAdoptingSession = sessionManager.isAdopting;
     const { updateSession } = sessionManager;
 
@@ -183,12 +181,19 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
     if (sessionTrackingConfig?.enabled) {
       const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
+      // Capture the namespace and per-instance deps at construction time so that
+      // each Faro instance uses its own storage key and API refs regardless of global faro singleton state.
+      const sessionManager = new SessionManager(sessionTrackingConfig.storageKeyNamespace, {
+        config: this.config,
+        metas: this.metas,
+        api: this.api,
+      });
 
-      this.registerBeforeSendHook(SessionManager);
+      this.registerBeforeSendHook(sessionManager);
 
-      const { initialSession, lifecycleType } = this.createInitialSession(SessionManager, sessionTrackingConfig);
+      const { initialSession, lifecycleType } = this.createInitialSession(sessionManager, sessionTrackingConfig);
 
-      SessionManager.storeUserSession(initialSession);
+      sessionManager.storeUserSession(initialSession);
 
       const initialSessionMeta = initialSession.sessionMeta;
 

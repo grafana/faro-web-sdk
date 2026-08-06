@@ -1,4 +1,12 @@
-import { BaseExtension, BaseTransport, createPromiseBuffer, getTransportBody, noop, VERSION } from '@grafana/faro-core';
+import {
+  BaseExtension,
+  BaseTransport,
+  createPromiseBuffer,
+  faro,
+  getTransportBody,
+  noop,
+  VERSION,
+} from '@grafana/faro-core';
 import type { Config, Patterns, PromiseBuffer, TransportItem } from '@grafana/faro-core';
 
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
@@ -267,9 +275,18 @@ export class FetchTransport extends BaseTransport {
     const sessionTrackingConfig = config.sessionTracking;
 
     if (sessionTrackingConfig?.enabled) {
-      const { fetchUserSession, storeUserSession } = getSessionManagerByConfig(sessionTrackingConfig);
+      const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
+      const namespace = sessionTrackingConfig.storageKeyNamespace;
 
-      getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
+      // the statics are side-effect-free; constructing a manager here would leak listeners per response
+      getUserSessionUpdater({
+        fetchUserSession: () => SessionManager.fetchUserSession(namespace),
+        storeUserSession: (session) => SessionManager.storeUserSession(session, namespace),
+        config: this.config,
+        metas: this.metas,
+        // this.api is wired by transports.add(); fall back to the global for standalone transports
+        api: this.api ?? faro.api,
+      })({ forceSessionExtend: true });
 
       logDebug(`${SessionExpiredString} created new session.`);
     } else {

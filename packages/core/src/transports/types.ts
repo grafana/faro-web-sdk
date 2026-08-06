@@ -1,4 +1,4 @@
-import type { APIEvent, EventEvent, ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent } from '../api';
+import type { API, APIEvent, EventEvent, ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent } from '../api';
 import type { Patterns } from '../config';
 import type { Extension } from '../extensions';
 import type { Meta } from '../metas';
@@ -17,6 +17,9 @@ export interface TransportItem<P = APIEvent> {
 }
 
 export interface Transport extends Extension {
+  // assigned by transports.add() once the API exists; undefined for standalone transports
+  api?: API;
+
   send(items: TransportItem | TransportItem[]): void | Promise<void>;
 
   // returns URLs to be ignored by tracing, to not cause a feedback loop

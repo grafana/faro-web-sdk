@@ -24,6 +24,11 @@ import {
 import * as samplingModuleMock from './sessionManager/sampling';
 import { createUserSessionObject } from './sessionManager/sessionManagerUtils';
 
+// Tests that explicitly opt into session isolation via `sessionTracking.isolatedSessions: true` use
+// a namespaced storage key derived from the app name. mockConfig defaults app.name to 'test', so the
+// namespaced key is `${STORAGE_KEY}_test`. Tests that do not opt in keep the bare STORAGE_KEY.
+const NAMESPACED_STORAGE_KEY = `${STORAGE_KEY}_test`;
+
 describe('SessionInstrumentation', () => {
   let mockStorage: Record<string, string> = {};
   let setItemSpy: jest.SpyInstance<void, [key: string, value: string]>;
@@ -479,7 +484,7 @@ describe('SessionInstrumentation', () => {
       },
     };
 
-    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+    mockStorage[NAMESPACED_STORAGE_KEY] = JSON.stringify(mockUserSession);
 
     jest.advanceTimersByTime(SESSION_INACTIVITY_TIME - 1);
 
@@ -489,6 +494,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          isolatedSessions: true,
           samplingRate: 1, // default
         },
       })
@@ -506,7 +512,7 @@ describe('SessionInstrumentation', () => {
       id: 'persisted-session',
     };
 
-    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+    mockStorage[NAMESPACED_STORAGE_KEY] = JSON.stringify(mockUserSession);
 
     jest.advanceTimersByTime(MAX_SESSION_PERSISTENCE_TIME);
 
@@ -516,6 +522,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          isolatedSessions: true,
           samplingRate: 1, // default
         },
       })
@@ -526,7 +533,7 @@ describe('SessionInstrumentation', () => {
     expect(removeItemSpy).toHaveBeenCalledTimes(0);
     expect(metas.value.session?.id).not.toBe(mockUserSession.sessionId);
 
-    const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]);
+    const sessionFromStorage: FaroUserSession = JSON.parse(mockStorage[NAMESPACED_STORAGE_KEY]);
     // creates new started timestamp
     expect(sessionFromStorage.started).not.toBe(started);
   });
@@ -537,7 +544,7 @@ describe('SessionInstrumentation', () => {
       id: 'persisted-session',
     };
 
-    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+    mockStorage[NAMESPACED_STORAGE_KEY] = JSON.stringify(mockUserSession);
 
     jest.advanceTimersByTime(MAX_SESSION_PERSISTENCE_TIME + 1);
 
@@ -547,6 +554,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          isolatedSessions: true,
           samplingRate: 1, // default
         },
       })
@@ -593,7 +601,7 @@ describe('SessionInstrumentation', () => {
       isSampled: initialIsSampled,
     });
 
-    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+    mockStorage[NAMESPACED_STORAGE_KEY] = JSON.stringify(mockUserSession);
 
     const config = makeCoreConfig(
       mockConfig({
@@ -601,6 +609,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          isolatedSessions: true,
           samplingRate: 0,
         },
       })
@@ -610,7 +619,7 @@ describe('SessionInstrumentation', () => {
     const sessionMeta = api.getSession();
 
     expect(sessionMeta?.attributes?.['isSampled']).toBe(initialIsSampled.toString());
-    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).isSampled).toBe(initialIsSampled);
+    expect((JSON.parse(mockStorage[NAMESPACED_STORAGE_KEY]) as FaroUserSession).isSampled).toBe(initialIsSampled);
   });
 
   it('Will calculate new sampling decision if session from web storage is invalid.', () => {
@@ -622,7 +631,7 @@ describe('SessionInstrumentation', () => {
 
     mockUserSession.lastActivity = dateNow() - SESSION_EXPIRATION_TIME;
 
-    mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
+    mockStorage[NAMESPACED_STORAGE_KEY] = JSON.stringify(mockUserSession);
 
     const config = makeCoreConfig(
       mockConfig({
@@ -630,6 +639,7 @@ describe('SessionInstrumentation', () => {
         sessionTracking: {
           enabled: true,
           persistent: true,
+          isolatedSessions: true,
           samplingRate: 0, // setting to zero so calculating sampling decision for new session will evaluate to false
         },
       })
@@ -639,7 +649,52 @@ describe('SessionInstrumentation', () => {
     const sessionMeta = api.getSession();
 
     expect(sessionMeta?.attributes?.['isSampled']).toBe('false');
-    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).isSampled).toBe(false);
+    expect((JSON.parse(mockStorage[NAMESPACED_STORAGE_KEY]) as FaroUserSession).isSampled).toBe(false);
+  });
+
+  it('Keeps two isolated instances in separate storage keys and rotates with the owning instance config.', () => {
+    const instanceA = initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [new MockTransport()],
+          instrumentations: [new SessionInstrumentation()],
+          app: { name: 'app-a' },
+          sessionTracking: { enabled: true, persistent: true, isolatedSessions: true, samplingRate: 1 },
+        })
+      )!
+    );
+
+    initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [new MockTransport()],
+          instrumentations: [new SessionInstrumentation()],
+          app: { name: 'app-b' },
+          sessionTracking: { enabled: true, persistent: true, isolatedSessions: true, samplingRate: 0 },
+        })
+      )!
+    );
+
+    const keyA = `${STORAGE_KEY}_app-a`;
+    const keyB = `${STORAGE_KEY}_app-b`;
+
+    // each instance persists its own session under its own key
+    const initialSessionA: FaroUserSession = JSON.parse(mockStorage[keyA]!);
+    const initialSessionB: FaroUserSession = JSON.parse(mockStorage[keyB]!);
+    expect(initialSessionA.sessionId).not.toEqual(initialSessionB.sessionId);
+
+    // rotate instance A's session after expiry; the global faro singleton now points at instance B
+    jest.advanceTimersByTime(SESSION_EXPIRATION_TIME + 1);
+    instanceA.api.pushEvent('rotate-a');
+
+    const rotatedSessionA: FaroUserSession = JSON.parse(mockStorage[keyA]!);
+    expect(rotatedSessionA.sessionId).not.toEqual(initialSessionA.sessionId);
+
+    // the sampling decision must come from instance A's config (samplingRate 1), not B's (samplingRate 0)
+    expect(rotatedSessionA.isSampled).toBe(true);
+
+    // instance B's stored session is untouched by A's rotation
+    expect((JSON.parse(mockStorage[keyB]!) as FaroUserSession).sessionId).toEqual(initialSessionB.sessionId);
   });
 
   it('Will send 0% of the signals.', () => {
