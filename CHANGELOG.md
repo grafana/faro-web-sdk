@@ -13,19 +13,17 @@
 
 ## [2.10.0](https://github.com/grafana/faro-web-sdk/compare/v2.9.0...v2.10.0) (2026-08-06)
 
-
 ### Features
 
-* **web-sdk:** forward LCP resource details and LoAF-based INP attribution in web vitals measurements ([#2187](https://github.com/grafana/faro-web-sdk/issues/2187)) ([557e94d](https://github.com/grafana/faro-web-sdk/commit/557e94d9d171c19ba0879f4834014e3b7eb09b1c))
-
+- **web-sdk:** forward LCP resource details and LoAF-based INP attribution in web vitals measurements ([#2187](https://github.com/grafana/faro-web-sdk/issues/2187)) ([557e94d](https://github.com/grafana/faro-web-sdk/commit/557e94d9d171c19ba0879f4834014e3b7eb09b1c))
 
 ### Bug Fixes
 
-* **deps:** bump vulnerable transitive deps ([#2193](https://github.com/grafana/faro-web-sdk/issues/2193)) ([41065ec](https://github.com/grafana/faro-web-sdk/commit/41065ecb63e607b1dd28cd6844c0e9c3b281632e))
-* **replay:** use fixed-length mask for input values ([#2126](https://github.com/grafana/faro-web-sdk/issues/2126)) ([80dac72](https://github.com/grafana/faro-web-sdk/commit/80dac72b90b7639b047ba4afb5f57f0ad255867d))
-* **security/high/:** update dependency brace-expansion to v5.0.9 [security] ([#2204](https://github.com/grafana/faro-web-sdk/issues/2204)) ([ffc90b0](https://github.com/grafana/faro-web-sdk/commit/ffc90b0271d7e9732ffb23c9a6dec2bf2df70307))
-* **security/medium/:** update dependency postcss to v8.5.23 [security] ([#2205](https://github.com/grafana/faro-web-sdk/issues/2205)) ([23894be](https://github.com/grafana/faro-web-sdk/commit/23894be300b7edf1c2752327621b6ce3d50355e4))
-* **web-sdk:** stop stack parsing from stalling on large error payloads ([#2197](https://github.com/grafana/faro-web-sdk/issues/2197)) ([12f3a39](https://github.com/grafana/faro-web-sdk/commit/12f3a399dd6fb6a8b7edebecabb1166c0c21b181))
+- **deps:** bump vulnerable transitive deps ([#2193](https://github.com/grafana/faro-web-sdk/issues/2193)) ([41065ec](https://github.com/grafana/faro-web-sdk/commit/41065ecb63e607b1dd28cd6844c0e9c3b281632e))
+- **replay:** use fixed-length mask for input values ([#2126](https://github.com/grafana/faro-web-sdk/issues/2126)) ([80dac72](https://github.com/grafana/faro-web-sdk/commit/80dac72b90b7639b047ba4afb5f57f0ad255867d))
+- **security/high/:** update dependency brace-expansion to v5.0.9 [security] ([#2204](https://github.com/grafana/faro-web-sdk/issues/2204)) ([ffc90b0](https://github.com/grafana/faro-web-sdk/commit/ffc90b0271d7e9732ffb23c9a6dec2bf2df70307))
+- **security/medium/:** update dependency postcss to v8.5.23 [security] ([#2205](https://github.com/grafana/faro-web-sdk/issues/2205)) ([23894be](https://github.com/grafana/faro-web-sdk/commit/23894be300b7edf1c2752327621b6ce3d50355e4))
+- **web-sdk:** stop stack parsing from stalling on large error payloads ([#2197](https://github.com/grafana/faro-web-sdk/issues/2197)) ([12f3a39](https://github.com/grafana/faro-web-sdk/commit/12f3a399dd6fb6a8b7edebecabb1166c0c21b181))
 
 ## [2.9.0](https://github.com/grafana/faro-web-sdk/compare/v2.8.2...v2.9.0) (2026-07-29)
 
