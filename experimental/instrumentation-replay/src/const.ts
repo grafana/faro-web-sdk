@@ -19,6 +19,7 @@ export const defaultReplayInstrumentationOptions: ReplayInstrumentationOptions =
   recordCanvas: false,
   recordCrossOriginIframes: false,
   beforeSend: undefined,
+  sanitizeMetaHref: true,
   recordAfter: 'load',
   samplingRate: 1,
   inactivityThresholdMs: 60_000,
