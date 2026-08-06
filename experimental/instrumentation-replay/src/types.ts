@@ -132,6 +132,22 @@ export type MaskInputOptions = Partial<{
   textarea: boolean;
   select: boolean;
   password: boolean;
+  /**
+   * Mask any input value that matches a US Social Security Number shape
+   * (`XXX-XX-XXXX` or 9 contiguous digits). See #2169.
+   */
+  ssn: boolean;
+  /**
+   * Mask any input value that matches a credit-card PAN shape (13–19 digits,
+   * with or without dash/space separators) and passes a Luhn checksum.
+   * See #2169.
+   */
+  creditCard: boolean;
+  /**
+   * Mask any input value that matches a US street-address shape
+   * (`Number Street, City, ST, ZIP`). See #2169.
+   */
+  usAddress: boolean;
 }>;
 
 export type MaskInputFn = (text: string, element: HTMLElement) => string;
