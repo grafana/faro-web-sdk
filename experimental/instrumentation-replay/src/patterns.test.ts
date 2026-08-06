@@ -1,4 +1,17 @@
-import { hasAnyPatternEnabled, isCreditCard, isUsAddress, isUsSsn, valueMatchesEnabledPattern } from './patterns';
+import {
+  elementIndicatesSensitiveField,
+  hasAnyPatternEnabled,
+  isCreditCard,
+  isUsAddress,
+  isUsSsn,
+  valueMatchesEnabledPattern,
+} from './patterns';
+
+function makeElement(autocomplete: string | null): HTMLElement {
+  return {
+    getAttribute: (name: string) => (name === 'autocomplete' ? autocomplete : null),
+  } as unknown as HTMLElement;
+}
 
 describe('isUsSsn', () => {
   it.each([
@@ -100,5 +113,76 @@ describe('hasAnyPatternEnabled', () => {
 
   it.each([{ ssn: true }, { creditCard: true }, { usAddress: true }])('returns true for %o', (opts) => {
     expect(hasAnyPatternEnabled(opts)).toBe(true);
+  });
+});
+
+describe('elementIndicatesSensitiveField', () => {
+  it('returns false for undefined options', () => {
+    expect(elementIndicatesSensitiveField(makeElement('cc-number'), undefined)).toBe(false);
+  });
+
+  it('returns false when the element has no autocomplete attribute', () => {
+    expect(elementIndicatesSensitiveField(makeElement(null), { creditCard: true })).toBe(false);
+    expect(elementIndicatesSensitiveField(makeElement(''), { creditCard: true })).toBe(false);
+  });
+
+  it('returns false when the element has no getAttribute (defensive)', () => {
+    const bare = { tagName: 'INPUT' } as unknown as HTMLElement;
+    expect(elementIndicatesSensitiveField(bare, { creditCard: true })).toBe(false);
+  });
+
+  it.each([
+    'cc-number',
+    'cc-csc',
+    'cc-name',
+    'cc-exp',
+    'cc-exp-month',
+    'cc-exp-year',
+    'cc-type',
+    'CC-NUMBER', // case-insensitive
+  ])('creditCard: fires on autocomplete=%s', (value) => {
+    expect(elementIndicatesSensitiveField(makeElement(value), { creditCard: true })).toBe(true);
+  });
+
+  it('creditCard: fires when cc-* token appears in a space-separated list', () => {
+    expect(elementIndicatesSensitiveField(makeElement('section-billing cc-number'), { creditCard: true })).toBe(true);
+    expect(elementIndicatesSensitiveField(makeElement('billing shipping cc-csc'), { creditCard: true })).toBe(true);
+  });
+
+  it('creditCard: does not fire when creditCard is off', () => {
+    expect(elementIndicatesSensitiveField(makeElement('cc-number'), { ssn: true, usAddress: true })).toBe(false);
+  });
+
+  it.each(['street-address', 'address-line1', 'address-line2', 'address-line3', 'ADDRESS-LINE1'])(
+    'usAddress: fires on autocomplete=%s',
+    (value) => {
+      expect(elementIndicatesSensitiveField(makeElement(value), { usAddress: true })).toBe(true);
+    }
+  );
+
+  it('usAddress: fires when address token appears in a space-separated list', () => {
+    expect(elementIndicatesSensitiveField(makeElement('section-billing address-line1'), { usAddress: true })).toBe(
+      true
+    );
+  });
+
+  it('usAddress: does not fire on address-level* / postal-code (out of scope)', () => {
+    expect(elementIndicatesSensitiveField(makeElement('address-level1'), { usAddress: true })).toBe(false);
+    expect(elementIndicatesSensitiveField(makeElement('address-level2'), { usAddress: true })).toBe(false);
+    expect(elementIndicatesSensitiveField(makeElement('postal-code'), { usAddress: true })).toBe(false);
+  });
+
+  it('ssn: does not fire (no standard autocomplete value exists)', () => {
+    expect(elementIndicatesSensitiveField(makeElement('ssn'), { ssn: true })).toBe(false);
+    expect(elementIndicatesSensitiveField(makeElement('one-time-code'), { ssn: true })).toBe(false);
+  });
+
+  it('ignores unrelated autocomplete values', () => {
+    expect(
+      elementIndicatesSensitiveField(makeElement('email'), { creditCard: true, usAddress: true, ssn: true })
+    ).toBe(false);
+    expect(elementIndicatesSensitiveField(makeElement('off'), { creditCard: true, usAddress: true, ssn: true })).toBe(
+      false
+    );
   });
 });

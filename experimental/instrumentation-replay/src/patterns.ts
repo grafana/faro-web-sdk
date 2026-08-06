@@ -1,4 +1,4 @@
-import { type MaskInputOptions, PATTERN_MASK_KEYS, type PatternMaskKey } from './types';
+import { type MaskInputOptions } from './types';
 
 /**
  * Value-pattern detectors for the SSN / credit-card / US-address keys on
@@ -7,6 +7,14 @@ import { type MaskInputOptions, PATTERN_MASK_KEYS, type PatternMaskKey } from '.
  *
  * See https://github.com/grafana/faro-web-sdk/issues/2169.
  */
+
+/**
+ * Subset of `MaskInputOptions` whose keys are value-pattern matchers
+ * rather than HTML input types. These keys are consumed inside the
+ * instrumentation and stripped before forwarding to rrweb.
+ */
+export const PATTERN_MASK_KEYS = ['ssn', 'creditCard', 'usAddress'] as const;
+export type PatternMaskKey = (typeof PATTERN_MASK_KEYS)[number];
 
 // XXX-XX-XXXX or 9 contiguous digits, anchored so we don't match digits
 // embedded in a longer string of digits.
@@ -88,4 +96,43 @@ export function hasAnyPatternEnabled(options: MaskInputOptions | undefined): boo
     return false;
   }
   return PATTERN_MASK_KEYS.some((k) => options[k]);
+}
+
+// WHATWG standard `autocomplete` tokens for address lines. The
+// `usAddress` value-pattern matcher only fires when a full address is on a
+// single line; these tokens catch partial addresses across separate fields.
+// See https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofill.
+const ADDRESS_AUTOCOMPLETE_TOKENS = new Set(['street-address', 'address-line1', 'address-line2', 'address-line3']);
+
+/**
+ * Returns true if `element` carries an HTML `autocomplete` attribute that
+ * identifies it as a sensitive field for one of the enabled pattern keys,
+ * regardless of the current value. This catches PANs / addresses while the
+ * user is still typing, before the value matches a complete pattern.
+ *
+ * - `creditCard` fires on any `cc-*` token (`cc-number`, `cc-csc`,
+ *   `cc-name`, `cc-exp*`, etc.) — enabling this key implies wanting all
+ *   card-related fields redacted, not just the PAN.
+ * - `usAddress` fires on `street-address` / `address-line1..3`.
+ * - `ssn` has no standard `autocomplete` value and is not matched here.
+ *
+ * `autocomplete` may be a space-separated list (e.g.
+ * `"section-billing cc-number"`), so tokens are checked individually.
+ */
+export function elementIndicatesSensitiveField(element: HTMLElement, options: MaskInputOptions | undefined): boolean {
+  if (!options || typeof element?.getAttribute !== 'function') {
+    return false;
+  }
+  const raw = element.getAttribute('autocomplete');
+  if (!raw) {
+    return false;
+  }
+  const tokens = raw.toLowerCase().split(/\s+/);
+  if (options.creditCard && tokens.some((t) => t.startsWith('cc-'))) {
+    return true;
+  }
+  if (options.usAddress && tokens.some((t) => ADDRESS_AUTOCOMPLETE_TOKENS.has(t))) {
+    return true;
+  }
+  return false;
 }

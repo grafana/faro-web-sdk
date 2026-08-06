@@ -363,7 +363,13 @@ describe('ReplayInstrumentation', () => {
   });
 
   describe('pattern-based maskInputOptions (ssn / creditCard / usAddress)', () => {
-    function startAndCaptureRecordOptions(options: ReplayInstrumentationOptions): Record<string, any> {
+    type CapturedRecordOptions = {
+      maskAllInputs?: boolean;
+      maskInputOptions?: Record<string, boolean>;
+      maskInputFn?: MaskInputFn;
+    };
+
+    function startAndCaptureRecordOptions(options: ReplayInstrumentationOptions): CapturedRecordOptions {
       instrumentation = new ReplayInstrumentation(options);
       mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
@@ -407,11 +413,11 @@ describe('ReplayInstrumentation', () => {
       const fn = recordOpts.maskInputFn as MaskInputFn;
       const textInput = { tagName: 'INPUT', type: 'text' } as unknown as HTMLElement;
 
-      expect(fn('123-45-6789', textInput)).toBe('***********');
-      expect(fn('4111-1111-1111-1111', textInput)).toBe('*'.repeat('4111-1111-1111-1111'.length));
-      expect(fn('123 Main St, Springfield, IL, 62704', textInput)).toBe(
-        '*'.repeat('123 Main St, Springfield, IL, 62704'.length)
-      );
+      // The wrapper delegates to `defaultMaskInputFn`, which returns a
+      // fixed-length `'******'` mask regardless of input length (#2126).
+      expect(fn('123-45-6789', textInput)).toBe('******');
+      expect(fn('4111-1111-1111-1111', textInput)).toBe('******');
+      expect(fn('123 Main St, Springfield, IL, 62704', textInput)).toBe('******');
     });
 
     it('leaves non-matching values untouched when the input type would not normally be masked', () => {
@@ -434,7 +440,7 @@ describe('ReplayInstrumentation', () => {
       const fn = recordOpts.maskInputFn as MaskInputFn;
       const passwordInput = { tagName: 'INPUT', type: 'password' } as unknown as HTMLElement;
 
-      expect(fn('hunter2', passwordInput)).toBe('*******');
+      expect(fn('hunter2', passwordInput)).toBe('******');
     });
 
     it('delegates to the user-supplied maskInputFn when masking is required', () => {
@@ -452,6 +458,43 @@ describe('ReplayInstrumentation', () => {
       // Non-matching values should still pass through unchanged when the
       // input type isn't otherwise eligible for masking.
       expect(fn('hello', textInput)).toBe('hello');
+    });
+
+    it('masks partial PANs while the user is typing when autocomplete=cc-number', () => {
+      const recordOpts = startAndCaptureRecordOptions({
+        maskAllInputs: false,
+        maskInputOptions: { creditCard: true },
+      });
+      const fn = recordOpts.maskInputFn as MaskInputFn;
+      const ccInput = {
+        tagName: 'INPUT',
+        type: 'text',
+        getAttribute: (n: string) => (n === 'autocomplete' ? 'cc-number' : null),
+      } as unknown as HTMLElement;
+
+      // Every keystroke on the way to a full PAN masks, not just the final
+      // Luhn-valid value. The fixed-length `'******'` mask is intentional
+      // (#2126) so an observer of the replay can't infer typed length.
+      expect(fn('4', ccInput)).toBe('******');
+      expect(fn('411', ccInput)).toBe('******');
+      expect(fn('4111 1111', ccInput)).toBe('******');
+      expect(fn('4111-1111-1111-1111', ccInput)).toBe('******');
+    });
+
+    it('masks partial addresses while the user is typing when autocomplete=street-address', () => {
+      const recordOpts = startAndCaptureRecordOptions({
+        maskAllInputs: false,
+        maskInputOptions: { usAddress: true },
+      });
+      const fn = recordOpts.maskInputFn as MaskInputFn;
+      const addrInput = {
+        tagName: 'INPUT',
+        type: 'text',
+        getAttribute: (n: string) => (n === 'autocomplete' ? 'address-line1' : null),
+      } as unknown as HTMLElement;
+
+      expect(fn('123', addrInput)).toBe('******');
+      expect(fn('123 Main', addrInput)).toBe('******');
     });
   });
 

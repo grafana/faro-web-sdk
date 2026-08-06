@@ -65,8 +65,8 @@ initializeFaro({
 | `textarea`       | `boolean` | Textarea elements                                                                                                                                                                                  |
 | `select`         | `boolean` | Select dropdowns                                                                                                                                                                                   |
 | `ssn`            | `boolean` | Mask any input value matching a US Social Security Number shape (`XXX-XX-XXXX` or 9 contiguous digits). See [#2169](https://github.com/grafana/faro-web-sdk/issues/2169).                          |
-| `creditCard`     | `boolean` | Mask any input value matching a 13–19 digit credit-card PAN that passes a Luhn checksum (with or without dash/space separators). See [#2169](https://github.com/grafana/faro-web-sdk/issues/2169). |
-| `usAddress`      | `boolean` | Mask any input value matching a US street-address shape (`Number Street, City, ST, ZIP`). See [#2169](https://github.com/grafana/faro-web-sdk/issues/2169).                                        |
+| `creditCard`     | `boolean` | Mask any input whose value passes a 13–19 digit Luhn-checked PAN shape, **or** whose `autocomplete` attribute is a `cc-*` token (`cc-number`, `cc-csc`, `cc-name`, `cc-exp*`, `cc-type`). See [#2169](https://github.com/grafana/faro-web-sdk/issues/2169). |
+| `usAddress`      | `boolean` | Mask any input whose value matches a US street-address shape (`Number Street, City, ST, ZIP`), **or** whose `autocomplete` attribute is `street-address` / `address-line1..3`. See [#2169](https://github.com/grafana/faro-web-sdk/issues/2169).             |
 
 > Unlike the input-_type_ keys above, `ssn` / `creditCard` / `usAddress` are
 > value-pattern matchers. When any of them is enabled the instrumentation
@@ -75,6 +75,13 @@ initializeFaro({
 > match any enabled pattern are still masked when they would be under
 > `maskAllInputs` or the input-type keys above; otherwise they pass through
 > unchanged.
+>
+> For `creditCard` and `usAddress`, the instrumentation additionally
+> inspects the input's [`autocomplete`](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofill)
+> attribute so partial values are masked while the user is still typing
+> (before the value has grown into a complete Luhn-valid PAN or a full
+> single-line address). `ssn` has no standard `autocomplete` value and is
+> matched by value only.
 
 ### Recording Options
 

@@ -150,12 +150,4 @@ export type MaskInputOptions = Partial<{
   usAddress: boolean;
 }>;
 
-/**
- * Subset of `MaskInputOptions` whose keys are value-pattern matchers
- * rather than HTML input types. These keys are consumed inside the
- * instrumentation and stripped before forwarding to rrweb.
- */
-export const PATTERN_MASK_KEYS = ['ssn', 'creditCard', 'usAddress'] as const;
-export type PatternMaskKey = (typeof PATTERN_MASK_KEYS)[number];
-
 export type MaskInputFn = (text: string, element: HTMLElement) => string;

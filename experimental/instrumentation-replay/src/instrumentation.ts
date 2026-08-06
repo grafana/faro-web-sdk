@@ -3,8 +3,13 @@ import { record, type recordOptions } from '@grafana/rrweb';
 import type { eventWithTime } from '@grafana/rrweb-types';
 
 import { defaultMaskInputFn, defaultReplayInstrumentationOptions } from './const';
-import { hasAnyPatternEnabled, valueMatchesEnabledPattern } from './patterns';
-import { type MaskInputFn, type MaskInputOptions, PATTERN_MASK_KEYS, type ReplayInstrumentationOptions } from './types';
+import {
+  elementIndicatesSensitiveField,
+  hasAnyPatternEnabled,
+  PATTERN_MASK_KEYS,
+  valueMatchesEnabledPattern,
+} from './patterns';
+import { type MaskInputFn, type MaskInputOptions, type ReplayInstrumentationOptions } from './types';
 
 const faroSessionReplayEventName = 'faro.session_recording.event';
 const faroSessionReplayStartedEventName = 'faro.session_recording.started';
@@ -167,22 +172,36 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   /**
-   * Build a `maskInputFn` that masks values matching any enabled pattern key
-   * (`ssn` / `creditCard` / `usAddress`), and otherwise reproduces what rrweb
-   * would have done under the user's original `maskAllInputs` /
-   * `maskInputOptions` / `maskInputFn` configuration.
+   * Build a `maskInputFn` that masks values under any of these conditions,
+   * in priority order:
    *
-   * Length-preserving asterisks are used when masking so the replay's visual
-   * layout doesn't shift, matching rrweb's own default.
+   * 1. The element's `autocomplete` attribute identifies it as a sensitive
+   *    field for an enabled pattern key (e.g. `cc-number` when `creditCard`
+   *    is on, `street-address` when `usAddress` is on). This catches partial
+   *    values while the user is still typing.
+   * 2. The value matches an enabled pattern key (`ssn` / `creditCard` /
+   *    `usAddress`).
+   * 3. rrweb would have masked the element under the user's original
+   *    `maskAllInputs` / `maskInputOptions` / `maskInputFn` configuration.
+   *
+   * Masked values are produced by the user-supplied `maskInputFn` when set,
+   * otherwise by `defaultMaskInputFn` (fixed-length `'******'`), so the
+   * length-leakage protection introduced in #2126 is preserved.
    */
   private buildPatternAwareMaskInputFn(): MaskInputFn {
     const userOptions = this.options.maskInputOptions;
     const userMaskAllInputs = this.options.maskAllInputs;
-    const userFn = this.options.maskInputFn;
+    const userFn = this.options.maskInputFn ?? defaultMaskInputFn;
 
     return (text, element) => {
-      const mask = (): string => (userFn ? userFn(text, element) : '*'.repeat(text.length));
+      const mask = (): string => userFn(text, element);
 
+      // Element-attribute check runs first so partial PANs / addresses are
+      // masked while the user is still typing, before the value matches a
+      // complete pattern.
+      if (elementIndicatesSensitiveField(element, userOptions)) {
+        return mask();
+      }
       if (valueMatchesEnabledPattern(text, userOptions)) {
         return mask();
       }
