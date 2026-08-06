@@ -6,7 +6,7 @@ export type UrlChangeMessage = {
   type: typeof MESSAGE_TYPE_URL_CHANGE;
   from: string;
   to: string;
-  trigger: 'pushState' | 'replaceState' | 'popstate' | 'hashchange' | 'navigate' | 'navigate-intercept';
+  trigger: 'pushState' | 'replaceState' | 'popstate' | 'hashchange' | 'currententrychange';
 };
 
 let urlChangeObservable: Observable<UrlChangeMessage> | undefined;
@@ -16,8 +16,7 @@ let originalPushState: typeof window.history.pushState | undefined;
 let originalReplaceState: typeof window.history.replaceState | undefined;
 let onPopStateHandler: ((this: Window, ev: PopStateEvent) => any) | undefined;
 let onHashChangeHandler: ((this: Window, ev: HashChangeEvent) => any) | undefined;
-let onNavigateHandler: ((this: any, ev: any) => any) | undefined;
-let originalNavigateEventIntercept: (((this: any, options?: any) => any) & { _faroWrapped?: boolean }) | undefined;
+let onCurrentEntryChangeHandler: ((this: any, ev: any) => any) | undefined;
 
 export function monitorUrlChanges(): Observable<UrlChangeMessage> {
   if (!urlChangeObservable) {
@@ -34,51 +33,25 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
   }
 
   if (!isInstrumented) {
-    const hasNavigation = 'navigation' in window && 'NavigateEvent' in (window as any);
+    const navigation = (window as any).navigation;
+    const hasNavigation =
+      typeof navigation?.addEventListener === 'function' &&
+      typeof navigation?.removeEventListener === 'function' &&
+      'currentEntry' in navigation;
 
     if (hasNavigation) {
       // Prefer Navigation API when supported: do not patch history or add popstate/hashchange listeners
-      onNavigateHandler = (e: any) => {
+      onCurrentEntryChangeHandler = () => {
         try {
-          const destination = e?.destination as { url?: string; sameDocument?: boolean } | undefined;
-          if (destination?.sameDocument && typeof destination.url === 'string') {
-            emit('navigate', destination.url);
+          const currentUrl = navigation.currentEntry?.url;
+          if (typeof currentUrl === 'string') {
+            emit('currententrychange', currentUrl);
           }
         } catch (_err) {
           // Swallow to avoid impacting host app
         }
       };
-      (window as any).navigation.addEventListener('navigate', onNavigateHandler as any);
-
-      const NavigateEventConstructor = (window as any).NavigateEvent;
-      if (
-        NavigateEventConstructor &&
-        NavigateEventConstructor.prototype &&
-        typeof NavigateEventConstructor.prototype.intercept === 'function'
-      ) {
-        if (!originalNavigateEventIntercept) {
-          originalNavigateEventIntercept = NavigateEventConstructor.prototype.intercept;
-        }
-
-        // Wrap intercept to detect soft navigations (cross-document turned same-document)
-        NavigateEventConstructor.prototype.intercept = function (this: any, options?: any) {
-          try {
-            const canIntercept = !!this?.canIntercept;
-            const destination = this?.destination as { url?: string; sameDocument?: boolean } | undefined;
-            if (
-              canIntercept &&
-              destination &&
-              destination.sameDocument === false &&
-              typeof destination.url === 'string'
-            ) {
-              emit('navigate-intercept', destination.url);
-            }
-          } catch (_err) {
-            // ignore
-          }
-          return originalNavigateEventIntercept!.call(this, options);
-        } as typeof originalNavigateEventIntercept;
-      }
+      navigation.addEventListener('currententrychange', onCurrentEntryChangeHandler as any);
 
       isInstrumented = true;
     } else {
@@ -121,8 +94,8 @@ export function __resetUrlChangeMonitorForTests() {
   if (onHashChangeHandler) {
     window.removeEventListener('hashchange', onHashChangeHandler);
   }
-  if (onNavigateHandler && (window as any).navigation?.removeEventListener) {
-    (window as any).navigation.removeEventListener('navigate', onNavigateHandler as any);
+  if (onCurrentEntryChangeHandler && (window as any).navigation?.removeEventListener) {
+    (window as any).navigation.removeEventListener('currententrychange', onCurrentEntryChangeHandler as any);
   }
   if (originalPushState) {
     window.history.pushState = originalPushState;
@@ -130,16 +103,12 @@ export function __resetUrlChangeMonitorForTests() {
   if (originalReplaceState) {
     window.history.replaceState = originalReplaceState;
   }
-  if (originalNavigateEventIntercept && (window as any).NavigateEvent?.prototype) {
-    (window as any).NavigateEvent.prototype.intercept = originalNavigateEventIntercept;
-  }
   urlChangeObservable = undefined;
   isInstrumented = false;
   lastHref = undefined;
   onPopStateHandler = undefined;
   onHashChangeHandler = undefined;
-  onNavigateHandler = undefined;
+  onCurrentEntryChangeHandler = undefined;
   originalPushState = undefined;
   originalReplaceState = undefined;
-  originalNavigateEventIntercept = undefined;
 }

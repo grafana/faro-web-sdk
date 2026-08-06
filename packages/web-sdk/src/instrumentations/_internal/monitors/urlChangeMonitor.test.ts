@@ -70,14 +70,13 @@ describe('monitorUrlChanges', () => {
 
   describe('with Navigation API', () => {
     let originalNavigation: any;
-    let originalNavigateEvent: any;
 
     beforeEach(() => {
       originalNavigation = (window as any).navigation;
-      originalNavigateEvent = (window as any).NavigateEvent;
 
-      const listeners: Record<string, Function[]> = { navigate: [] };
+      const listeners: Record<string, Function[]> = { currententrychange: [], navigate: [] };
       (window as any).navigation = {
+        currentEntry: { url: window.location.href },
         addEventListener: (type: string, cb: Function) => listeners[type]?.push(cb),
         removeEventListener: (type: string, cb: Function) => {
           const arr = listeners[type];
@@ -91,41 +90,27 @@ describe('monitorUrlChanges', () => {
         },
         _dispatch: (type: string, ev: any) => listeners[type]?.forEach((cb) => cb(ev)),
       };
-
-      function FakeNavigateEvent(this: any, _type: string, init: any) {
-        this.destination = init?.destination;
-      }
-      (FakeNavigateEvent as any).prototype = {
-        intercept: jest.fn(),
-      };
-
-      (window as any).NavigateEvent = FakeNavigateEvent as any;
     });
 
     afterEach(() => {
       (window as any).navigation = originalNavigation;
-      (window as any).NavigateEvent = originalNavigateEvent;
     });
 
-    it('emits on same-document navigate events and does not patch history', () => {
+    it('emits on currententrychange events and does not patch history', () => {
       const initialHref = window.location.href;
       const observable = monitorUrlChanges();
       const subscriber = jest.fn();
       observable.subscribe(subscriber);
 
-      (window as any).navigation._dispatch(
-        'navigate',
-        new (window as any).NavigateEvent('navigate', {
-          destination: { url: initialHref + '#nav', sameDocument: true },
-        })
-      );
+      (window as any).navigation.currentEntry = { url: initialHref + '#nav' };
+      (window as any).navigation._dispatch('currententrychange', {});
 
       expect(subscriber).toHaveBeenCalledTimes(1);
       expect(subscriber).toHaveBeenCalledWith({
         type: MESSAGE_TYPE_URL_CHANGE,
         from: initialHref,
         to: initialHref + '#nav',
-        trigger: 'navigate',
+        trigger: 'currententrychange',
       });
 
       // ensure history methods were not wrapped in this mode
@@ -135,26 +120,34 @@ describe('monitorUrlChanges', () => {
       expect(replaceDesc?.value).toBeDefined();
     });
 
-    it('emits on intercept for cross-document navigations (soft navigation)', () => {
+    it('does not emit on navigate events before navigation commits', () => {
       const initialHref = window.location.href;
       const observable = monitorUrlChanges();
       const subscriber = jest.fn();
       observable.subscribe(subscriber);
 
-      const ev = new (window as any).NavigateEvent('navigate', {
-        destination: { url: initialHref + '/soft', sameDocument: false },
+      (window as any).navigation._dispatch('navigate', {
+        destination: { url: initialHref + '/pending', sameDocument: true },
       });
-      // make intercept permitted
-      (ev as any).canIntercept = true;
-      // call the wrapped intercept
-      (window as any).NavigateEvent.prototype.intercept.call(ev, {});
+
+      expect(subscriber).not.toHaveBeenCalled();
+    });
+
+    it('emits on committed soft navigations', () => {
+      const initialHref = window.location.href;
+      const observable = monitorUrlChanges();
+      const subscriber = jest.fn();
+      observable.subscribe(subscriber);
+
+      (window as any).navigation.currentEntry = { url: initialHref + '/soft' };
+      (window as any).navigation._dispatch('currententrychange', {});
 
       expect(subscriber).toHaveBeenCalledTimes(1);
       expect(subscriber).toHaveBeenCalledWith({
         type: MESSAGE_TYPE_URL_CHANGE,
         from: initialHref,
         to: initialHref + '/soft',
-        trigger: 'navigate-intercept',
+        trigger: 'currententrychange',
       });
     });
   });
