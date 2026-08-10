@@ -64,6 +64,11 @@
       "allowedVersions": "<6.0.0"
     },
     {
+      "description": "history-v4 is pinned below v5 because React Router v4 and v5 require the history v4 API. Keep v4 updates eligible so Renovate can still propose compatible security fixes.",
+      "matchDepNames": ["history-v4"],
+      "allowedVersions": "<5.0.0"
+    },
+    {
       "description": "Pinned v6 compatibility-matrix fixture for packages/react. See the react-router-dom-v5 rule above.",
       "matchDepNames": ["react-router-v6"],
       "allowedVersions": "<7.0.0"
