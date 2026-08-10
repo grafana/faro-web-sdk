@@ -261,6 +261,10 @@ Out of the box, only one meta is provided: `sdk` which contains information abou
 
 Additional metas may be provided by platform packages like [@grafana/faro-web-sdk][faro-web-sdk-package].
 
+When constructing a Faro transport body with `getTransportBody`, core strips credentials, query string, and fragment
+from `meta.page.url`. This keeps the page URL metadata sent by the default web transports deterministic for batched
+payloads without mutating the original transport item metadata.
+
 You can also define your own metas:
 
 ```ts
