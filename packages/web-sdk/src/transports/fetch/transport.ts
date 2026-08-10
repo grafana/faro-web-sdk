@@ -23,6 +23,20 @@ interface KeepaliveReservation {
   release: () => void;
 }
 
+/**
+ * The browser keepalive budget is measured in bytes, while `String.length` counts UTF-16 code
+ * units. A payload of non-ASCII text is up to three times larger than its length suggests, so
+ * reserving by length lets Faro send far more than it accounted for and reintroduces the silent
+ * keepalive failures this budget exists to prevent.
+ */
+function getBodyByteSize(body: string): number {
+  if (typeof TextEncoder === 'undefined') {
+    return body.length;
+  }
+
+  return new TextEncoder().encode(body).byteLength;
+}
+
 export class FetchTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-fetch';
   readonly version = VERSION;
@@ -85,7 +99,7 @@ export class FetchTransport extends BaseTransport {
         }
 
         let body: string | Blob = jsonBody;
-        let bodySize = jsonBody.length;
+        let bodySize = getBodyByteSize(jsonBody);
         const compressionHeaders: Record<string, string> = {};
 
         if (this.compressionEnabled) {
