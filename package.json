@@ -22,6 +22,7 @@
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "prepublish": "yarn build",
+    "postinstall": "husky",
     "clean": "run-s 'clean:*'",
     "clean:packages": "lerna run --parallel clean",
     "clean:root": "rimraf .cache yarn-error.log",

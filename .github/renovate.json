@@ -34,6 +34,26 @@
       "groupName": "patch updates"
     },
     {
+      "description": "Keep formatters and linters out of the other groups. A newer prettier or eslint reformats files across the repository, and Renovate does not run the formatter itself, so such an upgrade lands with the 'Check for unfixed lint issues' job failing. Isolating them means the frequent dependency groups stay green and the reformat arrives in one pull request. That pull request is expected to fail the lint job: a maintainer runs 'yarn quality:lint:fix', reviews the reformat and commits it. Placed after the npm-dependencies and patch rules so it wins for these packages whatever the update type.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": [
+        "prettier",
+        "eslint",
+        "typescript",
+        "husky",
+        "lint-staged",
+        "markdownlint-cli",
+        "@eslint/js",
+        "@grafana/eslint-config",
+        "@stylistic/eslint-plugin-ts",
+        "/^@typescript-eslint\\//",
+        "/^eslint-config-/",
+        "/^eslint-plugin-/"
+      ],
+      "groupName": "formatters-and-linters",
+      "schedule": ["before 5am on Monday"]
+    },
+    {
       "description": "Restrict ua-parser-js to version below 2.x.x as it changes licensing model with v2 onwards",
       "matchPackageNames": ["ua-parser-js"],
       "allowedVersions": "<2.0.0"
