@@ -165,7 +165,9 @@ export function initializeTransports(
   };
 
   const removeBeforeSendHooks: Transports['removeBeforeSendHooks'] = (...beforeSendHooksToRemove) => {
-    beforeSendHooks.filter((beforeSendHook) => !beforeSendHooksToRemove.includes(beforeSendHook));
+    internalLogger.debug('Removing beforeSendHooks');
+
+    beforeSendHooks = beforeSendHooks.filter((beforeSendHook) => !beforeSendHooksToRemove.includes(beforeSendHook));
   };
 
   const unpause: Transports['unpause'] = () => {
