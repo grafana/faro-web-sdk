@@ -481,9 +481,7 @@ Breaking changes coming with Faro version 2
       // ...
       new TracingInstrumentation({
         contextManager: new ZoneContextManager(),
-        instrumentations: [
-          /* custom instruments */
-        ],
+        instrumentations: [/* custom instruments */],
       }),
     ],
     // ...

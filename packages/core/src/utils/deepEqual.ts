@@ -27,7 +27,7 @@ export function deepEqual(a: any, b: any): boolean {
       return false;
     }
 
-    for (let idx = length; idx-- !== 0; ) {
+    for (let idx = length; idx-- !== 0;) {
       if (!deepEqual(a[idx], b[idx])) {
         return false;
       }
