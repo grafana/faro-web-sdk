@@ -1,8 +1,8 @@
 import { BaseInstrumentation, clampSamplingRate, VERSION } from '@grafana/faro-core';
 import { record, type recordOptions } from '@grafana/rrweb';
-import type { eventWithTime } from '@grafana/rrweb-types';
+import { EventType, type eventWithTime } from '@grafana/rrweb-types';
 
-import { defaultReplayInstrumentationOptions } from './const';
+import { defaultMaskInputFn, defaultReplayInstrumentationOptions } from './const';
 import type { ReplayInstrumentationOptions } from './types';
 
 const faroSessionReplayEventName = 'faro.session_recording.event';
@@ -40,6 +40,8 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       ...defaultReplayInstrumentationOptions,
       ...options,
     };
+
+    this.options.maskInputFn ??= defaultMaskInputFn;
   }
 
   initialize(): void {
@@ -268,8 +270,37 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     }, threshold);
   }
 
+  private sanitizeMetaHref(event: eventWithTime): void {
+    if (event.type !== EventType.Meta || this.options.sanitizeMetaHref === false) {
+      return;
+    }
+
+    const data = event.data;
+    if (data == null || typeof data !== 'object' || !('href' in data) || typeof data.href !== 'string') {
+      return;
+    }
+
+    data.href = this.sanitizeUrl(data.href);
+  }
+
+  private sanitizeUrl(href: string): string {
+    try {
+      const url = new URL(href);
+      url.username = '';
+      url.password = '';
+      url.search = '';
+      url.hash = '';
+      return url.href;
+    } catch {
+      // Malformed URL — leave as-is rather than risk breaking the event.
+      return href;
+    }
+  }
+
   private handleEvent(event: eventWithTime, _isCheckout?: boolean): void {
     try {
+      this.sanitizeMetaHref(event);
+
       // Apply beforeSend transformation if provided
       let processedEvent: eventWithTime | null | undefined = event;
       if (this.options.beforeSend) {
@@ -277,6 +308,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
         if (processedEvent === null || processedEvent === undefined) {
           return;
         }
+        this.sanitizeMetaHref(processedEvent);
       }
 
       this.api.pushEvent(faroSessionReplayEventName, {

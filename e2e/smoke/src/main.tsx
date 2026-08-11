@@ -70,6 +70,9 @@ function App() {
       <button data-cy="btn-push-error" onClick={() => faro.api.pushError(new Error('smoke harness pushError'))}>
         Push error via API
       </button>
+      <button data-cy="btn-traced-fetch" onClick={() => void fetch('/api/ping').catch(() => undefined)}>
+        Traced fetch
+      </button>
       <button
         data-cy="btn-emit-span"
         onClick={() => {

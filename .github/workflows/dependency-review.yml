@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout Repository'
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -47,3 +47,12 @@ jobs:
             pkg:npm/lightningcss-linux-x64-musl,
             pkg:npm/lightningcss-win32-arm64-msvc,
             pkg:npm/lightningcss-win32-x64-msvc
+          # GHSA-mh99-v99m-4gvg (brace-expansion, OOM DoS): the advisory range is
+          # <=5.0.7, which covers every release of the 1.x and 2.x lines. Upstream
+          # only patched 5.0.8, and 5.x changed the module export from a callable to
+          # a named `expand`, so forcing it onto minimatch 3 and 9 breaks jest and
+          # glob at runtime. The 1.x/2.x copies are dev tooling only and reach no
+          # published package. Moving 1.1.15 -> 1.1.16 and 2.1.1 -> 2.1.2 does fix
+          # GHSA-3jxr-9vmj-r5cp on those lines, but registers here as newly added
+          # versions that still match this advisory. Revisit if upstream backports.
+          allow-ghsas: GHSA-mh99-v99m-4gvg

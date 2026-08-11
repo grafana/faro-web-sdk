@@ -1,6 +1,9 @@
 # Grafana Faro Web SDK
 
-<p align="left"><img src="docs/faro_logo.png" alt="Grafana Faro logo" width="400"></p>
+<p align="left">
+  <img src="docs/faro_logo.png#gh-light-mode-only" alt="Grafana Faro logo" width="400">
+  <img src="docs/faro_logo_dark.png#gh-dark-mode-only" alt="Grafana Faro logo" width="400">
+</p>
 
 The Grafana Faro Web SDK can instrument frontend JavaScript applications to collect telemetry and forward it to the
 [Grafana Alloy][grafana-alloy-docs] (with faro receiver integration enabled), to a Grafana Cloud instance or to a
