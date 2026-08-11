@@ -59,6 +59,13 @@
       "allowedVersions": "<2.0.0"
     },
     {
+      "description": "Keep legacy brace-expansion resolutions on the patched 2.x line. minimatch 3 and 9 expect brace-expansion's CommonJS callable export, while brace-expansion 5 exposes a named expand function. Resolutions already on 5.x remain eligible for updates.",
+      "matchPackageNames": ["brace-expansion"],
+      "matchDepTypes": ["resolutions"],
+      "matchCurrentVersion": "<3.0.0",
+      "allowedVersions": "<3.0.0"
+    },
+    {
       "description": "react-router-dom-v5 is a pinned compatibility-matrix fixture for packages/react (see src/router/__matrix__). Renovate treats these aliases as ordinary deps and proposes the latest major, which silently replaces the version under test and deletes the coverage the fixture exists to provide. react-router-v8 is deliberately left unconstrained so it tracks the latest v8.",
       "matchDepNames": ["react-router-dom-v5"],
       "allowedVersions": "<6.0.0"
