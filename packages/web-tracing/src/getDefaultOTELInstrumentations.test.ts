@@ -71,14 +71,10 @@ describe('getDefaultOTELInstrumentations', () => {
       fetchInstrumentationOptions: {
         clearTimingResources: true,
         measureRequestSize: true,
-        semconvStabilityOptIn: 'http',
-        enabled: false,
       },
       xhrInstrumentationOptions: {
         clearTimingResources: true,
         measureRequestSize: true,
-        semconvStabilityOptIn: 'http',
-        enabled: false,
       },
     });
 
@@ -86,8 +82,6 @@ describe('getDefaultOTELInstrumentations', () => {
       expect.objectContaining({
         clearTimingResources: true,
         measureRequestSize: true,
-        semconvStabilityOptIn: 'http',
-        enabled: false,
       })
     );
 
@@ -95,8 +89,6 @@ describe('getDefaultOTELInstrumentations', () => {
       expect.objectContaining({
         clearTimingResources: true,
         measureRequestSize: true,
-        semconvStabilityOptIn: 'http',
-        enabled: false,
       })
     );
   });
