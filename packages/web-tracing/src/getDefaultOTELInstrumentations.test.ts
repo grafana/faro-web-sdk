@@ -2,7 +2,7 @@ import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
-import { faro, initializeFaro, type UserActionInternalInterface, UserActionState } from '@grafana/faro-web-sdk';
+import { initializeFaro } from '@grafana/faro-web-sdk';
 
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 
@@ -12,7 +12,6 @@ jest.mock('@opentelemetry/instrumentation-xml-http-request');
 describe('getDefaultOTELInstrumentations', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    jest.restoreAllMocks();
   });
 
   it('should return an array of instrumentations', () => {
@@ -71,46 +70,26 @@ describe('getDefaultOTELInstrumentations', () => {
   // The option types used to expose only applyCustomAttributesOnSpan and ignoreNetworkEvents even
   // though every key is spread onto the OTel instrumentation. See issue #1464.
   it('forwards the full set of OTel instrumentation options', () => {
+    const forwardedOptions = { clearTimingResources: true, measureRequestSize: true };
+
     getDefaultOTELInstrumentations({
-      fetchInstrumentationOptions: {
-        clearTimingResources: true,
-        measureRequestSize: true,
-      },
-      xhrInstrumentationOptions: {
-        clearTimingResources: true,
-        measureRequestSize: true,
-      },
+      fetchInstrumentationOptions: forwardedOptions,
+      xhrInstrumentationOptions: forwardedOptions,
     });
 
-    expect(FetchInstrumentation).toHaveBeenCalledWith(
-      expect.objectContaining({
-        clearTimingResources: true,
-        measureRequestSize: true,
-      })
-    );
-
-    expect(XMLHttpRequestInstrumentation).toHaveBeenCalledWith(
-      expect.objectContaining({
-        clearTimingResources: true,
-        measureRequestSize: true,
-      })
-    );
+    expect(FetchInstrumentation).toHaveBeenCalledWith(expect.objectContaining(forwardedOptions));
+    expect(XMLHttpRequestInstrumentation).toHaveBeenCalledWith(expect.objectContaining(forwardedOptions));
   });
 
   it('runs a caller supplied fetch requestHook alongside the Faro one', () => {
-    initializeFaro(mockConfig());
-
-    jest.spyOn(faro.api, 'getActiveUserAction').mockReturnValue({
-      name: 'test-action',
-      parentId: 'test-parent-id',
-      getState: () => UserActionState.Started,
-    } as unknown as UserActionInternalInterface);
+    const faro = initializeFaro(mockConfig());
+    const userAction = faro.api.startUserAction('test-action');
 
     const requestHook = jest.fn();
 
     getDefaultOTELInstrumentations({ fetchInstrumentationOptions: { requestHook } });
 
-    const [fetchOptions] = (FetchInstrumentation as jest.Mock).mock.calls[0] as [{ requestHook: Function }];
+    const fetchOptions = (FetchInstrumentation as jest.Mock).mock.calls[0]![0];
     const span = { setAttribute: jest.fn() };
     const request = {} as Request;
 
@@ -118,7 +97,7 @@ describe('getDefaultOTELInstrumentations', () => {
 
     // both halves of the composed hook run: Faro's attributes and the caller's hook
     expect(span.setAttribute).toHaveBeenCalledWith('faro.action.user.name', 'test-action');
-    expect(span.setAttribute).toHaveBeenCalledWith('faro.action.user.parentId', 'test-parent-id');
+    expect(span.setAttribute).toHaveBeenCalledWith('faro.action.user.parentId', userAction?.parentId);
     expect(requestHook).toHaveBeenCalledWith(span, request);
   });
 });

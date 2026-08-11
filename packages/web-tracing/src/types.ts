@@ -34,14 +34,15 @@ export type DefaultInstrumentationsOptions = {
    *
    * Derived from the OTel config so the two cannot drift.
    *
-   * `ignoreUrls` is omitted because Faro derives it from the configured transports. Overriding it
-   * here would let Faro trace its own collector endpoint. Use the `ignoreUrls` above instead, which
-   * is merged with Faro's own.
+   * `ignoreUrls` is omitted because Faro derives it from the configured transports, which is what
+   * stops Faro from tracing its own collector endpoint. Overriding it here would undo that. To
+   * ignore further URLs, use the `ignoreUrls` option in the Faro config, which is merged with
+   * Faro's own.
    *
    * `enabled` is omitted because it cannot switch the instrumentation off. OTel enables the
-   * instrumentation in the constructor when the flag is set, and `registerInstrumentations` enables
-   * anything the constructor skipped, so both values end up enabled. To turn fetch or XHR tracing
-   * off, pass your own `instrumentations` array instead.
+   * instrumentation in its constructor when the flag is set. `registerInstrumentations` then
+   * enables anything the constructor skipped. Both values therefore end up enabled. To turn fetch
+   * or XHR tracing off, pass your own `instrumentations` array instead.
    */
   fetchInstrumentationOptions?: Omit<FetchInstrumentationConfig, 'ignoreUrls' | 'enabled'>;
 

@@ -1,5 +1,5 @@
 import type { Span } from '@opentelemetry/api';
-import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
+import { FetchInstrumentation, type FetchRequestHookFunction } from '@opentelemetry/instrumentation-fetch';
 
 import { faro, type UserActionInternalInterface, UserActionState } from '@grafana/faro-web-sdk';
 
@@ -27,23 +27,29 @@ function createFetchInstrumentationOptions(
     ignoreNetworkEvents: true,
     // keep this here to overwrite the defaults above if provided by the users
     ...fetchInstrumentationOptions,
-    // always keep this function
+    // always keep these functions, they compose the caller's callback with Faro's own
     applyCustomAttributesOnSpan: fetchCustomAttributeFunctionWithDefaults(
       fetchInstrumentationOptions?.applyCustomAttributesOnSpan
     ),
-    // composed rather than assigned, so a caller supplied requestHook still runs
-    requestHook: (span: Span, request: Request | RequestInit) => {
-      const currentAction = faro.api.getActiveUserAction();
-      if (
-        currentAction &&
-        (currentAction as unknown as UserActionInternalInterface)?.getState() === UserActionState.Started
-      ) {
-        span.setAttribute('faro.action.user.name', currentAction.name);
-        span.setAttribute('faro.action.user.parentId', currentAction.parentId);
-      }
+    requestHook: fetchRequestHookWithDefaults(fetchInstrumentationOptions?.requestHook),
+  };
+}
 
-      fetchInstrumentationOptions?.requestHook?.(span, request);
-    },
+/**
+ * Adds the active user action to every span, then runs the caller's own hook.
+ */
+function fetchRequestHookWithDefaults(callback?: FetchRequestHookFunction) {
+  return (span: Span, request: Request | RequestInit) => {
+    const currentAction = faro.api.getActiveUserAction();
+    if (
+      currentAction &&
+      (currentAction as unknown as UserActionInternalInterface)?.getState() === UserActionState.Started
+    ) {
+      span.setAttribute('faro.action.user.name', currentAction.name);
+      span.setAttribute('faro.action.user.parentId', currentAction.parentId);
+    }
+
+    callback?.(span, request);
   };
 }
 
