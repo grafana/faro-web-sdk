@@ -11,7 +11,6 @@
   "internalChecksFilter": "strict",
   "osvVulnerabilityAlerts": true,
   "vulnerabilityAlerts": {
-    "enabled": true,
     "labels": ["security"],
     "prPriority": 10
   },
@@ -52,6 +51,12 @@
       ],
       "groupName": "formatters-and-linters",
       "schedule": ["before 5am on Monday"]
+    },
+    {
+      "description": "peerDependencies ranges in this repository are compatibility declarations that are maintained by hand, so Renovate must not rewrite them. A security update did rewrite the react-router range from '^7.12.0 || ^8.0.0' to '^7.18.2 ^7.18.2'. A space means AND in semantic versioning, so that range stayed valid, collapsed to '^7.18.2' and silently dropped React Router v8, a generation this package supports and tests. Two notes for whoever changes this next. First, this rule only takes effect because the 'vulnerabilityAlerts' object above no longer sets 'enabled'. Renovate appends one package rule per advisory carrying 'force: { ...vulnerabilityAlerts }' (lib/workers/repository/process/vulnerabilities.ts), 'force' beats every other setting (lib/config/utils.ts, mergeChildConfig ends with '{ ...config, ...config.force }'), and applyPackageRules clears the skip whenever 'force.enabled' is truthy (lib/config/index.ts). Setting 'enabled: true' there would therefore defeat this rule. Second, Renovate configuration applied at the organisation level is not visible in this file and could still override this, so packages/react/src/peerDependencies.test.ts asserts the same invariant in a way that does not depend on Renovate at all.",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["peerDependencies"],
+      "enabled": false
     },
     {
       "description": "Restrict ua-parser-js to version below 2.x.x as it changes licensing model with v2 onwards",
