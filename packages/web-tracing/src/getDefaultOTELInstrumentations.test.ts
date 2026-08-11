@@ -1,6 +1,9 @@
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
+import { mockConfig } from '@grafana/faro-core/src/testUtils';
+import { faro, initializeFaro, type UserActionInternalInterface, UserActionState } from '@grafana/faro-web-sdk';
+
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 
 jest.mock('@opentelemetry/instrumentation-fetch');
@@ -9,6 +12,7 @@ jest.mock('@opentelemetry/instrumentation-xml-http-request');
 describe('getDefaultOTELInstrumentations', () => {
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   it('should return an array of instrumentations', () => {
@@ -94,6 +98,14 @@ describe('getDefaultOTELInstrumentations', () => {
   });
 
   it('runs a caller supplied fetch requestHook alongside the Faro one', () => {
+    initializeFaro(mockConfig());
+
+    jest.spyOn(faro.api, 'getActiveUserAction').mockReturnValue({
+      name: 'test-action',
+      parentId: 'test-parent-id',
+      getState: () => UserActionState.Started,
+    } as unknown as UserActionInternalInterface);
+
     const requestHook = jest.fn();
 
     getDefaultOTELInstrumentations({ fetchInstrumentationOptions: { requestHook } });
@@ -104,6 +116,9 @@ describe('getDefaultOTELInstrumentations', () => {
 
     fetchOptions.requestHook(span, request);
 
+    // both halves of the composed hook run: Faro's attributes and the caller's hook
+    expect(span.setAttribute).toHaveBeenCalledWith('faro.action.user.name', 'test-action');
+    expect(span.setAttribute).toHaveBeenCalledWith('faro.action.user.parentId', 'test-parent-id');
     expect(requestHook).toHaveBeenCalledWith(span, request);
   });
 });
