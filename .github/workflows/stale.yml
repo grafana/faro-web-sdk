@@ -74,13 +74,13 @@ jobs:
             Thank you for the contribution. If you are waiting on a review from
             a maintainer, a comment here is enough to keep this open.
 
-            To keep it open, do any one of these:
+            To keep it open, push a commit or leave a comment. That works for
+            everyone, including contributors from outside Grafana.
 
-            - push a commit, or leave a comment
-
-            - remove the `stale` label
-
-            - add the `keep-open` label
+            Maintainers can also remove the `stale` label, or add the
+            `keep-open` label to exempt this pull request from now on. Changing
+            labels needs write access to this repository, so if you do not have
+            it, ask for it in a comment.
 
             Closing is not final. The branch is kept, so a closed pull request
             can be reopened at any time.
@@ -97,13 +97,18 @@ jobs:
           #
           # Closing a Renovate PR would drop that version update silently,
           # because renovate.json does not set recreateWhen. `dependencies` is
-          # the label renovate.json now applies to every PR it opens.
+          # the label renovate.json now applies to every PR it opens. It is set
+          # there with `addLabels`, not `labels`, on purpose: `labels` is
+          # non-mergeable, so the `labels` under `vulnerabilityAlerts` would
+          # replace it and a security PR would arrive without `dependencies`.
           # update-major is listed as well: major bumps are the ones most likely
           # to sit unreviewed, and they only gained `dependencies` from
           # renovate.json in this change, so older ones do not carry it.
           #
           # automerge-security-update, security-needs-review and 1.security are
-          # the labels security PRs carry in this repository. There are also
+          # the labels security PRs carry in this repository. They come from
+          # Grafana-wide automation rather than from renovate.json, so they are
+          # a second line of defence, not the first one. There are also
           # severity:* labels, deliberately not listed: the security labels
           # above already cover every security PR, and exempting only some
           # severities would be an inconsistent half-set.

@@ -27,7 +27,8 @@ Contributing to the SDK? See [local development][faro-local-dev] for the three s
 the in-repo smoke harness, your own Grafana Cloud free-tier stack, or a local Alloy install.
 
 [Pull requests][faro-pull-requests] explains how pull requests work here, including the automation
-that closes a pull request after 60 days without activity and how to keep one open.
+that labels a pull request `stale` after 60 days without activity, closes it 14 days after that, and
+how to keep one open.
 
 ## Packages
 

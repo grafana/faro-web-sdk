@@ -22,18 +22,22 @@ is treated the same as any other pull request.
 
 ### How to keep a pull request open
 
-Any one of these is enough:
-
-- Leave a comment, or push a commit. Any activity removes the label and starts
-  the 60 days again.
-- Remove the `stale` label.
-- Add the `keep-open` label. Use this for work that is meant to stay open for a
-  long time, for example a proposal that is waiting on a decision. The workflow
-  then leaves the pull request alone.
+**Anyone, including contributors from outside Grafana:** leave a comment, or
+push a commit. Any activity removes the label and starts the 60 days again. This
+is all you need to do.
 
 If you are waiting for a review from a maintainer, a comment on the pull request
 is enough to keep it open. Please do not let a contribution close only because
 the review took a while.
+
+**Maintainers**, or anyone else with write access to this repository, have two
+more options. Changing labels needs that access, so if you do not have it, ask
+for one of these in a comment:
+
+- Remove the `stale` label.
+- Add the `keep-open` label. Use this for work that is meant to stay open for a
+  long time, for example a proposal that is waiting on a decision. The workflow
+  then leaves the pull request alone.
 
 Some pull requests are never closed by the workflow. Renovate pull requests are
 exempt, because closing one would drop that dependency update without telling
