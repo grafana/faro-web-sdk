@@ -8,9 +8,5 @@
   },
   "include": ["./src"],
   "exclude": ["**/*.test.ts", "**/__matrix__/**"],
-  "references": [
-    { "path": "../core/tsconfig.cjs.json" },
-    { "path": "../web-sdk/tsconfig.cjs.json" },
-    { "path": "../web-tracing/tsconfig.cjs.json" }
-  ]
+  "references": [{ "path": "../core/tsconfig.cjs.json" }, { "path": "../web-sdk/tsconfig.cjs.json" }]
 }

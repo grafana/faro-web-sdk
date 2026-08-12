@@ -8,9 +8,5 @@
   },
   "include": ["./src"],
   "exclude": ["**/*.test.ts", "**/__matrix__/**"],
-  "references": [
-    { "path": "../core/tsconfig.esm.json" },
-    { "path": "../web-sdk/tsconfig.esm.json" },
-    { "path": "../web-tracing/tsconfig.esm.json" }
-  ]
+  "references": [{ "path": "../core/tsconfig.esm.json" }, { "path": "../web-sdk/tsconfig.esm.json" }]
 }
