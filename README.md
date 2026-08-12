@@ -67,13 +67,13 @@ the [README.md][faro-web-sdk-readme] for more information.
 ## Supported environments
 
 The Faro Web SDK instruments web pages that run in a browser. During initialization, the SDK and most of its default
-instrumentations read browser APIs such as `window`, `document`, `PerformanceObserver` and `sessionStorage`. Any
-JavaScript environment without a full DOM is outside the supported scope.
+instrumentations read browser APIs such as `window`, `document`, `PerformanceObserver` and `sessionStorage`. JavaScript
+that doesn't run in a typical web page context is outside the supported scope.
 
 | Environment                                                                | Supported |
 | -------------------------------------------------------------------------- | --------- |
 | Web applications that run in a browser                                     | Yes       |
-| Client side of server-rendered applications, such as Next.js and React SSR | Yes       |
+| Client-side of server-rendered applications, such as Next.js and React SSR | Yes       |
 | Server runtime of server-rendered applications                             | No        |
 | Browser extensions                                                         | No        |
 | Web workers and service workers                                            | No        |
