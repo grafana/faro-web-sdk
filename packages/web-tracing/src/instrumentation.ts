@@ -39,7 +39,7 @@ import type { TracingInstrumentationOptions } from './types';
 
 export class TracingInstrumentation extends BaseInstrumentation {
   name = '@grafana/faro-web-tracing';
-  version = VERSION;
+  version: string = VERSION;
 
   static SCHEDULED_BATCH_DELAY_MS = 1000;
 
