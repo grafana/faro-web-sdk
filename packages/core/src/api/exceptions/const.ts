@@ -2,7 +2,7 @@ import { isObject, stringifyExternalJson } from '../../utils';
 
 export const defaultExceptionType = 'Error';
 
-export const defaultErrorArgsSerializer = (args: [any?, ...any[]]) => {
+export const defaultErrorArgsSerializer: (args: [any?, ...any[]]) => string = (args: [any?, ...any[]]) => {
   return args
     .map((arg) => {
       if (isObject(arg)) {

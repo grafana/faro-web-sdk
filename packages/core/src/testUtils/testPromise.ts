@@ -8,7 +8,7 @@ export interface TestPromise<T> {
   id?: number;
 }
 
-export function createTestPromise<T>(id?: number) {
+export function createTestPromise<T>(id?: number): TestPromise<T> {
   const obj: TestPromise<T> = {
     id,
   } as TestPromise<T>;
