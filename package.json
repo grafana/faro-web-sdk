@@ -101,7 +101,7 @@
     "lerna/js-yaml": "4.3.1",
     "postcss": "^8.5.18",
     "shell-quote": "^1.10.0",
-    "@istanbuljs/load-nyc-config/js-yaml": "^3.15.0",
+    "@istanbuljs/load-nyc-config/js-yaml": "^4.0.0",
     "markdownlint-cli/js-yaml": "^5.2.2",
     "brace-expansion@npm:^1.1.7": "^2.0.0",
     "brace-expansion@npm:1.1.15": "2.1.4",
