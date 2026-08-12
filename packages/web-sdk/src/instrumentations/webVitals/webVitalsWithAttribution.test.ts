@@ -16,6 +16,7 @@ jest.mock('web-vitals/attribution', () => {
       id: 'id',
       entries: [],
       navigationType: 'navigate',
+      navigationId: 0,
       attribution,
     } as MetricWithAttribution;
   }
@@ -179,6 +180,7 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
           id: 'id',
           entries: [],
           navigationType: 'navigate',
+          navigationId: 0,
           attribution: {
             interactionTarget: 'target',
             interactionType: 'pointer',
@@ -295,6 +297,7 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
           id: 'id',
           entries: [],
           navigationType: 'navigate',
+          navigationId: 0,
           attribution: {
             interactionTarget: 'target',
             interactionType: 'pointer',
@@ -449,6 +452,7 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
           id: 'id',
           entries: [],
           navigationType: 'navigate',
+          navigationId: 0,
           attribution: {
             elementRenderDelay: 0.1,
             resourceLoadDelay: 0.1,
