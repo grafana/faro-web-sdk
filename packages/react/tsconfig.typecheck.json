@@ -4,7 +4,12 @@
     "composite": false,
     "incremental": false,
     "isolatedDeclarations": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@grafana/faro-core": ["../core/src"],
+      "@grafana/faro-web-sdk": ["../web-sdk/src"],
+      "@grafana/faro-web-tracing": ["../web-tracing/src"]
+    }
   },
   "include": ["./src"],
   "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/__matrix__/**"]

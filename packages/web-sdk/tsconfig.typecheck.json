@@ -4,7 +4,10 @@
     "composite": false,
     "incremental": false,
     "isolatedDeclarations": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@grafana/faro-core": ["../core/src"]
+    }
   },
   "include": ["./src"],
   "exclude": ["**/*.test.ts"]

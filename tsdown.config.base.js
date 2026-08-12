@@ -57,9 +57,17 @@ exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, b
       ...shared,
       format: 'cjs',
       ...neverInlineDependencies,
+      // Keep a module whose only export is a default as `exports.default`. tsdown would otherwise
+      // collapse it to `module.exports = X`, which changes what a deep require returns. There is no
+      // `exports` field in any package, so those paths are reachable by consumers.
+      cjsDefault: false,
       unbundle: true,
       outDir: './dist/cjs',
       outExtensions: () => ({ js: '.js' }),
+      // Always mark the output with `__esModule`, as the TypeScript compiler did. Without it a
+      // bundler's interop treats a default import of one of these modules as the whole namespace
+      // rather than as undefined, which is a silent change in meaning.
+      outputOptions: { esModule: true },
       dts: false,
     },
     {
