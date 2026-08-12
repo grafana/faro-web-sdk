@@ -32,6 +32,13 @@ const SOURCES = [
  *   default, for every output format, so anything the bundle needs to carry has to be named here.
  */
 exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, bundleInlines = [] }) => {
+  // The per-file builds must never pull a package into their output. The TypeScript compiler could
+  // not do that, so nothing in dist/cjs or dist/esm has ever contained dependency code, and the
+  // published layout depends on it staying that way. tsdown on its own only externalises packages
+  // that are declared in dependencies or peerDependencies, which means an undeclared import would be
+  // inlined as a tree of extra files instead of failing.
+  const neverInlineDependencies = { deps: { neverBundle: true } };
+
   const shared = {
     entry: SOURCES,
     // The per-file builds list every entry and every emitted file, which is around ninety lines
@@ -49,6 +56,7 @@ exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, b
     {
       ...shared,
       format: 'cjs',
+      ...neverInlineDependencies,
       unbundle: true,
       outDir: './dist/cjs',
       outExtensions: () => ({ js: '.js' }),
@@ -57,6 +65,7 @@ exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, b
     {
       ...shared,
       format: 'esm',
+      ...neverInlineDependencies,
       unbundle: true,
       outDir: './dist/esm',
       outExtensions: () => ({ js: '.js' }),

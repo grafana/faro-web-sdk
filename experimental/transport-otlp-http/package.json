@@ -47,13 +47,11 @@
     "quality:lint:fix:prettier": "prettier --cache --cache-location=../../.cache/prettier/transportOtlpHttp --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:circular-deps": "madge --circular ."
   },
-  "devDependencies": {
-    "@grafana/faro-core": "^2.9.0"
-  },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
+    "@grafana/faro-core": "^2.9.0",
     "@opentelemetry/otlp-transformer": "^0.221.0",
     "@opentelemetry/semantic-conventions": "^1.28.0"
   }
