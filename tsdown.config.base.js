@@ -34,6 +34,9 @@ const SOURCES = [
 exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, bundleInlines = [] }) => {
   const shared = {
     entry: SOURCES,
+    // The per-file builds list every entry and every emitted file, which is around ninety lines
+    // each. Only the bundle reports at info level, where the size is worth seeing.
+    logLevel: 'warn',
     platform: 'browser',
     // Matches the "target" in tsconfig.base.json. Note that Rolldown applies this to dependencies
     // as well, which the previous Rollup build did not.
@@ -80,13 +83,23 @@ exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, b
     {
       ...shared,
       format: 'iife',
+      logLevel: 'info',
       entry: { [bundleName]: './src/index.ts' },
       outDir: './dist/bundle',
       globalName,
       deps: {
         neverBundle: Object.keys(bundleExternals),
         alwaysBundle: bundleInlines,
+        // The other half of the guard below: fail if a dependency that was never meant to be part
+        // of the bundle ends up inside it, for example after a new import is added.
+        onlyBundle: bundleInlines,
       },
+      // A browser has no module loader, so anything left outside the bundle without a declared
+      // global turns into a read of a variable that does not exist, and the bundle throws on load.
+      // Rolldown reports that as a MISSING_GLOBAL_NAME warning, so treat warnings as failures here.
+      // Subpath imports make this easy to get wrong: listing "web-vitals" as inlined does not cover
+      // "web-vitals/attribution".
+      failOnWarn: true,
       outputOptions: {
         globals: bundleExternals,
       },
