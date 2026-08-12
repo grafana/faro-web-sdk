@@ -806,7 +806,7 @@ __metadata:
     "@types/ua-parser-js": "npm:0.7.39"
     ua-parser-js: "npm:1.0.41"
     user-agent-data-types: "npm:0.4.3"
-    web-vitals: "npm:^5.1.0"
+    web-vitals: "npm:^6.0.0"
   languageName: unknown
   linkType: soft
 
@@ -12907,10 +12907,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web-vitals@npm:^5.1.0":
-  version: 5.3.0
-  resolution: "web-vitals@npm:5.3.0"
-  checksum: 10c0/a073c024d791bfac7a92f82607999b45be978ef3070f642f3cdd94c50d3e1651cf62b2475039248256b2d84651e16fa9bdcaa4b03f31af8bfeefb05832298b97
+"web-vitals@npm:^6.0.0":
+  version: 6.1.0
+  resolution: "web-vitals@npm:6.1.0"
+  checksum: 10c0/ab1bf6a91cd618ca64c4aaf4644066221dea1fad0733ad2ec20461ca37e3d7e8e02cda014710c728ea938271d9a5eec65c23675eae5926e5df4ea16fb1edda92
   languageName: node
   linkType: hard
 
