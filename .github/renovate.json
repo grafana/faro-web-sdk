@@ -10,6 +10,7 @@
   "minimumReleaseAge": "3 days",
   "internalChecksFilter": "strict",
   "osvVulnerabilityAlerts": true,
+  "labels": ["dependencies"],
   "vulnerabilityAlerts": {
     "labels": ["security"],
     "prPriority": 10

@@ -9,3 +9,11 @@
 - After applying fixes, run `yarn quality:lint` and the tests relevant to the changed files.
 - If the fixer changes files outside the task scope, do not silently include or discard those
   changes. Report them to the user.
+
+## Pull requests
+
+- A pull request with no activity for 60 days is labelled `stale` and closed 14 days later. Any
+  activity resets the clock, and the `keep-open` label exempts a pull request completely. Drafts are
+  included. See [docs/PULL_REQUESTS.md](docs/PULL_REQUESTS.md).
+- The exempt label list in `.github/workflows/stale.yml` is the single source of truth. Do not
+  duplicate it elsewhere.

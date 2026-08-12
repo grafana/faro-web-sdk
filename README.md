@@ -26,6 +26,9 @@ See [quick start for web applications][faro-quick-start].
 Contributing to the SDK? See [local development][faro-local-dev] for the three supported paths:
 the in-repo smoke harness, your own Grafana Cloud free-tier stack, or a local Alloy install.
 
+[Pull requests][faro-pull-requests] explains how pull requests work here, including the automation
+that closes a pull request after 60 days without activity and how to keep one open.
+
 ## Packages
 
 ### Core
@@ -55,6 +58,7 @@ the [README.md][faro-web-sdk-readme] for more information.
 [faro-core-readme]: ./packages/core/README.md
 [faro-demo]: https://github.com/grafana/quickpizza
 [faro-local-dev]: ./docs/sources/developer/local-development.md
+[faro-pull-requests]: ./docs/PULL_REQUESTS.md
 [faro-quick-start]: ./docs/sources/tutorials/quick-start-browser.md
 [faro-react]: ./packages/react
 [faro-react-readme]: ./packages/react/README.md
