@@ -67,7 +67,13 @@ exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, b
       // Always mark the output with `__esModule`, as the TypeScript compiler did. Without it a
       // bundler's interop treats a default import of one of these modules as the whole namespace
       // rather than as undefined, which is a silent change in meaning.
-      outputOptions: { esModule: true },
+      outputOptions: {
+        esModule: true,
+        // Do not tag the namespace object with Symbol.toStringTag. The TypeScript compiler did not,
+        // so without this `Object.prototype.toString` on a required module reports [object Module]
+        // where it used to report [object Object].
+        generatedCode: { symbols: false },
+      },
       dts: false,
     },
     {
