@@ -1,5 +1,6 @@
 {
   "fileExtensions": ["ts","tsx"],
+  "excludeRegExp": ["^dist/"],
   "detectiveOptions": {
     "ts": {
       "skipTypeImports": true
