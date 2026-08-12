@@ -28,7 +28,7 @@ export function monitorDomMutations(): Observable<DomMutationMessage> {
 }
 
 // Test-only utility to reset state between tests
-export function __resetDomMutationMonitorForTests() {
+export function __resetDomMutationMonitorForTests(): void {
   if (domMutationObserver) {
     domMutationObserver.disconnect();
   }

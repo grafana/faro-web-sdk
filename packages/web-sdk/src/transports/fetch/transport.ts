@@ -39,7 +39,7 @@ function getBodyByteSize(body: string): number {
 
 export class FetchTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-fetch';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   promiseBuffer: PromiseBuffer<Response | void>;
 

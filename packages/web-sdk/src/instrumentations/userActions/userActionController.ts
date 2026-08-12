@@ -30,7 +30,7 @@ export class UserActionController {
   constructor(
     private userAction: UserActionInternalInterface,
     private logDebug: InternalLogger['debug'],
-    private initialActivityTimeout = defaultInitialActivityTimeout
+    private initialActivityTimeout: number = defaultInitialActivityTimeout
   ) {}
 
   attach(): void {

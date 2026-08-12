@@ -3,21 +3,21 @@ import type { Instrumentation } from '@grafana/faro-core';
 
 export class CSPInstrumentation extends BaseInstrumentation implements Instrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-csp';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   constructor() {
     super();
   }
 
-  initialize() {
+  initialize(): void {
     document.addEventListener('securitypolicyviolation', this.securitypolicyviolationHandler.bind(this));
   }
 
-  destroy() {
+  destroy(): void {
     document.removeEventListener('securitypolicyviolation', this.securitypolicyviolationHandler);
   }
 
-  public securitypolicyviolationHandler(ev: SecurityPolicyViolationEvent) {
+  public securitypolicyviolationHandler(ev: SecurityPolicyViolationEvent): void {
     // We must explicitly extract properties because SecurityPolicyViolationEvent
     // properties are getters on the prototype chain, not own enumerable properties.
     // Object.entries() would not capture them.

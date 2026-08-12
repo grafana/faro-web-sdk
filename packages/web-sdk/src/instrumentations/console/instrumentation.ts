@@ -12,7 +12,7 @@ import { getDetailsFromConsoleErrorArgs } from '../errors/getErrorDetails';
 
 export class ConsoleInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-console';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   static defaultDisabledLevels: LogLevel[] = [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG];
   static consoleErrorPrefix = 'console.error: ';
@@ -20,7 +20,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
   private errorSerializer: LogArgsSerializer = defaultLogArgsSerializer;
   private subscription: Subscription | undefined;
 
-  initialize() {
+  initialize(): void {
     const instrumentationOptions = this.config.consoleInstrumentation;
 
     const serializeErrors = instrumentationOptions?.serializeErrors || !!instrumentationOptions?.errorSerializer;
@@ -71,7 +71,7 @@ export class ConsoleInstrumentation extends BaseInstrumentation {
   }
 
   // Clean up subscription when instrumentation is destroyed
-  destroy() {
+  destroy(): void {
     this.subscription?.unsubscribe();
     this.subscription = undefined;
   }

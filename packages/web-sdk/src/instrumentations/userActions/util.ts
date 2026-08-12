@@ -28,7 +28,7 @@ export function deriveUserActionTimeoutDataAttribute(dataAttributeName: string):
 
 export function normalizeInitialActivityTimeout(
   value: unknown,
-  fallback = defaultInitialActivityTimeout,
+  fallback: number = defaultInitialActivityTimeout,
   warn: TimeoutWarning = noop
 ): number {
   if (value === undefined) {
@@ -63,12 +63,12 @@ export function normalizeInitialActivityTimeout(
  * This is needed because the browser will remove the 'data-' prefix and the dashes from
  * data attributes and make them camelCase.
  */
-export function convertDataAttributeName(userActionDataAttribute: string) {
+export function convertDataAttributeName(userActionDataAttribute: string): string {
   const withoutData = normalizeDataAttributeName(userActionDataAttribute).slice(5);
   return withoutData.replace(/-(.)/g, (_, char) => char.toUpperCase());
 }
 
-export function startTimeout(timeoutId: number | undefined, cb: () => void, delay: number) {
+export function startTimeout(timeoutId: number | undefined, cb: () => void, delay: number): number {
   if (timeoutId !== undefined) {
     window.clearTimeout(timeoutId);
   }

@@ -28,7 +28,7 @@ export function monitorPerformanceEntries(): Observable {
 }
 
 // Test-only utility to reset state between tests
-export function __resetPerformanceEntriesMonitorForTests() {
+export function __resetPerformanceEntriesMonitorForTests(): void {
   if (subscription) {
     subscription.unsubscribe();
   }

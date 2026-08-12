@@ -5,13 +5,13 @@ import { onDocumentReady, performanceObserverSupported } from './performanceUtil
 import { observeResourceTimings } from './resource';
 import type { ResourceEntryMessage } from './types';
 
-export const performanceEntriesSubscription = new Observable<ResourceEntryMessage>();
+export const performanceEntriesSubscription: Observable<ResourceEntryMessage> = new Observable<ResourceEntryMessage>();
 
 export class PerformanceInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-performance';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
-  initialize() {
+  initialize(): void {
     if (!performanceObserverSupported()) {
       this.logDebug('performance observer not supported. Disable performance instrumentation.');
       return;

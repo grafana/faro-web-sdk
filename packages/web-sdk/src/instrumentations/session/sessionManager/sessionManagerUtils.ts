@@ -107,7 +107,10 @@ export function getUserSessionUpdater({
   };
 }
 
-export function addSessionMetadataToNextSession(newSession: FaroUserSession, previousSession: FaroUserSession | null) {
+export function addSessionMetadataToNextSession(
+  newSession: FaroUserSession,
+  previousSession: FaroUserSession | null
+): Required<FaroUserSession> {
   const sessionWithMeta: Required<FaroUserSession> = {
     ...newSession,
     sessionMeta: {
@@ -144,7 +147,7 @@ export function getSessionMetaUpdateHandler({
 }: GetUserSessionMetaUpdateHandlerParams) {
   let isSyncing = false;
 
-  return function syncSessionIfChangedExternally(meta: Meta) {
+  return function syncSessionIfChangedExternally(meta: Meta): void {
     if (isSyncing) {
       return;
     }

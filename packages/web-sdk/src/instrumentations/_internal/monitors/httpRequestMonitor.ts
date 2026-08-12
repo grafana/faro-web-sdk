@@ -143,7 +143,7 @@ function monitorFetch({
 }
 
 // Test-only utility to reset instrumentation and singleton between tests
-export function __resetHttpRequestMonitorForTests() {
+export function __resetHttpRequestMonitorForTests(): void {
   if (originalXhrOpen) {
     XMLHttpRequest.prototype.open = originalXhrOpen;
   }

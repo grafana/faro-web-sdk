@@ -20,7 +20,7 @@ export function observeResourceTimings(
   faroNavigationId: string,
   pushEvent: EventsAPI['pushEvent'],
   observable: Observable<ResourceEntryMessage>
-) {
+): void {
   const trackResources = faro.config.trackResources;
 
   const observer = new PerformanceObserver((observedEntries) => {

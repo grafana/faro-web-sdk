@@ -24,7 +24,7 @@ export class VolatileSessionsManager {
     this.init();
   }
 
-  static removeUserSession() {
+  static removeUserSession(): void {
     removeItem(STORAGE_KEY, VolatileSessionsManager.storageTypeSession);
   }
 
@@ -42,7 +42,7 @@ export class VolatileSessionsManager {
     return null;
   }
 
-  updateSession = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
+  updateSession: () => void = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
 
   private init(): void {
     document.addEventListener('visibilitychange', () => {

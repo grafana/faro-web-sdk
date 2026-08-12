@@ -4,7 +4,7 @@ import { getUserEventHandler } from './processUserActionEventHandler';
 
 export class UserActionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-user-action';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   private _userActionSub?: Subscription;
   private _processUserEvent?: (event: PointerEvent | KeyboardEvent) => void;
@@ -30,7 +30,7 @@ export class UserActionInstrumentation extends BaseInstrumentation {
     });
   }
 
-  destroy() {
+  destroy(): void {
     if (this._processUserEvent) {
       window.removeEventListener('pointerdown', this._processUserEvent);
     }
