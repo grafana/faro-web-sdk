@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "start": "yarn watch",
-    "build": "run-s 'build:*'",
+    "build": "run-s build:version build:compile",
     "build:version": "node bin/genVersion.js",
     "build:compile": "tsdown",
     "watch": "run-s build:version watch:compile",
