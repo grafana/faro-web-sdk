@@ -23,6 +23,7 @@
     "watch:packages": "lerna run --parallel watch",
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
+    "build:package": "lerna run build --include-dependencies --scope",
     "prepublish": "yarn build",
     "postinstall": "husky",
     "clean": "run-s 'clean:*'",

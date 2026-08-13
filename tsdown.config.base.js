@@ -22,6 +22,20 @@ const SOURCES = [
 ];
 
 /**
+ * Output settings that only matter for formats which are not ES modules.
+ *
+ * An ES module is strict and is a module by definition. A CommonJS file and a bundle inside a script
+ * tag are neither, so both properties have to be asked for. The TypeScript compiler and Rollup both
+ * produced them, and dropping either is a silent semantic change: without `"use strict"` the emitted
+ * files, and every dependency inlined into a bundle, run in sloppy mode; with Rolldown's namespace
+ * symbols the global reports as `[object Module]` where it used to report `[object Object]`.
+ */
+const NON_MODULE_OUTPUT = {
+  strict: true,
+  generatedCode: { symbols: false },
+};
+
+/**
  * @param {object} options
  * @param {string} options.bundleName Name of the bundle file, without the `.iife.js` suffix.
  * @param {string} options.globalName Global variable the bundle assigns itself to.
@@ -64,15 +78,12 @@ exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, b
       unbundle: true,
       outDir: './dist/cjs',
       outExtensions: () => ({ js: '.js' }),
-      // Always mark the output with `__esModule`, as the TypeScript compiler did. Without it a
-      // bundler's interop treats a default import of one of these modules as the whole namespace
-      // rather than as undefined, which is a silent change in meaning.
       outputOptions: {
+        // Always mark the output with `__esModule`, as the TypeScript compiler did. Without it a
+        // bundler's interop treats a default import of one of these modules as the whole namespace
+        // rather than as undefined, which is a silent change in meaning.
         esModule: true,
-        // Do not tag the namespace object with Symbol.toStringTag. The TypeScript compiler did not,
-        // so without this `Object.prototype.toString` on a required module reports [object Module]
-        // where it used to report [object Object].
-        generatedCode: { symbols: false },
+        ...NON_MODULE_OUTPUT,
       },
       dts: false,
     },
@@ -125,6 +136,7 @@ exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, b
       failOnWarn: true,
       outputOptions: {
         globals: bundleExternals,
+        ...NON_MODULE_OUTPUT,
       },
       minify: true,
       dts: false,
