@@ -7,27 +7,31 @@
  *
  * Both results land on `window`, where the export snapshot spec picks them up.
  */
-import * as faroCore from '@grafana/faro-core';
-import * as faroInstrumentationReplay from '@grafana/faro-instrumentation-replay';
-import * as faroReact from '@grafana/faro-react';
-import * as faroTransportOtlpHttp from '@grafana/faro-transport-otlp-http';
-import * as faroWebSdk from '@grafana/faro-web-sdk';
-import * as faroWebTracing from '@grafana/faro-web-tracing';
-
 import { type ExportShape, PUBLISHED_PACKAGES, readShape } from './packages';
 
-const ESM_NAMESPACES: Record<string, object> = {
-  '@grafana/faro-core': faroCore,
-  '@grafana/faro-web-sdk': faroWebSdk,
-  '@grafana/faro-web-tracing': faroWebTracing,
-  '@grafana/faro-react': faroReact,
-  '@grafana/faro-instrumentation-replay': faroInstrumentationReplay,
-  '@grafana/faro-transport-otlp-http': faroTransportOtlpHttp,
+/**
+ * Imported one at a time rather than with static imports at the top.
+ *
+ * A static import would make this page part of one module graph with all six packages, so a single
+ * package that cannot link takes the whole page down and the spec sees nothing but a timeout. That is
+ * not hypothetical: removing an export that another package imports does exactly that. Importing each
+ * package on its own lets the others still be measured, and turns the failure into a named error.
+ *
+ * The specifiers stay literal so Vite can still resolve them.
+ */
+const ESM_IMPORTS: Record<string, () => Promise<object>> = {
+  '@grafana/faro-core': () => import('@grafana/faro-core'),
+  '@grafana/faro-web-sdk': () => import('@grafana/faro-web-sdk'),
+  '@grafana/faro-web-tracing': () => import('@grafana/faro-web-tracing'),
+  '@grafana/faro-react': () => import('@grafana/faro-react'),
+  '@grafana/faro-instrumentation-replay': () => import('@grafana/faro-instrumentation-replay'),
+  '@grafana/faro-transport-otlp-http': () => import('@grafana/faro-transport-otlp-http'),
 };
 
 declare global {
   interface Window {
-    __esmSurface?: Record<string, ExportShape>;
+    __esmSurface?: Record<string, ExportShape | null>;
+    __esmErrors?: Record<string, string>;
     __iifeSurface?: Record<string, ExportShape | null>;
     __iifeErrors?: Record<string, string>;
     __surfaceReady?: boolean;
@@ -45,11 +49,20 @@ function loadScript(src: string): Promise<void> {
 }
 
 async function collect(): Promise<void> {
-  const esm: Record<string, ExportShape> = {};
-  for (const [name, namespace] of Object.entries(ESM_NAMESPACES)) {
-    esm[name] = readShape(namespace);
+  const esm: Record<string, ExportShape | null> = {};
+  const esmErrors: Record<string, string> = {};
+
+  for (const [name, load] of Object.entries(ESM_IMPORTS)) {
+    try {
+      esm[name] = readShape(await load());
+    } catch (error) {
+      esm[name] = null;
+      esmErrors[name] = error instanceof Error ? error.message : String(error);
+    }
   }
+
   window.__esmSurface = esm;
+  window.__esmErrors = esmErrors;
 
   // React 19 ships no UMD build, so the react bundle needs a React global. Handing it the real React
   // that Vite already resolved is better than a stub: the bundle gets the same object a content
@@ -94,9 +107,9 @@ async function collect(): Promise<void> {
 
   const output = document.getElementById('out');
   if (output) {
-    const esmTotal = Object.values(esm).reduce((sum, shape) => sum + Object.keys(shape).length, 0);
+    const esmTotal = Object.values(esm).reduce((sum, shape) => sum + Object.keys(shape ?? {}).length, 0);
     const iifeTotal = Object.values(iife).reduce((sum, shape) => sum + Object.keys(shape ?? {}).length, 0);
-    const failed = Object.keys(errors);
+    const failed = [...Object.keys(esmErrors), ...Object.keys(errors)];
     output.textContent =
       `ES modules: ${esmTotal} exports across ${Object.keys(esm).length} packages. ` +
       `Bundles: ${iifeTotal} exports. ` +

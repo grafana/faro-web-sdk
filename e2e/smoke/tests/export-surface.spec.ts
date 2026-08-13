@@ -71,10 +71,21 @@ test.describe('Export surface', () => {
     // bundles because they only exist as globals a script tag defines.
     const cjs = collectCommonJs();
 
+    const pageErrors: string[] = [];
+    page.on('pageerror', (error) => pageErrors.push(String(error).split('\n')[0] ?? ''));
+
     await page.goto('/exports.html');
-    await page.waitForFunction(() => window.__surfaceReady === true, undefined, { timeout: 30_000 });
+    await page
+      .waitForFunction(() => window.__surfaceReady === true, undefined, { timeout: 20_000 })
+      .catch(() => {
+        throw new Error(
+          `The export page never finished. This usually means a package could not be loaded at all. ` +
+            `Page errors: ${pageErrors.join(' | ') || 'none reported'}`
+        );
+      });
 
     const esm = await page.evaluate(() => window.__esmSurface ?? {});
+    const esmErrors = await page.evaluate(() => window.__esmErrors ?? {});
     const iife = await page.evaluate(() => window.__iifeSurface ?? {});
     const iifeErrors = await page.evaluate(() => window.__iifeErrors ?? {});
 
@@ -114,6 +125,9 @@ test.describe('Export surface', () => {
       problems.push(...compare('bundle', pkg.name, expectedPaths.iife, iife[pkg.name] ?? null));
     }
 
+    for (const [name, message] of Object.entries(esmErrors)) {
+      problems.push(`${name} (ES modules): ${message}`);
+    }
     for (const [name, message] of Object.entries(iifeErrors)) {
       problems.push(`${name} (bundle): ${message}`);
     }
@@ -127,7 +141,7 @@ test.describe('Export surface', () => {
     const cjs = collectCommonJs();
 
     await page.goto('/exports.html');
-    await page.waitForFunction(() => window.__surfaceReady === true, undefined, { timeout: 30_000 });
+    await page.waitForFunction(() => window.__surfaceReady === true, undefined, { timeout: 20_000 });
     const esm = await page.evaluate(() => window.__esmSurface ?? {});
     const iife = await page.evaluate(() => window.__iifeSurface ?? {});
 
