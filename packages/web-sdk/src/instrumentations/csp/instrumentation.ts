@@ -5,16 +5,23 @@ export class CSPInstrumentation extends BaseInstrumentation implements Instrumen
   readonly name = '@grafana/faro-web-sdk:instrumentation-csp';
   readonly version = VERSION;
 
+  // Bound once here rather than in initialize, because removeEventListener matches listeners by
+  // identity. Binding inside initialize created a new function object every time, so the listener
+  // destroy tried to remove was never the one that had been registered: it stayed attached and kept
+  // reporting violations after the instrumentation had been removed.
+  private readonly boundSecuritypolicyviolationHandler: (ev: SecurityPolicyViolationEvent) => void =
+    this.securitypolicyviolationHandler.bind(this);
+
   constructor() {
     super();
   }
 
   initialize() {
-    document.addEventListener('securitypolicyviolation', this.securitypolicyviolationHandler.bind(this));
+    document.addEventListener('securitypolicyviolation', this.boundSecuritypolicyviolationHandler);
   }
 
   destroy() {
-    document.removeEventListener('securitypolicyviolation', this.securitypolicyviolationHandler);
+    document.removeEventListener('securitypolicyviolation', this.boundSecuritypolicyviolationHandler);
   }
 
   public securitypolicyviolationHandler(ev: SecurityPolicyViolationEvent) {
