@@ -67,6 +67,21 @@
           "type": "json",
           "path": "e2e/smoke/package.json",
           "jsonpath": "$['devDependencies']['@grafana/faro-web-tracing']"
+        },
+        {
+          "type": "json",
+          "path": "e2e/smoke/package.json",
+          "jsonpath": "$['devDependencies']['@grafana/faro-web-sdk']"
+        },
+        {
+          "type": "json",
+          "path": "e2e/smoke/package.json",
+          "jsonpath": "$['devDependencies']['@grafana/faro-instrumentation-replay']"
+        },
+        {
+          "type": "json",
+          "path": "e2e/smoke/package.json",
+          "jsonpath": "$['devDependencies']['@grafana/faro-transport-otlp-http']"
         }
       ]
     }

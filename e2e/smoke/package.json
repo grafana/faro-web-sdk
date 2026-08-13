@@ -21,11 +21,15 @@
     "quality:lint:fix": "eslint --fix --cache --cache-location ../../.cache/eslint/smoke \"./**/*.{js,jsx,ts,tsx}\"",
     "quality:circular-deps": "exit 0",
     "e2e": "playwright test",
-    "e2e:ci": "start-server-and-test start http://127.0.0.1:5174 e2e"
+    "e2e:ci": "start-server-and-test start http://127.0.0.1:5174 e2e",
+    "snapshot:exports": "UPDATE_EXPORT_SURFACE=1 playwright test export-surface"
   },
   "devDependencies": {
     "@grafana/faro-core": "^2.9.0",
+    "@grafana/faro-instrumentation-replay": "^2.9.0",
     "@grafana/faro-react": "^2.9.0",
+    "@grafana/faro-transport-otlp-http": "^2.9.0",
+    "@grafana/faro-web-sdk": "^2.9.0",
     "@grafana/faro-web-tracing": "^2.9.0",
     "@playwright/test": "1.62.1",
     "@types/react": "19.2.18",

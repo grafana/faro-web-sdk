@@ -720,7 +720,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay":
+"@grafana/faro-instrumentation-replay@npm:^2.9.0, @grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay"
   dependencies:
@@ -774,7 +774,10 @@ __metadata:
   resolution: "@grafana/faro-smoke-harness@workspace:e2e/smoke"
   dependencies:
     "@grafana/faro-core": "npm:^2.9.0"
+    "@grafana/faro-instrumentation-replay": "npm:^2.9.0"
     "@grafana/faro-react": "npm:^2.9.0"
+    "@grafana/faro-transport-otlp-http": "npm:^2.9.0"
+    "@grafana/faro-web-sdk": "npm:^2.9.0"
     "@grafana/faro-web-tracing": "npm:^2.9.0"
     "@playwright/test": "npm:1.62.1"
     "@types/react": "npm:19.2.18"
@@ -787,7 +790,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http":
+"@grafana/faro-transport-otlp-http@npm:^2.9.0, @grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http"
   dependencies:
