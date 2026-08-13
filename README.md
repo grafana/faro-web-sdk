@@ -58,10 +58,33 @@ the [README.md][faro-web-sdk-readme] for more information.
 [faro-quick-start]: ./docs/sources/tutorials/quick-start-browser.md
 [faro-react]: ./packages/react
 [faro-react-readme]: ./packages/react/README.md
+[faro-supported-environments]: https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/introduction/supported-environments/
 [faro-web-sdk]: ./packages/web-sdk
 [faro-web-sdk-readme]: ./packages/web-sdk/README.md
 [faro-web-tracing]: ./packages/web-tracing
 [faro-web-tracing-readme]: ./packages/web-tracing/README.md
+
+## Supported environments
+
+The Faro Web SDK instruments web pages that run in a browser. During initialization, the SDK and most of its default
+instrumentations read browser APIs such as `window`, `document`, `PerformanceObserver` and `sessionStorage`. JavaScript
+that doesn't run in a typical web page context is outside the supported scope.
+
+| Environment                                                                | Supported |
+| -------------------------------------------------------------------------- | --------- |
+| Web applications that run in a browser                                     | Yes       |
+| Client-side of server-rendered applications, such as Next.js and React SSR | Yes       |
+| Server runtime of server-rendered applications                             | No        |
+| Browser extensions                                                         | No        |
+| Web workers and service workers                                            | No        |
+| Node.js, React Native, and other non-browser JavaScript environments       | No        |
+
+Browser extensions come up often, so to be explicit, they are not supported. Some users have made Faro run inside an
+extension by supplying their own set of instrumentations. That configuration is unsupported and we do not accept
+issues for it.
+
+For the reasoning behind each row, and for what to use instead when monitoring a server or a backend, see
+[supported environments][faro-supported-environments].
 
 ## Releases
 
@@ -77,6 +100,9 @@ Faro releases follow the [Semantic Versioning](https://semver.org/) naming schem
   > and the upgrade guide whenever choosing a new version of Faro to install.
 
 ## Supported Node versions
+
+This section is about the Node versions used to build, test and publish the SDK. Node.js is not a runtime that the SDK
+itself supports. See [supported environments](#supported-environments).
 
 Faro supports all active LTS (Long Term Support) and current Node versions. When Node.js versions
 reach end-of-life, we remove them from our test matrix and add new versions as they are released.
