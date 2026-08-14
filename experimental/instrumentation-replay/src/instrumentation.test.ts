@@ -769,7 +769,7 @@ describe('ReplayInstrumentation', () => {
         jest.advanceTimersByTime(1);
 
         expect(transport.sentBodies).toHaveLength(1);
-        expect(transport.sentBodies[0]!.meta.page?.url).toBe('https://example.com/callback?code=abc#fragment');
+        expect(transport.sentBodies[0]!.meta.page?.url).toBe('https://example.com/callback');
 
         const replayEvent = transport.sentBodies[0]!.events?.find(
           (event) => event.name === 'faro.session_recording.event'

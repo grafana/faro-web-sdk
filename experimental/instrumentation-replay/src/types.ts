@@ -101,8 +101,9 @@ export interface ReplayInstrumentationOptions {
    * query parameters). This option removes `username`, `password`, `search`, and
    * `hash` from replay Meta event hrefs.
    *
-   * This does not sanitize URLs in Faro transport metadata or arbitrary URLs
-   * serialized inside rrweb DOM snapshots.
+   * This option only controls replay Meta event hrefs. Faro transport body
+   * metadata is sanitized separately by core; arbitrary URLs serialized inside
+   * rrweb DOM snapshots are not changed.
    *
    * @default true
    */
