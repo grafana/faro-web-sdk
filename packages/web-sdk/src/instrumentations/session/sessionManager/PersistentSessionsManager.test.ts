@@ -69,7 +69,7 @@ describe('Persistent Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
 
-    const { updateSession } = new PersistentSessionsManager();
+    const { updateSession } = new PersistentSessionsManager(undefined);
 
     const nextActivityTimeAfterFiveSeconds = fakeSystemTime;
     jest.setSystemTime(nextActivityTimeAfterFiveSeconds);
@@ -100,7 +100,7 @@ describe('Persistent Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
 
-    const { updateSession } = new PersistentSessionsManager();
+    const { updateSession } = new PersistentSessionsManager(undefined);
 
     const mockNewSessionId = 'abcde';
     jest.spyOn(faroCore, 'genShortID').mockReturnValue(mockNewSessionId);
@@ -155,7 +155,7 @@ describe('Persistent Sessions Manager.', () => {
       sessionMeta: oldStoredMeta,
     };
 
-    const { updateSession } = new PersistentSessionsManager();
+    const { updateSession } = new PersistentSessionsManager(undefined);
 
     // overwrite auto created session
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -205,7 +205,7 @@ describe('Persistent Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
 
-    new PersistentSessionsManager();
+    new PersistentSessionsManager(undefined);
 
     const initialSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
     expect(initialSession.sessionId).toBe(mockInitialSessionId);
@@ -231,7 +231,7 @@ describe('Persistent Sessions Manager.', () => {
     };
 
     expect(() => {
-      PersistentSessionsManager.storeUserSession(storedSession);
+      new PersistentSessionsManager(undefined).storeUserSession(storedSession);
     }).not.toThrow();
   });
 
@@ -249,7 +249,7 @@ describe('Persistent Sessions Manager.', () => {
 
       mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
 
-      new PersistentSessionsManager();
+      new PersistentSessionsManager(undefined);
 
       const initialSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
       expect(initialSession.sessionId).toBe(mockInitialSessionId);
@@ -278,7 +278,7 @@ describe('Persistent Sessions Manager.', () => {
       };
 
       mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
-      new PersistentSessionsManager();
+      new PersistentSessionsManager(undefined);
 
       faro.api.setSession(storedSession.sessionMeta);
 
@@ -302,7 +302,7 @@ describe('Persistent Sessions Manager.', () => {
       };
 
       mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
-      new PersistentSessionsManager();
+      new PersistentSessionsManager(undefined);
 
       const newMetaAttributes = {
         id: mockInitialSessionId,

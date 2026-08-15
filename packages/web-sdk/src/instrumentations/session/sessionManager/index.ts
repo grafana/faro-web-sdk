@@ -10,8 +10,10 @@ export {
   defaultSessionTrackingConfig,
 } from './sessionConstants';
 
+export { getSessionStorageKey } from './getSessionStorageKey';
+
 export { isSampled } from './sampling';
 
-export type { FaroUserSession } from './types';
+export type { FaroUserSession, SessionManagerInstance, SessionManager } from './types';
 
 export { getSessionManagerByConfig } from './getSessionManagerByConfig';
