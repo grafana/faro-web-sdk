@@ -66,6 +66,7 @@ describe('CSPInstrumentation', () => {
 
   it('ensures listener gets removed on teardown', () => {
     const mockTransport = new MockTransport();
+    const addSpy = jest.spyOn(document, 'addEventListener');
     const removeSpy = jest.spyOn(document, 'removeEventListener');
 
     const instrumentation = new CSPInstrumentation();
@@ -79,7 +80,16 @@ describe('CSPInstrumentation', () => {
     );
     faro.internalLogger.warn = jest.fn();
 
+    const addCall = addSpy.mock.calls.find(([eventName]) => eventName === 'securitypolicyviolation');
+    const addedListener = addCall?.[1] as EventListener | undefined;
+
     faro.instrumentations.remove(instrumentation);
-    expect(removeSpy).toHaveBeenCalledWith('securitypolicyviolation', instrumentation.securitypolicyviolationListener);
+
+    const removeCall = removeSpy.mock.calls.find(([eventName]) => eventName === 'securitypolicyviolation');
+    const removedListener = removeCall?.[1] as EventListener | undefined;
+
+    expect(addedListener).toBeDefined();
+    expect(removedListener).toBeDefined();
+    expect(removedListener).toBe(addedListener);
   });
 });

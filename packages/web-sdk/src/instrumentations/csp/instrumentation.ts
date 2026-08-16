@@ -4,7 +4,7 @@ import type { Instrumentation } from '@grafana/faro-core';
 export class CSPInstrumentation extends BaseInstrumentation implements Instrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-csp';
   readonly version = VERSION;
-  readonly securitypolicyviolationListener = this.securitypolicyviolationHandler.bind(this);
+  private readonly securitypolicyviolationListener = this.securitypolicyviolationHandler.bind(this);
 
   constructor() {
     super();
