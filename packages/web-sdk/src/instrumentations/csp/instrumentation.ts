@@ -4,17 +4,18 @@ import type { Instrumentation } from '@grafana/faro-core';
 export class CSPInstrumentation extends BaseInstrumentation implements Instrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-csp';
   readonly version = VERSION;
+  readonly securitypolicyviolationListener = this.securitypolicyviolationHandler.bind(this);
 
   constructor() {
     super();
   }
 
   initialize() {
-    document.addEventListener('securitypolicyviolation', this.securitypolicyviolationHandler.bind(this));
+    document.addEventListener('securitypolicyviolation', this.securitypolicyviolationListener);
   }
 
   destroy() {
-    document.removeEventListener('securitypolicyviolation', this.securitypolicyviolationHandler);
+    document.removeEventListener('securitypolicyviolation', this.securitypolicyviolationListener);
   }
 
   public securitypolicyviolationHandler(ev: SecurityPolicyViolationEvent) {

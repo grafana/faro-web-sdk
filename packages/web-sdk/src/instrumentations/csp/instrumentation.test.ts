@@ -80,6 +80,6 @@ describe('CSPInstrumentation', () => {
     faro.internalLogger.warn = jest.fn();
 
     faro.instrumentations.remove(instrumentation);
-    expect(removeSpy).toHaveBeenCalledWith('securitypolicyviolation', instrumentation.securitypolicyviolationHandler);
+    expect(removeSpy).toHaveBeenCalledWith('securitypolicyviolation', instrumentation.securitypolicyviolationListener);
   });
 });
