@@ -5,7 +5,7 @@ import type { ConsoleTransportOptions } from './types';
 
 export class ConsoleTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-console';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   constructor(private options: ConsoleTransportOptions = {}) {
     super();

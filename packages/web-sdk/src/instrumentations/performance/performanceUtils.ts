@@ -58,7 +58,7 @@ export function performanceObserverSupported(): boolean {
   return 'PerformanceObserver' in window;
 }
 
-export function onDocumentReady(handleReady: () => void) {
+export function onDocumentReady(handleReady: () => void): void {
   if (document.readyState === 'complete') {
     handleReady();
   } else {

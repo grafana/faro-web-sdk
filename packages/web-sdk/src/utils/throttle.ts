@@ -1,7 +1,10 @@
 /**
  * Tail based throttle which caches the args of the last call and updates
  */
-export function throttle<T extends (...args: any[]) => void>(callback: T, delay: number) {
+export function throttle<T extends (...args: any[]) => void>(
+  callback: T,
+  delay: number
+): (...args: Parameters<T>) => void {
   let pause = false;
   let lastPending: Parameters<T> | null;
 

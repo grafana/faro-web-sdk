@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.esm.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "isolatedDeclarations": true,
+    "noEmit": true,
+    "paths": {
+      "@grafana/faro-core": ["../core/src"],
+      "@grafana/faro-web-sdk": ["../web-sdk/src"]
+    }
+  },
+  "include": ["./src"],
+  "exclude": ["**/*.test.ts"]
+}

@@ -16,7 +16,7 @@ import {
 } from './types';
 import UserAction from './userAction';
 
-export const userActionsMessageBus = new Observable<UserActionMessage>();
+export const userActionsMessageBus: Observable<UserActionMessage> = new Observable<UserActionMessage>();
 
 export function initializeUserActionsAPI({
   transports,

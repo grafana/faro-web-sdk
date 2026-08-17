@@ -24,7 +24,7 @@ const USER_INTERACTION_EVENTS: readonly string[] = [
 
 export class ReplayInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-instrumentation-replay';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   private stopFn: { (): void } | null = null;
   private isRecording: boolean = false;

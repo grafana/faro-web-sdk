@@ -68,8 +68,8 @@ export function removeItem(key: string, webStorageMechanism: StorageMechanism): 
   }
 }
 
-export const isLocalStorageAvailable = isWebStorageAvailable(webStorageType.local);
-export const isSessionStorageAvailable = isWebStorageAvailable(webStorageType.session);
+export const isLocalStorageAvailable: boolean = isWebStorageAvailable(webStorageType.local);
+export const isSessionStorageAvailable: boolean = isWebStorageAvailable(webStorageType.session);
 
 function isWebStorageTypeAvailable(webStorageMechanism: StorageMechanism) {
   if (webStorageMechanism === webStorageType.local) {

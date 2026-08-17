@@ -194,6 +194,9 @@ jobs:
       - name: Build
         run: yarn build
 
+      - name: Type check
+        run: yarn quality:typecheck
+
       - name: Lint
         run: yarn quality:lint
 

@@ -20,7 +20,7 @@ type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;
 
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   // previously notified session, to ensure we don't send session start
   // event twice for the same session
@@ -176,7 +176,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     });
   }
 
-  initialize() {
+  initialize(): void {
     this.logDebug('init session instrumentation');
 
     const sessionTrackingConfig = this.config.sessionTracking;

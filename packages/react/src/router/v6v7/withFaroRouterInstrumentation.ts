@@ -22,7 +22,7 @@ interface Router {
 /**
  * To use with React Router 6.4 data APIs.
  */
-export function withFaroRouterInstrumentation<R extends Router = Router>(router: R) {
+export function withFaroRouterInstrumentation<R extends Router = Router>(router: R): R {
   let lastRoute: EventRouteTransitionAttributes = {};
 
   router.subscribe((state) => {

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Faro Web SDK export surface</title>
+  </head>
+  <body>
+    <h1>Faro Web SDK export surface</h1>
+    <p>
+      Collects every export of every package, both as ES modules resolved the way a bundler resolves
+      them and as the bundles a content delivery network serves. The export snapshot spec reads the
+      result from this page.
+    </p>
+    <pre id="out">collecting…</pre>
+    <script type="module" src="/src/exports.ts"></script>
+  </body>
+</html>

@@ -4,7 +4,7 @@ import type { Meta, MetaView } from '@grafana/faro-core';
 // all this does is send VIEW_CHANGED event
 export class ViewInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-view';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   // previously notified view, to ensure we don't send view changed
   // event twice for the same view
@@ -28,7 +28,7 @@ export class ViewInstrumentation extends BaseInstrumentation {
     }
   }
 
-  initialize() {
+  initialize(): void {
     this.metas.addListener(this.sendViewChangedEvent.bind(this));
   }
 }

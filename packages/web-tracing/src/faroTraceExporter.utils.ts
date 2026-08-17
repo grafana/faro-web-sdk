@@ -6,7 +6,7 @@ import type { API, EventAttributes as FaroEventAttributes } from '@grafana/faro-
 
 const DURATION_NS_KEY = 'duration_ns';
 
-export function sendFaroEvents(resourceSpans: IResourceSpans[] = [], api: API) {
+export function sendFaroEvents(resourceSpans: IResourceSpans[] = [], api: API): void {
   for (const resourceSpan of resourceSpans) {
     const { scopeSpans } = resourceSpan;
 

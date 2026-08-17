@@ -10,7 +10,13 @@ import {
   type TimeoutWarning,
 } from './util';
 
-export function getUserEventHandler(faro: Faro, onTimeoutWarning: TimeoutWarning = noop) {
+export function getUserEventHandler(
+  faro: Faro,
+  onTimeoutWarning: TimeoutWarning = noop
+): {
+  processUserEvent: (event: PointerEvent | KeyboardEvent) => void;
+  processUserActionStarted: (userAction: UserActionInterface, initialActivityTimeout?: number) => void;
+} {
   const { api, config, internalLogger } = faro;
   const globalInitialActivityTimeout = normalizeInitialActivityTimeout(
     config.userActionsInstrumentation?.initialActivityTimeout,
@@ -18,7 +24,7 @@ export function getUserEventHandler(faro: Faro, onTimeoutWarning: TimeoutWarning
     onTimeoutWarning
   );
 
-  function processUserEvent(event: PointerEvent | KeyboardEvent) {
+  function processUserEvent(event: PointerEvent | KeyboardEvent): void {
     const element = event.target as HTMLElement;
     const dataAttributeName = config.userActionsInstrumentation?.dataAttributeName ?? userActionDataAttribute;
     const userActionName = getUserActionNameFromElement(element, dataAttributeName);
@@ -32,7 +38,7 @@ export function getUserEventHandler(faro: Faro, onTimeoutWarning: TimeoutWarning
     api.startUserAction(userActionName, {}, { triggerName: event.type, initialActivityTimeout });
   }
 
-  function processUserActionStarted(userAction: UserActionInterface, initialActivityTimeout?: number) {
+  function processUserActionStarted(userAction: UserActionInterface, initialActivityTimeout?: number): void {
     const internalUserAction = userAction as unknown as UserActionInternalInterface;
     const effectiveInitialActivityTimeout = normalizeInitialActivityTimeout(
       initialActivityTimeout,
@@ -63,6 +69,6 @@ export function getUserActionNameFromElement(element: HTMLElement, dataAttribute
   return undefined;
 }
 
-export function unsubscribeAllMonitors(allMonitorsSub: Subscription | undefined) {
+export function unsubscribeAllMonitors(allMonitorsSub: Subscription | undefined): void {
   allMonitorsSub?.unsubscribe();
 }

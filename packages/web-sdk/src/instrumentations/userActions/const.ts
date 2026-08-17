@@ -1,6 +1,6 @@
 export const userActionDataAttributeParsed = 'faroUserActionName';
 export const userActionDataAttribute = 'data-faro-user-action-name';
-export const userActionTimeoutDataAttribute = userActionDataAttribute.replace(/-name$/, '-timeout');
+export const userActionTimeoutDataAttribute: string = userActionDataAttribute.replace(/-name$/, '-timeout');
 export const defaultInitialActivityTimeout = 100;
 export const maxInitialActivityTimeout = 1000;
 
