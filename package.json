@@ -100,7 +100,7 @@
     "uuid": "^14.0.0",
     "tmp": "^0.2.7",
     "form-data": "4.0.6",
-    "lerna/js-yaml": "5.2.3",
+    "lerna/js-yaml": "5.3.0",
     "postcss": "^8.5.18",
     "shell-quote": "^1.10.0",
     "@istanbuljs/load-nyc-config/js-yaml": "^5.0.0",
