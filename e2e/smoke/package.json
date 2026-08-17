@@ -1,7 +1,7 @@
 {
   "name": "@grafana/faro-smoke-harness",
   "packageManager": "yarn@4.18.0",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "description": "Minimal Vite + React harness and Playwright smoke specs for Faro Web SDK",
   "license": "Apache-2.0",
   "author": "Grafana Labs",
@@ -25,12 +25,12 @@
     "snapshot:exports": "UPDATE_EXPORT_SURFACE=1 playwright test export-surface"
   },
   "devDependencies": {
-    "@grafana/faro-core": "^2.9.0",
-    "@grafana/faro-instrumentation-replay": "^2.9.0",
-    "@grafana/faro-react": "^2.9.0",
-    "@grafana/faro-transport-otlp-http": "^2.9.0",
-    "@grafana/faro-web-sdk": "^2.9.0",
-    "@grafana/faro-web-tracing": "^2.9.0",
+    "@grafana/faro-core": "^2.10.0",
+    "@grafana/faro-instrumentation-replay": "^2.10.0",
+    "@grafana/faro-react": "^2.10.0",
+    "@grafana/faro-transport-otlp-http": "^2.10.0",
+    "@grafana/faro-web-sdk": "^2.10.0",
+    "@grafana/faro-web-tracing": "^2.10.0",
     "@playwright/test": "1.62.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
