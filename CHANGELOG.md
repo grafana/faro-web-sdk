@@ -13,28 +13,26 @@
 
 ## [2.10.0](https://github.com/grafana/faro-web-sdk/compare/v2.9.0...v2.10.0) (2026-08-17)
 
-
 ### Features
 
-* **web-sdk:** forward LCP resource details and LoAF-based INP attribution in web vitals measurements ([#2187](https://github.com/grafana/faro-web-sdk/issues/2187)) ([557e94d](https://github.com/grafana/faro-web-sdk/commit/557e94d9d171c19ba0879f4834014e3b7eb09b1c))
-
+- **web-sdk:** forward LCP resource details and LoAF-based INP attribution in web vitals measurements ([#2187](https://github.com/grafana/faro-web-sdk/issues/2187)) ([557e94d](https://github.com/grafana/faro-web-sdk/commit/557e94d9d171c19ba0879f4834014e3b7eb09b1c))
 
 ### Bug Fixes
 
-* **core:** keep config.paused in sync with pause and unpause ([#2196](https://github.com/grafana/faro-web-sdk/issues/2196)) ([dd2f505](https://github.com/grafana/faro-web-sdk/commit/dd2f5051cd3b14ab7c2bc54a637f3931c265b4f2))
-* **core:** make removeBeforeSendHooks remove the hooks ([#2208](https://github.com/grafana/faro-web-sdk/issues/2208)) ([4378883](https://github.com/grafana/faro-web-sdk/commit/43788833147ae0bb679d84f92eda2b54714a720b))
-* **deps:** bump vulnerable transitive deps ([#2193](https://github.com/grafana/faro-web-sdk/issues/2193)) ([41065ec](https://github.com/grafana/faro-web-sdk/commit/41065ecb63e607b1dd28cd6844c0e9c3b281632e))
-* **deps:** update dependency web-vitals to v6 ([#2164](https://github.com/grafana/faro-web-sdk/issues/2164)) ([42f154f](https://github.com/grafana/faro-web-sdk/commit/42f154f33ac99c97c4d02d33a03cc4468eb1414e))
-* **deps:** update npm-dependencies ([#2154](https://github.com/grafana/faro-web-sdk/issues/2154)) ([9bc88e6](https://github.com/grafana/faro-web-sdk/commit/9bc88e63dfd1be55cc93f493639fd8e5fe8ae69b))
-* **replay:** strip query string and fragment from rrweb Meta event href ([#2127](https://github.com/grafana/faro-web-sdk/issues/2127)) ([fd0fa45](https://github.com/grafana/faro-web-sdk/commit/fd0fa452aaf5102e99a1319cb2fb1c6b31f8cb8b))
-* **replay:** use fixed-length mask for input values ([#2126](https://github.com/grafana/faro-web-sdk/issues/2126)) ([80dac72](https://github.com/grafana/faro-web-sdk/commit/80dac72b90b7639b047ba4afb5f57f0ad255867d))
-* **security/high/packages/react:** update dependency react-router to v7.18.2 [security] ([#2214](https://github.com/grafana/faro-web-sdk/issues/2214)) ([635bee6](https://github.com/grafana/faro-web-sdk/commit/635bee6b8b8cf7b4517f8569bceff8b665fdeaf1))
-* **security/high/:** update dependency brace-expansion to v5.0.9 [security] ([#2204](https://github.com/grafana/faro-web-sdk/issues/2204)) ([ffc90b0](https://github.com/grafana/faro-web-sdk/commit/ffc90b0271d7e9732ffb23c9a6dec2bf2df70307))
-* **security/medium/:** update dependency postcss to v8.5.23 [security] ([#2205](https://github.com/grafana/faro-web-sdk/issues/2205)) ([23894be](https://github.com/grafana/faro-web-sdk/commit/23894be300b7edf1c2752327621b6ce3d50355e4))
-* **web-sdk:** measure the keepalive budget in bytes ([#2199](https://github.com/grafana/faro-web-sdk/issues/2199)) ([c68f22d](https://github.com/grafana/faro-web-sdk/commit/c68f22dcfb1ce502644e1468de31377d257f61db))
-* **web-sdk:** stop stack parsing from stalling on large error payloads ([#2197](https://github.com/grafana/faro-web-sdk/issues/2197)) ([12f3a39](https://github.com/grafana/faro-web-sdk/commit/12f3a399dd6fb6a8b7edebecabb1166c0c21b181))
-* **web-tracing:** stop injecting traceparent while Faro is paused ([#2198](https://github.com/grafana/faro-web-sdk/issues/2198)) ([bb09041](https://github.com/grafana/faro-web-sdk/commit/bb09041ff3599539126d93d1de83e6519aa4c5d2))
-* **web-tracing:** type the full set of fetch and xhr instrumentation options ([#2200](https://github.com/grafana/faro-web-sdk/issues/2200)) ([4b90404](https://github.com/grafana/faro-web-sdk/commit/4b904045c93fb08a4f0b26f95f3b7f39c5373c1c))
+- **core:** keep config.paused in sync with pause and unpause ([#2196](https://github.com/grafana/faro-web-sdk/issues/2196)) ([dd2f505](https://github.com/grafana/faro-web-sdk/commit/dd2f5051cd3b14ab7c2bc54a637f3931c265b4f2))
+- **core:** make removeBeforeSendHooks remove the hooks ([#2208](https://github.com/grafana/faro-web-sdk/issues/2208)) ([4378883](https://github.com/grafana/faro-web-sdk/commit/43788833147ae0bb679d84f92eda2b54714a720b))
+- **deps:** bump vulnerable transitive deps ([#2193](https://github.com/grafana/faro-web-sdk/issues/2193)) ([41065ec](https://github.com/grafana/faro-web-sdk/commit/41065ecb63e607b1dd28cd6844c0e9c3b281632e))
+- **deps:** update dependency web-vitals to v6 ([#2164](https://github.com/grafana/faro-web-sdk/issues/2164)) ([42f154f](https://github.com/grafana/faro-web-sdk/commit/42f154f33ac99c97c4d02d33a03cc4468eb1414e))
+- **deps:** update npm-dependencies ([#2154](https://github.com/grafana/faro-web-sdk/issues/2154)) ([9bc88e6](https://github.com/grafana/faro-web-sdk/commit/9bc88e63dfd1be55cc93f493639fd8e5fe8ae69b))
+- **replay:** strip query string and fragment from rrweb Meta event href ([#2127](https://github.com/grafana/faro-web-sdk/issues/2127)) ([fd0fa45](https://github.com/grafana/faro-web-sdk/commit/fd0fa452aaf5102e99a1319cb2fb1c6b31f8cb8b))
+- **replay:** use fixed-length mask for input values ([#2126](https://github.com/grafana/faro-web-sdk/issues/2126)) ([80dac72](https://github.com/grafana/faro-web-sdk/commit/80dac72b90b7639b047ba4afb5f57f0ad255867d))
+- **security/high/packages/react:** update dependency react-router to v7.18.2 [security] ([#2214](https://github.com/grafana/faro-web-sdk/issues/2214)) ([635bee6](https://github.com/grafana/faro-web-sdk/commit/635bee6b8b8cf7b4517f8569bceff8b665fdeaf1))
+- **security/high/:** update dependency brace-expansion to v5.0.9 [security] ([#2204](https://github.com/grafana/faro-web-sdk/issues/2204)) ([ffc90b0](https://github.com/grafana/faro-web-sdk/commit/ffc90b0271d7e9732ffb23c9a6dec2bf2df70307))
+- **security/medium/:** update dependency postcss to v8.5.23 [security] ([#2205](https://github.com/grafana/faro-web-sdk/issues/2205)) ([23894be](https://github.com/grafana/faro-web-sdk/commit/23894be300b7edf1c2752327621b6ce3d50355e4))
+- **web-sdk:** measure the keepalive budget in bytes ([#2199](https://github.com/grafana/faro-web-sdk/issues/2199)) ([c68f22d](https://github.com/grafana/faro-web-sdk/commit/c68f22dcfb1ce502644e1468de31377d257f61db))
+- **web-sdk:** stop stack parsing from stalling on large error payloads ([#2197](https://github.com/grafana/faro-web-sdk/issues/2197)) ([12f3a39](https://github.com/grafana/faro-web-sdk/commit/12f3a399dd6fb6a8b7edebecabb1166c0c21b181))
+- **web-tracing:** stop injecting traceparent while Faro is paused ([#2198](https://github.com/grafana/faro-web-sdk/issues/2198)) ([bb09041](https://github.com/grafana/faro-web-sdk/commit/bb09041ff3599539126d93d1de83e6519aa4c5d2))
+- **web-tracing:** type the full set of fetch and xhr instrumentation options ([#2200](https://github.com/grafana/faro-web-sdk/issues/2200)) ([4b90404](https://github.com/grafana/faro-web-sdk/commit/4b904045c93fb08a4f0b26f95f3b7f39c5373c1c))
 
 ## [2.9.0](https://github.com/grafana/faro-web-sdk/compare/v2.8.2...v2.9.0) (2026-07-29)
 
