@@ -17,3 +17,4 @@
   included. See [docs/PULL_REQUESTS.md](docs/PULL_REQUESTS.md).
 - The exempt label list in `.github/workflows/stale.yml` is the single source of truth. Do not
   duplicate it elsewhere.
+- Security issues should be reported via [Grafana's security issue reporting page](https://grafana.com/legal/report-a-security-issue/) and not directly in this repository.
