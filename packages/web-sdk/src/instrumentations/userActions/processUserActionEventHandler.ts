@@ -27,9 +27,13 @@ export function getUserEventHandler(
 
   function processUserEvent(event: PointerEvent | KeyboardEvent): void {
     const dataAttributeName = config.userActionsInstrumentation?.dataAttributeName ?? userActionDataAttribute;
-    const element = (event.target as HTMLElement).closest(
-      `[${normalizeDataAttributeName(dataAttributeName)}]`
-    ) as HTMLElement | null;
+
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    const element = target.closest(`[${normalizeDataAttributeName(dataAttributeName)}]`) as HTMLElement | null;
     const userActionName = getUserActionNameFromElement(element, dataAttributeName);
 
     // We don't have a matching element or data attribute
