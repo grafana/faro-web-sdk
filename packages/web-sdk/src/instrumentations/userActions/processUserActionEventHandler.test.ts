@@ -55,6 +55,11 @@ describe('Utility functions', () => {
     expect(result).toBeUndefined();
   });
 
+  it('getUserActionNameFromElement returns undefined when the element is null', () => {
+    const result = getUserActionNameFromElement(null, defaultDataAttribute);
+    expect(result).toBeUndefined();
+  });
+
   it('unsubscribeAllMonitors calls unsubscribe on subscription', () => {
     const sub: Subscription = { unsubscribe: jest.fn() };
     unsubscribeAllMonitors(sub);
@@ -114,6 +119,32 @@ describe('getUserEventHandler', () => {
     processUserEvent(event);
 
     expect(startSpy).toHaveBeenCalledWith('my-action', {}, { triggerName: 'click' });
+  });
+
+  it('finds the data attribute on an ancestor when the event target is a nested child element', () => {
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+
+    const button = document.createElement('button');
+    button.setAttribute('data-foo-bar', 'save');
+    const span = document.createElement('span');
+    span.textContent = 'Save';
+    button.appendChild(span);
+
+    processUserEvent({ type: 'click', target: span } as unknown as PointerEvent);
+
+    expect(startSpy).toHaveBeenCalledWith('save', {}, { triggerName: 'click' });
+  });
+
+  it('does not start a user action when no ancestor has the data attribute', () => {
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+
+    const wrapper = document.createElement('div');
+    const span = document.createElement('span');
+    wrapper.appendChild(span);
+
+    processUserEvent({ type: 'click', target: span } as unknown as PointerEvent);
+
+    expect(startSpy).not.toHaveBeenCalled();
   });
 
   it('passes the element initial activity timeout to the user action start message', () => {
