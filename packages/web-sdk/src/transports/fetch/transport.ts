@@ -11,17 +11,41 @@ const DEFAULT_CONCURRENCY = 5; // chrome supports 10 total, firefox 17
 const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
 
 const BEACON_BODY_SIZE_LIMIT = 60000;
+const MAX_KEEPALIVE_REQUESTS = 9;
 const TOO_MANY_REQUESTS = 429;
 const ACCEPTED = 202;
 
+let pendingKeepaliveBodySize = 0;
+let pendingKeepaliveRequests = 0;
+
+interface KeepaliveReservation {
+  keepalive: boolean;
+  release: () => void;
+}
+
+/**
+ * The browser keepalive budget is measured in bytes, while `String.length` counts UTF-16 code
+ * units. A payload of non-ASCII text is up to three times larger than its length suggests, so
+ * reserving by length lets Faro send far more than it accounted for and reintroduces the silent
+ * keepalive failures this budget exists to prevent.
+ */
+function getBodyByteSize(body: string): number {
+  if (typeof TextEncoder === 'undefined') {
+    return body.length;
+  }
+
+  return new TextEncoder().encode(body).byteLength;
+}
+
 export class FetchTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-fetch';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   promiseBuffer: PromiseBuffer<Response | void>;
 
   private readonly rateLimitBackoffMs: number;
   private readonly getNow: () => number;
+  private readonly compressionEnabled: boolean;
   private disabledUntil: Date = new Date(0);
 
   constructor(private options: FetchTransportOptions) {
@@ -29,6 +53,17 @@ export class FetchTransport extends BaseTransport {
 
     this.rateLimitBackoffMs = options.defaultRateLimitBackoffMs ?? DEFAULT_RATE_LIMIT_BACKOFF_MS;
     this.getNow = options.getNow ?? (() => Date.now());
+
+    const requestCompression = options.requestCompression ?? false;
+
+    if (requestCompression && typeof CompressionStream === 'undefined') {
+      this.compressionEnabled = false;
+      this.logWarn(
+        'requestCompression is enabled but CompressionStream is not available. Falling back to uncompressed.'
+      );
+    } else {
+      this.compressionEnabled = requestCompression;
+    }
 
     this.promiseBuffer = createPromiseBuffer({
       size: options.bufferSize ?? DEFAULT_BUFFER_SIZE,
@@ -45,11 +80,12 @@ export class FetchTransport extends BaseTransport {
       }
 
       await this.promiseBuffer.add(async () => {
-        const body = JSON.stringify(getTransportBody(items));
+        const jsonBody = JSON.stringify(getTransportBody(items));
 
         const { url, requestOptions, apiKey } = this.options;
 
         const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
+        const { keepalive: configuredKeepalive, ...requestOptionsWithoutKeepalive } = restOfRequestOptions;
 
         let sessionId;
         const sessionMeta = this.metas.value.session;
@@ -62,39 +98,32 @@ export class FetchTransport extends BaseTransport {
           resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
         }
 
-        return fetch(url, {
+        let body: string | Blob = jsonBody;
+        let bodySize = getBodyByteSize(jsonBody);
+        const compressionHeaders: Record<string, string> = {};
+
+        if (this.compressionEnabled) {
+          body = await this.compress(jsonBody);
+          bodySize = body.size;
+          compressionHeaders['Content-Encoding'] = 'gzip';
+        }
+
+        const requestInit: RequestInit = {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...compressionHeaders,
             ...resolvedHeaders,
             ...(apiKey ? { 'x-api-key': apiKey } : {}),
             ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
           },
           body,
-          keepalive: body.length <= BEACON_BODY_SIZE_LIMIT,
-          ...(restOfRequestOptions ?? {}),
-        })
-          .then(async (response) => {
-            if (response.status === ACCEPTED) {
-              const sessionExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
+          ...(requestOptionsWithoutKeepalive ?? {}),
+        };
 
-              if (sessionExpired) {
-                this.extendFaroSession(this.config, this.logDebug);
-              }
-            }
-
-            if (response.status === TOO_MANY_REQUESTS) {
-              this.disabledUntil = this.getRetryAfterDate(response);
-              this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
-            }
-
-            // read the body so the connection can be closed
-            response.text().catch(noop);
-            return response;
-          })
-          .catch((err) => {
-            this.logError('Failed sending payload to the receiver\n', JSON.parse(body), err);
-          });
+        return this.fetchWithKeepaliveRetry(url, requestInit, bodySize, configuredKeepalive).catch((err) => {
+          this.logError('Failed sending payload to the receiver\n', JSON.parse(jsonBody), err);
+        });
       });
     } catch (err) {
       this.logError(err);
@@ -128,6 +157,122 @@ export class FetchTransport extends BaseTransport {
     }
 
     return new Date(now + this.rateLimitBackoffMs);
+  }
+
+  private reserveKeepalive(bodySize: number, configuredKeepalive?: boolean): KeepaliveReservation {
+    if (configuredKeepalive === false) {
+      return {
+        keepalive: false,
+        release: noop,
+      };
+    }
+
+    if (
+      bodySize > BEACON_BODY_SIZE_LIMIT ||
+      pendingKeepaliveBodySize + bodySize > BEACON_BODY_SIZE_LIMIT ||
+      pendingKeepaliveRequests >= MAX_KEEPALIVE_REQUESTS
+    ) {
+      this.logDebug('Disabling keepalive because the pending keepalive request budget would be exceeded.');
+
+      return {
+        keepalive: false,
+        release: noop,
+      };
+    }
+
+    pendingKeepaliveBodySize += bodySize;
+    pendingKeepaliveRequests++;
+
+    let released = false;
+
+    return {
+      keepalive: true,
+      release: () => {
+        if (released) {
+          return;
+        }
+
+        released = true;
+        pendingKeepaliveBodySize = Math.max(0, pendingKeepaliveBodySize - bodySize);
+        pendingKeepaliveRequests = Math.max(0, pendingKeepaliveRequests - 1);
+      },
+    };
+  }
+
+  private async fetchWithKeepaliveRetry(
+    url: string,
+    requestInit: RequestInit,
+    bodySize: number,
+    configuredKeepalive?: boolean
+  ): Promise<Response> {
+    const keepaliveReservation = this.reserveKeepalive(bodySize, configuredKeepalive);
+
+    try {
+      const response = await fetch(url, {
+        ...requestInit,
+        keepalive: keepaliveReservation.keepalive,
+      });
+
+      return this.handleResponse(response);
+    } catch (err) {
+      if (keepaliveReservation.keepalive && this.isFetchNetworkError(err)) {
+        this.logDebug('Retrying failed keepalive request with keepalive disabled.');
+
+        const response = await fetch(url, {
+          ...requestInit,
+          keepalive: false,
+        });
+
+        return this.handleResponse(response);
+      }
+
+      throw err;
+    } finally {
+      keepaliveReservation.release();
+    }
+  }
+
+  private async handleResponse(response: Response): Promise<Response> {
+    if (response.status === ACCEPTED) {
+      const sessionExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
+
+      if (sessionExpired) {
+        this.extendFaroSession(this.config, this.logDebug);
+      }
+    }
+
+    if (response.status === TOO_MANY_REQUESTS) {
+      this.disabledUntil = this.getRetryAfterDate(response);
+      this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
+    }
+
+    // read the body so the connection can be closed
+    response.text().catch(noop);
+    return response;
+  }
+
+  private isFetchNetworkError(err: unknown): boolean {
+    return err instanceof TypeError;
+  }
+
+  private async compress(body: string): Promise<Blob> {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(body));
+        controller.close();
+      },
+    }).pipeThrough(new CompressionStream('gzip'));
+
+    const reader = stream.getReader();
+    const chunks: BlobPart[] = [];
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      chunks.push(value);
+    }
+    return new Blob(chunks);
   }
 
   private extendFaroSession(config: Config, logDebug: BaseExtension['logDebug']) {

@@ -9,7 +9,7 @@ import { createRoutesFromChildren, isInitialized, Routes, useLocation, useNaviga
 import type { EventRouteTransitionAttributes, ReactRouterV6RoutesProps } from './types';
 import { getRouteFromLocation } from './utils';
 
-export function FaroRoutes(props: ReactRouterV6RoutesProps) {
+export function FaroRoutes(props: ReactRouterV6RoutesProps): React.JSX.Element {
   const location = useLocation?.();
   const navigationType = useNavigationType?.();
 

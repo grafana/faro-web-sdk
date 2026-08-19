@@ -10,6 +10,17 @@ import {
 } from '@grafana/faro-react';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
+// Opt-in via ?session=persistent so the session specs don't affect other smoke specs.
+const params = new URLSearchParams(window.location.search);
+const persistentSession = params.get('session') === 'persistent';
+const sessionTracking = persistentSession ? { enabled: true, persistent: true } : undefined;
+
+// Session signals only for the persistent scenario: web vitals/tracing/React
+// would emit on their own and rotate the session mid-test (non-deterministic).
+const instrumentations = persistentSession
+  ? [...getWebInstrumentations()]
+  : [...getWebInstrumentations(), new ReactIntegration(), new TracingInstrumentation()];
+
 const faro = initializeFaro({
   url: '/collect',
   app: {
@@ -17,7 +28,8 @@ const faro = initializeFaro({
     version: '0.0.0',
     environment: 'test',
   },
-  instrumentations: [...getWebInstrumentations(), new ReactIntegration(), new TracingInstrumentation()],
+  instrumentations,
+  ...(sessionTracking ? { sessionTracking } : {}),
 });
 
 function Thrower() {
@@ -57,6 +69,9 @@ function App() {
       </button>
       <button data-cy="btn-push-error" onClick={() => faro.api.pushError(new Error('smoke harness pushError'))}>
         Push error via API
+      </button>
+      <button data-cy="btn-traced-fetch" onClick={() => void fetch('/api/ping').catch(() => undefined)}>
+        Traced fetch
       </button>
       <button
         data-cy="btn-emit-span"

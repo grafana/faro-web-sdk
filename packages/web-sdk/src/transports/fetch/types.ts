@@ -27,6 +27,9 @@ export interface FetchTransportOptions {
   getNow?: ClockFn;
   // addition options for global.Fetch
   requestOptions?: FetchTransportRequestOptions;
+  // compress request bodies with gzip using the native CompressionStream API.
+  // falls back to uncompressed if CompressionStream is not available.
+  requestCompression?: boolean;
 }
 
 export type ClockFn = () => number;

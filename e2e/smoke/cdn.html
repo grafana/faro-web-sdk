@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Faro Web SDK from a content delivery network</title>
+  </head>
+  <body>
+    <main>
+      <h1>Faro Web SDK from a content delivery network</h1>
+      <p>
+        Loads the published bundles with script tags, the way a customer using unpkg does, and runs the
+        same journeys against the globals they define. This is the path that a bundler test cannot see.
+      </p>
+      <div id="root"></div>
+    </main>
+    <script type="module" src="/src/cdn.ts"></script>
+  </body>
+</html>

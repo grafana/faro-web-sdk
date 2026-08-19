@@ -51,8 +51,15 @@ describe('Navigation observer', () => {
 
   (global as any).PerformanceObserver = MockPerformanceObserver;
 
+  // Performance-event timestamps are derived from the current wall/monotonic clocks
+  // (see performanceEntryTimestampMs / issue #2179), so pin both for deterministic assertions.
+  const mockWallNow = 1_700_000_000_000;
+  const mockMonoNow = 5_000;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(Date, 'now').mockReturnValue(mockWallNow);
+    jest.spyOn(performance, 'now').mockReturnValue(mockMonoNow);
   });
 
   afterAll(() => {
@@ -101,7 +108,7 @@ describe('Navigation observer', () => {
       undefined,
       {
         spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' },
-        timestampOverwriteMs: mockTimeOriginValue,
+        timestampOverwriteMs: mockWallNow - (mockMonoNow - performanceNavigationEntry.startTime),
       }
     );
   });
@@ -118,7 +125,7 @@ describe('Navigation observer', () => {
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent).toHaveBeenNthCalledWith(1, expect.anything(), expect.anything(), undefined, {
       spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' },
-      timestampOverwriteMs: mockTimeOriginValue,
+      timestampOverwriteMs: mockWallNow - (mockMonoNow - performanceNavigationEntry.startTime),
     });
   });
 
@@ -146,7 +153,7 @@ describe('Navigation observer', () => {
       undefined,
       {
         spanContext: { traceId: '0af7651916cd43dd8448eb211c80319c', spanId: 'b7ad6b7169203331' },
-        timestampOverwriteMs: mockTimeOriginValue,
+        timestampOverwriteMs: mockWallNow - (mockMonoNow - performanceNavigationEntry.startTime),
       }
     );
   });

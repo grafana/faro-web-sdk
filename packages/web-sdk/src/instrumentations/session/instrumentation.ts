@@ -20,16 +20,25 @@ type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;
 
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   // previously notified session, to ensure we don't send session start
   // event twice for the same session
   private notifiedSession: MetaSession | undefined;
 
+  // Reads the session manager's adoption flag (set once the manager exists).
+  private isAdoptingSession: () => boolean = () => false;
+
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
 
     if (session && session.id !== this.notifiedSession?.id) {
+      // Adopting another tab's session: track it but emit nothing (the creating tab already did).
+      if (this.isAdoptingSession()) {
+        this.notifiedSession = session;
+        return;
+      }
+
       if (this.notifiedSession && this.notifiedSession.id === session.attributes?.['previousSession']) {
         this.api.pushEvent(EVENT_SESSION_EXTEND, {}, undefined, { skipDedupe: true });
         this.notifiedSession = session;
@@ -121,15 +130,37 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   private registerBeforeSendHook(SessionManager: SessionManager) {
-    const { updateSession } = new SessionManager();
+    const sessionManager = new SessionManager();
+    this.isAdoptingSession = sessionManager.isAdopting;
+    const { updateSession } = sessionManager;
+
+    // Most recent rotation updateSession performed. A batch buffered before the
+    // rotation is all stamped with the now-expired id, not just the triggering item.
+    let lastRotation: { from: string; to: MetaSession } | undefined;
 
     this.transports?.addBeforeSendHooks((item) => {
+      const previousSessionId = this.metas.value.session?.id;
       updateSession();
+      const currentSession = this.metas.value.session;
 
-      const attributes = item.meta.session?.attributes;
+      if (currentSession != null && previousSessionId != null && currentSession.id !== previousSessionId) {
+        lastRotation = { from: previousSessionId, to: currentSession };
+      }
+
+      // Re-stamp items still carrying the rotated-from session. Keyed on that id,
+      // so items from a genuinely earlier session (explicit setSession, which
+      // updateSession never rotates) keep their own sampling decision.
+      const reStamp = lastRotation != null && item.meta.session?.id === lastRotation.from;
+      const session = reStamp ? lastRotation!.to : item.meta.session;
+
+      const attributes = session?.attributes;
 
       if (attributes && attributes?.['isSampled'] === 'true') {
         let newItem: TransportItem = JSON.parse(JSON.stringify(item));
+
+        if (reStamp) {
+          newItem.meta.session = JSON.parse(JSON.stringify(lastRotation!.to));
+        }
 
         const newAttributes = newItem.meta.session?.attributes;
         delete newAttributes?.['isSampled'];
@@ -145,7 +176,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     });
   }
 
-  initialize() {
+  initialize(): void {
     this.logDebug('init session instrumentation');
 
     const sessionTrackingConfig = this.config.sessionTracking;

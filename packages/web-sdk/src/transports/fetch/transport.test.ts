@@ -12,17 +12,34 @@ import * as sessionManagerUtilsMock from '../../instrumentations/session/session
 
 import { FetchTransport } from './transport';
 
-const fetch = jest.fn(() =>
-  Promise.resolve({
-    status: 202,
-    headers: {
-      get: (_name: string): string | undefined => undefined,
-    },
-    text: () => Promise.resolve(),
-  })
-);
+const createAcceptedResponse = () => ({
+  status: 202,
+  headers: {
+    get: (_name: string): string | undefined => undefined,
+  },
+  text: () => Promise.resolve(),
+});
+
+const fetch = jest.fn(() => Promise.resolve(createAcceptedResponse()));
 
 (global as any).fetch = fetch;
+
+// jsdom doesn't provide web stream globals or Response — use Node's implementations
+const {
+  ReadableStream: NodeReadableStream,
+  WritableStream: NodeWritableStream,
+  CompressionStream: NodeCompressionStream,
+} = require('node:stream/web');
+
+if (typeof globalThis.ReadableStream === 'undefined') {
+  (globalThis as any).ReadableStream = NodeReadableStream;
+}
+if (typeof globalThis.WritableStream === 'undefined') {
+  (globalThis as any).WritableStream = NodeWritableStream;
+}
+if (typeof globalThis.CompressionStream === 'undefined') {
+  (globalThis as any).CompressionStream = NodeCompressionStream;
+}
 
 const mockSessionId = '123';
 
@@ -52,10 +69,24 @@ const largeItem: TransportItem<LogEvent> = {
   },
 };
 
+const mediumItem: TransportItem<LogEvent> = {
+  type: TransportItemType.LOG,
+  payload: {
+    context: {},
+    level: LogLevel.INFO,
+    message: Buffer.alloc(40_000, 'I').toString('utf-8'),
+    timestamp: new Date().toISOString(),
+  },
+  meta: {
+    session: { id: mockSessionId },
+  },
+};
+
 describe('FetchTransport', () => {
   beforeEach(() => {
-    fetch.mockClear();
     jest.clearAllMocks();
+    fetch.mockReset();
+    fetch.mockImplementation(() => Promise.resolve(createAcceptedResponse()));
     jest.clearAllTimers();
   });
 
@@ -228,6 +259,96 @@ describe('FetchTransport', () => {
       keepalive: false,
       method: 'POST',
     });
+  });
+
+  it('will turn off keepalive if pending keepalive requests would exceed the body size limit', async () => {
+    const pendingResponses: Array<(response: ReturnType<typeof createAcceptedResponse>) => void> = [];
+    fetch.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          pendingResponses.push(resolve);
+        })
+    );
+
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      concurrency: 2,
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    const firstSend = transport.send([mediumItem]);
+    const secondSend = transport.send([mediumItem]);
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    const firstCallArgs = fetch.mock.calls[0] as unknown[];
+    const secondCallArgs = fetch.mock.calls[1] as unknown[];
+    const firstRequestInit = firstCallArgs[1] as RequestInit;
+    const secondRequestInit = secondCallArgs[1] as RequestInit;
+
+    expect(firstRequestInit.keepalive).toBe(true);
+    expect(secondRequestInit.keepalive).toBe(false);
+
+    pendingResponses.forEach((resolve) => resolve(createAcceptedResponse()));
+    await Promise.all([firstSend, secondSend]);
+  });
+
+  // The browser budget is a byte limit, so the reservation has to measure bytes rather than
+  // UTF-16 code units. A CJK message is three bytes per code unit. See issue #1898.
+  it('will turn off keepalive for a non-ASCII payload whose byte size is over 60_000', async () => {
+    const nonAsciiItem: TransportItem<LogEvent> = {
+      type: TransportItemType.LOG,
+      payload: {
+        context: {},
+        level: LogLevel.INFO,
+        // 25_000 code units, but 75_000 bytes once encoded as UTF-8
+        message: '错'.repeat(25_000),
+        timestamp: new Date().toISOString(),
+      },
+      meta: {
+        session: { id: mockSessionId },
+      },
+    };
+
+    const transport = new FetchTransport({ url: 'http://example.com/collect' });
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    const jsonBody = JSON.stringify(getTransportBody([nonAsciiItem]));
+    expect(jsonBody.length).toBeLessThan(60_000);
+    expect(new TextEncoder().encode(jsonBody).byteLength).toBeGreaterThan(60_000);
+
+    await transport.send([nonAsciiItem]);
+
+    const requestInit = (fetch.mock.calls[0] as unknown[])[1] as RequestInit;
+    expect(requestInit.keepalive).toBe(false);
+  });
+
+  it('will retry a failed keepalive request with keepalive disabled', async () => {
+    fetch
+      .mockImplementationOnce(() => Promise.reject(new TypeError('Failed to fetch')))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+
+    await transport.send([item]);
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    const firstCallArgs = fetch.mock.calls[0] as unknown[];
+    const secondCallArgs = fetch.mock.calls[1] as unknown[];
+    const firstRequestInit = firstCallArgs[1] as RequestInit;
+    const secondRequestInit = secondCallArgs[1] as RequestInit;
+
+    expect(firstRequestInit.keepalive).toBe(true);
+    expect(secondRequestInit.keepalive).toBe(false);
   });
 
   it('will add global ignoredURLs to the ignoredUrls list ', async () => {
@@ -432,5 +553,127 @@ describe('FetchTransport', () => {
     await transport.send([item]);
 
     expect(mockGetUserSessionUpdater).not.toHaveBeenCalled();
+  });
+
+  describe('requestCompression', () => {
+    it('sends compressed body with Content-Encoding header when enabled', async () => {
+      const transport = new FetchTransport({
+        url: 'http://example.com/collect',
+        requestCompression: true,
+      });
+
+      transport.metas.value = { session: { id: mockSessionId } };
+      transport.internalLogger = mockInternalLogger;
+
+      await transport.send([item]);
+
+      expect(fetch).toHaveBeenCalledTimes(1);
+
+      const callArgs = fetch.mock.calls[0] as unknown[];
+      const requestInit = callArgs[1] as RequestInit;
+
+      expect(requestInit.body).toBeInstanceOf(Blob);
+      expect((requestInit.headers as Record<string, string>)['Content-Encoding']).toBe('gzip');
+      expect((requestInit.headers as Record<string, string>)['Content-Type']).toBe('application/json');
+    });
+
+    it('produces valid gzip that decompresses to the original JSON', async () => {
+      const zlib = require('node:zlib');
+
+      const transport = new FetchTransport({
+        url: 'http://example.com/collect',
+        requestCompression: true,
+      });
+
+      const jsonBody = JSON.stringify(getTransportBody([item]));
+      const blob = await (transport as any).compress(jsonBody);
+
+      // jsdom's Blob lacks arrayBuffer/stream — use FileReader to extract bytes
+      const compressed = await new Promise<Buffer>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(Buffer.from(reader.result as ArrayBuffer));
+        reader.readAsArrayBuffer(blob);
+      });
+      const decompressed = zlib.gunzipSync(compressed).toString('utf-8');
+
+      expect(JSON.parse(decompressed)).toEqual(getTransportBody([item]));
+    });
+
+    it('is disabled by default', async () => {
+      const transport = new FetchTransport({
+        url: 'http://example.com/collect',
+      });
+
+      transport.metas.value = { session: { id: mockSessionId } };
+      transport.internalLogger = mockInternalLogger;
+
+      await transport.send([item]);
+
+      const callArgs = fetch.mock.calls[0] as unknown[];
+      const requestInit = callArgs[1] as RequestInit;
+
+      expect(typeof requestInit.body).toBe('string');
+      expect((requestInit.headers as Record<string, string>)['Content-Encoding']).toBeUndefined();
+    });
+
+    it('falls back to uncompressed when CompressionStream is unavailable', async () => {
+      const original = (global as any).CompressionStream;
+      delete (global as any).CompressionStream;
+
+      try {
+        const transport = new FetchTransport({
+          url: 'http://example.com/collect',
+          requestCompression: true,
+        });
+
+        transport.metas.value = { session: { id: mockSessionId } };
+        transport.internalLogger = mockInternalLogger;
+
+        await transport.send([item]);
+
+        const callArgs = fetch.mock.calls[0] as unknown[];
+        const requestInit = callArgs[1] as RequestInit;
+
+        expect(typeof requestInit.body).toBe('string');
+        expect((requestInit.headers as Record<string, string>)['Content-Encoding']).toBeUndefined();
+      } finally {
+        (global as any).CompressionStream = original;
+      }
+    });
+
+    it('disables compression when CompressionStream is unavailable', () => {
+      const original = (global as any).CompressionStream;
+      delete (global as any).CompressionStream;
+
+      try {
+        const transport = new FetchTransport({
+          url: 'http://example.com/collect',
+          requestCompression: true,
+        });
+
+        expect((transport as any).compressionEnabled).toBe(false);
+      } finally {
+        (global as any).CompressionStream = original;
+      }
+    });
+
+    it('enables keepalive for large payloads that compress below the threshold', async () => {
+      const transport = new FetchTransport({
+        url: 'http://example.com/collect',
+        requestCompression: true,
+      });
+
+      transport.metas.value = { session: { id: mockSessionId } };
+      transport.internalLogger = mockInternalLogger;
+
+      await transport.send([largeItem]);
+
+      const callArgs = fetch.mock.calls[0] as unknown[];
+      const requestInit = callArgs[1] as RequestInit;
+      const blob = requestInit.body as Blob;
+
+      expect(blob.size).toBeLessThan(60000);
+      expect(requestInit.keepalive).toBe(true);
+    });
   });
 });

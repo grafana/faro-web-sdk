@@ -20,4 +20,4 @@ export const defaultInternalLogger: InternalLogger = {
   warn: noop,
 } as const;
 
-export const defaultInternalLoggerLevel = InternalLoggerLevel.ERROR;
+export const defaultInternalLoggerLevel: InternalLoggerLevel.ERROR = InternalLoggerLevel.ERROR;

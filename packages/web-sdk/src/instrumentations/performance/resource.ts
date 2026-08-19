@@ -4,7 +4,12 @@ import type { EventsAPI, Observable, PushEventOptions } from '@grafana/faro-core
 import { isUrlIgnored } from '../../utils/url';
 
 import { RESOURCE_ENTRY } from './performanceConstants';
-import { createFaroResourceTiming, getSpanContextFromServerTiming, includePerformanceEntry } from './performanceUtils';
+import {
+  createFaroResourceTiming,
+  getSpanContextFromServerTiming,
+  includePerformanceEntry,
+  performanceEntryTimestampMs,
+} from './performanceUtils';
 import type { ResourceEntryMessage } from './types';
 
 type SpanContext = PushEventOptions['spanContext'];
@@ -15,11 +20,13 @@ export function observeResourceTimings(
   faroNavigationId: string,
   pushEvent: EventsAPI['pushEvent'],
   observable: Observable<ResourceEntryMessage>
-) {
+): void {
   const trackResources = faro.config.trackResources;
 
   const observer = new PerformanceObserver((observedEntries) => {
     const entries = observedEntries.getEntries();
+
+    const clock = { wallNow: Date.now(), monoNow: performance.now() };
 
     for (const resourceEntryRaw of entries) {
       if (isUrlIgnored(resourceEntryRaw.name)) {
@@ -45,7 +52,7 @@ export function observeResourceTimings(
 
         pushEvent('faro.performance.resource', faroResourceEntry, undefined, {
           spanContext,
-          timestampOverwriteMs: performance.timeOrigin + resourceEntryJson.startTime,
+          timestampOverwriteMs: performanceEntryTimestampMs(resourceEntryJson.startTime, clock),
         });
       }
     }

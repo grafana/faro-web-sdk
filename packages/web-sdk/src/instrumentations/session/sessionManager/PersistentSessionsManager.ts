@@ -1,4 +1,5 @@
 import { faro, stringifyExternalJson } from '@grafana/faro-core';
+import type { MetaSession } from '@grafana/faro-core';
 
 import { throttle } from '../../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
@@ -11,16 +12,32 @@ export class PersistentSessionsManager {
   private static storageTypeLocal = webStorageType.local;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
 
+  // Set only for the synchronous span of an adopting setSession(); the session
+  // instrumentation reads isAdopting() to suppress its lifecycle event.
+  private adopting = false;
+
+  isAdopting = (): boolean => this.adopting;
+
+  private adoptSession = (sessionMeta: MetaSession): void => {
+    this.adopting = true;
+    try {
+      faro.api?.setSession(sessionMeta);
+    } finally {
+      this.adopting = false;
+    }
+  };
+
   constructor() {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: PersistentSessionsManager.fetchUserSession,
       storeUserSession: PersistentSessionsManager.storeUserSession,
+      adoptSession: this.adoptSession,
     });
 
     this.init();
   }
 
-  static removeUserSession() {
+  static removeUserSession(): void {
     removeItem(STORAGE_KEY, PersistentSessionsManager.storageTypeLocal);
   }
 
@@ -38,7 +55,7 @@ export class PersistentSessionsManager {
     return null;
   }
 
-  updateSession = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
+  updateSession: () => void = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
 
   private init(): void {
     document.addEventListener('visibilitychange', () => {

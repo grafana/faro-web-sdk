@@ -35,14 +35,15 @@ initializeFaro({
 
 ### Privacy & Masking Options
 
-| Key                | Type                                              | Default              | Description                                                                                                                              |
-| ------------------ | ------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `maskAllInputs`    | `boolean`                                         | `true`               | Mask all input content as `*`                                                                                                            |
-| `maskInputOptions` | `MaskInputOptions`                                | `{ password: true }` | Selectively mask specific input types (used only when `maskAllInputs` is `false`)                                                        |
-| `maskInputFn`      | `(value: string, element: HTMLElement) => string` | `undefined`          | Customize mask input content recording logic                                                                                             |
-| `maskTextSelector` | `string`                                          | `'*'`                | CSS selector for elements whose text content should be masked                                                                            |
-| `blockSelector`    | `string`                                          | `undefined`          | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions |
-| `ignoreSelector`   | `string`                                          | `undefined`          | CSS selector for elements whose input events should be ignored                                                                           |
+| Key                | Type                                              | Default                 | Description                                                                                                                                                                  |
+| ------------------ | ------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sanitizeMetaHref` | `boolean`                                         | `true`                  | Strip credentials, query string, and fragment from `window.location.href` in rrweb Meta events before sending. URLs may still appear in transport metadata and DOM snapshots |
+| `maskAllInputs`    | `boolean`                                         | `true`                  | Mask all input content                                                                                                                                                       |
+| `maskInputOptions` | `MaskInputOptions`                                | `{ password: true }`    | Selectively mask specific input types (used only when `maskAllInputs` is `false`)                                                                                            |
+| `maskInputFn`      | `(value: string, element: HTMLElement) => string` | Fixed-length `'******'` | Customize mask input content recording logic. The default returns a fixed-length mask regardless of input length to prevent length leakage                                   |
+| `maskTextSelector` | `string`                                          | `'*'`                   | CSS selector for elements whose text content should be masked                                                                                                                |
+| `blockSelector`    | `string`                                          | `undefined`             | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions                                     |
+| `ignoreSelector`   | `string`                                          | `undefined`             | CSS selector for elements whose input events should be ignored                                                                                                               |
 
 #### `maskInputOptions`
 
@@ -76,6 +77,7 @@ initializeFaro({
 | `collectFonts`             | `boolean`                      | `false`  | Whether to collect fonts used in the website                                                                                                    |
 | `inlineImages`             | `boolean`                      | `false`  | Whether to record image content                                                                                                                 |
 | `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                                                           |
+| `inactivityThresholdMs`    | `number`                       | `60000`  | Pause recording after this many milliseconds of inactivity; resumes automatically on the next interaction. Set to `0` to disable                |
 
 #### Sub-sampling example
 

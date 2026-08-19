@@ -1,11 +1,11 @@
 import { version } from 'react';
 
-export const reactVersion = version;
-export const reactVersionMajor = getMajorReactVersion();
-export const isReactVersionAtLeast19 = isReactVersionAtLeast(19);
-export const isReactVersionAtLeast18 = isReactVersionAtLeast(18);
-export const isReactVersionAtLeast17 = isReactVersionAtLeast(17);
-export const isReactVersionAtLeast16 = isReactVersionAtLeast(16);
+export const reactVersion: string = version;
+export const reactVersionMajor: number | null = getMajorReactVersion();
+export const isReactVersionAtLeast19: boolean = isReactVersionAtLeast(19);
+export const isReactVersionAtLeast18: boolean = isReactVersionAtLeast(18);
+export const isReactVersionAtLeast17: boolean = isReactVersionAtLeast(17);
+export const isReactVersionAtLeast16: boolean = isReactVersionAtLeast(16);
 
 export function getMajorReactVersion(): number | null {
   const major = reactVersion.split('.');

@@ -1,4 +1,4 @@
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@grafana/rrweb-types';
 
 export interface ReplayInstrumentationOptions {
   /**
@@ -92,6 +92,21 @@ export interface ReplayInstrumentationOptions {
    * @default 60000 (1 minute)
    */
   inactivityThresholdMs?: number;
+
+  /**
+   * Strip credentials, query string, and fragment from `window.location.href` in
+   * rrweb Meta events before they are sent.
+   *
+   * URLs routinely contain sensitive data (OAuth codes, tokens in fragments, PII in
+   * query parameters). This option removes `username`, `password`, `search`, and
+   * `hash` from replay Meta event hrefs.
+   *
+   * This does not sanitize URLs in Faro transport metadata or arbitrary URLs
+   * serialized inside rrweb DOM snapshots.
+   *
+   * @default true
+   */
+  sanitizeMetaHref?: boolean;
 
   /**
    * The fraction of globally-sampled sessions that should also record a session replay.

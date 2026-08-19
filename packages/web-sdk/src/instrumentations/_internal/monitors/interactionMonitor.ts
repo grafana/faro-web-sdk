@@ -31,7 +31,7 @@ export function monitorInteractions(eventNames: string[]): Observable<Interactio
 }
 
 // Test-only utility to reset state between tests
-export function __resetInteractionMonitorForTests() {
+export function __resetInteractionMonitorForTests(): void {
   eventNameToHandler.forEach((handler, eventName) => {
     window.removeEventListener(eventName, handler);
   });

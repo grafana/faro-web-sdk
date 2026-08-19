@@ -1,7 +1,7 @@
 {
   "name": "@grafana/faro-react",
-  "packageManager": "yarn@4.14.1",
-  "version": "2.7.0",
+  "packageManager": "yarn@4.18.0",
+  "version": "2.10.0",
   "description": "Faro package that enables easier integration in projects built with React.",
   "keywords": [
     "observability",
@@ -33,18 +33,14 @@
   ],
   "scripts": {
     "start": "yarn watch",
-    "build": "run-s 'build:*'",
-    "build:compile": "run-p 'build:compile:*'",
-    "build:compile:cjs": "tsc --build tsconfig.cjs.json",
-    "build:compile:esm": "tsc --build tsconfig.esm.json",
-    "build:compile:bundle": "run-s 'build:compile:bundle:*'",
-    "build:compile:bundle:create": "rollup -c ./rollup.config.js",
-    "build:compile:bundle:remove-extras": "rimraf dist/bundle/dist",
-    "watch": "run-s watch:compile",
-    "watch:compile": "yarn build:compile:cjs -w",
+    "build": "tsdown",
+    "watch": "tsdown --watch",
     "clean": "rimraf dist/ yarn-error.log",
     "quality": "run-s 'quality:*'",
-    "quality:test": "jest --passWithNoTests",
+    "quality:typecheck": "tsc -p tsconfig.typecheck.json",
+    "quality:test": "run-s quality:test:cjs quality:test:esm",
+    "quality:test:cjs": "jest --passWithNoTests --selectProjects react rr-v5 rr-v6 rr-v7",
+    "quality:test:esm": "NODE_OPTIONS=--experimental-vm-modules jest --selectProjects rr-v8",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s quality:lint:eslint quality:lint:prettier quality:lint:md",
     "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/react \"./**/*.{js,jsx,ts,tsx}\"",
@@ -56,21 +52,33 @@
     "quality:circular-deps": "madge --circular ."
   },
   "dependencies": {
-    "@grafana/faro-web-sdk": "^2.7.0",
-    "@grafana/faro-web-tracing": "^2.7.0",
+    "@grafana/faro-web-sdk": "^2.10.0",
+    "@grafana/faro-web-tracing": "^2.10.0",
     "hoist-non-react-statics": "^3.3.2"
   },
   "devDependencies": {
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/jest-dom": "7.0.0",
+    "@testing-library/react": "16.3.2",
     "@types/hoist-non-react-statics": "3.3.7",
-    "@types/react": "19.2.15",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "react-router": "7.15.1"
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@types/semver": "7.7.1",
+    "history-v4": "npm:history@4.10.1",
+    "react": "19.2.8",
+    "react-18": "npm:react@18.3.1",
+    "react-dom": "19.2.8",
+    "react-dom-18": "npm:react-dom@18.3.1",
+    "react-router": "7.18.2",
+    "react-router-dom-v5": "npm:react-router-dom@5.3.4",
+    "react-router-v6": "npm:react-router@6.30.4",
+    "react-router-v8": "npm:react-router@8.3.0",
+    "semver": "7.8.5"
   },
   "peerDependencies": {
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
     "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-router": "^7.12.0",
+    "react-router": "^7.12.0 || ^8.0.0",
     "react-router-dom": "^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"
   },
   "peerDependenciesMeta": {

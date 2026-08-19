@@ -45,11 +45,11 @@ export const isPrimitive = ((value) => !isObject(value) && !isFunction(value)) a
   string | number | bigint | boolean | symbol
 >;
 
-export const isEventDefined = typeof Event !== 'undefined';
+export const isEventDefined: boolean = typeof Event !== 'undefined';
 
 export const isEvent = ((value) => isEventDefined && isInstanceOf(value, Event)) as IsFnHelper<Event>;
 
-export const isErrorDefined = typeof Error !== 'undefined';
+export const isErrorDefined: boolean = typeof Error !== 'undefined';
 
 export const isError = ((value) => isErrorDefined && isInstanceOf(value, Error)) as IsFnHelper<Error>;
 
@@ -59,11 +59,11 @@ export const isDomError = ((value) => isToString(value, 'DOMError')) as IsFnHelp
 
 export const isDomException = ((value) => isToString(value, 'DOMException')) as IsFnHelper<DOMException>;
 
-export const isElementDefined = typeof Element !== 'undefined';
+export const isElementDefined: boolean = typeof Element !== 'undefined';
 
 export const isElement = ((value) => isElementDefined && isInstanceOf(value, Element)) as IsFnHelper<Element>;
 
-export const isMapDefined = typeof Map !== 'undefined';
+export const isMapDefined: boolean = typeof Map !== 'undefined';
 
 export const isMap = ((value) => isMapDefined && isInstanceOf(value, Map)) as IsFnHelper<Map<any, any>>;
 

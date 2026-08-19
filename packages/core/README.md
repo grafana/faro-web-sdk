@@ -206,9 +206,7 @@ The `api` property on the Faro instance contains all the necessary methods to pu
 
   ```ts
   faro.api.pushTraces({
-    resourceSpans: [
-      /* OTel Traces */
-    ],
+    resourceSpans: [/* OTel Traces */],
   });
   ```
 

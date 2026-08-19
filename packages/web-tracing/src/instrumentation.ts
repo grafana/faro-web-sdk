@@ -15,6 +15,7 @@ import { BaseInstrumentation, isArray, VERSION } from '@grafana/faro-web-sdk';
 import type { Transport } from '@grafana/faro-web-sdk';
 
 import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
+import { FaroPausablePropagator } from './faroPausablePropagator';
 import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 import { getSamplingDecision } from './sampler';
@@ -38,7 +39,7 @@ import type { TracingInstrumentationOptions } from './types';
 
 export class TracingInstrumentation extends BaseInstrumentation {
   name = '@grafana/faro-web-tracing';
-  version = VERSION;
+  version: string = VERSION;
 
   static SCHEDULED_BATCH_DELAY_MS = 1000;
 
@@ -126,7 +127,10 @@ export class TracingInstrumentation extends BaseInstrumentation {
     });
 
     provider.register({
-      propagator: options.propagator ?? new W3CTraceContextPropagator(),
+      // wrapped so that pausing Faro also stops trace context from being injected into requests
+      propagator: new FaroPausablePropagator(options.propagator ?? new W3CTraceContextPropagator(), () =>
+        this.transports.isPaused()
+      ),
       contextManager: options.contextManager,
     });
 

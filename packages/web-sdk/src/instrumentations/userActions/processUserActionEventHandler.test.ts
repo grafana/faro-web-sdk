@@ -116,6 +116,40 @@ describe('getUserEventHandler', () => {
     expect(startSpy).toHaveBeenCalledWith('my-action', {}, { triggerName: 'click' });
   });
 
+  it('passes the element initial activity timeout to the user action start message', () => {
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+    const element = document.createElement('div');
+    element.setAttribute('data-foo-bar', 'my-action');
+    element.setAttribute('data-foo-bar-timeout', '450');
+
+    processUserEvent({ type: 'pointerdown', target: element } as unknown as PointerEvent);
+
+    expect(startSpy).toHaveBeenCalledWith('my-action', {}, { triggerName: 'pointerdown', initialActivityTimeout: 450 });
+  });
+
+  it('derives the timeout attribute from a camelCase action attribute ending in Name', () => {
+    faro.config!.userActionsInstrumentation!.dataAttributeName = 'customActionName';
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+    const element = document.createElement('div');
+    element.setAttribute('data-custom-action-name', 'my-action');
+    element.setAttribute('data-custom-action-timeout', '350');
+
+    processUserEvent({ type: 'pointerdown', target: element } as unknown as PointerEvent);
+
+    expect(startSpy).toHaveBeenCalledWith('my-action', {}, { triggerName: 'pointerdown', initialActivityTimeout: 350 });
+  });
+
+  it('passes a malformed element timeout through for validation by the instrumentation', () => {
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+    const element = document.createElement('div');
+    element.setAttribute('data-foo-bar', 'my-action');
+    element.setAttribute('data-foo-bar-timeout', 'not-a-number');
+
+    processUserEvent({ type: 'pointerdown', target: element } as unknown as PointerEvent);
+
+    expect(startSpy).toHaveBeenCalledWith('my-action', {}, { triggerName: 'pointerdown', initialActivityTimeout: NaN });
+  });
+
   it('does not start a new action if one already exists', () => {
     getCurrentSpy.mockReturnValue(fakeAction);
     const { processUserEvent } = getUserEventHandler(faro as Faro);

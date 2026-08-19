@@ -84,7 +84,7 @@ export default class UserAction
     }
   }
 
-  halt() {
+  halt(): void {
     if (this._state !== UserActionState.Started) {
       return;
     }
@@ -92,7 +92,7 @@ export default class UserAction
     this.notify(this._state);
   }
 
-  cancel() {
+  cancel(): void {
     if (this._state === UserActionState.Started) {
       // Empty the buffer
       this._itemBuffer.flushBuffer((item) => {
@@ -104,7 +104,7 @@ export default class UserAction
     this.notify(this._state);
   }
 
-  end() {
+  end(): void {
     if (this._state === UserActionState.Cancelled) {
       return;
     }
