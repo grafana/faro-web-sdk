@@ -164,6 +164,7 @@ export type {
   Extension,
   FetchTransportOptions,
   FetchTransportRequestOptions,
+  FetchTransportRetryOptions,
   GlobalObject,
   Instrumentation,
   Instrumentations,

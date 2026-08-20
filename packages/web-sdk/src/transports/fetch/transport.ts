@@ -4,11 +4,53 @@ import type { Config, Patterns, PromiseBuffer, TransportItem } from '@grafana/fa
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
 import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 
-import type { FetchTransportOptions } from './types';
+import type { FetchTransportOptions, FetchTransportRetryOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;
 const DEFAULT_CONCURRENCY = 5; // chrome supports 10 total, firefox 17
 const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
+const DEFAULT_RETRY_OPTIONS: FetchTransportRetryOptions = {
+  maxAttempts: 3,
+  initialBackoffMs: 1000,
+  maxBackoffMs: 10000,
+  backoffMultiplier: 2,
+  retryableStatusCodes: [408, 425, 429, 500, 502, 503, 504],
+  requestTimeoutMs: 30000,
+  maxElapsedTimeMs: 120000,
+};
+const HTTP_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const HTTP_DATE_PATTERN =
+  /^(?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} GMT|(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), \d{2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{2} \d{2}:\d{2}:\d{2} GMT)$/;
+const ASCTIME_DATE_PATTERN =
+  /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ( [1-9]|\d{2}) (\d{2}):(\d{2}):(\d{2}) (\d{4})$/;
+function validateRetryOptions(options: FetchTransportRetryOptions): void {
+  const {
+    maxAttempts,
+    initialBackoffMs,
+    maxBackoffMs,
+    backoffMultiplier,
+    retryableStatusCodes,
+    requestTimeoutMs,
+    maxElapsedTimeMs,
+  } = options;
+
+  const durations = [initialBackoffMs, maxBackoffMs, requestTimeoutMs, maxElapsedTimeMs];
+  const statuses = new Set(retryableStatusCodes);
+
+  if (
+    !Number.isInteger(maxAttempts) ||
+    maxAttempts < 1 ||
+    maxAttempts > 5 ||
+    durations.some((duration) => !Number.isFinite(duration) || duration <= 0) ||
+    maxBackoffMs < initialBackoffMs ||
+    !Number.isFinite(backoffMultiplier) ||
+    backoffMultiplier < 1 ||
+    statuses.size !== retryableStatusCodes.length ||
+    retryableStatusCodes.some((status) => !Number.isInteger(status) || status < 300 || status > 599)
+  ) {
+    throw new TypeError('Invalid retry configuration');
+  }
+}
 
 const BEACON_BODY_SIZE_LIMIT = 60000;
 const MAX_KEEPALIVE_REQUESTS = 9;
@@ -29,6 +71,18 @@ interface KeepaliveReservation {
  * reserving by length lets Faro send far more than it accounted for and reintroduces the silent
  * keepalive failures this budget exists to prevent.
  */
+class RequestTimeoutError extends Error {
+  constructor(readonly originalError: unknown) {
+    super('Request timed out');
+    this.name = 'RequestTimeoutError';
+  }
+}
+
+interface RetryFailure {
+  error?: unknown;
+  status?: number;
+}
+
 function getBodyByteSize(body: string): number {
   if (typeof TextEncoder === 'undefined') {
     return body.length;
@@ -46,6 +100,7 @@ export class FetchTransport extends BaseTransport {
   private readonly rateLimitBackoffMs: number;
   private readonly getNow: () => number;
   private readonly compressionEnabled: boolean;
+  private readonly retryOptions: FetchTransportRetryOptions;
   private disabledUntil: Date = new Date(0);
 
   constructor(private options: FetchTransportOptions) {
@@ -53,6 +108,12 @@ export class FetchTransport extends BaseTransport {
 
     this.rateLimitBackoffMs = options.defaultRateLimitBackoffMs ?? DEFAULT_RATE_LIMIT_BACKOFF_MS;
     this.getNow = options.getNow ?? (() => Date.now());
+    this.retryOptions = {
+      ...DEFAULT_RETRY_OPTIONS,
+      ...options.retry,
+      retryableStatusCodes: [...(options.retry?.retryableStatusCodes ?? DEFAULT_RETRY_OPTIONS.retryableStatusCodes)],
+    };
+    validateRetryOptions(this.retryOptions);
 
     const requestCompression = options.requestCompression ?? false;
 
@@ -85,7 +146,11 @@ export class FetchTransport extends BaseTransport {
         const { url, requestOptions, apiKey } = this.options;
 
         const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
-        const { keepalive: configuredKeepalive, ...requestOptionsWithoutKeepalive } = restOfRequestOptions;
+        const {
+          keepalive: configuredKeepalive,
+          signal: callerSignal,
+          ...requestOptionsWithoutKeepalive
+        } = restOfRequestOptions;
 
         let sessionId;
         const sessionMeta = this.metas.value.session;
@@ -121,12 +186,14 @@ export class FetchTransport extends BaseTransport {
           ...(requestOptionsWithoutKeepalive ?? {}),
         };
 
-        return this.fetchWithKeepaliveRetry(url, requestInit, bodySize, configuredKeepalive).catch((err) => {
-          this.logError('Failed sending payload to the receiver\n', JSON.parse(jsonBody), err);
-        });
+        return this.fetchWithRetry(url, requestInit, bodySize, configuredKeepalive, callerSignal);
       });
     } catch (err) {
-      this.logError(err);
+      this.logError('Permanent delivery failure', {
+        error: err,
+        attempts: 0,
+        elapsedTimeMs: 0,
+      });
     }
   }
 
@@ -138,25 +205,275 @@ export class FetchTransport extends BaseTransport {
     return true;
   }
 
-  private getRetryAfterDate(response: Response): Date {
-    const now = this.getNow();
-    const retryAfterHeader = response.headers.get('Retry-After');
+  private async fetchWithRetry(
+    url: string,
+    requestInit: RequestInit,
+    bodySize: number,
+    configuredKeepalive?: boolean,
+    callerSignal?: AbortSignal | null
+  ): Promise<Response | void> {
+    const startedAt = this.getNow();
+    let attempt = 1;
+    let backoffAttempt = 1;
+    let previousFailure: RetryFailure | undefined;
+    let deliveryAmbiguous = false;
+    let keepaliveDisabled = configuredKeepalive === false;
+    const disableKeepalive = () => {
+      keepaliveDisabled = true;
+    };
 
-    if (retryAfterHeader) {
-      const delay = Number(retryAfterHeader);
-
-      if (!isNaN(delay)) {
-        return new Date(delay * 1000 + now);
+    for (;;) {
+      if (callerSignal?.aborted) {
+        this.logDebug('Delivery cancelled by caller', {
+          attempts: attempt,
+          elapsedTimeMs: this.getNow() - startedAt,
+        });
+        return;
+      }
+      const elapsedTimeMs = this.getNow() - startedAt;
+      const remainingTimeMs = this.retryOptions.maxElapsedTimeMs - elapsedTimeMs;
+      if (remainingTimeMs <= 0) {
+        this.logRetriesExhausted(previousFailure ?? {}, attempt - 1, elapsedTimeMs);
+        return;
       }
 
-      const date = Date.parse(retryAfterHeader);
+      let response: Response | undefined;
+      let failure: RetryFailure;
+      let delayMs: number;
+      let maxAttempts: number;
 
-      if (!isNaN(date)) {
-        return new Date(date);
+      try {
+        response = await this.fetchLogicalAttempt(
+          url,
+          requestInit,
+          bodySize,
+          keepaliveDisabled ? false : configuredKeepalive,
+          disableKeepalive,
+          callerSignal,
+          remainingTimeMs
+        );
+
+        if (response.status >= 200 && response.status < 300) {
+          return response;
+        }
+        if (!this.retryOptions.retryableStatusCodes.includes(response.status)) {
+          this.logError('Permanent delivery failure', {
+            status: response.status,
+            attempts: attempt,
+            elapsedTimeMs: this.getNow() - startedAt,
+          });
+          return response;
+        }
+
+        failure = { status: response.status };
+        maxAttempts = deliveryAmbiguous ? Math.min(this.retryOptions.maxAttempts, 2) : this.retryOptions.maxAttempts;
+
+        const retryAfterMs =
+          response.status === TOO_MANY_REQUESTS || response.status === 503
+            ? this.getRetryAfterDelayMs(response)
+            : undefined;
+        if (retryAfterMs != null) {
+          delayMs = retryAfterMs;
+          backoffAttempt = 1;
+        } else if (response.status === TOO_MANY_REQUESTS) {
+          delayMs = this.rateLimitBackoffMs;
+          backoffAttempt = 1;
+        } else {
+          delayMs = this.getExponentialBackoffMs(backoffAttempt);
+          backoffAttempt++;
+        }
+      } catch (err) {
+        if (callerSignal?.aborted) {
+          this.logDebug('Delivery cancelled by caller', {
+            attempts: attempt,
+            elapsedTimeMs: this.getNow() - startedAt,
+          });
+          return;
+        }
+
+        const isAmbiguousFailure = err instanceof RequestTimeoutError || this.isFetchNetworkError(err);
+        if (!isAmbiguousFailure) {
+          this.logError('Permanent delivery failure', {
+            error: err,
+            attempts: attempt,
+            elapsedTimeMs: this.getNow() - startedAt,
+          });
+          return;
+        }
+
+        deliveryAmbiguous = true;
+        failure = { error: err };
+        maxAttempts = Math.min(this.retryOptions.maxAttempts, 2);
+        delayMs = this.getExponentialBackoffMs(backoffAttempt);
+        backoffAttempt++;
       }
+
+      const retry = await this.scheduleRetry(failure, delayMs, attempt, maxAttempts, startedAt, callerSignal);
+      if (!retry) {
+        return callerSignal?.aborted ? undefined : response;
+      }
+
+      previousFailure = failure;
+      attempt = retry;
+    }
+  }
+
+  private async fetchLogicalAttempt(
+    url: string,
+    requestInit: RequestInit,
+    bodySize: number,
+    configuredKeepalive: boolean | undefined,
+    disableKeepalive: () => void,
+    callerSignal: AbortSignal | null | undefined,
+    remainingTimeMs: number
+  ): Promise<Response> {
+    const attemptController = new AbortController();
+    let timedOut = false;
+    const abortFromCaller = () => attemptController.abort();
+    callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
+
+    const timeoutId = setTimeout(
+      () => {
+        timedOut = true;
+        attemptController.abort();
+      },
+      Math.min(this.retryOptions.requestTimeoutMs, remainingTimeMs)
+    );
+
+    try {
+      return await this.fetchWithKeepaliveRetry(
+        url,
+        {
+          ...requestInit,
+          signal: attemptController.signal,
+        },
+        bodySize,
+        configuredKeepalive,
+        disableKeepalive
+      );
+    } catch (err) {
+      if (timedOut) {
+        throw new RequestTimeoutError(err);
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
+      callerSignal?.removeEventListener('abort', abortFromCaller);
+    }
+  }
+
+  private async scheduleRetry(
+    failure: RetryFailure,
+    delayMs: number,
+    attempt: number,
+    maxAttempts: number,
+    startedAt: number,
+    callerSignal?: AbortSignal | null
+  ): Promise<number | undefined> {
+    const elapsedTimeMs = this.getNow() - startedAt;
+    const remainingTimeMs = this.retryOptions.maxElapsedTimeMs - elapsedTimeMs;
+
+    if (attempt >= maxAttempts || delayMs >= remainingTimeMs) {
+      this.logRetriesExhausted(failure, attempt, elapsedTimeMs);
+      return;
     }
 
-    return new Date(now + this.rateLimitBackoffMs);
+    this.logDebug(`Retrying failed request after ${delayMs}ms. Attempt ${attempt + 1}.`);
+    if (!(await this.waitForRetry(delayMs, callerSignal)) || callerSignal?.aborted) {
+      this.logDebug('Delivery cancelled by caller', {
+        attempts: attempt,
+        elapsedTimeMs: this.getNow() - startedAt,
+      });
+      return;
+    }
+
+    const elapsedAfterWaitMs = this.getNow() - startedAt;
+    const remainingAfterWaitMs = this.retryOptions.maxElapsedTimeMs - elapsedAfterWaitMs;
+    if (remainingAfterWaitMs <= 0) {
+      this.logRetriesExhausted(failure, attempt, elapsedAfterWaitMs);
+      return;
+    }
+
+    return attempt + 1;
+  }
+
+  private logRetriesExhausted(failure: RetryFailure, attempts: number, elapsedTimeMs: number): void {
+    this.logError('Delivery retries exhausted', {
+      ...failure,
+      attempts,
+      elapsedTimeMs,
+    });
+  }
+
+  private waitForRetry(delayMs: number, callerSignal?: AbortSignal | null): Promise<boolean> {
+    if (callerSignal?.aborted) {
+      return Promise.resolve(false);
+    }
+
+    return new Promise<boolean>((resolve) => {
+      const abortFromCaller = () => {
+        clearTimeout(timeoutId);
+        callerSignal?.removeEventListener('abort', abortFromCaller);
+        resolve(false);
+      };
+      const timeoutId = setTimeout(() => {
+        callerSignal?.removeEventListener('abort', abortFromCaller);
+        resolve(true);
+      }, delayMs);
+
+      callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
+    });
+  }
+
+  private getExponentialBackoffMs(attempt: number): number {
+    const backoffMs = Math.min(
+      this.retryOptions.initialBackoffMs * this.retryOptions.backoffMultiplier ** (attempt - 1),
+      this.retryOptions.maxBackoffMs
+    );
+    const jitteredBackoffMs = backoffMs * (0.8 + Math.random() * 0.4);
+
+    return Math.min(jitteredBackoffMs, this.retryOptions.maxBackoffMs);
+  }
+
+  private getRetryAfterDelayMs(response: Response): number | undefined {
+    const retryAfterHeader = response.headers.get('Retry-After')?.trim();
+    if (!retryAfterHeader) {
+      return undefined;
+    }
+
+    if (/^\d+$/.test(retryAfterHeader)) {
+      const delayMs = Number(retryAfterHeader) * 1000;
+      return Number.isFinite(delayMs) ? delayMs : undefined;
+    }
+
+    let date: number;
+    const asctimeMatch = ASCTIME_DATE_PATTERN.exec(retryAfterHeader);
+    if (asctimeMatch) {
+      const month = asctimeMatch[1]!;
+      const day = asctimeMatch[2]!;
+      const hour = asctimeMatch[3]!;
+      const minute = asctimeMatch[4]!;
+      const second = asctimeMatch[5]!;
+      const year = asctimeMatch[6]!;
+      date = Date.UTC(
+        Number(year),
+        HTTP_MONTHS.indexOf(month),
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second)
+      );
+    } else if (HTTP_DATE_PATTERN.test(retryAfterHeader)) {
+      date = Date.parse(retryAfterHeader);
+    } else {
+      return undefined;
+    }
+
+    if (Number.isFinite(date)) {
+      return Math.max(0, date - this.getNow());
+    }
+
+    return undefined;
   }
 
   private reserveKeepalive(bodySize: number, configuredKeepalive?: boolean): KeepaliveReservation {
@@ -203,7 +520,8 @@ export class FetchTransport extends BaseTransport {
     url: string,
     requestInit: RequestInit,
     bodySize: number,
-    configuredKeepalive?: boolean
+    configuredKeepalive: boolean | undefined,
+    disableKeepalive: () => void
   ): Promise<Response> {
     const keepaliveReservation = this.reserveKeepalive(bodySize, configuredKeepalive);
 
@@ -215,8 +533,9 @@ export class FetchTransport extends BaseTransport {
 
       return this.handleResponse(response);
     } catch (err) {
-      if (keepaliveReservation.keepalive && this.isFetchNetworkError(err)) {
+      if (keepaliveReservation.keepalive && !requestInit.signal?.aborted && this.isFetchNetworkError(err)) {
         this.logDebug('Retrying failed keepalive request with keepalive disabled.');
+        disableKeepalive();
 
         const response = await fetch(url, {
           ...requestInit,
@@ -242,8 +561,8 @@ export class FetchTransport extends BaseTransport {
     }
 
     if (response.status === TOO_MANY_REQUESTS) {
-      this.disabledUntil = this.getRetryAfterDate(response);
-      this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
+      this.disabledUntil = new Date(this.getNow() + (this.getRetryAfterDelayMs(response) ?? this.rateLimitBackoffMs));
+      this.logDebug(`Too many requests, backing off until ${this.disabledUntil}`);
     }
 
     // read the body so the connection can be closed
