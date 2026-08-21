@@ -19,6 +19,7 @@ export interface FetchTransportOptions {
   bufferSize?: number;
   // how many requests to execute concurrently
   concurrency?: number;
+  // FIXME: Remove in Faro v3.0 and use retry.initialBackoffMs for 429 responses without Retry-After.
   // if rate limit response does not include a Retry-After header,
   // how many milliseconds to back off before attempting a request.
   // intermediate events will be dropped, not buffered

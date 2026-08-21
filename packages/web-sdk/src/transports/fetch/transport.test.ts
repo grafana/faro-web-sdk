@@ -11,16 +11,33 @@ import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils
 import * as sessionManagerUtilsMock from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 
 import { FetchTransport } from './transport';
+import type { FetchTransportOptions } from './types';
 
-const createAcceptedResponse = () => ({
-  status: 202,
+interface TestResponse {
+  status: number;
   headers: {
-    get: (_name: string): string | undefined => undefined,
+    get: (name: string) => string | undefined;
+  };
+  text: () => Promise<void>;
+}
+
+const createResponse = (status: number, retryAfter?: string): TestResponse => ({
+  status,
+  headers: {
+    get: (name: string): string | undefined => (name === 'Retry-After' ? retryAfter : undefined),
   },
   text: () => Promise.resolve(),
 });
 
+const createAcceptedResponse = () => createResponse(202);
+
 const fetch = jest.fn(() => Promise.resolve(createAcceptedResponse()));
+const createMockLogger = () => ({
+  ...mockInternalLogger,
+  debug: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+});
 
 (global as any).fetch = fetch;
 
@@ -42,6 +59,17 @@ if (typeof globalThis.CompressionStream === 'undefined') {
 }
 
 const mockSessionId = '123';
+const COLLECTOR_URL = 'http://example.com/collect';
+
+const createTransport = (
+  options: Omit<FetchTransportOptions, 'url'> = {},
+  logger: FetchTransport['internalLogger'] = mockInternalLogger
+) => {
+  const transport = new FetchTransport({ url: COLLECTOR_URL, ...options });
+  transport.metas.value = { session: { id: mockSessionId } };
+  transport.internalLogger = logger;
+  return transport;
+};
 
 const item: TransportItem<LogEvent> = {
   type: TransportItemType.LOG,
@@ -90,18 +118,13 @@ describe('FetchTransport', () => {
     jest.clearAllTimers();
   });
 
-  afterAll(() => {
+  afterEach(() => {
     jest.useRealTimers();
+    jest.restoreAllMocks();
   });
 
   it('will send event over fetch', () => {
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
-    });
-
-    transport.metas.value = { session: { id: mockSessionId } };
-
-    transport.internalLogger = mockInternalLogger;
+    const transport = createTransport();
 
     transport.send([item]);
 
@@ -112,20 +135,287 @@ describe('FetchTransport', () => {
         'Content-Type': 'application/json',
         'x-faro-session-id': mockSessionId,
       },
+
       keepalive: true,
       method: 'POST',
     });
   });
 
-  it('will not sending events if buffer size is exhausted', () => {
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
-      bufferSize: 3,
+  it('sends with Fetch when AbortController is unavailable', async () => {
+    const runtimeGlobal: { AbortController?: typeof AbortController } = globalThis;
+    const originalAbortController = runtimeGlobal.AbortController;
+
+    delete runtimeGlobal.AbortController;
+
+    try {
+      const transport = createTransport();
+
+      await transport.send([item]);
+
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const request = (fetch.mock.calls[0] as unknown[])[1] as RequestInit;
+      expect(request.signal).toBeUndefined();
+    } finally {
+      runtimeGlobal.AbortController = originalAbortController;
+    }
+  });
+
+  it('keeps an accepted outcome when draining the response body fails', async () => {
+    fetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ...createAcceptedResponse(),
+        text: () => Promise.reject(new Error('Could not drain response')),
+      })
+    );
+
+    const logger = createMockLogger();
+    const transport = createTransport({}, logger);
+
+    await transport.send([item]);
+    await Promise.resolve();
+
+    expect(logger.error).not.toHaveBeenCalled();
+  });
+
+  it('retries a retryable response with the same body', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503, undefined)))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport();
+
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1000);
+    await sendPromise;
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    const firstRequest = (fetch.mock.calls[0] as unknown[])[1] as RequestInit;
+    const secondRequest = (fetch.mock.calls[1] as unknown[])[1] as RequestInit;
+    expect(secondRequest.body).toBe(firstRequest.body);
+  });
+
+  it.each([408, 425, 429, 500, 502, 503, 504])('retries HTTP %s by default', async (status) => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(status)))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      defaultRateLimitBackoffMs: 1,
     });
 
-    transport.metas.value = { session: { id: mockSessionId } };
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1000);
+    await sendPromise;
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
 
-    transport.internalLogger = mockInternalLogger;
+  it.each([300, 400, 402, 404, 413, 501, 505])('does not retry permanent HTTP %s', async (status) => {
+    fetch.mockImplementationOnce(() => Promise.resolve(createResponse(status)));
+
+    const transport = createTransport();
+    await transport.send([item]);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('logs one payload-free permanent outcome', async () => {
+    fetch.mockImplementationOnce(() => Promise.resolve(createResponse(400, undefined)));
+
+    const logger = createMockLogger();
+    const transport = createTransport({}, logger);
+
+    await transport.send([item]);
+
+    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.any(String),
+      'Permanent delivery failure',
+      expect.objectContaining({
+        status: 400,
+        attempts: 1,
+        elapsedTimeMs: expect.any(Number),
+      })
+    );
+    expect(JSON.stringify(logger.error.mock.calls)).not.toContain(item.payload.message);
+  });
+
+  it('logs one exhausted outcome after the final retryable response', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+    fetch.mockImplementation(() => Promise.resolve(createResponse(503, undefined)));
+
+    const logger = createMockLogger();
+    const transport = createTransport({}, logger);
+
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(3000);
+    await sendPromise;
+
+    expect(logger.debug).toHaveBeenCalledTimes(2);
+    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.any(String),
+      'Delivery retries exhausted',
+      expect.objectContaining({
+        status: 503,
+        attempts: 3,
+        elapsedTimeMs: expect.any(Number),
+      })
+    );
+    expect(JSON.stringify(logger.error.mock.calls)).not.toContain(item.payload.message);
+  });
+
+  it.each([
+    ['below', 118999, 2],
+    ['equal to', 119000, 1],
+  ])('handles a retry delay %s the remaining elapsed-time budget', async (_case, elapsedMs, calls) => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+    let now = 0;
+    fetch
+      .mockImplementationOnce(() => {
+        now = elapsedMs;
+        return Promise.resolve(createResponse(503));
+      })
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({ getNow: () => now });
+    const sendPromise = transport.send([item]);
+
+    await jest.advanceTimersByTimeAsync(1000);
+    await sendPromise;
+    expect(fetch).toHaveBeenCalledTimes(calls);
+  });
+
+  it('rechecks the elapsed-time budget after waiting to retry', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+    let now = 0;
+    fetch.mockImplementationOnce(() => Promise.resolve(createResponse(503)));
+
+    const transport = createTransport({ getNow: () => now });
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+
+    now = 120000;
+    await jest.advanceTimersByTimeAsync(1000);
+    await sendPromise;
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('classifies header resolution failures without attempting delivery', async () => {
+    const headerError = new Error('Could not resolve authorization');
+    const logger = createMockLogger();
+    const transport = createTransport(
+      {
+        requestOptions: {
+          headers: {
+            Authorization: () => Promise.reject(headerError),
+          },
+        },
+      },
+      logger
+    );
+
+    await transport.send([item]);
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.any(String),
+      'Permanent delivery failure',
+      expect.objectContaining({
+        error: headerError,
+        attempts: 0,
+        elapsedTimeMs: 0,
+      })
+    );
+  });
+
+  it('treats caller cancellation during an active request as terminal and debug-only', async () => {
+    jest.useFakeTimers();
+    let rejectFetch: ((reason?: unknown) => void) | undefined;
+    fetch.mockImplementation(
+      () =>
+        new Promise<never>((_resolve, reject) => {
+          rejectFetch = reject;
+        })
+    );
+
+    const logger = createMockLogger();
+    const abortController = new AbortController();
+    const transport = createTransport({ requestOptions: { signal: abortController.signal } }, logger);
+
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+    const request = (fetch.mock.calls[0] as unknown[])[1] as RequestInit;
+    request.signal?.addEventListener('abort', () => rejectFetch?.(new TypeError('Failed to fetch')));
+
+    abortController.abort();
+    await sendPromise;
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(logger.error).not.toHaveBeenCalled();
+    expect(logger.warn).not.toHaveBeenCalled();
+    expect(logger.debug).toHaveBeenCalledWith(
+      expect.any(String),
+      'Delivery cancelled by caller',
+      expect.objectContaining({ attempts: 1, elapsedTimeMs: expect.any(Number) })
+    );
+  });
+
+  it('cancels a pending backoff when the caller aborts', async () => {
+    jest.useFakeTimers();
+
+    fetch.mockImplementation(() => Promise.resolve(createResponse(503, undefined)));
+
+    const logger = createMockLogger();
+    const abortController = new AbortController();
+    const transport = createTransport(
+      {
+        requestOptions: {
+          signal: abortController.signal,
+        },
+      },
+      logger
+    );
+
+    let completed = false;
+    const sendPromise = transport.send([item]).then(() => {
+      completed = true;
+    });
+
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    abortController.abort();
+    await jest.advanceTimersByTimeAsync(0);
+
+    expect(completed).toBe(true);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    await sendPromise;
+    expect(logger.error).not.toHaveBeenCalled();
+    expect(logger.warn).not.toHaveBeenCalled();
+    expect(logger.debug).toHaveBeenCalledWith(
+      expect.any(String),
+      'Delivery cancelled by caller',
+      expect.objectContaining({
+        attempts: 1,
+        elapsedTimeMs: expect.any(Number),
+      })
+    );
+  });
+
+  it('will not sending events if buffer size is exhausted', () => {
+    const transport = createTransport({
+      bufferSize: 3,
+    });
 
     for (let idx = 0; idx < 6; idx++) {
       transport.send([item]);
@@ -134,118 +424,275 @@ describe('FetchTransport', () => {
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 
-  it('will back off on 429 for default interval if no retry-after header present', async () => {
-    let now = Date.now();
+  it('releases request capacity while a batch waits to retry', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503)))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
 
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
-      defaultRateLimitBackoffMs: 1000,
+    const transport = createTransport({
+      bufferSize: 1,
+      concurrency: 1,
+    });
+
+    const retainedBatch = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await transport.send([mediumItem]);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(1000);
+    await retainedBatch;
+    expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('retains a retry when new requests fill the buffer', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    let resolveBlockingRequest!: (response: TestResponse) => void;
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503)))
+      .mockImplementationOnce(
+        () =>
+          new Promise<TestResponse>((resolve) => {
+            resolveBlockingRequest = resolve;
+          })
+      )
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      bufferSize: 1,
+      concurrency: 1,
+    });
+
+    const retainedBatch = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+
+    const blockingBatch = transport.send([mediumItem]);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(1000);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    resolveBlockingRequest(createAcceptedResponse());
+    await Promise.all([retainedBatch, blockingBatch]);
+    expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not start a queued attempt after its elapsed-time budget expires', async () => {
+    jest.useFakeTimers();
+
+    let resolveBlockingRequest!: (response: TestResponse) => void;
+    fetch
+      .mockImplementationOnce(
+        () =>
+          new Promise<TestResponse>((resolve) => {
+            resolveBlockingRequest = resolve;
+          })
+      )
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      bufferSize: 2,
+      concurrency: 1,
+    });
+
+    const blockingBatch = transport.send([item]);
+    const queuedBatch = transport.send([mediumItem]);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(120000);
+    resolveBlockingRequest(createAcceptedResponse());
+    await Promise.all([blockingBatch, queuedBatch]);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('honors an IMF-fixdate Retry-After date', async () => {
+    jest.useFakeTimers();
+    const now = Date.UTC(1994, 10, 6, 8, 49, 36);
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503, 'Sun, 06 Nov 1994 08:49:37 GMT')))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
       getNow: () => now,
     });
 
-    transport.metas.value = { session: { id: mockSessionId } };
-
-    transport.internalLogger = mockInternalLogger;
-
-    fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        status: 429,
-        headers: {
-          get: () => '',
-        },
-        text: () => Promise.resolve(),
-      })
-    );
-
-    await transport.send([item]);
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(999);
     expect(fetch).toHaveBeenCalledTimes(1);
 
-    await transport.send([item]);
-    expect(fetch).toHaveBeenCalledTimes(1);
-
-    now += 1001;
-    await transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1);
+    await sendPromise;
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
-  it('will back off on 429 for default interval if retry-after header present, with delay', async () => {
-    let now = Date.now();
+  it('retries immediately for a valid Retry-After date in the past', async () => {
+    jest.useFakeTimers();
+    fetch
+      .mockImplementationOnce(() =>
+        Promise.resolve(createResponse(503, new Date(Date.UTC(1994, 10, 6, 8, 49, 37)).toUTCString()))
+      )
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
 
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
-      defaultRateLimitBackoffMs: 1000,
-      getNow: () => now,
+    const transport = createTransport({
+      getNow: () => Date.UTC(1994, 10, 6, 8, 49, 38),
     });
 
-    transport.metas.value = { session: { id: mockSessionId } };
-
-    transport.internalLogger = mockInternalLogger;
-
-    fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        status: 429,
-        headers: {
-          get: () => '2',
-        },
-        text: () => Promise.resolve(),
-      })
-    );
-
-    await transport.send([item]);
-    expect(fetch).toHaveBeenCalledTimes(1);
-
-    now += 1001;
-    await transport.send([item]);
-    expect(fetch).toHaveBeenCalledTimes(1);
-
-    now += 1001;
-    await transport.send([item]);
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+    await sendPromise;
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
-  it('will back off on 429 for default interval if retry-after header present, with date', async () => {
-    let now = Date.now();
+  it('resets exponential backoff after honoring Retry-After', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
 
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503, '1')))
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503, undefined)))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport();
+
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1000);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(999);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(1);
+    expect(fetch).toHaveBeenCalledTimes(3);
+    await sendPromise;
+  });
+
+  it.each([undefined, 'invalid'])('uses bounded exponential backoff for 429 Retry-After %s', async (retryAfter) => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(1);
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(429, retryAfter)))
+      .mockImplementationOnce(() => Promise.resolve(createResponse(429, retryAfter)))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
       defaultRateLimitBackoffMs: 1000,
-      getNow: () => now,
     });
 
-    transport.metas.value = { session: { id: mockSessionId } };
-
-    transport.internalLogger = mockInternalLogger;
-
-    fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        status: 429,
-        headers: {
-          get: () => new Date(now + 3000).toISOString(),
-        },
-        text: () => Promise.resolve(),
-      })
-    );
-
-    await transport.send([item]);
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1199);
     expect(fetch).toHaveBeenCalledTimes(1);
 
-    now += 1001;
-    await transport.send([item]);
-    expect(fetch).toHaveBeenCalledTimes(1);
-
-    now += 2001;
-    await transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1);
     expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(2399);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(1);
+    await sendPromise;
+    expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('exhausts delivery when Retry-After exceeds the remaining elapsed-time budget', async () => {
+    jest.useFakeTimers();
+
+    fetch.mockImplementationOnce(() => Promise.resolve(createResponse(503, '120')));
+
+    const transport = createTransport();
+
+    await transport.send([item]);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
+  it('retries the rejected 429 batch while gating newly submitted batches', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(429, undefined)))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      defaultRateLimitBackoffMs: 1000,
+    });
+
+    const retainedBatch = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await transport.send([item]);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(1000);
+    await retainedBatch;
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('installs the 429 gate before the next queued request starts', async () => {
+    jest.useFakeTimers();
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(429, '60')))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      bufferSize: 2,
+      concurrency: 1,
+    });
+
+    const rateLimitedBatch = transport.send([item]);
+    const queuedBatch = transport.send([mediumItem]);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(59_999);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(1);
+    await Promise.all([rateLimitedBatch, queuedBatch]);
+    expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('honors a longer transport-wide Retry-After before an earlier batch retries', async () => {
+    jest.useFakeTimers();
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(429, '1')))
+      .mockImplementationOnce(() => Promise.resolve(createResponse(429, '60')))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      bufferSize: 2,
+      concurrency: 2,
+    });
+
+    const firstBatch = transport.send([item]);
+    const secondBatch = transport.send([mediumItem]);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(1000);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(58_999);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(1);
+    await Promise.all([firstBatch, secondBatch]);
+    expect(fetch).toHaveBeenCalledTimes(4);
   });
 
   it('will turn off keepalive if the payload length is over 60_000', async () => {
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
-    });
-
-    transport.metas.value = { session: { id: mockSessionId } };
-
-    transport.internalLogger = mockInternalLogger;
+    const transport = createTransport();
 
     transport.send([largeItem]);
 
@@ -262,7 +709,7 @@ describe('FetchTransport', () => {
   });
 
   it('will turn off keepalive if pending keepalive requests would exceed the body size limit', async () => {
-    const pendingResponses: Array<(response: ReturnType<typeof createAcceptedResponse>) => void> = [];
+    const pendingResponses: Array<(response: TestResponse) => void> = [];
     fetch.mockImplementation(
       () =>
         new Promise((resolve) => {
@@ -270,13 +717,9 @@ describe('FetchTransport', () => {
         })
     );
 
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
+    const transport = createTransport({
       concurrency: 2,
     });
-
-    transport.metas.value = { session: { id: mockSessionId } };
-    transport.internalLogger = mockInternalLogger;
 
     const firstSend = transport.send([mediumItem]);
     const secondSend = transport.send([mediumItem]);
@@ -312,9 +755,7 @@ describe('FetchTransport', () => {
       },
     };
 
-    const transport = new FetchTransport({ url: 'http://example.com/collect' });
-    transport.metas.value = { session: { id: mockSessionId } };
-    transport.internalLogger = mockInternalLogger;
+    const transport = createTransport();
 
     const jsonBody = JSON.stringify(getTransportBody([nonAsciiItem]));
     expect(jsonBody.length).toBeLessThan(60_000);
@@ -331,12 +772,7 @@ describe('FetchTransport', () => {
       .mockImplementationOnce(() => Promise.reject(new TypeError('Failed to fetch')))
       .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
 
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
-    });
-
-    transport.metas.value = { session: { id: mockSessionId } };
-    transport.internalLogger = mockInternalLogger;
+    const transport = createTransport();
 
     await transport.send([item]);
 
@@ -349,6 +785,128 @@ describe('FetchTransport', () => {
 
     expect(firstRequestInit.keepalive).toBe(true);
     expect(secondRequestInit.keepalive).toBe(false);
+  });
+
+  it('does not retry after the keepalive fallback returns a retryable response', async () => {
+    jest.useFakeTimers();
+
+    fetch
+      .mockImplementationOnce(() => Promise.reject(new TypeError('Failed to fetch')))
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503, undefined)));
+
+    const transport = createTransport();
+
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+    await sendPromise;
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    const requests = fetch.mock.calls.map((call) => (call as unknown[])[1] as RequestInit);
+    expect(requests.map(({ keepalive }) => keepalive)).toEqual([true, false]);
+    expect(requests[1]?.body).toBe(requests[0]?.body);
+  });
+
+  it('limits ambiguous keepalive failures to one retry', async () => {
+    jest.useFakeTimers();
+    fetch.mockImplementation(() => Promise.reject(new TypeError('Failed to fetch')));
+
+    const transport = createTransport();
+
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+    await sendPromise;
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+    const requests = fetch.mock.calls.map((call) => (call as unknown[])[1] as RequestInit);
+    expect(requests.map(({ keepalive }) => keepalive)).toEqual([true, false]);
+  });
+
+  it('stops after two logical attempts once delivery becomes ambiguous', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    fetch
+      .mockImplementationOnce(() => Promise.reject(new TypeError('Failed to fetch')))
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503, undefined)))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      requestOptions: {
+        keepalive: false,
+      },
+    });
+
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1000);
+    await sendPromise;
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('retains a complete non-keepalive body across retry', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503, undefined)))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport();
+
+    const sendPromise = transport.send([largeItem]);
+    await jest.advanceTimersByTimeAsync(1000);
+    await sendPromise;
+
+    const requests = fetch.mock.calls.map((call) => (call as unknown[])[1] as RequestInit);
+    expect(requests).toHaveLength(2);
+    expect(requests.map(({ keepalive }) => keepalive)).toEqual([false, false]);
+    expect(requests[1]?.body).toBe(requests[0]?.body);
+  });
+
+  it('freezes compressed body, dynamic headers, and session identity across retry', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+    const getAuthorization = jest.fn(() => 'Bearer token');
+    let resolveFirstFetch!: () => void;
+    const firstFetch = new Promise<void>((resolve) => {
+      resolveFirstFetch = resolve;
+    });
+
+    fetch
+      .mockImplementationOnce(() => {
+        resolveFirstFetch();
+        return Promise.resolve(createResponse(503, undefined));
+      })
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      requestCompression: true,
+      requestOptions: {
+        headers: {
+          Authorization: getAuthorization,
+        },
+      },
+    });
+
+    const sendPromise = transport.send([item]);
+    await firstFetch;
+    transport.metas.value = { session: { id: 'new-session' } };
+    await jest.advanceTimersByTimeAsync(1000);
+    await sendPromise;
+
+    const requests = fetch.mock.calls.map((call) => (call as unknown[])[1] as RequestInit);
+    expect(requests).toHaveLength(2);
+    expect(requests[0]?.body).toBeInstanceOf(Blob);
+    expect(requests[1]?.body).toBe(requests[0]?.body);
+    expect(requests[1]?.headers).toEqual(requests[0]?.headers);
+    expect(requests[1]?.headers).toEqual(
+      expect.objectContaining({
+        Authorization: 'Bearer token',
+        'x-faro-session-id': mockSessionId,
+      })
+    );
+    expect(getAuthorization).toHaveBeenCalledTimes(1);
   });
 
   it('will add global ignoredURLs to the ignoredUrls list ', async () => {
@@ -367,15 +925,12 @@ describe('FetchTransport', () => {
 
     const faro = initializeFaro(config);
 
-    transport.internalLogger = mockInternalLogger;
-
     const ignoreUrls = faro.transports.transports.flatMap((transport) => transport.getIgnoreUrls());
     expect(ignoreUrls).toStrictEqual([collectorUrl, ...globalIgnoreUrls]);
   });
 
   it('will add static header values', () => {
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
+    const transport = createTransport({
       requestOptions: {
         headers: {
           Authorization: 'Bearer static-token',
@@ -383,10 +938,6 @@ describe('FetchTransport', () => {
         },
       },
     });
-
-    transport.metas.value = { session: { id: mockSessionId } };
-
-    transport.internalLogger = mockInternalLogger;
 
     transport.send([item]);
 
@@ -403,8 +954,7 @@ describe('FetchTransport', () => {
   });
 
   it('will add dynamic header values from sync callbacks', async () => {
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
+    const transport = createTransport({
       requestOptions: {
         headers: {
           Authorization: () => `Bearer ${mockSessionId}-token`,
@@ -412,10 +962,6 @@ describe('FetchTransport', () => {
         },
       },
     });
-
-    transport.metas.value = { session: { id: mockSessionId } };
-
-    transport.internalLogger = mockInternalLogger;
 
     await transport.send([item]);
 
@@ -432,8 +978,7 @@ describe('FetchTransport', () => {
   });
 
   it('will add static header values and dynamic header values from sync callbacks', async () => {
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
+    const transport = createTransport({
       requestOptions: {
         headers: {
           Authorization: () => `Bearer ${mockSessionId}-token`,
@@ -441,10 +986,6 @@ describe('FetchTransport', () => {
         },
       },
     });
-
-    transport.metas.value = { session: { id: mockSessionId } };
-
-    transport.internalLogger = mockInternalLogger;
 
     await transport.send([item]);
 
@@ -461,8 +1002,7 @@ describe('FetchTransport', () => {
   });
 
   it('will add dynamic header values from async callbacks', async () => {
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
+    const transport = createTransport({
       requestOptions: {
         headers: {
           Authorization: async () => Promise.resolve('Bearer async-token'),
@@ -470,10 +1010,6 @@ describe('FetchTransport', () => {
         },
       },
     });
-
-    transport.metas.value = { session: { id: mockSessionId } };
-
-    transport.internalLogger = mockInternalLogger;
 
     await transport.send([item]);
 
@@ -505,12 +1041,8 @@ describe('FetchTransport', () => {
     const mockGetUserSessionUpdater = jest.fn(() => jest.fn());
     jest.spyOn(sessionManagerUtilsMock, 'getUserSessionUpdater').mockImplementationOnce(mockGetUserSessionUpdater);
 
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
-    });
+    const transport = createTransport();
 
-    transport.metas.value = { session: { id: mockSessionId } };
-    transport.internalLogger = mockInternalLogger;
     // Bind logDebug to prevent 'this' context loss when passed as callback
     transport.logDebug = transport.logDebug.bind(transport);
 
@@ -533,12 +1065,7 @@ describe('FetchTransport', () => {
     const mockGetUserSessionUpdater = jest.fn();
     jest.spyOn(sessionManagerUtilsMock, 'getUserSessionUpdater').mockImplementationOnce(mockGetUserSessionUpdater);
 
-    const transport = new FetchTransport({
-      url: 'http://example.com/collect',
-    });
-
-    transport.metas.value = { session: { id: mockSessionId } };
-    transport.internalLogger = mockInternalLogger;
+    const transport = createTransport();
 
     const config = mockConfig({
       transports: [transport],
@@ -557,13 +1084,9 @@ describe('FetchTransport', () => {
 
   describe('requestCompression', () => {
     it('sends compressed body with Content-Encoding header when enabled', async () => {
-      const transport = new FetchTransport({
-        url: 'http://example.com/collect',
+      const transport = createTransport({
         requestCompression: true,
       });
-
-      transport.metas.value = { session: { id: mockSessionId } };
-      transport.internalLogger = mockInternalLogger;
 
       await transport.send([item]);
 
@@ -580,8 +1103,7 @@ describe('FetchTransport', () => {
     it('produces valid gzip that decompresses to the original JSON', async () => {
       const zlib = require('node:zlib');
 
-      const transport = new FetchTransport({
-        url: 'http://example.com/collect',
+      const transport = createTransport({
         requestCompression: true,
       });
 
@@ -600,12 +1122,7 @@ describe('FetchTransport', () => {
     });
 
     it('is disabled by default', async () => {
-      const transport = new FetchTransport({
-        url: 'http://example.com/collect',
-      });
-
-      transport.metas.value = { session: { id: mockSessionId } };
-      transport.internalLogger = mockInternalLogger;
+      const transport = createTransport();
 
       await transport.send([item]);
 
@@ -621,13 +1138,9 @@ describe('FetchTransport', () => {
       delete (global as any).CompressionStream;
 
       try {
-        const transport = new FetchTransport({
-          url: 'http://example.com/collect',
+        const transport = createTransport({
           requestCompression: true,
         });
-
-        transport.metas.value = { session: { id: mockSessionId } };
-        transport.internalLogger = mockInternalLogger;
 
         await transport.send([item]);
 
@@ -646,8 +1159,7 @@ describe('FetchTransport', () => {
       delete (global as any).CompressionStream;
 
       try {
-        const transport = new FetchTransport({
-          url: 'http://example.com/collect',
+        const transport = createTransport({
           requestCompression: true,
         });
 
@@ -658,13 +1170,9 @@ describe('FetchTransport', () => {
     });
 
     it('enables keepalive for large payloads that compress below the threshold', async () => {
-      const transport = new FetchTransport({
-        url: 'http://example.com/collect',
+      const transport = createTransport({
         requestCompression: true,
       });
-
-      transport.metas.value = { session: { id: mockSessionId } };
-      transport.internalLogger = mockInternalLogger;
 
       await transport.send([largeItem]);
 
