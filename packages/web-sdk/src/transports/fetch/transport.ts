@@ -19,8 +19,10 @@ const DEFAULT_RETRY_OPTIONS: FetchTransportRetryOptions = {
   maxElapsedTimeMs: 120000,
 };
 const HTTP_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const HTTP_DATE_PATTERN =
-  /^(?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} GMT|(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), \d{2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{2} \d{2}:\d{2}:\d{2} GMT)$/;
+const IMF_FIXDATE_PATTERN =
+  /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$/;
+const RFC850_DATE_PATTERN =
+  /^(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), (\d{2})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2}) (\d{2}):(\d{2}):(\d{2}) GMT$/;
 const ASCTIME_DATE_PATTERN =
   /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ( [1-9]|\d{2}) (\d{2}):(\d{2}):(\d{2}) (\d{4})$/;
 function validateRetryOptions(options: FetchTransportRetryOptions): void {
@@ -102,6 +104,7 @@ export class FetchTransport extends BaseTransport {
   private readonly compressionEnabled: boolean;
   private readonly retryOptions: FetchTransportRetryOptions;
   private disabledUntil: Date = new Date(0);
+  private rateLimitGeneration = 0;
 
   constructor(private options: FetchTransportOptions) {
     super();
@@ -139,55 +142,61 @@ export class FetchTransport extends BaseTransport {
 
         return Promise.resolve();
       }
+      const admittedRateLimitGeneration = this.rateLimitGeneration;
 
-      await this.promiseBuffer.add(async () => {
-        const jsonBody = JSON.stringify(getTransportBody(items));
+      const jsonBody = JSON.stringify(getTransportBody(items));
 
-        const { url, requestOptions, apiKey } = this.options;
+      const { url, requestOptions, apiKey } = this.options;
 
-        const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
-        const {
-          keepalive: configuredKeepalive,
-          signal: callerSignal,
-          ...requestOptionsWithoutKeepalive
-        } = restOfRequestOptions;
+      const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
+      const {
+        keepalive: configuredKeepalive,
+        signal: callerSignal,
+        ...requestOptionsWithoutKeepalive
+      } = restOfRequestOptions;
 
-        let sessionId;
-        const sessionMeta = this.metas.value.session;
-        if (sessionMeta != null) {
-          sessionId = sessionMeta.id;
-        }
+      let sessionId;
+      const sessionMeta = this.metas.value.session;
+      if (sessionMeta != null) {
+        sessionId = sessionMeta.id;
+      }
 
-        const resolvedHeaders: Record<string, string> = {};
-        for (const [key, value] of Object.entries(headers)) {
-          resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
-        }
+      const resolvedHeaders: Record<string, string> = {};
+      for (const [key, value] of Object.entries(headers)) {
+        resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
+      }
 
-        let body: string | Blob = jsonBody;
-        let bodySize = getBodyByteSize(jsonBody);
-        const compressionHeaders: Record<string, string> = {};
+      let body: string | Blob = jsonBody;
+      let bodySize = getBodyByteSize(jsonBody);
+      const compressionHeaders: Record<string, string> = {};
 
-        if (this.compressionEnabled) {
-          body = await this.compress(jsonBody);
-          bodySize = body.size;
-          compressionHeaders['Content-Encoding'] = 'gzip';
-        }
+      if (this.compressionEnabled) {
+        body = await this.compress(jsonBody);
+        bodySize = body.size;
+        compressionHeaders['Content-Encoding'] = 'gzip';
+      }
 
-        const requestInit: RequestInit = {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...compressionHeaders,
-            ...resolvedHeaders,
-            ...(apiKey ? { 'x-api-key': apiKey } : {}),
-            ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
-          },
-          body,
-          ...(requestOptionsWithoutKeepalive ?? {}),
-        };
+      const requestInit: RequestInit = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...compressionHeaders,
+          ...resolvedHeaders,
+          ...(apiKey ? { 'x-api-key': apiKey } : {}),
+          ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
+        },
+        body,
+        ...(requestOptionsWithoutKeepalive ?? {}),
+      };
 
-        return this.fetchWithRetry(url, requestInit, bodySize, configuredKeepalive, callerSignal);
-      });
+      await this.fetchWithRetry(
+        url,
+        requestInit,
+        bodySize,
+        configuredKeepalive,
+        callerSignal,
+        admittedRateLimitGeneration
+      );
     } catch (err) {
       this.logError('Permanent delivery failure', {
         error: err,
@@ -209,8 +218,9 @@ export class FetchTransport extends BaseTransport {
     url: string,
     requestInit: RequestInit,
     bodySize: number,
-    configuredKeepalive?: boolean,
-    callerSignal?: AbortSignal | null
+    configuredKeepalive: boolean | undefined,
+    callerSignal: AbortSignal | null | undefined,
+    admittedRateLimitGeneration: number
   ): Promise<Response | void> {
     const startedAt = this.getNow();
     let attempt = 1;
@@ -218,8 +228,11 @@ export class FetchTransport extends BaseTransport {
     let previousFailure: RetryFailure | undefined;
     let deliveryAmbiguous = false;
     let keepaliveDisabled = configuredKeepalive === false;
+    let retryKeepaliveImmediately = false;
+    let observedRateLimitGeneration = admittedRateLimitGeneration;
     const disableKeepalive = () => {
       keepaliveDisabled = true;
+      retryKeepaliveImmediately = true;
     };
 
     for (;;) {
@@ -232,6 +245,28 @@ export class FetchTransport extends BaseTransport {
       }
       const elapsedTimeMs = this.getNow() - startedAt;
       const remainingTimeMs = this.retryOptions.maxElapsedTimeMs - elapsedTimeMs;
+      if (observedRateLimitGeneration < this.rateLimitGeneration) {
+        observedRateLimitGeneration = this.rateLimitGeneration;
+        const now = this.getNow();
+        const rateLimitDelayMs = this.disabledUntil.getTime() - now;
+        const remainingTimeMs = this.retryOptions.maxElapsedTimeMs - (now - startedAt);
+
+        if (rateLimitDelayMs >= remainingTimeMs) {
+          this.logRetriesExhausted(previousFailure ?? {}, attempt - 1, now - startedAt);
+          return;
+        }
+        if (rateLimitDelayMs > 0) {
+          if (!(await this.waitForRetry(rateLimitDelayMs, callerSignal)) || callerSignal?.aborted) {
+            this.logDebug('Delivery cancelled by caller', {
+              attempts: attempt - 1,
+              elapsedTimeMs: this.getNow() - startedAt,
+            });
+            return;
+          }
+          continue;
+        }
+      }
+
       if (remainingTimeMs <= 0) {
         this.logRetriesExhausted(previousFailure ?? {}, attempt - 1, elapsedTimeMs);
         return;
@@ -243,15 +278,53 @@ export class FetchTransport extends BaseTransport {
       let maxAttempts: number;
 
       try {
-        response = await this.fetchLogicalAttempt(
-          url,
-          requestInit,
-          bodySize,
-          keepaliveDisabled ? false : configuredKeepalive,
-          disableKeepalive,
-          callerSignal,
-          remainingTimeMs
+        const bufferedResponse = await this.promiseBuffer.add(
+          async () => {
+            if (callerSignal?.aborted || observedRateLimitGeneration < this.rateLimitGeneration) {
+              return;
+            }
+
+            const remainingTimeMs =
+              this.retryOptions.maxElapsedTimeMs - (this.getNow() - startedAt);
+            if (remainingTimeMs <= 0) {
+              return;
+            }
+
+            const attemptResponse = await this.fetchLogicalAttempt(
+              url,
+              requestInit,
+              bodySize,
+              keepaliveDisabled ? false : configuredKeepalive,
+              disableKeepalive,
+              callerSignal,
+              remainingTimeMs
+            );
+            if (attemptResponse.status === TOO_MANY_REQUESTS) {
+              const rateLimitGeneration = this.updateRateLimit(attemptResponse);
+              if (rateLimitGeneration != null) {
+                observedRateLimitGeneration = rateLimitGeneration;
+              }
+            }
+            return attemptResponse;
+          },
+          { allowOverflow: attempt > 1 }
         );
+        if (bufferedResponse == null) {
+          const elapsedAfterQueueMs = this.getNow() - startedAt;
+          if (callerSignal?.aborted) {
+            this.logDebug('Delivery cancelled by caller', {
+              attempts: attempt - 1,
+              elapsedTimeMs: elapsedAfterQueueMs,
+            });
+            return;
+          }
+          if (elapsedAfterQueueMs >= this.retryOptions.maxElapsedTimeMs) {
+            this.logRetriesExhausted(previousFailure ?? {}, attempt - 1, elapsedAfterQueueMs);
+            return;
+          }
+          continue;
+        }
+        response = bufferedResponse;
 
         if (response.status >= 200 && response.status < 300) {
           return response;
@@ -274,9 +347,6 @@ export class FetchTransport extends BaseTransport {
             : undefined;
         if (retryAfterMs != null) {
           delayMs = retryAfterMs;
-          backoffAttempt = 1;
-        } else if (response.status === TOO_MANY_REQUESTS) {
-          delayMs = this.rateLimitBackoffMs;
           backoffAttempt = 1;
         } else {
           delayMs = this.getExponentialBackoffMs(backoffAttempt);
@@ -304,8 +374,13 @@ export class FetchTransport extends BaseTransport {
         deliveryAmbiguous = true;
         failure = { error: err };
         maxAttempts = Math.min(this.retryOptions.maxAttempts, 2);
-        delayMs = this.getExponentialBackoffMs(backoffAttempt);
-        backoffAttempt++;
+        if (retryKeepaliveImmediately) {
+          delayMs = 0;
+          retryKeepaliveImmediately = false;
+        } else {
+          delayMs = this.getExponentialBackoffMs(backoffAttempt);
+          backoffAttempt++;
+        }
       }
 
       const retry = await this.scheduleRetry(failure, delayMs, attempt, maxAttempts, startedAt, callerSignal);
@@ -327,6 +402,19 @@ export class FetchTransport extends BaseTransport {
     callerSignal: AbortSignal | null | undefined,
     remainingTimeMs: number
   ): Promise<Response> {
+    if (typeof AbortController === 'undefined') {
+      return this.fetchWithKeepaliveRetry(
+        url,
+        {
+          ...requestInit,
+          signal: callerSignal,
+        },
+        bodySize,
+        configuredKeepalive,
+        disableKeepalive
+      );
+    }
+
     const attemptController = new AbortController();
     let timedOut = false;
     const abortFromCaller = () => attemptController.abort();
@@ -446,34 +534,60 @@ export class FetchTransport extends BaseTransport {
       return Number.isFinite(delayMs) ? delayMs : undefined;
     }
 
-    let date: number;
+    let day: number;
+    let month: number;
+    let year: number;
+    let hour: number;
+    let minute: number;
+    let second: number;
+
+    const imfFixdateMatch = IMF_FIXDATE_PATTERN.exec(retryAfterHeader);
+    const rfc850Match = RFC850_DATE_PATTERN.exec(retryAfterHeader);
     const asctimeMatch = ASCTIME_DATE_PATTERN.exec(retryAfterHeader);
-    if (asctimeMatch) {
-      const month = asctimeMatch[1]!;
-      const day = asctimeMatch[2]!;
-      const hour = asctimeMatch[3]!;
-      const minute = asctimeMatch[4]!;
-      const second = asctimeMatch[5]!;
-      const year = asctimeMatch[6]!;
-      date = Date.UTC(
-        Number(year),
-        HTTP_MONTHS.indexOf(month),
-        Number(day),
-        Number(hour),
-        Number(minute),
-        Number(second)
-      );
-    } else if (HTTP_DATE_PATTERN.test(retryAfterHeader)) {
-      date = Date.parse(retryAfterHeader);
+    if (imfFixdateMatch) {
+      day = Number(imfFixdateMatch[1]);
+      month = HTTP_MONTHS.indexOf(imfFixdateMatch[2]!);
+      year = Number(imfFixdateMatch[3]);
+      hour = Number(imfFixdateMatch[4]);
+      minute = Number(imfFixdateMatch[5]);
+      second = Number(imfFixdateMatch[6]);
+    } else if (rfc850Match) {
+      day = Number(rfc850Match[1]);
+      month = HTTP_MONTHS.indexOf(rfc850Match[2]!);
+      const twoDigitYear = Number(rfc850Match[3]);
+      const currentYear = new Date(this.getNow()).getUTCFullYear();
+      year = Math.floor(currentYear / 100) * 100 + twoDigitYear;
+      if (year - currentYear > 50) {
+        year -= 100;
+      }
+      hour = Number(rfc850Match[4]);
+      minute = Number(rfc850Match[5]);
+      second = Number(rfc850Match[6]);
+    } else if (asctimeMatch) {
+      month = HTTP_MONTHS.indexOf(asctimeMatch[1]!);
+      day = Number(asctimeMatch[2]);
+      hour = Number(asctimeMatch[3]);
+      minute = Number(asctimeMatch[4]);
+      second = Number(asctimeMatch[5]);
+      year = Number(asctimeMatch[6]);
     } else {
       return undefined;
     }
 
-    if (Number.isFinite(date)) {
-      return Math.max(0, date - this.getNow());
+    const date = Date.UTC(year, month, day, hour, minute, second);
+    const parsedDate = new Date(date);
+    if (
+      parsedDate.getUTCFullYear() !== year ||
+      parsedDate.getUTCMonth() !== month ||
+      parsedDate.getUTCDate() !== day ||
+      parsedDate.getUTCHours() !== hour ||
+      parsedDate.getUTCMinutes() !== minute ||
+      parsedDate.getUTCSeconds() !== second
+    ) {
+      return undefined;
     }
 
-    return undefined;
+    return Math.max(0, date - this.getNow());
   }
 
   private reserveKeepalive(bodySize: number, configuredKeepalive?: boolean): KeepaliveReservation {
@@ -536,13 +650,6 @@ export class FetchTransport extends BaseTransport {
       if (keepaliveReservation.keepalive && !requestInit.signal?.aborted && this.isFetchNetworkError(err)) {
         this.logDebug('Retrying failed keepalive request with keepalive disabled.');
         disableKeepalive();
-
-        const response = await fetch(url, {
-          ...requestInit,
-          keepalive: false,
-        });
-
-        return this.handleResponse(response);
       }
 
       throw err;
@@ -560,14 +667,23 @@ export class FetchTransport extends BaseTransport {
       }
     }
 
-    if (response.status === TOO_MANY_REQUESTS) {
-      this.disabledUntil = new Date(this.getNow() + (this.getRetryAfterDelayMs(response) ?? this.rateLimitBackoffMs));
-      this.logDebug(`Too many requests, backing off until ${this.disabledUntil}`);
-    }
-
     // read the body so the connection can be closed
     response.text().catch(noop);
     return response;
+  }
+
+  private updateRateLimit(response: Response): number | undefined {
+    const disabledUntil = new Date(
+      this.getNow() + (this.getRetryAfterDelayMs(response) ?? this.rateLimitBackoffMs)
+    );
+    if (disabledUntil <= this.disabledUntil) {
+      return undefined;
+    }
+
+    this.disabledUntil = disabledUntil;
+    this.rateLimitGeneration++;
+    this.logDebug(`Too many requests, backing off until ${this.disabledUntil}`);
+    return this.rateLimitGeneration;
   }
 
   private isFetchNetworkError(err: unknown): boolean {

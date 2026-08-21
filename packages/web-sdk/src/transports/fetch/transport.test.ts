@@ -13,7 +13,15 @@ import * as sessionManagerUtilsMock from '../../instrumentations/session/session
 import { FetchTransport } from './transport';
 import type { FetchTransportOptions, FetchTransportRetryOptions } from './types';
 
-const createResponse = (status: number, retryAfter?: string) => ({
+interface TestResponse {
+  status: number;
+  headers: {
+    get: (name: string) => string | undefined;
+  };
+  text: () => Promise<void>;
+}
+
+const createResponse = (status: number, retryAfter?: string): TestResponse => ({
   status,
   headers: {
     get: (name: string): string | undefined => (name === 'Retry-After' ? retryAfter : undefined),
@@ -137,6 +145,24 @@ describe('FetchTransport', () => {
       signal: expect.any(AbortSignal),
       method: 'POST',
     });
+  });
+
+  it('sends without a request timeout when AbortController is unavailable', async () => {
+    const runtimeGlobal: { AbortController?: typeof AbortController } = globalThis;
+    const original = runtimeGlobal.AbortController;
+    delete runtimeGlobal.AbortController;
+
+    try {
+      const transport = createTransport();
+
+      await transport.send([item]);
+
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const request = (fetch.mock.calls[0] as unknown[])[1] as RequestInit;
+      expect(request.signal).toBeUndefined();
+    } finally {
+      runtimeGlobal.AbortController = original;
+    }
   });
   it('keeps an accepted outcome when draining the response body fails', async () => {
     fetch.mockImplementationOnce(() =>
@@ -552,6 +578,112 @@ describe('FetchTransport', () => {
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 
+  it('releases request capacity while a batch waits to retry', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503)))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      bufferSize: 1,
+      concurrency: 1,
+      retry: {
+        maxAttempts: 2,
+        initialBackoffMs: 100,
+        maxBackoffMs: 100,
+        backoffMultiplier: 1,
+      },
+    });
+
+    const retainedBatch = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await transport.send([mediumItem]);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(100);
+    await retainedBatch;
+    expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('retains a retry when new requests fill the buffer', async () => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    let resolveBlockingRequest!: (response: TestResponse) => void;
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503)))
+      .mockImplementationOnce(
+        () =>
+          new Promise<TestResponse>((resolve) => {
+            resolveBlockingRequest = resolve;
+          })
+      )
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      bufferSize: 1,
+      concurrency: 1,
+      retry: {
+        maxAttempts: 2,
+        initialBackoffMs: 100,
+        maxBackoffMs: 100,
+        backoffMultiplier: 1,
+      },
+    });
+
+    const retainedBatch = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+
+    const blockingBatch = transport.send([mediumItem]);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(100);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    resolveBlockingRequest(createAcceptedResponse());
+    await Promise.all([retainedBatch, blockingBatch]);
+    expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not start a queued attempt after its elapsed-time budget expires', async () => {
+    jest.useFakeTimers();
+
+    let resolveBlockingRequest!: (response: TestResponse) => void;
+    fetch
+      .mockImplementationOnce(
+        () =>
+          new Promise<TestResponse>((resolve) => {
+            resolveBlockingRequest = resolve;
+          })
+      )
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      bufferSize: 2,
+      concurrency: 1,
+      retry: {
+        maxAttempts: 1,
+        requestTimeoutMs: 100,
+        maxElapsedTimeMs: 100,
+      },
+    });
+
+    const blockingBatch = transport.send([item]);
+    const queuedBatch = transport.send([mediumItem]);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(100);
+    resolveBlockingRequest(createAcceptedResponse());
+    await Promise.all([blockingBatch, queuedBatch]);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
   it('will back off on 429 for default interval if no retry-after header present', async () => {
     let now = Date.now();
 
@@ -751,7 +883,16 @@ describe('FetchTransport', () => {
     await sendPromise;
   });
 
-  it.each(['invalid', '-1', '1.5', '2000-01-01T00:00:00.000Z'])(
+  it.each([
+    'invalid',
+    '-1',
+    '1.5',
+    '2000-01-01T00:00:00.000Z',
+    'Sun Dec 99 00:00:00 2026',
+    'Sun Feb 31 00:00:00 2026',
+    'Sun, 31 Feb 2026 00:00:00 GMT',
+    'Sunday, 31-Feb-26 00:00:00 GMT',
+  ])(
     'uses exponential backoff for malformed Retry-After %s',
     async (value) => {
       jest.useFakeTimers();
@@ -779,25 +920,41 @@ describe('FetchTransport', () => {
       expect(fetch).toHaveBeenCalledTimes(2);
     }
   );
-  it('uses the rate-limit fallback for a malformed 429 Retry-After value', async () => {
-    jest.useFakeTimers();
-    fetch
-      .mockImplementationOnce(() => Promise.resolve(createResponse(429, 'invalid')))
-      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+  it.each([undefined, 'invalid'])(
+    'uses bounded exponential backoff for 429 Retry-After %s',
+    async (retryAfter) => {
+      jest.useFakeTimers();
+      jest.spyOn(Math, 'random').mockReturnValue(1);
+      fetch
+        .mockImplementationOnce(() => Promise.resolve(createResponse(429, retryAfter)))
+        .mockImplementationOnce(() => Promise.resolve(createResponse(429, retryAfter)))
+        .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
 
-    const transport = createTransport({
-      defaultRateLimitBackoffMs: 100,
-      retry: { maxAttempts: 2 },
-    });
+      const transport = createTransport({
+        defaultRateLimitBackoffMs: 1000,
+        retry: {
+          maxAttempts: 3,
+          initialBackoffMs: 100,
+          maxBackoffMs: 150,
+          backoffMultiplier: 2,
+        },
+      });
 
-    const sendPromise = transport.send([item]);
-    await jest.advanceTimersByTimeAsync(99);
-    expect(fetch).toHaveBeenCalledTimes(1);
+      const sendPromise = transport.send([item]);
+      await jest.advanceTimersByTimeAsync(119);
+      expect(fetch).toHaveBeenCalledTimes(1);
 
-    await jest.advanceTimersByTimeAsync(1);
-    await sendPromise;
-    expect(fetch).toHaveBeenCalledTimes(2);
-  });
+      await jest.advanceTimersByTimeAsync(1);
+      expect(fetch).toHaveBeenCalledTimes(2);
+
+      await jest.advanceTimersByTimeAsync(149);
+      expect(fetch).toHaveBeenCalledTimes(2);
+
+      await jest.advanceTimersByTimeAsync(1);
+      await sendPromise;
+      expect(fetch).toHaveBeenCalledTimes(3);
+    }
+  );
 
   it('exhausts delivery when Retry-After exceeds the remaining elapsed-time budget', async () => {
     jest.useFakeTimers();
@@ -818,6 +975,7 @@ describe('FetchTransport', () => {
 
   it('retries the rejected 429 batch while gating newly submitted batches', async () => {
     jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
 
     fetch
       .mockImplementationOnce(() => Promise.resolve(createResponse(429, undefined)))
@@ -827,6 +985,9 @@ describe('FetchTransport', () => {
       defaultRateLimitBackoffMs: 100,
       retry: {
         maxAttempts: 2,
+        initialBackoffMs: 100,
+        maxBackoffMs: 100,
+        backoffMultiplier: 1,
       },
     });
 
@@ -840,6 +1001,66 @@ describe('FetchTransport', () => {
     await jest.advanceTimersByTimeAsync(100);
     await retainedBatch;
     expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('installs the 429 gate before the next queued request starts', async () => {
+    jest.useFakeTimers();
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(429, '60')))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      bufferSize: 2,
+      concurrency: 1,
+      retry: {
+        maxAttempts: 2,
+      },
+    });
+
+    const rateLimitedBatch = transport.send([item]);
+    const queuedBatch = transport.send([mediumItem]);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(59_999);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(1);
+    await Promise.all([rateLimitedBatch, queuedBatch]);
+    expect(fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('honors a longer transport-wide Retry-After before an earlier batch retries', async () => {
+    jest.useFakeTimers();
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(429, '1')))
+      .mockImplementationOnce(() => Promise.resolve(createResponse(429, '60')))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+
+    const transport = createTransport({
+      bufferSize: 2,
+      concurrency: 2,
+      retry: {
+        maxAttempts: 2,
+      },
+    });
+
+    const firstBatch = transport.send([item]);
+    const secondBatch = transport.send([mediumItem]);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(1000);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(58_999);
+    expect(fetch).toHaveBeenCalledTimes(2);
+
+    await jest.advanceTimersByTimeAsync(1);
+    await Promise.all([firstBatch, secondBatch]);
+    expect(fetch).toHaveBeenCalledTimes(4);
   });
 
   it('will turn off keepalive if the payload length is over 60_000', async () => {
@@ -861,7 +1082,7 @@ describe('FetchTransport', () => {
   });
 
   it('will turn off keepalive if pending keepalive requests would exceed the body size limit', async () => {
-    const pendingResponses: Array<(response: ReturnType<typeof createAcceptedResponse>) => void> = [];
+    const pendingResponses: Array<(response: TestResponse) => void> = [];
     fetch.mockImplementation(
       () =>
         new Promise((resolve) => {
@@ -939,13 +1160,12 @@ describe('FetchTransport', () => {
     expect(secondRequestInit.keepalive).toBe(false);
   });
 
-  it('keeps keepalive disabled when a generic retry follows the compatibility fallback', async () => {
+  it('does not retry after the keepalive fallback returns a retryable response', async () => {
     jest.useFakeTimers();
 
     fetch
       .mockImplementationOnce(() => Promise.reject(new TypeError('Failed to fetch')))
-      .mockImplementationOnce(() => Promise.resolve(createResponse(503, undefined)))
-      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503, undefined)));
 
     const transport = createTransport({
       retry: { maxAttempts: 2, ...immediateRetry },
@@ -955,15 +1175,14 @@ describe('FetchTransport', () => {
     await jest.advanceTimersByTimeAsync(2);
     await sendPromise;
 
-    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(fetch).toHaveBeenCalledTimes(2);
 
     const requests = fetch.mock.calls.map((call) => (call as unknown[])[1] as RequestInit);
-    expect(requests.map(({ keepalive }) => keepalive)).toEqual([true, false, false]);
+    expect(requests.map(({ keepalive }) => keepalive)).toEqual([true, false]);
     expect(requests[1]?.body).toBe(requests[0]?.body);
-    expect(requests[2]?.body).toBe(requests[0]?.body);
   });
 
-  it('limits ambiguous failure to one generic retry after the keepalive fallback', async () => {
+  it('limits ambiguous keepalive failures to one retry', async () => {
     jest.useFakeTimers();
     fetch.mockImplementation(() => Promise.reject(new TypeError('Failed to fetch')));
 
@@ -975,9 +1194,9 @@ describe('FetchTransport', () => {
     await jest.advanceTimersByTimeAsync(2);
     await sendPromise;
 
-    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(fetch).toHaveBeenCalledTimes(2);
     const requests = fetch.mock.calls.map((call) => (call as unknown[])[1] as RequestInit);
-    expect(requests.map(({ keepalive }) => keepalive)).toEqual([true, false, false]);
+    expect(requests.map(({ keepalive }) => keepalive)).toEqual([true, false]);
   });
 
   it('stops after two logical attempts once delivery becomes ambiguous', async () => {

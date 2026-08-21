@@ -7,14 +7,19 @@ export interface PromiseBufferOptions {
 
 export type PromiseProducer<T> = () => PromiseLike<T>;
 
+interface PromiseBufferAddOptions {
+  // Previously accepted work can re-enter the queue without being dropped behind newer tasks.
+  allowOverflow?: boolean;
+}
+
 export interface PromiseBuffer<T> {
-  add(promiseProducer: PromiseProducer<T>): PromiseLike<T>;
+  add(promiseProducer: PromiseProducer<T>, options?: PromiseBufferAddOptions): PromiseLike<T>;
 }
 
 export interface BufferItem<T> {
   producer: PromiseProducer<T>;
   resolve: (value: T) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: unknown) => void;
 }
 
 export function createPromiseBuffer<T>(options: PromiseBufferOptions): PromiseBuffer<T> {
@@ -50,8 +55,8 @@ export function createPromiseBuffer<T>(options: PromiseBufferOptions): PromiseBu
     }
   };
 
-  const add: PromiseBuffer<T>['add'] = (promiseProducer) => {
-    if (buffer.length + inProgress >= size) {
+  const add: PromiseBuffer<T>['add'] = (promiseProducer, addOptions) => {
+    if (!addOptions?.allowOverflow && buffer.length + inProgress >= size) {
       throw new Error('Task buffer full');
     }
 
