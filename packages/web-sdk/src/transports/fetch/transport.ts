@@ -401,17 +401,16 @@ export class FetchTransport extends BaseTransport {
     callerSignal: AbortSignal | null | undefined,
     remainingTimeMs: number
   ): Promise<Response> {
+    // `supports es6-module` includes browsers without AbortController. Use XHR there because
+    // racing Fetch against a timer cannot cancel the in-flight request and could duplicate delivery.
     if (typeof AbortController === 'undefined') {
-      return this.fetchWithKeepaliveRetry(
+      const response = await this.sendWithXhr(
         url,
-        {
-          ...requestInit,
-          signal: callerSignal,
-        },
-        bodySize,
-        configuredKeepalive,
-        disableKeepalive
+        requestInit,
+        Math.min(this.retryOptions.requestTimeoutMs, remainingTimeMs),
+        callerSignal
       );
+      return this.handleResponse(response);
     }
 
     const attemptController = new AbortController();
@@ -447,6 +446,53 @@ export class FetchTransport extends BaseTransport {
       clearTimeout(timeoutId);
       callerSignal?.removeEventListener('abort', abortFromCaller);
     }
+  }
+
+  private sendWithXhr(
+    url: string,
+    requestInit: RequestInit,
+    timeoutMs: number,
+    callerSignal?: AbortSignal | null
+  ): Promise<Response> {
+    return new Promise<Response>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const abortFromCaller = () => xhr.abort();
+      const cleanup = () => callerSignal?.removeEventListener('abort', abortFromCaller);
+      const rejectRequest = (error: unknown) => {
+        cleanup();
+        reject(error);
+      };
+
+      xhr.open(requestInit.method ?? 'POST', url, true);
+      xhr.timeout = timeoutMs;
+      xhr.withCredentials = requestInit.credentials === 'include';
+
+      for (const [name, value] of Object.entries(requestInit.headers as Record<string, string>)) {
+        xhr.setRequestHeader(name, value);
+      }
+
+      xhr.onload = () => {
+        cleanup();
+        if (xhr.status === 0) {
+          reject(new TypeError('Network request failed'));
+          return;
+        }
+
+        resolve({
+          status: xhr.status,
+          headers: {
+            get: (name: string) => xhr.getResponseHeader(name),
+          },
+          text: () => Promise.resolve(xhr.responseText),
+        } as Response);
+      };
+      xhr.onerror = () => rejectRequest(new TypeError('Network request failed'));
+      xhr.ontimeout = () => rejectRequest(new RequestTimeoutError(new Error('Request timed out')));
+      xhr.onabort = () => rejectRequest(new TypeError('Request aborted'));
+
+      callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
+      xhr.send((requestInit.body as XMLHttpRequestBodyInit | null | undefined) ?? null);
+    });
   }
 
   private async scheduleRetry(

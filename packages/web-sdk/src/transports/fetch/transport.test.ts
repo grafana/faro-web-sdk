@@ -44,6 +44,23 @@ const immediateRetry = {
   backoffMultiplier: 1,
 } as const;
 
+const createMockXhr = (status = 202): XMLHttpRequest =>
+  ({
+    status,
+    responseText: '',
+    timeout: 0,
+    withCredentials: false,
+    open: jest.fn(),
+    setRequestHeader: jest.fn(),
+    getResponseHeader: jest.fn(() => null),
+    send: jest.fn(),
+    abort: jest.fn(),
+    onload: null,
+    onerror: null,
+    ontimeout: null,
+    onabort: null,
+  }) as unknown as XMLHttpRequest;
+
 (global as any).fetch = fetch;
 
 // jsdom doesn't provide web stream globals or Response — use Node's implementations
@@ -147,21 +164,78 @@ describe('FetchTransport', () => {
     });
   });
 
-  it('sends without a request timeout when AbortController is unavailable', async () => {
-    const runtimeGlobal: { AbortController?: typeof AbortController } = globalThis;
-    const original = runtimeGlobal.AbortController;
+  it('uses an XHR request timeout when AbortController is unavailable', async () => {
+    const runtimeGlobal: {
+      AbortController?: typeof AbortController;
+      XMLHttpRequest: typeof XMLHttpRequest;
+    } = globalThis;
+    const originalAbortController = runtimeGlobal.AbortController;
+    const originalXMLHttpRequest = runtimeGlobal.XMLHttpRequest;
+    const xhr = createMockXhr();
+    xhr.send = jest.fn(() => xhr.onload?.(new ProgressEvent('load')));
+
     delete runtimeGlobal.AbortController;
+    runtimeGlobal.XMLHttpRequest = jest.fn(() => xhr) as unknown as typeof XMLHttpRequest;
 
     try {
       const transport = createTransport();
 
       await transport.send([item]);
 
-      expect(fetch).toHaveBeenCalledTimes(1);
-      const request = (fetch.mock.calls[0] as unknown[])[1] as RequestInit;
-      expect(request.signal).toBeUndefined();
+      expect(fetch).not.toHaveBeenCalled();
+      expect(xhr.open).toHaveBeenCalledWith('POST', 'http://example.com/collect', true);
+      expect(xhr.timeout).toBe(30000);
+      expect(xhr.setRequestHeader).toHaveBeenCalledWith('Content-Type', 'application/json');
+      expect(xhr.send).toHaveBeenCalledWith(JSON.stringify(getTransportBody([item])));
     } finally {
-      runtimeGlobal.AbortController = original;
+      runtimeGlobal.AbortController = originalAbortController;
+      runtimeGlobal.XMLHttpRequest = originalXMLHttpRequest;
+    }
+  });
+
+  it('retries an XHR request after its timeout elapses', async () => {
+    jest.useFakeTimers();
+    const runtimeGlobal: {
+      AbortController?: typeof AbortController;
+      XMLHttpRequest: typeof XMLHttpRequest;
+    } = globalThis;
+    const originalAbortController = runtimeGlobal.AbortController;
+    const originalXMLHttpRequest = runtimeGlobal.XMLHttpRequest;
+    const firstXhr = createMockXhr();
+    const secondXhr = createMockXhr();
+    const createXhr = jest
+      .fn()
+      .mockImplementationOnce(() => firstXhr)
+      .mockImplementationOnce(() => secondXhr);
+
+    delete runtimeGlobal.AbortController;
+    runtimeGlobal.XMLHttpRequest = createXhr as unknown as typeof XMLHttpRequest;
+
+    try {
+      const transport = createTransport({
+        retry: {
+          maxAttempts: 2,
+          requestTimeoutMs: 10,
+          maxElapsedTimeMs: 100,
+          ...immediateRetry,
+        },
+      });
+
+      const sendPromise = transport.send([item]);
+      expect(firstXhr.timeout).toBe(10);
+
+      firstXhr.ontimeout?.(new ProgressEvent('timeout'));
+      await jest.advanceTimersByTimeAsync(1);
+      expect(createXhr).toHaveBeenCalledTimes(2);
+
+      secondXhr.onload?.(new ProgressEvent('load'));
+      await sendPromise;
+
+      expect(fetch).not.toHaveBeenCalled();
+      expect(secondXhr.timeout).toBeLessThanOrEqual(10);
+    } finally {
+      runtimeGlobal.AbortController = originalAbortController;
+      runtimeGlobal.XMLHttpRequest = originalXMLHttpRequest;
     }
   });
   it('keeps an accepted outcome when draining the response body fails', async () => {
