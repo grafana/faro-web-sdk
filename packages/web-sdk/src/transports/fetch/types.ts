@@ -20,8 +20,6 @@ export interface FetchTransportRetryOptions {
   backoffMultiplier: number;
   // HTTP response status codes eligible for retry
   retryableStatusCodes: number[];
-  // timeout for each logical attempt
-  requestTimeoutMs: number;
   // maximum elapsed time across all attempts and backoff delays
   maxElapsedTimeMs: number;
 }

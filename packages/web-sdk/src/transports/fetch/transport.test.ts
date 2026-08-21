@@ -44,23 +44,6 @@ const immediateRetry = {
   backoffMultiplier: 1,
 } as const;
 
-const createMockXhr = (status = 202): XMLHttpRequest =>
-  ({
-    status,
-    responseText: '',
-    timeout: 0,
-    withCredentials: false,
-    open: jest.fn(),
-    setRequestHeader: jest.fn(),
-    getResponseHeader: jest.fn(() => null),
-    send: jest.fn(),
-    abort: jest.fn(),
-    onload: null,
-    onerror: null,
-    ontimeout: null,
-    onabort: null,
-  }) as unknown as XMLHttpRequest;
-
 (global as any).fetch = fetch;
 
 // jsdom doesn't provide web stream globals or Response — use Node's implementations
@@ -159,85 +142,29 @@ describe('FetchTransport', () => {
       },
 
       keepalive: true,
-      signal: expect.any(AbortSignal),
       method: 'POST',
     });
   });
 
-  it('uses an XHR request timeout when AbortController is unavailable', async () => {
-    const runtimeGlobal: {
-      AbortController?: typeof AbortController;
-      XMLHttpRequest: typeof XMLHttpRequest;
-    } = globalThis;
+  it('sends with Fetch when AbortController is unavailable', async () => {
+    const runtimeGlobal: { AbortController?: typeof AbortController } = globalThis;
     const originalAbortController = runtimeGlobal.AbortController;
-    const originalXMLHttpRequest = runtimeGlobal.XMLHttpRequest;
-    const xhr = createMockXhr();
-    xhr.send = jest.fn(() => xhr.onload?.(new ProgressEvent('load')));
 
     delete runtimeGlobal.AbortController;
-    runtimeGlobal.XMLHttpRequest = jest.fn(() => xhr) as unknown as typeof XMLHttpRequest;
 
     try {
       const transport = createTransport();
 
       await transport.send([item]);
 
-      expect(fetch).not.toHaveBeenCalled();
-      expect(xhr.open).toHaveBeenCalledWith('POST', 'http://example.com/collect', true);
-      expect(xhr.timeout).toBe(30000);
-      expect(xhr.setRequestHeader).toHaveBeenCalledWith('Content-Type', 'application/json');
-      expect(xhr.send).toHaveBeenCalledWith(JSON.stringify(getTransportBody([item])));
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const request = (fetch.mock.calls[0] as unknown[])[1] as RequestInit;
+      expect(request.signal).toBeUndefined();
     } finally {
       runtimeGlobal.AbortController = originalAbortController;
-      runtimeGlobal.XMLHttpRequest = originalXMLHttpRequest;
     }
   });
 
-  it('retries an XHR request after its timeout elapses', async () => {
-    jest.useFakeTimers();
-    const runtimeGlobal: {
-      AbortController?: typeof AbortController;
-      XMLHttpRequest: typeof XMLHttpRequest;
-    } = globalThis;
-    const originalAbortController = runtimeGlobal.AbortController;
-    const originalXMLHttpRequest = runtimeGlobal.XMLHttpRequest;
-    const firstXhr = createMockXhr();
-    const secondXhr = createMockXhr();
-    const createXhr = jest
-      .fn()
-      .mockImplementationOnce(() => firstXhr)
-      .mockImplementationOnce(() => secondXhr);
-
-    delete runtimeGlobal.AbortController;
-    runtimeGlobal.XMLHttpRequest = createXhr as unknown as typeof XMLHttpRequest;
-
-    try {
-      const transport = createTransport({
-        retry: {
-          maxAttempts: 2,
-          requestTimeoutMs: 10,
-          maxElapsedTimeMs: 100,
-          ...immediateRetry,
-        },
-      });
-
-      const sendPromise = transport.send([item]);
-      expect(firstXhr.timeout).toBe(10);
-
-      firstXhr.ontimeout?.(new ProgressEvent('timeout'));
-      await jest.advanceTimersByTimeAsync(1);
-      expect(createXhr).toHaveBeenCalledTimes(2);
-
-      secondXhr.onload?.(new ProgressEvent('load'));
-      await sendPromise;
-
-      expect(fetch).not.toHaveBeenCalled();
-      expect(secondXhr.timeout).toBeLessThanOrEqual(10);
-    } finally {
-      runtimeGlobal.AbortController = originalAbortController;
-      runtimeGlobal.XMLHttpRequest = originalXMLHttpRequest;
-    }
-  });
   it('keeps an accepted outcome when draining the response body fails', async () => {
     fetch.mockImplementationOnce(() =>
       Promise.resolve({
@@ -480,7 +407,6 @@ describe('FetchTransport', () => {
     ['duplicate retryableStatusCodes', { retryableStatusCodes: [500, 500] }],
     ['non-error retryableStatusCodes', { retryableStatusCodes: [299] }],
     ['invalid retryableStatusCodes', { retryableStatusCodes: [600] }],
-    ['non-positive requestTimeoutMs', { requestTimeoutMs: 0 }],
     ['non-finite maxElapsedTimeMs', { maxElapsedTimeMs: Number.POSITIVE_INFINITY }],
   ])('rejects invalid retry configuration: %s', (_name, retry) => {
     expect(() =>
@@ -490,76 +416,6 @@ describe('FetchTransport', () => {
     ).toThrow('Invalid retry configuration');
   });
 
-  it('aborts a stalled request when its timeout elapses', async () => {
-    jest.useFakeTimers();
-
-    let rejectFetch: ((reason?: unknown) => void) | undefined;
-    fetch.mockImplementation(
-      () =>
-        new Promise<never>((_resolve, reject) => {
-          rejectFetch = reject;
-        })
-    );
-
-    const transport = createTransport({
-      retry: {
-        maxAttempts: 1,
-        requestTimeoutMs: 10,
-        maxElapsedTimeMs: 100,
-      },
-    });
-
-    const sendPromise = transport.send([item]);
-    await jest.advanceTimersByTimeAsync(0);
-
-    const request = (fetch.mock.calls[0] as unknown[])[1] as RequestInit;
-    request.signal?.addEventListener('abort', () => rejectFetch?.(request.signal?.reason));
-    expect(request.signal).toBeDefined();
-
-    await jest.advanceTimersByTimeAsync(10);
-    await sendPromise;
-    expect(request.signal?.aborted).toBe(true);
-  });
-
-  it('uses a fresh timeout signal for the generic retry', async () => {
-    jest.useFakeTimers();
-
-    const rejectFetches: Array<(reason?: unknown) => void> = [];
-    fetch.mockImplementation(
-      () =>
-        new Promise<never>((_resolve, reject) => {
-          rejectFetches.push(reject);
-        })
-    );
-
-    const transport = createTransport({
-      retry: {
-        maxAttempts: 2,
-        initialBackoffMs: 1,
-        maxBackoffMs: 1,
-        backoffMultiplier: 1,
-        requestTimeoutMs: 10,
-        maxElapsedTimeMs: 100,
-      },
-    });
-
-    const sendPromise = transport.send([item]);
-    await jest.advanceTimersByTimeAsync(0);
-
-    const firstRequest = (fetch.mock.calls[0] as unknown[])[1] as RequestInit;
-    firstRequest.signal?.addEventListener('abort', () => rejectFetches[0]?.(firstRequest.signal?.reason));
-    await jest.advanceTimersByTimeAsync(11);
-
-    const secondRequest = (fetch.mock.calls[1] as unknown[])[1] as RequestInit;
-    secondRequest.signal?.addEventListener('abort', () => rejectFetches[1]?.(secondRequest.signal?.reason));
-    await jest.advanceTimersByTimeAsync(10);
-    await sendPromise;
-
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(firstRequest.signal).not.toBe(secondRequest.signal);
-    expect(firstRequest.signal?.aborted).toBe(true);
-    expect(secondRequest.signal?.aborted).toBe(true);
-  });
   it('treats caller cancellation during an active request as terminal and debug-only', async () => {
     jest.useFakeTimers();
     let rejectFetch: ((reason?: unknown) => void) | undefined;
@@ -742,7 +598,6 @@ describe('FetchTransport', () => {
       concurrency: 1,
       retry: {
         maxAttempts: 1,
-        requestTimeoutMs: 100,
         maxElapsedTimeMs: 100,
       },
     });
@@ -1144,7 +999,6 @@ describe('FetchTransport', () => {
         'x-faro-session-id': mockSessionId,
       },
       keepalive: false,
-      signal: expect.any(AbortSignal),
       method: 'POST',
     });
   });

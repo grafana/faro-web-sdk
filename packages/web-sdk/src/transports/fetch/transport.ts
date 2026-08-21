@@ -15,7 +15,6 @@ const DEFAULT_RETRY_OPTIONS: FetchTransportRetryOptions = {
   maxBackoffMs: 10000,
   backoffMultiplier: 2,
   retryableStatusCodes: [408, 425, 429, 500, 502, 503, 504],
-  requestTimeoutMs: 30000,
   maxElapsedTimeMs: 120000,
 };
 const HTTP_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -26,17 +25,10 @@ const RFC850_DATE_PATTERN =
 const ASCTIME_DATE_PATTERN =
   /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ( [1-9]|\d{2}) (\d{2}):(\d{2}):(\d{2}) (\d{4})$/;
 function validateRetryOptions(options: FetchTransportRetryOptions): void {
-  const {
-    maxAttempts,
-    initialBackoffMs,
-    maxBackoffMs,
-    backoffMultiplier,
-    retryableStatusCodes,
-    requestTimeoutMs,
-    maxElapsedTimeMs,
-  } = options;
+  const { maxAttempts, initialBackoffMs, maxBackoffMs, backoffMultiplier, retryableStatusCodes, maxElapsedTimeMs } =
+    options;
 
-  const durations = [initialBackoffMs, maxBackoffMs, requestTimeoutMs, maxElapsedTimeMs];
+  const durations = [initialBackoffMs, maxBackoffMs, maxElapsedTimeMs];
   const statuses = new Set(retryableStatusCodes);
 
   if (
@@ -67,24 +59,17 @@ interface KeepaliveReservation {
   release: () => void;
 }
 
+interface RetryFailure {
+  error?: unknown;
+  status?: number;
+}
+
 /**
  * The browser keepalive budget is measured in bytes, while `String.length` counts UTF-16 code
  * units. A payload of non-ASCII text is up to three times larger than its length suggests, so
  * reserving by length lets Faro send far more than it accounted for and reintroduces the silent
  * keepalive failures this budget exists to prevent.
  */
-class RequestTimeoutError extends Error {
-  constructor(readonly originalError: unknown) {
-    super('Request timed out');
-    this.name = 'RequestTimeoutError';
-  }
-}
-
-interface RetryFailure {
-  error?: unknown;
-  status?: number;
-}
-
 function getBodyByteSize(body: string): number {
   if (typeof TextEncoder === 'undefined') {
     return body.length;
@@ -149,11 +134,8 @@ export class FetchTransport extends BaseTransport {
       const { url, requestOptions, apiKey } = this.options;
 
       const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
-      const {
-        keepalive: configuredKeepalive,
-        signal: callerSignal,
-        ...requestOptionsWithoutKeepalive
-      } = restOfRequestOptions;
+      const { keepalive: configuredKeepalive, ...requestOptionsWithoutKeepalive } = restOfRequestOptions;
+      const callerSignal = requestOptionsWithoutKeepalive.signal;
 
       let sessionId;
       const sessionMeta = this.metas.value.session;
@@ -289,14 +271,12 @@ export class FetchTransport extends BaseTransport {
               return;
             }
 
-            const attemptResponse = await this.fetchLogicalAttempt(
+            const attemptResponse = await this.fetchWithKeepaliveRetry(
               url,
               requestInit,
               bodySize,
               keepaliveDisabled ? false : configuredKeepalive,
-              disableKeepalive,
-              callerSignal,
-              remainingTimeMs
+              disableKeepalive
             );
             if (attemptResponse.status === TOO_MANY_REQUESTS) {
               const rateLimitGeneration = this.updateRateLimit(attemptResponse);
@@ -360,7 +340,7 @@ export class FetchTransport extends BaseTransport {
           return;
         }
 
-        const isAmbiguousFailure = err instanceof RequestTimeoutError || this.isFetchNetworkError(err);
+        const isAmbiguousFailure = this.isFetchNetworkError(err);
         if (!isAmbiguousFailure) {
           this.logError('Permanent delivery failure', {
             error: err,
@@ -390,109 +370,6 @@ export class FetchTransport extends BaseTransport {
       previousFailure = failure;
       attempt = retry;
     }
-  }
-
-  private async fetchLogicalAttempt(
-    url: string,
-    requestInit: RequestInit,
-    bodySize: number,
-    configuredKeepalive: boolean | undefined,
-    disableKeepalive: () => void,
-    callerSignal: AbortSignal | null | undefined,
-    remainingTimeMs: number
-  ): Promise<Response> {
-    // `supports es6-module` includes browsers without AbortController. Use XHR there because
-    // racing Fetch against a timer cannot cancel the in-flight request and could duplicate delivery.
-    if (typeof AbortController === 'undefined') {
-      const response = await this.sendWithXhr(
-        url,
-        requestInit,
-        Math.min(this.retryOptions.requestTimeoutMs, remainingTimeMs),
-        callerSignal
-      );
-      return this.handleResponse(response);
-    }
-
-    const attemptController = new AbortController();
-    let timedOut = false;
-    const abortFromCaller = () => attemptController.abort();
-    callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
-
-    const timeoutId = setTimeout(
-      () => {
-        timedOut = true;
-        attemptController.abort();
-      },
-      Math.min(this.retryOptions.requestTimeoutMs, remainingTimeMs)
-    );
-
-    try {
-      return await this.fetchWithKeepaliveRetry(
-        url,
-        {
-          ...requestInit,
-          signal: attemptController.signal,
-        },
-        bodySize,
-        configuredKeepalive,
-        disableKeepalive
-      );
-    } catch (err) {
-      if (timedOut) {
-        throw new RequestTimeoutError(err);
-      }
-      throw err;
-    } finally {
-      clearTimeout(timeoutId);
-      callerSignal?.removeEventListener('abort', abortFromCaller);
-    }
-  }
-
-  private sendWithXhr(
-    url: string,
-    requestInit: RequestInit,
-    timeoutMs: number,
-    callerSignal?: AbortSignal | null
-  ): Promise<Response> {
-    return new Promise<Response>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      const abortFromCaller = () => xhr.abort();
-      const cleanup = () => callerSignal?.removeEventListener('abort', abortFromCaller);
-      const rejectRequest = (error: unknown) => {
-        cleanup();
-        reject(error);
-      };
-
-      xhr.open(requestInit.method ?? 'POST', url, true);
-      xhr.timeout = timeoutMs;
-      xhr.withCredentials = requestInit.credentials === 'include';
-
-      for (const [name, value] of Object.entries(requestInit.headers as Record<string, string>)) {
-        xhr.setRequestHeader(name, value);
-      }
-
-      xhr.onload = () => {
-        cleanup();
-        if (xhr.status === 0) {
-          reject(new TypeError('Network request failed'));
-          return;
-        }
-
-        resolve({
-          status: xhr.status,
-          headers: {
-            get: (name: string) => xhr.getResponseHeader(name),
-          },
-          text: () => Promise.resolve(xhr.responseText),
-        } as Response);
-      };
-      xhr.onerror = () => rejectRequest(new TypeError('Network request failed'));
-      xhr.ontimeout = () => rejectRequest(new RequestTimeoutError(new Error('Request timed out')));
-      xhr.onabort = () => rejectRequest(new TypeError('Request aborted'));
-
-      callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
-      xhr.send((requestInit.body as XMLHttpRequestBodyInit | null | undefined) ?? null);
-    });
   }
 
   private async scheduleRetry(
