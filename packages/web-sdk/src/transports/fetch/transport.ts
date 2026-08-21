@@ -4,47 +4,16 @@ import type { Config, Patterns, PromiseBuffer, TransportItem } from '@grafana/fa
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
 import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 
-import type { FetchTransportOptions, FetchTransportRetryOptions } from './types';
+import type { FetchTransportOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;
 const DEFAULT_CONCURRENCY = 5; // chrome supports 10 total, firefox 17
 const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
-const DEFAULT_RETRY_OPTIONS: FetchTransportRetryOptions = {
-  maxAttempts: 3,
-  initialBackoffMs: 1000,
-  maxBackoffMs: 10000,
-  backoffMultiplier: 2,
-  retryableStatusCodes: [408, 425, 429, 500, 502, 503, 504],
-  maxElapsedTimeMs: 120000,
-};
-const HTTP_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const IMF_FIXDATE_PATTERN =
-  /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d{2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$/;
-const RFC850_DATE_PATTERN =
-  /^(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), (\d{2})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-(\d{2}) (\d{2}):(\d{2}):(\d{2}) GMT$/;
-const ASCTIME_DATE_PATTERN =
-  /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ( [1-9]|\d{2}) (\d{2}):(\d{2}):(\d{2}) (\d{4})$/;
-function validateRetryOptions(options: FetchTransportRetryOptions): void {
-  const { maxAttempts, initialBackoffMs, maxBackoffMs, backoffMultiplier, retryableStatusCodes, maxElapsedTimeMs } =
-    options;
-
-  const durations = [initialBackoffMs, maxBackoffMs, maxElapsedTimeMs];
-  const statuses = new Set(retryableStatusCodes);
-
-  if (
-    !Number.isInteger(maxAttempts) ||
-    maxAttempts < 1 ||
-    maxAttempts > 5 ||
-    durations.some((duration) => !Number.isFinite(duration) || duration <= 0) ||
-    maxBackoffMs < initialBackoffMs ||
-    !Number.isFinite(backoffMultiplier) ||
-    backoffMultiplier < 1 ||
-    statuses.size !== retryableStatusCodes.length ||
-    retryableStatusCodes.some((status) => !Number.isInteger(status) || status < 300 || status > 599)
-  ) {
-    throw new TypeError('Invalid retry configuration');
-  }
-}
+const MAX_ATTEMPTS = 3;
+const INITIAL_BACKOFF_MS = 1000;
+const BACKOFF_MULTIPLIER = 2;
+const RETRYABLE_STATUS_CODES = new Set<number>([408, 425, 429, 500, 502, 503, 504]);
+const MAX_ELAPSED_TIME_MS = 120000;
 
 const BEACON_BODY_SIZE_LIMIT = 60000;
 const MAX_KEEPALIVE_REQUESTS = 9;
@@ -87,7 +56,6 @@ export class FetchTransport extends BaseTransport {
   private readonly rateLimitBackoffMs: number;
   private readonly getNow: () => number;
   private readonly compressionEnabled: boolean;
-  private readonly retryOptions: FetchTransportRetryOptions;
   private disabledUntil: Date = new Date(0);
   private rateLimitGeneration = 0;
 
@@ -96,12 +64,6 @@ export class FetchTransport extends BaseTransport {
 
     this.rateLimitBackoffMs = options.defaultRateLimitBackoffMs ?? DEFAULT_RATE_LIMIT_BACKOFF_MS;
     this.getNow = options.getNow ?? (() => Date.now());
-    this.retryOptions = {
-      ...DEFAULT_RETRY_OPTIONS,
-      ...options.retry,
-      retryableStatusCodes: [...(options.retry?.retryableStatusCodes ?? DEFAULT_RETRY_OPTIONS.retryableStatusCodes)],
-    };
-    validateRetryOptions(this.retryOptions);
 
     const requestCompression = options.requestCompression ?? false;
 
@@ -226,12 +188,12 @@ export class FetchTransport extends BaseTransport {
         return;
       }
       const elapsedTimeMs = this.getNow() - startedAt;
-      const remainingTimeMs = this.retryOptions.maxElapsedTimeMs - elapsedTimeMs;
+      const remainingTimeMs = MAX_ELAPSED_TIME_MS - elapsedTimeMs;
       if (observedRateLimitGeneration < this.rateLimitGeneration) {
         observedRateLimitGeneration = this.rateLimitGeneration;
         const now = this.getNow();
         const rateLimitDelayMs = this.disabledUntil.getTime() - now;
-        const remainingTimeMs = this.retryOptions.maxElapsedTimeMs - (now - startedAt);
+        const remainingTimeMs = MAX_ELAPSED_TIME_MS - (now - startedAt);
 
         if (rateLimitDelayMs >= remainingTimeMs) {
           this.logRetriesExhausted(previousFailure ?? {}, attempt - 1, now - startedAt);
@@ -266,7 +228,7 @@ export class FetchTransport extends BaseTransport {
               return;
             }
 
-            const remainingTimeMs = this.retryOptions.maxElapsedTimeMs - (this.getNow() - startedAt);
+            const remainingTimeMs = MAX_ELAPSED_TIME_MS - (this.getNow() - startedAt);
             if (remainingTimeMs <= 0) {
               return;
             }
@@ -297,7 +259,7 @@ export class FetchTransport extends BaseTransport {
             });
             return;
           }
-          if (elapsedAfterQueueMs >= this.retryOptions.maxElapsedTimeMs) {
+          if (elapsedAfterQueueMs >= MAX_ELAPSED_TIME_MS) {
             this.logRetriesExhausted(previousFailure ?? {}, attempt - 1, elapsedAfterQueueMs);
             return;
           }
@@ -308,7 +270,7 @@ export class FetchTransport extends BaseTransport {
         if (response.status >= 200 && response.status < 300) {
           return response;
         }
-        if (!this.retryOptions.retryableStatusCodes.includes(response.status)) {
+        if (!RETRYABLE_STATUS_CODES.has(response.status)) {
           this.logError('Permanent delivery failure', {
             status: response.status,
             attempts: attempt,
@@ -318,7 +280,7 @@ export class FetchTransport extends BaseTransport {
         }
 
         failure = { status: response.status };
-        maxAttempts = deliveryAmbiguous ? Math.min(this.retryOptions.maxAttempts, 2) : this.retryOptions.maxAttempts;
+        maxAttempts = deliveryAmbiguous ? Math.min(MAX_ATTEMPTS, 2) : MAX_ATTEMPTS;
 
         const retryAfterMs =
           response.status === TOO_MANY_REQUESTS || response.status === 503
@@ -352,7 +314,7 @@ export class FetchTransport extends BaseTransport {
 
         deliveryAmbiguous = true;
         failure = { error: err };
-        maxAttempts = Math.min(this.retryOptions.maxAttempts, 2);
+        maxAttempts = Math.min(MAX_ATTEMPTS, 2);
         if (retryKeepaliveImmediately) {
           delayMs = 0;
           retryKeepaliveImmediately = false;
@@ -381,7 +343,7 @@ export class FetchTransport extends BaseTransport {
     callerSignal?: AbortSignal | null
   ): Promise<number | undefined> {
     const elapsedTimeMs = this.getNow() - startedAt;
-    const remainingTimeMs = this.retryOptions.maxElapsedTimeMs - elapsedTimeMs;
+    const remainingTimeMs = MAX_ELAPSED_TIME_MS - elapsedTimeMs;
 
     if (attempt >= maxAttempts || delayMs >= remainingTimeMs) {
       this.logRetriesExhausted(failure, attempt, elapsedTimeMs);
@@ -398,7 +360,7 @@ export class FetchTransport extends BaseTransport {
     }
 
     const elapsedAfterWaitMs = this.getNow() - startedAt;
-    const remainingAfterWaitMs = this.retryOptions.maxElapsedTimeMs - elapsedAfterWaitMs;
+    const remainingAfterWaitMs = MAX_ELAPSED_TIME_MS - elapsedAfterWaitMs;
     if (remainingAfterWaitMs <= 0) {
       this.logRetriesExhausted(failure, attempt, elapsedAfterWaitMs);
       return;
@@ -436,13 +398,8 @@ export class FetchTransport extends BaseTransport {
   }
 
   private getExponentialBackoffMs(attempt: number): number {
-    const backoffMs = Math.min(
-      this.retryOptions.initialBackoffMs * this.retryOptions.backoffMultiplier ** (attempt - 1),
-      this.retryOptions.maxBackoffMs
-    );
-    const jitteredBackoffMs = backoffMs * (0.8 + Math.random() * 0.4);
-
-    return Math.min(jitteredBackoffMs, this.retryOptions.maxBackoffMs);
+    const backoffMs = INITIAL_BACKOFF_MS * BACKOFF_MULTIPLIER ** (attempt - 1);
+    return backoffMs * (0.8 + Math.random() * 0.4);
   }
 
   private getRetryAfterDelayMs(response: Response): number | undefined {
@@ -456,60 +413,8 @@ export class FetchTransport extends BaseTransport {
       return Number.isFinite(delayMs) ? delayMs : undefined;
     }
 
-    let day: number;
-    let month: number;
-    let year: number;
-    let hour: number;
-    let minute: number;
-    let second: number;
-
-    const imfFixdateMatch = IMF_FIXDATE_PATTERN.exec(retryAfterHeader);
-    const rfc850Match = RFC850_DATE_PATTERN.exec(retryAfterHeader);
-    const asctimeMatch = ASCTIME_DATE_PATTERN.exec(retryAfterHeader);
-    if (imfFixdateMatch) {
-      day = Number(imfFixdateMatch[1]);
-      month = HTTP_MONTHS.indexOf(imfFixdateMatch[2]!);
-      year = Number(imfFixdateMatch[3]);
-      hour = Number(imfFixdateMatch[4]);
-      minute = Number(imfFixdateMatch[5]);
-      second = Number(imfFixdateMatch[6]);
-    } else if (rfc850Match) {
-      day = Number(rfc850Match[1]);
-      month = HTTP_MONTHS.indexOf(rfc850Match[2]!);
-      const twoDigitYear = Number(rfc850Match[3]);
-      const currentYear = new Date(this.getNow()).getUTCFullYear();
-      year = Math.floor(currentYear / 100) * 100 + twoDigitYear;
-      if (year - currentYear > 50) {
-        year -= 100;
-      }
-      hour = Number(rfc850Match[4]);
-      minute = Number(rfc850Match[5]);
-      second = Number(rfc850Match[6]);
-    } else if (asctimeMatch) {
-      month = HTTP_MONTHS.indexOf(asctimeMatch[1]!);
-      day = Number(asctimeMatch[2]);
-      hour = Number(asctimeMatch[3]);
-      minute = Number(asctimeMatch[4]);
-      second = Number(asctimeMatch[5]);
-      year = Number(asctimeMatch[6]);
-    } else {
-      return undefined;
-    }
-
-    const date = Date.UTC(year, month, day, hour, minute, second);
-    const parsedDate = new Date(date);
-    if (
-      parsedDate.getUTCFullYear() !== year ||
-      parsedDate.getUTCMonth() !== month ||
-      parsedDate.getUTCDate() !== day ||
-      parsedDate.getUTCHours() !== hour ||
-      parsedDate.getUTCMinutes() !== minute ||
-      parsedDate.getUTCSeconds() !== second
-    ) {
-      return undefined;
-    }
-
-    return Math.max(0, date - this.getNow());
+    const retryAt = Date.parse(retryAfterHeader);
+    return Number.isNaN(retryAt) ? undefined : Math.max(0, retryAt - this.getNow());
   }
 
   private reserveKeepalive(bodySize: number, configuredKeepalive?: boolean): KeepaliveReservation {

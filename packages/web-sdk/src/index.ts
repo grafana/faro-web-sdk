@@ -30,7 +30,6 @@ export type {
   ConsoleTransportOptions,
   FetchTransportOptions,
   FetchTransportRequestOptions,
-  FetchTransportRetryOptions,
 } from './transports';
 
 export {

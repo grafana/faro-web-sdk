@@ -9,21 +9,6 @@ export interface FetchTransportRequestOptions extends Omit<RequestInit, 'body' |
   headers?: Record<string, string | (() => string | Promise<string>)>;
 }
 
-export interface FetchTransportRetryOptions {
-  // maximum number of logical attempts, including the original request
-  maxAttempts: number;
-  // delay before the first retry
-  initialBackoffMs: number;
-  // maximum exponential backoff delay
-  maxBackoffMs: number;
-  // multiplier applied to each subsequent exponential backoff
-  backoffMultiplier: number;
-  // HTTP response status codes eligible for retry
-  retryableStatusCodes: number[];
-  // maximum elapsed time across all attempts and backoff delays
-  maxElapsedTimeMs: number;
-}
-
 export interface FetchTransportOptions {
   // url of the collector endpoint
   url: string;
@@ -46,8 +31,6 @@ export interface FetchTransportOptions {
   // compress request bodies with gzip using the native CompressionStream API.
   // falls back to uncompressed if CompressionStream is not available.
   requestCompression?: boolean;
-  // retry policy for transient delivery failures
-  retry?: Partial<FetchTransportRetryOptions>;
 }
 
 export type ClockFn = () => number;
