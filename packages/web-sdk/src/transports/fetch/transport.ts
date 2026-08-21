@@ -284,8 +284,7 @@ export class FetchTransport extends BaseTransport {
               return;
             }
 
-            const remainingTimeMs =
-              this.retryOptions.maxElapsedTimeMs - (this.getNow() - startedAt);
+            const remainingTimeMs = this.retryOptions.maxElapsedTimeMs - (this.getNow() - startedAt);
             if (remainingTimeMs <= 0) {
               return;
             }
@@ -673,9 +672,7 @@ export class FetchTransport extends BaseTransport {
   }
 
   private updateRateLimit(response: Response): number | undefined {
-    const disabledUntil = new Date(
-      this.getNow() + (this.getRetryAfterDelayMs(response) ?? this.rateLimitBackoffMs)
-    );
+    const disabledUntil = new Date(this.getNow() + (this.getRetryAfterDelayMs(response) ?? this.rateLimitBackoffMs));
     if (disabledUntil <= this.disabledUntil) {
       return undefined;
     }

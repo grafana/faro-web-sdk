@@ -892,69 +892,63 @@ describe('FetchTransport', () => {
     'Sun Feb 31 00:00:00 2026',
     'Sun, 31 Feb 2026 00:00:00 GMT',
     'Sunday, 31-Feb-26 00:00:00 GMT',
-  ])(
-    'uses exponential backoff for malformed Retry-After %s',
-    async (value) => {
-      jest.useFakeTimers();
-      jest.spyOn(Math, 'random').mockReturnValue(0.5);
+  ])('uses exponential backoff for malformed Retry-After %s', async (value) => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
 
-      fetch
-        .mockImplementationOnce(() => Promise.resolve(createResponse(503, value)))
-        .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(503, value)))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
 
-      const transport = createTransport({
-        retry: {
-          maxAttempts: 2,
-          initialBackoffMs: 100,
-          maxBackoffMs: 100,
-          backoffMultiplier: 1,
-        },
-      });
+    const transport = createTransport({
+      retry: {
+        maxAttempts: 2,
+        initialBackoffMs: 100,
+        maxBackoffMs: 100,
+        backoffMultiplier: 1,
+      },
+    });
 
-      const sendPromise = transport.send([item]);
-      await jest.advanceTimersByTimeAsync(99);
-      expect(fetch).toHaveBeenCalledTimes(1);
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(99);
+    expect(fetch).toHaveBeenCalledTimes(1);
 
-      await jest.advanceTimersByTimeAsync(1);
-      await sendPromise;
-      expect(fetch).toHaveBeenCalledTimes(2);
-    }
-  );
-  it.each([undefined, 'invalid'])(
-    'uses bounded exponential backoff for 429 Retry-After %s',
-    async (retryAfter) => {
-      jest.useFakeTimers();
-      jest.spyOn(Math, 'random').mockReturnValue(1);
-      fetch
-        .mockImplementationOnce(() => Promise.resolve(createResponse(429, retryAfter)))
-        .mockImplementationOnce(() => Promise.resolve(createResponse(429, retryAfter)))
-        .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
+    await jest.advanceTimersByTimeAsync(1);
+    await sendPromise;
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+  it.each([undefined, 'invalid'])('uses bounded exponential backoff for 429 Retry-After %s', async (retryAfter) => {
+    jest.useFakeTimers();
+    jest.spyOn(Math, 'random').mockReturnValue(1);
+    fetch
+      .mockImplementationOnce(() => Promise.resolve(createResponse(429, retryAfter)))
+      .mockImplementationOnce(() => Promise.resolve(createResponse(429, retryAfter)))
+      .mockImplementationOnce(() => Promise.resolve(createAcceptedResponse()));
 
-      const transport = createTransport({
-        defaultRateLimitBackoffMs: 1000,
-        retry: {
-          maxAttempts: 3,
-          initialBackoffMs: 100,
-          maxBackoffMs: 150,
-          backoffMultiplier: 2,
-        },
-      });
+    const transport = createTransport({
+      defaultRateLimitBackoffMs: 1000,
+      retry: {
+        maxAttempts: 3,
+        initialBackoffMs: 100,
+        maxBackoffMs: 150,
+        backoffMultiplier: 2,
+      },
+    });
 
-      const sendPromise = transport.send([item]);
-      await jest.advanceTimersByTimeAsync(119);
-      expect(fetch).toHaveBeenCalledTimes(1);
+    const sendPromise = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(119);
+    expect(fetch).toHaveBeenCalledTimes(1);
 
-      await jest.advanceTimersByTimeAsync(1);
-      expect(fetch).toHaveBeenCalledTimes(2);
+    await jest.advanceTimersByTimeAsync(1);
+    expect(fetch).toHaveBeenCalledTimes(2);
 
-      await jest.advanceTimersByTimeAsync(149);
-      expect(fetch).toHaveBeenCalledTimes(2);
+    await jest.advanceTimersByTimeAsync(149);
+    expect(fetch).toHaveBeenCalledTimes(2);
 
-      await jest.advanceTimersByTimeAsync(1);
-      await sendPromise;
-      expect(fetch).toHaveBeenCalledTimes(3);
-    }
-  );
+    await jest.advanceTimersByTimeAsync(1);
+    await sendPromise;
+    expect(fetch).toHaveBeenCalledTimes(3);
+  });
 
   it('exhausts delivery when Retry-After exceeds the remaining elapsed-time budget', async () => {
     jest.useFakeTimers();
