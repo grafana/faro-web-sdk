@@ -737,7 +737,7 @@ __metadata:
     "@grafana/faro-web-sdk": "npm:^2.10.0"
     "@grafana/faro-web-tracing": "npm:^2.10.0"
     "@testing-library/dom": "npm:10.4.1"
-    "@testing-library/jest-dom": "npm:7.0.0"
+    "@testing-library/jest-dom": "npm:7.0.1"
     "@testing-library/react": "npm:16.3.2"
     "@types/hoist-non-react-statics": "npm:3.3.7"
     "@types/react": "npm:19.2.18"
@@ -2803,9 +2803,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/jest-dom@npm:7.0.0":
-  version: 7.0.0
-  resolution: "@testing-library/jest-dom@npm:7.0.0"
+"@testing-library/jest-dom@npm:7.0.1":
+  version: 7.0.1
+  resolution: "@testing-library/jest-dom@npm:7.0.1"
   dependencies:
     "@adobe/css-tools": "npm:^4.4.0"
     aria-query: "npm:^5.0.0"
@@ -2815,7 +2815,11 @@ __metadata:
     redent: "npm:^3.0.0"
   peerDependencies:
     "@testing-library/dom": ">=10 <11"
-  checksum: 10c0/f5ecf821ed098438a5e9ce993d431505f0a1af43edb05e423c6ab7becf9d7dbe46385fc93e0e460a4c7996f4513cad72b8967dd8e98c75bc7ea6733ff7efcf4e
+    vitest: ">= 0.32"
+  peerDependenciesMeta:
+    vitest:
+      optional: true
+  checksum: 10c0/4450af11d3580749949c6eee749077267c70d18f794952b9e24839f8f66afe28c6f83dd3d93b135cfd9aae8401b9861260cc309dee4ad4f2845b52b94e5c5e11
   languageName: node
   linkType: hard
 
@@ -4756,19 +4760,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"conventional-commits-parser@npm:7.1.0":
-  version: 7.1.0
-  resolution: "conventional-commits-parser@npm:7.1.0"
-  dependencies:
-    "@simple-libs/stream-utils": "npm:^2.0.0"
-    argue-cli: "npm:^3.1.0"
-  bin:
-    conventional-commits-parser: ./dist/cli/index.js
-  checksum: 10c0/7056dbe22c844561675dc08b9a3062da07d56e93fa4360fa1cb72dc5df5811b165cc5b2a317a6e05803cc3399ddcb641d701ed456443cffb36c407b2a17d1f97
-  languageName: node
-  linkType: hard
-
-"conventional-commits-parser@npm:^7.1.0":
+"conventional-commits-parser@npm:7.1.2, conventional-commits-parser@npm:^7.1.0":
   version: 7.1.2
   resolution: "conventional-commits-parser@npm:7.1.2"
   dependencies:
@@ -6080,7 +6072,7 @@ __metadata:
     husky: "npm:9.1.7"
     jest: "npm:30.4.2"
     jest-environment-jsdom: "npm:30.4.1"
-    lerna: "npm:10.0.0"
+    lerna: "npm:10.0.1"
     lint-staged: "npm:17.3.0"
     madge: "npm:8.0.0"
     markdownlint-cli: "npm:0.49.1"
@@ -8313,9 +8305,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lerna@npm:10.0.0":
-  version: 10.0.0
-  resolution: "lerna@npm:10.0.0"
+"lerna@npm:10.0.1":
+  version: 10.0.1
+  resolution: "lerna@npm:10.0.1"
   dependencies:
     "@npmcli/arborist": "npm:9.1.6"
     "@npmcli/package-json": "npm:7.0.2"
@@ -8329,7 +8321,7 @@ __metadata:
     conventional-changelog: "npm:8.1.0"
     conventional-changelog-angular: "npm:9.2.1"
     conventional-commits-filter: "npm:6.0.1"
-    conventional-commits-parser: "npm:7.1.0"
+    conventional-commits-parser: "npm:7.1.2"
     conventional-recommended-bump: "npm:12.1.0"
     cosmiconfig: "npm:9.0.0"
     dedent: "npm:1.5.3"
@@ -8360,7 +8352,7 @@ __metadata:
     signal-exit: "npm:3.0.7"
     ssri: "npm:12.0.0"
     string-width: "npm:^4.2.3"
-    tar: "npm:7.5.20"
+    tar: "npm:7.5.22"
     tinyglobby: "npm:0.2.12"
     validate-npm-package-license: "npm:3.0.4"
     validate-npm-package-name: "npm:6.0.2"
@@ -8368,7 +8360,7 @@ __metadata:
     yargs: "npm:17.7.2"
   bin:
     lerna: dist/cli.js
-  checksum: 10c0/49e09f922df4eda5860cde0035873e6393960e828f81aabf14fe94538760ece86908233d1d0a85f0570c70140949dca8c89989c3093ef6c8f05b10e1eaf4dec4
+  checksum: 10c0/f5c162eef98ebe98c830ff0b60424ac8ce49b8451c03411f1cc79039c924e337f6330d468c43b8208b3b5d34acda4ea7850211728beaa33a39a3c430fbd62bf2
   languageName: node
   linkType: hard
 
@@ -12833,9 +12825,9 @@ __metadata:
   linkType: hard
 
 "web-vitals@npm:^6.0.0":
-  version: 6.1.0
-  resolution: "web-vitals@npm:6.1.0"
-  checksum: 10c0/ab1bf6a91cd618ca64c4aaf4644066221dea1fad0733ad2ec20461ca37e3d7e8e02cda014710c728ea938271d9a5eec65c23675eae5926e5df4ea16fb1edda92
+  version: 6.1.1
+  resolution: "web-vitals@npm:6.1.1"
+  checksum: 10c0/46a65d39d7c73bc06f90b7a6b6ab20a72f1635294ed81a6e0d3bfa32557012005f7abf319bdd128e5bde5185b3e2c9121f7c62d51aebf97d730a56042296bace
   languageName: node
   linkType: hard
 
