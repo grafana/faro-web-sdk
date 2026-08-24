@@ -20,7 +20,7 @@ import { browserMeta, osMeta, sdkMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
-import { FetchTransport as ReliableFetchTransport } from '../transports/fetch-reliable';
+import { FetchTransport as ReliableFetchTransport } from '../transports/fetch-v2';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';

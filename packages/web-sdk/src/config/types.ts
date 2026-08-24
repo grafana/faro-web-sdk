@@ -1,5 +1,5 @@
 import type { Config } from '@grafana/faro-core';
-import type { FetchTransportOptions as ReliableFetchTransportOptions } from '../transports/fetch-reliable';
+import type { FetchTransportOptions as ReliableFetchTransportOptions } from '../transports/fetch-v2';
 
 export interface BrowserConfig extends Partial<Omit<Config, 'app' | 'parseStacktrace'>>, Pick<Config, 'app'> {
   url?: string;
