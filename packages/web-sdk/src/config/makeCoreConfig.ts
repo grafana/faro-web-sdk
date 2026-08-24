@@ -20,7 +20,7 @@ import { browserMeta, osMeta, sdkMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
-import { FetchTransport as ReliableFetchTransport } from '../transports/fetch-v2';
+import { FetchTransport as FetchTransportV2 } from '../transports/fetch-v2';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
@@ -40,7 +40,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 
     transports.push(...browserConfig.transports);
   } else if (browserConfig.url) {
-    const Transport = browserConfig.experimental?.fetchTransportV2 ? ReliableFetchTransport : FetchTransport;
+    const Transport = browserConfig.experimental?.fetchTransportV2 ? FetchTransportV2 : FetchTransport;
     transports.push(
       new Transport({
         url: browserConfig.url,
