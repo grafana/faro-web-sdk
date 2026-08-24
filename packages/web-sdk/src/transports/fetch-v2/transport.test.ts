@@ -115,6 +115,20 @@ describe('reliable FetchTransport', () => {
     expect(JSON.stringify(internalLogger.error.mock.calls)).not.toContain(item.payload.message);
   });
 
+  it('releases admission when request preparation fails', async () => {
+    const header = jest.fn().mockRejectedValueOnce(new Error('header failed')).mockReturnValue('ready');
+    const { transport } = createTransport({
+      bufferSize: 1,
+      requestOptions: { headers: { Authorization: header } },
+    });
+
+    await transport.send([item]);
+    await transport.send([item]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(header).toHaveBeenCalledTimes(2);
+  });
+
   it('uses the configured bounded exponential retry schedule', async () => {
     fetchMock.mockResolvedValue(response(503));
     const { transport, internalLogger } = createTransport({

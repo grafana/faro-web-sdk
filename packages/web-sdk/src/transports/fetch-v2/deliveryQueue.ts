@@ -53,9 +53,10 @@ export interface DeliveryReservation {
  * When all slots are occupied, the queue declines new batches and keeps the batches it already
  * accepted. The concurrency limit separately controls how many attempts can execute at one time.
  *
- * Release is idempotent because preparation or attempt failures can end delivery before the normal
- * release point. This module deliberately has no dependency on Fetch so another transport can supply
- * its own single-attempt callback.
+ * The caller owns the reservation and must release it in a `finally` block after preparation and
+ * delivery finish. Release is idempotent so cleanup remains safe on every exit path. This module
+ * deliberately has no dependency on Fetch so another transport can supply its own single-attempt
+ * callback.
  */
 export class ReliableDeliveryQueue {
   private admitted = 0;
@@ -92,68 +93,64 @@ export class ReliableDeliveryQueue {
         let attempts = 0;
         let failure: DeliveryFailure | undefined;
 
-        try {
-          for (;;) {
-            const attempt = attempts + 1;
-            const outcome = await this.runAttempt(() => performAttempt(attempt, this.unloading));
-            if (outcome.kind !== 'terminal' || outcome.attempted !== false) {
-              attempts = attempt;
-            }
-
-            if (outcome.kind === 'success') {
-              return { kind: 'success', attempts, elapsedTimeMs: this.options.getNow() - startedAt };
-            }
-            failure = outcome.failure;
-            if (outcome.kind === 'terminal' || this.unloading) {
-              return {
-                kind: 'terminal',
-                attempts,
-                elapsedTimeMs: this.options.getNow() - startedAt,
-                failure,
-              };
-            }
-            if (attempts >= this.options.retry.maxAttempts) {
-              return {
-                kind: 'terminal',
-                attempts,
-                elapsedTimeMs: this.options.getNow() - startedAt,
-                failure,
-                reason: 'retries-exhausted',
-              };
-            }
-            if (outcome.retryAfterMs != null && outcome.retryAfterMs > this.options.retry.maxBackoffMs) {
-              return {
-                kind: 'terminal',
-                attempts,
-                elapsedTimeMs: this.options.getNow() - startedAt,
-                failure,
-                reason: 'retry-after-too-long',
-              };
-            }
-
-            const backoff = Math.min(
-              outcome.retryAfterMs ??
-                this.options.retry.initialBackoffMs * this.options.retry.backoffMultiplier ** (attempts - 1),
-              this.options.retry.maxBackoffMs
-            );
-            this.options.onRetry?.(backoff, attempts + 1);
-            const unloading = await this.waitForTurn(sequence, backoff);
-            if (unloading) {
-              const flushAttempt = attempts + 1;
-              const flushOutcome = await this.runAttempt(() => performAttempt(flushAttempt, true));
-              if (flushOutcome.kind !== 'terminal' || flushOutcome.attempted !== false) {
-                attempts = flushAttempt;
-              }
-              return {
-                kind: flushOutcome.kind === 'success' ? 'success' : 'terminal',
-                attempts,
-                elapsedTimeMs: this.options.getNow() - startedAt,
-                failure: flushOutcome.kind === 'success' ? undefined : flushOutcome.failure,
-              };
-            }
+        for (;;) {
+          const attempt = attempts + 1;
+          const outcome = await this.runAttempt(() => performAttempt(attempt, this.unloading));
+          if (outcome.kind !== 'terminal' || outcome.attempted !== false) {
+            attempts = attempt;
           }
-        } finally {
-          release();
+
+          if (outcome.kind === 'success') {
+            return { kind: 'success', attempts, elapsedTimeMs: this.options.getNow() - startedAt };
+          }
+          failure = outcome.failure;
+          if (outcome.kind === 'terminal' || this.unloading) {
+            return {
+              kind: 'terminal',
+              attempts,
+              elapsedTimeMs: this.options.getNow() - startedAt,
+              failure,
+            };
+          }
+          if (attempts >= this.options.retry.maxAttempts) {
+            return {
+              kind: 'terminal',
+              attempts,
+              elapsedTimeMs: this.options.getNow() - startedAt,
+              failure,
+              reason: 'retries-exhausted',
+            };
+          }
+          if (outcome.retryAfterMs != null && outcome.retryAfterMs > this.options.retry.maxBackoffMs) {
+            return {
+              kind: 'terminal',
+              attempts,
+              elapsedTimeMs: this.options.getNow() - startedAt,
+              failure,
+              reason: 'retry-after-too-long',
+            };
+          }
+
+          const backoff = Math.min(
+            outcome.retryAfterMs ??
+              this.options.retry.initialBackoffMs * this.options.retry.backoffMultiplier ** (attempts - 1),
+            this.options.retry.maxBackoffMs
+          );
+          this.options.onRetry?.(backoff, attempts + 1);
+          const unloading = await this.waitForTurn(sequence, backoff);
+          if (unloading) {
+            const flushAttempt = attempts + 1;
+            const flushOutcome = await this.runAttempt(() => performAttempt(flushAttempt, true));
+            if (flushOutcome.kind !== 'terminal' || flushOutcome.attempted !== false) {
+              attempts = flushAttempt;
+            }
+            return {
+              kind: flushOutcome.kind === 'success' ? 'success' : 'terminal',
+              attempts,
+              elapsedTimeMs: this.options.getNow() - startedAt,
+              failure: flushOutcome.kind === 'success' ? undefined : flushOutcome.failure,
+            };
+          }
         }
       },
       release,

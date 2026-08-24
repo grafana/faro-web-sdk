@@ -105,8 +105,9 @@ export class FetchTransport extends BaseTransport {
         );
       }
     } catch (error) {
-      reservation.release();
       this.logError('Permanent delivery failure', { error, attempts: 0, elapsedTimeMs: 0 });
+    } finally {
+      reservation.release();
     }
   }
 
