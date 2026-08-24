@@ -47,8 +47,17 @@ export interface DeliveryReservation {
 }
 
 /**
- * Bounded delivery admission, retry scheduling, and throttling. This module deliberately has no
- * dependency on Fetch so another transport can supply its own single-attempt callback.
+ * Bounded delivery admission, retry scheduling, and throttling.
+ *
+ * A reservation holds two independent slots. Its admission slot counts against `bufferSize` only
+ * until the initial attempt finishes. Its retention slot counts against `queueSize` for the full
+ * delivery lifecycle, including backoff and redelivery. This lets a waiting batch free capacity for
+ * new telemetry without losing the retention slot that commits the transport to its later attempts.
+ * Retries use the retention slot and the concurrency limit; they do not re-enter admission.
+ *
+ * Both releases are idempotent because preparation or attempt failures can end delivery before the
+ * normal release point. This module deliberately has no dependency on Fetch so another transport can
+ * supply its own single-attempt callback.
  */
 export class ReliableDeliveryQueue {
   private retained = 0;
