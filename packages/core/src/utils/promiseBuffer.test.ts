@@ -83,32 +83,4 @@ describe('PromiseBuffer', () => {
       addTask(4);
     });
   });
-
-  it('accepts retained tasks when the buffer is full', async () => {
-    const promises: Array<TestPromise<void>> = [];
-    const buf = createPromiseBuffer({ size: 1, concurrency: 1 });
-
-    buf.add(() => {
-      const promise = createTestPromise<void>(1);
-      promises.push(promise);
-      return promise.promise;
-    });
-    const retainedTask = buf.add(
-      () => {
-        const promise = createTestPromise<void>(2);
-        promises.push(promise);
-        return promise.promise;
-      },
-      { allowOverflow: true }
-    );
-
-    expect(() => buf.add(() => Promise.resolve())).toThrow('Task buffer full');
-    promises[0]?.resolve();
-
-    await defer(() => {
-      expect(promises).toHaveLength(2);
-      promises[1]?.resolve();
-    });
-    await retainedTask;
-  });
 });

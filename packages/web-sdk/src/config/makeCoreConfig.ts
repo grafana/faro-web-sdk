@@ -46,7 +46,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
         url: browserConfig.url,
         apiKey: browserConfig.apiKey,
         requestCompression: browserConfig.requestCompression,
-        ...(browserConfig.experimental?.fetchTransportV2 ? browserConfig.reliableFetchTransportOptions : undefined),
       })
     );
   } else {
@@ -68,8 +67,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     unpatchedConsole = defaultUnpatchedConsole,
     url: browserConfigUrl,
     experimental,
-    reliableFetchTransportOptions: _reliableFetchTransportOptions,
-
     // Properties without default values or which aren't used to create derived config
     ...restProperties
   }: BrowserConfig = browserConfig;
