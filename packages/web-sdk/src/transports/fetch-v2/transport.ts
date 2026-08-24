@@ -10,7 +10,6 @@ import type { FetchTransportOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;
 const DEFAULT_CONCURRENCY = 5;
-const DEFAULT_RETRY_QUEUE_SIZE = 60;
 const DEFAULT_MAX_ATTEMPTS = 3;
 const DEFAULT_INITIAL_BACKOFF_MS = 1000;
 const DEFAULT_MAX_BACKOFF_MS = 30000;
@@ -61,7 +60,6 @@ export class FetchTransport extends BaseTransport {
     }
 
     this.deliveryQueue = new ReliableDeliveryQueue({
-      queueSize: options.retryQueueSize ?? DEFAULT_RETRY_QUEUE_SIZE,
       bufferSize: options.bufferSize ?? DEFAULT_BUFFER_SIZE,
       concurrency: options.concurrency ?? DEFAULT_CONCURRENCY,
       retry: {

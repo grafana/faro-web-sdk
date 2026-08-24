@@ -178,6 +178,26 @@ describe('reliable FetchTransport', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
+  it('keeps admission reserved while a batch waits for redelivery', async () => {
+    fetchMock.mockResolvedValueOnce(response(503)).mockResolvedValue(response(202));
+    const { transport, internalLogger } = createTransport({ bufferSize: 1 });
+
+    const waiting = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+    await transport.send([item]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(internalLogger.error).toHaveBeenCalledWith(
+      expect.any(String),
+      'Permanent delivery failure',
+      expect.objectContaining({ attempts: 0 })
+    );
+
+    await jest.advanceTimersByTimeAsync(1100);
+    await waiting;
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it('throttles batches that share one retry deadline into separate ticks', async () => {
     fetchMock
       .mockResolvedValueOnce(response(429, '1'))
@@ -215,7 +235,7 @@ describe('reliable FetchTransport', () => {
 
   it('declines synchronously reserved overflow before compression', async () => {
     const compression = jest.spyOn(globalThis, 'CompressionStream');
-    const { transport, internalLogger } = createTransport({ retryQueueSize: 1, requestCompression: true });
+    const { transport, internalLogger } = createTransport({ bufferSize: 1, requestCompression: true });
 
     const first = transport.send([item]);
     const second = transport.send([item]);

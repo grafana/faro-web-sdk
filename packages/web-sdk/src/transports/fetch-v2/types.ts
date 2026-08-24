@@ -19,8 +19,6 @@ export interface FetchTransportOptions {
   apiKey?: string;
   bufferSize?: number;
   concurrency?: number;
-  /** Maximum batches retained for redelivery. Default: 60. */
-  retryQueueSize?: number;
   retry?: RetryOptions;
   /** Maximum duration of one logical request attempt. Default: 10000 ms. */
   requestTimeoutMs?: number;

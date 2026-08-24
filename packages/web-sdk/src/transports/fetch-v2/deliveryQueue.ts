@@ -26,7 +26,6 @@ export interface DeliveryOutcome {
 export type PerformAttempt = (attempt: number, unloading: boolean) => Promise<AttemptOutcome>;
 
 export interface DeliveryQueueOptions {
-  queueSize: number;
   bufferSize: number;
   concurrency: number;
   retry: RetryPolicy;
@@ -49,18 +48,16 @@ export interface DeliveryReservation {
 /**
  * Bounded delivery admission, retry scheduling, and throttling.
  *
- * A reservation holds two independent slots. Its admission slot counts against `bufferSize` only
- * until the initial attempt finishes. Its retention slot counts against `queueSize` for the full
- * delivery lifecycle, including backoff and redelivery. This lets a waiting batch free capacity for
- * new telemetry without losing the retention slot that commits the transport to its later attempts.
- * Retries use the retention slot and the concurrency limit; they do not re-enter admission.
+ * A reservation counts against `bufferSize` for its full delivery lifecycle, including backoff and
+ * redelivery. A batch that waits for redelivery therefore continues to occupy one admission slot.
+ * When all slots are occupied, the queue declines new batches and keeps the batches it already
+ * accepted. The concurrency limit separately controls how many attempts can execute at one time.
  *
- * Both releases are idempotent because preparation or attempt failures can end delivery before the
- * normal release point. This module deliberately has no dependency on Fetch so another transport can
- * supply its own single-attempt callback.
+ * Release is idempotent because preparation or attempt failures can end delivery before the normal
+ * release point. This module deliberately has no dependency on Fetch so another transport can supply
+ * its own single-attempt callback.
  */
 export class ReliableDeliveryQueue {
-  private retained = 0;
   private admitted = 0;
   private inProgress = 0;
   private sequence = 0;
@@ -73,29 +70,20 @@ export class ReliableDeliveryQueue {
   constructor(private readonly options: DeliveryQueueOptions) {}
 
   reserve(): DeliveryReservation | undefined {
-    if (this.retained >= this.options.queueSize || this.admitted >= this.options.bufferSize) {
+    if (this.admitted >= this.options.bufferSize) {
       return undefined;
     }
 
-    this.retained++;
     this.admitted++;
     const sequence = this.sequence++;
     let released = false;
-    let admissionReleased = false;
-
-    const releaseAdmission = () => {
-      if (!admissionReleased) {
-        admissionReleased = true;
-        this.admitted--;
-      }
-    };
 
     const release = () => {
       if (released) {
         return;
       }
       released = true;
-      this.retained--;
+      this.admitted--;
     };
 
     return {
@@ -110,9 +98,6 @@ export class ReliableDeliveryQueue {
             const outcome = await this.runAttempt(() => performAttempt(attempt, this.unloading));
             if (outcome.kind !== 'terminal' || outcome.attempted !== false) {
               attempts = attempt;
-            }
-            if (attempt === 1) {
-              releaseAdmission();
             }
 
             if (outcome.kind === 'success') {
@@ -168,14 +153,10 @@ export class ReliableDeliveryQueue {
             }
           }
         } finally {
-          releaseAdmission();
           release();
         }
       },
-      release: () => {
-        releaseAdmission();
-        release();
-      },
+      release,
     };
   }
 
