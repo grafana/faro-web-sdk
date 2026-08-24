@@ -289,7 +289,7 @@ export interface Config<P = APIEvent> {
     /**
      * Use the experimental bounded, retried Fetch transport.
      */
-    reliableFetchTransport?: boolean;
+    fetchTransportV2?: boolean;
   };
 }
 

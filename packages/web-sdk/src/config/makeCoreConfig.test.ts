@@ -321,18 +321,18 @@ describe('config', () => {
     const config = makeCoreConfig({ url: 'http://example.com/collect', app: {} });
 
     expect(config.transports[0]?.name).toBe('@grafana/faro-web-sdk:transport-fetch');
-    expect(config.experimental?.reliableFetchTransport).toBe(false);
+    expect(config.experimental?.fetchTransportV2).toBe(false);
   });
 
   it('selects the reliable Fetch transport when the experimental flag is enabled', () => {
     const config = makeCoreConfig({
       url: 'http://example.com/collect',
       app: {},
-      experimental: { reliableFetchTransport: true },
+      experimental: { fetchTransportV2: true },
     });
 
     expect(config.transports[0]?.name).toBe('@grafana/faro-web-sdk:transport-fetch-v2');
-    expect(config.experimental?.reliableFetchTransport).toBe(true);
+    expect(config.experimental?.fetchTransportV2).toBe(true);
   });
 
   it('reports when the reliable transport flag cannot affect explicit transports', () => {
@@ -342,14 +342,14 @@ describe('config', () => {
     const config = makeCoreConfig({
       app: {},
       transports: [explicitTransport],
-      experimental: { reliableFetchTransport: true },
+      experimental: { fetchTransportV2: true },
       unpatchedConsole: { error } as unknown as Console,
     });
 
     expect(config.transports).toEqual([explicitTransport]);
     expect(error).toHaveBeenCalledWith(
       expect.any(String),
-      expect.stringContaining('experimental.reliableFetchTransport cannot take effect')
+      expect.stringContaining('experimental.fetchTransportV2 cannot take effect')
     );
   });
 });

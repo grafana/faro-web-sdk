@@ -7,7 +7,7 @@ export interface BrowserConfig extends Partial<Omit<Config, 'app' | 'parseStackt
   requestCompression?: boolean;
   /**
    * Tuning for the experimental reliable Fetch transport. Ignored unless
-   * `experimental.reliableFetchTransport` is enabled.
+   * `experimental.fetchTransportV2` is enabled.
    */
   reliableFetchTransportOptions?: Omit<
     ReliableFetchTransportOptions,

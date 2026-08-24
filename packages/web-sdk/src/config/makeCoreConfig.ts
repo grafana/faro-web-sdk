@@ -34,23 +34,19 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     if (browserConfig.url || browserConfig.apiKey) {
       internalLogger.error('if "transports" is defined, "url" and "apiKey" should not be defined');
     }
-    if (browserConfig.experimental?.reliableFetchTransport) {
-      internalLogger.error(
-        'experimental.reliableFetchTransport cannot take effect when explicit "transports" are defined'
-      );
+    if (browserConfig.experimental?.fetchTransportV2) {
+      internalLogger.error('experimental.fetchTransportV2 cannot take effect when explicit "transports" are defined');
     }
 
     transports.push(...browserConfig.transports);
   } else if (browserConfig.url) {
-    const Transport = browserConfig.experimental?.reliableFetchTransport ? ReliableFetchTransport : FetchTransport;
+    const Transport = browserConfig.experimental?.fetchTransportV2 ? ReliableFetchTransport : FetchTransport;
     transports.push(
       new Transport({
         url: browserConfig.url,
         apiKey: browserConfig.apiKey,
         requestCompression: browserConfig.requestCompression,
-        ...(browserConfig.experimental?.reliableFetchTransport
-          ? browserConfig.reliableFetchTransportOptions
-          : undefined),
+        ...(browserConfig.experimental?.fetchTransportV2 ? browserConfig.reliableFetchTransportOptions : undefined),
       })
     );
   } else {
@@ -80,7 +76,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 
   // Extract experimental features with defaults
   const trackNavigation = experimental?.trackNavigation ?? false;
-  const reliableFetchTransport = experimental?.reliableFetchTransport ?? false;
+  const fetchTransportV2 = experimental?.fetchTransportV2 ?? false;
 
   // Extract user actions instrumentation with defaults
   const userActionsInstrumentation = {
@@ -133,7 +129,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     userActionsInstrumentation,
     experimental: {
       trackNavigation,
-      reliableFetchTransport,
+      fetchTransportV2,
     },
   };
 }
