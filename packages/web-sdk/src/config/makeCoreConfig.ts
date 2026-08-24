@@ -20,6 +20,7 @@ import { browserMeta, osMeta, sdkMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
+import { FetchTransport as ReliableFetchTransport } from '../transports/fetch-reliable';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
@@ -33,14 +34,23 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     if (browserConfig.url || browserConfig.apiKey) {
       internalLogger.error('if "transports" is defined, "url" and "apiKey" should not be defined');
     }
+    if (browserConfig.experimental?.reliableFetchTransport) {
+      internalLogger.error(
+        'experimental.reliableFetchTransport cannot take effect when explicit "transports" are defined'
+      );
+    }
 
     transports.push(...browserConfig.transports);
   } else if (browserConfig.url) {
+    const Transport = browserConfig.experimental?.reliableFetchTransport ? ReliableFetchTransport : FetchTransport;
     transports.push(
-      new FetchTransport({
+      new Transport({
         url: browserConfig.url,
         apiKey: browserConfig.apiKey,
         requestCompression: browserConfig.requestCompression,
+        ...(browserConfig.experimental?.reliableFetchTransport
+          ? browserConfig.reliableFetchTransportOptions
+          : undefined),
       })
     );
   } else {
@@ -62,12 +72,15 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     unpatchedConsole = defaultUnpatchedConsole,
     url: browserConfigUrl,
     experimental,
+    reliableFetchTransportOptions: _reliableFetchTransportOptions,
+
     // Properties without default values or which aren't used to create derived config
     ...restProperties
   }: BrowserConfig = browserConfig;
 
   // Extract experimental features with defaults
   const trackNavigation = experimental?.trackNavigation ?? false;
+  const reliableFetchTransport = experimental?.reliableFetchTransport ?? false;
 
   // Extract user actions instrumentation with defaults
   const userActionsInstrumentation = {
@@ -120,6 +133,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     userActionsInstrumentation,
     experimental: {
       trackNavigation,
+      reliableFetchTransport,
     },
   };
 }
