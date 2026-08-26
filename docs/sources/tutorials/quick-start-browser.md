@@ -235,6 +235,48 @@ const faro = initializeFaro({
 });
 ```
 
+### With session sampling below 100%
+
+Session sampling is all or nothing per session. When a session is not part of the sample, Faro
+discards every signal it produces in the browser. The fetch and XMLHttpRequest instrumentations
+still add a `traceparent` header to outgoing requests, but that header carries the unsampled flag
+`00`.
+
+Backend OpenTelemetry SDKs use the `parentbased_always_on` sampler by default, which honors an
+unsampled parent and drops the server span. Lowering `sessionTracking.samplingRate` therefore also
+removes traces from your backend services, not only from the browser.
+
+Set `omitTraceContextForUnsampledSessions` to leave the header off entirely for unsampled sessions,
+so each backend service applies its own sampling rules to those requests.
+
+```ts
+import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
+import { TracingInstrumentation } from '@grafana/faro-web-tracing';
+
+const faro = initializeFaro({
+  url: 'http://localhost:12345/collect',
+  apiKey: 'secret',
+  sessionTracking: {
+    samplingRate: 0.1, // 10% of sessions send frontend signals
+  },
+  instrumentations: [
+    ...getWebInstrumentations(),
+    new TracingInstrumentation({ omitTraceContextForUnsampledSessions: true }),
+  ],
+  app: {
+    name: 'frontend',
+    version: '1.0.0',
+  },
+});
+```
+
+Requests from an unsampled session then begin a new trace on the backend instead of joining the
+browser's, so those traces are recorded but no longer link back to the frontend. The frontend side
+of that link would have pointed at browser data Faro already discarded.
+
+This option defaults to `false` to preserve existing behavior, and is expected to become the default
+in the next major version.
+
 ### With custom OpenTelemetry tracing configuration
 
 The following example, demonstrates how to configure OpenTelemetry
