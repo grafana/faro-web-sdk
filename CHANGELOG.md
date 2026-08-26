@@ -11,6 +11,18 @@
 
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
 
+## [2.11.0](https://github.com/grafana/faro-web-sdk/compare/v2.10.0...v2.11.0) (2026-08-26)
+
+
+### Features
+
+* **web-tracing:** omit trace context for unsampled sessions ([#2251](https://github.com/grafana/faro-web-sdk/issues/2251)) ([f839439](https://github.com/grafana/faro-web-sdk/commit/f8394392cf76e4bf04dd42a994f817d78fef32e3))
+
+
+### Bug Fixes
+
+* **web-sdk:** retry transient Faro delivery failures ([#2247](https://github.com/grafana/faro-web-sdk/issues/2247)) ([8f15301](https://github.com/grafana/faro-web-sdk/commit/8f15301e943e87889258748c57f77cc12617aaba))
+
 ## [2.10.0](https://github.com/grafana/faro-web-sdk/compare/v2.9.0...v2.10.0) (2026-08-17)
 
 ### Features
