@@ -279,6 +279,33 @@ describe('reliable FetchTransport', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
+  it('retries each batch when its own backoff expires', async () => {
+    fetchMock
+      .mockResolvedValueOnce(response(429, '30'))
+      .mockResolvedValueOnce(response(429, '1'))
+      .mockResolvedValue(response(202));
+    const { transport } = createTransport({
+      concurrency: 2,
+      getRandom: () => 0,
+      retry: { maxBackoffMs: 60000 },
+    });
+
+    const first = transport.send([item]);
+    const second = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+    const firstKey = (fetchMock.mock.calls[0]![1].headers as Record<string, string>)['Idempotency-Key'];
+    const secondKey = (fetchMock.mock.calls[1]![1].headers as Record<string, string>)['Idempotency-Key'];
+
+    await jest.advanceTimersByTimeAsync(1000);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect((fetchMock.mock.calls[2]![1].headers as Record<string, string>)['Idempotency-Key']).toBe(secondKey);
+
+    await jest.advanceTimersByTimeAsync(29000);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect((fetchMock.mock.calls[3]![1].headers as Record<string, string>)['Idempotency-Key']).toBe(firstKey);
+    await Promise.all([first, second]);
+  });
+
   it('keeps admission reserved while a batch waits for redelivery', async () => {
     fetchMock.mockResolvedValueOnce(response(503)).mockResolvedValue(response(202));
     const { transport, internalLogger } = createTransport({ bufferSize: 1 });

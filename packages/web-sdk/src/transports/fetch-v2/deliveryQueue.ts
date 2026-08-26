@@ -239,7 +239,9 @@ export class ReliableDeliveryQueue {
     const jitteredDelay = Math.min(delayMs * (1 + this.options.getRandom() * 0.2), this.options.retry.maxBackoffMs);
     return new Promise<boolean>((resolve) => {
       this.waiting.push({ sequence, readyAt: this.options.getNow() + jitteredDelay, resolve });
-      this.waiting.sort((left, right) => left.sequence - right.sequence);
+      this.waiting.sort((left, right) =>
+        left.readyAt === right.readyAt ? left.sequence - right.sequence : left.readyAt - right.readyAt
+      );
       if (this.waitingTimer != null) {
         clearTimeout(this.waitingTimer);
         this.waitingTimer = undefined;
