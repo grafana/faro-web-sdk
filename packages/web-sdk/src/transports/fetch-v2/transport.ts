@@ -17,6 +17,15 @@ const DEFAULT_BACKOFF_MULTIPLIER = 2;
 const DEFAULT_REQUEST_TIMEOUT_MS = 10000;
 const RETRYABLE_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504]);
 const WAIT_INTERVAL_STATUS_CODES = new Set([429, 503]);
+const IMF_FIXDATE_PATTERN =
+  /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), (?:0[1-9]|[12]\d|3[01]) (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} (?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d GMT$/;
+const RFC850_DATE_PATTERN =
+  /^(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), (?:0[1-9]|[12]\d|3[01])-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{2} (?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d GMT$/;
+const ASCTIME_DATE_PATTERN =
+  /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (?: [1-9]|[12]\d|3[01]) (?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d \d{4}$/;
+const SHORT_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const LONG_WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const BEACON_BODY_SIZE_LIMIT = 60000;
 const MAX_KEEPALIVE_REQUESTS = 9;
 const ACCEPTED = 202;
@@ -29,6 +38,39 @@ interface KeepaliveReservation {
   release: () => void;
 }
 class RequestTimeoutError extends Error {}
+
+function twoDigits(value: number): string {
+  return value < 10 ? `0${value}` : String(value);
+}
+
+function fourDigits(value: number): string {
+  return `000${value}`.slice(-4);
+}
+
+function isValidHttpDate(value: string, timestamp: number): boolean {
+  if (Number.isNaN(timestamp)) {
+    return false;
+  }
+
+  const date = new Date(timestamp);
+  if (IMF_FIXDATE_PATTERN.test(value)) {
+    return date.toUTCString() === value;
+  }
+
+  const shortWeekday = SHORT_WEEKDAYS[date.getUTCDay()]!;
+  const month = MONTHS[date.getUTCMonth()]!;
+  const day = twoDigits(date.getUTCDate());
+  const time = `${twoDigits(date.getUTCHours())}:${twoDigits(date.getUTCMinutes())}:${twoDigits(date.getUTCSeconds())}`;
+  if (RFC850_DATE_PATTERN.test(value)) {
+    const longWeekday = LONG_WEEKDAYS[date.getUTCDay()]!;
+    return `${longWeekday}, ${day}-${month}-${twoDigits(date.getUTCFullYear() % 100)} ${time} GMT` === value;
+  }
+  if (ASCTIME_DATE_PATTERN.test(value)) {
+    const paddedDay = date.getUTCDate() < 10 ? ` ${date.getUTCDate()}` : day;
+    return `${shortWeekday} ${month} ${paddedDay} ${time} ${fourDigits(date.getUTCFullYear())}` === value;
+  }
+  return false;
+}
 
 function getBodyByteSize(body: string): number {
   return typeof TextEncoder === 'undefined' ? body.length : new TextEncoder().encode(body).byteLength;
@@ -77,6 +119,11 @@ export class FetchTransport extends BaseTransport {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('pagehide', () => this.deliveryQueue.flush());
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+          this.deliveryQueue.resume();
+        }
+      });
     }
   }
 
@@ -93,7 +140,9 @@ export class FetchTransport extends BaseTransport {
 
     try {
       const prepared = await this.prepareRequest(items);
-      const outcome = await reservation.deliver((_attempt, unloading) => this.performAttempt(prepared, unloading));
+      const outcome = await reservation.deliver((attemptsRemaining, unloading) =>
+        this.performAttempt(prepared, attemptsRemaining, unloading)
+      );
       if (outcome.kind === 'terminal') {
         this.logError(
           outcome.reason === 'retries-exhausted' ? 'Delivery retries exhausted' : 'Permanent delivery failure',
@@ -160,63 +209,75 @@ export class FetchTransport extends BaseTransport {
 
   private async performAttempt(
     prepared: { requestInit: RequestInit; bodySize: number },
+    attemptsRemaining: number,
     unloading: boolean
   ): Promise<AttemptOutcome> {
     const callerSignal = this.options.requestOptions?.signal;
     if (callerSignal?.aborted) {
-      return { kind: 'terminal', failure: { error: callerSignal.reason }, attempted: false };
+      return { kind: 'terminal', failure: { error: callerSignal.reason }, attemptsMade: 0 };
     }
 
+    let attemptsMade = 0;
     try {
       const response = await this.fetchWithKeepaliveFallback(
         prepared.requestInit,
         prepared.bodySize,
-        unloading ? true : this.options.requestOptions?.keepalive
+        unloading ? true : this.options.requestOptions?.keepalive,
+        attemptsRemaining,
+        () => attemptsMade++
       );
       this.handleResponse(response);
 
       if (response.status >= 200 && response.status < 300) {
-        return { kind: 'success' };
+        return { kind: 'success', attemptsMade };
       }
 
       const failure = { status: response.status };
       if (!RETRYABLE_STATUS_CODES.has(response.status) || unloading) {
-        return { kind: 'terminal', failure };
+        return { kind: 'terminal', failure, attemptsMade };
       }
 
       return {
         kind: 'retry',
         failure,
+        attemptsMade,
         retryAfterMs: WAIT_INTERVAL_STATUS_CODES.has(response.status) ? this.getRetryAfterDelayMs(response) : undefined,
       };
     } catch (error) {
       const failure: DeliveryFailure = { error };
       if (callerSignal?.aborted || !this.isFetchNetworkError(error) || unloading) {
-        return { kind: 'terminal', failure };
+        return { kind: 'terminal', failure, attemptsMade };
       }
-      return { kind: 'retry', failure };
+      return { kind: 'retry', failure, attemptsMade };
     }
   }
 
   private async fetchWithKeepaliveFallback(
     requestInit: RequestInit,
     bodySize: number,
-    configuredKeepalive?: boolean
+    configuredKeepalive: boolean | undefined,
+    attemptsRemaining: number,
+    onFetch: () => void
   ): Promise<Response> {
     const startedAt = this.getNow();
     const reservation = this.reserveKeepalive(bodySize, configuredKeepalive);
     try {
-      return await this.fetchWithTimeout({ ...requestInit, keepalive: reservation.keepalive }, this.requestTimeoutMs);
+      return await this.fetchWithTimeout(
+        { ...requestInit, keepalive: reservation.keepalive },
+        this.requestTimeoutMs,
+        onFetch
+      );
     } catch (error) {
       if (
         reservation.keepalive &&
+        attemptsRemaining > 1 &&
         this.isFetchNetworkError(error) &&
         !(error instanceof RequestTimeoutError) &&
         !this.options.requestOptions?.signal?.aborted
       ) {
         this.logDebug('Retrying failed keepalive request with keepalive disabled.');
         const remainingTimeoutMs = this.requestTimeoutMs - (this.getNow() - startedAt);
-        return this.fetchWithTimeout({ ...requestInit, keepalive: false }, remainingTimeoutMs);
+        return this.fetchWithTimeout({ ...requestInit, keepalive: false }, remainingTimeoutMs, onFetch);
       }
       throw error;
     } finally {
@@ -224,9 +285,10 @@ export class FetchTransport extends BaseTransport {
     }
   }
 
-  private async fetchWithTimeout(requestInit: RequestInit, timeoutMs: number): Promise<Response> {
+  private async fetchWithTimeout(requestInit: RequestInit, timeoutMs: number, onFetch: () => void): Promise<Response> {
     const callerSignal = this.options.requestOptions?.signal;
     if (this.requestTimeoutMs <= 0 || typeof AbortController === 'undefined') {
+      onFetch();
       return fetch(this.options.url, { ...requestInit, signal: callerSignal });
     }
     if (timeoutMs <= 0) {
@@ -243,6 +305,7 @@ export class FetchTransport extends BaseTransport {
     }, timeoutMs);
 
     try {
+      onFetch();
       return await fetch(this.options.url, { ...requestInit, signal: controller.signal });
     } catch (error) {
       if (timedOut && !callerSignal?.aborted) {
@@ -262,10 +325,10 @@ export class FetchTransport extends BaseTransport {
     }
     if (/^\d+$/.test(value)) {
       const delay = Number(value) * 1000;
-      return Number.isFinite(delay) ? delay : undefined;
+      return Number.isFinite(delay) ? delay : Number.POSITIVE_INFINITY;
     }
-    const retryAt = Date.parse(value);
-    return Number.isNaN(retryAt) ? undefined : Math.max(0, retryAt - this.getNow());
+    const retryAt = Date.parse(value.endsWith(' GMT') ? value : `${value} GMT`);
+    return isValidHttpDate(value, retryAt) ? Math.max(0, retryAt - this.getNow()) : undefined;
   }
 
   private reserveKeepalive(bodySize: number, configuredKeepalive?: boolean): KeepaliveReservation {

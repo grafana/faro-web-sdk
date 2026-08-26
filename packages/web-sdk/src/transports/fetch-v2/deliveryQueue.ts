@@ -11,9 +11,9 @@ export interface DeliveryFailure {
 }
 
 export type AttemptOutcome =
-  | { kind: 'success' }
-  | { kind: 'retry'; failure: DeliveryFailure; retryAfterMs?: number }
-  | { kind: 'terminal'; failure: DeliveryFailure; attempted?: boolean };
+  | { kind: 'success'; attemptsMade: number }
+  | { kind: 'retry'; failure: DeliveryFailure; attemptsMade: number; retryAfterMs?: number }
+  | { kind: 'terminal'; failure: DeliveryFailure; attemptsMade: number };
 
 export interface DeliveryOutcome {
   kind: 'success' | 'terminal';
@@ -23,7 +23,7 @@ export interface DeliveryOutcome {
   reason?: 'retries-exhausted' | 'retry-after-too-long';
 }
 
-export type PerformAttempt = (attempt: number, unloading: boolean) => Promise<AttemptOutcome>;
+export type PerformAttempt = (attemptsRemaining: number, unloading: boolean) => Promise<AttemptOutcome>;
 
 export interface DeliveryQueueOptions {
   bufferSize: number;
@@ -38,6 +38,11 @@ interface WaitingDelivery {
   sequence: number;
   readyAt: number;
   resolve: (unloading: boolean) => void;
+}
+
+interface QueuedAttempt {
+  run: () => void;
+  isRedelivery: boolean;
 }
 
 export interface DeliveryReservation {
@@ -63,9 +68,10 @@ export class ReliableDeliveryQueue {
   private inProgress = 0;
   private sequence = 0;
   private nextSendAt = 0;
-  private readonly attemptQueue: Array<() => void> = [];
+  private readonly attemptQueue: QueuedAttempt[] = [];
   private readonly waiting: WaitingDelivery[] = [];
-  private timer?: ReturnType<typeof setTimeout>;
+  private redeliveryTimer?: ReturnType<typeof setTimeout>;
+  private waitingTimer?: ReturnType<typeof setTimeout>;
   private unloading = false;
 
   constructor(private readonly options: DeliveryQueueOptions) {}
@@ -94,11 +100,9 @@ export class ReliableDeliveryQueue {
         let failure: DeliveryFailure | undefined;
 
         for (;;) {
-          const attempt = attempts + 1;
-          const outcome = await this.runAttempt(() => performAttempt(attempt, this.unloading));
-          if (outcome.kind !== 'terminal' || outcome.attempted !== false) {
-            attempts = attempt;
-          }
+          const attemptsRemaining = this.options.retry.maxAttempts - attempts;
+          const outcome = await this.runAttempt(() => performAttempt(attemptsRemaining, this.unloading), attempts > 0);
+          attempts += outcome.attemptsMade;
 
           if (outcome.kind === 'success') {
             return { kind: 'success', attempts, elapsedTimeMs: this.options.getNow() - startedAt };
@@ -139,11 +143,9 @@ export class ReliableDeliveryQueue {
           this.options.onRetry?.(backoff, attempts + 1);
           const unloading = await this.waitForTurn(sequence, backoff);
           if (unloading) {
-            const flushAttempt = attempts + 1;
-            const flushOutcome = await this.runAttempt(() => performAttempt(flushAttempt, true));
-            if (flushOutcome.kind !== 'terminal' || flushOutcome.attempted !== false) {
-              attempts = flushAttempt;
-            }
+            const attemptsRemaining = this.options.retry.maxAttempts - attempts;
+            const flushOutcome = await this.runAttempt(() => performAttempt(attemptsRemaining, true));
+            attempts += flushOutcome.attemptsMade;
             return {
               kind: flushOutcome.kind === 'success' ? 'success' : 'terminal',
               attempts,
@@ -159,35 +161,77 @@ export class ReliableDeliveryQueue {
 
   flush(): void {
     this.unloading = true;
+    this.nextSendAt = 0;
     const waiting = this.waiting.splice(0);
-    if (this.timer != null) {
-      clearTimeout(this.timer);
-      this.timer = undefined;
+    if (this.redeliveryTimer != null) {
+      clearTimeout(this.redeliveryTimer);
+      this.redeliveryTimer = undefined;
+    }
+    if (this.waitingTimer != null) {
+      clearTimeout(this.waitingTimer);
+      this.waitingTimer = undefined;
     }
     for (const delivery of waiting) {
       delivery.resolve(true);
     }
+    this.runNextAttempt();
   }
 
-  private runAttempt<T>(perform: () => Promise<T>): Promise<T> {
+  resume(): void {
+    this.unloading = false;
+  }
+
+  private runAttempt<T>(perform: () => Promise<T>, isRedelivery = false): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const run = () => {
         this.inProgress++;
-        perform()
-          .then(resolve, reject)
-          .finally(() => {
-            this.inProgress--;
-            this.runNextAttempt();
-          });
+        const onSettled = () => {
+          this.inProgress--;
+          this.runNextAttempt();
+        };
+        perform().then(
+          (value) => {
+            onSettled();
+            resolve(value);
+          },
+          (error) => {
+            onSettled();
+            reject(error);
+          }
+        );
       };
-      this.attemptQueue.push(run);
+      this.attemptQueue.push({ run, isRedelivery });
       this.runNextAttempt();
     });
   }
 
   private runNextAttempt(): void {
+    if (this.redeliveryTimer != null) {
+      clearTimeout(this.redeliveryTimer);
+      this.redeliveryTimer = undefined;
+    }
+
     while (this.inProgress < this.options.concurrency && this.attemptQueue.length > 0) {
-      this.attemptQueue.shift()!();
+      const now = this.options.getNow();
+      const runnableIndex = this.attemptQueue.findIndex(
+        ({ isRedelivery }) => this.unloading || !isRedelivery || now >= this.nextSendAt
+      );
+      if (runnableIndex < 0) {
+        this.redeliveryTimer = setTimeout(
+          () => {
+            this.redeliveryTimer = undefined;
+            this.runNextAttempt();
+          },
+          Math.max(0, this.nextSendAt - now)
+        );
+        return;
+      }
+
+      const [attempt] = this.attemptQueue.splice(runnableIndex, 1);
+      if (attempt!.isRedelivery && !this.unloading) {
+        this.nextSendAt = now + 1;
+      }
+      attempt!.run();
     }
   }
 
@@ -196,29 +240,28 @@ export class ReliableDeliveryQueue {
     return new Promise<boolean>((resolve) => {
       this.waiting.push({ sequence, readyAt: this.options.getNow() + jitteredDelay, resolve });
       this.waiting.sort((left, right) => left.sequence - right.sequence);
-      if (this.timer != null) {
-        clearTimeout(this.timer);
-        this.timer = undefined;
+      if (this.waitingTimer != null) {
+        clearTimeout(this.waitingTimer);
+        this.waitingTimer = undefined;
       }
       this.scheduleNext();
     });
   }
 
   private scheduleNext(): void {
-    if (this.timer != null || this.waiting.length === 0) {
+    if (this.waitingTimer != null || this.waiting.length === 0) {
       return;
     }
 
     const next = this.waiting[0]!;
-    const releaseAt = Math.max(next.readyAt, this.nextSendAt);
-    this.timer = setTimeout(
+    const releaseAt = next.readyAt;
+    this.waitingTimer = setTimeout(
       () => {
-        this.timer = undefined;
+        this.waitingTimer = undefined;
         const waitingIndex = this.waiting.indexOf(next);
         if (waitingIndex >= 0) {
           this.waiting.splice(waitingIndex, 1);
         }
-        this.nextSendAt = this.options.getNow() + 1;
         next.resolve(false);
         this.scheduleNext();
       },

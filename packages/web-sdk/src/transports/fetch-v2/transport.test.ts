@@ -129,6 +129,30 @@ describe('reliable FetchTransport', () => {
     expect(header).toHaveBeenCalledTimes(2);
   });
 
+  it('keeps processing when Promise.prototype.finally is unavailable', async () => {
+    const finallyDescriptor = Object.getOwnPropertyDescriptor(Promise.prototype, 'finally');
+    Object.defineProperty(Promise.prototype, 'finally', { configurable: true, value: undefined });
+
+    try {
+      const { transport } = createTransport({ concurrency: 1 });
+      const firstSending = transport.send([item]);
+      await jest.advanceTimersByTimeAsync(0);
+      await firstSending;
+
+      const secondSending = transport.send([item]);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      await secondSending;
+    } finally {
+      if (finallyDescriptor) {
+        Object.defineProperty(Promise.prototype, 'finally', finallyDescriptor);
+      } else {
+        delete (Promise.prototype as Partial<Promise<unknown>>).finally;
+      }
+    }
+  });
+
   it('uses the configured bounded exponential retry schedule', async () => {
     fetchMock.mockResolvedValue(response(503));
     const { transport, internalLogger } = createTransport({
@@ -173,6 +197,69 @@ describe('reliable FetchTransport', () => {
       'Permanent delivery failure',
       expect.objectContaining({ attempts: 1, status: 429 })
     );
+  });
+
+  it('drops a retry whose numeric Retry-After overflows', async () => {
+    fetchMock.mockResolvedValueOnce(response(429, '9'.repeat(400))).mockResolvedValueOnce(response(202));
+    const { transport } = createTransport();
+
+    const sending = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1100);
+    await sending;
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses fallback backoff for a Retry-After value that is not an HTTP date', async () => {
+    fetchMock.mockResolvedValueOnce(response(503, '2026-08-30')).mockResolvedValueOnce(response(202));
+    const { transport } = createTransport({ getNow: () => Date.parse('2026-08-26T00:00:00Z') });
+
+    const sending = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1099);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await jest.advanceTimersByTimeAsync(1);
+    await sending;
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('interprets an asctime Retry-After date as GMT', async () => {
+    const previousTimeZone = process.env['TZ'];
+    process.env['TZ'] = 'Europe/Warsaw';
+
+    try {
+      fetchMock.mockResolvedValueOnce(response(503, 'Sun Aug 30 12:00:01 2026')).mockResolvedValueOnce(response(202));
+      const { transport } = createTransport({ getNow: () => Date.parse('2026-08-30T12:00:00Z') });
+
+      const sending = transport.send([item]);
+      await jest.advanceTimersByTimeAsync(1099);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      await jest.advanceTimersByTimeAsync(1);
+      await sending;
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    } finally {
+      if (previousTimeZone == null) {
+        delete process.env['TZ'];
+      } else {
+        process.env['TZ'] = previousTimeZone;
+      }
+    }
+  });
+
+  it('uses fallback backoff for an impossible Retry-After date', async () => {
+    fetchMock
+      .mockResolvedValueOnce(response(503, 'Tue, 31 Feb 2026 00:00:01 GMT'))
+      .mockResolvedValueOnce(response(202));
+    const { transport } = createTransport({ getNow: () => Date.parse('2026-02-28T00:00:00Z') });
+
+    const sending = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1099);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await jest.advanceTimersByTimeAsync(1);
+    await sending;
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('keeps unrelated delivery moving while one batch is waiting', async () => {
@@ -231,6 +318,44 @@ describe('reliable FetchTransport', () => {
     expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
+  it('spaces redeliveries that queue behind saturated concurrency', async () => {
+    let resolveFirstBlocker!: (value: TestResponse) => void;
+    let resolveSecondBlocker!: (value: TestResponse) => void;
+    fetchMock
+      .mockResolvedValueOnce(response(429, '1'))
+      .mockResolvedValueOnce(response(429, '1'))
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFirstBlocker = resolve;
+          })
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveSecondBlocker = resolve;
+          })
+      )
+      .mockResolvedValue(response(202));
+    const { transport } = createTransport({ concurrency: 2, getRandom: () => 0 });
+
+    const firstWaiting = transport.send([item]);
+    const secondWaiting = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(0);
+    const firstBlocker = transport.send([item]);
+    const secondBlocker = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1001);
+
+    resolveFirstBlocker(response(202));
+    resolveSecondBlocker(response(202));
+    await jest.advanceTimersByTimeAsync(0);
+
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+    await jest.advanceTimersByTimeAsync(1);
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+    await Promise.all([firstWaiting, secondWaiting, firstBlocker, secondBlocker]);
+  });
+
   it('does not share retry throttling between transport instances', async () => {
     fetchMock
       .mockResolvedValueOnce(response(429, '1'))
@@ -263,10 +388,15 @@ describe('reliable FetchTransport', () => {
     );
   });
 
-  it('performs the non-keepalive fallback inline without consuming an attempt', async () => {
-    fetchMock.mockRejectedValueOnce(new TypeError('network')).mockResolvedValueOnce(response(202));
-    const { transport, internalLogger } = createTransport({ retry: { maxAttempts: 1 } });
-    await transport.send([item]);
+  it('counts the non-keepalive fallback toward the configured attempt limit', async () => {
+    fetchMock
+      .mockRejectedValueOnce(new TypeError('keepalive network failure'))
+      .mockRejectedValueOnce(new TypeError('fallback network failure'))
+      .mockResolvedValueOnce(response(202));
+    const { transport, internalLogger } = createTransport({ retry: { maxAttempts: 2 } });
+    const sending = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1100);
+    await sending;
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[0]![1].keepalive).toBe(true);
@@ -274,7 +404,11 @@ describe('reliable FetchTransport', () => {
     expect((fetchMock.mock.calls[0]![1].headers as Record<string, string>)['Idempotency-Key']).toBe(
       (fetchMock.mock.calls[1]![1].headers as Record<string, string>)['Idempotency-Key']
     );
-    expect(internalLogger.error).not.toHaveBeenCalled();
+    expect(internalLogger.error).toHaveBeenCalledWith(
+      expect.any(String),
+      'Delivery retries exhausted',
+      expect.objectContaining({ attempts: 2 })
+    );
   });
 
   it('flushes a waiting batch once on page hide without scheduling another retry', async () => {
@@ -315,6 +449,20 @@ describe('reliable FetchTransport', () => {
       'Permanent delivery failure',
       expect.objectContaining({ attempts: 1, status: 503 })
     );
+  });
+
+  it('resumes retries after restoration from the back-forward cache', async () => {
+    fetchMock.mockResolvedValueOnce(response(503)).mockResolvedValueOnce(response(202));
+    const { transport } = createTransport();
+
+    window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }));
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+
+    const sending = transport.send([item]);
+    await jest.advanceTimersByTimeAsync(1100);
+    await sending;
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('reports zero attempts when the caller already cancelled the request', async () => {
