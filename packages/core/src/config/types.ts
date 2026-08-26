@@ -285,6 +285,11 @@ export interface Config<P = APIEvent> {
      * Track navigation events.
      */
     trackNavigation?: boolean;
+
+    /**
+     * Use the experimental bounded, retried Fetch transport.
+     */
+    fetchTransportV2?: boolean;
   };
 }
 
