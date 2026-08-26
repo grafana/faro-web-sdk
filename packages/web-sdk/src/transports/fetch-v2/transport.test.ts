@@ -444,7 +444,7 @@ describe('reliable FetchTransport', () => {
     const sending = transport.send([item]);
     await jest.advanceTimersByTimeAsync(0);
 
-    window.dispatchEvent(new PageTransitionEvent('pagehide'));
+    window.dispatchEvent(new Event('pagehide'));
     await jest.advanceTimersByTimeAsync(0);
     await sending;
 
@@ -465,7 +465,7 @@ describe('reliable FetchTransport', () => {
     const sending = transport.send([item]);
     await jest.advanceTimersByTimeAsync(0);
 
-    window.dispatchEvent(new PageTransitionEvent('pagehide'));
+    window.dispatchEvent(new Event('pagehide'));
     resolvePending(response(503));
     await sending;
     await jest.advanceTimersByTimeAsync(60000);
@@ -482,8 +482,10 @@ describe('reliable FetchTransport', () => {
     fetchMock.mockResolvedValueOnce(response(503)).mockResolvedValueOnce(response(202));
     const { transport } = createTransport();
 
-    window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }));
-    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    const pageShowEvent = new Event('pageshow');
+    Object.defineProperty(pageShowEvent, 'persisted', { value: true });
+    window.dispatchEvent(new Event('pagehide'));
+    window.dispatchEvent(pageShowEvent);
 
     const sending = transport.send([item]);
     await jest.advanceTimersByTimeAsync(1100);
