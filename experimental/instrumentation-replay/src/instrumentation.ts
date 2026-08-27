@@ -1,4 +1,4 @@
-import { BaseInstrumentation, clampSamplingRate, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, clampSamplingRate, genShortID, VERSION } from '@grafana/faro-core';
 import { record, type recordOptions } from '@grafana/rrweb';
 import { EventType, type eventWithTime } from '@grafana/rrweb-types';
 
@@ -33,6 +33,15 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private inactivityTimer: ReturnType<typeof setTimeout> | null = null;
   private boundOnUserInteraction: (() => void) | null = null;
 
+  private recordingId: string = genShortID();
+  // -1 until the recording's first Meta event opens generation 0.
+  private gen: number = -1;
+  private seq: number = 0;
+  // The session the current recording belongs to; a recording never spans two sessions.
+  private recordingSessionId: string | null = null;
+  private pendingStart: boolean = false;
+  private destroyed: boolean = false;
+
   constructor(options: ReplayInstrumentationOptions = {}) {
     super();
 
@@ -45,21 +54,39 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   initialize(): void {
-    // Check if current session is sampled before starting recording
-    this.checkAndUpdateRecording();
+    // Check if current session is sampled before starting recording. Starting
+    // synchronously is safe here: initialization never runs inside a batch flush.
+    this.checkAndUpdateRecording(false);
 
-    // Listen for session changes
+    // Listen for session changes. Starts triggered from the listener are deferred out
+    // of the call stack (see scheduleStartRecording).
     this.metas.addListener(() => {
-      this.checkAndUpdateRecording();
+      this.checkAndUpdateRecording(true);
     });
   }
 
-  private checkAndUpdateRecording(): void {
+  private checkAndUpdateRecording(deferStart: boolean): void {
     const session = this.api.getSession();
-    const isSampled = session?.attributes?.['isSampled'] === 'true';
-    const sessionId = session?.id ?? null;
 
-    if (!isSampled || sessionId === null) {
+    // Core's setSession removes and re-adds the session meta, notifying listeners on
+    // each step, so mid-rotation the listener transiently observes NO session meta at
+    // all. Acting on that transient notification would stop and restart recording on
+    // every setSession call; the follow-up notification carries the session to act on.
+    // A deliberate session clear (resetSession / setSession(undefined)) is different:
+    // it re-adds a session meta WITHOUT an id, which must stop recording below.
+    if (session === undefined) {
+      this.logDebug('No session meta present, awaiting the next session meta notification');
+      return;
+    }
+
+    const sessionId = session.id ?? null;
+    const isSampled = session.attributes?.['isSampled'] === 'true';
+
+    // Globally sampled — apply replay sub-sampling using a deterministic hash of the
+    // session ID so the decision is stable across page reloads within the same session.
+    const replaySampled = sessionId !== null && isSampled && this.shouldReplaySample(sessionId);
+
+    if (!replaySampled || sessionId === null) {
       if (this.isRecording) {
         this.logDebug('Session is not sampled, stopping recording');
         this.stopRecording();
@@ -69,19 +96,46 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       return;
     }
 
-    // Globally sampled — apply replay sub-sampling using a deterministic hash of the
-    // session ID so the decision is stable across page reloads within the same session.
-    const replaySampled = this.shouldReplaySample(sessionId);
+    if (this.isRecording) {
+      if (this.recordingSessionId === sessionId) {
+        return;
+      }
 
-    if (replaySampled && !this.isRecording) {
-      this.logDebug('Session is sampled for replay, starting recording');
-      this.startRecording();
-    } else if (!replaySampled && this.isRecording) {
-      this.logDebug('Session is not sampled for replay, stopping recording');
+      // The session rotated while recording: a recording belongs to exactly one
+      // session, so end this one now (stopping pushes no events, making it safe inside
+      // the listener call stack) and start the new session's recording deferred.
+      this.logDebug('Session changed, restarting recording for the new session');
       this.stopRecording();
-    } else if (!replaySampled) {
-      this.logDebug('Session is not sampled for replay, recording not started');
     }
+
+    if (deferStart) {
+      this.scheduleStartRecording();
+    } else {
+      this.startRecording(sessionId);
+    }
+  }
+
+  // Defers a (re)start out of the metas-listener call stack. Session rotations are
+  // typically detected inside a transport hook while the batch executor is flushing,
+  // and the flush resets its buffer after sending, discarding items pushed during it —
+  // a synchronous start would lose the new recording's Meta, FullSnapshot, and started
+  // events. The pending flag coalesces rotation bursts (e.g. collector-forced session
+  // re-creation) into one start, and the full decision is re-evaluated at execution
+  // time, so a start that raced a concurrent rotation converges on the latest session.
+  private scheduleStartRecording(): void {
+    if (this.pendingStart) {
+      return;
+    }
+    this.pendingStart = true;
+
+    void Promise.resolve().then(() => {
+      this.pendingStart = false;
+      if (this.destroyed) {
+        return;
+      }
+
+      this.checkAndUpdateRecording(false);
+    });
   }
 
   private shouldReplaySample(sessionId: string): boolean {
@@ -171,14 +225,28 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private startRecording(): void {
+  private startRecording(sessionId: string): void {
     try {
-      this.startRrweb();
+      // Mint a fresh delivery identity for every rrweb start except the inactivity
+      // pause-resume, which continues the current recording (see resumeRecording).
+      this.recordingId = genShortID();
+      this.gen = -1;
+      this.seq = 0;
+      this.recordingSessionId = sessionId;
+
+      // Pushed before rrweb starts so the lifecycle marker precedes the recording's
+      // first replay events (rrweb can emit the initial snapshot synchronously).
+      this.api.pushEvent(faroSessionReplayStartedEventName, { recording_id: this.recordingId });
+
+      if (!this.startRrweb()) {
+        // Not marked as recording, so a later session notification can retry.
+        this.logWarn('Failed to start session replay: rrweb did not start');
+        return;
+      }
 
       this.isRecording = true;
       this.isPaused = false;
       this.logDebug('Session replay started');
-      this.api.pushEvent(faroSessionReplayStartedEventName, {});
 
       this.setupInactivityTracking();
     } catch (err) {
@@ -199,7 +267,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.stopRrweb();
     this.isPaused = true;
     this.logDebug('Session replay paused due to inactivity');
-    this.api.pushEvent(faroSessionReplayPausedEventName, {});
+    this.api.pushEvent(faroSessionReplayPausedEventName, { recording_id: this.recordingId });
   }
 
   private resumeRecording(): void {
@@ -208,11 +276,18 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     }
 
     try {
-      this.startRrweb();
+      // Pushed before rrweb restarts so the lifecycle marker precedes the fresh
+      // snapshot's replay events (rrweb can emit it synchronously).
+      this.api.pushEvent(faroSessionReplayResumedEventName, { recording_id: this.recordingId });
+
+      if (!this.startRrweb()) {
+        // Stays paused, so the next user interaction can retry the resume.
+        this.logWarn('Failed to resume session replay: rrweb did not start');
+        return;
+      }
 
       this.isPaused = false;
       this.logDebug('Session replay resumed after user interaction');
-      this.api.pushEvent(faroSessionReplayResumedEventName, {});
 
       this.resetInactivityTimer();
     } catch (err) {
@@ -221,6 +296,10 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   private setupInactivityTracking(): void {
+    // Defensive: a re-entrant stop/start cycle must never leak a previous closure's
+    // document listeners.
+    this.teardownInactivityTracking();
+
     const threshold = this.options.inactivityThresholdMs;
     if (!threshold || threshold <= 0) {
       return;
@@ -311,15 +390,33 @@ export class ReplayInstrumentation extends BaseInstrumentation {
         this.sanitizeMetaHref(processedEvent);
       }
 
-      this.api.pushEvent(faroSessionReplayEventName, {
+      // gen advances when the emitted event is a Meta — the event that opens a new
+      // independently playable chain. rrweb's isCheckout flag is not usable as the
+      // trigger: it marks both the Meta and the FullSnapshot of a scheduled checkout
+      // and neither event of an initial or post-resume snapshot.
+      if (processedEvent.type === EventType.Meta) {
+        this.gen++;
+      }
+
+      const attributes: Record<string, string> = {
         event: JSON.stringify(processedEvent),
-      });
+        recording_id: this.recordingId,
+        // Clamped for the never-observed case of an event emitted before the first Meta.
+        gen: String(Math.max(this.gen, 0)),
+        // seq is recording-wide and never resets on a generation change, so any hole in
+        // stored sequence numbers is proof of loss.
+        seq: String(this.seq),
+      };
+      this.seq++;
+
+      this.api.pushEvent(faroSessionReplayEventName, attributes);
     } catch (err) {
       this.logWarn(`Failed to push ${faroSessionReplayEventName} event`, err);
     }
   }
 
   destroy(): void {
+    this.destroyed = true;
     this.stopRecording();
   }
 }
