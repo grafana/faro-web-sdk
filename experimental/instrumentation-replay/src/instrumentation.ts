@@ -67,9 +67,9 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   private checkAndUpdateRecording(deferStart: boolean): void {
-    // A notification can arrive synchronously from a transport hook while a start is
-    // pushing its lifecycle marker or rrweb's initial events. Reconcile once the
-    // current call stack has finished and the recorder has a stop function.
+    // A notification can arrive synchronously while rrweb's record() is still executing,
+    // before the stop function is installed. Reconcile once the current call stack has
+    // finished so the start attempt can finish setting up its state.
     if (this.isStarting) {
       this.scheduleStartRecording();
       return;
