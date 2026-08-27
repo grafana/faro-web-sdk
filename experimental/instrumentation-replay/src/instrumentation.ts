@@ -97,7 +97,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
     if (!replaySampled || sessionId === null) {
       if (this.isRecording) {
-        this.logDebug('Session is not sampled, stopping recording');
+        this.logDebug('Session is not eligible for replay (unsampled or missing id), stopping recording');
         this.stopRecording();
       } else {
         this.logDebug('Session is not sampled, recording not started');
