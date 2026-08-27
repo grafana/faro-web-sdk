@@ -1787,27 +1787,41 @@ describe('ReplayInstrumentation', () => {
       const numSamples = seeds.length * samplesPerSeed;
       const buckets = new Array(numBuckets).fill(0);
       const maxAllowedChiSquared = 21.67;
+      const originalCrypto = globalThis.crypto;
+      Object.defineProperty(globalThis, 'crypto', {
+        configurable: true,
+        value: {},
+      });
       const randomSpy = jest.spyOn(Math, 'random');
 
-      const inst = new ReplayInstrumentation();
-      for (const seed of seeds) {
-        randomSpy.mockImplementation(createSeededRandom(seed));
+      try {
+        const inst = new ReplayInstrumentation();
+        for (const seed of seeds) {
+          randomSpy.mockImplementation(createSeededRandom(seed));
 
-        for (let i = 0; i < samplesPerSeed; i++) {
-          const hash = inst['hashSessionId'](genShortID());
-          const bucket = Math.min(Math.floor(hash * numBuckets), numBuckets - 1);
-          buckets[bucket]++;
+          for (let i = 0; i < samplesPerSeed; i++) {
+            const hash = inst['hashSessionId'](genShortID());
+            const bucket = Math.min(Math.floor(hash * numBuckets), numBuckets - 1);
+            buckets[bucket]++;
+          }
         }
+
+        // Seed Math.random with several fixed seeds so the real genShortID() exercises a broader,
+        // deterministic corpus. This uses chi-squared as a regression score, not as a p-value-based test.
+        const expected = numSamples / numBuckets;
+        const chiSquared = buckets.reduce((sum, observed) => {
+          return sum + (observed - expected) ** 2 / expected;
+        }, 0);
+
+        expect(randomSpy).toHaveBeenCalled();
+        expect(chiSquared).toBeLessThan(maxAllowedChiSquared);
+      } finally {
+        randomSpy.mockRestore();
+        Object.defineProperty(globalThis, 'crypto', {
+          configurable: true,
+          value: originalCrypto,
+        });
       }
-
-      // Seed Math.random with several fixed seeds so the real genShortID() exercises a broader,
-      // deterministic corpus. This uses chi-squared as a regression score, not as a p-value-based test.
-      const expected = numSamples / numBuckets;
-      const chiSquared = buckets.reduce((sum, observed) => {
-        return sum + (observed - expected) ** 2 / expected;
-      }, 0);
-
-      expect(chiSquared).toBeLessThan(maxAllowedChiSquared);
     });
 
     it('should not start recording when session ID is null', () => {
