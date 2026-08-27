@@ -35,13 +35,54 @@ export function mergeResourceSpans(traces?: TraceEvent, resourceSpans?: IResourc
   };
 }
 
+function sanitizeUrl(url: string): string {
+  try {
+    const parsedUrl = new URL(url);
+
+    if (!parsedUrl.username && !parsedUrl.password && !parsedUrl.search && !parsedUrl.hash) {
+      return url;
+    }
+
+    parsedUrl.username = '';
+    parsedUrl.password = '';
+    parsedUrl.search = '';
+    parsedUrl.hash = '';
+
+    return parsedUrl.href;
+  } catch {
+    return url;
+  }
+}
+
+function sanitizeMetaPageUrl(meta: TransportItem['meta']): TransportItem['meta'] {
+  const pageUrl = meta.page?.url;
+
+  if (pageUrl == null) {
+    return meta;
+  }
+
+  const sanitizedUrl = sanitizeUrl(pageUrl);
+
+  if (sanitizedUrl === pageUrl) {
+    return meta;
+  }
+
+  return {
+    ...meta,
+    page: {
+      ...meta.page,
+      url: sanitizedUrl,
+    },
+  };
+}
+
 export function getTransportBody(item: TransportItem[]): TransportBody {
   let body: TransportBody = {
     meta: {},
   };
 
   if (item[0] !== undefined) {
-    body.meta = item[0].meta;
+    body.meta = sanitizeMetaPageUrl(item[0].meta);
   }
 
   item.forEach((currentItem: TransportItem) => {
