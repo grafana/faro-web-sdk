@@ -1100,6 +1100,85 @@ describe('ReplayInstrumentation', () => {
       expect(latest['seq']).toBe('0');
     });
 
+    it('should stop a deferred start when sampling flips off while it is starting', async () => {
+      const initialStop = jest.fn();
+      const restartedStop = jest.fn();
+      mockRecord.mockReturnValueOnce(initialStop).mockReturnValueOnce(restartedStop);
+      instrumentation = initSampled({}, 'session-a');
+
+      mockGetSession.mockReturnValue({ id: 'session-b', attributes: { isSampled: 'true' } });
+      metaListener!();
+      expect(initialStop).toHaveBeenCalledTimes(1);
+
+      let samplingFlipTriggered = false;
+      mockPushEvent.mockImplementation((eventName: string) => {
+        if (eventName === 'faro.session_recording.started' && !samplingFlipTriggered) {
+          samplingFlipTriggered = true;
+          mockGetSession.mockReturnValue({ id: 'session-b', attributes: { isSampled: 'false' } });
+          metaListener!();
+        }
+      });
+
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(mockRecord).toHaveBeenCalledTimes(2);
+      expect(restartedStop).toHaveBeenCalledTimes(1);
+    });
+
+    it('should clear recording state when the rrweb stop function throws', () => {
+      const stopError = new Error('rrweb stop failed');
+      mockRecord.mockReturnValueOnce(
+        jest.fn(() => {
+          throw stopError;
+        })
+      );
+      instrumentation = initSampled();
+      const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
+
+      mockGetSession.mockReturnValue({ id: 'session-b', attributes: { isSampled: 'false' } });
+
+      expect(() => metaListener!()).not.toThrow();
+      expect(instrumentation['isRecording']).toBe(false);
+      expect(instrumentation['stopFn']).toBeNull();
+      expect(logWarnSpy).toHaveBeenCalledWith('Failed to stop session replay', stopError);
+    });
+
+    it.each([
+      ['a sampled new session', 'session-b', 'true', 2],
+      ['an unsampled new session', 'session-b', 'false', 1],
+      ['the same session becoming unsampled', 'session-a', 'false', 1],
+    ])(
+      'should reconcile an initial started-event rotation to %s',
+      async (_scenario, nextSessionId, isSampled, expectedStarts) => {
+        const stops: jest.Mock[] = [];
+        mockRecord.mockImplementation(() => {
+          const stop = jest.fn();
+          stops.push(stop);
+          return stop;
+        });
+
+        let rotationTriggered = false;
+        mockPushEvent.mockImplementation((eventName: string) => {
+          if (eventName === 'faro.session_recording.started' && !rotationTriggered) {
+            rotationTriggered = true;
+            mockGetSession.mockReturnValue({ id: nextSessionId, attributes: { isSampled } });
+            metaListener!();
+          }
+        });
+
+        instrumentation = initSampled({}, 'session-a');
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(stops[0]).toHaveBeenCalledTimes(1);
+        expect(mockRecord).toHaveBeenCalledTimes(expectedStarts);
+        if (expectedStarts === 2) {
+          expect(stops[1]).not.toHaveBeenCalled();
+        }
+      }
+    );
+
     it('should restart with a new recording id when the session rotates while paused', async () => {
       jest.useFakeTimers();
       try {
@@ -1208,6 +1287,41 @@ describe('ReplayInstrumentation', () => {
       expect(startedIndex).toBeLessThan(firstReplayIndex);
     });
 
+    it('should emit no started marker for a declined start and one ordered marker when retry succeeds', async () => {
+      const successfulStop = jest.fn();
+      mockRecord
+        .mockImplementationOnce(() => undefined)
+        .mockImplementationOnce((opts: any) => {
+          emitCallback = opts.emit;
+          opts.emit(metaEvent());
+          return successfulStop;
+        });
+
+      instrumentation = initSampled();
+
+      expect(lifecycleAttributes('faro.session_recording.started')).toHaveLength(0);
+      expect(replayAttributes()).toHaveLength(0);
+
+      metaListener!();
+      await Promise.resolve();
+
+      const names = mockPushEvent.mock.calls.map((call: any[]) => call[0]);
+      expect(names).toEqual(['faro.session_recording.started', 'faro.session_recording.event']);
+      expect(successfulStop).not.toHaveBeenCalled();
+    });
+
+    it('should discard synchronous replay events and the started marker when rrweb throws', () => {
+      mockRecord.mockImplementationOnce((opts: any) => {
+        opts.emit(metaEvent());
+        throw new Error('rrweb failed');
+      });
+
+      instrumentation = initSampled();
+
+      expect(lifecycleAttributes('faro.session_recording.started')).toHaveLength(0);
+      expect(replayAttributes()).toHaveLength(0);
+    });
+
     it('should push the resumed event before the fresh snapshot events on resume', () => {
       jest.useFakeTimers();
       try {
@@ -1228,6 +1342,36 @@ describe('ReplayInstrumentation', () => {
         const lastReplayIndex = names.lastIndexOf('faro.session_recording.event');
         expect(resumedIndex).toBeGreaterThanOrEqual(0);
         expect(resumedIndex).toBeLessThan(lastReplayIndex);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('should emit no resumed markers for declined attempts and one ordered marker when retry succeeds', () => {
+      jest.useFakeTimers();
+      try {
+        instrumentation = initSampled({ inactivityThresholdMs: 5_000 });
+        jest.advanceTimersByTime(5_000);
+
+        mockRecord
+          .mockReturnValueOnce(undefined)
+          .mockReturnValueOnce(undefined)
+          .mockImplementationOnce((opts: any) => {
+            opts.emit(metaEvent());
+            return jest.fn();
+          });
+
+        document.dispatchEvent(new Event('pointerdown'));
+        document.dispatchEvent(new Event('pointerdown'));
+        expect(lifecycleAttributes('faro.session_recording.resumed')).toHaveLength(0);
+
+        const callCountBeforeSuccess = mockPushEvent.mock.calls.length;
+        document.dispatchEvent(new Event('pointerdown'));
+
+        const successfulAttemptNames = mockPushEvent.mock.calls
+          .slice(callCountBeforeSuccess)
+          .map((call: any[]) => call[0]);
+        expect(successfulAttemptNames).toEqual(['faro.session_recording.resumed', 'faro.session_recording.event']);
       } finally {
         jest.useRealTimers();
       }

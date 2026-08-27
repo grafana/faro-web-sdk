@@ -10,6 +10,8 @@ const faroSessionReplayStartedEventName = 'faro.session_recording.started';
 const faroSessionReplayPausedEventName = 'faro.session_recording.paused';
 const faroSessionReplayResumedEventName = 'faro.session_recording.resumed';
 
+type RrwebEmit = (event: eventWithTime, isCheckout?: boolean) => void;
+
 // DOM events that signal a human is present.  Aligned with rrweb's
 // IncrementalSource 1-5 (MouseMove, MouseInteraction, Scroll,
 // ViewportResize, Input).  We use pointer* instead of mouse*/touch*
@@ -39,6 +41,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private seq: number = 0;
   // The session the current recording belongs to; a recording never spans two sessions.
   private recordingSessionId: string | null = null;
+  private isStarting: boolean = false;
   private pendingStart: boolean = false;
   private destroyed: boolean = false;
 
@@ -54,18 +57,24 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   initialize(): void {
-    // Check if current session is sampled before starting recording. Starting
-    // synchronously is safe here: initialization never runs inside a batch flush.
-    this.checkAndUpdateRecording(false);
-
     // Listen for session changes. Starts triggered from the listener are deferred out
     // of the call stack (see scheduleStartRecording).
     this.metas.addListener(() => {
       this.checkAndUpdateRecording(true);
     });
+
+    this.checkAndUpdateRecording(false);
   }
 
   private checkAndUpdateRecording(deferStart: boolean): void {
+    // A notification can arrive synchronously from a transport hook while a start is
+    // pushing its lifecycle marker or rrweb's initial events. Reconcile once the
+    // current call stack has finished and the recorder has a stop function.
+    if (this.isStarting) {
+      this.scheduleStartRecording();
+      return;
+    }
+
     const session = this.api.getSession();
 
     // Core's setSession removes and re-adds the session meta, notifying listeners on
@@ -175,20 +184,17 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   private stopRecording(): void {
     this.teardownInactivityTracking();
-    if (this.stopFn) {
-      this.stopFn();
-      this.stopFn = null;
-    }
+    this.stopRrweb();
     this.isRecording = false;
     this.isPaused = false;
     this.logDebug('Session replay stopped');
   }
 
-  private buildRecordOptions(): recordOptions<eventWithTime> {
+  private buildRecordOptions(
+    emit: RrwebEmit = (event, isCheckout) => this.handleEvent(event, isCheckout)
+  ): recordOptions<eventWithTime> {
     return {
-      emit: (event: eventWithTime, isCheckout?: boolean): void => {
-        this.handleEvent(event, isCheckout);
-      },
+      emit,
       checkoutEveryNms: 300_000, // 5 minutes
       recordCrossOriginIframes: this.options.recordCrossOriginIframes,
       maskAllInputs: this.options.maskAllInputs,
@@ -209,19 +215,91 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     };
   }
 
-  private startRrweb(): boolean {
-    const stop = record(this.buildRecordOptions());
-    if (stop) {
-      this.stopFn = stop;
-      return true;
+  private startRrweb(lifecycleEventName: string): boolean {
+    const bufferedEvents: Array<[event: eventWithTime, isCheckout?: boolean]> = [];
+    const attempt: { phase: 'buffering' | 'active' | 'discarded' } = { phase: 'buffering' };
+    const wasRecording = this.isRecording;
+    const wasPaused = this.isPaused;
+    const discardAttempt = (): void => {
+      attempt.phase = 'discarded';
+      bufferedEvents.length = 0;
+    };
+
+    this.isStarting = true;
+    let stop: (() => void) | undefined;
+    try {
+      stop = record(
+        this.buildRecordOptions((event, isCheckout) => {
+          if (attempt.phase === 'buffering') {
+            bufferedEvents.push([event, isCheckout]);
+          } else if (attempt.phase === 'active') {
+            this.handleEvent(event, isCheckout);
+          }
+        })
+      );
+    } catch (err) {
+      discardAttempt();
+      throw err;
+    } finally {
+      this.isStarting = false;
     }
-    return false;
+
+    if (!stop) {
+      discardAttempt();
+      return false;
+    }
+
+    const stopAttempt = (): void => {
+      discardAttempt();
+      stop!();
+    };
+    const recordingId = this.recordingId;
+    const isCurrentAttempt = (): boolean =>
+      this.isRecording && this.stopFn === stopAttempt && this.recordingId === recordingId;
+
+    this.stopFn = stopAttempt;
+    this.isRecording = true;
+    this.isPaused = false;
+
+    try {
+      this.api.pushEvent(lifecycleEventName, { recording_id: recordingId });
+
+      for (const [event, isCheckout] of bufferedEvents) {
+        if (!isCurrentAttempt()) {
+          discardAttempt();
+          return true;
+        }
+        this.handleEvent(event, isCheckout);
+      }
+
+      if (!isCurrentAttempt()) {
+        discardAttempt();
+        return true;
+      }
+
+      bufferedEvents.length = 0;
+      attempt.phase = 'active';
+      return true;
+    } catch (err) {
+      if (this.stopFn === stopAttempt) {
+        this.stopRrweb();
+        this.isRecording = wasRecording;
+        this.isPaused = wasPaused;
+      }
+      throw err;
+    }
   }
 
   private stopRrweb(): void {
-    if (this.stopFn) {
-      this.stopFn();
-      this.stopFn = null;
+    const stop = this.stopFn;
+    this.stopFn = null;
+
+    if (stop) {
+      try {
+        stop();
+      } catch (err) {
+        this.logWarn('Failed to stop session replay', err);
+      }
     }
   }
 
@@ -234,18 +312,16 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       this.seq = 0;
       this.recordingSessionId = sessionId;
 
-      // Pushed before rrweb starts so the lifecycle marker precedes the recording's
-      // first replay events (rrweb can emit the initial snapshot synchronously).
-      this.api.pushEvent(faroSessionReplayStartedEventName, { recording_id: this.recordingId });
-
-      if (!this.startRrweb()) {
+      if (!this.startRrweb(faroSessionReplayStartedEventName)) {
         // Not marked as recording, so a later session notification can retry.
         this.logWarn('Failed to start session replay: rrweb did not start');
         return;
       }
 
-      this.isRecording = true;
-      this.isPaused = false;
+      if (!this.isRecording) {
+        return;
+      }
+
       this.logDebug('Session replay started');
 
       this.setupInactivityTracking();
@@ -276,17 +352,16 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     }
 
     try {
-      // Pushed before rrweb restarts so the lifecycle marker precedes the fresh
-      // snapshot's replay events (rrweb can emit it synchronously).
-      this.api.pushEvent(faroSessionReplayResumedEventName, { recording_id: this.recordingId });
-
-      if (!this.startRrweb()) {
+      if (!this.startRrweb(faroSessionReplayResumedEventName)) {
         // Stays paused, so the next user interaction can retry the resume.
         this.logWarn('Failed to resume session replay: rrweb did not start');
         return;
       }
 
-      this.isPaused = false;
+      if (!this.isRecording || this.isPaused) {
+        return;
+      }
+
       this.logDebug('Session replay resumed after user interaction');
 
       this.resetInactivityTimer();
