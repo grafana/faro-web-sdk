@@ -20,6 +20,7 @@ import { browserMeta, osMeta, sdkMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
+import { FetchTransport as FetchTransportV2 } from '../transports/fetch-v2';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
@@ -33,11 +34,15 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     if (browserConfig.url || browserConfig.apiKey) {
       internalLogger.error('if "transports" is defined, "url" and "apiKey" should not be defined');
     }
+    if (browserConfig.experimental?.fetchTransportV2) {
+      internalLogger.error('experimental.fetchTransportV2 cannot take effect when explicit "transports" are defined');
+    }
 
     transports.push(...browserConfig.transports);
   } else if (browserConfig.url) {
+    const Transport = browserConfig.experimental?.fetchTransportV2 ? FetchTransportV2 : FetchTransport;
     transports.push(
-      new FetchTransport({
+      new Transport({
         url: browserConfig.url,
         apiKey: browserConfig.apiKey,
         requestCompression: browserConfig.requestCompression,
@@ -68,6 +73,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 
   // Extract experimental features with defaults
   const trackNavigation = experimental?.trackNavigation ?? false;
+  const fetchTransportV2 = experimental?.fetchTransportV2 ?? false;
 
   // Extract user actions instrumentation with defaults
   const userActionsInstrumentation = {
@@ -120,6 +126,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     userActionsInstrumentation,
     experimental: {
       trackNavigation,
+      fetchTransportV2,
     },
   };
 }
