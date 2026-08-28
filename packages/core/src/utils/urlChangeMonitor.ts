@@ -37,6 +37,7 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
     const hasNavigation = 'navigation' in window && 'NavigateEvent' in (window as any);
 
     if (hasNavigation) {
+      // Prefer Navigation API when supported: do not patch history or add popstate/hashchange listeners
       onNavigateHandler = (e: any) => {
         try {
           const destination = e?.destination as { url?: string; sameDocument?: boolean } | undefined;
@@ -58,6 +59,8 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
         if (!originalNavigateEventIntercept) {
           originalNavigateEventIntercept = NavigateEventConstructor.prototype.intercept;
         }
+
+        // Wrap intercept to detect soft navigations (cross-document turned same-document)
         NavigateEventConstructor.prototype.intercept = function (this: any, options?: any) {
           try {
             const canIntercept = !!this?.canIntercept;
@@ -71,7 +74,7 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
               emit('navigate-intercept', destination.url);
             }
           } catch (_err) {
-            // Ignore URL observation failures.
+            // ignore
           }
           return originalNavigateEventIntercept!.call(this, options);
         } as typeof originalNavigateEventIntercept;
@@ -79,6 +82,7 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
 
       isInstrumented = true;
     } else {
+      // Fallback: history API patching + popstate/hashchange
       if (!originalPushState) {
         originalPushState = window.history.pushState;
       }
@@ -109,6 +113,7 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
   return urlChangeObservable;
 }
 
+// Test-only utility to reset state between tests
 export function __resetUrlChangeMonitorForTests(): void {
   if (onPopStateHandler) {
     window.removeEventListener('popstate', onPopStateHandler);
