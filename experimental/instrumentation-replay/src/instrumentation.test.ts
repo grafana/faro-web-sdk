@@ -1471,6 +1471,49 @@ describe('ReplayInstrumentation', () => {
         jest.useRealTimers();
       }
     });
+
+    it('should reconcile rotations after the same instance is removed and re-added', async () => {
+      instrumentation = new ReplayInstrumentation();
+      const faro = initializeFaro(
+        mockConfig({
+          instrumentations: [instrumentation],
+          batching: { enabled: false },
+        })
+      );
+
+      try {
+        faro.api.setSession({ id: 'session-a', attributes: { isSampled: 'true' } });
+        await Promise.resolve();
+        expect(mockRecord).toHaveBeenCalledTimes(1);
+
+        faro.instrumentations.remove(instrumentation);
+        faro.instrumentations.add(instrumentation);
+        expect(mockRecord).toHaveBeenCalledTimes(2);
+
+        faro.api.setSession({ id: 'session-b', attributes: { isSampled: 'true' } });
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(mockRecord).toHaveBeenCalledTimes(3);
+      } finally {
+        faro.instrumentations.remove(instrumentation);
+      }
+    });
+
+    it('should remove the same metas listener that it registered', () => {
+      instrumentation = new ReplayInstrumentation();
+      const faro = initializeFaro(mockConfig({ instrumentations: [] }));
+      const addListenerSpy = jest.spyOn(faro.metas, 'addListener');
+      const removeListenerSpy = jest.spyOn(faro.metas, 'removeListener');
+
+      faro.instrumentations.add(instrumentation);
+      const registeredListener = addListenerSpy.mock.calls[0]?.[0];
+
+      faro.instrumentations.remove(instrumentation);
+
+      expect(registeredListener).toBeDefined();
+      expect(removeListenerSpy).toHaveBeenCalledWith(registeredListener);
+    });
   });
 
   describe('destroy', () => {

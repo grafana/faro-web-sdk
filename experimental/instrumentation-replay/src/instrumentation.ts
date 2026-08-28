@@ -44,6 +44,9 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private isStarting: boolean = false;
   private pendingStart: boolean = false;
   private destroyed: boolean = false;
+  private readonly metasListener = (): void => {
+    this.checkAndUpdateRecording(true);
+  };
 
   constructor(options: ReplayInstrumentationOptions = {}) {
     super();
@@ -57,11 +60,11 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   initialize(): void {
+    this.destroyed = false;
+
     // Listen for session changes. Starts triggered from the listener are deferred out
     // of the call stack (see scheduleStartRecording).
-    this.metas.addListener(() => {
-      this.checkAndUpdateRecording(true);
-    });
+    this.metas.addListener(this.metasListener);
 
     this.checkAndUpdateRecording(false);
   }
@@ -492,6 +495,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   destroy(): void {
     this.destroyed = true;
+    this.metas.removeListener?.(this.metasListener);
     this.stopRecording();
   }
 }
