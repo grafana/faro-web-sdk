@@ -1579,31 +1579,17 @@ describe('ReplayInstrumentation', () => {
       expect(mockRecord).not.toHaveBeenCalled();
     });
 
-    it('should open a generation when rrweb emits a checkpoint for SPA navigation', () => {
+    it('should not force an rrweb checkpoint for SPA navigation', () => {
       instrumentation = initSampled({}, 'session-a');
       emitCallback(metaEvent());
       emitCallback(fullSnapshotEvent());
-      mockRecord.takeFullSnapshot.mockImplementation(() => {
-        emitCallback(metaEvent());
-        emitCallback(fullSnapshotEvent());
-      });
 
       window.history.pushState({}, '', '/spa-navigation');
 
-      expect(mockRecord.takeFullSnapshot).toHaveBeenCalledTimes(1);
-      const attrs = replayAttributes();
-      expect(attrs.map((event) => event['gen'])).toEqual(['0', '0', '1', '1']);
-      expect(attrs.map((event) => event['seq'])).toEqual(['0', '1', '2', '3']);
-    });
-
-    it('should stop requesting SPA checkpoints after destroy', () => {
-      instrumentation = initSampled({}, 'session-a');
-      instrumentation.destroy();
-      mockRecord.takeFullSnapshot.mockClear();
-
-      window.history.pushState({}, '', '/after-replay-destroy');
-
       expect(mockRecord.takeFullSnapshot).not.toHaveBeenCalled();
+      const attrs = replayAttributes();
+      expect(attrs.map((event) => event['gen'])).toEqual(['0', '0']);
+      expect(attrs.map((event) => event['seq'])).toEqual(['0', '1']);
     });
 
     it('should reconcile rotations after the same instance is removed and re-added', async () => {

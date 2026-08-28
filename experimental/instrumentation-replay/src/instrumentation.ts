@@ -1,11 +1,4 @@
-import {
-  BaseInstrumentation,
-  clampSamplingRate,
-  genShortID,
-  monitorUrlChanges,
-  type Subscription,
-  VERSION,
-} from '@grafana/faro-core';
+import { BaseInstrumentation, clampSamplingRate, genShortID, VERSION } from '@grafana/faro-core';
 import { record, type recordOptions } from '@grafana/rrweb';
 import { EventType, type eventWithTime } from '@grafana/rrweb-types';
 
@@ -79,7 +72,6 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private pageHidden: boolean = false;
   private recordingStateStore: ReplayRecordingStateStore | undefined;
   private recordingStorageKey: string | undefined;
-  private urlChangeSubscription: Subscription | undefined;
   private readonly metasListener = (): void => {
     this.checkAndUpdateRecording(true);
   };
@@ -110,18 +102,6 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.recordingSessionId = null;
     this.checkAndUpdateRecording(false);
   };
-  private readonly urlChangeListener = (): void => {
-    if (!this.isRecording || this.isPaused || this.pageHidden) {
-      return;
-    }
-
-    try {
-      record.takeFullSnapshot();
-    } catch (err) {
-      this.logWarn('Failed to take a session replay checkpoint after navigation', err);
-    }
-  };
-
   constructor(options: ReplayInstrumentationOptions = {}) {
     super();
 
@@ -150,7 +130,6 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.metas.addListener(this.metasListener);
     window.addEventListener('pagehide', this.pageHideListener, { capture: true });
     window.addEventListener('pageshow', this.pageShowListener, { capture: true });
-    this.urlChangeSubscription = monitorUrlChanges().subscribe(this.urlChangeListener);
 
     this.checkAndUpdateRecording(false);
   }
@@ -604,8 +583,6 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.metas.removeListener?.(this.metasListener);
     window.removeEventListener('pagehide', this.pageHideListener, { capture: true });
     window.removeEventListener('pageshow', this.pageShowListener, { capture: true });
-    this.urlChangeSubscription?.unsubscribe();
-    this.urlChangeSubscription = undefined;
     this.stopRecording();
     if (this.recordingSessionId !== null) {
       const state = {

@@ -1,4 +1,4 @@
-import { Observable } from './reactive';
+import { Observable } from '@grafana/faro-core';
 
 export const MESSAGE_TYPE_URL_CHANGE = 'url-change';
 
