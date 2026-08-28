@@ -1622,17 +1622,18 @@ describe('ReplayInstrumentation', () => {
 
     it('should continue recording identity when the instance is replaced in the same document', () => {
       window.sessionStorage.clear();
-      const firstInstrumentation = initSampled({}, 'session-a');
+      const recordingStorageKey = 'test-replay-replacement-state';
+      const firstInstrumentation = initSampled({ recordingStorageKey }, 'session-a');
       emitCallback(metaEvent());
       emitCallback(incrementalEvent());
       const recordingId = replayAttributes()[0]!['recording_id'];
 
       firstInstrumentation.destroy();
-      expect(JSON.parse(window.sessionStorage.getItem('com.grafana.faro.replay.recording:faro')!)).toEqual(
+      expect(JSON.parse(window.sessionStorage.getItem(recordingStorageKey)!)).toEqual(
         expect.objectContaining({ handoff: 'active' })
       );
       mockPushEvent.mockClear();
-      instrumentation = initSampled({}, 'session-a');
+      instrumentation = initSampled({ recordingStorageKey }, 'session-a');
       emitCallback(metaEvent());
 
       expect(replayAttributes()).toEqual([expect.objectContaining({ recording_id: recordingId, gen: '1', seq: '2' })]);
