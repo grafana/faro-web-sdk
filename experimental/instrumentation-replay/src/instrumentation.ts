@@ -10,7 +10,7 @@ const faroSessionReplayEventName = 'faro.session_recording.event';
 const faroSessionReplayStartedEventName = 'faro.session_recording.started';
 const faroSessionReplayPausedEventName = 'faro.session_recording.paused';
 const faroSessionReplayResumedEventName = 'faro.session_recording.resumed';
-const replayRecordingStorageKey = 'com.grafana.faro.replay.recording';
+const replayRecordingStorageKey = 'com.grafana.faro.replay';
 
 interface ActiveRecordingHandoff {
   sessionId: string;
