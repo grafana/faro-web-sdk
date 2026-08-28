@@ -3,7 +3,7 @@ import { __resetUrlChangeMonitorForTests, MESSAGE_TYPE_URL_CHANGE, monitorUrlCha
 describe('monitorUrlChanges', () => {
   afterEach(() => {
     __resetUrlChangeMonitorForTests();
-    jest.resetAllMocks();
+    jest.restoreAllMocks();
   });
 
   it('notifies when history.pushState changes the URL', () => {
@@ -51,21 +51,15 @@ describe('monitorUrlChanges', () => {
 
     expect(second).toBe(first);
 
-    // Ensure addEventListener only called once for popstate and hashchange
-    const popstateCalls = addEventListenerSpy.mock.calls.filter((c) => c[0] === 'popstate');
-    const hashchangeCalls = addEventListenerSpy.mock.calls.filter((c) => c[0] === 'hashchange');
-    expect(popstateCalls.length).toBe(1);
-    expect(hashchangeCalls.length).toBe(1);
+    const popstateCalls = addEventListenerSpy.mock.calls.filter((call) => call[0] === 'popstate');
+    const hashchangeCalls = addEventListenerSpy.mock.calls.filter((call) => call[0] === 'hashchange');
+    expect(popstateCalls).toHaveLength(1);
+    expect(hashchangeCalls).toHaveLength(1);
 
-    // Ensure pushState/replaceState were redefined once (spies see wrapper calls after redefinition)
     window.history.pushState({}, '', '/x');
     window.history.replaceState({}, '', '/y');
     expect(pushStateSpy).toHaveBeenCalled();
     expect(replaceStateSpy).toHaveBeenCalled();
-
-    addEventListenerSpy.mockRestore();
-    pushStateSpy.mockRestore();
-    replaceStateSpy.mockRestore();
   });
 
   describe('with Navigation API', () => {
@@ -78,27 +72,24 @@ describe('monitorUrlChanges', () => {
 
       const listeners: Record<string, Function[]> = { navigate: [] };
       (window as any).navigation = {
-        addEventListener: (type: string, cb: Function) => listeners[type]?.push(cb),
-        removeEventListener: (type: string, cb: Function) => {
-          const arr = listeners[type];
-          if (!arr) {
+        addEventListener: (type: string, callback: Function) => listeners[type]?.push(callback),
+        removeEventListener: (type: string, callback: Function) => {
+          const callbacks = listeners[type];
+          if (!callbacks) {
             return;
           }
-          const idx = arr.indexOf(cb);
-          if (idx >= 0) {
-            arr.splice(idx, 1);
+          const index = callbacks.indexOf(callback);
+          if (index >= 0) {
+            callbacks.splice(index, 1);
           }
         },
-        _dispatch: (type: string, ev: any) => listeners[type]?.forEach((cb) => cb(ev)),
+        _dispatch: (type: string, event: any) => listeners[type]?.forEach((callback) => callback(event)),
       };
 
       function FakeNavigateEvent(this: any, _type: string, init: any) {
         this.destination = init?.destination;
       }
-      (FakeNavigateEvent as any).prototype = {
-        intercept: jest.fn(),
-      };
-
+      (FakeNavigateEvent as any).prototype = { intercept: jest.fn() };
       (window as any).NavigateEvent = FakeNavigateEvent as any;
     });
 
@@ -127,27 +118,21 @@ describe('monitorUrlChanges', () => {
         to: initialHref + '#nav',
         trigger: 'navigate',
       });
-
-      // ensure history methods were not wrapped in this mode
-      const pushDesc = Object.getOwnPropertyDescriptor(window.history, 'pushState');
-      const replaceDesc = Object.getOwnPropertyDescriptor(window.history, 'replaceState');
-      expect(pushDesc?.value).toBeDefined();
-      expect(replaceDesc?.value).toBeDefined();
+      expect(Object.getOwnPropertyDescriptor(window.history, 'pushState')?.value).toBeDefined();
+      expect(Object.getOwnPropertyDescriptor(window.history, 'replaceState')?.value).toBeDefined();
     });
 
-    it('emits on intercept for cross-document navigations (soft navigation)', () => {
+    it('emits on intercept for cross-document navigations converted to soft navigation', () => {
       const initialHref = window.location.href;
       const observable = monitorUrlChanges();
       const subscriber = jest.fn();
       observable.subscribe(subscriber);
 
-      const ev = new (window as any).NavigateEvent('navigate', {
+      const event = new (window as any).NavigateEvent('navigate', {
         destination: { url: initialHref + '/soft', sameDocument: false },
       });
-      // make intercept permitted
-      (ev as any).canIntercept = true;
-      // call the wrapped intercept
-      (window as any).NavigateEvent.prototype.intercept.call(ev, {});
+      event.canIntercept = true;
+      (window as any).NavigateEvent.prototype.intercept.call(event, {});
 
       expect(subscriber).toHaveBeenCalledTimes(1);
       expect(subscriber).toHaveBeenCalledWith({

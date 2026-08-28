@@ -1,14 +1,46 @@
-import { BaseInstrumentation, clampSamplingRate, genShortID, VERSION } from '@grafana/faro-core';
+import {
+  BaseInstrumentation,
+  clampSamplingRate,
+  genShortID,
+  monitorUrlChanges,
+  type Subscription,
+  VERSION,
+} from '@grafana/faro-core';
 import { record, type recordOptions } from '@grafana/rrweb';
 import { EventType, type eventWithTime } from '@grafana/rrweb-types';
 
 import { defaultMaskInputFn, defaultReplayInstrumentationOptions } from './const';
+import { ReplayRecordingStateStore } from './recordingState';
 import type { ReplayInstrumentationOptions } from './types';
 
 const faroSessionReplayEventName = 'faro.session_recording.event';
 const faroSessionReplayStartedEventName = 'faro.session_recording.started';
 const faroSessionReplayPausedEventName = 'faro.session_recording.paused';
 const faroSessionReplayResumedEventName = 'faro.session_recording.resumed';
+const replayRecordingStorageKey = 'com.grafana.faro.replay.recording';
+
+interface ActiveRecordingHandoff {
+  sessionId: string;
+  recordingId: string;
+}
+
+const activeRecordingHandoffs = new WeakMap<Document, Map<string, ActiveRecordingHandoff>>();
+
+function rememberActiveRecordingHandoff(storageKey: string, handoff: ActiveRecordingHandoff): void {
+  let handoffs = activeRecordingHandoffs.get(document);
+  if (!handoffs) {
+    handoffs = new Map();
+    activeRecordingHandoffs.set(document, handoffs);
+  }
+  handoffs.set(storageKey, handoff);
+}
+
+function takeActiveRecordingHandoff(storageKey: string): ActiveRecordingHandoff | undefined {
+  const handoffs = activeRecordingHandoffs.get(document);
+  const handoff = handoffs?.get(storageKey);
+  handoffs?.delete(storageKey);
+  return handoff;
+}
 
 type RrwebEmit = (event: eventWithTime, isCheckout?: boolean) => void;
 
@@ -44,8 +76,50 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private isStarting: boolean = false;
   private pendingStart: boolean = false;
   private destroyed: boolean = false;
+  private pageHidden: boolean = false;
+  private recordingStateStore: ReplayRecordingStateStore | undefined;
+  private recordingStorageKey: string | undefined;
+  private urlChangeSubscription: Subscription | undefined;
   private readonly metasListener = (): void => {
     this.checkAndUpdateRecording(true);
+  };
+  private readonly pageHideListener = (): void => {
+    if (this.destroyed) {
+      return;
+    }
+
+    this.pageHidden = true;
+    if (this.recordingSessionId === null) {
+      return;
+    }
+
+    this.stopRecording();
+    this.recordingStateStore?.seal({
+      sessionId: this.recordingSessionId,
+      recordingId: this.recordingId,
+      nextSeq: this.seq,
+      gen: this.gen,
+    });
+  };
+  private readonly pageShowListener = (event: PageTransitionEvent): void => {
+    if (this.destroyed || !event.persisted || !this.pageHidden) {
+      return;
+    }
+
+    this.pageHidden = false;
+    this.recordingSessionId = null;
+    this.checkAndUpdateRecording(false);
+  };
+  private readonly urlChangeListener = (): void => {
+    if (!this.isRecording || this.isPaused || this.pageHidden) {
+      return;
+    }
+
+    try {
+      record.takeFullSnapshot();
+    } catch (err) {
+      this.logWarn('Failed to take a session replay checkpoint after navigation', err);
+    }
   };
 
   constructor(options: ReplayInstrumentationOptions = {}) {
@@ -61,15 +135,39 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   initialize(): void {
     this.destroyed = false;
+    this.pageHidden = false;
+    this.recordingStorageKey ??=
+      this.options.recordingStorageKey ?? `${replayRecordingStorageKey}:${this.config.globalObjectKey ?? 'faro'}`;
+    this.recordingStateStore ??= new ReplayRecordingStateStore(
+      this.getSessionStorage(),
+      this.recordingStorageKey,
+      genShortID(),
+      genShortID
+    );
 
     // Listen for session changes. Starts triggered from the listener are deferred out
     // of the call stack (see scheduleStartRecording).
     this.metas.addListener(this.metasListener);
+    window.addEventListener('pagehide', this.pageHideListener, { capture: true });
+    window.addEventListener('pageshow', this.pageShowListener, { capture: true });
+    this.urlChangeSubscription = monitorUrlChanges().subscribe(this.urlChangeListener);
 
     this.checkAndUpdateRecording(false);
   }
 
+  private getSessionStorage(): Storage | undefined {
+    try {
+      return typeof window === 'undefined' ? undefined : window.sessionStorage;
+    } catch {
+      return undefined;
+    }
+  }
+
   private checkAndUpdateRecording(deferStart: boolean): void {
+    if (this.pageHidden) {
+      return;
+    }
+
     // A notification can arrive synchronously while rrweb's record() is still executing,
     // before the stop function is installed. Reconcile once the current call stack has
     // finished so the start attempt can finish setting up its state.
@@ -308,12 +406,22 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   private startRecording(sessionId: string): void {
     try {
-      // Mint a fresh delivery identity for every rrweb start except the inactivity
-      // pause-resume, which continues the current recording (see resumeRecording).
-      this.recordingId = genShortID();
-      this.gen = -1;
-      this.seq = 0;
-      this.recordingSessionId = sessionId;
+      if (this.recordingSessionId !== sessionId) {
+        const handoff = this.recordingStorageKey ? takeActiveRecordingHandoff(this.recordingStorageKey) : undefined;
+        const state = this.recordingStateStore?.claim(
+          sessionId,
+          handoff?.sessionId === sessionId ? handoff.recordingId : undefined
+        ) ?? {
+          sessionId,
+          recordingId: genShortID(),
+          nextSeq: 0,
+          gen: -1,
+        };
+        this.recordingId = state.recordingId;
+        this.gen = state.gen;
+        this.seq = state.nextSeq;
+        this.recordingSessionId = state.sessionId;
+      }
 
       if (!this.startRrweb(faroSessionReplayStartedEventName)) {
         // Not marked as recording, so a later session notification can retry.
@@ -496,6 +604,22 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   destroy(): void {
     this.destroyed = true;
     this.metas.removeListener?.(this.metasListener);
+    window.removeEventListener('pagehide', this.pageHideListener, { capture: true });
+    window.removeEventListener('pageshow', this.pageShowListener, { capture: true });
+    this.urlChangeSubscription?.unsubscribe();
+    this.urlChangeSubscription = undefined;
     this.stopRecording();
+    if (this.recordingSessionId !== null) {
+      const state = {
+        sessionId: this.recordingSessionId,
+        recordingId: this.recordingId,
+        nextSeq: this.seq,
+        gen: this.gen,
+      };
+      if (this.recordingStateStore?.checkpoint(state) && this.recordingStorageKey) {
+        rememberActiveRecordingHandoff(this.recordingStorageKey, state);
+      }
+      this.recordingSessionId = null;
+    }
   }
 }

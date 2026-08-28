@@ -139,6 +139,8 @@ export {
   isTypeof,
   isUndefined,
   LogLevel,
+  MESSAGE_TYPE_URL_CHANGE,
+  monitorUrlChanges,
   noop,
   dateNow,
   monoNow,
@@ -158,6 +160,7 @@ export type {
   PromiseBufferOptions,
   PromiseProducer,
   Subscription,
+  UrlChangeMessage,
 } from './utils';
 
 export { VERSION } from './version';

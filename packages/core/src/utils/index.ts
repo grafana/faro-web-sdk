@@ -56,3 +56,6 @@ export { getCircularDependencyReplacer, stringifyExternalJson, stringifyObjectVa
 
 export { Observable } from './reactive';
 export type { Subscription } from './reactive';
+
+export { MESSAGE_TYPE_URL_CHANGE, monitorUrlChanges } from './urlChangeMonitor';
+export type { UrlChangeMessage } from './urlChangeMonitor';
