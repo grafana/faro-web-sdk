@@ -42,7 +42,7 @@ function takeActiveRecordingHandoff(storageKey: string): ActiveRecordingHandoff 
   return handoff;
 }
 
-type RrwebEmit = (event: eventWithTime, isCheckout?: boolean) => void;
+type RrwebEmit = (event: eventWithTime) => void;
 
 // DOM events that signal a human is present.  Aligned with rrweb's
 // IncrementalSource 1-5 (MouseMove, MouseInteraction, Scroll,
@@ -291,9 +291,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.logDebug('Session replay stopped');
   }
 
-  private buildRecordOptions(
-    emit: RrwebEmit = (event, isCheckout) => this.handleEvent(event, isCheckout)
-  ): recordOptions<eventWithTime> {
+  private buildRecordOptions(emit: RrwebEmit): recordOptions<eventWithTime> {
     return {
       emit,
       checkoutEveryNms: 300_000, // 5 minutes
@@ -317,7 +315,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   private startRrweb(lifecycleEventName: string): boolean {
-    const bufferedEvents: Array<[event: eventWithTime, isCheckout?: boolean]> = [];
+    const bufferedEvents: eventWithTime[] = [];
     const attempt: { phase: 'buffering' | 'active' | 'discarded' } = { phase: 'buffering' };
     const wasRecording = this.isRecording;
     const wasPaused = this.isPaused;
@@ -330,11 +328,11 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     let stop: (() => void) | undefined;
     try {
       stop = record(
-        this.buildRecordOptions((event, isCheckout) => {
+        this.buildRecordOptions((event) => {
           if (attempt.phase === 'buffering') {
-            bufferedEvents.push([event, isCheckout]);
+            bufferedEvents.push(event);
           } else if (attempt.phase === 'active') {
-            this.handleEvent(event, isCheckout);
+            this.handleEvent(event);
           }
         })
       );
@@ -365,12 +363,12 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     try {
       this.api.pushEvent(lifecycleEventName, { recording_id: recordingId });
 
-      for (const [event, isCheckout] of bufferedEvents) {
+      for (const event of bufferedEvents) {
         if (!isCurrentAttempt()) {
           discardAttempt();
           return true;
         }
-        this.handleEvent(event, isCheckout);
+        this.handleEvent(event);
       }
 
       if (!isCurrentAttempt()) {
@@ -562,7 +560,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private handleEvent(event: eventWithTime, _isCheckout?: boolean): void {
+  private handleEvent(event: eventWithTime): void {
     try {
       this.sanitizeMetaHref(event);
 

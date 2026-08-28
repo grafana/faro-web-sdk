@@ -47,20 +47,14 @@ export class ReplayRecordingStateStore {
   }
 
   checkpoint(state: ReplayRecordingState): boolean {
-    const persisted = this.read();
-    if (
-      persisted?.handoff !== 'active' ||
-      persisted.documentId !== this.documentId ||
-      persisted.sessionId !== state.sessionId ||
-      persisted.recordingId !== state.recordingId
-    ) {
-      return false;
-    }
-
-    return this.write({ ...state, handoff: 'active', documentId: this.documentId });
+    return this.transition(state, 'active');
   }
 
   seal(state: ReplayRecordingState): boolean {
+    return this.transition(state, 'clean');
+  }
+
+  private transition(state: ReplayRecordingState, handoff: PersistedReplayRecordingState['handoff']): boolean {
     const persisted = this.read();
     if (
       persisted?.handoff !== 'active' ||
@@ -71,7 +65,7 @@ export class ReplayRecordingStateStore {
       return false;
     }
 
-    return this.write({ ...state, handoff: 'clean', documentId: this.documentId });
+    return this.write({ ...state, handoff, documentId: this.documentId });
   }
 
   private read(): PersistedReplayRecordingState | undefined {
