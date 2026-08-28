@@ -117,7 +117,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.destroyed = false;
     this.pageHidden = false;
     this.recordingStorageKey = `${replayRecordingStorageKey}:${this.config.globalObjectKey}`;
-    this.recordingStateStore ??= new ReplayRecordingStateStore(
+    this.recordingStateStore = new ReplayRecordingStateStore(
       this.getSessionStorage(),
       this.recordingStorageKey,
       genShortID(),
