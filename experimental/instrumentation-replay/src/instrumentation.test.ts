@@ -1622,8 +1622,8 @@ describe('ReplayInstrumentation', () => {
 
     it('should continue recording identity when the instance is replaced in the same document', () => {
       window.sessionStorage.clear();
-      const recordingStorageKey = 'test-replay-replacement-state';
-      const firstInstrumentation = initSampled({ recordingStorageKey }, 'session-a');
+      const firstInstrumentation = initSampled({}, 'session-a');
+      const recordingStorageKey = firstInstrumentation['recordingStorageKey'];
       emitCallback(metaEvent());
       emitCallback(incrementalEvent());
       const recordingId = replayAttributes()[0]!['recording_id'];
@@ -1633,7 +1633,7 @@ describe('ReplayInstrumentation', () => {
         expect.objectContaining({ handoff: 'active' })
       );
       mockPushEvent.mockClear();
-      instrumentation = initSampled({ recordingStorageKey }, 'session-a');
+      instrumentation = initSampled({}, 'session-a');
       emitCallback(metaEvent());
 
       expect(replayAttributes()).toEqual([expect.objectContaining({ recording_id: recordingId, gen: '1', seq: '2' })]);

@@ -128,14 +128,6 @@ export interface ReplayInstrumentationOptions {
    * @default 1
    */
   samplingRate?: number;
-
-  /**
-   * Session-storage key used to continue recording identity across full-page navigation.
-   * Set a distinct key for isolated Faro instances that share the same globalObjectKey.
-   *
-   * @default `com.grafana.faro.replay.recording:<globalObjectKey>`
-   */
-  recordingStorageKey?: string;
 }
 
 export type MaskInputOptions = Partial<{

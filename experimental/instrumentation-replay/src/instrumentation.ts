@@ -71,7 +71,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private destroyed: boolean = false;
   private pageHidden: boolean = false;
   private recordingStateStore: ReplayRecordingStateStore | undefined;
-  private recordingStorageKey: string | undefined;
+  private recordingStorageKey!: string;
   private readonly metasListener = (): void => {
     this.checkAndUpdateRecording(true);
   };
@@ -116,8 +116,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   initialize(): void {
     this.destroyed = false;
     this.pageHidden = false;
-    this.recordingStorageKey ??=
-      this.options.recordingStorageKey ?? `${replayRecordingStorageKey}:${this.config.globalObjectKey ?? 'faro'}`;
+    this.recordingStorageKey = `${replayRecordingStorageKey}:${this.config.globalObjectKey}`;
     this.recordingStateStore ??= new ReplayRecordingStateStore(
       this.getSessionStorage(),
       this.recordingStorageKey,
@@ -384,7 +383,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private startRecording(sessionId: string): void {
     try {
       if (this.recordingSessionId !== sessionId) {
-        const handoff = this.recordingStorageKey ? takeActiveRecordingHandoff(this.recordingStorageKey) : undefined;
+        const handoff = takeActiveRecordingHandoff(this.recordingStorageKey);
         const state = this.recordingStateStore?.claim(
           sessionId,
           handoff?.sessionId === sessionId ? handoff.recordingId : undefined
@@ -591,7 +590,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
         nextSeq: this.seq,
         gen: this.gen,
       };
-      if (this.recordingStateStore?.checkpoint(state) && this.recordingStorageKey) {
+      if (this.recordingStateStore?.checkpoint(state)) {
         rememberActiveRecordingHandoff(this.recordingStorageKey, state);
       }
       this.recordingSessionId = null;

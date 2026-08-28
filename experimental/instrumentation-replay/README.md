@@ -68,17 +68,16 @@ initializeFaro({
 
 ### Recording Options
 
-| Key                        | Type                           | Default  | Description                                                                                                                                                 |
-| -------------------------- | ------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `samplingRate`             | `number`                       | `1`      | Fraction of globally-sampled sessions that will be recorded. Applied on top of `sessionTracking.samplingRate`. Out-of-range values are clamped.             |
-| `recordingStorageKey`      | `string`                       | derived  | Session-storage key used to continue recording identity across page navigation. Set a unique key for isolated Faro instances sharing one `globalObjectKey`. |
-| `recordAfter`              | `'load' \| 'DOMContentLoaded'` | `'load'` | When to start recording if the document is not ready yet                                                                                                    |
-| `recordCrossOriginIframes` | `boolean`                      | `false`  | Whether to record cross-origin iframes. rrweb must be injected in each child iframe for this to work                                                        |
-| `recordCanvas`             | `boolean`                      | `false`  | Whether to record canvas element content                                                                                                                    |
-| `collectFonts`             | `boolean`                      | `false`  | Whether to collect fonts used in the website                                                                                                                |
-| `inlineImages`             | `boolean`                      | `false`  | Whether to record image content                                                                                                                             |
-| `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                                                                       |
-| `inactivityThresholdMs`    | `number`                       | `60000`  | Pause recording after this many milliseconds of inactivity; resumes automatically on the next interaction. Set to `0` to disable                            |
+| Key                        | Type                           | Default  | Description                                                                                                                                     |
+| -------------------------- | ------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `samplingRate`             | `number`                       | `1`      | Fraction of globally-sampled sessions that will be recorded. Applied on top of `sessionTracking.samplingRate`. Out-of-range values are clamped. |
+| `recordAfter`              | `'load' \| 'DOMContentLoaded'` | `'load'` | When to start recording if the document is not ready yet                                                                                        |
+| `recordCrossOriginIframes` | `boolean`                      | `false`  | Whether to record cross-origin iframes. rrweb must be injected in each child iframe for this to work                                            |
+| `recordCanvas`             | `boolean`                      | `false`  | Whether to record canvas element content                                                                                                        |
+| `collectFonts`             | `boolean`                      | `false`  | Whether to collect fonts used in the website                                                                                                    |
+| `inlineImages`             | `boolean`                      | `false`  | Whether to record image content                                                                                                                 |
+| `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                                                           |
+| `inactivityThresholdMs`    | `number`                       | `60000`  | Pause recording after this many milliseconds of inactivity; resumes automatically on the next interaction. Set to `0` to disable                |
 
 #### Sub-sampling example
 
