@@ -218,5 +218,57 @@ describe('BatchExecutor', () => {
       expect(mockSendFunction).toHaveBeenCalledTimes(2);
       expect(mockSendFunction.mock.calls[1]![0]).toEqual([item2]);
     });
+
+    it('retries buffered signals after synchronous dispatch fails', () => {
+      const item = generateTransportItem();
+      const dispatchError = new Error('dispatch failed');
+      const mockSendFunction = jest.fn().mockImplementationOnce(() => {
+        throw dispatchError;
+      });
+      const be = new BatchExecutor(mockSendFunction, {
+        sendTimeout: 1000,
+      });
+
+      be.addItem(item);
+
+      expect(() => jest.advanceTimersByTime(1000)).toThrow(dispatchError);
+      expect(mockSendFunction).toHaveBeenCalledTimes(1);
+
+      jest.advanceTimersByTime(1000);
+
+      expect(mockSendFunction).toHaveBeenCalledTimes(2);
+      expect(mockSendFunction.mock.calls[1]![0]).toEqual([item]);
+    });
+
+    it('preserves signals added during a failed flush', () => {
+      const bufferedItem = generateTransportItem();
+      const reentrantItem = {
+        ...generateTransportItem(),
+        meta: {
+          sdk: {
+            name: 'reentrant-sdk',
+          },
+        },
+      };
+      const dispatchError = new Error('dispatch failed');
+      let be: BatchExecutor;
+      const mockSendFunction = jest.fn().mockImplementationOnce(() => {
+        be.addItem(reentrantItem);
+        throw dispatchError;
+      });
+      be = new BatchExecutor(mockSendFunction, {
+        sendTimeout: 1000,
+      });
+
+      be.addItem(bufferedItem);
+
+      expect(() => jest.advanceTimersByTime(1000)).toThrow(dispatchError);
+
+      jest.advanceTimersByTime(1000);
+
+      expect(mockSendFunction).toHaveBeenCalledTimes(3);
+      expect(mockSendFunction.mock.calls[1]![0]).toEqual([bufferedItem]);
+      expect(mockSendFunction.mock.calls[2]![0]).toEqual([reentrantItem]);
+    });
   });
 });

@@ -84,7 +84,12 @@ export class BatchExecutor {
     const snapshot = this.signalBuffer;
     this.signalBuffer = [];
 
-    const itemGroups = this.groupItems(snapshot);
-    itemGroups.forEach(this.sendFn);
+    try {
+      const itemGroups = this.groupItems(snapshot);
+      itemGroups.forEach(this.sendFn);
+    } catch (error) {
+      this.signalBuffer = [...snapshot, ...this.signalBuffer];
+      throw error;
+    }
   }
 }
