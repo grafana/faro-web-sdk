@@ -189,5 +189,34 @@ describe('BatchExecutor', () => {
       jest.advanceTimersByTime(2);
       expect(mockSendFunction).toHaveBeenCalledTimes(2);
     });
+
+    it('does not discard signals added during flush', () => {
+      const item1 = generateTransportItem();
+      const item2 = generateTransportItem();
+
+      let addedDuringFlush = false;
+      let be: BatchExecutor;
+      const mockSendFunction = jest.fn().mockImplementation(() => {
+        if (!addedDuringFlush) {
+          addedDuringFlush = true;
+          be.addItem(item2);
+        }
+      });
+
+      be = new BatchExecutor(mockSendFunction, {
+        sendTimeout: 1000,
+      });
+
+      be.addItem(item1);
+      jest.advanceTimersByTime(1000);
+
+      expect(mockSendFunction).toHaveBeenCalledTimes(1);
+      expect(mockSendFunction.mock.calls[0]![0]).toEqual([item1]);
+
+      jest.advanceTimersByTime(1000);
+
+      expect(mockSendFunction).toHaveBeenCalledTimes(2);
+      expect(mockSendFunction.mock.calls[1]![0]).toEqual([item2]);
+    });
   });
 });
