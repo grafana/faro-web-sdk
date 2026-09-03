@@ -529,6 +529,45 @@ describe('FetchTransport', () => {
     expect(mockGetUserSessionUpdater).toHaveBeenCalledTimes(1);
   });
 
+  it('coalesces session rotation when concurrent batches receive collector invalidation for the same stale session', async () => {
+    fetch.mockImplementation(() =>
+      Promise.resolve({
+        status: 202,
+        headers: {
+          get: (name: string) => ({ 'X-Faro-Session-Status': 'invalid' })[name],
+        },
+        text: () => Promise.resolve(),
+      })
+    );
+
+    const mockUpdateSession = jest.fn();
+    jest.spyOn(sessionManagerUtilsMock, 'getUserSessionUpdater').mockImplementation(() => mockUpdateSession);
+
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      concurrency: 5,
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+    transport.logDebug = transport.logDebug.bind(transport);
+    transport.config = mockConfig({
+      sessionTracking: {
+        enabled: true,
+        persistent: false,
+      },
+    });
+
+    mockUpdateSession.mockImplementation(() => {
+      transport.metas.value = { session: { id: 'new-session-id' } };
+    });
+
+    await Promise.all(Array.from({ length: 5 }, () => transport.send([item])));
+
+    expect(mockUpdateSession).toHaveBeenCalledTimes(1);
+    expect(mockUpdateSession).toHaveBeenCalledWith({ forceSessionExtend: true });
+  });
+
   it('does not create a new faro session for standard collector responses', async () => {
     const mockGetUserSessionUpdater = jest.fn();
     jest.spyOn(sessionManagerUtilsMock, 'getUserSessionUpdater').mockImplementationOnce(mockGetUserSessionUpdater);
