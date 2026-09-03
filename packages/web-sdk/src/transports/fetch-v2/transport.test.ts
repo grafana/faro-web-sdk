@@ -1,6 +1,8 @@
 import { getTransportBody, LogLevel, TransportItemType } from '@grafana/faro-core';
 import type { LogEvent, TransportItem } from '@grafana/faro-core';
-import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
+import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
+
+import * as sessionManagerUtilsMock from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 
 import { FetchTransport } from './transport';
 import type { FetchTransportOptions } from './types';
@@ -26,6 +28,8 @@ Object.assign(globalThis, {
   CompressionStream: globalThis.CompressionStream ?? NodeCompressionStream,
 });
 
+const mockSessionId = 'session-123';
+
 const item: TransportItem<LogEvent> = {
   type: TransportItemType.LOG,
   payload: {
@@ -34,8 +38,18 @@ const item: TransportItem<LogEvent> = {
     message: 'hello',
     timestamp: new Date(0).toISOString(),
   },
-  meta: {},
+  meta: {
+    session: { id: mockSessionId },
+  },
 };
+
+const invalidSessionResponse = (): TestResponse => ({
+  status: 202,
+  headers: {
+    get: (name) => (name === 'X-Faro-Session-Status' ? 'invalid' : undefined),
+  },
+  text: async () => undefined,
+});
 
 const response = (status: number, retryAfter?: string): TestResponse => ({
   status,
@@ -533,5 +547,52 @@ describe('reliable FetchTransport', () => {
     expect(fetchMock.mock.calls[0]![1]).toEqual(
       expect.objectContaining({ body: JSON.stringify(getTransportBody([item])), method: 'POST' })
     );
+  });
+
+  describe('collector session invalidation', () => {
+    const setupTransportWithSessionTracking = (options: Omit<FetchTransportOptions, 'url'> = {}) => {
+      const { transport, internalLogger } = createTransport(options);
+      transport.metas.value = { session: { id: mockSessionId } };
+      transport.logDebug = transport.logDebug.bind(transport);
+      transport.config = mockConfig({
+        sessionTracking: {
+          enabled: true,
+          persistent: false,
+        },
+      });
+
+      return { transport, internalLogger };
+    };
+
+    it('creates a new faro session when the collector invalidates the current session', async () => {
+      fetchMock.mockResolvedValueOnce(invalidSessionResponse());
+
+      const mockGetUserSessionUpdater = jest.fn(() => jest.fn());
+      jest.spyOn(sessionManagerUtilsMock, 'getUserSessionUpdater').mockImplementationOnce(mockGetUserSessionUpdater);
+
+      const { transport } = setupTransportWithSessionTracking();
+
+      await transport.send([item]);
+
+      expect(mockGetUserSessionUpdater).toHaveBeenCalledTimes(1);
+    });
+
+    it('coalesces session rotation when concurrent batches receive collector invalidation for the same stale session', async () => {
+      fetchMock.mockImplementation(() => Promise.resolve(invalidSessionResponse()));
+
+      const mockUpdateSession = jest.fn();
+      jest.spyOn(sessionManagerUtilsMock, 'getUserSessionUpdater').mockImplementation(() => mockUpdateSession);
+
+      const { transport } = setupTransportWithSessionTracking({ concurrency: 5 });
+
+      mockUpdateSession.mockImplementation(() => {
+        transport.metas.value = { session: { id: 'new-session-id' } };
+      });
+
+      await Promise.all(Array.from({ length: 5 }, () => transport.send([item])));
+
+      expect(mockUpdateSession).toHaveBeenCalledTimes(1);
+      expect(mockUpdateSession).toHaveBeenCalledWith({ forceSessionExtend: true });
+    });
   });
 });
