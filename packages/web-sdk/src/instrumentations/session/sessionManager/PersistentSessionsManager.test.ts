@@ -56,7 +56,7 @@ describe('Persistent Sessions Manager.', () => {
     setItemSpy.mockRestore();
   });
 
-  it('Updates last active timestamp for valid session.', () => {
+  it('Refreshes valid sessions only when activity is recorded, not when expiry is checked.', () => {
     const mockIsSampled = jest.fn();
     jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
 
@@ -69,14 +69,15 @@ describe('Persistent Sessions Manager.', () => {
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
 
-    const { updateSession } = new PersistentSessionsManager();
+    const { updateSession, recordActivity } = new PersistentSessionsManager();
 
-    const nextActivityTimeAfterFiveSeconds = fakeSystemTime;
+    const nextActivityTimeAfterFiveSeconds = fakeSystemTime + 5000;
     jest.setSystemTime(nextActivityTimeAfterFiveSeconds);
 
     updateSession();
 
-    expect(setItemSpy).toHaveBeenCalledTimes(1); // called on time in the init function and the in the onActivity func
+    expect(JSON.parse(mockStorage[STORAGE_KEY]).lastActivity).toBe(fakeSystemTime);
+    recordActivity(mockInitialSessionId);
     expect(mockStorage[STORAGE_KEY]).toBe(
       JSON.stringify({
         sessionId: mockInitialSessionId,
@@ -85,6 +86,27 @@ describe('Persistent Sessions Manager.', () => {
         isSampled: true,
       })
     );
+  });
+
+  it('Refreshes activity when the tab becomes visible without a telemetry event.', () => {
+    mockStorage[STORAGE_KEY] = JSON.stringify({
+      sessionId: mockInitialSessionId,
+      lastActivity: fakeSystemTime,
+      started: fakeSystemTime,
+      isSampled: true,
+    });
+    new PersistentSessionsManager();
+    jest.setSystemTime(fakeSystemTime + 10_000);
+    const visibility = jest.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    try {
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(JSON.parse(mockStorage[STORAGE_KEY])).toMatchObject({
+        sessionId: mockInitialSessionId,
+        lastActivity: fakeSystemTime + 10_000,
+      });
+    } finally {
+      visibility.mockRestore();
+    }
   });
 
   it('Creates a new Faro user session if (old) session if max inactivity duration is reached.', () => {

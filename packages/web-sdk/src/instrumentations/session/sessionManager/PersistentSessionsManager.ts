@@ -4,12 +4,17 @@ import type { MetaSession } from '@grafana/faro-core';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
-import { getSessionMetaUpdateHandler, getUserSessionUpdater } from './sessionManagerUtils';
+import {
+  getSessionMetaUpdateHandler,
+  getUserSessionActivityRecorder,
+  getUserSessionUpdater,
+} from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
 export class PersistentSessionsManager {
   private static storageTypeLocal = webStorageType.local;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
+  private recordUserSessionActivity: (sessionId: string) => void;
 
   // Set only for the synchronous span of an adopting setSession(); the session
   // instrumentation reads isAdopting() to suppress its lifecycle event.
@@ -31,6 +36,11 @@ export class PersistentSessionsManager {
       fetchUserSession: PersistentSessionsManager.fetchUserSession,
       storeUserSession: PersistentSessionsManager.storeUserSession,
       adoptSession: this.adoptSession,
+      updateInterval: STORAGE_UPDATE_DELAY,
+    });
+    this.recordUserSessionActivity = getUserSessionActivityRecorder({
+      fetchUserSession: PersistentSessionsManager.fetchUserSession,
+      storeUserSession: PersistentSessionsManager.storeUserSession,
       updateInterval: STORAGE_UPDATE_DELAY,
     });
 
@@ -55,12 +65,18 @@ export class PersistentSessionsManager {
     return null;
   }
 
-  updateSession = (): void => this.updateUserSession();
+  updateSession = (): void => this.updateUserSession({ refreshActivity: false });
+
+  recordActivity = (sessionId: string): void => this.recordUserSessionActivity(sessionId);
 
   private init(): void {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.updateSession();
+        const sessionId = faro.api?.getSession()?.id;
+        if (sessionId) {
+          this.recordActivity(sessionId);
+        }
       }
     });
 

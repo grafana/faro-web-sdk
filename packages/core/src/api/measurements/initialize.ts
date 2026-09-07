@@ -39,35 +39,41 @@ export function initializeMeasurementsAPI({
     try {
       const ctx = stringifyObjectValues(context);
 
-      const item: TransportItem<MeasurementEvent> = {
-        type: TransportItemType.MEASUREMENT,
-        payload: {
-          ...payload,
-          trace: spanContext
-            ? {
-                trace_id: spanContext.traceId,
-                span_id: spanContext.spanId,
-              }
-            : tracesApi.getTraceContext(),
-          timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
-          context: isEmpty(ctx) ? undefined : ctx,
-        },
-        meta: metas.capture(),
+      const measurement: MeasurementEvent = {
+        ...payload,
+        trace: spanContext
+          ? {
+              trace_id: spanContext.traceId,
+              span_id: spanContext.spanId,
+            }
+          : tracesApi.getTraceContext(),
+        timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
+        context: isEmpty(ctx) ? undefined : ctx,
       };
 
       const testingPayload = {
-        type: item.payload.type,
-        values: item.payload.values,
-        context: item.payload.context,
+        type: measurement.type,
+        values: measurement.values,
+        context: measurement.context,
       };
 
       if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
-        internalLogger.debug('Skipping measurement push because it is the same as the last one\n', item.payload);
+        internalLogger.debug('Skipping measurement push because it is the same as the last one\n', measurement);
 
         return;
       }
 
+      const previousPayload = lastPayload;
+      const meta = metas.capture();
+      if (lastPayload !== previousPayload && !skipDedupe && config.dedupe && deepEqual(testingPayload, lastPayload)) {
+        return;
+      }
       lastPayload = testingPayload;
+      const item: TransportItem<MeasurementEvent> = {
+        type: TransportItemType.MEASUREMENT,
+        payload: measurement,
+        meta,
+      };
 
       internalLogger.debug('Pushing measurement\n', item);
 

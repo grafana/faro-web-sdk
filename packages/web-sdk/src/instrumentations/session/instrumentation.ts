@@ -130,8 +130,14 @@ export class SessionInstrumentation extends BaseInstrumentation {
     return { initialSession, lifecycleType };
   }
 
-  private registerBeforeSendHook() {
+  private registerBeforeSendHook(recordActivity: (sessionId: string) => void) {
     this.transports?.addBeforeSendHooks((item) => {
+      // config.beforeSend runs before this hook. Sampling and hooks added later
+      // retain their existing order and do not undo session activity.
+      const sessionId = item.meta.session?.id;
+      if (sessionId && !this.transports.isPaused()) {
+        recordActivity(sessionId);
+      }
       // Delivery filters using the captured session's sampling decision. It must
       // never rotate or reassign an item that already belongs to a session.
       const attributes = item.meta.session?.attributes;
@@ -163,7 +169,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       const sessionManager = new SessionManager();
       this.isAdoptingSession = sessionManager.isAdopting;
-      this.registerBeforeSendHook();
+      this.registerBeforeSendHook(sessionManager.recordActivity);
 
       const { initialSession, lifecycleType } = this.createInitialSession(SessionManager, sessionTrackingConfig);
 
@@ -173,7 +179,11 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       this.notifiedSession = initialSessionMeta;
       this.api.setSession(initialSessionMeta);
-      this.captureListener = sessionManager.updateSession;
+      this.captureListener = () => {
+        if (!this.transports.isPaused()) {
+          sessionManager.updateSession();
+        }
+      };
       this.metas.addCaptureListener(this.captureListener);
 
       if (lifecycleType === EVENT_SESSION_START) {

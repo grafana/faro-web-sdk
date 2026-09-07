@@ -3,12 +3,17 @@ import { faro, stringifyExternalJson } from '@grafana/faro-core';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
-import { getSessionMetaUpdateHandler, getUserSessionUpdater } from './sessionManagerUtils';
+import {
+  getSessionMetaUpdateHandler,
+  getUserSessionActivityRecorder,
+  getUserSessionUpdater,
+} from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
 export class VolatileSessionsManager {
   private static storageTypeSession = webStorageType.session;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
+  private recordUserSessionActivity: (sessionId: string) => void;
 
   // sessionStorage is tab-local, so this manager never adopts another tab's
   // session. Stubbed so the instrumentation can treat both managers uniformly.
@@ -16,6 +21,11 @@ export class VolatileSessionsManager {
 
   constructor() {
     this.updateUserSession = getUserSessionUpdater({
+      fetchUserSession: VolatileSessionsManager.fetchUserSession,
+      storeUserSession: VolatileSessionsManager.storeUserSession,
+      updateInterval: STORAGE_UPDATE_DELAY,
+    });
+    this.recordUserSessionActivity = getUserSessionActivityRecorder({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
       storeUserSession: VolatileSessionsManager.storeUserSession,
       updateInterval: STORAGE_UPDATE_DELAY,
@@ -42,12 +52,18 @@ export class VolatileSessionsManager {
     return null;
   }
 
-  updateSession = (): void => this.updateUserSession();
+  updateSession = (): void => this.updateUserSession({ refreshActivity: false });
+
+  recordActivity = (sessionId: string): void => this.recordUserSessionActivity(sessionId);
 
   private init(): void {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.updateSession();
+        const sessionId = faro.api?.getSession()?.id;
+        if (sessionId) {
+          this.recordActivity(sessionId);
+        }
       }
     });
 
