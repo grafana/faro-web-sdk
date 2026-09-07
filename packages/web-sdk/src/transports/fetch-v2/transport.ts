@@ -133,8 +133,8 @@ export class FetchTransport extends BaseTransport {
     // Async headers and compression can outlive a session. Bind both the header
     // and its response handling to the payload, not the current session.
     const transportBody = getTransportBody(items);
-    const jsonBody = JSON.stringify(transportBody);
     const sessionId = transportBody.meta.session?.id;
+    const jsonBody = JSON.stringify(transportBody);
 
     const { headers = {}, ...requestOptions } = this.options.requestOptions ?? {};
     const { keepalive: _keepalive, signal: _signal, ...requestOptionsWithoutManagedFields } = requestOptions;

@@ -615,6 +615,25 @@ describe('reliable FetchTransport', () => {
       expect(JSON.parse(init.body as string).meta.session.id).toBe('A');
     });
 
+    it('captures the session id before payload serialization can mutate metadata', async () => {
+      const { transport } = createTransport();
+      const outgoing = itemWithSession('A');
+      const payload = {
+        ...outgoing.payload,
+        toJSON: () => {
+          outgoing.meta.session!.id = 'B';
+          return item.payload;
+        },
+      };
+      outgoing.payload = payload;
+
+      await transport.send([outgoing]);
+
+      const [, init] = fetchMock.mock.calls[0]!;
+      expect(JSON.parse(init.body as string).meta.session.id).toBe('A');
+      expect((init.headers as Record<string, string>)['x-faro-session-id']).toBe('A');
+    });
+
     it('preserves the same body and x-faro-session-id header across retries even if the session rotates mid-flight', async () => {
       fetchMock.mockResolvedValueOnce(response(503)).mockResolvedValueOnce(response(202));
       const { transport } = createTransport({ retry: { initialBackoffMs: 1000 } });
