@@ -6,6 +6,16 @@ data once it has been collected by the instrumentations and processed by the int
 The core library does not provide any transports out of the box. They are either provided by wrapper packages like
 `web-sdk` or by the user.
 
+## Fetch-v2 session identity
+
+With `experimental.fetchTransportV2: true`, each request's `X-Faro-Session-Id` header identifies
+the session in its payload. Async header resolution, compression, queueing, and retries do not
+replace that identity with the current session.
+
+A collector `202` response with `X-Faro-Session-Status: invalid` renews the session only if the
+request's session is still current in memory and storage. Delayed responses cannot renew a newer
+session, including one another tab has established. This guarantee does not apply to legacy `fetch`.
+
 ## Transports SDK
 
 The transports SDK is the internal handler for the transports component. It is responsible for keeping track of the

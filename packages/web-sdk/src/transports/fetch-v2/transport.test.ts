@@ -1,6 +1,13 @@
-import { getTransportBody, LogLevel, TransportItemType } from '@grafana/faro-core';
+import { getTransportBody, initializeFaro, LogLevel, TransportItemType } from '@grafana/faro-core';
 import type { LogEvent, TransportItem } from '@grafana/faro-core';
-import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
+import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
+
+import {
+  PersistentSessionsManager,
+  STORAGE_KEY,
+  VolatileSessionsManager,
+} from '../../instrumentations/session/sessionManager';
+import type { FaroUserSession } from '../../instrumentations/session/sessionManager';
 
 import { FetchTransport } from './transport';
 import type { FetchTransportOptions } from './types';
@@ -533,5 +540,183 @@ describe('reliable FetchTransport', () => {
     expect(fetchMock.mock.calls[0]![1]).toEqual(
       expect.objectContaining({ body: JSON.stringify(getTransportBody([item])), method: 'POST' })
     );
+  });
+
+  describe('session identity and invalidation handling', () => {
+    let mockStorage: Record<string, string> = {};
+
+    beforeEach(() => {
+      mockStorage = {};
+      jest.spyOn(global.Storage.prototype, 'setItem').mockImplementation((key, value) => {
+        mockStorage[key] = value;
+      });
+      jest.spyOn(global.Storage.prototype, 'getItem').mockImplementation((key) => mockStorage[key] ?? null);
+    });
+
+    const itemWithSession = (sessionId: string): TransportItem<LogEvent> => ({
+      ...item,
+      meta: { session: { id: sessionId } },
+    });
+
+    const sessionInvalidResponse = (): TestResponse => ({
+      status: 202,
+      headers: { get: (name) => (name === 'X-Faro-Session-Status' ? 'invalid' : undefined) },
+      text: async () => undefined,
+    });
+
+    const storedSession = (sessionId: string): FaroUserSession => ({
+      sessionId,
+      started: Date.now(),
+      lastActivity: Date.now(),
+      isSampled: true,
+    });
+
+    // Wires the transport into a real, isolated Faro instance so the invalidation guard's
+    // "current in-memory session" and the session updater's global lookups agree.
+    const setupFaroBackedTransport = (persistent = false) => {
+      const faro = initializeFaro(mockConfig({ sessionTracking: { enabled: true, persistent } }));
+      const { transport, internalLogger } = createTransport();
+      transport.config = faro.config;
+      transport.metas = faro.metas;
+      return { faro, transport, internalLogger };
+    };
+
+    it('derives the header session id from the same payload snapshot as the body, unaffected by async header rotation', async () => {
+      const { transport } = createTransport({
+        requestOptions: {
+          headers: {
+            Authorization: async () => {
+              // A session rotation that happens while an async header resolves must not leak
+              // into a request whose identity was already captured.
+              transport.metas.value = { session: { id: 'rotated-during-header' } };
+              return 'token';
+            },
+          },
+        },
+      });
+
+      await transport.send([itemWithSession('A')]);
+
+      const [, init] = fetchMock.mock.calls[0]!;
+      const headers = init.headers as Record<string, string>;
+      expect(headers['x-faro-session-id']).toBe('A');
+      expect(JSON.parse(init.body as string).meta.session.id).toBe('A');
+    });
+
+    it('keeps body and header aligned with the queued snapshot when the current session has already moved on', async () => {
+      const { transport } = createTransport();
+      transport.metas.value = { session: { id: 'B' } };
+
+      await transport.send([itemWithSession('A')]);
+
+      const [, init] = fetchMock.mock.calls[0]!;
+      const headers = init.headers as Record<string, string>;
+      expect(headers['x-faro-session-id']).toBe('A');
+      expect(JSON.parse(init.body as string).meta.session.id).toBe('A');
+    });
+
+    it('preserves the same body and x-faro-session-id header across retries even if the session rotates mid-flight', async () => {
+      fetchMock.mockResolvedValueOnce(response(503)).mockResolvedValueOnce(response(202));
+      const { transport } = createTransport({ retry: { initialBackoffMs: 1000 } });
+
+      const sending = transport.send([itemWithSession('A')]);
+      await jest.advanceTimersByTimeAsync(0);
+      transport.metas.value = { session: { id: 'B' } };
+      await jest.advanceTimersByTimeAsync(1100);
+      await sending;
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      const [first, second] = fetchMock.mock.calls.map(([, init]) => init);
+      expect(second!.body).toBe(first!.body);
+      expect((second!.headers as Record<string, string>)['x-faro-session-id']).toBe(
+        (first!.headers as Record<string, string>)['x-faro-session-id']
+      );
+      expect((first!.headers as Record<string, string>)['x-faro-session-id']).toBe('A');
+    });
+
+    it('rotates the session when an invalid response matches the current session in memory and storage', async () => {
+      fetchMock.mockResolvedValueOnce(sessionInvalidResponse());
+      const { faro, transport } = setupFaroBackedTransport();
+      faro.metas.add({ session: { id: 'A' } });
+      VolatileSessionsManager.storeUserSession(storedSession('A'));
+
+      await transport.send([itemWithSession('A')]);
+
+      const stored = JSON.parse(mockStorage[STORAGE_KEY]!);
+      expect(stored.sessionId).not.toBe('A');
+    });
+
+    it('ignores an invalid response whose session has already rotated in memory and storage', async () => {
+      const { faro, transport } = setupFaroBackedTransport();
+      faro.metas.add({ session: { id: 'A' } });
+      VolatileSessionsManager.storeUserSession(storedSession('A'));
+
+      let resolveFetch!: (value: TestResponse) => void;
+      fetchMock.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFetch = resolve;
+          })
+      );
+
+      const sending = transport.send([itemWithSession('A')]);
+      await jest.advanceTimersByTimeAsync(0);
+
+      // Another update rotates both the in-memory and persisted session before the response arrives.
+      faro.metas.add({ session: { id: 'B' } });
+      VolatileSessionsManager.storeUserSession(storedSession('B'));
+
+      resolveFetch(sessionInvalidResponse());
+      await sending;
+
+      const stored = JSON.parse(mockStorage[STORAGE_KEY]!);
+      expect(stored.sessionId).toBe('B');
+    });
+
+    it('rotates only once for concurrent invalid responses belonging to the same session', async () => {
+      const { faro, transport } = setupFaroBackedTransport();
+      faro.api.setSession({ id: 'A' });
+      VolatileSessionsManager.storeUserSession(storedSession('A'));
+      const responses: Array<(value: TestResponse) => void> = [];
+      fetchMock.mockImplementation(() => new Promise((resolve) => responses.push(resolve)));
+      const first = transport.send([itemWithSession('A')]);
+      const second = transport.send([itemWithSession('A')]);
+      await jest.advanceTimersByTimeAsync(0);
+
+      responses[0]!(sessionInvalidResponse());
+      await first;
+      const renewed = faro.api.getSession()?.id;
+      expect(renewed).not.toBe('A');
+      responses[1]!(sessionInvalidResponse());
+      await second;
+      expect(faro.api.getSession()?.id).toBe(renewed);
+      expect(JSON.parse(mockStorage[STORAGE_KEY]!).sessionId).toBe(renewed);
+    });
+
+    it('ignores an invalid response when another tab has rotated the persisted session', async () => {
+      const { faro, transport } = setupFaroBackedTransport(true);
+      faro.metas.add({ session: { id: 'A' } });
+      PersistentSessionsManager.storeUserSession(storedSession('A'));
+
+      let resolveFetch!: (value: TestResponse) => void;
+      fetchMock.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFetch = resolve;
+          })
+      );
+
+      const sending = transport.send([itemWithSession('A')]);
+      await jest.advanceTimersByTimeAsync(0);
+
+      // Another tab rotates the shared, persisted session while this tab's in-memory session stays A.
+      PersistentSessionsManager.storeUserSession(storedSession('B'));
+
+      resolveFetch(sessionInvalidResponse());
+      await sending;
+
+      const stored = JSON.parse(mockStorage[STORAGE_KEY]!);
+      expect(stored.sessionId).toBe('B');
+    });
   });
 });
