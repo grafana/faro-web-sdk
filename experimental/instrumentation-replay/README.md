@@ -119,6 +119,12 @@ initializeFaro({
 | ------------ | -------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------- |
 | `beforeSend` | `(event: eventWithTime) => eventWithTime \| null \| undefined` | `undefined` | Transform or filter events before they are sent. Return `null` or `undefined` to skip sending |
 
+Replay reconciles session state before starting, pausing, resuming, or accepting recorder events.
+Synchronous capture keeps that decision consistent through event submission. If `beforeSend` or
+rrweb callbacks such as `maskInputFn` change the session, revoke sampling, or destroy Replay,
+the invalidated attempt's pending events are discarded. Startup publishes nothing until rrweb
+returns a stop function and the attempt remains eligible.
+
 ## Privacy and Security
 
 This instrumentation records user interactions on your website. Make sure to:
