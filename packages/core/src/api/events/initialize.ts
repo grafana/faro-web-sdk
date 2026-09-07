@@ -40,7 +40,7 @@ export function initializeEventsAPI({
       const attrs = stringifyObjectValues(attributes);
 
       const item: TransportItem<EventEvent> = {
-        meta: metas.value,
+        meta: metas.capture(),
         payload: customPayloadTransformer({
           name,
           domain: domain ?? config.eventDomain,

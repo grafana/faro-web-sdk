@@ -12,6 +12,8 @@ export function initializeMetas(
 ): Metas {
   let items: MetaItem[] = [];
   let listeners: MetasListener[] = [];
+  let captureListeners: Array<() => void> = [];
+  let capturing = false;
 
   const getValue = () => items.reduce<Meta>((acc, item) => Object.assign(acc, isFunction(item) ? item() : item), {});
 
@@ -51,11 +53,35 @@ export function initializeMetas(
     listeners = listeners.filter((currentListener) => currentListener !== listener);
   };
 
+  const capture: Metas['capture'] = (callback) => {
+    // Nested telemetry shares the same synchronous capture, including callbacks
+    // that assign recording identity before submitting their events.
+    const nested = capturing;
+    capturing = true;
+    try {
+      if (!nested) {
+        captureListeners.forEach((listener) => listener());
+      }
+      const value = getValue();
+      callback?.();
+      return value;
+    } finally {
+      capturing = nested;
+    }
+  };
+
   return {
     add,
     remove,
     addListener,
     removeListener,
+    capture,
+    addCaptureListener: (listener) => {
+      captureListeners.push(listener);
+    },
+    removeCaptureListener: (listener) => {
+      captureListeners = captureListeners.filter((current) => current !== listener);
+    },
     get value() {
       return getValue();
     },

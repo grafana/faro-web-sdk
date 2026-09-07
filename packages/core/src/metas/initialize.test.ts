@@ -1,5 +1,5 @@
 import { initializeFaro } from '../initialize';
-import { mockConfig } from '../testUtils';
+import { mockConfig, MockTransport } from '../testUtils';
 
 describe('metas', () => {
   it('sets app.gitHash from global object on initialization', () => {
@@ -43,5 +43,51 @@ describe('metas', () => {
 
     metas.add({ session: { id: '2' } });
     expect(listener).toHaveBeenCalledTimes(2);
+  });
+
+  it('reconciles capture without making reads active or recursively capturing lifecycle events', () => {
+    const transport = new MockTransport();
+    const { api, metas } = initializeFaro(mockConfig({ transports: [transport] }));
+    api.setSession({ id: 'old' });
+    const reconcile = () => {
+      api.setSession({ id: 'new' });
+      api.pushEvent('session-transition');
+    };
+    metas.addCaptureListener(reconcile);
+
+    expect(api.getSession()?.id).toBe('old');
+    api.pushEvent('activity');
+    expect(transport.items.map((item) => item.meta.session?.id)).toEqual(['new', 'new']);
+
+    metas.removeCaptureListener(reconcile);
+    api.setSession({ id: 'later' });
+    api.pushEvent('next-activity');
+    expect(transport.items[2]?.meta.session?.id).toBe('later');
+    expect(transport.items[0]?.meta.session?.id).toBe('new');
+  });
+  it('keeps nested submissions in one capture while subsequent activity can rotate', () => {
+    const transport = new MockTransport();
+    const { api, metas } = initializeFaro(mockConfig({ transports: [transport] }));
+    let session = 0;
+    metas.addCaptureListener(() => api.setSession({ id: String(++session) }));
+
+    metas.capture(() => {
+      api.pushEvent('first');
+      api.pushEvent('second');
+    });
+    api.pushEvent('next');
+    expect(transport.items.map((item) => item.meta.session?.id)).toEqual(['1', '1', '2']);
+  });
+
+  it('allows subsequent captures after a reconciliation listener throws', () => {
+    const { api, metas } = initializeFaro(mockConfig());
+    const fail = () => {
+      throw new Error('reconciliation failed');
+    };
+    metas.addCaptureListener(fail);
+    expect(() => metas.capture()).toThrow('reconciliation failed');
+    metas.removeCaptureListener(fail);
+    metas.addCaptureListener(() => api.setSession({ id: 'recovered' }));
+    expect(metas.capture().session?.id).toBe('recovered');
   });
 });

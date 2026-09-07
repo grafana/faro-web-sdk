@@ -83,7 +83,7 @@ export function initializeExceptionsAPI({
       });
 
       const item: TransportItem<ExceptionEvent<typeof preserveOriginalError>> = {
-        meta: metas.value,
+        meta: metas.capture(),
         payload: {
           type: type || error.name || defaultExceptionType,
           value: error.message,

@@ -116,6 +116,13 @@ The `session` meta is a static meta that is used to link signals between them. I
 core package and wrapper packages like `web-sdk` can handle it automatically. But unlike other metas, it can be also
 overwritten by the end-user if they have a different way of defining what a session is.
 
+The Web SDK reconciles local session expiry when telemetry captures metadata, not when its batch
+is sent. Already-captured items keep their session and its sampling decision. A later capture
+can establish a new session without reassigning queued items. This affects all signal types.
+
+Use `fetch-v2` for matching payload/header session identity and request-correlated server
+invalidation. The legacy `fetch` transport is unchanged and does not provide those guarantees.
+
 Properties
 
 - `id` - the name of the browser
@@ -167,4 +174,8 @@ Methods and properties:
 - `remove()` - removes a specific meta
 - `addListener()` - adds a new listener
 - `removeListener()` - removes a specific listener
-- `value` - accesses the current value of the static metas
+- `capture(callback?)` - reconciles activity-dependent metadata and returns the current metadata for a signal;
+  an optional synchronous callback shares this capture with nested telemetry, without reconciling again
+- `addCaptureListener()` - registers a synchronous callback run before capture
+- `removeCaptureListener()` - unregisters a capture callback
+- `value` - reads current metadata without notifying capture listeners or refreshing session activity

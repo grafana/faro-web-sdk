@@ -58,6 +58,7 @@ type GetUserSessionUpdaterParams = {
   // Silently adopt another tab's session into in-memory metas (cross-tab sync).
   // Optional: only the valid (non-force-extend) branch uses it.
   adoptSession?: (sessionMeta: NonNullable<FaroUserSession['sessionMeta']>) => void;
+  updateInterval?: number;
 };
 
 type UpdateSessionParams = { forceSessionExtend: boolean };
@@ -66,9 +67,16 @@ export function getUserSessionUpdater({
   fetchUserSession,
   storeUserSession,
   adoptSession,
+  updateInterval = 0,
 }: GetUserSessionUpdaterParams): (options?: UpdateSessionParams) => void {
+  let nextUpdate = 0;
   return function updateSession({ forceSessionExtend } = { forceSessionExtend: false }): void {
     if (!fetchUserSession || !storeUserSession) {
+      return;
+    }
+
+    const now = dateNow();
+    if (!forceSessionExtend && now < nextUpdate) {
       return;
     }
 
@@ -80,9 +88,12 @@ export function getUserSessionUpdater({
     }
 
     const sessionFromStorage = fetchUserSession();
+    // Rate-limit storage work, not capture reconciliation with a deferred timer.
+    // A suspended tab or a lifetime boundary must be checked on its next capture.
+    nextUpdate = Math.min(now + updateInterval, (sessionFromStorage?.started ?? now) + SESSION_EXPIRATION_TIME);
 
     if (forceSessionExtend === false && isUserSessionValid(sessionFromStorage)) {
-      storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
+      storeUserSession({ ...sessionFromStorage!, lastActivity: now });
 
       // Another tab rotated the shared session; adopt it so we stop emitting the stale id.
       const inMemorySessionId = faro.metas.value.session?.id;
@@ -98,6 +109,7 @@ export function getUserSessionUpdater({
         createUserSessionObject({ isSampled: isSampled() }),
         sessionFromStorage
       );
+      nextUpdate = now + updateInterval;
 
       storeUserSession(newSession);
 

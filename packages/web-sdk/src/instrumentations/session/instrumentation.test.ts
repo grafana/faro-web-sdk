@@ -199,7 +199,7 @@ describe('SessionInstrumentation', () => {
 
     jest.advanceTimersByTime(SESSION_EXPIRATION_TIME + 1); // session lifetime lapses
 
-    // this signal triggers the rotation (updateSession in beforeSend) and is sent
+    // Capture reconciles expiry before assigning the signal's session.
     api.pushEvent('after-gap');
 
     const rotatedId = api.getSession()?.id;
@@ -209,12 +209,12 @@ describe('SessionInstrumentation', () => {
       (item) => (item as TransportItem<EventEvent>).payload.name === 'after-gap'
     ) as TransportItem<EventEvent> | undefined;
 
-    // it must carry the new session id, not the expired one it was stamped with
+    // The first post-expiry signal already belongs to the new session.
     expect(afterGap).toBeDefined();
     expect(afterGap!.meta.session?.id).toEqual(rotatedId);
   });
 
-  it('re-stamps every batched signal after a rotation, not just the triggering one.', () => {
+  it('captures every post-expiry signal under the new session before flushing.', () => {
     const transport = new MockTransport();
     mockStorage[STORAGE_KEY] = JSON.stringify(createUserSessionObject({ sessionId: 'S0' }));
 
@@ -231,7 +231,7 @@ describe('SessionInstrumentation', () => {
 
     jest.advanceTimersByTime(SESSION_EXPIRATION_TIME + 1); // session lifetime lapses
 
-    // a burst stamped with the expired session, flushed together
+    // A burst captured after expiry is flushed together.
     api.pushEvent('gap-1');
     api.pushEvent('gap-2');
     api.pushEvent('gap-3');
@@ -244,9 +244,86 @@ describe('SessionInstrumentation', () => {
       /^gap-/.test((item as TransportItem<EventEvent>).payload.name)
     ) as Array<TransportItem<EventEvent>>;
 
-    // every signal in the batch, not just the rotation-triggering one, must carry the new id
+    // Every signal in the batch belongs to the session established at capture.
     expect(gapItems).toHaveLength(3);
     expect(gapItems.every((item) => item.meta.session?.id === rotatedId)).toBe(true);
+  });
+
+  it('does not rotate a session merely because a delayed batch is flushed', () => {
+    const transport = new MockTransport();
+    const { api } = initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [transport],
+          batching: {},
+          instrumentations: [new SessionInstrumentation()],
+          sessionTracking: { enabled: true, persistent: false, samplingRate: 1 },
+        })
+      )!
+    );
+    jest.advanceTimersByTime(250);
+    transport.items.length = 0;
+    const capturedId = api.getSession()?.id;
+    api.pushEvent('buffered');
+    expect(transport.items).toEqual([]);
+    jest.setSystemTime(dateNow() + SESSION_INACTIVITY_TIME + 1);
+    jest.advanceTimersByTime(250);
+    expect(transport.items.map((item) => item.meta.session?.id)).toEqual([capturedId]);
+    expect(api.getSession()?.id).toBe(capturedId);
+    api.pushEvent('new-activity');
+    expect(api.getSession()?.id).not.toBe(capturedId);
+  });
+
+  describe.each([true, false])('immutable capture with persistent=%s', (persistent) => {
+    it.each([
+      ['inactivity', true, true],
+      ['inactivity', true, false],
+      ['inactivity', false, true],
+      ['lifetime', true, true],
+      ['lifetime', true, false],
+      ['lifetime', false, true],
+    ] as const)('preserves queued ownership across %s expiry (%s → %s)', (expiry, wasSampled, nextSampled) => {
+      const transport = new MockTransport();
+      mockStorage[STORAGE_KEY] = JSON.stringify(
+        createUserSessionObject({
+          sessionId: 'S0',
+          isSampled: wasSampled,
+          started: expiry === 'lifetime' ? dateNow() - SESSION_EXPIRATION_TIME + 1000 : dateNow(),
+        })
+      );
+      const { api } = initializeFaro(
+        makeCoreConfig(
+          mockConfig({
+            transports: [transport],
+            batching: {},
+            instrumentations: [new SessionInstrumentation()],
+            sessionTracking: { enabled: true, persistent, samplingRate: 1 },
+          })
+        )!
+      );
+      jest.advanceTimersByTime(250);
+      transport.items.length = 0;
+      api.pushEvent('before-expiry');
+      expect(transport.items).toEqual([]);
+      jest.setSystemTime(dateNow() + (expiry === 'lifetime' ? 2000 : SESSION_INACTIVITY_TIME + 1));
+      expect(api.getSession()?.id).toBe('S0');
+
+      jest.spyOn(samplingModuleMock, 'isSampled').mockReturnValue(nextSampled);
+      api.pushEvent('after-expiry');
+      const newSessionId = api.getSession()?.id;
+      expect(newSessionId).not.toBe('S0');
+      jest.advanceTimersByTime(250);
+
+      const before = transport.items.filter(
+        (item) => (item as TransportItem<EventEvent>).payload.name === 'before-expiry'
+      );
+      const after = transport.items.filter(
+        (item) => (item as TransportItem<EventEvent>).payload.name === 'after-expiry'
+      );
+      expect(before.map((item) => item.meta.session?.id)).toEqual(wasSampled ? ['S0'] : []);
+      expect(after.map((item) => item.meta.session?.id)).toEqual(nextSampled ? [newSessionId] : []);
+      expect(transport.items.every((item) => item.meta.session?.attributes?.['isSampled'] === undefined)).toBe(true);
+    });
   });
 
   it('silently adopts a session rotated by another tab without emitting a lifecycle event.', () => {

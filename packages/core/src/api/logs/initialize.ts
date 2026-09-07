@@ -56,7 +56,7 @@ export function initializeLogsAPI({
               }
             : tracesApi.getTraceContext(),
         },
-        meta: metas.value,
+        meta: metas.capture(),
       };
 
       const testingPayload = {

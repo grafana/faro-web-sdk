@@ -8,12 +8,18 @@ export const mockMetas: {
   remove: jest.Mock;
   addListener: jest.Mock;
   removeListener: jest.Mock;
+  capture: () => {};
+  addCaptureListener: jest.Mock;
+  removeCaptureListener: jest.Mock;
   value: {};
 } = {
   add: jest.fn(),
   remove: jest.fn(),
   addListener: jest.fn(),
   removeListener: jest.fn(),
+  capture: () => mockMetas.value,
+  addCaptureListener: jest.fn(),
+  removeCaptureListener: jest.fn(),
   value: {},
 };
 

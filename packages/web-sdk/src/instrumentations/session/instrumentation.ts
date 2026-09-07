@@ -28,6 +28,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
   // Reads the session manager's adoption flag (set once the manager exists).
   private isAdoptingSession: () => boolean = () => false;
+  private captureListener: (() => void) | undefined;
 
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
@@ -129,38 +130,14 @@ export class SessionInstrumentation extends BaseInstrumentation {
     return { initialSession, lifecycleType };
   }
 
-  private registerBeforeSendHook(SessionManager: SessionManager) {
-    const sessionManager = new SessionManager();
-    this.isAdoptingSession = sessionManager.isAdopting;
-    const { updateSession } = sessionManager;
-
-    // Most recent rotation updateSession performed. A batch buffered before the
-    // rotation is all stamped with the now-expired id, not just the triggering item.
-    let lastRotation: { from: string; to: MetaSession } | undefined;
-
+  private registerBeforeSendHook() {
     this.transports?.addBeforeSendHooks((item) => {
-      const previousSessionId = this.metas.value.session?.id;
-      updateSession();
-      const currentSession = this.metas.value.session;
-
-      if (currentSession != null && previousSessionId != null && currentSession.id !== previousSessionId) {
-        lastRotation = { from: previousSessionId, to: currentSession };
-      }
-
-      // Re-stamp items still carrying the rotated-from session. Keyed on that id,
-      // so items from a genuinely earlier session (explicit setSession, which
-      // updateSession never rotates) keep their own sampling decision.
-      const reStamp = lastRotation != null && item.meta.session?.id === lastRotation.from;
-      const session = reStamp ? lastRotation!.to : item.meta.session;
-
-      const attributes = session?.attributes;
+      // Delivery filters using the captured session's sampling decision. It must
+      // never rotate or reassign an item that already belongs to a session.
+      const attributes = item.meta.session?.attributes;
 
       if (attributes && attributes?.['isSampled'] === 'true') {
         let newItem: TransportItem = JSON.parse(JSON.stringify(item));
-
-        if (reStamp) {
-          newItem.meta.session = JSON.parse(JSON.stringify(lastRotation!.to));
-        }
 
         const newAttributes = newItem.meta.session?.attributes;
         delete newAttributes?.['isSampled'];
@@ -184,7 +161,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
     if (sessionTrackingConfig?.enabled) {
       const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
 
-      this.registerBeforeSendHook(SessionManager);
+      const sessionManager = new SessionManager();
+      this.isAdoptingSession = sessionManager.isAdopting;
+      this.registerBeforeSendHook();
 
       const { initialSession, lifecycleType } = this.createInitialSession(SessionManager, sessionTrackingConfig);
 
@@ -194,6 +173,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       this.notifiedSession = initialSessionMeta;
       this.api.setSession(initialSessionMeta);
+      this.captureListener = sessionManager.updateSession;
+      this.metas.addCaptureListener(this.captureListener);
 
       if (lifecycleType === EVENT_SESSION_START) {
         this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
@@ -205,5 +186,12 @@ export class SessionInstrumentation extends BaseInstrumentation {
     }
 
     this.metas.addListener(this.sendSessionStartEvent.bind(this));
+  }
+
+  destroy(): void {
+    if (this.captureListener) {
+      this.metas.removeCaptureListener(this.captureListener);
+      this.captureListener = undefined;
+    }
   }
 }

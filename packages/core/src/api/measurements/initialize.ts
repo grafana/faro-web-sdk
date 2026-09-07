@@ -52,7 +52,7 @@ export function initializeMeasurementsAPI({
           timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
           context: isEmpty(ctx) ? undefined : ctx,
         },
-        meta: metas.value,
+        meta: metas.capture(),
       };
 
       const testingPayload = {

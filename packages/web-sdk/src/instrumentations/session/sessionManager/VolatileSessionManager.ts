@@ -1,6 +1,5 @@
 import { faro, stringifyExternalJson } from '@grafana/faro-core';
 
-import { throttle } from '../../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
@@ -19,6 +18,7 @@ export class VolatileSessionsManager {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
       storeUserSession: VolatileSessionsManager.storeUserSession,
+      updateInterval: STORAGE_UPDATE_DELAY,
     });
 
     this.init();
@@ -42,7 +42,7 @@ export class VolatileSessionsManager {
     return null;
   }
 
-  updateSession: () => void = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
+  updateSession = (): void => this.updateUserSession();
 
   private init(): void {
     document.addEventListener('visibilitychange', () => {

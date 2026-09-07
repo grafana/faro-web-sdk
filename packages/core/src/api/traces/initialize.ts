@@ -43,7 +43,7 @@ export function initializeTracesAPI(
       const item: TransportItem<TraceEvent> = {
         type: TransportItemType.TRACE,
         payload,
-        meta: metas.value,
+        meta: metas.capture(),
       };
 
       internalLogger.debug('Pushing trace\n', item);
