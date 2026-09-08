@@ -45,6 +45,22 @@ initializeFaro({
 | `blockSelector`    | `string`                                          | `undefined`             | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions                                     |
 | `ignoreSelector`   | `string`                                          | `undefined`             | CSS selector for elements whose input events should be ignored                                                                                                               |
 
+#### Built-in CSS classes
+
+These classes work without configuration and remain active alongside custom selectors:
+
+| Class            | Behavior                                                                       |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `grafana-mask`   | Masks text in the element and its descendants, not input values or attributes. |
+| `grafana-block`  | Excludes the subtree's content and replaces it with a layout placeholder.      |
+| `grafana-ignore` | Suppresses input-change recording on the matching input, textarea, or select.  |
+
+```html
+<span class="grafana-mask">Jane Doe</span>
+<div class="grafana-block">Sensitive content</div>
+<input class="grafana-ignore" type="search" />
+```
+
 #### `maskInputOptions`
 
 | Key              | Type      | Description           |
