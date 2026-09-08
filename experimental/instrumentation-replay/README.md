@@ -45,6 +45,32 @@ initializeFaro({
 | `blockSelector`    | `string`                                          | `undefined`             | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions                                     |
 | `ignoreSelector`   | `string`                                          | `undefined`             | CSS selector for elements whose input events should be ignored                                                                                                               |
 
+#### Built-in CSS classes
+
+These classes work without configuration and remain active alongside custom selectors:
+
+| Class            | Behavior                                                                       |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `grafana-mask`   | Masks text in the element and its descendants, not input values or attributes. |
+| `grafana-block`  | Excludes the subtree's content and replaces it with a layout placeholder.      |
+| `grafana-ignore` | Suppresses input-change recording on the matching input, textarea, or select.  |
+
+```html
+<span class="grafana-mask">Jane Doe</span>
+<div class="grafana-block">Sensitive content</div>
+<input class="grafana-ignore" type="search" />
+```
+
+All text is still masked by default (`maskTextSelector: '*'`). The `grafana-mask` class remains useful when
+you configure more selective text masking.
+
+Apply `grafana-ignore` directly to the form control, not its container. It does not block clicks or exclude
+the control's initial value from snapshots; values still follow the input masking options.
+Use `grafana-block` or input masking to protect sensitive fields.
+
+These built-in class names replace rrweb's `rr-mask`, `rr-block`, and `rr-ignore` defaults.
+Update existing markup or include the old classes in the corresponding selector options if you still need them.
+
 #### `maskInputOptions`
 
 | Key              | Type      | Description           |
@@ -132,7 +158,7 @@ new ReplayInstrumentation({
   maskTextSelector: '.sensitive-data, .pii',
   // Block elements completely from recording
   blockSelector: '.payment-form, .credit-card-info',
-  // Ignore certain elements (won't be recorded at all)
+  // Ignore input changes on matching controls (their initial values can still be recorded)
   ignoreSelector: '.analytics-widget',
   // Filter or transform events before sending
   beforeSend: (event) => {
