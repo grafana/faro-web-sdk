@@ -148,7 +148,7 @@ new ReplayInstrumentation({
   maskTextSelector: '.sensitive-data, .pii',
   // Block elements completely from recording
   blockSelector: '.payment-form, .credit-card-info',
-  // Ignore input changes on matching controls (their initial values can still be recorded)
+  // Ignore certain elements (won't be recorded at all)
   ignoreSelector: '.analytics-widget',
   // Filter or transform events before sending
   beforeSend: (event) => {
