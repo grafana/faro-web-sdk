@@ -71,6 +71,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private stopFn: { (): void } | null = null;
   private isRecording: boolean = false;
   private isPaused: boolean = false;
+  private isManuallyPaused: boolean = false;
   private options: ReplayInstrumentationOptions = defaultReplayInstrumentationOptions;
   private inactivityTimer: ReturnType<typeof setTimeout> | null = null;
   private boundOnUserInteraction: (() => void) | null = null;
@@ -349,6 +350,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.stopRrweb();
     this.isRecording = false;
     this.isPaused = false;
+    this.isManuallyPaused = false;
     this.logDebug('Session replay stopped');
   }
 
@@ -538,6 +540,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
           return;
         }
 
+        this.isManuallyPaused = false;
         this.logDebug('Session replay started');
 
         this.setupInactivityTracking();
@@ -547,7 +550,22 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private pauseRecording(): void {
+  /**
+   * Pauses the current session recording.
+   *
+   * While paused, rrweb does not capture events. Calling this method when
+   * recording is not active or is already paused has no effect.
+   */
+  public pauseRecording(): void {
+    if (!this.isRecording) {
+      return;
+    }
+
+    this.isManuallyPaused = true;
+    this.pauseRecordingInternal('manual control');
+  }
+
+  private pauseRecordingInternal(reason: 'inactivity' | 'manual control'): void {
     if (!this.isRecording || this.isPaused) {
       return;
     }
@@ -560,7 +578,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     // Metadata reconciliation must not prevent the local inactivity pause.
     this.stopRrweb();
     this.isPaused = true;
-    this.logDebug('Session replay paused due to inactivity');
+    this.logDebug(`Session replay paused due to ${reason}`);
 
     try {
       captureMetas(this.metas, () => {
@@ -575,12 +593,28 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     }
   }
 
-  private resumeRecording(): void {
+  /**
+   * Resumes a paused session recording with a fresh DOM checkpoint.
+   *
+   * Calling this method when the recording is not paused has no effect.
+   */
+  public resumeRecording(): void {
     if (!this.isPaused) {
       return;
     }
 
+    if (this.resumeRecordingInternal('manual control')) {
+      this.isManuallyPaused = false;
+    }
+  }
+
+  private resumeRecordingInternal(reason: 'user interaction' | 'manual control'): boolean {
+    if (!this.isPaused) {
+      return false;
+    }
+
     try {
+      let resumed = false;
       captureMetas(this.metas, () => {
         // A capture listener may have installed a fresh recorder.
         if (this.isRecording && !this.isPaused) {
@@ -603,12 +637,15 @@ export class ReplayInstrumentation extends BaseInstrumentation {
           return;
         }
 
-        this.logDebug('Session replay resumed after user interaction');
+        this.logDebug(`Session replay resumed by ${reason}`);
 
         this.resetInactivityTimer();
+        resumed = true;
       });
+      return resumed;
     } catch (err) {
       this.logWarn('Failed to resume session replay', err);
+      return false;
     }
   }
 
@@ -624,7 +661,9 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
     this.boundOnUserInteraction = () => {
       if (this.isPaused) {
-        this.resumeRecording();
+        if (!this.isManuallyPaused) {
+          this.resumeRecordingInternal('user interaction');
+        }
       } else {
         this.resetInactivityTimer();
       }
@@ -660,7 +699,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     clearTimeout(this.inactivityTimer ?? undefined);
 
     this.inactivityTimer = setTimeout(() => {
-      this.pauseRecording();
+      this.pauseRecordingInternal('inactivity');
     }, threshold);
   }
 
