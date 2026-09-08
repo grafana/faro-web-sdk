@@ -61,16 +61,6 @@ These classes work without configuration and remain active alongside custom sele
 <input class="grafana-ignore" type="search" />
 ```
 
-All text is still masked by default (`maskTextSelector: '*'`). The `grafana-mask` class remains useful when
-you configure more selective text masking.
-
-Apply `grafana-ignore` directly to the form control, not its container. It does not block clicks or exclude
-the control's initial value from snapshots; values still follow the input masking options.
-Use `grafana-block` or input masking to protect sensitive fields.
-
-These built-in class names replace rrweb's `rr-mask`, `rr-block`, and `rr-ignore` defaults.
-Update existing markup or include the old classes in the corresponding selector options if you still need them.
-
 #### `maskInputOptions`
 
 | Key              | Type      | Description           |
