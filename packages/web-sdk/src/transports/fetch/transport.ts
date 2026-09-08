@@ -1,8 +1,7 @@
-import { BaseExtension, BaseTransport, createPromiseBuffer, getTransportBody, noop, VERSION } from '@grafana/faro-core';
-import type { Config, Patterns, PromiseBuffer, TransportItem } from '@grafana/faro-core';
+import { BaseTransport, createPromiseBuffer, getTransportBody, noop, VERSION } from '@grafana/faro-core';
+import type { Patterns, PromiseBuffer, TransportItem } from '@grafana/faro-core';
 
-import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
-import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
+import { extendSessionOnCollectorInvalidation } from '../extendSessionOnCollectorInvalidation';
 
 import type { FetchTransportOptions } from './types';
 
@@ -121,8 +120,15 @@ export class FetchTransport extends BaseTransport {
           ...(requestOptionsWithoutKeepalive ?? {}),
         };
 
-        return this.fetchWithKeepaliveRetry(url, requestInit, bodySize, configuredKeepalive).catch((err) => {
-          this.logError('Failed sending payload to the receiver\n', JSON.parse(jsonBody), err);
+        return this.fetchWithKeepaliveRetry(url, requestInit, bodySize, configuredKeepalive, sessionId).catch((err) => {
+          let payload: unknown = jsonBody;
+          try {
+            payload = JSON.parse(jsonBody);
+          } catch {
+            // keep the raw body when it is not valid JSON
+          }
+
+          this.logError('Failed sending payload to the receiver\n', payload, err);
         });
       });
     } catch (err) {
@@ -203,7 +209,8 @@ export class FetchTransport extends BaseTransport {
     url: string,
     requestInit: RequestInit,
     bodySize: number,
-    configuredKeepalive?: boolean
+    configuredKeepalive: boolean | undefined,
+    invalidatedSessionId: string | undefined
   ): Promise<Response> {
     const keepaliveReservation = this.reserveKeepalive(bodySize, configuredKeepalive);
 
@@ -213,7 +220,7 @@ export class FetchTransport extends BaseTransport {
         keepalive: keepaliveReservation.keepalive,
       });
 
-      return this.handleResponse(response);
+      return await this.handleResponse(response, invalidatedSessionId);
     } catch (err) {
       if (keepaliveReservation.keepalive && this.isFetchNetworkError(err)) {
         this.logDebug('Retrying failed keepalive request with keepalive disabled.');
@@ -223,7 +230,7 @@ export class FetchTransport extends BaseTransport {
           keepalive: false,
         });
 
-        return this.handleResponse(response);
+        return await this.handleResponse(response, invalidatedSessionId);
       }
 
       throw err;
@@ -232,12 +239,12 @@ export class FetchTransport extends BaseTransport {
     }
   }
 
-  private async handleResponse(response: Response): Promise<Response> {
+  private async handleResponse(response: Response, invalidatedSessionId: string | undefined): Promise<Response> {
     if (response.status === ACCEPTED) {
       const sessionExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
 
       if (sessionExpired) {
-        this.extendFaroSession(this.config, this.logDebug);
+        extendSessionOnCollectorInvalidation(this.config, invalidatedSessionId, this, this.logDebug.bind(this));
       }
     }
 
@@ -273,21 +280,5 @@ export class FetchTransport extends BaseTransport {
       chunks.push(value);
     }
     return new Blob(chunks);
-  }
-
-  private extendFaroSession(config: Config, logDebug: BaseExtension['logDebug']) {
-    const SessionExpiredString = `Session expired`;
-
-    const sessionTrackingConfig = config.sessionTracking;
-
-    if (sessionTrackingConfig?.enabled) {
-      const { fetchUserSession, storeUserSession } = getSessionManagerByConfig(sessionTrackingConfig);
-
-      getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
-
-      logDebug(`${SessionExpiredString} created new session.`);
-    } else {
-      logDebug(`${SessionExpiredString}.`);
-    }
   }
 }

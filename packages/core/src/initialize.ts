@@ -24,8 +24,10 @@ export function initializeFaro(config: Config): Faro {
 
   // Initializing the APIs
   const metas = initializeMetas(unpatchedConsole, internalLogger, config);
-  const transports = initializeTransports(unpatchedConsole, internalLogger, config, metas);
+  const apiHolder: { api?: ReturnType<typeof initializeAPI> } = {};
+  const transports = initializeTransports(unpatchedConsole, internalLogger, config, metas, apiHolder);
   const api = initializeAPI(unpatchedConsole, internalLogger, config, metas, transports);
+  apiHolder.api = api;
   const instrumentations = initializeInstrumentations(unpatchedConsole, internalLogger, config, metas, transports, api);
   const faro = registerFaro(unpatchedConsole, internalLogger, config, metas, transports, api, instrumentations);
 
