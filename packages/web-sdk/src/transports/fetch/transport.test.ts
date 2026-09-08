@@ -8,6 +8,8 @@ import {
 } from '@grafana/faro-core';
 import { mockConfig, mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
+import * as sessionManagerMock from '../../instrumentations/session/sessionManager';
+import * as samplingModule from '../../instrumentations/session/sessionManager/sampling';
 import * as sessionManagerUtilsMock from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 
 import { FetchTransport } from './transport';
@@ -527,6 +529,49 @@ describe('FetchTransport', () => {
     await transport.send([item]);
 
     expect(mockGetUserSessionUpdater).toHaveBeenCalledTimes(1);
+  });
+
+  it('coalesces session rotation when concurrent batches receive collector invalidation for the same stale session', async () => {
+    fetch.mockImplementation(() =>
+      Promise.resolve({
+        status: 202,
+        headers: {
+          get: (name: string) => ({ 'X-Faro-Session-Status': 'invalid' })[name],
+        },
+        text: () => Promise.resolve(),
+      })
+    );
+
+    const mockStoreUserSession = jest.fn();
+    jest.spyOn(samplingModule, 'isSampled').mockReturnValue(true);
+    jest.spyOn(sessionManagerMock, 'getSessionManagerByConfig').mockReturnValue({
+      fetchUserSession: jest.fn().mockReturnValue(null),
+      storeUserSession: mockStoreUserSession,
+    } as unknown as ReturnType<typeof sessionManagerMock.getSessionManagerByConfig>);
+
+    const transport = new FetchTransport({
+      url: 'http://example.com/collect',
+      concurrency: 5,
+    });
+
+    transport.metas.value = { session: { id: mockSessionId } };
+    transport.internalLogger = mockInternalLogger;
+    transport.logDebug = transport.logDebug.bind(transport);
+    (transport as { api?: { setSession: jest.Mock } }).api = { setSession: jest.fn() };
+    transport.config = mockConfig({
+      sessionTracking: {
+        enabled: true,
+        persistent: false,
+      },
+    });
+
+    mockStoreUserSession.mockImplementation((session) => {
+      transport.metas.value = { session: { id: session.sessionId } };
+    });
+
+    await Promise.all(Array.from({ length: 5 }, () => transport.send([item])));
+
+    expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
   });
 
   it('does not create a new faro session for standard collector responses', async () => {

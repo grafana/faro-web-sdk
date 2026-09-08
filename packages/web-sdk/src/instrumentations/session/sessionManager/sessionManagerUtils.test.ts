@@ -398,6 +398,55 @@ describe('sessionManagerUtils', () => {
     expect(mockOnSessionChange).toHaveBeenCalledTimes(1);
   });
 
+  it('coalesces concurrent forceSessionExtend calls when no session id was captured', () => {
+    jest.spyOn(samplingModule, 'isSampled').mockReturnValue(true);
+
+    const mockFetchUserSession = jest.fn().mockReturnValue(null);
+    const mockStoreUserSession = jest.fn();
+    const mockSetSession = jest.fn();
+    let sessionId: string | undefined;
+
+    const updateSession = getUserSessionUpdater({
+      fetchUserSession: mockFetchUserSession,
+      storeUserSession: mockStoreUserSession,
+      context: {
+        getInMemorySessionId: () => sessionId,
+        getSessionTrackingConfig: () => ({ enabled: true, persistent: false }),
+        setSession: (meta) => {
+          sessionId = meta.id;
+          mockSetSession(meta);
+        },
+      },
+    });
+
+    updateSession({ forceSessionExtend: true });
+    updateSession({ forceSessionExtend: true });
+
+    expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
+    expect(mockSetSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips forceSessionExtend when a session already exists but the batch had no session id', () => {
+    const mockFetchUserSession = jest.fn().mockReturnValue(null);
+    const mockStoreUserSession = jest.fn();
+    const mockSetSession = jest.fn();
+
+    const updateSession = getUserSessionUpdater({
+      fetchUserSession: mockFetchUserSession,
+      storeUserSession: mockStoreUserSession,
+      context: {
+        getInMemorySessionId: () => 'already-rotated',
+        getSessionTrackingConfig: () => ({ enabled: true, persistent: false }),
+        setSession: mockSetSession,
+      },
+    });
+
+    updateSession({ forceSessionExtend: true });
+
+    expect(mockStoreUserSession).not.toHaveBeenCalled();
+    expect(mockSetSession).not.toHaveBeenCalled();
+  });
+
   it('adopts a divergent valid session from storage into in-memory metas', () => {
     const faro = initializeFaro(mockConfig({ sessionTracking: { enabled: true, persistent: true } }));
 

@@ -1,3 +1,4 @@
+import type { API } from '../api';
 import type { Config } from '../config';
 import { defaultInternalLogger } from '../internalLogger';
 import type { InternalLogger } from '../internalLogger';
@@ -15,6 +16,7 @@ export abstract class BaseExtension implements Extension {
   internalLogger: InternalLogger = defaultInternalLogger;
   config = {} as Config;
   metas = {} as Metas;
+  api?: API;
 
   logDebug(...args: unknown[]): void {
     this.internalLogger.debug(`${this.name}\n`, ...args);

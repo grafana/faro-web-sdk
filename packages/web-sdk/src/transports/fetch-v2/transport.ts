@@ -1,9 +1,8 @@
-import { BaseExtension, BaseTransport, genShortID, getTransportBody, noop, VERSION } from '@grafana/faro-core';
-import type { Config, Patterns, TransportItem } from '@grafana/faro-core';
+import { BaseTransport, genShortID, getTransportBody, noop, VERSION } from '@grafana/faro-core';
+import type { Patterns, TransportItem } from '@grafana/faro-core';
 
-import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
-import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 import { parseHttpDate } from '../../utils/httpDate';
+import { extendSessionOnCollectorInvalidation } from '../extendSessionOnCollectorInvalidation';
 
 import { ReliableDeliveryQueue } from './deliveryQueue';
 import type { AttemptOutcome, DeliveryFailure } from './deliveryQueue';
@@ -127,7 +126,12 @@ export class FetchTransport extends BaseTransport {
     return true;
   }
 
-  private async prepareRequest(items: TransportItem[]): Promise<{ requestInit: RequestInit; bodySize: number }> {
+  private async prepareRequest(items: TransportItem[]): Promise<{
+    requestInit: RequestInit;
+    bodySize: number;
+    invalidatedSessionId: string | undefined;
+  }> {
+    const invalidatedSessionId = this.metas.value.session?.id;
     const jsonBody = JSON.stringify(getTransportBody(items));
     const { headers = {}, ...requestOptions } = this.options.requestOptions ?? {};
     const { keepalive: _keepalive, signal: _signal, ...requestOptionsWithoutManagedFields } = requestOptions;
@@ -146,9 +150,10 @@ export class FetchTransport extends BaseTransport {
       compressionHeaders['Content-Encoding'] = 'gzip';
     }
 
-    const sessionId = this.metas.value.session?.id;
+    const sessionId = invalidatedSessionId;
     return {
       bodySize,
+      invalidatedSessionId: sessionId,
       requestInit: {
         method: 'POST',
         headers: {
@@ -167,7 +172,7 @@ export class FetchTransport extends BaseTransport {
   }
 
   private async performAttempt(
-    prepared: { requestInit: RequestInit; bodySize: number },
+    prepared: { requestInit: RequestInit; bodySize: number; invalidatedSessionId: string | undefined },
     attemptsRemaining: number,
     unloading: boolean
   ): Promise<AttemptOutcome> {
@@ -185,7 +190,18 @@ export class FetchTransport extends BaseTransport {
         attemptsRemaining,
         () => attemptsMade++
       );
-      this.handleResponse(response);
+
+      try {
+        this.handleResponse(response, prepared.invalidatedSessionId);
+      } catch (sessionError) {
+        this.logError('Failed to extend session after collector invalidation', sessionError);
+
+        if (response.status >= 200 && response.status < 300) {
+          return { kind: 'success', attemptsMade };
+        }
+
+        throw sessionError;
+      }
 
       if (response.status >= 200 && response.status < 300) {
         return { kind: 'success', attemptsMade };
@@ -316,9 +332,9 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
-  private handleResponse(response: Response): void {
+  private handleResponse(response: Response, invalidatedSessionId: string | undefined): void {
     if (response.status === ACCEPTED && response.headers.get('X-Faro-Session-Status') === 'invalid') {
-      this.extendFaroSession(this.config, this.logDebug.bind(this));
+      extendSessionOnCollectorInvalidation(this.config, invalidatedSessionId, this, this.logDebug.bind(this));
     }
     response.text().catch(noop);
   }
@@ -346,17 +362,6 @@ export class FetchTransport extends BaseTransport {
         return new Blob(chunks);
       }
       chunks.push(value);
-    }
-  }
-
-  private extendFaroSession(config: Config, logDebug: BaseExtension['logDebug']): void {
-    const sessionTrackingConfig = config.sessionTracking;
-    if (sessionTrackingConfig?.enabled) {
-      const { fetchUserSession, storeUserSession } = getSessionManagerByConfig(sessionTrackingConfig);
-      getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
-      logDebug('Session expired created new session.');
-    } else {
-      logDebug('Session expired.');
     }
   }
 }
