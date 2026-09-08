@@ -1,7 +1,27 @@
 import { initializeFaro } from '../initialize';
 import { mockConfig, MockTransport } from '../testUtils';
 
+import { captureMetas } from './capture';
+import type { Metas } from './types';
+
 describe('metas', () => {
+  it('supports the pre-capture public Metas interface and runs scoped callbacks', () => {
+    const metas: Metas = {
+      add: () => {},
+      remove: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      value: { session: { id: 'before' } },
+    };
+
+    const captured = captureMetas(metas, () => {
+      metas.value = { session: { id: 'after' } };
+    });
+
+    expect(captured.session?.id).toBe('before');
+    expect(metas.value.session?.id).toBe('after');
+  });
+
   it('sets app.gitHash from global object on initialization', () => {
     (global as any).__faroGitHash_test = 'abc123def456abc123def456abc123def456abc1';
 
@@ -53,13 +73,13 @@ describe('metas', () => {
       api.setSession({ id: 'new' });
       api.pushEvent('session-transition');
     };
-    metas.addCaptureListener(reconcile);
+    metas.addCaptureListener!(reconcile);
 
     expect(api.getSession()?.id).toBe('old');
     api.pushEvent('activity');
     expect(transport.items.map((item) => item.meta.session?.id)).toEqual(['new', 'new']);
 
-    metas.removeCaptureListener(reconcile);
+    metas.removeCaptureListener!(reconcile);
     api.setSession({ id: 'later' });
     api.pushEvent('next-activity');
     expect(transport.items[2]?.meta.session?.id).toBe('later');
@@ -111,9 +131,9 @@ describe('metas', () => {
     const transport = new MockTransport();
     const { api, metas } = initializeFaro(mockConfig({ transports: [transport] }));
     let session = 0;
-    metas.addCaptureListener(() => api.setSession({ id: String(++session) }));
+    metas.addCaptureListener!(() => api.setSession({ id: String(++session) }));
 
-    metas.capture(() => {
+    metas.capture!(() => {
       api.pushEvent('first');
       api.pushEvent('second');
     });
@@ -126,11 +146,11 @@ describe('metas', () => {
     const fail = () => {
       throw new Error('reconciliation failed');
     };
-    metas.addCaptureListener(fail);
-    expect(() => metas.capture()).toThrow('reconciliation failed');
-    metas.removeCaptureListener(fail);
-    metas.addCaptureListener(() => api.setSession({ id: 'recovered' }));
-    expect(metas.capture().session?.id).toBe('recovered');
+    metas.addCaptureListener!(fail);
+    expect(() => metas.capture!()).toThrow('reconciliation failed');
+    metas.removeCaptureListener!(fail);
+    metas.addCaptureListener!(() => api.setSession({ id: 'recovered' }));
+    expect(metas.capture!().session?.id).toBe('recovered');
   });
 
   it('resets the capture cycle after a pending listener throws during nested capture', () => {

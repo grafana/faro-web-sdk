@@ -51,7 +51,7 @@ describe('api.logs', () => {
           api.setSession({ id: String(++session) });
           api.pushEvent('session-transition');
         };
-        metas.addCaptureListener(reconcile);
+        metas.addCaptureListener!(reconcile);
 
         api.pushLog(['test']);
         api.pushLog(['test']);

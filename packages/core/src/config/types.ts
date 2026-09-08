@@ -287,7 +287,8 @@ export interface Config<P = APIEvent> {
     trackNavigation?: boolean;
 
     /**
-     * Use the experimental bounded, retried Fetch transport.
+     * @deprecated The bounded, retried Fetch transport is now the default.
+     * This option is accepted for compatibility and has no effect, including when false.
      */
     fetchTransportV2?: boolean;
   };

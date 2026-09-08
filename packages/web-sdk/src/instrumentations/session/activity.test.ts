@@ -10,7 +10,7 @@ import {
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config/makeCoreConfig';
-import { FetchTransport } from '../../transports/fetch-v2/transport';
+import { FetchTransport } from '../../transports/fetch/transport';
 
 import { SessionInstrumentation } from './instrumentation';
 import { type FaroUserSession, SESSION_INACTIVITY_TIME, STORAGE_KEY } from './sessionManager';

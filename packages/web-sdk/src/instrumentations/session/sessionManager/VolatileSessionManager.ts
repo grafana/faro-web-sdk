@@ -46,7 +46,8 @@ export class VolatileSessionsManager {
     return null;
   }
 
-  updateSession = (): void => this.updateUserSession({ refreshActivity: false });
+  updateSession = ({ refreshActivity = true }: { refreshActivity?: boolean } = {}): void =>
+    this.updateUserSession({ refreshActivity });
 
   recordActivity: (sessionId: string) => void = getUserSessionActivityRecorder({
     fetchUserSession: VolatileSessionsManager.fetchUserSession,
@@ -57,7 +58,7 @@ export class VolatileSessionsManager {
   private init(): void {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
-        this.updateSession();
+        this.updateSession({ refreshActivity: false });
         const sessionId = faro.api?.getSession()?.id;
         if (sessionId) {
           this.recordActivity(sessionId);

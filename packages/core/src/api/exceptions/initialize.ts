@@ -1,6 +1,6 @@
 import type { Config, Patterns } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
-import type { Metas } from '../../metas';
+import { captureMetas, type Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
@@ -122,7 +122,7 @@ export function initializeExceptionsAPI({
       }
 
       const previousPayload = lastPayload;
-      const meta = metas.capture();
+      const meta = captureMetas(metas);
       if (lastPayload !== previousPayload && !skipDedupe && config.dedupe && deepEqual(testingPayload, lastPayload)) {
         return;
       }

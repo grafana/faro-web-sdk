@@ -8,7 +8,7 @@ import {
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,
 } from '../../../packages/web-sdk/src/instrumentations/session/sessionManager';
-import { FetchTransport } from '../../../packages/web-sdk/src/transports/fetch-v2/transport';
+import { FetchTransport } from '../../../packages/web-sdk/src/transports/fetch/transport';
 
 import { ReplayInstrumentation } from './instrumentation';
 

@@ -2,6 +2,7 @@ import type { APIEvent, ExceptionEvent } from '../api';
 import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
+import { captureMetas, isMetaCaptured, markMetaCaptured } from '../metas/capture';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 
 import { BatchExecutor } from './batchExecutor';
@@ -126,6 +127,21 @@ export function initializeTransports(
   const execute: Transports['execute'] = (item) => {
     if (config.paused) {
       return;
+    }
+
+    // Older extensions submit fresh items using metas.value. Reconcile those at
+    // entry, while previously captured items (including delayed user actions)
+    // retain their ownership. Explicitly supplied different sessions stay intact.
+    if (!isMetaCaptured(item.meta)) {
+      const previousSessionId = metas.value.session?.id;
+      const meta = captureMetas(metas);
+      item = {
+        ...item,
+        meta: markMetaCaptured({
+          ...item.meta,
+          ...(item.meta.session?.id === previousSessionId ? { session: meta.session } : {}),
+        }),
+      };
     }
 
     if (config.batching?.enabled) {

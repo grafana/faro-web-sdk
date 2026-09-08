@@ -376,7 +376,7 @@ describe('Replay callback and startup safety', () => {
 
   it('does not reconcile again between accepting an event and submitting it', () => {
     let expired = false;
-    faro.metas.addCaptureListener(() => {
+    faro.metas.addCaptureListener!(() => {
       if (expired) {
         setSession('B');
       }
@@ -421,7 +421,7 @@ describe('Replay callback and startup safety', () => {
 
   it('reconciles a paused session before choosing resume versus a new recorder', async () => {
     let expired = false;
-    faro.metas.addCaptureListener(() => {
+    faro.metas.addCaptureListener!(() => {
       if (expired) {
         setSession('B');
       }

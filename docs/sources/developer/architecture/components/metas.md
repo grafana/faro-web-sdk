@@ -124,7 +124,7 @@ Capture-time expiry checks do not refresh an active session's `lastActivity`. Te
 activity in the existing session before-send hook, after payload deduplication and
 `config.beforeSend`, but before the internal sampling filter. Unsampled sessions therefore remain
 active while the application submits eligible telemetry; sampling controls export, not activity.
-`fetch-v2` retries do not run this hook again. Existing ordering for hooks registered after the
+Fetch retries do not run this hook again. Existing ordering for hooks registered after the
 session hook and for mixed immediate/batched transports is unchanged.
 
 Returning to a visible tab also checks the session and refreshes activity, even without telemetry.
@@ -137,6 +137,15 @@ filter rejects the triggering event. Creating the new session initializes its ti
 emit a lifecycle event; this is separate from refreshing an existing session. This behavior is
 deliberate. A lifecycle event that passes the configured filter can count as activity, even if
 session sampling prevents its export.
+
+The default Fetch transport preserves matching payload/header session identity and correlates
+server invalidation with the request's session.
+
+The public session managers' `updateSession()` method continues to refresh valid sessions.
+Capture-time checks pass `{ refreshActivity: false }` to separate reconciliation from activity.
+Custom instrumentations can continue submitting fresh items with `transports.execute()` and
+`metas.value`; the transport entry point reconciles these before queueing. Previously captured
+metadata keeps its ownership, including for delayed user actions and Replay.
 
 Properties
 
@@ -195,3 +204,7 @@ Methods and properties:
 - `addCaptureListener()` - registers a synchronous callback run before capture
 - `removeCaptureListener()` - unregisters a capture callback
 - `value` - reads current metadata without notifying capture listeners or refreshing session activity
+
+Capture methods are optional on the public `Metas` interface so existing extension implementations
+and mocks remain valid. `captureMetas(metas, callback?)`, exported by core and the Web SDK,
+provides capture with a fallback for implementations that only expose the older interface.
