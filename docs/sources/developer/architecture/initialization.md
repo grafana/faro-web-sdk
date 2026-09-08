@@ -85,6 +85,32 @@ then the transports and finally the instrumentations.
 
 ## Tracing
 
+The `TracingInstrumentation` from `@grafana/faro-web-tracing` builds on OpenTelemetry, which allows
+only a single global tracer provider, propagator and context manager per browsing context. The
+fetch/XHR instrumentations also patch the global `fetch`/`XMLHttpRequest` only once.
+
+Because of these constraints, tracing has a single owner per page. The first Faro instance to
+initialize a `TracingInstrumentation` claims ownership (tracked on the global object so the claim is
+shared even across independently bundled micro-frontends). That owner registers the tracer provider
+and instruments fetch/XHR. Any later instance that adds a `TracingInstrumentation` detects the
+existing owner, logs a warning, and skips registration instead of registering a second provider
+(which OpenTelemetry would reject as a duplicate) or re-patching fetch/XHR with a different
+configuration.
+
+Consequently, all spans are exported by the owning instance — using its exporter, its resource
+(`service.name`), and its collector — no matter which instance created them, and only the owner
+produces automatic fetch/XHR spans. Later instances register no exporter of their own, so they never
+export spans directly; they can still create spans against the shared provider via
+`faro.api.getOTEL()` (for example, manual spans), but those spans are exported by the owning instance
+and attributed to it. This is independent of the `isolate` config option, because tracer-provider
+registration and fetch/XHR patching are inherently global.
+
+To avoid regressing distributed traces, cross-origin trace-header propagation is unioned across
+instances: every instance's `propagateTraceHeaderCorsUrls` is merged into the owner (via the shared
+owner slot on the global object), so the owning instance keeps injecting W3C trace headers for URLs
+configured by any instance. Per-instance custom span attributes (`applyCustomAttributesOnSpan`) are
+not merged — only the owner's are applied.
+
 [initial-values]: #initial-values
 [components-api]: ./components/api.md
 [components-instrumentations]: ./components/instrumentations.md
