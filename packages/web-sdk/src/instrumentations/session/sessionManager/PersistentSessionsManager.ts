@@ -8,6 +8,7 @@ import {
   getSessionMetaUpdateHandler,
   getUserSessionActivityRecorder,
   getUserSessionUpdater,
+  type UserSessionUpdaterContext,
 } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
@@ -24,18 +25,23 @@ export class PersistentSessionsManager {
   private adoptSession = (sessionMeta: MetaSession): void => {
     this.adopting = true;
     try {
-      faro.api?.setSession(sessionMeta);
+      if (this.context?.setSession) {
+        this.context.setSession(sessionMeta);
+      } else {
+        faro.api?.setSession(sessionMeta);
+      }
     } finally {
       this.adopting = false;
     }
   };
 
-  constructor() {
+  constructor(private readonly context?: UserSessionUpdaterContext) {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: PersistentSessionsManager.fetchUserSession,
       storeUserSession: PersistentSessionsManager.storeUserSession,
       adoptSession: this.adoptSession,
       updateInterval: STORAGE_UPDATE_DELAY,
+      context,
     });
 
     this.init();
@@ -72,7 +78,7 @@ export class PersistentSessionsManager {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.updateSession({ refreshActivity: false });
-        const sessionId = faro.api?.getSession()?.id;
+        const sessionId = this.context?.getInMemorySessionId?.() ?? faro.api?.getSession()?.id;
         if (sessionId) {
           this.recordActivity(sessionId);
         }
@@ -80,10 +86,12 @@ export class PersistentSessionsManager {
     });
 
     // Users can call the setSession() method, so we need to sync this with the local storage session
-    faro.metas.addListener(
+    const metas = this.context?.metas ?? faro.metas;
+    metas.addListener(
       getSessionMetaUpdateHandler({
         fetchUserSession: PersistentSessionsManager.fetchUserSession,
         storeUserSession: PersistentSessionsManager.storeUserSession,
+        context: this.context,
       })
     );
   }

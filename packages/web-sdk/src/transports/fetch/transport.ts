@@ -1,17 +1,8 @@
-import {
-  BaseExtension,
-  BaseTransport,
-  createPromiseBuffer,
-  genShortID,
-  getTransportBody,
-  noop,
-  VERSION,
-} from '@grafana/faro-core';
-import type { Config, Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
+import { BaseTransport, createPromiseBuffer, genShortID, getTransportBody, noop, VERSION } from '@grafana/faro-core';
+import type { Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
 
-import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
-import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
 import { parseHttpDate } from '../../utils/httpDate';
+import { extendSessionOnCollectorInvalidation } from '../extendSessionOnCollectorInvalidation';
 
 import { ReliableDeliveryQueue } from './deliveryQueue';
 import type { AttemptOutcome, DeliveryFailure, DeliveryReservation } from './deliveryQueue';
@@ -401,7 +392,7 @@ export class FetchTransport extends BaseTransport {
 
   private handleResponse(response: Response, requestSessionId: string | undefined): void {
     if (response.status === ACCEPTED && response.headers.get('X-Faro-Session-Status') === 'invalid') {
-      this.extendFaroSession(this.config, this.logDebug.bind(this), requestSessionId);
+      extendSessionOnCollectorInvalidation(this.config, requestSessionId, this, this.logDebug.bind(this));
     }
     response.text().catch(noop);
   }
@@ -430,31 +421,5 @@ export class FetchTransport extends BaseTransport {
       }
       chunks.push(value);
     }
-  }
-
-  private extendFaroSession(
-    config: Config,
-    logDebug: BaseExtension['logDebug'],
-    requestSessionId: string | undefined
-  ): void {
-    const sessionTrackingConfig = config.sessionTracking;
-    if (!sessionTrackingConfig?.enabled) {
-      logDebug('Session expired.');
-      return;
-    }
-
-    const { fetchUserSession, storeUserSession } = getSessionManagerByConfig(sessionTrackingConfig);
-
-    // A delayed response must not rotate a newer session, including one another
-    // tab has already established in shared storage.
-    const currentSessionId = this.metas.value.session?.id;
-    const storedSessionId = fetchUserSession()?.sessionId;
-    if (!requestSessionId || requestSessionId !== currentSessionId || requestSessionId !== storedSessionId) {
-      logDebug('Ignoring stale or cross-tab session-invalid response; request session no longer current.');
-      return;
-    }
-
-    getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
-    logDebug('Session expired; created new session.');
   }
 }

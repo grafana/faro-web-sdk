@@ -13,7 +13,11 @@ import { createSession } from '../../metas';
 
 import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
 import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
-import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
+import {
+  createUserSessionObject,
+  isUserSessionValid,
+  type UserSessionUpdaterContext,
+} from './sessionManager/sessionManagerUtils';
 import type { SessionManager } from './sessionManager/types';
 
 type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;
@@ -85,6 +89,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
         sessionId,
         isSampled: storedUserSession!.isSampled || false,
         started: storedUserSession?.started,
+        generateSessionId: sessionsConfig.generateSessionId,
       });
 
       const storedUserSessionMeta = storedUserSession?.sessionMeta;
@@ -111,7 +116,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       initialSession = createUserSessionObject({
         sessionId,
-        isSampled: isSampled(),
+        isSampled: isSampled({ sessionTracking: sessionsConfig, metas: this.metas.value }),
+        generateSessionId: sessionsConfig.generateSessionId,
       });
 
       const overrides = sessionsConfig.session?.overrides;
@@ -170,7 +176,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     if (sessionTrackingConfig?.enabled) {
       const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
 
-      const sessionManager = new SessionManager();
+      const sessionManager = new SessionManager(this.getSessionUpdaterContext());
       this.isAdoptingSession = sessionManager.isAdopting;
       this.registerBeforeSendHook(sessionManager.recordActivity);
 
@@ -200,6 +206,19 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
     this.sessionStartListener = this.sendSessionStartEvent.bind(this);
     this.metas.addListener(this.sessionStartListener);
+  }
+
+  private getSessionUpdaterContext(): UserSessionUpdaterContext {
+    return {
+      getInMemorySessionId: () => this.metas.value.session?.id,
+      getSessionTrackingConfig: () => this.config.sessionTracking,
+      getSessionAttributes: () => this.metas.value.session?.attributes,
+      getSessionOverrides: () => this.metas.value.session?.overrides,
+      getMetas: () => this.metas.value,
+      metas: this.metas,
+      setSession: (session) => this.api.setSession(session),
+      onSessionChange: this.config.sessionTracking?.onSessionChange,
+    };
   }
 
   destroy(): void {
