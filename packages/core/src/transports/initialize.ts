@@ -135,12 +135,20 @@ export function initializeTransports(
     if (!isMetaCaptured(item.meta)) {
       const previousSessionId = metas.value.session?.id;
       const meta = captureMetas(metas);
+      if (config.paused) {
+        return;
+      }
+      const itemMeta = { ...item.meta };
+      if (itemMeta.session?.id === previousSessionId && meta.session?.id !== previousSessionId) {
+        if (meta.session === undefined) {
+          delete itemMeta.session;
+        } else {
+          itemMeta.session = meta.session;
+        }
+      }
       item = {
         ...item,
-        meta: markMetaCaptured({
-          ...item.meta,
-          ...(item.meta.session?.id === previousSessionId ? { session: meta.session } : {}),
-        }),
+        meta: markMetaCaptured(itemMeta),
       };
     }
 

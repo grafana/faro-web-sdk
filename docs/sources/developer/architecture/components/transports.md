@@ -30,8 +30,9 @@ cooldown that drops intervening events.
 
 `experimental.fetchTransportV2` is retained as a deprecated no-op, including when set to `false`.
 There is one Fetch implementation. Existing `fetch-v2` module paths forward to it for compatibility.
-The public `promiseBuffer.add()` API remains available and shares admission and concurrency with
-delivery. Tasks submitted directly through that API run once; transport requests use the retry policy.
+The default `promiseBuffer.add()` shares admission and concurrency with delivery. Tasks submitted
+directly through that API run once; transport requests use the retry policy. Custom buffer replacements
+and decorators retain their own outer scheduling so waiting for delivery cannot deadlock their worker.
 
 ## Transports SDK
 

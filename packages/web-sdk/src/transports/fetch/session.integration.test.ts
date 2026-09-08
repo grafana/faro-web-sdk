@@ -52,13 +52,14 @@ describe('default Fetch transport session ownership', () => {
     window.sessionStorage.clear();
   });
 
-  async function start(persistent: boolean, enabled = true) {
+  async function start(persistent: boolean, enabled = true, batched = true) {
     faro = initializeFaro({
       url: 'https://collector.test/collect',
       app: { name: 'legacy-compat' },
       isolate: true,
       preventGlobalExposure: true,
       instrumentations: [new SessionInstrumentation()],
+      batching: { enabled: batched },
       sessionTracking: { enabled, persistent, samplingRate: 1 },
     });
     expect(faro.transports.transports[0]).toBeInstanceOf(FetchTransport);
@@ -202,5 +203,45 @@ describe('default Fetch transport session ownership', () => {
       headerSession: 'explicit-session',
     });
     expect(faro.api.getSession()?.id).toBe(replacement);
+  });
+
+  it('preserves custom attributes and overrides when capture does not rotate the session', async () => {
+    await start(false);
+    const sessionId = faro.api.getSession()?.id;
+    faro.transports.execute({
+      type: TransportItemType.EVENT,
+      meta: {
+        session: {
+          id: sessionId,
+          attributes: { isSampled: 'true', origin: 'custom-extension' },
+          overrides: { serviceName: 'custom-service' },
+        },
+      },
+      payload: { name: 'custom-metadata', timestamp: new Date().toISOString() },
+    });
+    await jest.advanceTimersByTimeAsync(250);
+    expect(requests[0]?.body.meta.session).toEqual({
+      id: sessionId,
+      attributes: { origin: 'custom-extension' },
+      overrides: { serviceName: 'custom-service' },
+    });
+  });
+
+  it('honors pause triggered by capture before immediate custom delivery', async () => {
+    await start(false, true, false);
+    faro.config.sessionTracking!.onSessionChange = () => faro.pause();
+    const previous = JSON.parse(storage(false).getItem(STORAGE_KEY)!);
+    jest.setSystemTime(previous.lastActivity + SESSION_INACTIVITY_TIME + 1);
+    faro.transports.execute({
+      type: TransportItemType.EVENT,
+      meta: faro.metas.value,
+      payload: { name: 'paused-during-capture', timestamp: new Date().toISOString() },
+    });
+    await jest.advanceTimersByTimeAsync(250);
+    expect(faro.transports.isPaused()).toBe(true);
+    expect(events().some((event) => event.name === 'paused-during-capture')).toBe(false);
+    faro.unpause();
+    await jest.advanceTimersByTimeAsync(250);
+    expect(events().some((event) => event.name === 'paused-during-capture')).toBe(false);
   });
 });

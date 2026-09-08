@@ -181,6 +181,56 @@ it('preserves wrappers and replacements of the public promiseBuffer', async () =
   expect(fetchMock).toHaveBeenCalledTimes(2);
 });
 
+it('honors in-place decorators and admission policies on promiseBuffer.add', async () => {
+  const transport = createTransport({ bufferSize: 1, concurrency: 1 });
+  const originalAdd = transport.promiseBuffer.add;
+  const decorator = jest.fn((producer) => originalAdd(() => producer()));
+  transport.promiseBuffer.add = decorator;
+  await transport.send([item]);
+  expect(decorator).toHaveBeenCalledTimes(1);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+
+  transport.promiseBuffer.add = () => {
+    throw new Error('custom admission policy');
+  };
+  await transport.send([item]);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+
+  transport.promiseBuffer.add = originalAdd;
+  await transport.send([item]);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+it.each([
+  { bufferSize: 1, asynchronous: false, restore: false },
+  { bufferSize: 2, asynchronous: false, restore: false },
+  { bufferSize: 1, asynchronous: true, restore: false },
+  { bufferSize: 2, asynchronous: true, restore: false },
+  { bufferSize: 1, asynchronous: true, restore: true },
+])(
+  'supports transformed and delayed buffer decorators without double admission: %j',
+  async ({ bufferSize, asynchronous, restore }) => {
+    const transport = createTransport({ bufferSize, concurrency: 1 });
+    const original = transport.promiseBuffer;
+    transport.promiseBuffer = {
+      add: async (producer) => {
+        if (asynchronous) {
+          await Promise.resolve();
+        }
+        if (restore) {
+          transport.promiseBuffer = original;
+        }
+        return original.add(async () => producer());
+      },
+    };
+
+    await transport.send([item]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await transport.send([item]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  }
+);
+
 it('budgets keepalive using UTF-8 bytes', async () => {
   const transport = createTransport();
   await transport.send([{ ...item, payload: { ...item.payload, message: '界'.repeat(25_000) } }]);

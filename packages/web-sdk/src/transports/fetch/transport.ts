@@ -1,4 +1,12 @@
-import { BaseExtension, BaseTransport, genShortID, getTransportBody, noop, VERSION } from '@grafana/faro-core';
+import {
+  BaseExtension,
+  BaseTransport,
+  createPromiseBuffer,
+  genShortID,
+  getTransportBody,
+  noop,
+  VERSION,
+} from '@grafana/faro-core';
 import type { Config, Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
 
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
@@ -42,7 +50,10 @@ export class FetchTransport extends BaseTransport {
   /** Compatibility access to the transport's bounded task queue. Tasks added directly are not retried. */
   promiseBuffer: PromiseBuffer<Response | void>;
 
-  private readonly sendProducers = new WeakSet<PromiseProducer<Response | void>>();
+  private readonly defaultPromiseBuffer: PromiseBuffer<Response | void>;
+  private readonly defaultBufferAdd: PromiseBuffer<Response | void>['add'];
+  private readonly customPromiseBuffer: PromiseBuffer<Response | void>;
+  private pendingCustomSends = 0;
   private readonly getNow: () => number;
   private readonly requestTimeoutMs: number;
   private readonly compressionEnabled: boolean;
@@ -81,12 +92,21 @@ export class FetchTransport extends BaseTransport {
       },
     });
 
-    this.promiseBuffer = {
+    this.customPromiseBuffer = createPromiseBuffer({
+      size: options.bufferSize ?? DEFAULT_BUFFER_SIZE,
+      concurrency: options.concurrency ?? DEFAULT_CONCURRENCY,
+    });
+    this.defaultPromiseBuffer = {
       add: (producer) => {
-        // send() owns admission across preparation and every delivery attempt.
-        // Preserve wrappers around promiseBuffer.add without admitting the same batch twice.
-        if (this.sendProducers.has(producer)) {
-          return producer();
+        // A replacement may wrap or asynchronously forward a producer through
+        // the original buffer. Keep that outer scheduling separate from the
+        // delivery workers it awaits, so a one-worker buffer cannot deadlock.
+        if (
+          this.promiseBuffer !== this.defaultPromiseBuffer ||
+          this.promiseBuffer.add !== this.defaultBufferAdd ||
+          this.pendingCustomSends > 0
+        ) {
+          return this.customPromiseBuffer.add(producer);
         }
         const reservation = this.deliveryQueue.reserve();
         if (!reservation) {
@@ -95,6 +115,8 @@ export class FetchTransport extends BaseTransport {
         return this.runBufferedTask(reservation, producer);
       },
     };
+    this.defaultBufferAdd = this.defaultPromiseBuffer.add;
+    this.promiseBuffer = this.defaultPromiseBuffer;
 
     if (typeof window !== 'undefined') {
       window.addEventListener('pagehide', () => this.deliveryQueue.flush());
@@ -107,14 +129,19 @@ export class FetchTransport extends BaseTransport {
   }
 
   async send(items: TransportItem[]): Promise<void> {
-    const producer = () => this.deliver(items);
-    this.sendProducers.add(producer);
+    const buffer = this.promiseBuffer;
+    if (buffer === this.defaultPromiseBuffer && buffer.add === this.defaultBufferAdd) {
+      await this.deliver(items);
+      return;
+    }
+
+    this.pendingCustomSends++;
     try {
-      await this.promiseBuffer.add(producer);
+      await buffer.add(() => this.deliver(items));
     } catch (error) {
       this.logError('Permanent delivery failure', { error, attempts: 0, elapsedTimeMs: 0 });
     } finally {
-      this.sendProducers.delete(producer);
+      this.pendingCustomSends--;
     }
   }
 
