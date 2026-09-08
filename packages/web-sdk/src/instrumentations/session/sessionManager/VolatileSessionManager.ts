@@ -13,7 +13,6 @@ import type { FaroUserSession } from './types';
 export class VolatileSessionsManager {
   private static storageTypeSession = webStorageType.session;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
-  private recordUserSessionActivity: (sessionId: string) => void;
 
   // sessionStorage is tab-local, so this manager never adopts another tab's
   // session. Stubbed so the instrumentation can treat both managers uniformly.
@@ -21,11 +20,6 @@ export class VolatileSessionsManager {
 
   constructor() {
     this.updateUserSession = getUserSessionUpdater({
-      fetchUserSession: VolatileSessionsManager.fetchUserSession,
-      storeUserSession: VolatileSessionsManager.storeUserSession,
-      updateInterval: STORAGE_UPDATE_DELAY,
-    });
-    this.recordUserSessionActivity = getUserSessionActivityRecorder({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
       storeUserSession: VolatileSessionsManager.storeUserSession,
       updateInterval: STORAGE_UPDATE_DELAY,
@@ -54,7 +48,11 @@ export class VolatileSessionsManager {
 
   updateSession = (): void => this.updateUserSession({ refreshActivity: false });
 
-  recordActivity = (sessionId: string): void => this.recordUserSessionActivity(sessionId);
+  recordActivity: (sessionId: string) => void = getUserSessionActivityRecorder({
+    fetchUserSession: VolatileSessionsManager.fetchUserSession,
+    storeUserSession: VolatileSessionsManager.storeUserSession,
+    updateInterval: STORAGE_UPDATE_DELAY,
+  });
 
   private init(): void {
     document.addEventListener('visibilitychange', () => {

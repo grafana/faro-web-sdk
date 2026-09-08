@@ -138,9 +138,6 @@ emit a lifecycle event; this is separate from refreshing an existing session. Th
 deliberate. A lifecycle event that passes the configured filter can count as activity, even if
 session sampling prevents its export.
 
-Use `fetch-v2` for matching payload/header session identity and request-correlated server
-invalidation. The legacy `fetch` transport is unchanged and does not provide those guarantees.
-
 Properties
 
 - `id` - the name of the browser

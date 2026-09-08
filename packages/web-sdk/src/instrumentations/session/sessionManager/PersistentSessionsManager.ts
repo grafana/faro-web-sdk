@@ -14,7 +14,6 @@ import type { FaroUserSession } from './types';
 export class PersistentSessionsManager {
   private static storageTypeLocal = webStorageType.local;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
-  private recordUserSessionActivity: (sessionId: string) => void;
 
   // Set only for the synchronous span of an adopting setSession(); the session
   // instrumentation reads isAdopting() to suppress its lifecycle event.
@@ -36,11 +35,6 @@ export class PersistentSessionsManager {
       fetchUserSession: PersistentSessionsManager.fetchUserSession,
       storeUserSession: PersistentSessionsManager.storeUserSession,
       adoptSession: this.adoptSession,
-      updateInterval: STORAGE_UPDATE_DELAY,
-    });
-    this.recordUserSessionActivity = getUserSessionActivityRecorder({
-      fetchUserSession: PersistentSessionsManager.fetchUserSession,
-      storeUserSession: PersistentSessionsManager.storeUserSession,
       updateInterval: STORAGE_UPDATE_DELAY,
     });
 
@@ -67,7 +61,11 @@ export class PersistentSessionsManager {
 
   updateSession = (): void => this.updateUserSession({ refreshActivity: false });
 
-  recordActivity = (sessionId: string): void => this.recordUserSessionActivity(sessionId);
+  recordActivity: (sessionId: string) => void = getUserSessionActivityRecorder({
+    fetchUserSession: PersistentSessionsManager.fetchUserSession,
+    storeUserSession: PersistentSessionsManager.storeUserSession,
+    updateInterval: STORAGE_UPDATE_DELAY,
+  });
 
   private init(): void {
     document.addEventListener('visibilitychange', () => {
