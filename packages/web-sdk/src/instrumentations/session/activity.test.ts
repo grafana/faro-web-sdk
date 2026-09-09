@@ -218,7 +218,7 @@ describe.each([true, false])('accepted activity with persistent=%s', (persistent
   });
 });
 
-it('does not refresh activity again for fetch-v2 retries', async () => {
+it('does not refresh activity again for Fetch retries', async () => {
   const fetchMock = jest
     .fn()
     .mockResolvedValueOnce({ status: 503, headers: { get: () => null }, text: async () => '' })

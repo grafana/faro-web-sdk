@@ -22,14 +22,17 @@ backoff starting at one second and capped at thirty seconds. Each batch retains 
 `Idempotency-Key` across attempts. Collector CORS policies must allow `Idempotency-Key` before
 this SDK version is deployed. The header alone does not guarantee server-side deduplication.
 
-Existing `FetchTransport` imports and constructor options remain supported. Advanced callers can
+Package-root `FetchTransport` imports and constructor options remain supported. Advanced callers can
 set `retry` and `requestTimeoutMs` when constructing a transport. The deprecated
 `defaultRateLimitBackoffMs` option aliases `retry.initialBackoffMs`; an explicit
 `retry.initialBackoffMs` takes precedence. It now controls retry backoff rather than a global
 cooldown that drops intervening events.
 
-`experimental.fetchTransportV2` is retained as a deprecated no-op, including when set to `false`.
-There is one Fetch implementation. Existing `fetch-v2` module paths forward to it for compatibility.
+Remove `experimental.fetchTransportV2` from configuration: reliable Fetch is now unconditional.
+The former `fetch-v2` module paths have been removed. Import `FetchTransport` and its public option
+types from `@grafana/faro-web-sdk` instead. This is a breaking change for callers using the flag or
+removed deep imports; there is no legacy transport fallback.
+
 The default `promiseBuffer.add()` shares admission and concurrency with delivery. Tasks submitted
 directly through that API run once; transport requests use the retry policy. Custom buffer replacements
 and decorators retain their own outer scheduling so waiting for delivery cannot deadlock their worker.

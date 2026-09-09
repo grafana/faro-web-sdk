@@ -63,7 +63,6 @@ describe('default Fetch transport session ownership', () => {
       sessionTracking: { enabled, persistent, samplingRate: 1 },
     });
     expect(faro.transports.transports[0]).toBeInstanceOf(FetchTransport);
-    expect(faro.config.experimental?.fetchTransportV2).toBe(true);
     await jest.advanceTimersByTimeAsync(2000);
     requests.length = 0;
   }

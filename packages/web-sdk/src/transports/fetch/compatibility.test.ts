@@ -7,7 +7,6 @@ import {
   type FetchTransportOptions,
   type FetchTransportRequestOptions,
 } from '../../index';
-import { FetchTransport as PreviousInternalTransport } from '../fetch-v2/transport';
 
 const { ReadableStream: NodeReadableStream, CompressionStream: NodeCompressionStream } = require('node:stream/web');
 
@@ -68,7 +67,6 @@ it('preserves the public constructor, name, existing options and dynamic headers
   await transport.send([item]);
 
   expect(transport.name).toBe('@grafana/faro-web-sdk:transport-fetch');
-  expect(PreviousInternalTransport).toBe(FetchTransport);
   expect(transport.getIgnoreUrls()).toEqual(['https://collector.test/collect', 'https://also-ignored.test']);
   expect(fetchMock).toHaveBeenCalledWith(
     options.url,

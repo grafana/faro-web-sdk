@@ -67,7 +67,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
 
   // Extract experimental features with defaults
   const trackNavigation = experimental?.trackNavigation ?? false;
-  const fetchTransportV2 = experimental?.fetchTransportV2 ?? true;
 
   // Extract user actions instrumentation with defaults
   const userActionsInstrumentation = {
@@ -120,7 +119,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     userActionsInstrumentation,
     experimental: {
       trackNavigation,
-      fetchTransportV2,
     },
   };
 }

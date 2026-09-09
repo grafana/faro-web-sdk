@@ -12,7 +12,7 @@ import { FetchTransport } from '../../../packages/web-sdk/src/transports/fetch/t
 
 import { ReplayInstrumentation } from './instrumentation';
 
-describe.each([true, false])('Replay through fetch-v2 with persistent=%s', (persistent) => {
+describe.each([true, false])('Replay through Fetch with persistent=%s', (persistent) => {
   const originalFetch = globalThis.fetch;
   let replay: ReplayInstrumentation;
   let requests: Array<{ sessionId: string; body: TransportBody }>;

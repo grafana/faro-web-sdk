@@ -321,28 +321,15 @@ describe('config', () => {
     const config = makeCoreConfig({ url: 'http://example.com/collect', app: {} });
 
     expect(config.transports[0]?.name).toBe('@grafana/faro-web-sdk:transport-fetch');
-    expect(config.experimental?.fetchTransportV2).toBe(true);
   });
 
-  it.each([true, false])('accepts the deprecated transport flag without changing the implementation: %s', (flag) => {
-    const config = makeCoreConfig({
-      url: 'http://example.com/collect',
-      app: {},
-      experimental: { fetchTransportV2: flag },
-    });
-
-    expect(config.transports[0]?.name).toBe('@grafana/faro-web-sdk:transport-fetch');
-    expect(config.experimental?.fetchTransportV2).toBe(flag);
-  });
-
-  it('keeps explicit transports and silently accepts the deprecated flag', () => {
+  it('keeps explicit transports', () => {
     const error = jest.fn();
     const explicitTransport = new MockTransport();
 
     const config = makeCoreConfig({
       app: {},
       transports: [explicitTransport],
-      experimental: { fetchTransportV2: true },
       unpatchedConsole: { error } as unknown as Console,
     });
 
