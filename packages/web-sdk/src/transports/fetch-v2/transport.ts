@@ -379,6 +379,6 @@ export class FetchTransport extends BaseTransport {
     }
 
     getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
-    logDebug('Session expired created new session.');
+    logDebug('Session expired; created new session.');
   }
 }
