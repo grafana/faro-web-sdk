@@ -58,7 +58,7 @@ export function getUserEventHandler(
   return { processUserEvent, processUserActionStarted };
 }
 
-export function findClosestElementWithAttribute(element: Element, attributeName: string): HTMLElement | null {
+function findClosestElementWithAttribute(element: Element, attributeName: string): HTMLElement | null {
   let current: Element | null = element;
 
   while (current) {
