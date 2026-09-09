@@ -563,7 +563,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.logDebug('Session replay paused due to inactivity');
 
     try {
-      this.metas.capture(() => {
+      captureMetas(this.metas, () => {
         if (!this.isRecording || !this.isPaused || !this.isRecordingSessionEligible()) {
           return;
         }

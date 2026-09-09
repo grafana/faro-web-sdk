@@ -74,13 +74,13 @@ describe('Replay callback and startup safety', () => {
     const failedCapture = () => {
       throw new Error('capture failed');
     };
-    faro.metas.addCaptureListener(failedCapture);
+    faro.metas.addCaptureListener!(failedCapture);
 
     expect(() => jest.advanceTimersByTime(5_000)).not.toThrow();
     expect(stop).toHaveBeenCalledTimes(1);
     expect(events().map((item) => item.payload.name)).toEqual(['faro.session_recording.started']);
 
-    faro.metas.removeCaptureListener(failedCapture);
+    faro.metas.removeCaptureListener!(failedCapture);
     emit(changeEvent());
     expect(recordings()).toEqual([]);
     document.dispatchEvent(new Event('pointerdown'));
@@ -117,14 +117,14 @@ describe('Replay callback and startup safety', () => {
   it.each(['rotate', 'clear'])('does not publish a paused event after capture changes the session: %s', (action) => {
     start({ inactivityThresholdMs: 5_000 });
     const changeSession = () => {
-      faro.metas.removeCaptureListener(changeSession);
+      faro.metas.removeCaptureListener!(changeSession);
       if (action === 'rotate') {
         setSession('B');
       } else {
         faro.api.setSession(undefined);
       }
     };
-    faro.metas.addCaptureListener(changeSession);
+    faro.metas.addCaptureListener!(changeSession);
 
     jest.advanceTimersByTime(5_000);
 
