@@ -33,7 +33,7 @@ export function getUserEventHandler(
       return;
     }
 
-    const element = target.closest(`[${normalizeDataAttributeName(dataAttributeName)}]`) as HTMLElement | null;
+    const element = findClosestElementWithAttribute(target, normalizeDataAttributeName(dataAttributeName));
     const userActionName = getUserActionNameFromElement(element, dataAttributeName);
 
     // We don't have a matching element or data attribute
@@ -56,6 +56,19 @@ export function getUserEventHandler(
   }
 
   return { processUserEvent, processUserActionStarted };
+}
+
+export function findClosestElementWithAttribute(element: Element, attributeName: string): HTMLElement | null {
+  let current: Element | null = element;
+
+  while (current) {
+    if (current.hasAttribute(attributeName)) {
+      return current as HTMLElement;
+    }
+    current = current.parentElement;
+  }
+
+  return null;
 }
 
 export function getUserActionTimeoutFromElement(element: HTMLElement, dataAttributeName: string): number | undefined {

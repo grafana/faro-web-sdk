@@ -181,6 +181,17 @@ describe('getUserEventHandler', () => {
     expect(startSpy).toHaveBeenCalledWith('my-action', {}, { triggerName: 'pointerdown', initialActivityTimeout: NaN });
   });
 
+  it('does not throw when the configured data attribute name contains CSS selector special characters', () => {
+    faro.config!.userActionsInstrumentation!.dataAttributeName = 'data-foo]';
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+
+    const element = document.createElement('div');
+    const event = { type: 'click', target: element } as unknown as PointerEvent;
+
+    expect(() => processUserEvent(event)).not.toThrow();
+    expect(startSpy).not.toHaveBeenCalled();
+  });
+
   it('does not start a new action if one already exists', () => {
     getCurrentSpy.mockReturnValue(fakeAction);
     const { processUserEvent } = getUserEventHandler(faro as Faro);
