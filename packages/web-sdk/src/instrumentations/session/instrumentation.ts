@@ -6,7 +6,7 @@ import {
   EVENT_SESSION_START,
   VERSION,
 } from '@grafana/faro-core';
-import type { Config, Meta, MetaSession } from '@grafana/faro-core';
+import type { BeforeSendHook, Config, Meta, MetaSession } from '@grafana/faro-core';
 
 import type { TransportItem } from '../..';
 import { createSession } from '../../metas';
@@ -29,6 +29,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
   // Reads the session manager's adoption flag (set once the manager exists).
   private isAdoptingSession: () => boolean = () => false;
   private captureListener: (() => void) | undefined;
+  private beforeSendHook: BeforeSendHook | undefined;
+  private sessionStartListener: ((meta: Meta) => void) | undefined;
 
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
@@ -131,7 +133,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   private registerBeforeSendHook(recordActivity: (sessionId: string) => void) {
-    this.transports?.addBeforeSendHooks((item) => {
+    this.beforeSendHook = (item) => {
       // config.beforeSend runs before this hook. Sampling and hooks added later
       // retain their existing order and do not undo session activity.
       const sessionId = item.meta.session?.id;
@@ -156,7 +158,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
       }
 
       return null;
-    });
+    };
+    this.transports?.addBeforeSendHooks(this.beforeSendHook);
   }
 
   initialize(): void {
@@ -195,13 +198,22 @@ export class SessionInstrumentation extends BaseInstrumentation {
       }
     }
 
-    this.metas.addListener(this.sendSessionStartEvent.bind(this));
+    this.sessionStartListener = this.sendSessionStartEvent.bind(this);
+    this.metas.addListener(this.sessionStartListener);
   }
 
   destroy(): void {
     if (this.captureListener) {
       this.metas.removeCaptureListener(this.captureListener);
       this.captureListener = undefined;
+    }
+    if (this.beforeSendHook) {
+      this.transports.removeBeforeSendHooks(this.beforeSendHook);
+      this.beforeSendHook = undefined;
+    }
+    if (this.sessionStartListener) {
+      this.metas.removeListener(this.sessionStartListener);
+      this.sessionStartListener = undefined;
     }
   }
 }

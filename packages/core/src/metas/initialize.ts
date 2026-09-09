@@ -13,7 +13,9 @@ export function initializeMetas(
   let items: MetaItem[] = [];
   let listeners: MetasListener[] = [];
   let captureListeners: Array<() => void> = [];
-  let capturing = false;
+  let pendingCaptureListeners: Array<() => void> | undefined;
+  let nextCaptureListener = 0;
+  let captureListenerCount = 0;
 
   const getValue = () => items.reduce<Meta>((acc, item) => Object.assign(acc, isFunction(item) ? item() : item), {});
 
@@ -54,19 +56,28 @@ export function initializeMetas(
   };
 
   const capture: Metas['capture'] = (callback) => {
-    // Nested telemetry shares the same synchronous capture, including callbacks
-    // that assign recording identity before submitting their events.
-    const nested = capturing;
-    capturing = true;
+    // Nested telemetry drains pending reconciliation but never reruns active or
+    // completed listeners, including when a capture callback submits events.
+    const nested = pendingCaptureListeners !== undefined;
+    const cycleListeners = pendingCaptureListeners ?? captureListeners;
+    if (!nested) {
+      // Preserve forEach's array and length semantics if listeners are changed.
+      pendingCaptureListeners = cycleListeners;
+      nextCaptureListener = 0;
+      captureListenerCount = cycleListeners.length;
+    }
     try {
-      if (!nested) {
-        captureListeners.forEach((listener) => listener());
+      while (nextCaptureListener < captureListenerCount) {
+        const listener = cycleListeners[nextCaptureListener++];
+        listener?.();
       }
       const value = getValue();
       callback?.();
       return value;
     } finally {
-      capturing = nested;
+      if (!nested) {
+        pendingCaptureListeners = undefined;
+      }
     }
   };
 

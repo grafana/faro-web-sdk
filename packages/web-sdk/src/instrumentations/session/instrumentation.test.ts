@@ -80,6 +80,61 @@ describe('SessionInstrumentation', () => {
     expect(event.meta.session?.id).toEqual(session.id);
   });
 
+  it.each(['same', 'replacement'])('delivers sampled events after readding the %s instance', (instance) => {
+    const transport = new MockTransport();
+    const instrumentation = new SessionInstrumentation();
+    const faro = initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [instrumentation],
+        sessionTracking: { enabled: true, persistent: false, samplingRate: 1 },
+      })
+    );
+
+    faro.api.pushEvent('before');
+    expect(transport.items).toContainEqual(
+      expect.objectContaining({ payload: expect.objectContaining({ name: 'before' }) })
+    );
+
+    faro.instrumentations.remove(instrumentation);
+    faro.instrumentations.add(instance === 'same' ? instrumentation : new SessionInstrumentation());
+    faro.api.pushEvent('after');
+
+    expect(transport.items).toContainEqual(
+      expect.objectContaining({ payload: expect.objectContaining({ name: 'after' }) })
+    );
+  });
+
+  it('stops emitting session lifecycle events after removal and lets a replacement observe changes', () => {
+    const transport = new MockTransport();
+    const instrumentation = new SessionInstrumentation();
+    const faro = initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [instrumentation],
+        sessionTracking: { enabled: false },
+      })
+    );
+
+    faro.api.setSession({ id: 'before-removal' });
+    expect(transport.items.map((item) => (item.payload as EventEvent).name)).toEqual([EVENT_SESSION_START]);
+    transport.items.length = 0;
+
+    faro.instrumentations.remove(instrumentation);
+    instrumentation.destroy();
+    faro.api.setSession({ id: 'while-removed' });
+    expect(transport.items).toEqual([]);
+
+    faro.instrumentations.add(new SessionInstrumentation());
+    faro.api.setSession({ id: 'after-replacement' });
+    expect(transport.items).toEqual([
+      expect.objectContaining({
+        payload: expect.objectContaining({ name: EVENT_SESSION_START }),
+        meta: expect.objectContaining({ session: expect.objectContaining({ id: 'after-replacement' }) }),
+      }),
+    ]);
+  });
+
   it('will send session start event for new session.', () => {
     const transport = new MockTransport();
     const session = createSession({ foo: 'bar' });
