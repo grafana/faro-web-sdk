@@ -1,2 +1,4 @@
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 * @grafana/frontend-o11y
+
+/experimental/instrumentation-replay/ @grafana/session-replay
