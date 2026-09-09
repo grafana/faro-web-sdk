@@ -2,6 +2,9 @@
 
 ## Next
 
+- Fix (`@grafana/faro-instrumentation-replay`): Pause inactive recordings even when metadata
+  capture fails, and contain errors when publishing the paused lifecycle event (#2260).
+
 ## 2.4.0
 
 - Feature (`@grafana/faro-transport-otlp-http`): OTLP HTTP transport now supports async dynamic header values.

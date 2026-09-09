@@ -66,6 +66,69 @@ describe('Replay callback and startup safety', () => {
     return events().filter((item) => item.payload.name === 'faro.session_recording.event');
   }
 
+  it('pauses despite a capture listener failure and resumes after the listener recovers', () => {
+    start({ inactivityThresholdMs: 5_000 });
+    const failedCapture = () => {
+      throw new Error('capture failed');
+    };
+    faro.metas.addCaptureListener(failedCapture);
+
+    expect(() => jest.advanceTimersByTime(5_000)).not.toThrow();
+    expect(stop).toHaveBeenCalledTimes(1);
+    expect(events().map((item) => item.payload.name)).toEqual(['faro.session_recording.started']);
+
+    faro.metas.removeCaptureListener(failedCapture);
+    emit(changeEvent());
+    expect(recordings()).toEqual([]);
+    document.dispatchEvent(new Event('pointerdown'));
+
+    expect(mockRecord).toHaveBeenCalledTimes(2);
+    expect(events().map((item) => item.payload.name)).toEqual([
+      'faro.session_recording.started',
+      'faro.session_recording.resumed',
+    ]);
+  });
+
+  it('stays paused when publishing the paused event fails', () => {
+    start({ inactivityThresholdMs: 5_000 });
+    const pushEvent = jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(() => {
+      throw new Error('publication failed');
+    });
+
+    try {
+      expect(() => jest.advanceTimersByTime(5_000)).not.toThrow();
+      expect(stop).toHaveBeenCalledTimes(1);
+      emit(changeEvent());
+      expect(recordings()).toEqual([]);
+      document.dispatchEvent(new Event('pointerdown'));
+      expect(mockRecord).toHaveBeenCalledTimes(2);
+      expect(events().map((item) => item.payload.name)).toEqual([
+        'faro.session_recording.started',
+        'faro.session_recording.resumed',
+      ]);
+    } finally {
+      pushEvent.mockRestore();
+    }
+  });
+
+  it.each(['rotate', 'clear'])('does not publish a paused event after capture changes the session: %s', (action) => {
+    start({ inactivityThresholdMs: 5_000 });
+    const changeSession = () => {
+      faro.metas.removeCaptureListener(changeSession);
+      if (action === 'rotate') {
+        setSession('B');
+      } else {
+        faro.api.setSession(undefined);
+      }
+    };
+    faro.metas.addCaptureListener(changeSession);
+
+    jest.advanceTimersByTime(5_000);
+
+    expect(stop).toHaveBeenCalledTimes(1);
+    expect(events().filter((item) => item.payload.name === 'faro.session_recording.paused')).toEqual([]);
+  });
+
   it.each(['no-stop', 'throw'])('discards synchronous startup events when record fails: %s', (failure) => {
     mockRecord.mockImplementation((options) => {
       options.emit(metaEvent());

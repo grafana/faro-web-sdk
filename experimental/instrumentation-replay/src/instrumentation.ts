@@ -393,21 +393,27 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       return;
     }
 
-    this.metas.capture(() => {
-      if (!this.isRecording || this.isPaused) {
-        return;
-      }
+    if (this.inactivityTimer !== null) {
+      clearTimeout(this.inactivityTimer);
+      this.inactivityTimer = null;
+    }
 
-      if (this.inactivityTimer !== null) {
-        clearTimeout(this.inactivityTimer);
-        this.inactivityTimer = null;
-      }
+    // Metadata reconciliation must not prevent the local inactivity pause.
+    this.stopRrweb();
+    this.isPaused = true;
+    this.logDebug('Session replay paused due to inactivity');
 
-      this.stopRrweb();
-      this.isPaused = true;
-      this.logDebug('Session replay paused due to inactivity');
-      this.api.pushEvent(faroSessionReplayPausedEventName, {});
-    });
+    try {
+      this.metas.capture(() => {
+        if (!this.isRecording || !this.isPaused || !this.isRecordingSessionEligible()) {
+          return;
+        }
+
+        this.api.pushEvent(faroSessionReplayPausedEventName, {});
+      });
+    } catch (err) {
+      this.logWarn('Failed to push session replay paused event', err);
+    }
   }
 
   private resumeRecording(): void {
