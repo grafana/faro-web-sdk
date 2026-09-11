@@ -24,6 +24,14 @@ function faroHarnessPlugin(): Plugin {
       server.middlewares.use((req, res, next) => {
         const url = (req.url ?? '').split('?')[0] ?? '';
 
+        // Serve this navigation fixture without Vite's injected HMR client so
+        // native BFCache tests exercise only the SDK and browser lifecycle.
+        if (url === '/replay-lifecycle') {
+          res.setHeader('content-type', 'text/html');
+          res.end(readFileSync(join(REPO_ROOT, 'e2e/smoke/replay-lifecycle.html')));
+          return;
+        }
+
         const bundleMatch = /^\/bundles\/([\w-]+)\.iife\.js$/.exec(url);
         if (bundleMatch) {
           const requested = bundleMatch[1];
