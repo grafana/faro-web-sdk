@@ -240,6 +240,28 @@ describe('Replay callback and startup safety', () => {
     expect(recordings().map((item) => item.meta.session?.id)).toEqual(['C']);
   });
 
+  it('does not leak a recorder when a capture listener reinitializes replay', () => {
+    const reinitialize = () => {
+      faro.metas.removeCaptureListener(reinitialize);
+      faro.instrumentations.remove(replay);
+      faro.instrumentations.add(replay);
+    };
+    faro.metas.addCaptureListener(reinitialize);
+
+    start();
+
+    expect(mockRecord).toHaveBeenCalledTimes(1);
+    expect(stop).not.toHaveBeenCalled();
+    emit(changeEvent());
+    expect(recordings().map((item) => item.meta.session?.id)).toEqual(['A']);
+
+    faro.instrumentations.remove(replay);
+
+    expect(stop).toHaveBeenCalledTimes(1);
+    emit(changeEvent());
+    expect(recordings()).toHaveLength(1);
+  });
+
   it('publishes the lifecycle marker before buffered events and then accepts live events', () => {
     mockRecord.mockImplementation((options) => {
       emit = options.emit;

@@ -368,6 +368,11 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private startRecording(sessionId: string): void {
     try {
       this.metas.capture(() => {
+        // A capture listener may have reinitialized and started this instrumentation.
+        if (this.isRecording) {
+          return;
+        }
+
         const eligibleSessionId = this.currentEligibleSessionId();
         if (this.destroyed || eligibleSessionId === null || eligibleSessionId !== sessionId) {
           this.logDebug('Session changed during reconciliation, deferring recording start');
