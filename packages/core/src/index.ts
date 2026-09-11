@@ -161,5 +161,6 @@ export type {
 } from './utils';
 
 export { VERSION } from './version';
+export { captureMetas } from './metas';
 
 export { unknownString } from './consts';

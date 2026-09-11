@@ -1,4 +1,4 @@
-import { BaseInstrumentation, clampSamplingRate, genShortID, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, captureMetas, clampSamplingRate, genShortID, VERSION } from '@grafana/faro-core';
 import { record, type recordOptions } from '@grafana/rrweb';
 import { EventType, type eventWithTime } from '@grafana/rrweb-types';
 
@@ -508,7 +508,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   private startRecording(sessionId: string): void {
     try {
-      this.metas.capture(() => {
+      captureMetas(this.metas, () => {
         // A capture listener may have reinitialized and started this instrumentation.
         if (this.isRecording) {
           return;
@@ -563,7 +563,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.logDebug('Session replay paused due to inactivity');
 
     try {
-      this.metas.capture(() => {
+      captureMetas(this.metas, () => {
         if (!this.isRecording || !this.isPaused || !this.isRecordingSessionEligible()) {
           return;
         }
@@ -581,7 +581,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     }
 
     try {
-      this.metas.capture(() => {
+      captureMetas(this.metas, () => {
         // A capture listener may have installed a fresh recorder.
         if (this.isRecording && !this.isPaused) {
           return;
@@ -694,7 +694,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private handleEvent(event: eventWithTime, isCurrentAttempt: () => boolean): void {
     const state = this.recordingState;
     try {
-      this.metas.capture(() => {
+      captureMetas(this.metas, () => {
         if (!state || !isCurrentAttempt()) {
           return;
         }

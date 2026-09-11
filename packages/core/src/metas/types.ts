@@ -9,10 +9,10 @@ export interface Metas {
   remove: (...getters: MetaItem[]) => void;
   addListener: (listener: MetasListener) => void;
   removeListener: (listener: MetasListener) => void;
-  /** Reconcile before capture. An optional synchronous callback shares this capture with nested telemetry. */
-  capture: (callback?: () => void) => Meta;
-  addCaptureListener: (listener: () => void) => void;
-  removeCaptureListener: (listener: () => void) => void;
+  /** Reconcile before capture. Optional for compatibility with older extension implementations. */
+  capture?: (callback?: () => void) => Meta;
+  addCaptureListener?: (listener: () => void) => void;
+  removeCaptureListener?: (listener: () => void) => void;
   value: Meta;
 }
 

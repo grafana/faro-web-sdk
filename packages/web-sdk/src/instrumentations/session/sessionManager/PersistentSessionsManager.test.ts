@@ -74,7 +74,7 @@ describe('Persistent Sessions Manager.', () => {
     const nextActivityTimeAfterFiveSeconds = fakeSystemTime + 5000;
     jest.setSystemTime(nextActivityTimeAfterFiveSeconds);
 
-    updateSession();
+    updateSession({ refreshActivity: false });
 
     expect(JSON.parse(mockStorage[STORAGE_KEY]).lastActivity).toBe(fakeSystemTime);
     recordActivity(mockInitialSessionId);

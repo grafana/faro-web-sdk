@@ -3,6 +3,7 @@ import type { InternalLogger } from '../internalLogger';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 import { isFunction } from '../utils';
 
+import { markMetaCaptured } from './capture';
 import type { Meta, MetaItem, Metas, MetasListener } from './types';
 
 export function initializeMetas(
@@ -55,7 +56,7 @@ export function initializeMetas(
     listeners = listeners.filter((currentListener) => currentListener !== listener);
   };
 
-  const capture: Metas['capture'] = (callback) => {
+  const capture: NonNullable<Metas['capture']> = (callback) => {
     // Nested telemetry drains pending reconciliation but never reruns active or
     // completed listeners, including when a capture callback submits events.
     const nested = pendingCaptureListeners !== undefined;
@@ -71,7 +72,7 @@ export function initializeMetas(
         const listener = cycleListeners[nextCaptureListener++];
         listener?.();
       }
-      const value = getValue();
+      const value = markMetaCaptured(getValue());
       callback?.();
       return value;
     } finally {

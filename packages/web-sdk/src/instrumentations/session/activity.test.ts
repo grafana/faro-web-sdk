@@ -10,7 +10,7 @@ import {
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config/makeCoreConfig';
-import { FetchTransport } from '../../transports/fetch-v2/transport';
+import { FetchTransport } from '../../transports/fetch/transport';
 
 import { SessionInstrumentation } from './instrumentation';
 import { type FaroUserSession, SESSION_INACTIVITY_TIME, STORAGE_KEY } from './sessionManager';
@@ -218,7 +218,7 @@ describe.each([true, false])('accepted activity with persistent=%s', (persistent
   });
 });
 
-it('does not refresh activity again for fetch-v2 retries', async () => {
+it('does not refresh activity again for Fetch retries', async () => {
   const fetchMock = jest
     .fn()
     .mockResolvedValueOnce({ status: 503, headers: { get: () => null }, text: async () => '' })

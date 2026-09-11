@@ -6,15 +6,36 @@ data once it has been collected by the instrumentations and processed by the int
 The core library does not provide any transports out of the box. They are either provided by wrapper packages like
 `web-sdk` or by the user.
 
-## Fetch-v2 session identity
+## Fetch delivery and session identity
 
-With `experimental.fetchTransportV2: true`, each request's `X-Faro-Session-Id` header identifies
+The default Fetch transport sends each request with an `X-Faro-Session-Id` header identifying
 the session in its payload. Async header resolution, compression, queueing, and retries do not
 replace that identity with the current session.
 
 A collector `202` response with `X-Faro-Session-Status: invalid` renews the session only if the
 request's session is still current in memory and storage. Delayed responses cannot renew a newer
-session, including one another tab has established. This guarantee does not apply to legacy `fetch`.
+session, including one another tab has established.
+
+The transport retries transient network failures and HTTP 408, 425, 429, 500, 502, 503, and 504
+responses. Defaults are three total attempts, a ten-second request timeout, and exponential
+backoff starting at one second and capped at thirty seconds. Each batch retains its body and
+`Idempotency-Key` across attempts. Collector CORS policies must allow `Idempotency-Key` before
+this SDK version is deployed. The header alone does not guarantee server-side deduplication.
+
+Package-root `FetchTransport` imports and constructor options remain supported. Advanced callers can
+set `retry` and `requestTimeoutMs` when constructing a transport. The deprecated
+`defaultRateLimitBackoffMs` option aliases `retry.initialBackoffMs`; an explicit
+`retry.initialBackoffMs` takes precedence. It now controls retry backoff rather than a global
+cooldown that drops intervening events.
+
+Remove `experimental.fetchTransportV2` from configuration: reliable Fetch is now unconditional.
+The former `fetch-v2` module paths have been removed. Import `FetchTransport` and its public option
+types from `@grafana/faro-web-sdk` instead. This is a breaking change for callers using the flag or
+removed deep imports; there is no legacy transport fallback.
+
+The default `promiseBuffer.add()` shares admission and concurrency with delivery. Tasks submitted
+directly through that API run once; transport requests use the retry policy. Custom buffer replacements
+and decorators retain their own outer scheduling so waiting for delivery cannot deadlock their worker.
 
 ## Transports SDK
 

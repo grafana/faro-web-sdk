@@ -45,7 +45,7 @@ describe('api.events', () => {
       it('keeps the triggering event as the dedupe key after nested lifecycle emission', () => {
         const target = new MockTransport();
         const { api, metas } = initializeFaro(mockConfig({ transports: [target] }));
-        metas.addCaptureListener(() => api.pushEvent('session-transition'));
+        metas.addCaptureListener!(() => api.pushEvent('session-transition'));
 
         api.pushEvent('trigger');
         api.pushEvent('trigger');
@@ -59,7 +59,7 @@ describe('api.events', () => {
       it('deduplicates the same event emitted during capture', () => {
         const target = new MockTransport();
         const { api, metas } = initializeFaro(mockConfig({ transports: [target] }));
-        metas.addCaptureListener(() => api.pushEvent('same'));
+        metas.addCaptureListener!(() => api.pushEvent('same'));
 
         api.pushEvent('same');
 
@@ -72,10 +72,10 @@ describe('api.events', () => {
         const fail = () => {
           throw new Error('capture failed');
         };
-        metas.addCaptureListener(fail);
+        metas.addCaptureListener!(fail);
         api.pushEvent('retry');
         expect(target.items).toEqual([]);
-        metas.removeCaptureListener(fail);
+        metas.removeCaptureListener!(fail);
 
         api.pushEvent('retry');
 

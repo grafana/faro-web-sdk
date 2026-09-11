@@ -184,10 +184,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
       this.api.setSession(initialSessionMeta);
       this.captureListener = () => {
         if (!this.transports.isPaused()) {
-          sessionManager.updateSession();
+          sessionManager.updateSession({ refreshActivity: false });
         }
       };
-      this.metas.addCaptureListener(this.captureListener);
+      this.metas.addCaptureListener?.(this.captureListener);
 
       if (lifecycleType === EVENT_SESSION_START) {
         this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
@@ -204,7 +204,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
   destroy(): void {
     if (this.captureListener) {
-      this.metas.removeCaptureListener(this.captureListener);
+      this.metas.removeCaptureListener?.(this.captureListener);
       this.captureListener = undefined;
     }
     if (this.beforeSendHook) {

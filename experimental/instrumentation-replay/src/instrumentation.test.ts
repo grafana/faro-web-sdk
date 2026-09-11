@@ -50,7 +50,11 @@ describe('ReplayInstrumentation', () => {
   let mockGetSession: jest.Mock;
   let mockAddListener: jest.Mock;
   let mockPushEvent: jest.Mock;
-  const mockCapture = (callback?: () => void) => callback?.();
+  const mockCapture = (callback?: () => void) => {
+    const meta = { session: mockGetSession() };
+    callback?.();
+    return meta;
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
