@@ -1,13 +1,5 @@
-import {
-  BaseExtension,
-  BaseTransport,
-  createPromiseBuffer,
-  genShortID,
-  getTransportBody,
-  noop,
-  VERSION,
-} from '@grafana/faro-core';
-import type { Config, Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
+import { BaseTransport, createPromiseBuffer, genShortID, getTransportBody, noop, VERSION } from '@grafana/faro-core';
+import type { Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
 
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
 import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
@@ -15,6 +7,7 @@ import { parseHttpDate } from '../../utils/httpDate';
 
 import { ReliableDeliveryQueue } from './deliveryQueue';
 import type { AttemptOutcome, DeliveryFailure, DeliveryReservation } from './deliveryQueue';
+import { SendDeadline } from './sendDeadline';
 import type { FetchTransportOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;
@@ -37,7 +30,13 @@ interface KeepaliveReservation {
   keepalive: boolean;
   release: () => void;
 }
-class RequestTimeoutError extends Error {}
+
+interface PreparedRequest {
+  requestInit: RequestInit;
+  bodySize: number;
+  sessionId: string | undefined;
+  keepalive: boolean | undefined;
+}
 
 function getBodyByteSize(body: string): number {
   return typeof TextEncoder === 'undefined' ? body.length : new TextEncoder().encode(body).byteLength;
@@ -58,6 +57,7 @@ export class FetchTransport extends BaseTransport {
   private readonly requestTimeoutMs: number;
   private readonly compressionEnabled: boolean;
   private readonly deliveryQueue: ReliableDeliveryQueue;
+  private removeLifecycleListeners?: () => void;
 
   constructor(private readonly options: FetchTransportOptions) {
     super();
@@ -70,9 +70,6 @@ export class FetchTransport extends BaseTransport {
       this.logWarn(
         'requestCompression is enabled but CompressionStream is not available. Falling back to uncompressed.'
       );
-    }
-    if (this.requestTimeoutMs > 0 && typeof AbortController === 'undefined') {
-      this.logWarn('AbortController is unavailable. Requests will be sent without the configured timeout.');
     }
 
     this.deliveryQueue = new ReliableDeliveryQueue({
@@ -106,7 +103,7 @@ export class FetchTransport extends BaseTransport {
           this.promiseBuffer.add !== this.defaultBufferAdd ||
           this.pendingCustomSends > 0
         ) {
-          return this.customPromiseBuffer.add(producer);
+          return this.customPromiseBuffer.add(async () => producer());
         }
         const reservation = this.deliveryQueue.reserve();
         if (!reservation) {
@@ -118,30 +115,108 @@ export class FetchTransport extends BaseTransport {
     this.defaultBufferAdd = this.defaultPromiseBuffer.add;
     this.promiseBuffer = this.defaultPromiseBuffer;
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('pagehide', () => this.deliveryQueue.flush());
-      window.addEventListener('pageshow', (event) => {
-        if (event.persisted) {
-          this.deliveryQueue.resume();
-        }
-      });
+    // Derived initialization hooks run after their constructor and SDK wiring.
+    FetchTransport.prototype.initialize.call(this);
+  }
+
+  initialize(): void {
+    if (this.removeLifecycleListeners || typeof window === 'undefined') {
+      return;
+    }
+    let active = true;
+    const onPageHide = () => {
+      if (active) {
+        this.deliveryQueue.flush();
+      }
+    };
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (active && event.persisted) {
+        this.deliveryQueue.resume();
+      }
+    };
+    const dispose = () => {
+      active = false;
+      window.removeEventListener('pagehide', onPageHide);
+      window.removeEventListener('pageshow', onPageShow);
+    };
+    this.removeLifecycleListeners = dispose;
+    try {
+      window.addEventListener('pagehide', onPageHide);
+      window.addEventListener('pageshow', onPageShow);
+      if (this.removeLifecycleListeners !== dispose) {
+        dispose();
+        return;
+      }
+      this.deliveryQueue.resume();
+    } catch (error) {
+      if (this.removeLifecycleListeners === dispose) {
+        this.removeLifecycleListeners = undefined;
+      }
+      dispose();
+      throw error;
     }
   }
 
+  destroy(): void {
+    const dispose = this.removeLifecycleListeners;
+    this.removeLifecycleListeners = undefined;
+    dispose?.();
+  }
+
   async send(items: TransportItem[]): Promise<void> {
-    const buffer = this.promiseBuffer;
-    if (buffer === this.defaultPromiseBuffer && buffer.add === this.defaultBufferAdd) {
-      await this.deliver(items);
+    const startedAt = this.getNow();
+    const reservation = this.deliveryQueue.reserve();
+    if (!reservation) {
+      this.logError('Permanent delivery failure', {
+        error: 'Reliable delivery queue is full',
+        attempts: 0,
+        elapsedTimeMs: 0,
+      });
       return;
     }
 
-    this.pendingCustomSends++;
+    let deadline: SendDeadline | undefined;
+    let custom = false;
+    let attempts = 0;
     try {
-      await buffer.add(() => this.deliver(items));
+      const task = new SendDeadline(
+        startedAt,
+        this.requestTimeoutMs,
+        this.getNow,
+        this.options.requestOptions?.signal ?? undefined
+      );
+      deadline = task;
+      const buffer = this.promiseBuffer;
+      custom = buffer !== this.defaultPromiseBuffer || buffer.add !== this.defaultBufferAdd;
+      let work: Promise<void> | undefined;
+      const produce = () => {
+        if (!work) {
+          work = Promise.resolve().then(() =>
+            this.deliver(items, reservation, task, () => {
+              attempts++;
+            })
+          );
+          void work.catch(noop);
+        }
+        return work;
+      };
+      if (custom) {
+        this.pendingCustomSends++;
+        await task.run(() => buffer.add(produce));
+      } else {
+        await task.run(produce);
+      }
     } catch (error) {
-      this.logError('Permanent delivery failure', { error, attempts: 0, elapsedTimeMs: 0 });
+      this.logError('Permanent delivery failure', { error, attempts, elapsedTimeMs: this.getNow() - startedAt });
     } finally {
-      this.pendingCustomSends--;
+      try {
+        deadline?.dispose();
+      } finally {
+        reservation.release();
+        if (custom) {
+          this.pendingCustomSends--;
+        }
+      }
     }
   }
 
@@ -161,37 +236,28 @@ export class FetchTransport extends BaseTransport {
     }
   }
 
-  private async deliver(items: TransportItem[]): Promise<void> {
-    const reservation = this.deliveryQueue.reserve();
-    if (!reservation) {
-      this.logError('Permanent delivery failure', {
-        error: 'Reliable delivery queue is full',
-        attempts: 0,
-        elapsedTimeMs: 0,
-      });
-      return;
-    }
-
-    try {
-      const prepared = await this.prepareRequest(items);
-      const outcome = await reservation.deliver((attemptsRemaining, unloading) =>
-        this.performAttempt(prepared, attemptsRemaining, unloading)
+  private async deliver(
+    items: TransportItem[],
+    reservation: DeliveryReservation,
+    deadline: SendDeadline,
+    onFetch: () => void
+  ): Promise<void> {
+    const prepared = await deadline.run(() => this.prepareRequest(items, deadline));
+    const outcome = await deadline.run(() =>
+      reservation.deliver((attemptsRemaining, unloading) =>
+        this.performAttempt(prepared, deadline, attemptsRemaining, unloading, onFetch)
+      )
+    );
+    if (outcome.kind === 'terminal') {
+      this.logError(
+        outcome.reason === 'retries-exhausted' ? 'Delivery retries exhausted' : 'Permanent delivery failure',
+        {
+          ...outcome.failure,
+          reason: outcome.reason,
+          attempts: outcome.attempts,
+          elapsedTimeMs: this.getNow() - deadline.startedAt,
+        }
       );
-      if (outcome.kind === 'terminal') {
-        this.logError(
-          outcome.reason === 'retries-exhausted' ? 'Delivery retries exhausted' : 'Permanent delivery failure',
-          {
-            ...outcome.failure,
-            reason: outcome.reason,
-            attempts: outcome.attempts,
-            elapsedTimeMs: outcome.elapsedTimeMs,
-          }
-        );
-      }
-    } catch (error) {
-      this.logError('Permanent delivery failure', { error, attempts: 0, elapsedTimeMs: 0 });
-    } finally {
-      reservation.release();
     }
   }
 
@@ -203,28 +269,33 @@ export class FetchTransport extends BaseTransport {
     return true;
   }
 
-  private async prepareRequest(
-    items: TransportItem[]
-  ): Promise<{ requestInit: RequestInit; bodySize: number; sessionId: string | undefined }> {
+  private async prepareRequest(items: TransportItem[], deadline: SendDeadline): Promise<PreparedRequest> {
     // Async headers and compression can outlive a session. Bind both the header
     // and its response handling to the payload, not the current session.
     const transportBody = getTransportBody(items);
     const sessionId = transportBody.meta.session?.id;
     const jsonBody = JSON.stringify(transportBody);
+    deadline.assertActive();
 
     const { headers = {}, ...requestOptions } = this.options.requestOptions ?? {};
-    const { keepalive: _keepalive, signal: _signal, ...requestOptionsWithoutManagedFields } = requestOptions;
+    const { keepalive, signal: _signal, ...requestOptionsWithoutManagedFields } = requestOptions;
     const resolvedHeaders: Record<string, string> = {};
 
-    for (const [key, value] of Object.entries(headers)) {
-      resolvedHeaders[key] = typeof value === 'function' ? await value() : value;
+    for (const key of Object.keys(headers)) {
+      deadline.assertActive();
+      if (key.toLowerCase() === 'idempotency-key' || key.toLowerCase() === 'x-faro-session-id') {
+        continue;
+      }
+      const value = headers[key]!;
+      resolvedHeaders[key] = typeof value === 'function' ? await deadline.run(value) : value;
     }
 
+    deadline.assertActive();
     let body: string | Blob = jsonBody;
     let bodySize = getBodyByteSize(jsonBody);
     const compressionHeaders: Record<string, string> = {};
     if (this.compressionEnabled) {
-      body = await this.compress(jsonBody);
+      body = await deadline.run(() => this.compress(jsonBody, deadline));
       bodySize = body.size;
       compressionHeaders['Content-Encoding'] = 'gzip';
     }
@@ -232,6 +303,7 @@ export class FetchTransport extends BaseTransport {
     return {
       bodySize,
       sessionId,
+      keepalive,
       requestInit: {
         method: 'POST',
         headers: {
@@ -250,48 +322,58 @@ export class FetchTransport extends BaseTransport {
   }
 
   private async performAttempt(
-    prepared: { requestInit: RequestInit; bodySize: number; sessionId: string | undefined },
+    prepared: PreparedRequest,
+    deadline: SendDeadline,
     attemptsRemaining: number,
-    unloading: boolean
+    unloading: boolean,
+    onFetch: () => void
   ): Promise<AttemptOutcome> {
-    const callerSignal = this.options.requestOptions?.signal;
-    if (callerSignal?.aborted) {
-      return { kind: 'terminal', failure: { error: callerSignal.reason }, attemptsMade: 0 };
-    }
-
+    deadline.assertActive();
     let attemptsMade = 0;
+    let response: Response;
     try {
-      const response = await this.fetchWithKeepaliveFallback(
+      response = await this.fetchWithKeepaliveFallback(
         prepared.requestInit,
         prepared.bodySize,
-        unloading ? true : this.options.requestOptions?.keepalive,
+        unloading ? true : prepared.keepalive,
         attemptsRemaining,
-        () => attemptsMade++
+        deadline,
+        () => {
+          attemptsMade++;
+          onFetch();
+        }
       );
-      this.handleResponse(response, prepared.sessionId);
-
-      if (response.status >= 200 && response.status < 300) {
-        return { kind: 'success', attemptsMade };
-      }
-
-      const failure = { status: response.status };
-      if (!RETRYABLE_STATUS_CODES.has(response.status) || unloading) {
-        return { kind: 'terminal', failure, attemptsMade };
-      }
-
-      return {
-        kind: 'retry',
-        failure,
-        attemptsMade,
-        retryAfterMs: WAIT_INTERVAL_STATUS_CODES.has(response.status) ? this.getRetryAfterDelayMs(response) : undefined,
-      };
     } catch (error) {
+      deadline.assertActive();
       const failure: DeliveryFailure = { error };
-      if (callerSignal?.aborted || !this.isFetchNetworkError(error) || unloading) {
+      if (!this.isFetchNetworkError(error) || unloading) {
         return { kind: 'terminal', failure, attemptsMade };
       }
       return { kind: 'retry', failure, attemptsMade };
     }
+
+    deadline.assertActive();
+    try {
+      this.handleResponse(response, prepared.sessionId, deadline);
+    } catch (error) {
+      deadline.assertActive();
+      this.logError('Failed to process collector response', error);
+    }
+    deadline.assertActive();
+    if (response.status >= 200 && response.status < 300) {
+      return { kind: 'success', attemptsMade };
+    }
+
+    const failure = { status: response.status };
+    if (!RETRYABLE_STATUS_CODES.has(response.status) || unloading) {
+      return { kind: 'terminal', failure, attemptsMade };
+    }
+    return {
+      kind: 'retry',
+      failure,
+      attemptsMade,
+      retryAfterMs: WAIT_INTERVAL_STATUS_CODES.has(response.status) ? this.getRetryAfterDelayMs(response) : undefined,
+    };
   }
 
   private async fetchWithKeepaliveFallback(
@@ -299,64 +381,27 @@ export class FetchTransport extends BaseTransport {
     bodySize: number,
     configuredKeepalive: boolean | undefined,
     attemptsRemaining: number,
+    deadline: SendDeadline,
     onFetch: () => void
   ): Promise<Response> {
-    const startedAt = this.getNow();
     const reservation = this.reserveKeepalive(bodySize, configuredKeepalive);
     try {
-      return await this.fetchWithTimeout(
-        { ...requestInit, keepalive: reservation.keepalive },
-        this.requestTimeoutMs,
-        onFetch
-      );
+      return await deadline.run(() => {
+        onFetch();
+        return fetch(this.options.url, { ...requestInit, keepalive: reservation.keepalive, signal: deadline.signal });
+      });
     } catch (error) {
-      if (
-        reservation.keepalive &&
-        attemptsRemaining > 1 &&
-        this.isFetchNetworkError(error) &&
-        !(error instanceof RequestTimeoutError) &&
-        !this.options.requestOptions?.signal?.aborted
-      ) {
+      deadline.assertActive();
+      if (reservation.keepalive && attemptsRemaining > 1 && this.isFetchNetworkError(error)) {
         this.logDebug('Retrying failed keepalive request with keepalive disabled.');
-        const remainingTimeoutMs = this.requestTimeoutMs - (this.getNow() - startedAt);
-        return this.fetchWithTimeout({ ...requestInit, keepalive: false }, remainingTimeoutMs, onFetch);
+        return deadline.run(() => {
+          onFetch();
+          return fetch(this.options.url, { ...requestInit, keepalive: false, signal: deadline.signal });
+        });
       }
       throw error;
     } finally {
       reservation.release();
-    }
-  }
-
-  private async fetchWithTimeout(requestInit: RequestInit, timeoutMs: number, onFetch: () => void): Promise<Response> {
-    const callerSignal = this.options.requestOptions?.signal;
-    if (this.requestTimeoutMs <= 0 || typeof AbortController === 'undefined') {
-      onFetch();
-      return fetch(this.options.url, { ...requestInit, signal: callerSignal });
-    }
-    if (timeoutMs <= 0) {
-      throw new RequestTimeoutError('Request timed out');
-    }
-
-    const controller = new AbortController();
-    const abortFromCaller = () => controller.abort(callerSignal?.reason);
-    callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
-    let timedOut = false;
-    const timeout = setTimeout(() => {
-      timedOut = true;
-      controller.abort();
-    }, timeoutMs);
-
-    try {
-      onFetch();
-      return await fetch(this.options.url, { ...requestInit, signal: controller.signal });
-    } catch (error) {
-      if (timedOut && !callerSignal?.aborted) {
-        throw new RequestTimeoutError('Request timed out');
-      }
-      throw error;
-    } finally {
-      clearTimeout(timeout);
-      callerSignal?.removeEventListener('abort', abortFromCaller);
     }
   }
 
@@ -399,22 +444,23 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
-  private handleResponse(response: Response, requestSessionId: string | undefined): void {
-    if (response.status === ACCEPTED && response.headers.get('X-Faro-Session-Status') === 'invalid') {
-      this.extendFaroSession(this.config, this.logDebug.bind(this), requestSessionId);
+  private handleResponse(response: Response, requestSessionId: string | undefined, deadline: SendDeadline): void {
+    try {
+      const invalid = response.status === ACCEPTED && response.headers.get('X-Faro-Session-Status') === 'invalid';
+      deadline.assertActive();
+      if (invalid) {
+        this.extendFaroSession(requestSessionId, deadline);
+      }
+    } finally {
+      response.text().catch(noop);
     }
-    response.text().catch(noop);
   }
 
   private isFetchNetworkError(error: unknown): boolean {
-    return (
-      error instanceof TypeError ||
-      error instanceof RequestTimeoutError ||
-      (error instanceof DOMException && error.name === 'AbortError')
-    );
+    return error instanceof TypeError || (error instanceof DOMException && error.name === 'AbortError');
   }
 
-  private async compress(body: string): Promise<Blob> {
+  private async compress(body: string, deadline: SendDeadline): Promise<Blob> {
     const stream = new ReadableStream({
       start(controller) {
         controller.enqueue(new TextEncoder().encode(body));
@@ -423,23 +469,24 @@ export class FetchTransport extends BaseTransport {
     }).pipeThrough(new CompressionStream('gzip'));
     const chunks: BlobPart[] = [];
     const reader = stream.getReader();
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) {
-        return new Blob(chunks);
+    try {
+      for (;;) {
+        const { done, value } = await deadline.run(() => reader.read());
+        if (done) {
+          return new Blob(chunks);
+        }
+        chunks.push(value);
       }
-      chunks.push(value);
+    } finally {
+      void reader.cancel().catch(noop);
+      reader.releaseLock();
     }
   }
 
-  private extendFaroSession(
-    config: Config,
-    logDebug: BaseExtension['logDebug'],
-    requestSessionId: string | undefined
-  ): void {
-    const sessionTrackingConfig = config.sessionTracking;
+  private extendFaroSession(requestSessionId: string | undefined, deadline: SendDeadline): void {
+    const sessionTrackingConfig = this.config.sessionTracking;
     if (!sessionTrackingConfig?.enabled) {
-      logDebug('Session expired.');
+      this.logDebug('Session expired.');
       return;
     }
 
@@ -448,13 +495,19 @@ export class FetchTransport extends BaseTransport {
     // A delayed response must not rotate a newer session, including one another
     // tab has already established in shared storage.
     const currentSessionId = this.metas.value.session?.id;
-    const storedSessionId = fetchUserSession()?.sessionId;
-    if (!requestSessionId || requestSessionId !== currentSessionId || requestSessionId !== storedSessionId) {
-      logDebug('Ignoring stale or cross-tab session-invalid response; request session no longer current.');
+    if (!requestSessionId || requestSessionId !== currentSessionId) {
+      this.logDebug('Ignoring stale session-invalid response; request session no longer current.');
       return;
     }
 
-    getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
-    logDebug('Session expired; created new session.');
+    getUserSessionUpdater({
+      fetchUserSession,
+      storeUserSession,
+      isActive: () => {
+        deadline.assertActive();
+        return true;
+      },
+    })({ forceSessionExtend: true, expectedSessionId: requestSessionId });
+    this.logDebug('Session invalidation processed.');
   }
 }
