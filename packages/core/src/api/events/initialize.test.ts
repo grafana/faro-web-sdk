@@ -42,6 +42,46 @@ describe('api.events', () => {
         expect(transport.items).toHaveLength(1);
       });
 
+      it('keeps the triggering event as the dedupe key after nested lifecycle emission', () => {
+        const target = new MockTransport();
+        const { api, metas } = initializeFaro(mockConfig({ transports: [target] }));
+        metas.addCaptureListener(() => api.pushEvent('session-transition'));
+
+        api.pushEvent('trigger');
+        api.pushEvent('trigger');
+
+        expect(target.items.map((item) => (item.payload as EventEvent).name)).toEqual([
+          'session-transition',
+          'trigger',
+        ]);
+      });
+
+      it('deduplicates the same event emitted during capture', () => {
+        const target = new MockTransport();
+        const { api, metas } = initializeFaro(mockConfig({ transports: [target] }));
+        metas.addCaptureListener(() => api.pushEvent('same'));
+
+        api.pushEvent('same');
+
+        expect(target.items.map((item) => (item.payload as EventEvent).name)).toEqual(['same']);
+      });
+
+      it('does not consume the dedupe key when capture fails', () => {
+        const target = new MockTransport();
+        const { api, metas } = initializeFaro(mockConfig({ transports: [target] }));
+        const fail = () => {
+          throw new Error('capture failed');
+        };
+        metas.addCaptureListener(fail);
+        api.pushEvent('retry');
+        expect(target.items).toEqual([]);
+        metas.removeCaptureListener(fail);
+
+        api.pushEvent('retry');
+
+        expect(target.items.map((item) => (item.payload as EventEvent).name)).toEqual(['retry']);
+      });
+
       it("doesn't filter events with same name and partially same values", () => {
         api.pushEvent('test', {
           a: '1',

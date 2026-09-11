@@ -82,50 +82,56 @@ export function initializeExceptionsAPI({
         ...(context ?? {}),
       });
 
-      const item: TransportItem<ExceptionEvent<typeof preserveOriginalError>> = {
-        meta: metas.value,
-        payload: {
-          type: type || error.name || defaultExceptionType,
-          value: error.message,
-          timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
-          trace: spanContext
-            ? {
-                trace_id: spanContext.traceId,
-                span_id: spanContext.spanId,
-              }
-            : tracesApi.getTraceContext(),
-          ...(isEmpty(ctx) ? {} : { context: ctx }),
-          ...(preserveOriginalError ? { originalError } : {}),
-          ...(fingerprint ? { fingerprint } : {}),
-          ...(fatal !== undefined ? { fatal } : {}),
-        },
-        type: TransportItemType.EXCEPTION,
+      const payload: ExceptionEvent<typeof preserveOriginalError> = {
+        type: type || error.name || defaultExceptionType,
+        value: error.message,
+        timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
+        trace: spanContext
+          ? {
+              trace_id: spanContext.traceId,
+              span_id: spanContext.spanId,
+            }
+          : tracesApi.getTraceContext(),
+        ...(isEmpty(ctx) ? {} : { context: ctx }),
+        ...(preserveOriginalError ? { originalError } : {}),
+        ...(fingerprint ? { fingerprint } : {}),
+        ...(fatal !== undefined ? { fatal } : {}),
       };
 
       stackFrames = stackFrames ?? (error.stack ? stacktraceParser?.(error).frames : undefined);
 
       if (stackFrames?.length) {
-        item.payload.stacktrace = {
+        payload.stacktrace = {
           frames: stackFrames,
         };
       }
 
       const testingPayload = {
-        type: item.payload.type,
-        value: item.payload.value,
-        stacktrace: item.payload.stacktrace,
-        context: item.payload.context,
-        fingerprint: item.payload.fingerprint,
-        fatal: item.payload.fatal ?? false,
+        type: payload.type,
+        value: payload.value,
+        stacktrace: payload.stacktrace,
+        context: payload.context,
+        fingerprint: payload.fingerprint,
+        fatal: payload.fatal ?? false,
       };
 
       if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
-        internalLogger.debug('Skipping error push because it is the same as the last one\n', item.payload);
+        internalLogger.debug('Skipping error push because it is the same as the last one\n', payload);
 
         return;
       }
 
+      const previousPayload = lastPayload;
+      const meta = metas.capture();
+      if (lastPayload !== previousPayload && !skipDedupe && config.dedupe && deepEqual(testingPayload, lastPayload)) {
+        return;
+      }
       lastPayload = testingPayload;
+      const item: TransportItem<ExceptionEvent<typeof preserveOriginalError>> = {
+        meta,
+        payload,
+        type: TransportItemType.EXCEPTION,
+      };
 
       internalLogger.debug('Pushing exception\n', item);
 

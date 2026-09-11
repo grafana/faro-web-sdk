@@ -39,36 +39,43 @@ export function initializeEventsAPI({
     try {
       const attrs = stringifyObjectValues(attributes);
 
-      const item: TransportItem<EventEvent> = {
-        meta: metas.value,
-        payload: customPayloadTransformer({
-          name,
-          domain: domain ?? config.eventDomain,
-          attributes: isEmpty(attrs) ? undefined : attrs,
-          timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
-          trace: spanContext
-            ? {
-                trace_id: spanContext.traceId,
-                span_id: spanContext.spanId,
-              }
-            : tracesApi.getTraceContext(),
-        }),
-        type: TransportItemType.EVENT,
-      };
+      const payload = customPayloadTransformer({
+        name,
+        domain: domain ?? config.eventDomain,
+        attributes: isEmpty(attrs) ? undefined : attrs,
+        timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
+        trace: spanContext
+          ? {
+              trace_id: spanContext.traceId,
+              span_id: spanContext.spanId,
+            }
+          : tracesApi.getTraceContext(),
+      });
 
       const testingPayload = {
-        name: item.payload.name,
-        attributes: item.payload.attributes,
-        domain: item.payload.domain,
+        name: payload.name,
+        attributes: payload.attributes,
+        domain: payload.domain,
       };
 
       if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
-        internalLogger.debug('Skipping event push because it is the same as the last one\n', item.payload);
+        internalLogger.debug('Skipping event push because it is the same as the last one\n', payload);
 
         return;
       }
 
+      const previousPayload = lastPayload;
+      const meta = metas.capture();
+      // Capture can emit a nested event. Preserve dedupe without committing a failed capture.
+      if (lastPayload !== previousPayload && !skipDedupe && config.dedupe && deepEqual(testingPayload, lastPayload)) {
+        return;
+      }
       lastPayload = testingPayload;
+      const item: TransportItem<EventEvent> = {
+        meta,
+        payload,
+        type: TransportItemType.EVENT,
+      };
 
       internalLogger.debug('Pushing event\n', item);
 

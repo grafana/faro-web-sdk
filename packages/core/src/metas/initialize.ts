@@ -12,6 +12,10 @@ export function initializeMetas(
 ): Metas {
   let items: MetaItem[] = [];
   let listeners: MetasListener[] = [];
+  let captureListeners: Array<() => void> = [];
+  let pendingCaptureListeners: Array<() => void> | undefined;
+  let nextCaptureListener = 0;
+  let captureListenerCount = 0;
 
   const getValue = () => items.reduce<Meta>((acc, item) => Object.assign(acc, isFunction(item) ? item() : item), {});
 
@@ -51,11 +55,44 @@ export function initializeMetas(
     listeners = listeners.filter((currentListener) => currentListener !== listener);
   };
 
+  const capture: Metas['capture'] = (callback) => {
+    // Nested telemetry drains pending reconciliation but never reruns active or
+    // completed listeners, including when a capture callback submits events.
+    const nested = pendingCaptureListeners !== undefined;
+    const cycleListeners = pendingCaptureListeners ?? captureListeners;
+    if (!nested) {
+      // Preserve forEach's array and length semantics if listeners are changed.
+      pendingCaptureListeners = cycleListeners;
+      nextCaptureListener = 0;
+      captureListenerCount = cycleListeners.length;
+    }
+    try {
+      while (nextCaptureListener < captureListenerCount) {
+        const listener = cycleListeners[nextCaptureListener++];
+        listener?.();
+      }
+      const value = getValue();
+      callback?.();
+      return value;
+    } finally {
+      if (!nested) {
+        pendingCaptureListeners = undefined;
+      }
+    }
+  };
+
   return {
     add,
     remove,
     addListener,
     removeListener,
+    capture,
+    addCaptureListener: (listener) => {
+      captureListeners.push(listener);
+    },
+    removeCaptureListener: (listener) => {
+      captureListeners = captureListeners.filter((current) => current !== listener);
+    },
     get value() {
       return getValue();
     },

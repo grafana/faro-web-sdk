@@ -1,5 +1,6 @@
 import { initializeFaro } from '../../initialize';
 import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
+import { TransportItemType } from '../../transports';
 import type { TransportItem } from '../../transports';
 import { LogLevel } from '../../utils';
 import { mockMetas, mockTracesApi, mockTransports, mockUserActionsApi } from '../apiTestHelpers';
@@ -40,6 +41,26 @@ describe('api.logs', () => {
 
         api.pushLog(['test']);
         expect(transport.items).toHaveLength(1);
+      });
+
+      it('does not reconcile metadata or emit session lifecycle activity for a duplicate', () => {
+        const transport = new MockTransport();
+        const { api, metas } = initializeFaro(mockConfig({ dedupe: true, transports: [transport] }));
+        let session = 0;
+        const reconcile = () => {
+          api.setSession({ id: String(++session) });
+          api.pushEvent('session-transition');
+        };
+        metas.addCaptureListener(reconcile);
+
+        api.pushLog(['test']);
+        api.pushLog(['test']);
+
+        expect(session).toBe(1);
+        expect(transport.items.map(({ type, meta }) => ({ type, session: meta.session?.id }))).toEqual([
+          { type: TransportItemType.EVENT, session: '1' },
+          { type: TransportItemType.LOG, session: '1' },
+        ]);
       });
 
       it("doesn't filter events with partially same message", () => {

@@ -6,7 +6,7 @@ import {
   EVENT_SESSION_START,
   VERSION,
 } from '@grafana/faro-core';
-import type { Config, Meta, MetaSession } from '@grafana/faro-core';
+import type { BeforeSendHook, Config, Meta, MetaSession } from '@grafana/faro-core';
 
 import type { TransportItem } from '../..';
 import { createSession } from '../../metas';
@@ -28,6 +28,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
   // Reads the session manager's adoption flag (set once the manager exists).
   private isAdoptingSession: () => boolean = () => false;
+  private captureListener: (() => void) | undefined;
+  private beforeSendHook: BeforeSendHook | undefined;
+  private sessionStartListener: ((meta: Meta) => void) | undefined;
 
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
@@ -129,38 +132,20 @@ export class SessionInstrumentation extends BaseInstrumentation {
     return { initialSession, lifecycleType };
   }
 
-  private registerBeforeSendHook(SessionManager: SessionManager) {
-    const sessionManager = new SessionManager();
-    this.isAdoptingSession = sessionManager.isAdopting;
-    const { updateSession } = sessionManager;
-
-    // Most recent rotation updateSession performed. A batch buffered before the
-    // rotation is all stamped with the now-expired id, not just the triggering item.
-    let lastRotation: { from: string; to: MetaSession } | undefined;
-
-    this.transports?.addBeforeSendHooks((item) => {
-      const previousSessionId = this.metas.value.session?.id;
-      updateSession();
-      const currentSession = this.metas.value.session;
-
-      if (currentSession != null && previousSessionId != null && currentSession.id !== previousSessionId) {
-        lastRotation = { from: previousSessionId, to: currentSession };
+  private registerBeforeSendHook(recordActivity: (sessionId: string) => void) {
+    this.beforeSendHook = (item) => {
+      // config.beforeSend runs before this hook. Sampling and hooks added later
+      // retain their existing order and do not undo session activity.
+      const sessionId = item.meta.session?.id;
+      if (sessionId && !this.transports.isPaused()) {
+        recordActivity(sessionId);
       }
-
-      // Re-stamp items still carrying the rotated-from session. Keyed on that id,
-      // so items from a genuinely earlier session (explicit setSession, which
-      // updateSession never rotates) keep their own sampling decision.
-      const reStamp = lastRotation != null && item.meta.session?.id === lastRotation.from;
-      const session = reStamp ? lastRotation!.to : item.meta.session;
-
-      const attributes = session?.attributes;
+      // Delivery filters using the captured session's sampling decision. It must
+      // never rotate or reassign an item that already belongs to a session.
+      const attributes = item.meta.session?.attributes;
 
       if (attributes && attributes?.['isSampled'] === 'true') {
         let newItem: TransportItem = JSON.parse(JSON.stringify(item));
-
-        if (reStamp) {
-          newItem.meta.session = JSON.parse(JSON.stringify(lastRotation!.to));
-        }
 
         const newAttributes = newItem.meta.session?.attributes;
         delete newAttributes?.['isSampled'];
@@ -173,7 +158,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
       }
 
       return null;
-    });
+    };
+    this.transports?.addBeforeSendHooks(this.beforeSendHook);
   }
 
   initialize(): void {
@@ -184,7 +170,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
     if (sessionTrackingConfig?.enabled) {
       const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
 
-      this.registerBeforeSendHook(SessionManager);
+      const sessionManager = new SessionManager();
+      this.isAdoptingSession = sessionManager.isAdopting;
+      this.registerBeforeSendHook(sessionManager.recordActivity);
 
       const { initialSession, lifecycleType } = this.createInitialSession(SessionManager, sessionTrackingConfig);
 
@@ -194,6 +182,12 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       this.notifiedSession = initialSessionMeta;
       this.api.setSession(initialSessionMeta);
+      this.captureListener = () => {
+        if (!this.transports.isPaused()) {
+          sessionManager.updateSession();
+        }
+      };
+      this.metas.addCaptureListener(this.captureListener);
 
       if (lifecycleType === EVENT_SESSION_START) {
         this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
@@ -204,6 +198,22 @@ export class SessionInstrumentation extends BaseInstrumentation {
       }
     }
 
-    this.metas.addListener(this.sendSessionStartEvent.bind(this));
+    this.sessionStartListener = this.sendSessionStartEvent.bind(this);
+    this.metas.addListener(this.sessionStartListener);
+  }
+
+  destroy(): void {
+    if (this.captureListener) {
+      this.metas.removeCaptureListener(this.captureListener);
+      this.captureListener = undefined;
+    }
+    if (this.beforeSendHook) {
+      this.transports.removeBeforeSendHooks(this.beforeSendHook);
+      this.beforeSendHook = undefined;
+    }
+    if (this.sessionStartListener) {
+      this.metas.removeListener(this.sessionStartListener);
+      this.sessionStartListener = undefined;
+    }
   }
 }

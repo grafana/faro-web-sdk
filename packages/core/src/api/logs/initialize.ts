@@ -42,36 +42,42 @@ export function initializeLogsAPI({
     try {
       const ctx = stringifyObjectValues(context);
 
-      const item: TransportItem<LogEvent> = {
-        type: TransportItemType.LOG,
-        payload: {
-          message: logArgsSerializer(args),
-          level: level ?? defaultLogLevel,
-          context: isEmpty(ctx) ? undefined : ctx,
-          timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
-          trace: spanContext
-            ? {
-                trace_id: spanContext.traceId,
-                span_id: spanContext.spanId,
-              }
-            : tracesApi.getTraceContext(),
-        },
-        meta: metas.value,
+      const payload: LogEvent = {
+        message: logArgsSerializer(args),
+        level: level ?? defaultLogLevel,
+        context: isEmpty(ctx) ? undefined : ctx,
+        timestamp: timestampOverwriteMs ? timestampToIsoString(timestampOverwriteMs) : getCurrentTimestamp(),
+        trace: spanContext
+          ? {
+              trace_id: spanContext.traceId,
+              span_id: spanContext.spanId,
+            }
+          : tracesApi.getTraceContext(),
       };
 
       const testingPayload = {
-        message: item.payload.message,
-        level: item.payload.level,
-        context: item.payload.context,
+        message: payload.message,
+        level: payload.level,
+        context: payload.context,
       };
 
       if (!skipDedupe && config.dedupe && !isNull(lastPayload) && deepEqual(testingPayload, lastPayload)) {
-        internalLogger.debug('Skipping log push because it is the same as the last one\n', item.payload);
+        internalLogger.debug('Skipping log push because it is the same as the last one\n', payload);
 
         return;
       }
 
+      const previousPayload = lastPayload;
+      const meta = metas.capture();
+      if (lastPayload !== previousPayload && !skipDedupe && config.dedupe && deepEqual(testingPayload, lastPayload)) {
+        return;
+      }
       lastPayload = testingPayload;
+      const item: TransportItem<LogEvent> = {
+        type: TransportItemType.LOG,
+        payload,
+        meta,
+      };
 
       internalLogger.debug('Pushing log\n', item);
 

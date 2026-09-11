@@ -1,10 +1,13 @@
 import { faro, stringifyExternalJson } from '@grafana/faro-core';
 
-import { throttle } from '../../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
-import { getSessionMetaUpdateHandler, getUserSessionUpdater } from './sessionManagerUtils';
+import {
+  getSessionMetaUpdateHandler,
+  getUserSessionActivityRecorder,
+  getUserSessionUpdater,
+} from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
 export class VolatileSessionsManager {
@@ -19,6 +22,7 @@ export class VolatileSessionsManager {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
       storeUserSession: VolatileSessionsManager.storeUserSession,
+      updateInterval: STORAGE_UPDATE_DELAY,
     });
 
     this.init();
@@ -42,12 +46,22 @@ export class VolatileSessionsManager {
     return null;
   }
 
-  updateSession: () => void = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
+  updateSession = (): void => this.updateUserSession({ refreshActivity: false });
+
+  recordActivity: (sessionId: string) => void = getUserSessionActivityRecorder({
+    fetchUserSession: VolatileSessionsManager.fetchUserSession,
+    storeUserSession: VolatileSessionsManager.storeUserSession,
+    updateInterval: STORAGE_UPDATE_DELAY,
+  });
 
   private init(): void {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.updateSession();
+        const sessionId = faro.api?.getSession()?.id;
+        if (sessionId) {
+          this.recordActivity(sessionId);
+        }
       }
     });
 
