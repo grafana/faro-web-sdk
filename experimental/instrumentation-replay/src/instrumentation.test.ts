@@ -48,6 +48,7 @@ describe('ReplayInstrumentation', () => {
   let mockGetSession: jest.Mock;
   let mockAddListener: jest.Mock;
   let mockPushEvent: jest.Mock;
+  let mockCapture: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -58,6 +59,7 @@ describe('ReplayInstrumentation', () => {
     mockGetSession = jest.fn();
     mockAddListener = jest.fn();
     mockPushEvent = jest.fn();
+    mockCapture = jest.fn((callback?: () => void) => callback?.());
   });
 
   afterEach(() => {
@@ -190,7 +192,7 @@ describe('ReplayInstrumentation', () => {
 
       mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -208,7 +210,7 @@ describe('ReplayInstrumentation', () => {
 
       mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -237,7 +239,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -256,7 +258,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'false' },
       });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -275,7 +277,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -313,7 +315,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -345,7 +347,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -360,7 +362,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'false' },
       });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -380,7 +382,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
 
@@ -408,7 +410,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -431,7 +433,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -455,7 +457,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -476,7 +478,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -494,7 +496,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -518,7 +520,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -542,7 +544,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -568,7 +570,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -600,7 +602,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -627,7 +629,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -651,7 +653,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -675,7 +677,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -699,7 +701,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -722,7 +724,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -738,7 +740,7 @@ describe('ReplayInstrumentation', () => {
       expect(parsed.data.href).toBe('file:///android_asset/www/index.html');
     });
 
-    it('should keep Meta event href sanitized when batched after a non-replay event', () => {
+    it('should keep Meta event href sanitized when batched after a non-replay event', async () => {
       jest.useFakeTimers();
       try {
         const transport = new BatchedBodyTransport();
@@ -757,6 +759,9 @@ describe('ReplayInstrumentation', () => {
         );
 
         api.setSession({ id: 'test-session', attributes: { isSampled: 'true' } });
+        // Session-triggered (re)starts are deferred out of the metas-listener call
+        // stack; flush that microtask before relying on the recorder being active.
+        await Promise.resolve();
         jest.advanceTimersByTime(1);
         transport.sentBodies = [];
 
@@ -801,7 +806,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { pushEvent: mockPushEvent, getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
       instrumentation.initialize();
@@ -824,7 +829,7 @@ describe('ReplayInstrumentation', () => {
         attributes: { isSampled: 'true' },
       });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -858,7 +863,7 @@ describe('ReplayInstrumentation', () => {
       const inst = new ReplayInstrumentation(options);
       mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
       inst['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      inst['metas'] = { addListener: mockAddListener } as any;
+      inst['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
       inst.initialize();
       return inst;
     }
@@ -979,7 +984,7 @@ describe('ReplayInstrumentation', () => {
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -992,7 +997,7 @@ describe('ReplayInstrumentation', () => {
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -1006,7 +1011,7 @@ describe('ReplayInstrumentation', () => {
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -1020,7 +1025,7 @@ describe('ReplayInstrumentation', () => {
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -1035,13 +1040,13 @@ describe('ReplayInstrumentation', () => {
 
       instrumentation = new ReplayInstrumentation({ samplingRate: 0.2 });
       instrumentation['api'] = { getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
       instrumentation.initialize();
       const firstDecision = instrumentation['isRecording'];
 
       const instrumentation2 = new ReplayInstrumentation({ samplingRate: 0.2 });
       instrumentation2['api'] = { getSession: mockGetSession } as any;
-      instrumentation2['metas'] = { addListener: mockAddListener } as any;
+      instrumentation2['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
       instrumentation2.initialize();
       const secondDecision = instrumentation2['isRecording'];
       instrumentation2.destroy();
@@ -1054,7 +1059,7 @@ describe('ReplayInstrumentation', () => {
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
 
@@ -1069,7 +1074,7 @@ describe('ReplayInstrumentation', () => {
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
 
@@ -1090,7 +1095,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ samplingRate: 0.5 });
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
       expect(instrumentation['isRecording']).toBe(true);
@@ -1106,7 +1111,7 @@ describe('ReplayInstrumentation', () => {
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'false' } });
       instrumentation['api'] = { getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
@@ -1121,27 +1126,41 @@ describe('ReplayInstrumentation', () => {
       const numSamples = seeds.length * samplesPerSeed;
       const buckets = new Array(numBuckets).fill(0);
       const maxAllowedChiSquared = 21.67;
+      const originalCrypto = globalThis.crypto;
+      Object.defineProperty(globalThis, 'crypto', {
+        configurable: true,
+        value: {},
+      });
       const randomSpy = jest.spyOn(Math, 'random');
 
-      const inst = new ReplayInstrumentation();
-      for (const seed of seeds) {
-        randomSpy.mockImplementation(createSeededRandom(seed));
+      try {
+        const inst = new ReplayInstrumentation();
+        for (const seed of seeds) {
+          randomSpy.mockImplementation(createSeededRandom(seed));
 
-        for (let i = 0; i < samplesPerSeed; i++) {
-          const hash = inst['hashSessionId'](genShortID());
-          const bucket = Math.min(Math.floor(hash * numBuckets), numBuckets - 1);
-          buckets[bucket]++;
+          for (let i = 0; i < samplesPerSeed; i++) {
+            const hash = inst['hashSessionId'](genShortID());
+            const bucket = Math.min(Math.floor(hash * numBuckets), numBuckets - 1);
+            buckets[bucket]++;
+          }
         }
+
+        // Seed Math.random with several fixed seeds so the real genShortID() exercises a broader,
+        // deterministic corpus. This uses chi-squared as a regression score, not as a p-value-based test.
+        const expected = numSamples / numBuckets;
+        const chiSquared = buckets.reduce((sum, observed) => {
+          return sum + (observed - expected) ** 2 / expected;
+        }, 0);
+
+        expect(randomSpy).toHaveBeenCalled();
+        expect(chiSquared).toBeLessThan(maxAllowedChiSquared);
+      } finally {
+        randomSpy.mockRestore();
+        Object.defineProperty(globalThis, 'crypto', {
+          configurable: true,
+          value: originalCrypto,
+        });
       }
-
-      // Seed Math.random with several fixed seeds so the real genShortID() exercises a broader,
-      // deterministic corpus. This uses chi-squared as a regression score, not as a p-value-based test.
-      const expected = numSamples / numBuckets;
-      const chiSquared = buckets.reduce((sum, observed) => {
-        return sum + (observed - expected) ** 2 / expected;
-      }, 0);
-
-      expect(chiSquared).toBeLessThan(maxAllowedChiSquared);
     });
 
     it('should not start recording when session ID is null', () => {
@@ -1149,7 +1168,7 @@ describe('ReplayInstrumentation', () => {
 
       mockGetSession.mockReturnValue({ id: undefined, attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
 
