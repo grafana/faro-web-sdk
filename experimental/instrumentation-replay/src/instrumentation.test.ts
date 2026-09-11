@@ -11,12 +11,14 @@ import { EventType } from '@grafana/rrweb-types';
 
 import { defaultMaskInputFn } from './const';
 import { ReplayInstrumentation } from './instrumentation';
+import { replayRecordingCheckpointKeyPrefix } from './recordingState';
 import { MaskInputFn, ReplayInstrumentationOptions } from './types';
 
 // Mock rrweb
-jest.mock('@grafana/rrweb', () => ({
-  record: jest.fn(),
-}));
+jest.mock('@grafana/rrweb', () => {
+  const record = Object.assign(jest.fn(), { takeFullSnapshot: jest.fn() });
+  return { record };
+});
 
 class BatchedBodyTransport extends BaseTransport {
   readonly name = '@grafana/transport-batched-body-mock';
@@ -44,14 +46,16 @@ function createSeededRandom(seed: number): () => number {
 
 describe('ReplayInstrumentation', () => {
   let instrumentation: ReplayInstrumentation;
-  let mockRecord: jest.Mock;
+  let mockRecord: jest.Mock & { takeFullSnapshot: jest.Mock };
   let mockGetSession: jest.Mock;
   let mockAddListener: jest.Mock;
   let mockPushEvent: jest.Mock;
-  let mockCapture: jest.Mock;
+  const mockCapture = (callback?: () => void) => callback?.();
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.sessionStorage.clear();
+    window.localStorage.clear();
     mockRecord = require('@grafana/rrweb').record;
     mockRecord.mockReturnValue(jest.fn());
 
@@ -59,7 +63,6 @@ describe('ReplayInstrumentation', () => {
     mockGetSession = jest.fn();
     mockAddListener = jest.fn();
     mockPushEvent = jest.fn();
-    mockCapture = jest.fn((callback?: () => void) => callback?.());
   });
 
   afterEach(() => {
@@ -68,6 +71,17 @@ describe('ReplayInstrumentation', () => {
       instrumentation.destroy();
     }
   });
+  function initSampled(
+    options: ReplayInstrumentationOptions = {},
+    sessionId: string = 'test-session'
+  ): ReplayInstrumentation {
+    const inst = new ReplayInstrumentation(options);
+    mockGetSession.mockReturnValue({ id: sessionId, attributes: { isSampled: 'true' } });
+    inst['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+    inst['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
+    inst.initialize();
+    return inst;
+  }
 
   describe('constructor', () => {
     it('should have correct name and version', () => {
@@ -351,7 +365,9 @@ describe('ReplayInstrumentation', () => {
 
       instrumentation.initialize();
 
-      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.started', {});
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.started', {
+        recording_id: expect.any(String),
+      });
     });
 
     it('should not push a faro.session_recording.started event when session is not sampled', () => {
@@ -419,6 +435,9 @@ describe('ReplayInstrumentation', () => {
 
       expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.event', {
         event: JSON.stringify(testEvent),
+        recording_id: expect.any(String),
+        gen: '0',
+        seq: '0',
       });
     });
 
@@ -443,6 +462,9 @@ describe('ReplayInstrumentation', () => {
       expect(beforeSend).toHaveBeenCalledWith(testEvent);
       expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.event', {
         event: JSON.stringify({ ...testEvent, modified: true }),
+        recording_id: expect.any(String),
+        gen: '0',
+        seq: '0',
       });
     });
 
@@ -759,8 +781,7 @@ describe('ReplayInstrumentation', () => {
         );
 
         api.setSession({ id: 'test-session', attributes: { isSampled: 'true' } });
-        // Session-triggered (re)starts are deferred out of the metas-listener call
-        // stack; flush that microtask before relying on the recorder being active.
+        // Listener-triggered starts are deferred by a microtask.
         await Promise.resolve();
         jest.advanceTimersByTime(1);
         transport.sentBodies = [];
@@ -816,6 +837,904 @@ describe('ReplayInstrumentation', () => {
     });
   });
 
+  describe('delivery identity', () => {
+    let emitCallback: (event: any, isCheckout?: boolean) => void;
+    let metaListener: (() => void) | undefined;
+
+    beforeEach(() => {
+      mockRecord.mockImplementation((opts: any) => {
+        emitCallback = opts.emit;
+        return jest.fn();
+      });
+      metaListener = undefined;
+      mockAddListener.mockImplementation((cb: () => void) => {
+        metaListener = cb;
+      });
+    });
+
+    function replayAttributes(): Array<Record<string, string>> {
+      return mockPushEvent.mock.calls
+        .filter((call: any[]) => call[0] === 'faro.session_recording.event')
+        .map((call: any[]) => call[1]);
+    }
+
+    function lifecycleAttributes(eventName: string): Array<Record<string, string>> {
+      return mockPushEvent.mock.calls.filter((call: any[]) => call[0] === eventName).map((call: any[]) => call[1]);
+    }
+
+    function metaEvent() {
+      return {
+        type: EventType.Meta,
+        data: { href: 'https://example.com/', width: 1, height: 1 },
+        timestamp: Date.now(),
+      };
+    }
+
+    function fullSnapshotEvent() {
+      return { type: EventType.FullSnapshot, data: {}, timestamp: Date.now() };
+    }
+
+    function incrementalEvent(data: Record<string, unknown> = {}) {
+      return { type: EventType.IncrementalSnapshot, data, timestamp: Date.now() };
+    }
+
+    it.each([
+      ['session-b', 'true'],
+      ['test-session', 'false'],
+    ])('discards an event invalidated inside beforeSend (%s, %s)', async (id, isSampled) => {
+      let rotate = false;
+      instrumentation = initSampled({
+        beforeSend: (event) => {
+          if (rotate) {
+            mockGetSession.mockReturnValue({ id, attributes: { isSampled } });
+            metaListener!();
+          }
+          return event;
+        },
+      });
+      emitCallback(metaEvent());
+      const original = replayAttributes()[0]!;
+      rotate = true;
+      emitCallback(metaEvent());
+      expect(replayAttributes()).toEqual([original]);
+      rotate = false;
+      await Promise.resolve();
+      if (isSampled === 'true') {
+        emitCallback(metaEvent());
+        expect(replayAttributes()[1]).toMatchObject({ seq: '0', gen: '0' });
+        expect(replayAttributes()[1]!['recording_id']).not.toBe(original['recording_id']);
+      }
+    });
+
+    it('exposes an unserializable accepted Meta as a gap in the new generation', () => {
+      instrumentation = initSampled();
+      emitCallback(metaEvent());
+      emitCallback(fullSnapshotEvent());
+      const circular: Record<string, unknown> = {};
+      circular['self'] = circular;
+      emitCallback({ ...metaEvent(), data: circular });
+      emitCallback(fullSnapshotEvent());
+      expect(replayAttributes().map((attrs) => [attrs['seq'], attrs['gen']])).toEqual([
+        ['0', '0'],
+        ['1', '0'],
+        ['3', '1'],
+      ]);
+    });
+
+    it('stamps an event with the gen captured before serialization re-enters with a later Meta', () => {
+      instrumentation = initSampled({
+        beforeSend: (event: any) =>
+          event.data?.['reenter'] === true
+            ? {
+                ...event,
+                data: {
+                  toJSON: () => {
+                    emitCallback(metaEvent());
+                    return { reentered: true };
+                  },
+                },
+              }
+            : event,
+      });
+
+      emitCallback(metaEvent());
+      emitCallback(incrementalEvent({ reenter: true }));
+
+      // The nested Meta is pushed before the outer event finishes, but the outer event was
+      // accepted first and must keep the generation that was open when it reserved its seq.
+      expect(replayAttributes().map((attrs) => [JSON.parse(attrs['event']!).type, attrs['seq'], attrs['gen']])).toEqual(
+        [
+          [EventType.Meta, '0', '0'],
+          [EventType.Meta, '2', '1'],
+          [EventType.IncrementalSnapshot, '1', '0'],
+        ]
+      );
+    });
+
+    it('should stamp events with a stable recording_id, gen 0, and a contiguous seq', () => {
+      instrumentation = initSampled();
+
+      emitCallback(metaEvent());
+      emitCallback(fullSnapshotEvent());
+      emitCallback(incrementalEvent());
+      emitCallback(incrementalEvent());
+
+      const attrs = replayAttributes();
+      expect(attrs).toHaveLength(4);
+
+      const recordingId = attrs[0]!['recording_id'];
+      expect(recordingId).toEqual(expect.any(String));
+      expect(recordingId!.length).toBeGreaterThan(0);
+      expect(attrs.every((a) => a['recording_id'] === recordingId)).toBe(true);
+
+      expect(attrs.map((a) => a['gen'])).toEqual(['0', '0', '0', '0']);
+      expect(attrs.map((a) => a['seq'])).toEqual(['0', '1', '2', '3']);
+    });
+
+    it('should advance gen on each emitted Meta and keep seq contiguous across the checkout', () => {
+      instrumentation = initSampled();
+
+      emitCallback(metaEvent());
+      emitCallback(fullSnapshotEvent());
+      emitCallback(incrementalEvent());
+
+      // A scheduled checkout emits Meta and FullSnapshot, both flagged isCheckout=true.
+      // The flag must be irrelevant: only the Meta event advances gen.
+      emitCallback(metaEvent(), true);
+      emitCallback(fullSnapshotEvent(), true);
+      emitCallback(incrementalEvent());
+
+      const attrs = replayAttributes();
+      expect(attrs.map((a) => a['gen'])).toEqual(['0', '0', '0', '1', '1', '1']);
+      expect(attrs.map((a) => a['seq'])).toEqual(['0', '1', '2', '3', '4', '5']);
+    });
+
+    it('should not advance gen or consume seq for events dropped by beforeSend', () => {
+      instrumentation = initSampled({
+        beforeSend: (event: any) => (event.data?.['drop'] === true ? null : event),
+      });
+
+      emitCallback(metaEvent());
+      emitCallback(incrementalEvent({ drop: true }));
+      emitCallback(incrementalEvent());
+      emitCallback({ ...metaEvent(), data: { drop: true } });
+      emitCallback(incrementalEvent());
+
+      const attrs = replayAttributes();
+      expect(attrs.map((a) => a['gen'])).toEqual(['0', '0', '0']);
+      expect(attrs.map((a) => a['seq'])).toEqual(['0', '1', '2']);
+    });
+
+    it('should keep identity attributes intact when beforeSend mutates the event', () => {
+      instrumentation = initSampled({
+        beforeSend: (event: any) => ({ ...event, data: { mutated: true } }),
+      });
+
+      emitCallback(incrementalEvent({ original: true }));
+
+      const attrs = replayAttributes();
+      expect(attrs).toHaveLength(1);
+      expect(JSON.parse(attrs[0]!['event']!).data).toEqual({ mutated: true });
+      expect(attrs[0]!['recording_id']).toEqual(expect.any(String));
+      expect(attrs[0]!['gen']).toBe('0');
+      expect(attrs[0]!['seq']).toBe('0');
+    });
+
+    it('should increment gen with no seq gap across an inactivity pause and resume', () => {
+      jest.useFakeTimers();
+      try {
+        instrumentation = initSampled({ inactivityThresholdMs: 5_000 });
+
+        emitCallback(metaEvent());
+        emitCallback(fullSnapshotEvent());
+
+        jest.advanceTimersByTime(5_000);
+        expect(instrumentation['isPaused']).toBe(true);
+
+        document.dispatchEvent(new Event('pointerdown'));
+        expect(instrumentation['isPaused']).toBe(false);
+
+        // The resume restarted rrweb; drive its fresh snapshot through the new emit.
+        emitCallback(metaEvent());
+        emitCallback(fullSnapshotEvent());
+
+        const attrs = replayAttributes();
+        expect(attrs.map((a) => a['gen'])).toEqual(['0', '0', '1', '1']);
+        expect(attrs.map((a) => a['seq'])).toEqual(['0', '1', '2', '3']);
+        expect(new Set(attrs.map((a) => a['recording_id'])).size).toBe(1);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('should stamp lifecycle events with recording_id and no gen or seq', () => {
+      jest.useFakeTimers();
+      try {
+        instrumentation = initSampled({ inactivityThresholdMs: 5_000 });
+
+        jest.advanceTimersByTime(5_000);
+        document.dispatchEvent(new Event('pointerdown'));
+
+        for (const eventName of [
+          'faro.session_recording.started',
+          'faro.session_recording.paused',
+          'faro.session_recording.resumed',
+        ]) {
+          const attrs = lifecycleAttributes(eventName);
+          expect(attrs.length).toBeGreaterThan(0);
+          for (const a of attrs) {
+            expect(a['recording_id']).toEqual(expect.any(String));
+            expect(a).not.toHaveProperty('gen');
+            expect(a).not.toHaveProperty('seq');
+          }
+        }
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('should mint a new recording_id and reset gen and seq when the session rotates', async () => {
+      instrumentation = initSampled({}, 'session-a');
+
+      emitCallback(metaEvent());
+      const firstRecordingId = replayAttributes()[0]!['recording_id'];
+
+      mockGetSession.mockReturnValue({ id: 'session-b', attributes: { isSampled: 'true' } });
+      metaListener!();
+
+      // The stop is synchronous; the restart is deferred out of the listener call stack.
+      expect(instrumentation['isRecording']).toBe(false);
+      expect(mockRecord).toHaveBeenCalledTimes(1);
+
+      await Promise.resolve();
+
+      expect(mockRecord).toHaveBeenCalledTimes(2);
+      expect(instrumentation['isRecording']).toBe(true);
+
+      const startedAttrs = lifecycleAttributes('faro.session_recording.started');
+      expect(startedAttrs).toHaveLength(2);
+      expect(startedAttrs[1]!['recording_id']).not.toBe(startedAttrs[0]!['recording_id']);
+
+      emitCallback(metaEvent());
+      const attrs = replayAttributes();
+      const rotatedEvent = attrs[attrs.length - 1]!;
+      expect(rotatedEvent['recording_id']).not.toBe(firstRecordingId);
+      expect(rotatedEvent['gen']).toBe('0');
+      expect(rotatedEvent['seq']).toBe('0');
+    });
+
+    it('should ignore the transient no-session notification from setSession', async () => {
+      instrumentation = initSampled();
+      expect(mockRecord).toHaveBeenCalledTimes(1);
+
+      // Core setSession removes the session meta before re-adding it, so listeners
+      // transiently observe a state with no session.
+      mockGetSession.mockReturnValue(undefined);
+      metaListener!();
+
+      expect(instrumentation['isRecording']).toBe(true);
+
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      metaListener!();
+      await Promise.resolve();
+
+      expect(mockRecord).toHaveBeenCalledTimes(1);
+      expect(lifecycleAttributes('faro.session_recording.started')).toHaveLength(1);
+    });
+
+    it('should not restart recording when a session notification carries an unchanged id', async () => {
+      instrumentation = initSampled();
+
+      metaListener!();
+      await Promise.resolve();
+
+      expect(mockRecord).toHaveBeenCalledTimes(1);
+      expect(lifecycleAttributes('faro.session_recording.started')).toHaveLength(1);
+    });
+
+    it('should coalesce a burst of rotations into one restart bound to the latest session', async () => {
+      instrumentation = initSampled({}, 'session-a');
+
+      mockGetSession.mockReturnValue({ id: 'session-b', attributes: { isSampled: 'true' } });
+      metaListener!();
+      mockGetSession.mockReturnValue({ id: 'session-c', attributes: { isSampled: 'true' } });
+      metaListener!();
+
+      await Promise.resolve();
+
+      expect(mockRecord).toHaveBeenCalledTimes(2);
+      expect(lifecycleAttributes('faro.session_recording.started')).toHaveLength(2);
+
+      // The recording is bound to the latest session: another session-c notification
+      // is a no-op.
+      metaListener!();
+      await Promise.resolve();
+      expect(mockRecord).toHaveBeenCalledTimes(2);
+      expect(lifecycleAttributes('faro.session_recording.started')).toHaveLength(2);
+    });
+
+    it('should keep recording identity when sampling flips off and back on for the same session', async () => {
+      instrumentation = initSampled();
+      const firstStarted = lifecycleAttributes('faro.session_recording.started')[0]!;
+      emitCallback(metaEvent());
+
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'false' } });
+      metaListener!();
+      expect(instrumentation['isRecording']).toBe(false);
+
+      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
+      metaListener!();
+      await Promise.resolve();
+
+      const started = lifecycleAttributes('faro.session_recording.started');
+      expect(started).toHaveLength(2);
+      expect(started[1]!['recording_id']).toBe(firstStarted['recording_id']);
+
+      emitCallback(metaEvent());
+      const attrs = replayAttributes();
+      const latest = attrs[attrs.length - 1]!;
+      expect(latest['recording_id']).toBe(started[1]!['recording_id']);
+      expect(latest['gen']).toBe('1');
+      expect(latest['seq']).toBe('1');
+    });
+
+    it('should stop a deferred start when sampling flips off while it is starting', async () => {
+      const initialStop = jest.fn();
+      const restartedStop = jest.fn();
+      mockRecord.mockReturnValueOnce(initialStop).mockReturnValueOnce(restartedStop);
+      instrumentation = initSampled({}, 'session-a');
+
+      mockGetSession.mockReturnValue({ id: 'session-b', attributes: { isSampled: 'true' } });
+      metaListener!();
+      expect(initialStop).toHaveBeenCalledTimes(1);
+
+      let samplingFlipTriggered = false;
+      mockPushEvent.mockImplementation((eventName: string) => {
+        if (eventName === 'faro.session_recording.started' && !samplingFlipTriggered) {
+          samplingFlipTriggered = true;
+          mockGetSession.mockReturnValue({ id: 'session-b', attributes: { isSampled: 'false' } });
+          metaListener!();
+        }
+      });
+
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(mockRecord).toHaveBeenCalledTimes(2);
+      expect(restartedStop).toHaveBeenCalledTimes(1);
+    });
+
+    it('should clear recording state when the rrweb stop function throws', () => {
+      const stopError = new Error('rrweb stop failed');
+      mockRecord.mockReturnValueOnce(
+        jest.fn(() => {
+          throw stopError;
+        })
+      );
+      instrumentation = initSampled();
+      const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
+
+      mockGetSession.mockReturnValue({ id: 'session-b', attributes: { isSampled: 'false' } });
+
+      expect(() => metaListener!()).not.toThrow();
+      expect(instrumentation['isRecording']).toBe(false);
+      expect(instrumentation['stopFn']).toBeNull();
+      expect(logWarnSpy).toHaveBeenCalledWith('Failed to stop session replay', stopError);
+    });
+
+    it.each([
+      ['a sampled new session', 'session-b', 'true', 2],
+      ['an unsampled new session', 'session-b', 'false', 1],
+      ['the same session becoming unsampled', 'session-a', 'false', 1],
+    ])(
+      'should reconcile an initial started-event rotation to %s',
+      async (_scenario, nextSessionId, isSampled, expectedStarts) => {
+        const stops: jest.Mock[] = [];
+        mockRecord.mockImplementation(() => {
+          const stop = jest.fn();
+          stops.push(stop);
+          return stop;
+        });
+
+        let rotationTriggered = false;
+        mockPushEvent.mockImplementation((eventName: string) => {
+          if (eventName === 'faro.session_recording.started' && !rotationTriggered) {
+            rotationTriggered = true;
+            mockGetSession.mockReturnValue({ id: nextSessionId, attributes: { isSampled } });
+            metaListener!();
+          }
+        });
+
+        instrumentation = initSampled({}, 'session-a');
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(stops[0]).toHaveBeenCalledTimes(1);
+        expect(mockRecord).toHaveBeenCalledTimes(expectedStarts);
+        if (expectedStarts === 2) {
+          expect(stops[1]).not.toHaveBeenCalled();
+        }
+      }
+    );
+
+    it('should restart with a new recording id when the session rotates while paused', async () => {
+      jest.useFakeTimers();
+      try {
+        instrumentation = initSampled({ inactivityThresholdMs: 5_000 }, 'session-a');
+        emitCallback(metaEvent());
+
+        jest.advanceTimersByTime(5_000);
+        expect(instrumentation['isPaused']).toBe(true);
+
+        mockGetSession.mockReturnValue({ id: 'session-b', attributes: { isSampled: 'true' } });
+        metaListener!();
+        await Promise.resolve();
+
+        expect(instrumentation['isPaused']).toBe(false);
+        const started = lifecycleAttributes('faro.session_recording.started');
+        expect(started).toHaveLength(2);
+        expect(started[1]!['recording_id']).not.toBe(started[0]!['recording_id']);
+
+        emitCallback(metaEvent());
+        const attrs = replayAttributes();
+        expect(attrs[attrs.length - 1]!['recording_id']).toBe(started[1]!['recording_id']);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('should stop recording when the session is deliberately cleared', () => {
+      instrumentation = initSampled();
+      expect(instrumentation['isRecording']).toBe(true);
+
+      // resetSession()/setSession(undefined) re-adds a session meta WITHOUT an id —
+      // unlike the transient mid-rotation state, where no session meta exists at all.
+      mockGetSession.mockReturnValue({});
+      metaListener!();
+
+      expect(instrumentation['isRecording']).toBe(false);
+    });
+
+    it('should not restart recording after destroy even with a pending start', async () => {
+      instrumentation = initSampled({}, 'session-a');
+
+      mockGetSession.mockReturnValue({ id: 'session-b', attributes: { isSampled: 'true' } });
+      metaListener!();
+      instrumentation.destroy();
+
+      await Promise.resolve();
+
+      expect(mockRecord).toHaveBeenCalledTimes(1);
+      expect(instrumentation['isRecording']).toBe(false);
+    });
+
+    it('should emit no started marker for a declined start and one ordered marker when retry succeeds', async () => {
+      const successfulStop = jest.fn();
+      mockRecord
+        .mockImplementationOnce(() => undefined)
+        .mockImplementationOnce((opts: any) => {
+          emitCallback = opts.emit;
+          opts.emit(metaEvent());
+          return successfulStop;
+        });
+
+      instrumentation = initSampled();
+
+      expect(lifecycleAttributes('faro.session_recording.started')).toHaveLength(0);
+      expect(replayAttributes()).toHaveLength(0);
+
+      metaListener!();
+      await Promise.resolve();
+
+      const names = mockPushEvent.mock.calls.map((call: any[]) => call[0]);
+      expect(names).toEqual(['faro.session_recording.started', 'faro.session_recording.event']);
+      expect(successfulStop).not.toHaveBeenCalled();
+    });
+
+    it.each([0, 2])(
+      'should emit one resumed marker before the fresh snapshot after %s declined attempts',
+      (declinedAttempts) => {
+        jest.useFakeTimers();
+        try {
+          instrumentation = initSampled({ inactivityThresholdMs: 5_000 });
+          jest.advanceTimersByTime(5_000);
+          mockPushEvent.mockClear();
+
+          for (let attempt = 0; attempt < declinedAttempts; attempt++) {
+            mockRecord.mockReturnValueOnce(undefined);
+            document.dispatchEvent(new Event('pointerdown'));
+            expect(mockPushEvent).not.toHaveBeenCalled();
+          }
+          mockRecord.mockImplementationOnce((opts: { emit: (event: unknown) => void }) => {
+            // rrweb can emit its fresh snapshot synchronously inside record().
+            opts.emit(metaEvent());
+            return jest.fn();
+          });
+          document.dispatchEvent(new Event('pointerdown'));
+
+          expect(mockPushEvent.mock.calls.map((call) => call[0])).toEqual([
+            'faro.session_recording.resumed',
+            'faro.session_recording.event',
+          ]);
+        } finally {
+          jest.useRealTimers();
+        }
+      }
+    );
+
+    it('should mint distinct recording ids for two concurrent instances', () => {
+      const emits: Array<(event: any, isCheckout?: boolean) => void> = [];
+      mockRecord.mockImplementation((opts: any) => {
+        emits.push(opts.emit);
+        return jest.fn();
+      });
+
+      instrumentation = initSampled();
+      const secondInstrumentation = initSampled();
+
+      try {
+        emits[0]!(metaEvent());
+        emits[1]!(metaEvent());
+
+        const attrs = replayAttributes();
+        expect(attrs).toHaveLength(2);
+        expect(attrs[0]!['recording_id']).not.toBe(attrs[1]!['recording_id']);
+        expect(attrs.map((a) => a['seq'])).toEqual(['0', '0']);
+      } finally {
+        secondInstrumentation.destroy();
+      }
+    });
+
+    it('should deliver the new recording events when a rotation is detected mid-flush', async () => {
+      jest.useFakeTimers();
+      try {
+        const transport = new BatchedBodyTransport();
+        instrumentation = new ReplayInstrumentation();
+
+        let rotated = false;
+        const { api } = initializeFaro(
+          mockConfig({
+            instrumentations: [instrumentation],
+            transports: [transport],
+            batching: {
+              enabled: true,
+              sendTimeout: 1,
+              itemLimit: 10,
+            },
+            // Simulates the session instrumentation's transport hook rotating the
+            // session while the batch executor is flushing: items pushed synchronously
+            // during a flush are discarded by the executor's buffer reset.
+            beforeSend: (item) => {
+              if (!rotated) {
+                rotated = true;
+                api.setSession({ id: 'rotated-session', attributes: { isSampled: 'true' } });
+              }
+              return item;
+            },
+          })
+        );
+
+        api.setSession({ id: 'first-session', attributes: { isSampled: 'true' } });
+        await Promise.resolve();
+        expect(mockRecord).toHaveBeenCalledTimes(1);
+
+        // First flush: sends the first recording's started event and triggers the
+        // rotation from inside the flush.
+        jest.advanceTimersByTime(1);
+        const firstStarted = transport.sentBodies
+          .flatMap((body) => body.events ?? [])
+          .find((event) => event.name === 'faro.session_recording.started');
+        expect(firstStarted).toBeDefined();
+        transport.sentBodies = [];
+
+        // The restart is deferred out of the flush call stack, so the new recording's
+        // events land in the next batch instead of being wiped.
+        await Promise.resolve();
+        expect(mockRecord).toHaveBeenCalledTimes(2);
+
+        emitCallback({
+          type: EventType.Meta,
+          data: { href: 'https://example.com/', width: 1, height: 1 },
+          timestamp: Date.now(),
+        });
+        emitCallback({ type: EventType.FullSnapshot, data: {}, timestamp: Date.now() });
+        jest.advanceTimersByTime(1);
+
+        const sentEvents = transport.sentBodies.flatMap((body) => body.events ?? []);
+        const started = sentEvents.find((event) => event.name === 'faro.session_recording.started');
+        const replayEvents = sentEvents.filter((event) => event.name === 'faro.session_recording.event');
+
+        expect(started).toBeDefined();
+        expect(started!.attributes!['recording_id']).not.toBe(firstStarted!.attributes!['recording_id']);
+        expect(replayEvents).toHaveLength(2);
+        expect(
+          replayEvents.every((event) => event.attributes!['recording_id'] === started!.attributes!['recording_id'])
+        ).toBe(true);
+        expect(replayEvents.map((event) => event.attributes!['gen'])).toEqual(['0', '0']);
+        expect(replayEvents.map((event) => event.attributes!['seq'])).toEqual(['0', '1']);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('should continue recording identity across a clean full-page navigation', () => {
+      window.sessionStorage.clear();
+      const firstInstrumentation = initSampled({}, 'session-a');
+
+      emitCallback(metaEvent());
+      emitCallback(incrementalEvent());
+      const firstPageEvents = replayAttributes();
+      const recordingId = firstPageEvents[0]!['recording_id'];
+
+      window.dispatchEvent(new Event('pagehide'));
+      firstInstrumentation.destroy();
+      mockPushEvent.mockClear();
+
+      instrumentation = initSampled({}, 'session-a');
+      expect(lifecycleAttributes('faro.session_recording.started')).toEqual([
+        expect.objectContaining({ recording_id: recordingId }),
+      ]);
+      emitCallback(metaEvent());
+
+      expect(replayAttributes()).toEqual([expect.objectContaining({ recording_id: recordingId, gen: '1', seq: '2' })]);
+    });
+
+    it('should mint a recovery recording instead of reusing an active handoff', () => {
+      const firstDocument = initSampled({}, 'session-a');
+      emitCallback(metaEvent());
+      const firstRecordingId = replayAttributes()[0]!['recording_id'];
+      mockPushEvent.mockClear();
+
+      instrumentation = initSampled({}, 'session-a');
+      try {
+        emitCallback(metaEvent());
+
+        expect(replayAttributes()).toEqual([expect.objectContaining({ gen: '0', seq: '0' })]);
+        expect(replayAttributes()[0]!['recording_id']).not.toBe(firstRecordingId);
+      } finally {
+        firstDocument.destroy();
+      }
+    });
+
+    it('should not write recording state while assigning replay event identity', () => {
+      window.sessionStorage.clear();
+      const storageSpy = jest.spyOn(Storage.prototype, 'setItem');
+      instrumentation = initSampled({}, 'session-a');
+      storageSpy.mockClear();
+
+      emitCallback(metaEvent());
+      for (let i = 0; i < 100; i++) {
+        emitCallback(incrementalEvent());
+      }
+
+      expect(storageSpy).not.toHaveBeenCalled();
+    });
+
+    it('should rehydrate the latest clean handoff when restored from BFCache', () => {
+      window.sessionStorage.clear();
+      const firstDocument = initSampled({}, 'session-a');
+      emitCallback(metaEvent());
+      const recordingId = replayAttributes()[0]!['recording_id'];
+      window.dispatchEvent(new Event('pagehide'));
+
+      const secondDocument = initSampled({}, 'session-a');
+      emitCallback(metaEvent());
+      emitCallback(incrementalEvent());
+      window.dispatchEvent(new Event('pagehide'));
+      secondDocument.destroy();
+
+      instrumentation = firstDocument;
+      mockPushEvent.mockClear();
+      const pageShowEvent = new Event('pageshow');
+      Object.defineProperty(pageShowEvent, 'persisted', { value: true });
+      window.dispatchEvent(pageShowEvent);
+      emitCallback(metaEvent());
+
+      expect(replayAttributes()).toEqual([expect.objectContaining({ recording_id: recordingId, gen: '2', seq: '3' })]);
+    });
+
+    it('should not run a pending session restart after pagehide seals the recording', async () => {
+      window.sessionStorage.clear();
+      instrumentation = initSampled({}, 'session-a');
+      emitCallback(metaEvent());
+
+      mockGetSession.mockReturnValue({ id: 'session-b', attributes: { isSampled: 'true' } });
+      metaListener!();
+      window.dispatchEvent(new Event('pagehide'));
+      await Promise.resolve();
+
+      expect(mockRecord).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not run a pending initial start after pagehide', async () => {
+      mockGetSession.mockReturnValue({ id: 'session-a', attributes: { isSampled: 'false' } });
+      instrumentation = new ReplayInstrumentation();
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
+      instrumentation.initialize();
+
+      mockGetSession.mockReturnValue({ id: 'session-a', attributes: { isSampled: 'true' } });
+      instrumentation['metasListener']();
+      window.dispatchEvent(new Event('pagehide'));
+      await Promise.resolve();
+
+      expect(mockRecord).not.toHaveBeenCalled();
+    });
+
+    it('should not force an rrweb checkpoint for SPA navigation', () => {
+      instrumentation = initSampled({}, 'session-a');
+      emitCallback(metaEvent());
+      emitCallback(fullSnapshotEvent());
+
+      window.history.pushState({}, '', '/spa-navigation');
+
+      expect(mockRecord.takeFullSnapshot).not.toHaveBeenCalled();
+      const attrs = replayAttributes();
+      expect(attrs.map((event) => event['gen'])).toEqual(['0', '0']);
+      expect(attrs.map((event) => event['seq'])).toEqual(['0', '1']);
+    });
+
+    it('should reconcile rotations after the same instance is removed and re-added', async () => {
+      instrumentation = new ReplayInstrumentation();
+      const faro = initializeFaro(
+        mockConfig({
+          instrumentations: [instrumentation],
+          batching: { enabled: false },
+        })
+      );
+
+      try {
+        faro.api.setSession({ id: 'session-a', attributes: { isSampled: 'true' } });
+        await Promise.resolve();
+        expect(mockRecord).toHaveBeenCalledTimes(1);
+
+        faro.instrumentations.remove(instrumentation);
+        faro.instrumentations.add(instrumentation);
+        expect(mockRecord).toHaveBeenCalledTimes(2);
+
+        faro.api.setSession({ id: 'session-b', attributes: { isSampled: 'true' } });
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(mockRecord).toHaveBeenCalledTimes(3);
+      } finally {
+        faro.instrumentations.remove(instrumentation);
+      }
+    });
+
+    it('should continue recording identity when the instance is replaced in the same document', () => {
+      window.sessionStorage.clear();
+      const firstInstrumentation = initSampled({}, 'session-a');
+      emitCallback(metaEvent());
+      emitCallback(incrementalEvent());
+      const recordingId = replayAttributes()[0]!['recording_id'];
+
+      firstInstrumentation.destroy();
+      mockPushEvent.mockClear();
+      instrumentation = initSampled({}, 'session-a');
+      emitCallback(metaEvent());
+
+      expect(replayAttributes()).toEqual([expect.objectContaining({ recording_id: recordingId, gen: '1', seq: '2' })]);
+    });
+
+    it('should continue recording identity across a same-document replacement when localStorage writes fail', () => {
+      window.sessionStorage.clear();
+      const originalSetItem = Storage.prototype.setItem;
+      jest.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, key: string, value: string) {
+        if (this === window.localStorage) {
+          throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+        }
+        originalSetItem.call(this, key, value);
+      });
+
+      const firstInstrumentation = initSampled({}, 'session-a');
+      emitCallback(metaEvent());
+      emitCallback(incrementalEvent());
+      const recordingId = replayAttributes()[0]!['recording_id'];
+      firstInstrumentation.destroy();
+      mockPushEvent.mockClear();
+
+      instrumentation = initSampled({}, 'session-a');
+      emitCallback(metaEvent());
+
+      expect(replayAttributes()).toEqual([expect.objectContaining({ recording_id: recordingId, gen: '1', seq: '2' })]);
+      expect(window.localStorage.length).toBe(0);
+    });
+
+    it.each([
+      { handoff: 'active', pointerWrites: 'available' },
+      { handoff: 'clean', pointerWrites: 'available' },
+      { handoff: 'clean', pointerWrites: 'blocked' },
+      { handoff: 'clean', pointerWrites: 'recover' },
+    ])(
+      'should abandon a foreign $handoff checkpoint across replacement (pointer writes: $pointerWrites)',
+      ({ handoff, pointerWrites }) => {
+        instrumentation = initSampled({}, 'session-a');
+        const ownerNamespace = instrumentation['recordingOwnerNamespace'];
+        emitCallback(metaEvent());
+        emitCallback(incrementalEvent());
+        emitCallback(metaEvent());
+        emitCallback(fullSnapshotEvent());
+        const recordingId = replayAttributes()[0]!['recording_id'];
+        const key = `${replayRecordingCheckpointKeyPrefix}${ownerNamespace}:${recordingId}`;
+        const foreignClaim = {
+          ...JSON.parse(window.localStorage.getItem(key)!),
+          documentId: 'other-document',
+          handoff,
+          nextSeq: 1,
+          gen: 0,
+        };
+        window.localStorage.setItem(key, JSON.stringify(foreignClaim));
+        let blockPointerWrites = pointerWrites !== 'available';
+        if (blockPointerWrites) {
+          const originalSetItem = Storage.prototype.setItem;
+          jest.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, key, value) {
+            if (blockPointerWrites && this === window.sessionStorage) {
+              throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+            }
+            originalSetItem.call(this, key, value);
+          });
+        }
+        mockPushEvent.mockClear();
+
+        window.dispatchEvent(
+          new StorageEvent('storage', { key, newValue: JSON.stringify(foreignClaim), storageArea: window.localStorage })
+        );
+        emitCallback(metaEvent());
+        const recoveryRecordingId = replayAttributes()[0]!['recording_id'];
+        expect(recoveryRecordingId).not.toBe(recordingId);
+        expect(replayAttributes()).toEqual([
+          expect.objectContaining({ recording_id: recoveryRecordingId, gen: '0', seq: '0' }),
+        ]);
+        expect(lifecycleAttributes('faro.session_recording.started')).toEqual([
+          expect.objectContaining({ recording_id: recoveryRecordingId }),
+        ]);
+        expect(JSON.parse(window.localStorage.getItem(key)!)).toEqual(foreignClaim);
+
+        instrumentation.destroy();
+        blockPointerWrites = pointerWrites === 'blocked';
+        mockPushEvent.mockClear();
+        instrumentation = initSampled({}, 'session-a');
+        emitCallback(metaEvent());
+        expect(replayAttributes()).toEqual([
+          expect.objectContaining({ recording_id: recoveryRecordingId, gen: '1', seq: '1' }),
+        ]);
+        window.dispatchEvent(new Event('pagehide'));
+        if (!blockPointerWrites) {
+          // Navigation has no same-document handoff: it must use the repaired pointer.
+          instrumentation.destroy();
+          mockPushEvent.mockClear();
+          instrumentation = initSampled({}, 'session-a');
+          emitCallback(metaEvent());
+          expect(replayAttributes()).toEqual([
+            expect.objectContaining({ recording_id: recoveryRecordingId, gen: '2', seq: '2' }),
+          ]);
+        }
+        expect(JSON.parse(window.localStorage.getItem(key)!)).toEqual(foreignClaim);
+      }
+    );
+
+    it.each([
+      ['a removal of its checkpoint', (key: string) => ({ key, newValue: null })],
+      ['another recording checkpoint', (key: string) => ({ key: `${key}-other`, newValue: '{"documentId":"x"}' })],
+      ['a write under its own document', (key: string) => ({ key, newValue: window.localStorage.getItem(key) })],
+    ])('should keep recording on a storage event for %s', (_scenario, makeEvent) => {
+      window.sessionStorage.clear();
+      instrumentation = initSampled({}, 'session-a');
+      const ownerNamespace = instrumentation['recordingOwnerNamespace'];
+      emitCallback(metaEvent());
+      const recordingId = replayAttributes()[0]!['recording_id'];
+      const key = `${replayRecordingCheckpointKeyPrefix}${ownerNamespace}:${recordingId}`;
+      mockPushEvent.mockClear();
+
+      window.dispatchEvent(new StorageEvent('storage', { ...makeEvent(key), storageArea: window.localStorage }));
+      emitCallback(incrementalEvent());
+
+      expect(lifecycleAttributes('faro.session_recording.started')).toEqual([]);
+      expect(replayAttributes()).toEqual([expect.objectContaining({ recording_id: recordingId, gen: '0', seq: '1' })]);
+    });
+  });
+
   describe('destroy', () => {
     it('should stop recording and clean up when destroyed', () => {
       const stopFn = jest.fn();
@@ -859,34 +1778,27 @@ describe('ReplayInstrumentation', () => {
       jest.useRealTimers();
     });
 
-    function initSampledInstrumentation(options: ReplayInstrumentationOptions = {}): ReplayInstrumentation {
-      const inst = new ReplayInstrumentation(options);
-      mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
-      inst['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      inst['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
-      inst.initialize();
-      return inst;
-    }
-
     it('should pause recording after inactivity threshold elapses', () => {
       const stopFn = jest.fn();
       mockRecord.mockReturnValue(stopFn);
 
-      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 5_000 });
+      instrumentation = initSampled({ inactivityThresholdMs: 5_000 });
       expect(instrumentation['isPaused']).toBe(false);
 
       jest.advanceTimersByTime(5_000);
 
       expect(stopFn).toHaveBeenCalled();
       expect(instrumentation['isPaused']).toBe(true);
-      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.paused', {});
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.paused', {
+        recording_id: expect.any(String),
+      });
     });
 
     it('should resume recording with a fresh checkpoint when user interacts after pause', () => {
       const stopFn = jest.fn();
       mockRecord.mockReturnValue(stopFn);
 
-      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 5_000 });
+      instrumentation = initSampled({ inactivityThresholdMs: 5_000 });
 
       jest.advanceTimersByTime(5_000);
       expect(instrumentation['isPaused']).toBe(true);
@@ -897,14 +1809,16 @@ describe('ReplayInstrumentation', () => {
 
       expect(instrumentation['isPaused']).toBe(false);
       expect(mockRecord).toHaveBeenCalledTimes(2);
-      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.resumed', {});
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.resumed', {
+        recording_id: expect.any(String),
+      });
     });
 
     it('should not pause when inactivityThresholdMs is 0', () => {
       const stopFn = jest.fn();
       mockRecord.mockReturnValue(stopFn);
 
-      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 0 });
+      instrumentation = initSampled({ inactivityThresholdMs: 0 });
 
       jest.advanceTimersByTime(120_000);
 
@@ -916,7 +1830,7 @@ describe('ReplayInstrumentation', () => {
       const stopFn = jest.fn();
       mockRecord.mockReturnValue(stopFn);
 
-      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: undefined });
+      instrumentation = initSampled({ inactivityThresholdMs: undefined });
 
       jest.advanceTimersByTime(120_000);
 
@@ -927,7 +1841,7 @@ describe('ReplayInstrumentation', () => {
     it('should remove DOM listeners on stopRecording', () => {
       const removeSpy = jest.spyOn(document, 'removeEventListener');
 
-      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 5_000 });
+      instrumentation = initSampled({ inactivityThresholdMs: 5_000 });
       instrumentation.destroy();
 
       const removedEvents = removeSpy.mock.calls.map((call) => call[0]);
@@ -943,7 +1857,7 @@ describe('ReplayInstrumentation', () => {
       mockRecord.mockReturnValue(stopFn);
       const removeSpy = jest.spyOn(document, 'removeEventListener');
 
-      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 5_000 });
+      instrumentation = initSampled({ inactivityThresholdMs: 5_000 });
 
       jest.advanceTimersByTime(5_000);
       expect(instrumentation['isPaused']).toBe(true);
@@ -961,7 +1875,7 @@ describe('ReplayInstrumentation', () => {
       const stopFn = jest.fn();
       mockRecord.mockReturnValue(stopFn);
 
-      instrumentation = initSampledInstrumentation({ inactivityThresholdMs: 5_000 });
+      instrumentation = initSampled({ inactivityThresholdMs: 5_000 });
 
       jest.advanceTimersByTime(4_000);
       document.dispatchEvent(new Event('keydown'));
@@ -983,7 +1897,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ samplingRate: 1 });
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
-      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
       instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
@@ -996,7 +1910,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ samplingRate: 0 });
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
-      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
       instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
@@ -1010,7 +1924,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ samplingRate: 0.2 });
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
-      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
       instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
@@ -1024,7 +1938,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ samplingRate: 0.1 });
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
-      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
       instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
@@ -1039,13 +1953,13 @@ describe('ReplayInstrumentation', () => {
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
 
       instrumentation = new ReplayInstrumentation({ samplingRate: 0.2 });
-      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
       instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
       instrumentation.initialize();
       const firstDecision = instrumentation['isRecording'];
 
       const instrumentation2 = new ReplayInstrumentation({ samplingRate: 0.2 });
-      instrumentation2['api'] = { getSession: mockGetSession } as any;
+      instrumentation2['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
       instrumentation2['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
       instrumentation2.initialize();
       const secondDecision = instrumentation2['isRecording'];
@@ -1058,7 +1972,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ samplingRate: -0.5 });
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
-      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
       instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
@@ -1073,7 +1987,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ samplingRate: 1.5 });
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
-      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
       instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       const logWarnSpy = jest.spyOn(instrumentation as any, 'logWarn');
@@ -1094,7 +2008,7 @@ describe('ReplayInstrumentation', () => {
 
       instrumentation = new ReplayInstrumentation({ samplingRate: 0.5 });
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'true' } });
-      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
       instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
@@ -1110,7 +2024,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ samplingRate: 0 });
 
       mockGetSession.mockReturnValue({ id: 'session-1', attributes: { isSampled: 'false' } });
-      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
       instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();
@@ -1167,7 +2081,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ samplingRate: 1 });
 
       mockGetSession.mockReturnValue({ id: undefined, attributes: { isSampled: 'true' } });
-      instrumentation['api'] = { getSession: mockGetSession } as any;
+      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
       instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
 
       instrumentation.initialize();

@@ -2,6 +2,12 @@
 
 ## Next
 
+- Feature (`@grafana/faro-instrumentation-replay`): Add per-tab recording identity, checkpoint
+  generations, and recording-wide sequence numbers. Preserve identity through clean navigation
+  using owner-scoped handoffs, and expose accepted-event serialization failures as sequence gaps.
+  Recover with a new identity after ownership loss, including same-document replacement when
+  the tab pointer cannot be updated.
+
 ## 2.4.0
 
 - Feature (`@grafana/faro-transport-otlp-http`): OTLP HTTP transport now supports async dynamic header values.
