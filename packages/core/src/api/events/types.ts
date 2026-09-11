@@ -1,5 +1,6 @@
 import type { SpanContext } from '@opentelemetry/api';
 
+import type { Meta } from '../../metas';
 import type { TraceContext } from '../traces';
 import type { UserAction } from '../types';
 
@@ -17,6 +18,8 @@ export interface EventEvent {
 }
 
 export interface PushEventOptions {
+  /** Metadata captured by an instrumentation before deferred event publication. */
+  meta?: Meta;
   skipDedupe?: boolean;
   spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
   timestampOverwriteMs?: number;

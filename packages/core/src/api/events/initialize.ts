@@ -1,6 +1,7 @@
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import { captureMetas, type Metas } from '../../metas';
+import { markMetaCaptured } from '../../metas/capture';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
@@ -34,7 +35,13 @@ export function initializeEventsAPI({
     name,
     attributes,
     domain,
-    { skipDedupe, spanContext, timestampOverwriteMs, customPayloadTransformer = (payload: EventEvent) => payload } = {}
+    {
+      meta: capturedMeta,
+      skipDedupe,
+      spanContext,
+      timestampOverwriteMs,
+      customPayloadTransformer = (payload: EventEvent) => payload,
+    } = {}
   ) => {
     try {
       const attrs = stringifyObjectValues(attributes);
@@ -65,7 +72,8 @@ export function initializeEventsAPI({
       }
 
       const previousPayload = lastPayload;
-      const meta = captureMetas(metas);
+      const currentMeta = captureMetas(metas);
+      const meta = capturedMeta ? markMetaCaptured({ ...capturedMeta }) : currentMeta;
       // Capture can emit a nested event. Preserve dedupe without committing a failed capture.
       if (lastPayload !== previousPayload && !skipDedupe && config.dedupe && deepEqual(testingPayload, lastPayload)) {
         return;

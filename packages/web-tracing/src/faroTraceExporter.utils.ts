@@ -2,11 +2,11 @@ import type { SpanContext } from '@opentelemetry/api';
 import { ESpanKind, type IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 
 import { unknownString } from '@grafana/faro-web-sdk';
-import type { API, EventAttributes as FaroEventAttributes } from '@grafana/faro-web-sdk';
+import type { API, EventAttributes as FaroEventAttributes, Meta } from '@grafana/faro-web-sdk';
 
 const DURATION_NS_KEY = 'duration_ns';
 
-export function sendFaroEvents(resourceSpans: IResourceSpans[] = [], api: API): void {
+export function sendFaroEvents(resourceSpans: IResourceSpans[] = [], api: API, meta?: Meta): void {
   for (const resourceSpan of resourceSpans) {
     const { scopeSpans } = resourceSpan;
 
@@ -47,6 +47,7 @@ export function sendFaroEvents(resourceSpans: IResourceSpans[] = [], api: API): 
         }
 
         api.pushEvent(`faro.tracing.${eventName}`, faroEventAttributes, undefined, {
+          meta,
           spanContext,
           // Convert nanoseconds to milliseconds
           timestampOverwriteMs: Number(span.endTimeUnixNano) / 1_000_000,
