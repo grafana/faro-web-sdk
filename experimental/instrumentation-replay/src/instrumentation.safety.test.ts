@@ -262,6 +262,33 @@ describe('Replay callback and startup safety', () => {
     expect(recordings()).toHaveLength(1);
   });
 
+  it.each(['A', 'B'])('preserves a recorder reinitialized during resume for session %s', async (sessionId) => {
+    start({ inactivityThresholdMs: 5_000 });
+    jest.advanceTimersByTime(5_000);
+    const reinitialize = () => {
+      faro.metas.removeCaptureListener(reinitialize);
+      faro.instrumentations.remove(replay);
+      setSession(sessionId);
+      faro.instrumentations.add(replay);
+    };
+    faro.metas.addCaptureListener(reinitialize);
+
+    document.dispatchEvent(new Event('pointerdown'));
+    await Promise.resolve();
+
+    expect(mockRecord).toHaveBeenCalledTimes(2);
+    expect(stop).toHaveBeenCalledTimes(1);
+    expect(events().filter((item) => item.payload.name === 'faro.session_recording.resumed')).toEqual([]);
+    emit(changeEvent());
+    expect(recordings().map((item) => item.meta.session?.id)).toEqual([sessionId]);
+
+    faro.instrumentations.remove(replay);
+
+    expect(stop).toHaveBeenCalledTimes(2);
+    emit(changeEvent());
+    expect(recordings()).toHaveLength(1);
+  });
+
   it('publishes the lifecycle marker before buffered events and then accepts live events', () => {
     mockRecord.mockImplementation((options) => {
       emit = options.emit;

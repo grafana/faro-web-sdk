@@ -440,6 +440,11 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
     try {
       this.metas.capture(() => {
+        // A capture listener may have installed a fresh recorder.
+        if (this.isRecording && !this.isPaused) {
+          return;
+        }
+
         if (!this.isRecording || !this.isPaused || !this.isRecordingSessionEligible()) {
           this.logDebug('Recording session no longer eligible, stopping instead of resuming');
           this.stopRecording();
