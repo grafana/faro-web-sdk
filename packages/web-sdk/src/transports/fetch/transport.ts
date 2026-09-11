@@ -182,6 +182,7 @@ export class FetchTransport extends BaseTransport {
           outcome.reason === 'retries-exhausted' ? 'Delivery retries exhausted' : 'Permanent delivery failure',
           {
             ...outcome.failure,
+            reason: outcome.reason,
             attempts: outcome.attempts,
             elapsedTimeMs: outcome.elapsedTimeMs,
           }
