@@ -6,6 +6,8 @@ import type { UserActionsAPI } from './userActions/types';
 export const mockMetas: {
   add: jest.Mock;
   remove: jest.Mock;
+  replace: jest.Mock;
+  beginSessionUpdate: jest.Mock;
   addListener: jest.Mock;
   removeListener: jest.Mock;
   capture: () => {};
@@ -15,6 +17,8 @@ export const mockMetas: {
 } = {
   add: jest.fn(),
   remove: jest.fn(),
+  replace: jest.fn(),
+  beginSessionUpdate: jest.fn(() => () => {}),
   addListener: jest.fn(),
   removeListener: jest.fn(),
   capture: () => mockMetas.value,
