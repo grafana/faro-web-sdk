@@ -29,6 +29,7 @@ describe('Replay callback and startup safety', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     window.sessionStorage.clear();
+    window.localStorage.clear();
     mockRecord = require('@grafana/rrweb').record;
     mockRecord.mockReset();
     stop = jest.fn();
@@ -46,6 +47,7 @@ describe('Replay callback and startup safety', () => {
     jest.restoreAllMocks();
     document.body.replaceChildren();
     window.sessionStorage.clear();
+    window.localStorage.clear();
     jest.clearAllTimers();
     jest.useRealTimers();
   });
