@@ -244,11 +244,11 @@ describe('Replay callback and startup safety', () => {
 
   it('does not leak a recorder when a capture listener reinitializes replay', () => {
     const reinitialize = () => {
-      faro.metas.removeCaptureListener(reinitialize);
+      faro.metas.removeCaptureListener!(reinitialize);
       faro.instrumentations.remove(replay);
       faro.instrumentations.add(replay);
     };
-    faro.metas.addCaptureListener(reinitialize);
+    faro.metas.addCaptureListener!(reinitialize);
 
     start();
 
@@ -268,12 +268,12 @@ describe('Replay callback and startup safety', () => {
     start({ inactivityThresholdMs: 5_000 });
     jest.advanceTimersByTime(5_000);
     const reinitialize = () => {
-      faro.metas.removeCaptureListener(reinitialize);
+      faro.metas.removeCaptureListener!(reinitialize);
       faro.instrumentations.remove(replay);
       setSession(sessionId);
       faro.instrumentations.add(replay);
     };
-    faro.metas.addCaptureListener(reinitialize);
+    faro.metas.addCaptureListener!(reinitialize);
 
     document.dispatchEvent(new Event('pointerdown'));
     await Promise.resolve();

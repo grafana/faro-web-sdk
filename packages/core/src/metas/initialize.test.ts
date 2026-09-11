@@ -96,10 +96,10 @@ describe('metas', () => {
       api.setSession({ id: String(++session) });
       api.pushEvent('session-transition');
     });
-    metas.addCaptureListener(emit);
-    metas.addCaptureListener(reconcile);
+    metas.addCaptureListener!(emit);
+    metas.addCaptureListener!(reconcile);
 
-    metas.capture(() => api.pushEvent('callback-event'));
+    metas.capture!(() => api.pushEvent('callback-event'));
     expect(transport.items.map((item) => item.meta.session?.id)).toEqual(['1', '1', '1']);
     expect(emit).toHaveBeenCalledTimes(1);
     expect(reconcile).toHaveBeenCalledTimes(1);
@@ -115,16 +115,16 @@ describe('metas', () => {
     const replacement = () => api.setSession({ id: 'replacement' });
     const pending = () => api.setSession({ id: 'pending' });
     const mutate = () => {
-      metas.addCaptureListener(replacement);
-      metas.removeCaptureListener(pending);
-      metas.removeCaptureListener(mutate);
-      expect(metas.capture().session?.id).toBe('pending');
+      metas.addCaptureListener!(replacement);
+      metas.removeCaptureListener!(pending);
+      metas.removeCaptureListener!(mutate);
+      expect(metas.capture!().session?.id).toBe('pending');
     };
-    metas.addCaptureListener(mutate);
-    metas.addCaptureListener(pending);
+    metas.addCaptureListener!(mutate);
+    metas.addCaptureListener!(pending);
 
-    expect(metas.capture().session?.id).toBe('pending');
-    expect(metas.capture().session?.id).toBe('replacement');
+    expect(metas.capture!().session?.id).toBe('pending');
+    expect(metas.capture!().session?.id).toBe('replacement');
   });
 
   it('keeps nested submissions in one capture while subsequent activity can rotate', () => {
@@ -155,18 +155,18 @@ describe('metas', () => {
 
   it('resets the capture cycle after a pending listener throws during nested capture', () => {
     const { api, metas } = initializeFaro(mockConfig());
-    const nested = jest.fn(() => metas.capture());
+    const nested = jest.fn(() => metas.capture!());
     const fail = () => {
       throw new Error('nested reconciliation failed');
     };
-    metas.addCaptureListener(nested);
-    metas.addCaptureListener(fail);
+    metas.addCaptureListener!(nested);
+    metas.addCaptureListener!(fail);
 
-    expect(() => metas.capture()).toThrow('nested reconciliation failed');
-    metas.removeCaptureListener(fail);
-    metas.addCaptureListener(() => api.setSession({ id: 'recovered' }));
+    expect(() => metas.capture!()).toThrow('nested reconciliation failed');
+    metas.removeCaptureListener!(fail);
+    metas.addCaptureListener!(() => api.setSession({ id: 'recovered' }));
 
-    expect(metas.capture().session?.id).toBe('recovered');
+    expect(metas.capture!().session?.id).toBe('recovered');
     expect(nested).toHaveBeenCalledTimes(2);
     expect(nested).toHaveLastReturnedWith(expect.objectContaining({ session: { id: 'recovered' } }));
   });
