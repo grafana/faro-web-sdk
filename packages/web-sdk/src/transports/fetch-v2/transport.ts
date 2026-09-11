@@ -127,8 +127,15 @@ export class FetchTransport extends BaseTransport {
     return true;
   }
 
-  private async prepareRequest(items: TransportItem[]): Promise<{ requestInit: RequestInit; bodySize: number }> {
-    const jsonBody = JSON.stringify(getTransportBody(items));
+  private async prepareRequest(
+    items: TransportItem[]
+  ): Promise<{ requestInit: RequestInit; bodySize: number; sessionId: string | undefined }> {
+    // Async headers and compression can outlive a session. Bind both the header
+    // and its response handling to the payload, not the current session.
+    const transportBody = getTransportBody(items);
+    const sessionId = transportBody.meta.session?.id;
+    const jsonBody = JSON.stringify(transportBody);
+
     const { headers = {}, ...requestOptions } = this.options.requestOptions ?? {};
     const { keepalive: _keepalive, signal: _signal, ...requestOptionsWithoutManagedFields } = requestOptions;
     const resolvedHeaders: Record<string, string> = {};
@@ -146,9 +153,9 @@ export class FetchTransport extends BaseTransport {
       compressionHeaders['Content-Encoding'] = 'gzip';
     }
 
-    const sessionId = this.metas.value.session?.id;
     return {
       bodySize,
+      sessionId,
       requestInit: {
         method: 'POST',
         headers: {
@@ -167,7 +174,7 @@ export class FetchTransport extends BaseTransport {
   }
 
   private async performAttempt(
-    prepared: { requestInit: RequestInit; bodySize: number },
+    prepared: { requestInit: RequestInit; bodySize: number; sessionId: string | undefined },
     attemptsRemaining: number,
     unloading: boolean
   ): Promise<AttemptOutcome> {
@@ -185,7 +192,7 @@ export class FetchTransport extends BaseTransport {
         attemptsRemaining,
         () => attemptsMade++
       );
-      this.handleResponse(response);
+      this.handleResponse(response, prepared.sessionId);
 
       if (response.status >= 200 && response.status < 300) {
         return { kind: 'success', attemptsMade };
@@ -316,9 +323,9 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
-  private handleResponse(response: Response): void {
+  private handleResponse(response: Response, requestSessionId: string | undefined): void {
     if (response.status === ACCEPTED && response.headers.get('X-Faro-Session-Status') === 'invalid') {
-      this.extendFaroSession(this.config, this.logDebug.bind(this));
+      this.extendFaroSession(this.config, this.logDebug.bind(this), requestSessionId);
     }
     response.text().catch(noop);
   }
@@ -349,14 +356,29 @@ export class FetchTransport extends BaseTransport {
     }
   }
 
-  private extendFaroSession(config: Config, logDebug: BaseExtension['logDebug']): void {
+  private extendFaroSession(
+    config: Config,
+    logDebug: BaseExtension['logDebug'],
+    requestSessionId: string | undefined
+  ): void {
     const sessionTrackingConfig = config.sessionTracking;
-    if (sessionTrackingConfig?.enabled) {
-      const { fetchUserSession, storeUserSession } = getSessionManagerByConfig(sessionTrackingConfig);
-      getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
-      logDebug('Session expired created new session.');
-    } else {
+    if (!sessionTrackingConfig?.enabled) {
       logDebug('Session expired.');
+      return;
     }
+
+    const { fetchUserSession, storeUserSession } = getSessionManagerByConfig(sessionTrackingConfig);
+
+    // A delayed response must not rotate a newer session, including one another
+    // tab has already established in shared storage.
+    const currentSessionId = this.metas.value.session?.id;
+    const storedSessionId = fetchUserSession()?.sessionId;
+    if (!requestSessionId || requestSessionId !== currentSessionId || requestSessionId !== storedSessionId) {
+      logDebug('Ignoring stale or cross-tab session-invalid response; request session no longer current.');
+      return;
+    }
+
+    getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
+    logDebug('Session expired; created new session.');
   }
 }
