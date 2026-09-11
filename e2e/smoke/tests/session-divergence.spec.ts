@@ -10,18 +10,12 @@ import { expect, test } from './fixtures';
 // session, a background tab must adopt the new id rather than keep emitting the
 // expired one. Asserts: after Tab A rotates, Tab B's next emit carries the rotated id.
 //
-// Non-obvious mechanics (don't "simplify" away):
-//  - ?session=persistent runs session signals only, so nothing rotates on its own.
-//  - We force expiry by ageing the stored session (not by waiting out the real
-//    lifetime cap), then drain the ~2s updateSession throttle (leading+trailing)
-//    so Tab A's next send rotates synchronously and Tab B can't self-rotate first.
-//  - Each send uses a different signal type: faro won't re-send a duplicate, and
-//    rotation/adoption only happens on an actual send (updateSession in beforeSend).
-//  - The rotation-triggering batch is re-stamped to the new session in beforeSend,
-//    so Tab B's first post-rotation send already carries the rotated id.
+// Force expiry by ageing the stored session, then let the one-second
+// reconciliation interval elapse. The next accepted capture rotates or adopts
+// the session before assigning ownership to the triggering signal.
 
 const URL = '/?session=persistent';
-const THROTTLE_LAPSE_MS = 2_500; // > the ~2s updateSession throttle settle (leading+trailing)
+const RECONCILIATION_LAPSE_MS = 2_500;
 
 const EVENT_BTN = '[data-cy="btn-push-event"]';
 const LOG_BTN = '[data-cy="btn-push-log"]';
@@ -61,7 +55,7 @@ async function expireStoredSession(page: Page): Promise<void> {
 }
 
 // Bring the tab to the front, click a signal button, and wait until the
-// resulting /collect payload is captured (so beforeSend/updateSession has run).
+// resulting /collect payload is captured (so session reconciliation has run).
 // Returns the session id that payload carried — i.e. the tab's in-memory id.
 async function clickAndCapture(page: Page, sink: string[], button: string): Promise<string> {
   const before = sink.length;
@@ -89,9 +83,8 @@ test('a background tab converges to the rotated session instead of emitting the 
     await tabB.locator(EVENT_BTN).waitFor();
     expect(await clickAndCapture(tabB, bIds, EVENT_BTN), 'Tab B resumes S0 from shared localStorage').toBe(s0);
 
-    // --- expire the shared session, then let the updateSession throttle lapse so
-    //     the next send rotates synchronously (neither tab emits in between) ---
-    await tabA.waitForTimeout(THROTTLE_LAPSE_MS);
+    // Let reconciliation run again, then expire the shared session.
+    await tabA.waitForTimeout(RECONCILIATION_LAPSE_MS);
     await expireStoredSession(tabA);
 
     // --- Tab A emits first (log = a fresh signal) -> rotates to A1 in storage ---
@@ -100,10 +93,9 @@ test('a background tab converges to the rotated session instead of emitting the 
     expect(a1, 'Tab A rotates to a new session when the stored one is expired').not.toBe(s0);
     expect(await storageSessionId(tabB), 'shared storage now holds A1 for both tabs').toBe(a1);
 
-    // The rotation-triggering batch is re-stamped to the new session in beforeSend,
-    // so Tab B's first post-rotation send already carries A1 — immediate
-    // convergence, no one-batch boundary smear. A missing adoption (stale S0) or a
-    // self-rotation (some other id) would surface here as a value other than A1.
+    // Tab B reconciles before capturing its signal, so its first post-rotation
+    // send carries A1. Missing adoption or another rotation would produce a
+    // different session ID.
     const bConverged = await clickAndCapture(tabB, bIds, LOG_BTN);
     expect(bConverged, 'background tab converges to the shared session, not the expired one').toBe(a1);
   } finally {

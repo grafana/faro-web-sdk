@@ -22,6 +22,22 @@ describe('metas', () => {
     expect(metas.value.session?.id).toBe('after');
   });
 
+  it.each([false, true])(
+    'snapshots a reused legacy metadata object without marking it captured (capture=%s)',
+    (customCapture) => {
+      const live = { session: { id: 'first' } };
+      const metas = { value: live, capture: customCapture ? () => live : undefined };
+      const first = captureMetas(metas);
+      live.session = { id: 'second' };
+      const second = captureMetas(metas);
+
+      expect(first).not.toBe(live);
+      expect(second).not.toBe(live);
+      expect(first.session?.id).toBe('first');
+      expect(second.session?.id).toBe('second');
+    }
+  );
+
   it('sets app.gitHash from global object on initialization', () => {
     (global as any).__faroGitHash_test = 'abc123def456abc123def456abc123def456abc1';
 
@@ -151,6 +167,70 @@ describe('metas', () => {
     metas.removeCaptureListener!(fail);
     metas.addCaptureListener!(() => api.setSession({ id: 'recovered' }));
     expect(metas.capture!().session?.id).toBe('recovered');
+  });
+
+  it('retains a reconciliation failure swallowed by nested telemetry until the outer capture exits', () => {
+    const transport = new MockTransport();
+    const { api, metas } = initializeFaro(mockConfig({ transports: [transport], dedupe: true }));
+    const fail = () => {
+      throw new Error('nested failure');
+    };
+    const remaining = jest.fn();
+    metas.addCaptureListener!(() => api.pushEvent('nested'));
+    metas.addCaptureListener!(fail);
+    metas.addCaptureListener!(remaining);
+
+    api.pushEvent('outer');
+
+    expect(transport.items).toEqual([]);
+    expect(remaining).not.toHaveBeenCalled();
+
+    metas.removeCaptureListener!(fail);
+    api.pushEvent('outer');
+    expect(transport.items.map((item) => (item.payload as { name: string }).name)).toEqual(['nested', 'outer']);
+    expect(remaining).toHaveBeenCalledTimes(1);
+  });
+
+  it('retains metadata assembly failure after a nested public API catches it', () => {
+    const transport = new MockTransport();
+    const { api, metas } = initializeFaro(mockConfig({ transports: [transport] }));
+    let fail = true;
+    metas.add(() => {
+      if (fail) {
+        fail = false;
+        throw new Error('metadata assembly failed');
+      }
+      return {};
+    });
+    metas.addCaptureListener!(() => api.pushEvent('nested'));
+
+    expect(() => metas.capture!(() => api.pushEvent('outer'))).toThrow('metadata assembly failed');
+    expect(transport.items).toEqual([]);
+
+    api.pushEvent('recovered');
+    expect(transport.items.map((item) => (item.payload as { name: string }).name)).toEqual(['nested', 'recovered']);
+  });
+
+  it('does not deliver a metadata listener when assembly triggers a caught capture failure', () => {
+    const { api, metas } = initializeFaro(mockConfig());
+    let submit = true;
+    metas.add(() => {
+      if (submit) {
+        submit = false;
+        api.pushEvent('nested');
+      }
+      return {};
+    });
+    const delivered = jest.fn();
+    metas.addListener(delivered);
+    metas.addCaptureListener!(() => api.setSession({ id: 'replacement' }));
+    metas.addCaptureListener!(() => {
+      throw new Error('capture failed');
+    });
+
+    api.pushEvent('outer');
+
+    expect(delivered).not.toHaveBeenCalled();
   });
 
   it('resets the capture cycle after a pending listener throws during nested capture', () => {

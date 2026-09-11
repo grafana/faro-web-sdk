@@ -43,6 +43,17 @@ class MockTransport extends BaseTransport implements Transport {
 const sendMock = jest.spyOn(MockTransport.prototype, 'send');
 
 describe('transports', () => {
+  it('preserves a custom item without session ownership when reconciliation creates a session', () => {
+    const transport = new MockTransport();
+    const { api, metas, transports } = initializeFaro(mockConfig({ transports: [transport] }));
+    metas.addCaptureListener!(() => api.setSession({ id: 'new-session' }));
+
+    transports.execute(makeExceptionTransportItem('Error', 'before-session'));
+
+    expect(api.getSession()?.id).toBe('new-session');
+    expect(transport.sentItems[0]?.meta.session).toBeUndefined();
+  });
+
   describe('config.beforeSend', () => {
     it('will not send events that are rejected by beforeSend hook', () => {
       const transport = new MockTransport();

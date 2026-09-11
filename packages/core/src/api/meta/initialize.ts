@@ -49,10 +49,7 @@ export function initializeMetaAPI({
         }
       : {};
 
-    if (metaSession) {
-      metas.remove(metaSession);
-    }
-
+    const previousSession = metaSession;
     metaSession = {
       session: {
         // if session is undefined, session manager force creates a new session
@@ -61,7 +58,15 @@ export function initializeMetaAPI({
       },
     };
 
-    metas.add(metaSession);
+    if (metas.replace) {
+      metas.replace(previousSession, metaSession);
+    } else {
+      // Compatibility with metadata implementations predating atomic replacement.
+      if (previousSession) {
+        metas.remove(previousSession);
+      }
+      metas.add(metaSession);
+    }
   };
 
   const getSession: MetaAPI['getSession'] = () => metas.value.session;

@@ -144,8 +144,7 @@ describe('sessionManagerUtils', () => {
     // session is invalid
     jest.spyOn(mockSessionManagerUtils, 'isUserSessionValid').mockReturnValueOnce(false);
 
-    const mockSetSession = jest.fn();
-    jest.spyOn(faro.api, 'setSession').mockImplementationOnce(mockSetSession);
+    const mockSetSession = jest.spyOn(faro.api, 'setSession');
 
     mockFetchUserSession.mockReturnValueOnce({
       sessionId: 'abc',
@@ -209,8 +208,7 @@ describe('sessionManagerUtils', () => {
     // session is invalid
     jest.spyOn(mockSessionManagerUtils, 'isUserSessionValid').mockReturnValueOnce(false);
 
-    const mockSetSession = jest.fn();
-    jest.spyOn(faro.api, 'setSession').mockImplementationOnce(mockSetSession);
+    const mockSetSession = jest.spyOn(faro.api, 'setSession');
 
     mockFetchUserSession.mockReturnValue({
       sessionId: currentSessionMeta.id,
@@ -384,8 +382,7 @@ describe('sessionManagerUtils', () => {
       storeUserSession: mockStoreUserSession,
     });
 
-    const mockSetSession = jest.fn();
-    jest.spyOn(faro.api, 'setSession').mockImplementationOnce(mockSetSession);
+    const mockSetSession = jest.spyOn(faro.api, 'setSession');
 
     updateSession({ forceSessionExtend: true });
 
@@ -460,7 +457,7 @@ describe('sessionManagerUtils', () => {
       const mockStoreUserSession = jest.fn();
       jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
 
-      initializeFaro(mockConfig({}));
+      const faro = initializeFaro(mockConfig({}));
 
       const handler = mockSessionManagerUtils.getSessionMetaUpdateHandler({
         fetchUserSession: VolatileSessionsManager.fetchUserSession,
@@ -468,11 +465,8 @@ describe('sessionManagerUtils', () => {
       });
 
       const newSessionId = 'new-session-id';
-      handler({
-        session: {
-          id: newSessionId,
-        },
-      });
+      faro.metas.addListener(handler);
+      faro.api.setSession({ id: newSessionId });
 
       expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
       expect(mockStoreUserSession).toHaveBeenCalledWith(
@@ -732,11 +726,10 @@ describe('sessionManagerUtils', () => {
       const mockPushEvent = jest.fn();
       jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(mockPushEvent);
 
-      handler({
-        session: {
-          id: mockSessionId,
-          overrides: newOverrides,
-        },
+      faro.metas.addListener(handler);
+      faro.api.setSession({
+        id: mockSessionId,
+        overrides: newOverrides,
       });
 
       expect(mockPushEvent).toHaveBeenCalledTimes(1);
@@ -784,11 +777,10 @@ describe('sessionManagerUtils', () => {
 
       const newOverrides = { serviceName: 'my-new-service' };
 
-      handler({
-        session: {
-          id: mockSessionId,
-          overrides: newOverrides,
-        },
+      faro.metas.addListener(handler);
+      faro.api.setSession({
+        id: mockSessionId,
+        overrides: newOverrides,
       });
 
       expect(mockPushEvent).toHaveBeenCalledTimes(1);

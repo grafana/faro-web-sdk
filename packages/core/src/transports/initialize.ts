@@ -139,7 +139,7 @@ export function initializeTransports(
         return;
       }
       const itemMeta = { ...item.meta };
-      if (itemMeta.session?.id === previousSessionId && meta.session?.id !== previousSessionId) {
+      if (previousSessionId && itemMeta.session?.id === previousSessionId && meta.session?.id !== previousSessionId) {
         if (meta.session === undefined) {
           delete itemMeta.session;
         } else {
