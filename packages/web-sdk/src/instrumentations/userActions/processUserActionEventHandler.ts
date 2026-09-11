@@ -6,6 +6,7 @@ import { UserActionController } from './userActionController';
 import {
   convertDataAttributeName,
   deriveUserActionTimeoutDataAttribute,
+  normalizeDataAttributeName,
   normalizeInitialActivityTimeout,
   type TimeoutWarning,
 } from './util';
@@ -25,12 +26,18 @@ export function getUserEventHandler(
   );
 
   function processUserEvent(event: PointerEvent | KeyboardEvent): void {
-    const element = event.target as HTMLElement;
     const dataAttributeName = config.userActionsInstrumentation?.dataAttributeName ?? userActionDataAttribute;
+
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    const element = findClosestElementWithAttribute(target, normalizeDataAttributeName(dataAttributeName));
     const userActionName = getUserActionNameFromElement(element, dataAttributeName);
 
-    // We don't have a data attribute
-    if (!userActionName) {
+    // We don't have a matching element or data attribute
+    if (!element || !userActionName) {
       return;
     }
 
@@ -51,12 +58,32 @@ export function getUserEventHandler(
   return { processUserEvent, processUserActionStarted };
 }
 
+function findClosestElementWithAttribute(element: Element, attributeName: string): HTMLElement | null {
+  let current: Element | null = element;
+
+  while (current) {
+    if (current.hasAttribute(attributeName)) {
+      return current as HTMLElement;
+    }
+    current = current.parentElement;
+  }
+
+  return null;
+}
+
 export function getUserActionTimeoutFromElement(element: HTMLElement, dataAttributeName: string): number | undefined {
   const value = element.getAttribute(deriveUserActionTimeoutDataAttribute(dataAttributeName));
   return value === null ? undefined : Number(value);
 }
 
-export function getUserActionNameFromElement(element: HTMLElement, dataAttributeName: string): string | undefined {
+export function getUserActionNameFromElement(
+  element: HTMLElement | null,
+  dataAttributeName: string
+): string | undefined {
+  if (!element) {
+    return undefined;
+  }
+
   const parsedDataAttributeName = convertDataAttributeName(dataAttributeName);
   const dataset = element.dataset;
 
