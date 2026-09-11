@@ -43,6 +43,7 @@ describe('Replay callback and startup safety', () => {
 
   afterEach(() => {
     replay?.destroy();
+    jest.restoreAllMocks();
     document.body.replaceChildren();
     window.sessionStorage.clear();
     jest.clearAllTimers();
@@ -139,6 +140,104 @@ describe('Replay callback and startup safety', () => {
     });
     start();
     expect(events()).toEqual([]);
+  });
+
+  it.each(['start', 'resume'])('logs stop failures when an attempt is invalidated during %s', async (phase) => {
+    replay = new ReplayInstrumentation({ inactivityThresholdMs: 5_000 });
+    const logWarn = jest.spyOn(replay, 'logWarn');
+    if (phase === 'resume') {
+      faro.instrumentations.add(replay);
+      jest.advanceTimersByTime(5_000);
+    }
+    const previousEvents = [...events()];
+    const stopError = new Error('stop failed');
+    const stopInvalidated = jest.fn(() => {
+      throw stopError;
+    });
+    mockRecord.mockImplementationOnce((options) => {
+      emit = options.emit;
+      emit(metaEvent());
+      setSession('B');
+      return stopInvalidated;
+    });
+
+    expect(() => {
+      if (phase === 'resume') {
+        document.dispatchEvent(new Event('pointerdown'));
+      } else {
+        faro.instrumentations.add(replay);
+      }
+    }).not.toThrow();
+
+    expect(stopInvalidated).toHaveBeenCalledTimes(1);
+    expect(logWarn).toHaveBeenCalledWith('Failed to stop session replay', stopError);
+    expect(logWarn).not.toHaveBeenCalledWith(`Failed to ${phase} session replay`, stopError);
+    expect(events()).toEqual(previousEvents);
+    const staleEmit = emit;
+    staleEmit(changeEvent());
+    expect(recordings()).toEqual([]);
+
+    await Promise.resolve();
+
+    expect(mockRecord).toHaveBeenCalledTimes(phase === 'resume' ? 3 : 2);
+    staleEmit(changeEvent());
+    expect(recordings()).toEqual([]);
+    emit(changeEvent());
+    expect(recordings().map((item) => item.meta.session?.id)).toEqual(['B']);
+  });
+
+  it('does not retry a failed reinitialization from a previous lifecycle', async () => {
+    start();
+    setSession('B');
+    faro.instrumentations.remove(replay);
+    mockRecord.mockReturnValueOnce(undefined);
+    faro.instrumentations.add(replay);
+    expect(mockRecord).toHaveBeenCalledTimes(2);
+
+    await Promise.resolve();
+
+    expect(mockRecord).toHaveBeenCalledTimes(2);
+    setSession('B');
+    await Promise.resolve();
+    expect(mockRecord).toHaveBeenCalledTimes(3);
+  });
+
+  it('preserves coalescing of new starts when a previous lifecycle callback runs', async () => {
+    start();
+    setSession('B');
+    faro.instrumentations.remove(replay);
+    faro.instrumentations.add(replay);
+
+    // Notify between the old callback and the new one; this must not queue a second retry.
+    const notification = Promise.resolve().then(() => setSession('D'));
+    setSession('C');
+    mockRecord.mockReturnValueOnce(undefined);
+    await notification;
+    await Promise.resolve();
+
+    expect(mockRecord).toHaveBeenCalledTimes(3);
+    expect(stop).toHaveBeenCalledTimes(2);
+  });
+
+  it('can restart after a removed listener queues work during destruction', async () => {
+    faro.metas.addListener((meta) => {
+      if (meta.session?.id === 'B') {
+        faro.instrumentations.remove(replay);
+      }
+    });
+    start();
+    // Core still invokes the removed replay listener in this notification's iteration.
+    setSession('B');
+    faro.instrumentations.add(replay);
+    await Promise.resolve();
+
+    setSession('C');
+    await Promise.resolve();
+
+    expect(mockRecord).toHaveBeenCalledTimes(3);
+    expect(stop).toHaveBeenCalledTimes(2);
+    emit(changeEvent());
+    expect(recordings().map((item) => item.meta.session?.id)).toEqual(['C']);
   });
 
   it('publishes the lifecycle marker before buffered events and then accepts live events', () => {

@@ -42,6 +42,8 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   // Coalesce re-entrant session changes into one deferred start.
   private pendingStart: boolean = false;
   private destroyed: boolean = false;
+  // Deferred starts belong to the lifecycle that scheduled them.
+  private lifecycle = 0;
   // Prevent an invalidated attempt from reviving if the same session returns.
   private attemptRevision = 0;
 
@@ -62,6 +64,9 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   initialize(): void {
     this.destroyed = false;
+    this.lifecycle++;
+    // A listener already being notified can still queue work after destroy().
+    this.pendingStart = false;
 
     // Listen for session changes. Starts triggered from the listener are deferred out
     // of the call stack (see scheduleStartRecording).
@@ -134,8 +139,12 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       return;
     }
     this.pendingStart = true;
+    const lifecycle = this.lifecycle;
 
     void Promise.resolve().then(() => {
+      if (lifecycle !== this.lifecycle) {
+        return;
+      }
       this.pendingStart = false;
       if (this.destroyed) {
         return;
@@ -289,9 +298,12 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       discardAttempt();
       try {
         stop();
+      } catch (err) {
+        this.logWarn('Failed to stop session replay', err);
       } finally {
         this.stopRecording();
       }
+      this.logDebug('Recorder start attempt invalidated');
       return false;
     }
 
@@ -567,6 +579,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   destroy(): void {
     this.destroyed = true;
+    this.pendingStart = false;
     this.metas.removeListener?.(this.metasListener);
     this.stopRecording();
     this.recordingSessionId = null;
