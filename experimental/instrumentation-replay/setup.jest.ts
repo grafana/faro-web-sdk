@@ -49,7 +49,7 @@ beforeEach(() => {
       options: LockOptions | LockGrantedCallback<unknown>,
       callback?: LockGrantedCallback<unknown>
     ) =>
-      new Promise((resolve, reject) => {
+      new Promise<unknown>((resolve, reject) => {
         const signal = typeof options === 'function' ? undefined : options.signal;
         if (signal?.aborted) {
           reject(signal.reason);
