@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Replay lifecycle fixture</title>
+    <style>
+      @view-transition { navigation: auto; }
+      #heading { view-transition-name: heading; }
+      body { min-height: 200px; }
+    </style>
+  </head>
+  <body>
+    <h1 id="heading">Replay lifecycle fixture</h1>
+    <input value="masked input" aria-label="Input" />
+    <button id="interact">Interact</button>
+    <a id="next" href="/replay-lifecycle?name=b">Next document</a>
+    <script src="/bundles/faro-web-sdk.iife.js"></script>
+    <script src="/bundles/faro-instrumentation-replay.iife.js"></script>
+    <script>
+      (() => {
+        const params = new URL(location.href).searchParams;
+        const documentId = crypto.randomUUID();
+        const key = 'com.grafana.faro.replay.current:["faro","replay-lifecycle","","test"]';
+        const initialCheckpoint = sessionStorage.getItem(key);
+        const events = [];
+        const lifecycle = [];
+        const writes = [];
+        let mode = params.get('mode');
+        let failReads = params.get('storage') === 'read';
+        let failWrites = params.get('storage') === 'write';
+        let countOnly = false;
+        let eventCount = 0;
+        let replay;
+        let initializationId;
+        const originalGet = Storage.prototype.getItem;
+        const originalSet = Storage.prototype.setItem;
+        Storage.prototype.getItem = function (name) {
+          if (name.startsWith('com.grafana.faro.replay.') && failReads) {
+            throw new Error('Fixture storage read failure');
+          }
+          return originalGet.call(this, name);
+        };
+        Storage.prototype.setItem = function (name, value) {
+          if (name.startsWith('com.grafana.faro.replay.')) {
+            writes.push({ name, handoff: JSON.parse(value).handoff, at: performance.now() });
+            if (failWrites) {
+              throw new Error('Fixture storage write failure');
+            }
+          }
+          return originalSet.call(this, name, value);
+        };
+        const { initializeFaro, getWebInstrumentations, BaseTransport } = window.GrafanaFaroWebSdk;
+        const { ReplayInstrumentation } = window.GrafanaFaroInstrumentationReplay;
+        class CountingTransport extends BaseTransport {
+          name = 'fixture-counting';
+          version = '1';
+          send() { return Promise.resolve(); }
+          isBatched() { return false; }
+        }
+        const sdk = initializeFaro({
+          url: '/collect',
+          app: { name: 'replay-lifecycle', environment: 'test' },
+          batching: { enabled: true, sendTimeout: 100 },
+          instrumentations: getWebInstrumentations(),
+          ...(params.has('cost') ? { transports: [new CountingTransport()], batching: { enabled: false } } : {}),
+          sessionTracking: {
+            enabled: true, persistent: false, samplingRate: 1,
+            session: { id: 'lifecycle-session' },
+          },
+          beforeSend: (item) => {
+            if (item.type === 'event' && item.payload.name.startsWith('faro.session_recording.')) {
+              eventCount++;
+              if (!countOnly) {
+                const attributes = item.payload.attributes ?? {};
+                events.push({
+                  name: item.payload.name, session: item.meta.session?.id,
+                  recording: attributes.recording_id,
+                  seq: attributes.seq == null ? undefined : Number(attributes.seq),
+                  gen: attributes.gen == null ? undefined : Number(attributes.gen),
+                  type: attributes.event == null ? undefined : JSON.parse(attributes.event).type,
+                });
+              }
+            }
+            return item;
+          },
+        });
+        function start() {
+          if (replay) { return; }
+          initializationId = crypto.randomUUID();
+          replay = new ReplayInstrumentation({
+            samplingRate: 1, recordAfter: 'DOMContentLoaded',
+            inactivityThresholdMs: Number(params.get('inactivity') ?? 0),
+          });
+          sdk.instrumentations.add(replay);
+        }
+        function stop() {
+          const previous = replay;
+          replay = undefined;
+          if (previous) { sdk.instrumentations.remove(previous); }
+        }
+        function checkpoint() {
+          return JSON.parse(originalGet.call(sessionStorage, key) ?? 'null');
+        }
+        if (params.get('autostart') !== '0') { start(); }
+        for (const name of ['pageswap', 'pagehide', 'pageshow']) {
+          addEventListener(name, (event) => {
+            lifecycle.push({ name, persisted: event.persisted, trusted: event.isTrusted, checkpoint: checkpoint() });
+            if (name === 'pageswap') {
+              if (mode === 'stop') { window.stop(); }
+              if (mode === 'hash-skip') { location.hash = 'outgoing'; }
+              if (mode === 'skip' || mode === 'hash-skip') { event.viewTransition?.skipTransition(); }
+              mode = undefined;
+            }
+          });
+        }
+        for (const name of ['freeze', 'resume']) {
+          document.addEventListener(name, (event) => {
+            lifecycle.push({ name, trusted: event.isTrusted, checkpoint: checkpoint() });
+          });
+        }
+        window.replayFixture = {
+          key, documentId, initialCheckpoint, events, lifecycle, writes,
+          get initializationId() { return initializationId; },
+          start, stop, replace: () => { stop(); start(); }, checkpoint,
+          storageFailure: (reads, writes) => { failReads = reads; failWrites = writes; },
+          measure: (count) => {
+            countOnly = true;
+            const before = eventCount;
+            const beforeWrites = writes.length;
+            const began = performance.now();
+            for (let index = 0; index < count; index++) {
+              document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: index }));
+            }
+            const elapsedMs = performance.now() - began;
+            countOnly = false;
+            return { elapsedMs, events: eventCount - before, writes: writes.length - beforeWrites };
+          },
+        };
+      })();
+    </script>
+  </body>
+</html>
