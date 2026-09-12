@@ -17,6 +17,10 @@ export interface TransportItem<P = APIEvent> {
 }
 
 export interface Transport extends Extension {
+  /** Acquire registrations after the SDK has supplied configuration and metadata. */
+  initialize?(): void;
+  /** Release registrations when this transport is removed from the SDK. */
+  destroy?(): void;
   send(items: TransportItem | TransportItem[]): void | Promise<void>;
 
   // returns URLs to be ignored by tracing, to not cause a feedback loop

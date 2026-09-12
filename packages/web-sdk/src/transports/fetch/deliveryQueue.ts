@@ -18,7 +18,6 @@ export type AttemptOutcome =
 export interface DeliveryOutcome {
   kind: 'success' | 'terminal';
   attempts: number;
-  elapsedTimeMs: number;
   failure?: DeliveryFailure;
   reason?: 'retries-exhausted' | 'retry-after-too-long';
 }
@@ -45,6 +44,11 @@ interface QueuedAttempt {
   isRedelivery: boolean;
 }
 
+interface DeliveryLifetime {
+  phase: 'reserved' | 'delivering' | 'released';
+  cancel?: () => void;
+}
+
 export interface DeliveryReservation {
   deliver: (performAttempt: PerformAttempt) => Promise<DeliveryOutcome>;
   release: () => void;
@@ -59,7 +63,8 @@ export interface DeliveryReservation {
  * accepted. The concurrency limit separately controls how many attempts can execute at one time.
  *
  * The caller owns the reservation and must release it in a `finally` block after preparation and
- * delivery finish. Release is idempotent so cleanup remains safe on every exit path. This module
+ * delivery finish. Release cancels queued, waiting, or active work and ignores its late result.
+ * It is idempotent so cleanup remains safe on every exit path. This module
  * deliberately has no dependency on Fetch so another transport can supply its own single-attempt
  * callback.
  */
@@ -83,36 +88,44 @@ export class ReliableDeliveryQueue {
 
     this.admitted++;
     const sequence = this.sequence++;
-    let released = false;
+    const lifetime: DeliveryLifetime = { phase: 'reserved' };
 
     const release = () => {
-      if (released) {
+      if (lifetime.phase === 'released') {
         return;
       }
-      released = true;
+      lifetime.phase = 'released';
       this.admitted--;
+      lifetime.cancel?.();
     };
 
     return {
       deliver: async (performAttempt) => {
-        const startedAt = this.options.getNow();
+        if (lifetime.phase !== 'reserved') {
+          throw new Error('Delivery reservation already used or released');
+        }
+        lifetime.phase = 'delivering';
         let attempts = 0;
         let failure: DeliveryFailure | undefined;
 
         for (;;) {
           const attemptsRemaining = this.options.retry.maxAttempts - attempts;
-          const outcome = await this.runAttempt(() => performAttempt(attemptsRemaining, this.unloading), attempts > 0);
+          const outcome = await this.runAttempt(
+            () => performAttempt(attemptsRemaining, this.unloading),
+            lifetime,
+            attempts > 0
+          );
+          this.assertActive(lifetime);
           attempts += outcome.attemptsMade;
 
           if (outcome.kind === 'success') {
-            return { kind: 'success', attempts, elapsedTimeMs: this.options.getNow() - startedAt };
+            return { kind: 'success', attempts };
           }
           failure = outcome.failure;
           if (outcome.kind === 'terminal' || this.unloading) {
             return {
               kind: 'terminal',
               attempts,
-              elapsedTimeMs: this.options.getNow() - startedAt,
               failure,
             };
           }
@@ -120,7 +133,6 @@ export class ReliableDeliveryQueue {
             return {
               kind: 'terminal',
               attempts,
-              elapsedTimeMs: this.options.getNow() - startedAt,
               failure,
               reason: 'retries-exhausted',
             };
@@ -129,7 +141,6 @@ export class ReliableDeliveryQueue {
             return {
               kind: 'terminal',
               attempts,
-              elapsedTimeMs: this.options.getNow() - startedAt,
               failure,
               reason: 'retry-after-too-long',
             };
@@ -141,15 +152,17 @@ export class ReliableDeliveryQueue {
             this.options.retry.maxBackoffMs
           );
           this.options.onRetry?.(backoff, attempts + 1);
-          const unloading = await this.waitForTurn(sequence, backoff);
+          this.assertActive(lifetime);
+          const unloading = await this.waitForTurn(sequence, backoff, lifetime);
+          this.assertActive(lifetime);
           if (unloading) {
             const attemptsRemaining = this.options.retry.maxAttempts - attempts;
-            const flushOutcome = await this.runAttempt(() => performAttempt(attemptsRemaining, true));
+            const flushOutcome = await this.runAttempt(() => performAttempt(attemptsRemaining, true), lifetime);
+            this.assertActive(lifetime);
             attempts += flushOutcome.attemptsMade;
             return {
               kind: flushOutcome.kind === 'success' ? 'success' : 'terminal',
               attempts,
-              elapsedTimeMs: this.options.getNow() - startedAt,
               failure: flushOutcome.kind === 'success' ? undefined : flushOutcome.failure,
             };
           }
@@ -181,26 +194,58 @@ export class ReliableDeliveryQueue {
     this.unloading = false;
   }
 
-  private runAttempt<T>(perform: () => Promise<T>, isRedelivery = false): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      const run = () => {
-        this.inProgress++;
-        const onSettled = () => {
+  private assertActive(lifetime: DeliveryLifetime): void {
+    if (lifetime.phase === 'released') {
+      throw new Error('Delivery reservation released');
+    }
+  }
+
+  private runAttempt(
+    perform: () => Promise<AttemptOutcome>,
+    lifetime: DeliveryLifetime,
+    isRedelivery = false
+  ): Promise<AttemptOutcome> {
+    this.assertActive(lifetime);
+    return new Promise<AttemptOutcome>((resolve, reject) => {
+      let started = false;
+      let settled = false;
+      const finish = (complete: () => void) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        if (lifetime.cancel === cancel) {
+          lifetime.cancel = undefined;
+        }
+        const index = this.attemptQueue.indexOf(attempt);
+        if (index !== -1) {
+          this.attemptQueue.splice(index, 1);
+        }
+        if (started) {
           this.inProgress--;
-          this.runNextAttempt();
-        };
-        perform().then(
-          (value) => {
-            onSettled();
-            resolve(value);
-          },
-          (error) => {
-            onSettled();
-            reject(error);
-          }
-        );
+        }
+        complete();
+        this.runNextAttempt();
       };
-      this.attemptQueue.push({ run, isRedelivery });
+      const cancel = () => finish(() => reject(new Error('Delivery reservation released')));
+      const run = () => {
+        if (settled) {
+          return;
+        }
+        started = true;
+        this.inProgress++;
+        try {
+          perform().then(
+            (value) => finish(() => resolve(value)),
+            (error) => finish(() => reject(error))
+          );
+        } catch (error) {
+          finish(() => reject(error));
+        }
+      };
+      const attempt = { run, isRedelivery };
+      lifetime.cancel = cancel;
+      this.attemptQueue.push(attempt);
       this.runNextAttempt();
     });
   }
@@ -235,10 +280,34 @@ export class ReliableDeliveryQueue {
     }
   }
 
-  private waitForTurn(sequence: number, delayMs: number): Promise<boolean> {
+  private waitForTurn(sequence: number, delayMs: number, lifetime: DeliveryLifetime): Promise<boolean> {
     const jitteredDelay = Math.min(delayMs * (1 + this.options.getRandom() * 0.2), this.options.retry.maxBackoffMs);
-    return new Promise<boolean>((resolve) => {
-      this.waiting.push({ sequence, readyAt: this.options.getNow() + jitteredDelay, resolve });
+    const readyAt = this.options.getNow() + jitteredDelay;
+    this.assertActive(lifetime);
+    return new Promise<boolean>((resolve, reject) => {
+      const cancel = () => {
+        const index = this.waiting.indexOf(delivery);
+        if (index !== -1) {
+          this.waiting.splice(index, 1);
+        }
+        lifetime.cancel = undefined;
+        clearTimeout(this.waitingTimer);
+        this.waitingTimer = undefined;
+        this.scheduleNext();
+        reject(new Error('Delivery reservation released'));
+      };
+      const delivery: WaitingDelivery = {
+        sequence,
+        readyAt,
+        resolve: (unloading) => {
+          if (lifetime.cancel === cancel) {
+            lifetime.cancel = undefined;
+          }
+          resolve(unloading);
+        },
+      };
+      lifetime.cancel = cancel;
+      this.waiting.push(delivery);
       this.waiting.sort((left, right) =>
         left.readyAt === right.readyAt ? left.sequence - right.sequence : left.readyAt - right.readyAt
       );
