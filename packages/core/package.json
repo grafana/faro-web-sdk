@@ -55,7 +55,7 @@
     "@opentelemetry/otlp-transformer": "^0.221.0"
   },
   "devDependencies": {
-    "@types/node": "24.13.3"
+    "@types/node": "24.13.4"
   },
   "publishConfig": {
     "access": "public"
