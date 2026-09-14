@@ -2024,7 +2024,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ inactivityThresholdMs: 0 });
       mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
       instrumentation.initialize();
 
       instrumentation.pauseRecording();
@@ -2034,8 +2034,12 @@ describe('ReplayInstrumentation', () => {
       instrumentation.resumeRecording();
       expect(mockRecord).toHaveBeenCalledTimes(2);
       expect(instrumentation['isPaused']).toBe(false);
-      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.paused', {});
-      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.resumed', {});
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.paused', {
+        recording_id: expect.any(String),
+      });
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.resumed', {
+        recording_id: expect.any(String),
+      });
     });
 
     it('should make pause and resume idempotent', () => {
@@ -2044,7 +2048,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ inactivityThresholdMs: 0 });
       mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
       instrumentation.initialize();
 
       instrumentation.pauseRecording();
@@ -2053,9 +2057,15 @@ describe('ReplayInstrumentation', () => {
       instrumentation.resumeRecording();
 
       expect(mockPushEvent).toHaveBeenCalledTimes(3);
-      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.started', {});
-      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.paused', {});
-      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.resumed', {});
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.started', {
+        recording_id: expect.any(String),
+      });
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.paused', {
+        recording_id: expect.any(String),
+      });
+      expect(mockPushEvent).toHaveBeenCalledWith('faro.session_recording.resumed', {
+        recording_id: expect.any(String),
+      });
     });
 
     it('should keep an explicitly paused recording paused until resumed', () => {
@@ -2064,7 +2074,7 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ inactivityThresholdMs: 5_000 });
       mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
       instrumentation.initialize();
       instrumentation.pauseRecording();
       document.dispatchEvent(new Event('pointerdown'));
@@ -2085,14 +2095,16 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ inactivityThresholdMs: 5_000 });
       mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
       instrumentation.initialize();
       instrumentation.pauseRecording();
       instrumentation.resumeRecording();
       document.dispatchEvent(new Event('pointerdown'));
 
       expect(instrumentation['isPaused']).toBe(true);
-      expect(mockPushEvent).not.toHaveBeenCalledWith('faro.session_recording.resumed', {});
+      expect(mockPushEvent).not.toHaveBeenCalledWith('faro.session_recording.resumed', {
+        recording_id: expect.any(String),
+      });
       expect(mockRecord).toHaveBeenCalledTimes(2);
     });
 
@@ -2102,13 +2114,15 @@ describe('ReplayInstrumentation', () => {
       instrumentation = new ReplayInstrumentation({ inactivityThresholdMs: 5_000 });
       mockGetSession.mockReturnValue({ id: 'test-session', attributes: { isSampled: 'true' } });
       instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener } as any;
+      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
       instrumentation.initialize();
       instrumentation.pauseRecording();
       instrumentation.resumeRecording();
 
       expect(instrumentation['isPaused']).toBe(true);
-      expect(mockPushEvent).not.toHaveBeenCalledWith('faro.session_recording.resumed', {});
+      expect(mockPushEvent).not.toHaveBeenCalledWith('faro.session_recording.resumed', {
+        recording_id: expect.any(String),
+      });
     });
   });
 
