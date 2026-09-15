@@ -11,6 +11,24 @@
 
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
 
+## [2.12.0](https://github.com/grafana/faro-web-sdk/compare/v2.11.0...v2.12.0) (2026-09-15)
+
+### Features
+
+- **replay:** preserve recording identity across tab handoffs ([#2256](https://github.com/grafana/faro-web-sdk/issues/2256)) ([6891fad](https://github.com/grafana/faro-web-sdk/commit/6891fad755ed8b0a74f7d8f32741a0cf8302a4df))
+- **replay:** use Grafana privacy classes by default ([#2262](https://github.com/grafana/faro-web-sdk/issues/2262)) ([adb4bea](https://github.com/grafana/faro-web-sdk/commit/adb4bea4f5fd656c0cb6b53189990c826557177c))
+- **session:** reconcile ownership before telemetry capture ([#2261](https://github.com/grafana/faro-web-sdk/issues/2261)) ([ea5de81](https://github.com/grafana/faro-web-sdk/commit/ea5de814e01570be8a8ef9225f872e8226e0422e))
+- **web-sdk:** make reliable Fetch transport the default ([#2264](https://github.com/grafana/faro-web-sdk/issues/2264)) ([002103d](https://github.com/grafana/faro-web-sdk/commit/002103dfc64c736a588126cd6580825e22aa2e26))
+
+### Bug Fixes
+
+- **deps:** patch Joi prototype pollution vulnerabilities ([#2281](https://github.com/grafana/faro-web-sdk/issues/2281)) ([879b04a](https://github.com/grafana/faro-web-sdk/commit/879b04a0f224b085bade369aeb5a10f2a1c44bcc))
+- **deps:** patch js-yaml CVE-2026-84375 ([#2279](https://github.com/grafana/faro-web-sdk/issues/2279)) ([224edc1](https://github.com/grafana/faro-web-sdk/commit/224edc14086cf27367f9dcdddd2b4aeb8a652f0a))
+- **deps:** patch smol-toml denial of service ([#2280](https://github.com/grafana/faro-web-sdk/issues/2280)) ([0a216b0](https://github.com/grafana/faro-web-sdk/commit/0a216b0d48e41c62dcb3c24a733812cc4cbf9330))
+- **fetch-v2:** bind session invalidation to request identity ([#2259](https://github.com/grafana/faro-web-sdk/issues/2259)) ([104e1a7](https://github.com/grafana/faro-web-sdk/commit/104e1a7ae57e3e9bd379ff85191a94a9a123e5a5))
+- **replay:** discard invalidated recorder attempts ([#2260](https://github.com/grafana/faro-web-sdk/issues/2260)) ([f3e8f24](https://github.com/grafana/faro-web-sdk/commit/f3e8f2496cc3b1f0c5bdc29c3fb220f3b039ddf5))
+- **user-actions:** trigger user actions from clicks on nested child elements ([#2239](https://github.com/grafana/faro-web-sdk/issues/2239)) ([dbe7340](https://github.com/grafana/faro-web-sdk/commit/dbe73403cf0c371376bb367e879d9b9823ce60fe))
+
 ## [2.11.0](https://github.com/grafana/faro-web-sdk/compare/v2.10.0...v2.11.0) (2026-08-26)
 
 ### Features
