@@ -187,6 +187,58 @@ describe('toMeasurementLogRecord', () => {
     expect(measurementLogRecord).toStrictEqual(matchMeasurementLogRecord);
   });
 
+  it('serializes all measurement values as attributes.', () => {
+    const measurementLogRecord = getLogTransforms(mockInternalLogger).toScopeLog({
+      ...item,
+      payload: {
+        ...item.payload,
+        values: {
+          inp: 24,
+          delta: 24,
+          input_delay: 5.3,
+          processing_duration: 0.3,
+          presentation_delay: 18.4,
+        },
+      },
+    }).logRecords[0]!;
+
+    const attributeKeys = measurementLogRecord.attributes.map(({ key }) => key);
+    expect(attributeKeys).toHaveLength(new Set(attributeKeys).size);
+
+    expect(
+      measurementLogRecord.attributes.filter(({ key }) => key.startsWith('measurement.'))
+    ).toStrictEqual([
+      {
+        key: 'measurement.type',
+        value: { stringValue: 'web-vitals' },
+      },
+      {
+        key: 'measurement.name',
+        value: { stringValue: 'inp' },
+      },
+      {
+        key: 'measurement.value',
+        value: { intValue: 24 },
+      },
+      {
+        key: 'measurement.values.delta',
+        value: { intValue: 24 },
+      },
+      {
+        key: 'measurement.values.input_delay',
+        value: { doubleValue: 5.3 },
+      },
+      {
+        key: 'measurement.values.processing_duration',
+        value: { doubleValue: 0.3 },
+      },
+      {
+        key: 'measurement.values.presentation_delay',
+        value: { doubleValue: 18.4 },
+      },
+    ]);
+  });
+
   it('Builds resource payload object for given transport item with custom body attached.', () => {
     const customOtlpTransform: OtlpHttpTransportOptions['otlpTransform'] = {
       createMeasurementLogBody(item) {
