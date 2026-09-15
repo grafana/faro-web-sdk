@@ -17,7 +17,7 @@ export function initializeTransports(
 ): Transports {
   internalLogger.debug('Initializing transports');
 
-  const transports: Transport[] = [];
+  const registrations: Array<{ transport: Transport }> = [];
 
   // `config.paused` is the single source of truth so that the paused state stays
   // observable through `faro.config.paused` after `faro.pause()` / `faro.unpause()`
@@ -29,7 +29,7 @@ export function initializeTransports(
     newTransports.forEach((newTransport) => {
       internalLogger.debug(`Adding "${newTransport.name}" transport`);
 
-      const exists = transports.some((existingTransport) => existingTransport === newTransport);
+      const exists = registrations.some(({ transport }) => transport === newTransport);
 
       if (exists) {
         internalLogger.warn(`Transport ${newTransport.name} is already added`);
@@ -42,7 +42,22 @@ export function initializeTransports(
       newTransport.config = config;
       newTransport.metas = metas;
 
-      transports.push(newTransport);
+      const registration = { transport: newTransport };
+      registrations.push(registration);
+      try {
+        newTransport.initialize?.();
+      } catch (error) {
+        const index = registrations.indexOf(registration);
+        if (index !== -1) {
+          registrations.splice(index, 1);
+          try {
+            newTransport.destroy?.();
+          } catch (cleanupError) {
+            internalLogger.warn('Failed to clean up transport after initialization failure', cleanupError);
+          }
+        }
+        throw error;
+      }
     });
   };
 
@@ -77,7 +92,7 @@ export function initializeTransports(
       return;
     }
 
-    for (const transport of transports) {
+    for (const { transport } of registrations) {
       internalLogger.debug(`Transporting item using ${transport.name}\n`, filteredItems);
       if (transport.isBatched()) {
         transport.send(filteredItems);
@@ -87,7 +102,7 @@ export function initializeTransports(
 
   const instantSend = (item: TransportItem) => {
     // prevent all beforeSend hooks being executed twice if batching is enabled.
-    if (config.batching?.enabled && transports.every((transport) => transport.isBatched())) {
+    if (config.batching?.enabled && registrations.every(({ transport }) => transport.isBatched())) {
       return;
     }
 
@@ -97,7 +112,7 @@ export function initializeTransports(
       return;
     }
 
-    for (const transport of transports) {
+    for (const { transport } of registrations) {
       internalLogger.debug(`Transporting item using ${transport.name}\n`, filteredItem);
       if (!transport.isBatched()) {
         transport.send(filteredItem);
@@ -173,18 +188,24 @@ export function initializeTransports(
   const remove: Transports['remove'] = (...transportsToRemove) => {
     internalLogger.debug('Removing transports');
 
-    transportsToRemove.forEach((transportToRemove) => {
+    const selected = transportsToRemove.map((transportToRemove) => {
       internalLogger.debug(`Removing "${transportToRemove.name}" transport`);
 
-      const existingTransportIndex = transports.indexOf(transportToRemove);
-
-      if (existingTransportIndex === -1) {
+      const registration = registrations.find(({ transport }) => transport === transportToRemove);
+      if (!registration) {
         internalLogger.warn(`Transport "${transportToRemove.name}" is not added`);
-
+      }
+      return registration;
+    });
+    selected.forEach((registration) => {
+      if (!registration) {
         return;
       }
-
-      transports.splice(existingTransportIndex, 1);
+      const index = registrations.indexOf(registration);
+      if (index !== -1) {
+        registrations.splice(index, 1);
+        registration.transport.destroy?.();
+      }
     });
   };
 
@@ -211,7 +232,7 @@ export function initializeTransports(
     remove,
     removeBeforeSendHooks,
     get transports() {
-      return [...transports];
+      return registrations.map(({ transport }) => transport);
     },
     unpause,
   };

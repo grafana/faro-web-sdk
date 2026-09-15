@@ -19,6 +19,7 @@ interface TestResponse {
 }
 
 const fetchMock = jest.fn<Promise<TestResponse>, [string, RequestInit]>();
+const transports: FetchTransport[] = [];
 const runtimeGlobal = globalThis as typeof globalThis & { fetch: typeof fetch };
 runtimeGlobal.fetch = fetchMock as unknown as typeof fetch;
 
@@ -64,6 +65,7 @@ const createTransport = (options: Omit<FetchTransportOptions, 'url'> = {}) => {
     getRandom: () => 0.5,
     ...options,
   });
+  transports.push(transport);
   transport.metas.value = {};
   const internalLogger = logger();
   transport.internalLogger = internalLogger;
@@ -78,6 +80,9 @@ describe('reliable FetchTransport', () => {
   });
 
   afterEach(() => {
+    for (const transport of transports.splice(0)) {
+      transport.destroy();
+    }
     jest.useRealTimers();
     jest.restoreAllMocks();
   });
@@ -295,6 +300,7 @@ describe('reliable FetchTransport', () => {
       concurrency: 2,
       getRandom: () => 0,
       retry: { maxBackoffMs: 60000 },
+      requestTimeoutMs: 0,
     });
 
     const first = transport.send([item]);
@@ -516,7 +522,7 @@ describe('reliable FetchTransport', () => {
     );
   });
 
-  it('times out a hung attempt and retries it', async () => {
+  it('ends a hung send at its deadline without retrying after expiry', async () => {
     fetchMock
       .mockImplementationOnce(
         (_url, init) =>
@@ -530,7 +536,8 @@ describe('reliable FetchTransport', () => {
     const sending = transport.send([item]);
     await jest.advanceTimersByTimeAsync(15);
     await sending;
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0]![1].signal?.aborted).toBe(true);
   });
 
   it('sends the expected serialized request', async () => {

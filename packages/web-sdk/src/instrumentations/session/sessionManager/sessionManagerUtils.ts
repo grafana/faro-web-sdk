@@ -70,7 +70,7 @@ type GetUserSessionUpdaterParams = {
   isActive?: () => boolean;
 };
 
-type UpdateSessionParams = { forceSessionExtend?: boolean; refreshActivity?: boolean };
+type UpdateSessionParams = { forceSessionExtend?: boolean; refreshActivity?: boolean; expectedSessionId?: string };
 
 export function getUserSessionUpdater({
   fetchUserSession,
@@ -83,11 +83,11 @@ export function getUserSessionUpdater({
   return function updateSession({
     forceSessionExtend = false,
     refreshActivity = true,
+    expectedSessionId,
   }: UpdateSessionParams = {}): void {
     if (!isActive()) {
       return;
     }
-
     const now = dateNow();
     if (!forceSessionExtend && now < nextUpdate && nextUpdate - now <= updateInterval) {
       return;
@@ -102,6 +102,12 @@ export function getUserSessionUpdater({
 
     const sessionFromStorage = fetchUserSession();
     if (!isActive()) {
+      return;
+    }
+    if (
+      expectedSessionId != null &&
+      (sessionFromStorage?.sessionId !== expectedSessionId || faro.metas.value.session?.id !== expectedSessionId)
+    ) {
       return;
     }
     // Bound checks by both expiry deadlines. A backward clock adjustment must
@@ -134,12 +140,26 @@ export function getUserSessionUpdater({
         if (!isActive()) {
           return;
         }
-        const newSession = addSessionMetadataToNextSession(
-          createUserSessionObject({ isSampled: sampled }),
-          sessionFromStorage
-        );
+        // Materialize getters and toJSON while still preparing. The final
+        // ownership check must precede a write of callback-free session data.
+        const newSession = JSON.parse(
+          stringifyExternalJson(
+            addSessionMetadataToNextSession(createUserSessionObject({ isSampled: sampled }), sessionFromStorage)
+          )
+        ) as Required<FaroUserSession>;
         if (!isActive()) {
           return;
+        }
+        // Recheck at the mutation point after sampler/generator/metadata
+        // callbacks. Storage is still best-effort across independent tabs.
+        if (expectedSessionId != null) {
+          if (
+            faro.metas.value.session?.id !== expectedSessionId ||
+            fetchUserSession()?.sessionId !== expectedSessionId ||
+            !isActive()
+          ) {
+            return;
+          }
         }
         storeUserSession(newSession);
         if (!isActive()) {

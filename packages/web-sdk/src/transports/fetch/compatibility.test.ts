@@ -1,4 +1,10 @@
-import { type LogEvent, LogLevel, type TransportItem, TransportItemType } from '@grafana/faro-core';
+import {
+  type LogEvent,
+  LogLevel,
+  type PromiseProducer,
+  type TransportItem,
+  TransportItemType,
+} from '@grafana/faro-core';
 import { mockInternalLogger } from '@grafana/faro-core/src/testUtils';
 
 import {
@@ -15,6 +21,7 @@ const originalCompressionStream = globalThis.CompressionStream;
 const originalReadableStream = globalThis.ReadableStream;
 const accepted = () => ({ status: 202, headers: { get: () => null }, text: async () => '' });
 const fetchMock = jest.fn();
+const transports: FetchTransport[] = [];
 const item: TransportItem<LogEvent> = {
   type: TransportItemType.LOG,
   payload: { level: LogLevel.INFO, message: 'hello', timestamp: '2026-09-08T12:00:00Z', context: {} },
@@ -23,6 +30,7 @@ const item: TransportItem<LogEvent> = {
 
 function createTransport(options: Partial<FetchTransportOptions> = {}): FetchTransport {
   const transport = new FetchTransport({ url: 'https://collector.test/collect', requestTimeoutMs: 0, ...options });
+  transports.push(transport);
   transport.internalLogger = mockInternalLogger;
   transport.metas.value = item.meta;
   transport.config = { ignoreUrls: ['https://also-ignored.test'] } as typeof transport.config;
@@ -38,6 +46,9 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  for (const transport of transports.splice(0)) {
+    transport.destroy();
+  }
   jest.restoreAllMocks();
   jest.clearAllTimers();
   jest.useRealTimers();
@@ -197,6 +208,51 @@ it('honors in-place decorators and admission policies on promiseBuffer.add', asy
   transport.promiseBuffer.add = originalAdd;
   await transport.send([item]);
   expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+it('recovers the original buffer after a custom wrapper throws synchronously', async () => {
+  const transport = createTransport({ bufferSize: 1, concurrency: 1 });
+  const original = transport.promiseBuffer;
+  let failOnce = true;
+  transport.promiseBuffer = {
+    add: (producer) =>
+      original.add(() => {
+        if (failOnce) {
+          failOnce = false;
+          throw new Error('wrapper failed');
+        }
+        return producer();
+      }),
+  };
+  await transport.send([item]);
+  await transport.send([item]);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+it('coalesces reentrant scheduling before any preparation callback runs', async () => {
+  let producer!: PromiseProducer<Response | void>;
+  let nested: PromiseLike<Response | void> | undefined;
+  let reenter = true;
+  const header = jest.fn(() => {
+    if (reenter) {
+      reenter = false;
+      nested = producer();
+    }
+    return 'token';
+  });
+  const transport = createTransport({ requestOptions: { headers: { Authorization: header } } });
+  const logError = jest.spyOn(transport, 'logError');
+  transport.promiseBuffer = {
+    add: (next) => {
+      producer = next;
+      return next();
+    },
+  };
+  await transport.send([item]);
+  expect(header).toHaveBeenCalledTimes(1);
+  await nested;
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(logError).not.toHaveBeenCalled();
 });
 
 it.each([

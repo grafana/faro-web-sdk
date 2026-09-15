@@ -22,7 +22,7 @@ export interface FetchTransportOptions {
   /** @deprecated Use retry.initialBackoffMs. This sets retry backoff, not a transport-wide cooldown. */
   defaultRateLimitBackoffMs?: number;
   retry?: RetryOptions;
-  /** Maximum duration of one logical request attempt. Default: 10000 ms. */
+  /** Total send deadline, including scheduling, preparation, and retries. Default: 10000 ms; <= 0 disables it. */
   requestTimeoutMs?: number;
   getNow?: ClockFn;
   getRandom?: RandomFn;

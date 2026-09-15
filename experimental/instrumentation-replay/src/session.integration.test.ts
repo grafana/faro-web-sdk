@@ -36,6 +36,7 @@ describe.each([true, false])('Replay through Fetch with persistent=%s', (persist
   afterEach(async () => {
     window.dispatchEvent(new Event('pagehide'));
     sdk.instrumentations.remove(...sdk.instrumentations.instrumentations);
+    sdk.transports.remove(...sdk.transports.transports);
     await jest.advanceTimersByTimeAsync(0);
     jest.clearAllTimers();
     jest.useRealTimers();

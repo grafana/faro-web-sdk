@@ -44,6 +44,8 @@ describe('default Fetch transport session ownership', () => {
 
   afterEach(() => {
     faro?.pause();
+    faro?.instrumentations.remove(...faro.instrumentations.instrumentations);
+    faro?.transports.remove(...faro.transports.transports);
     jest.restoreAllMocks();
     jest.clearAllTimers();
     jest.useRealTimers();
@@ -243,4 +245,175 @@ describe('default Fetch transport session ownership', () => {
     await jest.advanceTimersByTimeAsync(250);
     expect(events().some((event) => event.name === 'paused-during-capture')).toBe(false);
   });
+
+  it('does not retry an accepted batch when onSessionChange throws a TypeError', async () => {
+    await start(false);
+    const previous = faro.api.getSession()?.id;
+    faro.config.sessionTracking!.onSessionChange = jest.fn(() => {
+      throw new TypeError('application callback failed');
+    });
+    invalidateNext = true;
+    faro.api.pushEvent('accepted-before-callback-error');
+    await jest.advanceTimersByTimeAsync(4_000);
+    expect(faro.api.getSession()?.id).not.toBe(previous);
+    expect(events().filter((event) => event.name === 'accepted-before-callback-error')).toHaveLength(1);
+    expect(faro.config.sessionTracking!.onSessionChange).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([true, false])(
+    'does not overwrite a session that replaces the guarded storage read, persistent=%s',
+    async (persistent) => {
+      await start(persistent);
+      const session = faro.api.getSession()!;
+      const manager = persistent ? PersistentSessionsManager : VolatileSessionsManager;
+      const fetchSession = manager.fetchUserSession;
+      const replacement = {
+        ...fetchSession()!,
+        sessionId: 'another-tab',
+        sessionMeta: { ...session, id: 'another-tab' },
+      };
+      let reads = 0;
+      jest.spyOn(manager, 'fetchUserSession').mockImplementation(() => {
+        if (++reads === 2) {
+          storage(persistent).setItem(STORAGE_KEY, JSON.stringify(replacement));
+        }
+        return fetchSession();
+      });
+      const changed = jest.fn();
+      faro.config.sessionTracking!.onSessionChange = changed;
+      invalidateNext = true;
+      await faro.transports.transports[0]!.send([
+        {
+          type: TransportItemType.EVENT,
+          meta: { session },
+          payload: { name: 'invalidates-old-owner', timestamp: new Date().toISOString() },
+        },
+      ]);
+      expect(JSON.parse(storage(persistent).getItem(STORAGE_KEY)!).sessionId).toBe('another-tab');
+      expect(changed).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([true, false])(
+    'preserves an application session replacement made during renewal, persistent=%s',
+    async (persistent) => {
+      await start(persistent);
+      const session = faro.api.getSession()!;
+      faro.config.sessionTracking!.generateSessionId = () => {
+        faro.api.setSession({ id: 'application-replacement' });
+        return 'obsolete-renewal';
+      };
+      invalidateNext = true;
+      await faro.transports.transports[0]!.send([
+        {
+          type: TransportItemType.EVENT,
+          meta: { session },
+          payload: { name: 'reentrant-renewal', timestamp: new Date().toISOString() },
+        },
+      ]);
+      expect(faro.api.getSession()?.id).toBe('application-replacement');
+      expect(JSON.parse(storage(persistent).getItem(STORAGE_KEY)!).sessionId).toBe('application-replacement');
+    }
+  );
+
+  it.each([true, false])(
+    'stops response-side renewal when a generator exhausts the deadline, persistent=%s',
+    async (persistent) => {
+      await start(persistent);
+      const session = faro.api.getSession()!;
+      faro.config.sessionTracking!.generateSessionId = () => {
+        jest.setSystemTime(Date.now() + 10_001);
+        return 'too-late';
+      };
+      invalidateNext = true;
+      await faro.transports.transports[0]!.send([
+        {
+          type: TransportItemType.EVENT,
+          meta: { session },
+          payload: { name: 'slow-renewal', timestamp: new Date().toISOString() },
+        },
+      ]);
+      expect(faro.api.getSession()?.id).toBe(session.id);
+      expect(JSON.parse(storage(persistent).getItem(STORAGE_KEY)!).sessionId).toBe(session.id);
+      faro.api.pushEvent('after-deadline');
+      await jest.advanceTimersByTimeAsync(250);
+      expect(events().some((event) => event.name === 'after-deadline')).toBe(true);
+    }
+  );
+
+  it('stops response-side renewal when its caller cancels inside the generator', async () => {
+    await start(false);
+    const controller = new AbortController();
+    const transport = new FetchTransport({
+      url: 'https://collector.test/collect',
+      requestOptions: { signal: controller.signal },
+    });
+    faro.transports.add(transport);
+    const session = faro.api.getSession()!;
+    faro.config.sessionTracking!.generateSessionId = () => {
+      controller.abort();
+      return 'cancelled-renewal';
+    };
+    invalidateNext = true;
+    await transport.send([
+      {
+        type: TransportItemType.EVENT,
+        meta: { session },
+        payload: { name: 'cancelled-renewal', timestamp: new Date().toISOString() },
+      },
+    ]);
+    expect(faro.api.getSession()?.id).toBe(session.id);
+    expect(JSON.parse(storage(false).getItem(STORAGE_KEY)!).sessionId).toBe(session.id);
+  });
+
+  it.each([
+    [true, 'replace'],
+    [false, 'replace'],
+    [true, 'cancel'],
+    [false, 'deadline'],
+  ] as const)(
+    'checks ownership after serializing session overrides, persistent=%s action=%s',
+    async (persistent, action) => {
+      await start(persistent);
+      const controller = new AbortController();
+      const transport = new FetchTransport({
+        url: 'https://collector.test/collect',
+        requestTimeoutMs: 10,
+        requestOptions: { signal: controller.signal },
+      });
+      faro.transports.add(transport);
+      const session = faro.api.getSession()!;
+      faro.config.sessionTracking!.generateSessionId = () => 'obsolete-renewal';
+      let acted = false;
+      session.overrides = {};
+      Object.defineProperty(session.overrides, 'serviceName', {
+        enumerable: true,
+        get: () => {
+          if (!acted) {
+            acted = true;
+            if (action === 'replace') {
+              faro.api.setSession({ id: 'application-replacement' });
+            } else if (action === 'cancel') {
+              controller.abort();
+            } else {
+              jest.setSystemTime(Date.now() + 11);
+            }
+          }
+          return 'application-service';
+        },
+      });
+      invalidateNext = true;
+      await transport.send([
+        {
+          type: TransportItemType.EVENT,
+          meta: { session: { id: session.id } },
+          payload: { name: 'serialization-renewal', timestamp: new Date().toISOString() },
+        },
+      ]);
+      expect(acted).toBe(true);
+      const expected = action === 'replace' ? 'application-replacement' : session.id;
+      expect(faro.api.getSession()?.id).toBe(expected);
+      expect(JSON.parse(storage(persistent).getItem(STORAGE_KEY)!).sessionId).toBe(expected);
+    }
+  );
 });
