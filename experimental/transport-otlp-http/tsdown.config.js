@@ -1,6 +1,6 @@
-const { getTsdownConfigBase } = require('../../tsdown.config.base.js');
+import { getTsdownConfigBase } from '../../tsdown.config.base.js';
 
-module.exports = getTsdownConfigBase({
+export default getTsdownConfigBase({
   bundleName: 'faro-transport-otlp-http',
   globalName: 'GrafanaFaroTransportOtlpHttp',
   bundleInlines: [/^@grafana\/faro-core/, /^@opentelemetry\//],
