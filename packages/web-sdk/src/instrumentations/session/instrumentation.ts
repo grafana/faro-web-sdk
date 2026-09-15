@@ -18,40 +18,35 @@ import type { SessionManager } from './sessionManager/types';
 
 type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;
 
+interface SessionLifetime {
+  manager?: InstanceType<SessionManager>;
+  notifiedSession?: MetaSession;
+  disposers: Array<() => void>;
+}
+
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
   readonly version: string = VERSION;
 
-  // previously notified session, to ensure we don't send session start
-  // event twice for the same session
-  private notifiedSession: MetaSession | undefined;
+  private lifetime?: SessionLifetime;
 
-  // Reads the session manager's adoption flag (set once the manager exists).
-  private isAdoptingSession: () => boolean = () => false;
-  private captureListener: (() => void) | undefined;
-  private beforeSendHook: BeforeSendHook | undefined;
-  private sessionStartListener: ((meta: Meta) => void) | undefined;
-
-  private sendSessionStartEvent(meta: Meta): void {
+  private sendSessionStartEvent(meta: Meta, lifetime: SessionLifetime): void {
+    if (this.lifetime !== lifetime) {
+      return;
+    }
     const session = meta.session;
-
-    if (session && session.id !== this.notifiedSession?.id) {
+    const previousSession = lifetime.notifiedSession;
+    if (session && session.id !== previousSession?.id) {
+      lifetime.notifiedSession = session;
       // Adopting another tab's session: track it but emit nothing (the creating tab already did).
-      if (this.isAdoptingSession()) {
-        this.notifiedSession = session;
+      if (lifetime.manager?.isAdopting()) {
         return;
       }
-
-      if (this.notifiedSession && this.notifiedSession.id === session.attributes?.['previousSession']) {
-        this.api.pushEvent(EVENT_SESSION_EXTEND, {}, undefined, { skipDedupe: true });
-        this.notifiedSession = session;
-        return;
-      }
-
-      this.notifiedSession = session;
-      // no need to add attributes and session id, they are included as part of meta
-      // automatically
-      this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
+      const event =
+        previousSession?.id === session.attributes?.['previousSession'] && previousSession
+          ? EVENT_SESSION_EXTEND
+          : EVENT_SESSION_START;
+      this.api.pushEvent(event, {}, undefined, { skipDedupe: true });
     }
   }
 
@@ -132,13 +127,20 @@ export class SessionInstrumentation extends BaseInstrumentation {
     return { initialSession, lifecycleType };
   }
 
-  private registerBeforeSendHook(recordActivity: (sessionId: string) => void) {
-    this.beforeSendHook = (item) => {
+  private registerBeforeSendHook(lifetime: SessionLifetime): void {
+    const transports = this.transports;
+    const beforeSendHook: BeforeSendHook = (item) => {
+      if (this.lifetime !== lifetime) {
+        return item;
+      }
       // config.beforeSend runs before this hook. Sampling and hooks added later
       // retain their existing order and do not undo session activity.
       const sessionId = item.meta.session?.id;
       if (sessionId && !this.transports.isPaused()) {
-        recordActivity(sessionId);
+        lifetime.manager?.recordActivity(sessionId);
+      }
+      if (this.lifetime !== lifetime) {
+        return item;
       }
       // Delivery filters using the captured session's sampling decision. It must
       // never rotate or reassign an item that already belongs to a session.
@@ -146,6 +148,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       if (attributes && attributes?.['isSampled'] === 'true') {
         let newItem: TransportItem = JSON.parse(JSON.stringify(item));
+        if (this.lifetime !== lifetime) {
+          return item;
+        }
 
         const newAttributes = newItem.meta.session?.attributes;
         delete newAttributes?.['isSampled'];
@@ -159,61 +164,108 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       return null;
     };
-    this.transports?.addBeforeSendHooks(this.beforeSendHook);
+    this.register(
+      lifetime,
+      () => transports.addBeforeSendHooks(beforeSendHook),
+      () => transports.removeBeforeSendHooks(beforeSendHook)
+    );
   }
 
   initialize(): void {
-    this.logDebug('init session instrumentation');
-
-    const sessionTrackingConfig = this.config.sessionTracking;
-
-    if (sessionTrackingConfig?.enabled) {
-      const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
-
-      const sessionManager = new SessionManager();
-      this.isAdoptingSession = sessionManager.isAdopting;
-      this.registerBeforeSendHook(sessionManager.recordActivity);
-
-      const { initialSession, lifecycleType } = this.createInitialSession(SessionManager, sessionTrackingConfig);
-
-      SessionManager.storeUserSession(initialSession);
-
-      const initialSessionMeta = initialSession.sessionMeta;
-
-      this.notifiedSession = initialSessionMeta;
-      this.api.setSession(initialSessionMeta);
-      this.captureListener = () => {
-        if (!this.transports.isPaused()) {
-          sessionManager.updateSession({ refreshActivity: false });
-        }
-      };
-      this.metas.addCaptureListener?.(this.captureListener);
-
-      if (lifecycleType === EVENT_SESSION_START) {
-        this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
-      }
-
-      if (lifecycleType === EVENT_SESSION_RESUME) {
-        this.api.pushEvent(EVENT_SESSION_RESUME, {}, undefined, { skipDedupe: true });
-      }
+    this.destroy();
+    if (this.lifetime) {
+      return;
     }
+    const lifetime: SessionLifetime = { disposers: [] };
+    this.lifetime = lifetime;
+    const isActive = () => this.lifetime === lifetime;
+    const metas = this.metas;
+    const sessionTrackingConfig = this.config.sessionTracking;
+    try {
+      if (sessionTrackingConfig?.enabled) {
+        const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
+        lifetime.manager = new SessionManager();
+        if (!isActive()) {
+          lifetime.manager.dispose();
+          return;
+        }
+        this.registerBeforeSendHook(lifetime);
 
-    this.sessionStartListener = this.sendSessionStartEvent.bind(this);
-    this.metas.addListener(this.sessionStartListener);
+        const endPreparation = this.metas.beginSessionUpdate?.();
+        let lifecycleType: LifecycleType;
+        try {
+          const initial = this.createInitialSession(SessionManager, sessionTrackingConfig);
+          if (!isActive()) {
+            return;
+          }
+          lifecycleType = initial.lifecycleType;
+          lifetime.manager.storeSession(initial.initialSession);
+          if (!isActive()) {
+            return;
+          }
+          lifetime.notifiedSession = initial.initialSession.sessionMeta;
+          this.api.setSession(initial.initialSession.sessionMeta);
+        } finally {
+          endPreparation?.();
+        }
+        if (!isActive()) {
+          return;
+        }
+        const captureListener = () => {
+          if (isActive() && !this.transports.isPaused()) {
+            lifetime.manager!.updateSession({ refreshActivity: false });
+          }
+        };
+        this.register(
+          lifetime,
+          () => metas.addCaptureListener?.(captureListener),
+          () => metas.removeCaptureListener?.(captureListener)
+        );
+
+        if (isActive()) {
+          this.api.pushEvent(lifecycleType, {}, undefined, { skipDedupe: true });
+        }
+      }
+      if (isActive()) {
+        const sessionStartListener = (meta: Meta) => this.sendSessionStartEvent(meta, lifetime);
+        this.register(
+          lifetime,
+          () => metas.addListener(sessionStartListener),
+          () => metas.removeListener(sessionStartListener)
+        );
+      }
+    } catch (error) {
+      if (isActive()) {
+        this.destroy();
+      }
+      throw error;
+    }
+  }
+
+  private register(lifetime: SessionLifetime, add: () => void, remove: () => void): void {
+    if (this.lifetime !== lifetime) {
+      return;
+    }
+    lifetime.disposers.push(remove);
+    add();
+    if (this.lifetime !== lifetime) {
+      remove();
+    }
   }
 
   destroy(): void {
-    if (this.captureListener) {
-      this.metas.removeCaptureListener?.(this.captureListener);
-      this.captureListener = undefined;
+    const lifetime = this.lifetime;
+    if (!lifetime) {
+      return;
     }
-    if (this.beforeSendHook) {
-      this.transports.removeBeforeSendHooks(this.beforeSendHook);
-      this.beforeSendHook = undefined;
-    }
-    if (this.sessionStartListener) {
-      this.metas.removeListener(this.sessionStartListener);
-      this.sessionStartListener = undefined;
+    this.lifetime = undefined;
+    const disposers = [() => lifetime.manager?.dispose(), ...lifetime.disposers];
+    for (const dispose of disposers) {
+      try {
+        dispose();
+      } catch (error) {
+        this.logWarn('Failed to dispose session instrumentation resource', error);
+      }
     }
   }
 }

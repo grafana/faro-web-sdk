@@ -12,12 +12,13 @@ export function isMetaCaptured(meta: Meta): boolean {
 }
 
 /** Capture metadata, including with extension implementations predating capture listeners. */
-export function captureMetas(metas: Metas, callback?: () => void): Meta {
+export function captureMetas(metas: Pick<Metas, 'capture' | 'value'>, callback?: () => void): Meta {
   if (metas.capture) {
-    return markMetaCaptured(metas.capture(callback));
+    const meta = metas.capture(callback);
+    return isMetaCaptured(meta) ? meta : markMetaCaptured({ ...meta });
   }
 
-  const meta = markMetaCaptured(metas.value);
+  const meta = markMetaCaptured({ ...metas.value });
   callback?.();
   return meta;
 }

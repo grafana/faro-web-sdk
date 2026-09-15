@@ -17,7 +17,7 @@ export function initializeInstrumentations(
 ): Instrumentations {
   internalLogger.debug('Initializing instrumentations');
 
-  const instrumentations: Instrumentation[] = [];
+  const registrations: Array<{ instrumentation: Instrumentation }> = [];
 
   const add: Instrumentations['add'] = (...newInstrumentations) => {
     internalLogger.debug('Adding instrumentations');
@@ -25,9 +25,7 @@ export function initializeInstrumentations(
     newInstrumentations.forEach((newInstrumentation) => {
       internalLogger.debug(`Adding "${newInstrumentation.name}" instrumentation`);
 
-      const exists = instrumentations.some(
-        (existingInstrumentation) => existingInstrumentation.name === newInstrumentation.name
-      );
+      const exists = registrations.some(({ instrumentation }) => instrumentation.name === newInstrumentation.name);
 
       if (exists) {
         internalLogger.warn(`Instrumentation ${newInstrumentation.name} is already added`);
@@ -42,45 +40,59 @@ export function initializeInstrumentations(
       newInstrumentation.transports = transports;
       newInstrumentation.api = api;
 
-      instrumentations.push(newInstrumentation);
-
-      newInstrumentation.initialize();
+      const registration = { instrumentation: newInstrumentation };
+      registrations.push(registration);
+      try {
+        newInstrumentation.initialize();
+      } catch (error) {
+        const index = registrations.indexOf(registration);
+        if (index !== -1) {
+          registrations.splice(index, 1);
+          try {
+            newInstrumentation.destroy?.();
+          } catch (cleanupError) {
+            internalLogger.warn('Failed to clean up instrumentation after initialization failure', cleanupError);
+          }
+        }
+        throw error;
+      }
     });
   };
 
   const remove: Instrumentations['remove'] = (...instrumentationsToRemove) => {
     internalLogger.debug('Removing instrumentations');
 
-    instrumentationsToRemove.forEach((instrumentationToRemove) => {
+    const selected = instrumentationsToRemove.map((instrumentationToRemove) => {
       internalLogger.debug(`Removing "${instrumentationToRemove.name}" instrumentation`);
 
-      const existingInstrumentationIndex = instrumentations.reduce<number | null>(
-        (acc, existingInstrumentation, existingTransportIndex) => {
-          if (acc === null && existingInstrumentation.name === instrumentationToRemove.name) {
-            return existingTransportIndex;
-          }
-
-          return null;
-        },
-        null
+      const registration = registrations.find(
+        ({ instrumentation }) => instrumentation.name === instrumentationToRemove.name
       );
 
-      if (existingInstrumentationIndex === null) {
+      if (!registration) {
         internalLogger.warn(`Instrumentation "${instrumentationToRemove.name}" is not added`);
+      }
 
+      return registration;
+    });
+
+    selected.forEach((registration) => {
+      if (!registration) {
         return;
       }
 
-      instrumentations[existingInstrumentationIndex]!.destroy?.();
-
-      instrumentations.splice(existingInstrumentationIndex, 1);
+      const index = registrations.indexOf(registration);
+      if (index !== -1) {
+        registrations.splice(index, 1);
+        registration.instrumentation.destroy?.();
+      }
     });
   };
 
   return {
     add,
     get instrumentations() {
-      return [...instrumentations];
+      return registrations.map(({ instrumentation }) => instrumentation);
     },
     remove,
   };

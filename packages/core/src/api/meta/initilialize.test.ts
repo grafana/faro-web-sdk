@@ -57,6 +57,34 @@ describe('Meta API', () => {
   });
 
   describe('setSession', () => {
+    it('replaces and clears a session atomically, with the latest nested value delivered to every listener', () => {
+      const { api, metas } = initializeFaro(mockConfig());
+      api.setSession({ id: 'initial' });
+      const otherMeta = { user: { id: 'user' }, session: { id: 'configured' } };
+      metas.add(otherMeta);
+      const first: Array<string | undefined> = [];
+      const later: Array<string | undefined> = [];
+      metas.addListener((meta) => {
+        first.push(meta.session?.id);
+        if (meta.session?.id === 'outer') {
+          api.setSession({ id: 'nested' });
+        }
+      });
+      metas.addListener((meta) => later.push(meta.session?.id));
+
+      api.setSession({ id: 'outer' });
+
+      expect(first).toEqual(['outer', 'nested']);
+      expect(later).toEqual(['nested', 'nested']);
+      expect(api.getSession()?.id).toBe('nested');
+      expect(metas.value.user).toEqual({ id: 'user' });
+
+      api.resetSession();
+      expect(first).toEqual(['outer', 'nested', undefined]);
+      expect(later).toEqual(['nested', 'nested', undefined]);
+      expect(api.getSession()).toEqual({});
+    });
+
     it('adds overrides to the session meta if provided via the setView() function call', () => {
       const initialSession = { id: 'my-session' };
 

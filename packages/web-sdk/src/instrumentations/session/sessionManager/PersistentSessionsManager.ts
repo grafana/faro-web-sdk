@@ -1,5 +1,5 @@
 import { faro, stringifyExternalJson } from '@grafana/faro-core';
-import type { MetaSession } from '@grafana/faro-core';
+import type { Meta, MetaSession } from '@grafana/faro-core';
 
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
@@ -14,6 +14,10 @@ import type { FaroUserSession } from './types';
 export class PersistentSessionsManager {
   private static storageTypeLocal = webStorageType.local;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
+  private readonly metas = faro.metas;
+  private active = true;
+  private metaListener?: (meta: Meta) => void;
+  private readonly isActive = (): boolean => this.active;
 
   // Set only for the synchronous span of an adopting setSession(); the session
   // instrumentation reads isAdopting() to suppress its lifecycle event.
@@ -22,6 +26,9 @@ export class PersistentSessionsManager {
   isAdopting = (): boolean => this.adopting;
 
   private adoptSession = (sessionMeta: MetaSession): void => {
+    if (!this.active) {
+      return;
+    }
     this.adopting = true;
     try {
       faro.api?.setSession(sessionMeta);
@@ -33,9 +40,10 @@ export class PersistentSessionsManager {
   constructor() {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: PersistentSessionsManager.fetchUserSession,
-      storeUserSession: PersistentSessionsManager.storeUserSession,
+      storeUserSession: this.storeSession,
       adoptSession: this.adoptSession,
       updateInterval: STORAGE_UPDATE_DELAY,
+      isActive: this.isActive,
     });
 
     this.init();
@@ -59,32 +67,59 @@ export class PersistentSessionsManager {
     return null;
   }
 
+  storeSession = (session: FaroUserSession): void => {
+    const serialized = stringifyExternalJson(session);
+    if (this.active) {
+      setItem(STORAGE_KEY, serialized, PersistentSessionsManager.storageTypeLocal);
+    }
+  };
+
   updateSession = ({ refreshActivity = true }: { refreshActivity?: boolean } = {}): void =>
     this.updateUserSession({ refreshActivity });
 
   recordActivity: (sessionId: string) => void = getUserSessionActivityRecorder({
     fetchUserSession: PersistentSessionsManager.fetchUserSession,
-    storeUserSession: PersistentSessionsManager.storeUserSession,
+    storeUserSession: this.storeSession,
     updateInterval: STORAGE_UPDATE_DELAY,
+    isActive: this.isActive,
   });
 
-  private init(): void {
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        this.updateSession({ refreshActivity: false });
-        const sessionId = faro.api?.getSession()?.id;
-        if (sessionId) {
-          this.recordActivity(sessionId);
-        }
+  private readonly visibilityListener = (): void => {
+    if (this.active && document.visibilityState === 'visible') {
+      this.updateSession({ refreshActivity: false });
+      const sessionId = this.metas.value.session?.id;
+      if (this.active && sessionId) {
+        this.recordActivity(sessionId);
       }
-    });
+    }
+  };
 
-    // Users can call the setSession() method, so we need to sync this with the local storage session
-    faro.metas.addListener(
-      getSessionMetaUpdateHandler({
+  private init(): void {
+    try {
+      this.metaListener = getSessionMetaUpdateHandler({
         fetchUserSession: PersistentSessionsManager.fetchUserSession,
-        storeUserSession: PersistentSessionsManager.storeUserSession,
-      })
-    );
+        storeUserSession: this.storeSession,
+        isActive: this.isActive,
+      });
+      document.addEventListener('visibilitychange', this.visibilityListener);
+      this.metas.addListener(this.metaListener);
+    } catch (error) {
+      this.dispose();
+      throw error;
+    }
+  }
+
+  dispose(): void {
+    if (!this.active) {
+      return;
+    }
+    this.active = false;
+    try {
+      if (this.metaListener) {
+        this.metas.removeListener(this.metaListener);
+      }
+    } finally {
+      document.removeEventListener('visibilitychange', this.visibilityListener);
+    }
   }
 }

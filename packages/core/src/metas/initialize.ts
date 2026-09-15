@@ -14,18 +14,32 @@ export function initializeMetas(
   let items: MetaItem[] = [];
   let listeners: MetasListener[] = [];
   let captureListeners: Array<() => void> = [];
-  let pendingCaptureListeners: Array<() => void> | undefined;
-  let nextCaptureListener = 0;
-  let captureListenerCount = 0;
+  const sessionPreparations = new Set<object>();
+  let activeCapture: { listeners: Array<() => void>; next: number; failure?: { error: unknown } } | undefined;
 
-  const getValue = () => items.reduce<Meta>((acc, item) => Object.assign(acc, isFunction(item) ? item() : item), {});
+  const getValue = (): Meta => {
+    try {
+      return items.reduce<Meta>((acc, item) => Object.assign(acc, isFunction(item) ? item() : item), {});
+    } catch (error) {
+      if (activeCapture) {
+        activeCapture.failure ??= { error };
+      }
+      throw error;
+    }
+  };
 
   const notifyListeners = () => {
-    if (listeners.length) {
+    // A listener can replace metadata. Later deliveries must see that replacement.
+    listeners.forEach((listener) => {
+      if (activeCapture?.failure) {
+        throw activeCapture.failure.error;
+      }
       const value = getValue();
-
-      listeners.forEach((listener) => listener(value));
-    }
+      if (activeCapture?.failure) {
+        throw activeCapture.failure.error;
+      }
+      listener(value);
+    });
   };
 
   const add: Metas['add'] = (...newItems) => {
@@ -56,28 +70,45 @@ export function initializeMetas(
     listeners = listeners.filter((currentListener) => currentListener !== listener);
   };
 
+  const assertCaptureAllowed = () => {
+    if (sessionPreparations.size > 0) {
+      const error = new Error('Telemetry submitted during session preparation was discarded');
+      internalLogger.warn(error.message);
+      throw error;
+    }
+    if (activeCapture?.failure) {
+      throw activeCapture.failure.error;
+    }
+  };
+
   const capture: NonNullable<Metas['capture']> = (callback) => {
+    assertCaptureAllowed();
     // Nested telemetry drains pending reconciliation but never reruns active or
     // completed listeners, including when a capture callback submits events.
-    const nested = pendingCaptureListeners !== undefined;
-    const cycleListeners = pendingCaptureListeners ?? captureListeners;
-    if (!nested) {
-      // Preserve forEach's array and length semantics if listeners are changed.
-      pendingCaptureListeners = cycleListeners;
-      nextCaptureListener = 0;
-      captureListenerCount = cycleListeners.length;
-    }
+    const nested = activeCapture !== undefined;
+    const cycle = (activeCapture ??= { listeners: captureListeners.slice(), next: 0 });
+    const checkFailure = () => {
+      if (cycle.failure) {
+        throw cycle.failure.error;
+      }
+    };
     try {
-      while (nextCaptureListener < captureListenerCount) {
-        const listener = cycleListeners[nextCaptureListener++];
-        listener?.();
+      while (cycle.next < cycle.listeners.length) {
+        try {
+          cycle.listeners[cycle.next++]?.();
+        } catch (error) {
+          cycle.failure ??= { error };
+        }
+        checkFailure();
       }
       const value = markMetaCaptured(getValue());
+      checkFailure();
       callback?.();
+      checkFailure();
       return value;
     } finally {
       if (!nested) {
-        pendingCaptureListeners = undefined;
+        activeCapture = undefined;
       }
     }
   };
@@ -85,8 +116,24 @@ export function initializeMetas(
   return {
     add,
     remove,
+    replace: (previous, replacement) => {
+      items = items.filter((item) => item !== previous);
+      items.push(replacement);
+      if (!isFunction(replacement) && 'session' in replacement) {
+        sessionPreparations.clear();
+      }
+      notifyListeners();
+    },
+    beginSessionUpdate: () => {
+      const preparation = {};
+      sessionPreparations.add(preparation);
+      return () => {
+        sessionPreparations.delete(preparation);
+      };
+    },
     addListener,
     removeListener,
+    assertCaptureAllowed,
     capture,
     addCaptureListener: (listener) => {
       captureListeners.push(listener);

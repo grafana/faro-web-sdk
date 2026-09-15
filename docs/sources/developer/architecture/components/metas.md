@@ -147,6 +147,22 @@ Custom instrumentations can continue submitting fresh items with `transports.exe
 `metas.value`; the transport entry point reconciles these before queueing. Previously captured
 metadata keeps its ownership, including for delayed user actions and Replay.
 
+The built-in metadata implementation replaces session metadata atomically. Each replacement,
+including a clear, sends one notification; a session manager may normalize it with another
+replacement. A nested `setSession()` takes precedence, and each listener receives the current
+value. Clearing metadata does not disable session tracking.
+
+Telemetry submitted by a session ID generator or sampler before the replacement commits is
+discarded with a diagnostic. It does not consume deduplication state, refresh activity, or enter
+transport hooks. Submissions from listeners after the replacement commits are allowed.
+Reconciliation or metadata-assembly failures remain attached to the active capture cycle even
+when a nested public API catches the error. The next independent capture can retry.
+
+Removing session instrumentation disposes its manager, visibility and metadata listeners,
+capture listener, and before-send hook. Stored session state remains available for replacement
+instrumentation. Removed callbacks cannot continue session updates if disposal happens during
+a listener or application callback.
+
 Properties
 
 - `id` - the name of the browser
@@ -196,6 +212,8 @@ Methods and properties:
 
 - `add()` - adds a new meta
 - `remove()` - removes a specific meta
+- `replace(previous, replacement)` - atomically removes the previous item and appends its replacement
+- `beginSessionUpdate()` - rejects captures until a session replacement commits; returns a cancellation function
 - `addListener()` - adds a new listener
 - `removeListener()` - removes a specific listener
 - `capture(callback?)` - runs capture listeners and returns metadata assembled before the optional
@@ -205,6 +223,7 @@ Methods and properties:
 - `removeCaptureListener()` - unregisters a capture callback
 - `value` - reads current metadata without notifying capture listeners or refreshing session activity
 
-Capture methods are optional on the public `Metas` interface so existing extension implementations
-and mocks remain valid. `captureMetas(metas, callback?)`, exported by core and the Web SDK,
+Capture, replacement, and session preparation methods are optional on the public `Metas` interface
+so existing extension implementations and mocks remain valid. `captureMetas(metas, callback?)`,
+exported by core and the Web SDK,
 provides capture with a fallback for implementations that only expose the older interface.
