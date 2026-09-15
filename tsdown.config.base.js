@@ -10,6 +10,9 @@
  * Do not change any of those paths without treating it as a breaking change.
  */
 
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 // Every source file is an entry, not just index.ts. With a single entry, Rolldown tree-shakes
 // exports that index.ts does not reach out of the declarations while keeping them in the emitted
 // JavaScript, which would make the two disagree for anyone importing a module directly.
@@ -35,6 +38,11 @@ const NON_MODULE_OUTPUT = {
   generatedCode: { symbols: false },
 };
 
+const writePackageType = (outDir, type) => {
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(join(outDir, 'package.json'), `${JSON.stringify({ type }, null, 2)}\n`);
+};
+
 /**
  * @param {object} options
  * @param {string} options.bundleName Name of the bundle file, without the `.iife.js` suffix.
@@ -45,7 +53,7 @@ const NON_MODULE_OUTPUT = {
  *   bundle even though they are listed in `dependencies`. tsdown externalises dependencies by
  *   default, for every output format, so anything the bundle needs to carry has to be named here.
  */
-exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, bundleInlines = [] }) => {
+export const getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, bundleInlines = [] }) => {
   // The per-file builds must never pull a package into their output. The TypeScript compiler could
   // not do that, so nothing in dist/cjs or dist/esm has ever contained dependency code, and the
   // published layout depends on it staying that way. tsdown on its own only externalises packages
@@ -85,6 +93,9 @@ exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, b
         esModule: true,
         ...NON_MODULE_OUTPUT,
       },
+      hooks: {
+        'build:done': ({ options }) => writePackageType(options.outDir, 'commonjs'),
+      },
       dts: false,
     },
     {
@@ -94,6 +105,9 @@ exports.getTsdownConfigBase = ({ bundleName, globalName, bundleExternals = {}, b
       unbundle: true,
       outDir: './dist/esm',
       outExtensions: () => ({ js: '.js' }),
+      hooks: {
+        'build:done': ({ options }) => writePackageType(options.outDir, 'module'),
+      },
       dts: false,
     },
     {
