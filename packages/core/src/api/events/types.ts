@@ -18,6 +18,12 @@ export interface EventEvent {
 
 export interface PushEventOptions {
   skipDedupe?: boolean;
+  /**
+   * Send the event without buffering it under the currently active user action.
+   * Use for delayed events whose action (or lack of one) is already known.
+   * Deduplication, metadata capture and the transport pipeline still apply.
+   */
+  skipUserActionBuffer?: boolean;
   spanContext?: Pick<SpanContext, 'traceId' | 'spanId'>;
   timestampOverwriteMs?: number;
 

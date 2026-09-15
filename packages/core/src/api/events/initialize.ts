@@ -34,7 +34,13 @@ export function initializeEventsAPI({
     name,
     attributes,
     domain,
-    { skipDedupe, spanContext, timestampOverwriteMs, customPayloadTransformer = (payload: EventEvent) => payload } = {}
+    {
+      skipDedupe,
+      skipUserActionBuffer,
+      spanContext,
+      timestampOverwriteMs,
+      customPayloadTransformer = (payload: EventEvent) => payload,
+    } = {}
   ) => {
     try {
       const attrs = stringifyObjectValues(attributes);
@@ -79,7 +85,7 @@ export function initializeEventsAPI({
 
       internalLogger.debug('Pushing event\n', item);
 
-      if (!addItemToUserActionBuffer(userActionsApi.getActiveUserAction(), item)) {
+      if (skipUserActionBuffer || !addItemToUserActionBuffer(userActionsApi.getActiveUserAction(), item)) {
         transports.execute(item);
       }
     } catch (err) {

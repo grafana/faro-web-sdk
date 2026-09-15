@@ -1,4 +1,5 @@
-import type { TransportItem } from '../..';
+import { TransportItemType, UserActionState } from '../..';
+import type { TransportItem, UserActionInternalInterface } from '../..';
 import { initializeFaro } from '../../initialize';
 import { mockConfig, mockInternalLogger, MockTransport } from '../../testUtils';
 import { mockMetas, mockTracesApi, mockTransports, mockUserActionsApi } from '../apiTestHelpers';
@@ -202,6 +203,76 @@ describe('api.events', () => {
         expect((transport.items[0] as TransportItem<EventEvent>).payload.attributes).toBeUndefined();
         expect((transport.items[0] as TransportItem<EventEvent>).payload.attributes).toBeUndefined();
       });
+    });
+  });
+
+  describe('Skipping the user action buffer', () => {
+    it.each([undefined, { name: 'earlier', parentId: 'earlier-id' }])(
+      'sends the captured ownership immediately (%s) and still buffers the next ordinary event',
+      (capturedAction) => {
+        const [api, transport] = createAPI();
+        const laterAction = api.startUserAction('later') as UserActionInternalInterface;
+        api.pushEvent('delayed-request', {}, undefined, {
+          skipUserActionBuffer: true,
+          customPayloadTransformer: (payload) => ({ ...payload, action: capturedAction }),
+        });
+        expect(transport.items).toHaveLength(1);
+        expect((transport.items[0]?.payload as EventEvent).action).toEqual(capturedAction);
+        expect(laterAction.getState()).toBe(UserActionState.Started);
+
+        api.pushEvent('ordinary');
+        expect(transport.items).toHaveLength(1);
+        laterAction.end();
+        const ordinary = transport.items.find((item) => (item.payload as EventEvent).name === 'ordinary');
+        expect((ordinary?.payload as EventEvent).action).toEqual({ name: 'later', parentId: laterAction.parentId });
+      }
+    );
+
+    it.each([
+      [false, true, false],
+      [true, false, true],
+    ])('shares deduplication across buffered and opted-out events (%s, %s, %s)', (...skipBuffer) => {
+      const [api, transport] = createAPI();
+      const action = api.startUserAction('active') as UserActionInternalInterface;
+      ['first', 'different', 'first'].forEach((name, index) => {
+        api.pushEvent(name, {}, undefined, { skipUserActionBuffer: skipBuffer[index] });
+      });
+      action.end();
+      expect(transport.items.filter((item) => (item.payload as EventEvent).name === 'first')).toHaveLength(2);
+      expect(transport.items.filter((item) => (item.payload as EventEvent).name === 'different')).toHaveLength(1);
+    });
+
+    it('still deduplicates consecutive opted-out events', () => {
+      const [api, transport] = createAPI();
+      api.startUserAction('active');
+      api.pushEvent('same', {}, undefined, { skipUserActionBuffer: true });
+      api.pushEvent('same', {}, undefined, { skipUserActionBuffer: true });
+      expect(transport.items).toHaveLength(1);
+    });
+
+    it.each(['hook', 'transport'] as const)('isolates a throwing %s from later opted-out events', (source) => {
+      const transport = new MockTransport();
+      const failFirst = (item: TransportItem) => {
+        if (item.type === TransportItemType.EVENT && (item.payload as EventEvent).name === 'first') {
+          throw new Error('synthetic failure');
+        }
+        return item;
+      };
+      if (source === 'transport') {
+        const send = transport.send.bind(transport);
+        transport.send = (items) => send(items.map(failFirst));
+      }
+      const { api } = initializeFaro(
+        mockConfig({
+          transports: [transport],
+          ...(source === 'hook' ? { beforeSend: failFirst } : {}),
+        })
+      );
+      api.startUserAction('active');
+      for (const name of ['first', 'second', 'third']) {
+        api.pushEvent(name, {}, undefined, { skipUserActionBuffer: true });
+      }
+      expect(transport.items.map((item) => (item.payload as EventEvent).name)).toEqual(['second', 'third']);
     });
   });
 

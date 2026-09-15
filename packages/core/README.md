@@ -397,3 +397,21 @@ Although an isolated agent may sound like a great idea, there are some limitatio
   `import { faro } from '@grafana/faro-core';`
 
 [faro-web-sdk-package]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk
+
+### Events with known user-action ownership
+
+For a delayed event whose user action was determined when the operation began,
+pass `skipUserActionBuffer: true` to `pushEvent`. This prevents the action active
+at emission time from buffering or reassigning the event. Set the captured
+`action` with `customPayloadTransformer`, or leave it absent for an operation
+that began without an action.
+
+```ts
+faro.api.pushEvent('delayed-operation', { result: 'success' }, undefined, {
+  skipUserActionBuffer: true,
+  customPayloadTransformer: (payload) => ({ ...payload, action: capturedAction }),
+});
+```
+
+The option defaults to false. Shared event deduplication, metadata capture,
+transport batching, pause handling, and before-send hooks continue to apply.
