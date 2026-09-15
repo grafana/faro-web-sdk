@@ -21,6 +21,26 @@ export interface TracingInstrumentationOptions {
   instrumentations?: InstrumentationOption[];
   spanProcessor?: SpanProcessor;
   instrumentationOptions?: Omit<DefaultInstrumentationsOptions, 'ignoreUrls'>;
+
+  /**
+   * Withhold trace context from outgoing requests while the session is not part of the sample.
+   *
+   * Faro drops every signal for an unsampled session, but the fetch and XHR instrumentations still
+   * inject a `traceparent` carrying the unsampled flag `00`. Backend OTel SDKs default to
+   * `parentbased_always_on`, which honours that flag and drops the server span, so lowering
+   * `sessionTracking.samplingRate` silently removes backend traces too. Omitting the header instead
+   * lets the backend take its own sampling decision.
+   *
+   * The trade-off is that requests from unsampled sessions start a new trace on the backend rather
+   * than joining the browser's, so the frontend-to-backend link is lost. That link would have
+   * pointed at browser data Faro already discarded.
+   *
+   * This skips the whole `inject` call, so a custom `propagator` has *all* the headers it writes
+   * withheld - `tracestate` and `baggage` included - not only `traceparent`.
+   *
+   * @default false - expected to become true in the next major version
+   */
+  omitTraceContextForUnsampledSessions?: boolean;
 }
 
 export type MatchUrlDefinitions = Patterns;

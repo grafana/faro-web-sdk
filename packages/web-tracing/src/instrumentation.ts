@@ -18,7 +18,7 @@ import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcess
 import { FaroPausablePropagator } from './faroPausablePropagator';
 import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
-import { getSamplingDecision } from './sampler';
+import { getSamplingDecision, isSessionSampled } from './sampler';
 import {
   ATTR_BROWSER_BRANDS,
   ATTR_BROWSER_LANGUAGE,
@@ -126,10 +126,14 @@ export class TracingInstrumentation extends BaseInstrumentation {
       ],
     });
 
+    const omitForUnsampledSessions = options.omitTraceContextForUnsampledSessions === true;
+
     provider.register({
-      // wrapped so that pausing Faro also stops trace context from being injected into requests
-      propagator: new FaroPausablePropagator(options.propagator ?? new W3CTraceContextPropagator(), () =>
-        this.transports.isPaused()
+      // wrapped so that pausing Faro, or running an unsampled session, also stops trace context
+      // from being injected into requests
+      propagator: new FaroPausablePropagator(
+        options.propagator ?? new W3CTraceContextPropagator(),
+        () => this.transports.isPaused() || (omitForUnsampledSessions && !isSessionSampled(this.api.getSession()))
       ),
       contextManager: options.contextManager,
     });

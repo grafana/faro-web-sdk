@@ -710,35 +710,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grafana/faro-core@npm:^2.10.0, @grafana/faro-core@workspace:packages/core":
+"@grafana/faro-core@npm:^2.11.0, @grafana/faro-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-core@workspace:packages/core"
   dependencies:
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/otlp-transformer": "npm:^0.221.0"
-    "@types/node": "npm:24.13.3"
+    "@types/node": "npm:24.13.4"
   languageName: unknown
   linkType: soft
 
-"@grafana/faro-instrumentation-replay@npm:^2.10.0, @grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay":
+"@grafana/faro-instrumentation-replay@npm:^2.11.0, @grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-instrumentation-replay@workspace:experimental/instrumentation-replay"
   dependencies:
-    "@grafana/faro-core": "npm:^2.10.0"
+    "@grafana/faro-core": "npm:^2.11.0"
     "@grafana/rrweb": "npm:2.0.0-grafana.2"
     "@grafana/rrweb-types": "npm:2.0.0-grafana.2"
   languageName: unknown
   linkType: soft
 
-"@grafana/faro-react@npm:^2.10.0, @grafana/faro-react@workspace:packages/react":
+"@grafana/faro-react@npm:^2.11.0, @grafana/faro-react@workspace:packages/react":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-react@workspace:packages/react"
   dependencies:
-    "@grafana/faro-web-sdk": "npm:^2.10.0"
-    "@grafana/faro-web-tracing": "npm:^2.10.0"
+    "@grafana/faro-web-sdk": "npm:^2.11.0"
+    "@grafana/faro-web-tracing": "npm:^2.11.0"
     "@testing-library/dom": "npm:10.4.1"
-    "@testing-library/jest-dom": "npm:7.0.0"
-    "@testing-library/react": "npm:16.3.2"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    "@testing-library/react": "npm:16.3.3"
     "@types/hoist-non-react-statics": "npm:3.3.7"
     "@types/react": "npm:19.2.18"
     "@types/react-dom": "npm:19.2.4"
@@ -749,10 +749,10 @@ __metadata:
     react-18: "npm:react@18.3.1"
     react-dom: "npm:19.2.8"
     react-dom-18: "npm:react-dom@18.3.1"
-    react-router: "npm:7.18.2"
+    react-router: "npm:7.18.3"
     react-router-dom-v5: "npm:react-router-dom@5.3.4"
     react-router-v6: "npm:react-router@6.30.4"
-    react-router-v8: "npm:react-router@8.3.0"
+    react-router-v8: "npm:react-router@8.3.1"
     semver: "npm:7.8.5"
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -773,12 +773,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@grafana/faro-smoke-harness@workspace:e2e/smoke"
   dependencies:
-    "@grafana/faro-core": "npm:^2.10.0"
-    "@grafana/faro-instrumentation-replay": "npm:^2.10.0"
-    "@grafana/faro-react": "npm:^2.10.0"
-    "@grafana/faro-transport-otlp-http": "npm:^2.10.0"
-    "@grafana/faro-web-sdk": "npm:^2.10.0"
-    "@grafana/faro-web-tracing": "npm:^2.10.0"
+    "@grafana/faro-core": "npm:^2.11.0"
+    "@grafana/faro-instrumentation-replay": "npm:^2.11.0"
+    "@grafana/faro-react": "npm:^2.11.0"
+    "@grafana/faro-transport-otlp-http": "npm:^2.11.0"
+    "@grafana/faro-web-sdk": "npm:^2.11.0"
+    "@grafana/faro-web-tracing": "npm:^2.11.0"
     "@playwright/test": "npm:1.62.1"
     "@types/react": "npm:19.2.18"
     "@types/react-dom": "npm:19.2.4"
@@ -790,22 +790,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@grafana/faro-transport-otlp-http@npm:^2.10.0, @grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http":
+"@grafana/faro-transport-otlp-http@npm:^2.11.0, @grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http"
   dependencies:
-    "@grafana/faro-core": "npm:^2.10.0"
+    "@grafana/faro-core": "npm:^2.11.0"
     "@opentelemetry/otlp-transformer": "npm:^0.221.0"
     "@opentelemetry/semantic-conventions": "npm:^1.28.0"
   languageName: unknown
   linkType: soft
 
-"@grafana/faro-web-sdk@npm:^2.10.0, @grafana/faro-web-sdk@workspace:packages/web-sdk":
+"@grafana/faro-web-sdk@npm:^2.11.0, @grafana/faro-web-sdk@workspace:packages/web-sdk":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-web-sdk@workspace:packages/web-sdk"
   dependencies:
-    "@grafana/faro-core": "npm:^2.10.0"
-    "@types/node": "npm:24.13.3"
+    "@grafana/faro-core": "npm:^2.11.0"
+    "@types/node": "npm:24.13.4"
     "@types/ua-parser-js": "npm:0.7.39"
     ua-parser-js: "npm:1.0.41"
     user-agent-data-types: "npm:0.4.3"
@@ -813,11 +813,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@grafana/faro-web-tracing@npm:^2.10.0, @grafana/faro-web-tracing@workspace:packages/web-tracing":
+"@grafana/faro-web-tracing@npm:^2.11.0, @grafana/faro-web-tracing@workspace:packages/web-tracing":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-web-tracing@workspace:packages/web-tracing"
   dependencies:
-    "@grafana/faro-web-sdk": "npm:^2.10.0"
+    "@grafana/faro-web-sdk": "npm:^2.11.0"
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/core": "npm:^2.0.0"
     "@opentelemetry/exporter-trace-otlp-http": "npm:^0.221.0"
@@ -2803,9 +2803,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/jest-dom@npm:7.0.0":
-  version: 7.0.0
-  resolution: "@testing-library/jest-dom@npm:7.0.0"
+"@testing-library/jest-dom@npm:7.0.1":
+  version: 7.0.1
+  resolution: "@testing-library/jest-dom@npm:7.0.1"
   dependencies:
     "@adobe/css-tools": "npm:^4.4.0"
     aria-query: "npm:^5.0.0"
@@ -2815,13 +2815,17 @@ __metadata:
     redent: "npm:^3.0.0"
   peerDependencies:
     "@testing-library/dom": ">=10 <11"
-  checksum: 10c0/f5ecf821ed098438a5e9ce993d431505f0a1af43edb05e423c6ab7becf9d7dbe46385fc93e0e460a4c7996f4513cad72b8967dd8e98c75bc7ea6733ff7efcf4e
+    vitest: ">= 0.32"
+  peerDependenciesMeta:
+    vitest:
+      optional: true
+  checksum: 10c0/4450af11d3580749949c6eee749077267c70d18f794952b9e24839f8f66afe28c6f83dd3d93b135cfd9aae8401b9861260cc309dee4ad4f2845b52b94e5c5e11
   languageName: node
   linkType: hard
 
-"@testing-library/react@npm:16.3.2":
-  version: 16.3.2
-  resolution: "@testing-library/react@npm:16.3.2"
+"@testing-library/react@npm:16.3.3":
+  version: 16.3.3
+  resolution: "@testing-library/react@npm:16.3.3"
   dependencies:
     "@babel/runtime": "npm:^7.12.5"
   peerDependencies:
@@ -2835,7 +2839,7 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/f9c7f0915e1b5f7b750e6c7d8b51f091b8ae7ea99bacb761d7b8505ba25de9cfcb749a0f779f1650fb268b499dd79165dc7e1ee0b8b4cb63430d3ddc81ffe044
+  checksum: 10c0/87d65cca71a39c93fffa23746a751a7037a4b4e939ea6b234af5188e4bdec96a7568b05000db109b5b76c686899e93a329a594d7e690674e30b35594c87c9e1d
   languageName: node
   linkType: hard
 
@@ -3109,12 +3113,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.13.3":
-  version: 24.13.3
-  resolution: "@types/node@npm:24.13.3"
+"@types/node@npm:24.13.4":
+  version: 24.13.4
+  resolution: "@types/node@npm:24.13.4"
   dependencies:
     undici-types: "npm:~7.18.0"
-  checksum: 10c0/a5bc08f49b9581dcdca90e02cd77197a3c799840807664942e5cd5161a553d4d2ae8064f7e3294410d748d7d098b5c1848be7fa50c06f29c4193ab16be4e59eb
+  checksum: 10c0/a12196e984cb09ead549651217b4b395961ea011f3a3791a9f78311d70b5f3be343c6fc935376553c06a34c14d963d4f637ad7829837b0c88cf441919f422893
   languageName: node
   linkType: hard
 
@@ -4756,19 +4760,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"conventional-commits-parser@npm:7.1.0":
-  version: 7.1.0
-  resolution: "conventional-commits-parser@npm:7.1.0"
-  dependencies:
-    "@simple-libs/stream-utils": "npm:^2.0.0"
-    argue-cli: "npm:^3.1.0"
-  bin:
-    conventional-commits-parser: ./dist/cli/index.js
-  checksum: 10c0/7056dbe22c844561675dc08b9a3062da07d56e93fa4360fa1cb72dc5df5811b165cc5b2a317a6e05803cc3399ddcb641d701ed456443cffb36c407b2a17d1f97
-  languageName: node
-  linkType: hard
-
-"conventional-commits-parser@npm:^7.1.0":
+"conventional-commits-parser@npm:7.1.2, conventional-commits-parser@npm:^7.1.0":
   version: 7.1.2
   resolution: "conventional-commits-parser@npm:7.1.2"
   dependencies:
@@ -6080,7 +6072,7 @@ __metadata:
     husky: "npm:9.1.7"
     jest: "npm:30.4.2"
     jest-environment-jsdom: "npm:30.4.1"
-    lerna: "npm:10.0.0"
+    lerna: "npm:10.0.1"
     lint-staged: "npm:17.3.0"
     madge: "npm:8.0.0"
     markdownlint-cli: "npm:0.49.1"
@@ -8313,9 +8305,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lerna@npm:10.0.0":
-  version: 10.0.0
-  resolution: "lerna@npm:10.0.0"
+"lerna@npm:10.0.1":
+  version: 10.0.1
+  resolution: "lerna@npm:10.0.1"
   dependencies:
     "@npmcli/arborist": "npm:9.1.6"
     "@npmcli/package-json": "npm:7.0.2"
@@ -8329,7 +8321,7 @@ __metadata:
     conventional-changelog: "npm:8.1.0"
     conventional-changelog-angular: "npm:9.2.1"
     conventional-commits-filter: "npm:6.0.1"
-    conventional-commits-parser: "npm:7.1.0"
+    conventional-commits-parser: "npm:7.1.2"
     conventional-recommended-bump: "npm:12.1.0"
     cosmiconfig: "npm:9.0.0"
     dedent: "npm:1.5.3"
@@ -8360,7 +8352,7 @@ __metadata:
     signal-exit: "npm:3.0.7"
     ssri: "npm:12.0.0"
     string-width: "npm:^4.2.3"
-    tar: "npm:7.5.20"
+    tar: "npm:7.5.22"
     tinyglobby: "npm:0.2.12"
     validate-npm-package-license: "npm:3.0.4"
     validate-npm-package-name: "npm:6.0.2"
@@ -8368,7 +8360,7 @@ __metadata:
     yargs: "npm:17.7.2"
   bin:
     lerna: dist/cli.js
-  checksum: 10c0/49e09f922df4eda5860cde0035873e6393960e828f81aabf14fe94538760ece86908233d1d0a85f0570c70140949dca8c89989c3093ef6c8f05b10e1eaf4dec4
+  checksum: 10c0/f5c162eef98ebe98c830ff0b60424ac8ce49b8451c03411f1cc79039c924e337f6330d468c43b8208b3b5d34acda4ea7850211728beaa33a39a3c430fbd62bf2
   languageName: node
   linkType: hard
 
@@ -9385,12 +9377,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.17":
-  version: 3.3.17
-  resolution: "nanoid@npm:3.3.17"
+"nanoid@npm:^3.3.18":
+  version: 3.3.19
+  resolution: "nanoid@npm:3.3.19"
   bin:
     nanoid: bin/nanoid.cjs
-  checksum: 10c0/06f7949c7cce5c92c6aea66022f29a1eae7f56e05acbfddf1e049e819b4bf234c44a765cc44da7163482b111677948514012e27acdfa56f95309295768bdae32
+  checksum: 10c0/ce7afa6258bfaa00bdc8de291cfe9913280eaa403b7d9cff3db4e4200c1913e7163577df74897958da144db473a96c67f74f57db0f542fbfe409df677bae3255
   languageName: node
   linkType: hard
 
@@ -10492,13 +10484,13 @@ __metadata:
   linkType: hard
 
 "postcss@npm:^8.5.18":
-  version: 8.5.26
-  resolution: "postcss@npm:8.5.26"
+  version: 8.5.28
+  resolution: "postcss@npm:8.5.28"
   dependencies:
-    nanoid: "npm:^3.3.17"
+    nanoid: "npm:^3.3.18"
     picocolors: "npm:^1.1.1"
     source-map-js: "npm:^1.2.1"
-  checksum: 10c0/2bdafc00d96bd57b6649a52e458864a4bf58ee56cfdbe4aea1472b5cccc127e6c1ad653bd0bec50d211e650eb0b9270c80e1e72aff2e2fa40d9e7363234d6e43
+  checksum: 10c0/9fe44215a6628d89c8a75184b92f5b2f77e16f9e5b13b39b9009bb7e8e6eccddf82c8854bae922db1f17ace6ef3445073fe38abff513caeb03e5285b1b55620a
   languageName: node
   linkType: hard
 
@@ -10807,9 +10799,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-v8@npm:react-router@8.3.0":
-  version: 8.3.0
-  resolution: "react-router@npm:8.3.0"
+"react-router-v8@npm:react-router@8.3.1":
+  version: 8.3.1
+  resolution: "react-router@npm:8.3.1"
   dependencies:
     cookie-es: "npm:^3.1.1"
   peerDependencies:
@@ -10818,7 +10810,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10c0/c1277d6a75ff1b77e759bc0142e3257b6cea1eb683595a64a19d7fb341a7b9ba30c81ef8fc426e437c7fbec043bde683462b2463a055b0f58c8e5ad19cdee2ad
+  checksum: 10c0/1de8feec25518f036980ecab291ab5477fb5bc1bfbda64f830bf12bd8207d46e22824108837df4bc8386c59f29b6aaa551a6f3f72771c495b456ff643f5c6de9
   languageName: node
   linkType: hard
 
@@ -10841,9 +10833,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:7.18.2":
-  version: 7.18.2
-  resolution: "react-router@npm:7.18.2"
+"react-router@npm:7.18.3":
+  version: 7.18.3
+  resolution: "react-router@npm:7.18.3"
   dependencies:
     cookie: "npm:^1.0.1"
     set-cookie-parser: "npm:^2.6.0"
@@ -10853,7 +10845,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10c0/513b04adf020fcf95124557418e003d16b175765045332858d5817b045e49dfe33b529c4871c57b0cddf24fa5432589ffc45d1a9a5b398b069f02adb755fab15
+  checksum: 10c0/77686cad916f8928e6c4aeafe5f8dc26384e84897849ff7d771ddee67af02b788c103503d029ffa442f7bf42aa47b3779440e70fc1aeae90532120fae4036b0f
   languageName: node
   linkType: hard
 

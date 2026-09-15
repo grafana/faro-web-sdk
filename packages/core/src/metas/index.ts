@@ -1,4 +1,5 @@
 export { initializeMetas } from './initialize';
+export { captureMetas } from './capture';
 
 export { registerInitialMetas } from './registerInitial';
 

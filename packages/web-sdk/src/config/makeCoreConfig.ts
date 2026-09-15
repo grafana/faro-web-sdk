@@ -33,7 +33,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     if (browserConfig.url || browserConfig.apiKey) {
       internalLogger.error('if "transports" is defined, "url" and "apiKey" should not be defined');
     }
-
     transports.push(...browserConfig.transports);
   } else if (browserConfig.url) {
     transports.push(

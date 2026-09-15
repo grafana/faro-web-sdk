@@ -1,5 +1,6 @@
 import { defaultLogArgsSerializer, InternalLoggerLevel, isFunction } from '@grafana/faro-core';
 import type { LogArgsSerializer } from '@grafana/faro-core';
+import { MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { userActionDataAttribute } from '../instrumentations/userActions';
 
@@ -315,5 +316,24 @@ describe('config', () => {
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
     expect(navigationInstrumentation).toBeUndefined();
+  });
+  it('uses the reliable Fetch transport under the existing public name by default', () => {
+    const config = makeCoreConfig({ url: 'http://example.com/collect', app: {} });
+
+    expect(config.transports[0]?.name).toBe('@grafana/faro-web-sdk:transport-fetch');
+  });
+
+  it('keeps explicit transports', () => {
+    const error = jest.fn();
+    const explicitTransport = new MockTransport();
+
+    const config = makeCoreConfig({
+      app: {},
+      transports: [explicitTransport],
+      unpatchedConsole: { error } as unknown as Console,
+    });
+
+    expect(config.transports).toEqual([explicitTransport]);
+    expect(error).not.toHaveBeenCalled();
   });
 });
