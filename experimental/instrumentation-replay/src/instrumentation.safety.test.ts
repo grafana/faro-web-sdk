@@ -2,7 +2,9 @@ import { type EventEvent, type Faro, initializeFaro, type TransportItem } from '
 import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 import { EventType, type eventWithTime } from '@grafana/rrweb-types';
 
+import { getRecordingDocument } from './documentLifecycle';
 import { ReplayInstrumentation } from './instrumentation';
+import { replayRecordingStorageKeyPrefix } from './recordingState';
 import type { ReplayInstrumentationOptions } from './types';
 
 jest.mock('@grafana/rrweb', () => ({ record: jest.fn() }));
@@ -17,6 +19,7 @@ const changeEvent = (): eventWithTime => ({
   data: { tag: 'change', payload: null },
   timestamp: Date.now(),
 });
+const flush = () => jest.advanceTimersByTimeAsync(0);
 
 describe('Replay callback and startup safety', () => {
   let faro: Faro;
@@ -30,6 +33,7 @@ describe('Replay callback and startup safety', () => {
     jest.useFakeTimers();
     window.sessionStorage.clear();
     window.localStorage.clear();
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
     mockRecord = require('@grafana/rrweb').record;
     mockRecord.mockReset();
     stop = jest.fn();
@@ -42,12 +46,12 @@ describe('Replay callback and startup safety', () => {
     setSession('A');
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    window.dispatchEvent(new Event('pagehide'));
     replay?.destroy();
+    await flush();
     jest.restoreAllMocks();
     document.body.replaceChildren();
-    window.sessionStorage.clear();
-    window.localStorage.clear();
     jest.clearAllTimers();
     jest.useRealTimers();
   });
@@ -56,9 +60,10 @@ describe('Replay callback and startup safety', () => {
     faro.api.setSession({ id, attributes: { isSampled: String(sampled) } });
   }
 
-  function start(options: ReplayInstrumentationOptions = {}) {
+  async function start(options: ReplayInstrumentationOptions = {}) {
     replay = new ReplayInstrumentation({ recordAfter: 'DOMContentLoaded', ...options });
     faro.instrumentations.add(replay);
+    await flush();
   }
 
   function events() {
@@ -69,22 +74,23 @@ describe('Replay callback and startup safety', () => {
     return events().filter((item) => item.payload.name === 'faro.session_recording.event');
   }
 
-  it('pauses despite a capture listener failure and resumes after the listener recovers', () => {
-    start({ inactivityThresholdMs: 5_000 });
-    const failedCapture = () => {
-      throw new Error('capture failed');
-    };
-    faro.metas.addCaptureListener!(failedCapture);
+  function hasActiveCheckpoint() {
+    return Object.keys(window.sessionStorage)
+      .filter((key) => key.startsWith(replayRecordingStorageKeyPrefix))
+      .some((key) => JSON.parse(window.sessionStorage.getItem(key)!).handoff === 'active');
+  }
 
-    expect(() => jest.advanceTimersByTime(5_000)).not.toThrow();
+  it('stays paused when publishing the paused event fails', async () => {
+    await start({ inactivityThresholdMs: 1_000 });
+    jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(() => {
+      throw new Error('publication failed');
+    });
+    await jest.advanceTimersByTimeAsync(1_000);
     expect(stop).toHaveBeenCalledTimes(1);
-    expect(events().map((item) => item.payload.name)).toEqual(['faro.session_recording.started']);
-
-    faro.metas.removeCaptureListener!(failedCapture);
     emit(changeEvent());
     expect(recordings()).toEqual([]);
     document.dispatchEvent(new Event('pointerdown'));
-
+    await flush();
     expect(mockRecord).toHaveBeenCalledTimes(2);
     expect(events().map((item) => item.payload.name)).toEqual([
       'faro.session_recording.started',
@@ -92,274 +98,287 @@ describe('Replay callback and startup safety', () => {
     ]);
   });
 
-  it('stays paused when publishing the paused event fails', () => {
-    start({ inactivityThresholdMs: 5_000 });
-    const pushEvent = jest.spyOn(faro.api, 'pushEvent').mockImplementationOnce(() => {
-      throw new Error('publication failed');
-    });
-
-    try {
-      expect(() => jest.advanceTimersByTime(5_000)).not.toThrow();
+  it.each(['rotate', 'clear'])(
+    'does not publish a paused event after capture changes the session: %s',
+    async (action) => {
+      await start({ inactivityThresholdMs: 1_000 });
+      const changeSession = () => {
+        faro.metas.removeCaptureListener!(changeSession);
+        if (action === 'rotate') {
+          setSession('B');
+        } else {
+          faro.api.setSession(undefined);
+        }
+      };
+      faro.metas.addCaptureListener!(changeSession);
+      await jest.advanceTimersByTimeAsync(1_000);
       expect(stop).toHaveBeenCalledTimes(1);
-      emit(changeEvent());
-      expect(recordings()).toEqual([]);
-      document.dispatchEvent(new Event('pointerdown'));
-      expect(mockRecord).toHaveBeenCalledTimes(2);
-      expect(events().map((item) => item.payload.name)).toEqual([
-        'faro.session_recording.started',
-        'faro.session_recording.resumed',
-      ]);
-    } finally {
-      pushEvent.mockRestore();
+      expect(events().filter((item) => item.payload.name === 'faro.session_recording.paused')).toEqual([]);
     }
-  });
+  );
 
-  it.each(['rotate', 'clear'])('does not publish a paused event after capture changes the session: %s', (action) => {
-    start({ inactivityThresholdMs: 5_000 });
-    const changeSession = () => {
-      faro.metas.removeCaptureListener!(changeSession);
-      if (action === 'rotate') {
-        setSession('B');
-      } else {
-        faro.api.setSession(undefined);
-      }
-    };
-    faro.metas.addCaptureListener!(changeSession);
-
-    jest.advanceTimersByTime(5_000);
-
-    expect(stop).toHaveBeenCalledTimes(1);
-    expect(events().filter((item) => item.payload.name === 'faro.session_recording.paused')).toEqual([]);
-  });
-
-  it.each(['no-stop', 'throw'])('discards synchronous startup events when record fails: %s', (failure) => {
-    mockRecord.mockImplementation((options) => {
-      options.emit(metaEvent());
-      if (failure === 'throw') {
-        throw new Error('recorder failed');
-      }
-      return undefined;
-    });
-    start();
-    expect(events()).toEqual([]);
-  });
-
-  it.each(['start', 'resume'])('logs stop failures when an attempt is invalidated during %s', async (phase) => {
-    replay = new ReplayInstrumentation({ inactivityThresholdMs: 5_000 });
-    const logWarn = jest.spyOn(replay, 'logWarn');
-    if (phase === 'resume') {
-      faro.instrumentations.add(replay);
-      jest.advanceTimersByTime(5_000);
-    }
-    const previousEvents = [...events()];
-    const stopError = new Error('stop failed');
-    const stopInvalidated = jest.fn(() => {
-      throw stopError;
-    });
-    mockRecord.mockImplementationOnce((options) => {
-      emit = options.emit;
+  it.each(['no-stop', 'throw'])(
+    'discards failed startup events, releases the lease, and retries only on input: %s',
+    async (failure) => {
+      let failedId: string | undefined;
+      mockRecord.mockImplementationOnce((options) => {
+        failedId = JSON.parse(window.sessionStorage.getItem(Object.keys(window.sessionStorage)[0]!)!).recordingId;
+        options.emit(metaEvent());
+        if (failure === 'throw') {
+          throw new Error('recorder failed');
+        }
+        return undefined;
+      });
+      await start();
+      expect(events()).toEqual([]);
+      expect((await navigator.locks.query()).held).toEqual([]);
+      await flush();
+      expect(mockRecord).toHaveBeenCalledTimes(1);
+      document.dispatchEvent(new Event('keydown'));
+      await flush();
       emit(metaEvent());
-      setSession('B');
-      return stopInvalidated;
-    });
+      expect(recordings()[0]!.payload.attributes).toMatchObject({ recording_id: failedId, seq: '0', gen: '0' });
+    }
+  );
 
-    expect(() => {
+  it.each(['start', 'resume'])(
+    'stops a stale returned handle after the enclosing %s call and releases despite a stop error',
+    async (phase) => {
+      replay = new ReplayInstrumentation({ inactivityThresholdMs: 1_000 });
+      const logWarn = jest.spyOn(replay, 'logWarn');
+      if (phase === 'resume') {
+        faro.instrumentations.add(replay);
+        await flush();
+        await jest.advanceTimersByTimeAsync(1_000);
+      }
+      let staleEmit!: typeof emit;
+      const stopError = new Error('stop failed');
+      const order: string[] = [];
+      const staleStop = jest.fn(() => {
+        order.push('stop');
+        throw stopError;
+      });
+      mockRecord.mockImplementationOnce((options) => {
+        staleEmit = options.emit;
+        options.emit(metaEvent());
+        setSession('B');
+        expect(staleStop).not.toHaveBeenCalled();
+        order.push('record returned');
+        return staleStop;
+      });
       if (phase === 'resume') {
         document.dispatchEvent(new Event('pointerdown'));
       } else {
         faro.instrumentations.add(replay);
       }
-    }).not.toThrow();
+      await flush();
+      expect(order).toEqual(['record returned', 'stop']);
+      expect(staleStop).toHaveBeenCalledTimes(1);
+      expect(logWarn).toHaveBeenCalledWith('Failed to stop session replay', stopError);
+      expect(mockRecord).toHaveBeenCalledTimes(phase === 'resume' ? 3 : 2);
+      expect((await navigator.locks.query()).held).toHaveLength(1);
+      staleEmit(changeEvent());
+      expect(recordings()).toEqual([]);
+      emit(changeEvent());
+      expect(recordings().map((item) => item.meta.session?.id)).toEqual(['B']);
+    }
+  );
 
-    expect(stopInvalidated).toHaveBeenCalledTimes(1);
-    expect(logWarn).toHaveBeenCalledWith('Failed to stop session replay', stopError);
-    expect(logWarn).not.toHaveBeenCalledWith(`Failed to ${phase} session replay`, stopError);
-    expect(events()).toEqual(previousEvents);
-    const staleEmit = emit;
-    staleEmit(changeEvent());
-    expect(recordings()).toEqual([]);
+  it.each(['start', 'resume'])(
+    'retains the returned stop handle when post-%s metadata validation throws',
+    async (phase) => {
+      if (phase === 'resume') {
+        await start({ inactivityThresholdMs: 1_000 });
+        await jest.advanceTimersByTimeAsync(1_000);
+      }
+      let fail = false;
+      faro.metas.add(() => {
+        if (fail) {
+          fail = false;
+          throw new Error('metadata getter failed');
+        }
+        return {};
+      });
+      mockRecord.mockImplementationOnce((options) => {
+        emit = options.emit;
+        fail = true;
+        return stop;
+      });
+      if (phase === 'start') {
+        await start();
+      } else {
+        document.dispatchEvent(new Event('pointerdown'));
+        await flush();
+      }
+      expect(stop).toHaveBeenCalledTimes(phase === 'start' ? 1 : 2);
+      emit(changeEvent());
+      expect(recordings()).toEqual([]);
+      expect((await navigator.locks.query()).held).toHaveLength(phase === 'start' ? 0 : 1);
+    }
+  );
 
-    await Promise.resolve();
-
-    expect(mockRecord).toHaveBeenCalledTimes(phase === 'resume' ? 3 : 2);
-    staleEmit(changeEvent());
-    expect(recordings()).toEqual([]);
-    emit(changeEvent());
-    expect(recordings().map((item) => item.meta.session?.id)).toEqual(['B']);
-  });
-
-  it('does not retry a failed reinitialization from a previous lifecycle', async () => {
-    start();
-    setSession('B');
-    faro.instrumentations.remove(replay);
-    mockRecord.mockReturnValueOnce(undefined);
-    faro.instrumentations.add(replay);
-    expect(mockRecord).toHaveBeenCalledTimes(2);
-
-    await Promise.resolve();
-
-    expect(mockRecord).toHaveBeenCalledTimes(2);
-    setSession('B');
-    await Promise.resolve();
-    expect(mockRecord).toHaveBeenCalledTimes(3);
-  });
-
-  it('preserves coalescing of new starts when a previous lifecycle callback runs', async () => {
-    start();
-    setSession('B');
-    faro.instrumentations.remove(replay);
-    faro.instrumentations.add(replay);
-
-    // Notify between the old callback and the new one; this must not queue a second retry.
-    const notification = Promise.resolve().then(() => setSession('D'));
-    setSession('C');
-    mockRecord.mockReturnValueOnce(undefined);
-    await notification;
-    await Promise.resolve();
-
-    expect(mockRecord).toHaveBeenCalledTimes(3);
-    expect(stop).toHaveBeenCalledTimes(2);
-  });
-
-  it('can restart after a removed listener queues work during destruction', async () => {
+  it('does not let a removed metadata callback queue work for its replacement', async () => {
     faro.metas.addListener((meta) => {
       if (meta.session?.id === 'B') {
         faro.instrumentations.remove(replay);
       }
     });
-    start();
-    // Core still invokes the removed replay listener in this notification's iteration.
+    await start();
     setSession('B');
     faro.instrumentations.add(replay);
-    await Promise.resolve();
-
+    await flush();
     setSession('C');
-    await Promise.resolve();
-
+    await flush();
     expect(mockRecord).toHaveBeenCalledTimes(3);
     expect(stop).toHaveBeenCalledTimes(2);
     emit(changeEvent());
     expect(recordings().map((item) => item.meta.session?.id)).toEqual(['C']);
   });
 
-  it('does not leak a recorder when a capture listener reinitializes replay', () => {
+  it('does not retain a document subscriber when metadata registration removes Replay', async () => {
+    const subscribe = jest.spyOn(getRecordingDocument(), 'subscribe');
+    const addListener = faro.metas.addListener;
+    jest.spyOn(faro.metas, 'addListener').mockImplementation((listener) => {
+      addListener(listener);
+      faro.instrumentations.remove(replay);
+    });
+    await start();
+    expect(subscribe).not.toHaveBeenCalled();
+    expect(mockRecord).not.toHaveBeenCalled();
+    expect(faro.instrumentations.instrumentations).toHaveLength(0);
+  });
+
+  it('releases unused ownership when dynamic metadata withdraws eligibility after grant', async () => {
+    let eligible = true;
+    faro.metas.add(() => ({ session: eligible ? { id: 'A', attributes: { isSampled: 'true' } } : undefined }));
+    const withdraw = () => {
+      if (hasActiveCheckpoint()) {
+        eligible = false;
+      }
+    };
+    faro.metas.addCaptureListener!(withdraw);
+    await start();
+    expect(mockRecord).not.toHaveBeenCalled();
+    expect((await navigator.locks.query()).held).toEqual([]);
+    faro.metas.removeCaptureListener!(withdraw);
+    eligible = true;
+    document.dispatchEvent(new Event('pointerdown'));
+    await flush();
+    expect(mockRecord).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not start rrweb after an eligibility getter destroys the granted owner', async () => {
+    let invalidate = false;
+    faro.metas.add(() => {
+      if (invalidate) {
+        invalidate = false;
+        replay.destroy();
+      }
+      return {};
+    });
+    const capture = faro.metas.capture!;
+    jest.spyOn(faro.metas, 'capture').mockImplementation((callback) =>
+      capture(
+        callback &&
+          (() => {
+            invalidate = hasActiveCheckpoint();
+            callback();
+          })
+      )
+    );
+    await start();
+    expect(mockRecord).not.toHaveBeenCalled();
+    expect((await navigator.locks.query()).held).toEqual([]);
+  });
+
+  it.each(['start', 'resume'])('preserves a replacement installed by capture during %s', async (phase) => {
+    if (phase === 'resume') {
+      await start({ inactivityThresholdMs: 1_000 });
+      await jest.advanceTimersByTimeAsync(1_000);
+    }
     const reinitialize = () => {
       faro.metas.removeCaptureListener!(reinitialize);
       faro.instrumentations.remove(replay);
       faro.instrumentations.add(replay);
     };
     faro.metas.addCaptureListener!(reinitialize);
-
-    start();
-
-    expect(mockRecord).toHaveBeenCalledTimes(1);
-    expect(stop).not.toHaveBeenCalled();
+    if (phase === 'start') {
+      await start();
+    } else {
+      document.dispatchEvent(new Event('pointerdown'));
+      await flush();
+    }
+    expect(mockRecord).toHaveBeenCalledTimes(phase === 'resume' ? 2 : 1);
     emit(changeEvent());
     expect(recordings().map((item) => item.meta.session?.id)).toEqual(['A']);
-
     faro.instrumentations.remove(replay);
-
-    expect(stop).toHaveBeenCalledTimes(1);
+    await flush();
+    expect((await navigator.locks.query()).held).toEqual([]);
     emit(changeEvent());
     expect(recordings()).toHaveLength(1);
   });
 
-  it.each(['A', 'B'])('preserves a recorder reinitialized during resume for session %s', async (sessionId) => {
-    start({ inactivityThresholdMs: 5_000 });
-    jest.advanceTimersByTime(5_000);
-    const reinitialize = () => {
-      faro.metas.removeCaptureListener!(reinitialize);
-      faro.instrumentations.remove(replay);
-      setSession(sessionId);
-      faro.instrumentations.add(replay);
-    };
-    faro.metas.addCaptureListener!(reinitialize);
-
-    document.dispatchEvent(new Event('pointerdown'));
-    await Promise.resolve();
-
-    expect(mockRecord).toHaveBeenCalledTimes(2);
-    expect(stop).toHaveBeenCalledTimes(1);
-    expect(events().filter((item) => item.payload.name === 'faro.session_recording.resumed')).toEqual([]);
-    emit(changeEvent());
-    expect(recordings().map((item) => item.meta.session?.id)).toEqual([sessionId]);
-
-    faro.instrumentations.remove(replay);
-
-    expect(stop).toHaveBeenCalledTimes(2);
-    emit(changeEvent());
-    expect(recordings()).toHaveLength(1);
-  });
-
-  it('publishes the lifecycle marker before buffered events and then accepts live events', () => {
-    mockRecord.mockImplementation((options) => {
-      emit = options.emit;
-      emit(metaEvent());
-      emit(changeEvent());
-      return stop;
-    });
-    start();
-    emit({ ...changeEvent(), timestamp: Date.now() + 1 });
-    expect(events().map((item) => item.payload.name)).toEqual([
-      'faro.session_recording.started',
-      'faro.session_recording.event',
-      'faro.session_recording.event',
-      'faro.session_recording.event',
-    ]);
-  });
-
-  it.each(['rotate', 'unsample', 'away-back', 'destroy'])(
-    'discards real rrweb startup invalidated by maskInputFn: %s',
-    async (action) => {
+  it.each(['startup', 'checkout', 'deferred'])(
+    'guards real rrweb %s through reentrant input masking and replacement',
+    async (phase) => {
       const input = document.createElement('input');
       input.value = 'private';
       document.body.appendChild(input);
       const realRecord = jest.requireActual('@grafana/rrweb').record;
+      const readyState =
+        phase === 'deferred' ? jest.spyOn(document, 'readyState', 'get').mockReturnValue('loading') : undefined;
+      const order: string[] = [];
       mockRecord.mockImplementation((options) => {
         const stopRecorder = realRecord(options);
         return () => {
+          order.push('stop');
           stop();
           stopRecorder?.();
         };
       });
-      let invalidated = false;
-      start({
+      let invalidate = phase !== 'checkout';
+      await start({
         maskInputFn: () => {
-          if (!invalidated) {
-            invalidated = true;
-            if (action === 'destroy') {
-              replay.destroy();
-            } else if (action === 'unsample') {
-              setSession('A', false);
-            } else {
-              setSession('B');
-              if (action === 'away-back') {
-                setSession('A');
-              }
-            }
+          if (invalidate) {
+            invalidate = false;
+            const count = stop.mock.calls.length;
+            setSession('B');
+            expect(stop).toHaveBeenCalledTimes(count);
+            order.push('mask returned');
           }
           return '******';
         },
       });
-      expect(invalidated).toBe(true);
-      expect(stop).toHaveBeenCalledTimes(1);
-      expect(events()).toEqual([]);
-      await Promise.resolve();
-      if (action === 'rotate' || action === 'away-back') {
-        expect(events()[0]?.payload.name).toBe('faro.session_recording.started');
-        expect(recordings().map((item) => JSON.parse(item.payload.attributes!['event']!).type)).toEqual([
-          EventType.Meta,
-          EventType.FullSnapshot,
-        ]);
-        expect(recordings().every((item) => item.meta.session?.id === (action === 'rotate' ? 'B' : 'A'))).toBe(true);
-      } else {
-        expect(events()).toEqual([]);
+      if (phase === 'checkout') {
+        transport.items.splice(0);
+        invalidate = true;
+        realRecord.takeFullSnapshot();
+      } else if (phase === 'deferred') {
+        readyState!.mockReturnValue('interactive');
+        document.dispatchEvent(new Event('DOMContentLoaded'));
       }
+      await flush();
+      expect(order.slice(0, 2)).toEqual(['mask returned', 'stop']);
+      expect(stop).toHaveBeenCalledTimes(1);
+      expect(
+        recordings()
+          .filter((item) => item.meta.session?.id === 'A')
+          .some((item) => JSON.parse(item.payload.attributes!['event']!).type === EventType.FullSnapshot)
+      ).toBe(false);
+      const current = recordings().filter((item) => item.meta.session?.id === 'B');
+      expect(current.map((item) => JSON.parse(item.payload.attributes!['event']!).type)).toEqual([
+        EventType.Meta,
+        EventType.FullSnapshot,
+      ]);
+      document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 7 }));
+      await flush();
+      expect(recordings().at(-1)!.meta.session?.id).toBe('B');
+      readyState?.mockRestore();
     }
   );
 
-  it.each(['rotate', 'unsample', 'destroy'])('discards an event invalidated inside beforeSend: %s', (action) => {
-    start({
+  it.each(['rotate', 'unsample', 'destroy'])('discards an event invalidated inside beforeSend: %s', async (action) => {
+    await start({
       beforeSend: (event) => {
         if (action === 'destroy') {
           replay.destroy();
@@ -371,17 +390,19 @@ describe('Replay callback and startup safety', () => {
     });
     emit(changeEvent());
     expect(recordings()).toEqual([]);
+    expect(stop).not.toHaveBeenCalled();
+    await flush();
     expect(stop).toHaveBeenCalledTimes(1);
   });
 
-  it('does not reconcile again between accepting an event and submitting it', () => {
+  it('keeps the accepted capture through filtering and reconciles again on the next event', async () => {
     let expired = false;
     faro.metas.addCaptureListener!(() => {
       if (expired) {
         setSession('B');
       }
     });
-    start({
+    await start({
       beforeSend: (event) => {
         expired = true;
         return event;
@@ -394,48 +415,23 @@ describe('Replay callback and startup safety', () => {
     expect(faro.api.getSession()?.id).toBe('B');
   });
 
-  it('discards serialization callbacks that invalidate the current attempt', () => {
-    start();
-    const event = {
+  it('rejects serialization invalidation and old callbacks even after returning to the same session', async () => {
+    await start();
+    const staleEmit = emit;
+    const invalidated = {
       ...changeEvent(),
       toJSON: () => {
         setSession('B');
         return changeEvent();
       },
     };
-    emit(event);
+    emit(invalidated);
     expect(recordings()).toEqual([]);
-  });
-
-  it('rejects a stale rrweb callback after rotating away and back to the same session', async () => {
-    start();
-    const staleEmit = emit;
-    setSession('B');
     setSession('A');
-    await Promise.resolve();
+    await flush();
     staleEmit(changeEvent());
     expect(recordings()).toEqual([]);
     emit(changeEvent());
     expect(recordings().map((item) => item.meta.session?.id)).toEqual(['A']);
-  });
-
-  it('reconciles a paused session before choosing resume versus a new recorder', async () => {
-    let expired = false;
-    faro.metas.addCaptureListener!(() => {
-      if (expired) {
-        setSession('B');
-      }
-    });
-    start({ inactivityThresholdMs: 1000 });
-    jest.advanceTimersByTime(1000);
-    expired = true;
-    document.dispatchEvent(new Event('pointerdown'));
-    await Promise.resolve();
-    expect(events().filter((item) => item.payload.name === 'faro.session_recording.resumed')).toEqual([]);
-    expect(
-      events()
-        .filter((item) => item.payload.name === 'faro.session_recording.started')
-        .map((item) => item.meta.session?.id)
-    ).toEqual(['A', 'B']);
   });
 });

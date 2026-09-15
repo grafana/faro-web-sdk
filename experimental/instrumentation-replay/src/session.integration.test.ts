@@ -1,4 +1,4 @@
-import { initializeFaro, type TransportBody } from '@grafana/faro-core';
+import { type Faro, initializeFaro, type TransportBody } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../../packages/web-sdk/src/config/makeCoreConfig';
@@ -15,12 +15,14 @@ import { ReplayInstrumentation } from './instrumentation';
 describe.each([true, false])('Replay through Fetch with persistent=%s', (persistent) => {
   const originalFetch = globalThis.fetch;
   let replay: ReplayInstrumentation;
+  let sdk: Faro;
   let requests: Array<{ sessionId: string; body: TransportBody }>;
 
   beforeEach(() => {
     jest.useFakeTimers();
     window.sessionStorage.clear();
     window.localStorage.clear();
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
     requests = [];
     globalThis.fetch = jest.fn(async (_url, init) => {
       requests.push({
@@ -31,8 +33,10 @@ describe.each([true, false])('Replay through Fetch with persistent=%s', (persist
     });
   });
 
-  afterEach(() => {
-    replay?.destroy();
+  afterEach(async () => {
+    window.dispatchEvent(new Event('pagehide'));
+    sdk.instrumentations.remove(...sdk.instrumentations.instrumentations);
+    await jest.advanceTimersByTimeAsync(0);
     jest.clearAllTimers();
     jest.useRealTimers();
     globalThis.fetch = originalFetch;
@@ -42,7 +46,7 @@ describe.each([true, false])('Replay through Fetch with persistent=%s', (persist
 
   function start(inactivityThresholdMs: number) {
     replay = new ReplayInstrumentation({ recordAfter: 'DOMContentLoaded', inactivityThresholdMs });
-    return initializeFaro(
+    sdk = initializeFaro(
       makeCoreConfig(
         mockConfig({
           batching: {},
@@ -52,6 +56,7 @@ describe.each([true, false])('Replay through Fetch with persistent=%s', (persist
         })
       )!
     );
+    return sdk;
   }
 
   async function flush() {

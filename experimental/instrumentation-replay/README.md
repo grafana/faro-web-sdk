@@ -119,6 +119,54 @@ initializeFaro({
 | ------------ | -------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------- |
 | `beforeSend` | `(event: eventWithTime) => eventWithTime \| null \| undefined` | `undefined` | Transform or filter events before they are sent. Return `null` or `undefined` to skip sending |
 
+Filtering is unrestricted. Dropping rrweb Meta or FullSnapshot events can make later events
+unplayable; the application owns that decision. Replay's `beforeSend` runs before reservation,
+so its dropped events consume no sequence number. The global Faro `config.beforeSend` runs after
+reservation and can leave a gap, just like serialization or delivery failure. Retries reuse the
+original event identity.
+
+## Recording identity and lifecycle
+
+Each `faro.session_recording.event` has three identity attributes:
+
+| Attribute      | Meaning                                                          |
+| -------------- | ---------------------------------------------------------------- |
+| `recording_id` | One recording for a Faro owner, tab, and captured session.       |
+| `seq`          | Sequence number across the entire recording, beginning at zero.  |
+| `gen`          | Snapshot generation, advanced by each accepted rrweb Meta event. |
+
+A Faro owner consists of the global object key and application name, namespace, and environment.
+Changing a deployment version does not change the owner. Replay requires the Web Locks API and
+holds an exclusive recording lock before starting rrweb. Only one Replay instrumentation can
+register with a shared rrweb runtime, including while paused.
+
+One checkpoint in the tab's `sessionStorage` preserves the recording and counters through clean
+navigation, reload, BFCache restoration, and instrumentation replacement. Counters stay in memory
+while the lock is held and are saved on release. Inactivity pauses retain the lock and counters;
+resuming starts a fresh snapshot. The `started`, `paused`, and `resumed` lifecycle events include
+`recording_id` and bypass deduplication.
+
+Replay releases on `pageswap`, `pagehide`, and supported `freeze` events. Background visibility
+alone does not release ownership. A persisted `pageshow` or supported `resume` reacquires and
+rereads the checkpoint. If navigation is abandoned after `pageswap`, the next trusted pointer or
+keyboard interaction in the visible retained document restarts recording. Initial or resumed
+startup failures can also retry on later interaction; there is no automatic retry timer.
+
+Missing, malformed, or unfinished checkpoints recover under a new recording ID. Storage failures
+use the same lock protocol with document-local counters; same-document replacement can continue,
+but a later document may need a new ID. Earlier experimental checkpoint formats are ignored.
+
+Browser-copied tab state has limits. A copy of an active checkpoint waits without recording until
+the source releases, then starts a new ID. That wait can last indefinitely while the source retains
+its lock, including during inactivity. A copy of a stale clean checkpoint can reuse sequence
+numbers already emitted by the source, despite exclusive locks. Detection and targeted restart
+of those conflicts are future work.
+
+The installed rrweb version still has a partial-startup cleanup limitation tracked in
+[grafana/rrweb#59](https://github.com/grafana/rrweb/issues/59). Faro guards obsolete callbacks and
+defers stop/replacement beyond rrweb callbacks; the upstream cleanup fix and dependency update
+remain separate work.
+
 ## Privacy and Security
 
 This instrumentation records user interactions on your website. Make sure to:

@@ -2,11 +2,13 @@
 
 ## Next
 
-- Feature (`@grafana/faro-instrumentation-replay`): Add per-tab recording identity, checkpoint
-  generations, and recording-wide sequence numbers. Preserve identity through clean navigation
-  using owner-scoped handoffs, and expose accepted-event serialization failures as sequence gaps.
-  Recover with a new identity after ownership loss, including same-document replacement when
-  the tab pointer cannot be updated.
+- Feature (`@grafana/faro-instrumentation-replay`): Add stable recording identity, checkpoint
+  generations, and recording-wide sequence numbers. Use Web Locks and one current tab checkpoint
+  to preserve completed counters through navigation, BFCache, replacement, and inactivity.
+  Remove the previous shared checkpoint pool and timed claims. Guard reentrant recorder startup
+  and teardown, reject conflicting Replay registrations, and retry failed startup on interaction.
+  Recover with a new identity when continuation counters are unavailable; document-local state
+  can survive same-document replacement after storage failures.
 
 ## 2.4.0
 
