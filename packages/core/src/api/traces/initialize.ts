@@ -1,6 +1,7 @@
 import type { Config } from '../../config';
 import type { InternalLogger } from '../../internalLogger';
 import { captureMetas, type Metas } from '../../metas';
+import { markMetaCaptured } from '../../metas/capture';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports/types';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
@@ -38,12 +39,13 @@ export function initializeTracesAPI(
         };
   };
 
-  const pushTraces: TracesAPI['pushTraces'] = (payload) => {
+  const pushTraces: TracesAPI['pushTraces'] = (payload, options) => {
     try {
+      const currentMeta = captureMetas(metas);
       const item: TransportItem<TraceEvent> = {
         type: TransportItemType.TRACE,
         payload,
-        meta: captureMetas(metas),
+        meta: options?.meta ? markMetaCaptured({ ...options.meta }) : currentMeta,
       };
 
       internalLogger.debug('Pushing trace\n', item);

@@ -33,10 +33,6 @@ import {
 } from './semconv';
 import type { TracingInstrumentationOptions } from './types';
 
-// the providing of app name here is not great
-// should delay initialization and provide the full Faro config,
-// taking app name from it
-
 export class TracingInstrumentation extends BaseInstrumentation {
   name = '@grafana/faro-web-tracing';
   version: string = VERSION;
@@ -109,9 +105,15 @@ export class TracingInstrumentation extends BaseInstrumentation {
       resource,
       sampler: {
         shouldSample: () => {
-          return {
-            decision: getSamplingDecision(this.api.getSession()),
-          };
+          try {
+            this.metas.assertCaptureAllowed?.();
+            const session = this.api.getSession();
+            this.metas.assertCaptureAllowed?.();
+            return { decision: getSamplingDecision(session) };
+          } catch (error) {
+            this.logWarn('Discarding span because Faro metadata capture failed', error);
+            return { decision: getSamplingDecision() };
+          }
         },
       },
       spanProcessors: [
