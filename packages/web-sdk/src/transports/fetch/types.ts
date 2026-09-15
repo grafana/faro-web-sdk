@@ -1,35 +1,34 @@
 export interface FetchTransportRequestOptions extends Omit<RequestInit, 'body' | 'headers'> {
-  /**
-   * Headers to include in every request.
-   * Each value can be:
-   * - a string (static value)
-   * - a function returning a string (dynamic value, sync)
-   * - a function returning a Promise of string (dynamic value, async)
-   */
+  /** Headers resolved once for a batch and reused by every attempt. */
   headers?: Record<string, string | (() => string | Promise<string>)>;
 }
 
-export interface FetchTransportOptions {
-  // url of the collector endpoint
-  url: string;
+export interface RetryOptions {
+  /** Total attempts, including the initial request. Default: 3. */
+  maxAttempts?: number;
+  /** Delay before the first retry. Default: 1000 ms. */
+  initialBackoffMs?: number;
+  /** Maximum retry delay and collector wait interval. Default: 30000 ms. */
+  maxBackoffMs?: number;
+  /** Exponential backoff multiplier. Default: 2. */
+  backoffMultiplier?: number;
+}
 
-  // will be added as `x-api-key` header
+export interface FetchTransportOptions {
+  url: string;
   apiKey?: string;
-  // how many requests to buffer in total
   bufferSize?: number;
-  // how many requests to execute concurrently
   concurrency?: number;
-  // if rate limit response does not include a Retry-After header,
-  // how many milliseconds to back off before attempting a request.
-  // intermediate events will be dropped, not buffered
+  /** @deprecated Use retry.initialBackoffMs. This sets retry backoff, not a transport-wide cooldown. */
   defaultRateLimitBackoffMs?: number;
-  // get current date. for mocking purposes in tests
+  retry?: RetryOptions;
+  /** Maximum duration of one logical request attempt. Default: 10000 ms. */
+  requestTimeoutMs?: number;
   getNow?: ClockFn;
-  // addition options for global.Fetch
+  getRandom?: RandomFn;
   requestOptions?: FetchTransportRequestOptions;
-  // compress request bodies with gzip using the native CompressionStream API.
-  // falls back to uncompressed if CompressionStream is not available.
   requestCompression?: boolean;
 }
 
 export type ClockFn = () => number;
+export type RandomFn = () => number;

@@ -58,17 +58,28 @@ type GetUserSessionUpdaterParams = {
   // Silently adopt another tab's session into in-memory metas (cross-tab sync).
   // Optional: only the valid (non-force-extend) branch uses it.
   adoptSession?: (sessionMeta: NonNullable<FaroUserSession['sessionMeta']>) => void;
+  updateInterval?: number;
 };
 
-type UpdateSessionParams = { forceSessionExtend: boolean };
+type UpdateSessionParams = { forceSessionExtend?: boolean; refreshActivity?: boolean };
 
 export function getUserSessionUpdater({
   fetchUserSession,
   storeUserSession,
   adoptSession,
+  updateInterval = 0,
 }: GetUserSessionUpdaterParams): (options?: UpdateSessionParams) => void {
-  return function updateSession({ forceSessionExtend } = { forceSessionExtend: false }): void {
+  let nextUpdate = 0;
+  return function updateSession({
+    forceSessionExtend = false,
+    refreshActivity = true,
+  }: UpdateSessionParams = {}): void {
     if (!fetchUserSession || !storeUserSession) {
+      return;
+    }
+
+    const now = dateNow();
+    if (!forceSessionExtend && now < nextUpdate && nextUpdate - now <= updateInterval) {
       return;
     }
 
@@ -80,9 +91,18 @@ export function getUserSessionUpdater({
     }
 
     const sessionFromStorage = fetchUserSession();
+    // Bound checks by both expiry deadlines. A backward clock adjustment must
+    // not turn the storage interval into a long suspension of reconciliation.
+    nextUpdate = Math.min(
+      now + updateInterval,
+      (sessionFromStorage?.started ?? now) + SESSION_EXPIRATION_TIME,
+      (sessionFromStorage?.lastActivity ?? now) + SESSION_INACTIVITY_TIME
+    );
 
     if (forceSessionExtend === false && isUserSessionValid(sessionFromStorage)) {
-      storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
+      if (refreshActivity) {
+        storeUserSession({ ...sessionFromStorage!, lastActivity: now });
+      }
 
       // Another tab rotated the shared session; adopt it so we stop emitting the stale id.
       const inMemorySessionId = faro.metas.value.session?.id;
@@ -98,12 +118,40 @@ export function getUserSessionUpdater({
         createUserSessionObject({ isSampled: isSampled() }),
         sessionFromStorage
       );
+      nextUpdate = now + updateInterval;
 
       storeUserSession(newSession);
 
       faro.api?.setSession(newSession.sessionMeta);
       sessionTrackingConfig?.onSessionChange?.(sessionFromStorage?.sessionMeta ?? null, newSession.sessionMeta!);
     }
+  };
+}
+
+export function getUserSessionActivityRecorder({
+  fetchUserSession,
+  storeUserSession,
+  updateInterval = 0,
+}: Pick<GetUserSessionUpdaterParams, 'fetchUserSession' | 'storeUserSession' | 'updateInterval'>): (
+  sessionId: string
+) => void {
+  let lastSessionId: string | undefined;
+  let nextUpdate = 0;
+
+  return (sessionId) => {
+    const now = dateNow();
+    if (sessionId === lastSessionId && now < nextUpdate && nextUpdate - now <= updateInterval) {
+      return;
+    }
+    lastSessionId = sessionId;
+    nextUpdate = now + updateInterval;
+    const session = fetchUserSession();
+    // Accepted old batches must not refresh a replacement session or resurrect
+    // an expired one. This path records activity only; it never rotates.
+    if (session?.sessionId !== sessionId || !isUserSessionValid(session)) {
+      return;
+    }
+    storeUserSession({ ...session, lastActivity: now });
   };
 }
 

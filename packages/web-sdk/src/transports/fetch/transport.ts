@@ -1,18 +1,33 @@
-import { BaseExtension, BaseTransport, createPromiseBuffer, getTransportBody, noop, VERSION } from '@grafana/faro-core';
-import type { Config, Patterns, PromiseBuffer, TransportItem } from '@grafana/faro-core';
+import {
+  BaseExtension,
+  BaseTransport,
+  createPromiseBuffer,
+  genShortID,
+  getTransportBody,
+  noop,
+  VERSION,
+} from '@grafana/faro-core';
+import type { Config, Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
 
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
 import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
+import { parseHttpDate } from '../../utils/httpDate';
 
+import { ReliableDeliveryQueue } from './deliveryQueue';
+import type { AttemptOutcome, DeliveryFailure, DeliveryReservation } from './deliveryQueue';
 import type { FetchTransportOptions } from './types';
 
 const DEFAULT_BUFFER_SIZE = 30;
-const DEFAULT_CONCURRENCY = 5; // chrome supports 10 total, firefox 17
-const DEFAULT_RATE_LIMIT_BACKOFF_MS = 5000;
-
+const DEFAULT_CONCURRENCY = 5;
+const DEFAULT_MAX_ATTEMPTS = 3;
+const DEFAULT_INITIAL_BACKOFF_MS = 1000;
+const DEFAULT_MAX_BACKOFF_MS = 30000;
+const DEFAULT_BACKOFF_MULTIPLIER = 2;
+const DEFAULT_REQUEST_TIMEOUT_MS = 10000;
+const RETRYABLE_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504]);
+const WAIT_INTERVAL_STATUS_CODES = new Set([429, 503]);
 const BEACON_BODY_SIZE_LIMIT = 60000;
 const MAX_KEEPALIVE_REQUESTS = 9;
-const TOO_MANY_REQUESTS = 429;
 const ACCEPTED = 202;
 
 let pendingKeepaliveBodySize = 0;
@@ -22,111 +37,161 @@ interface KeepaliveReservation {
   keepalive: boolean;
   release: () => void;
 }
+class RequestTimeoutError extends Error {}
 
-/**
- * The browser keepalive budget is measured in bytes, while `String.length` counts UTF-16 code
- * units. A payload of non-ASCII text is up to three times larger than its length suggests, so
- * reserving by length lets Faro send far more than it accounted for and reintroduces the silent
- * keepalive failures this budget exists to prevent.
- */
 function getBodyByteSize(body: string): number {
-  if (typeof TextEncoder === 'undefined') {
-    return body.length;
-  }
-
-  return new TextEncoder().encode(body).byteLength;
+  return typeof TextEncoder === 'undefined' ? body.length : new TextEncoder().encode(body).byteLength;
 }
 
 export class FetchTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-fetch';
   readonly version: string = VERSION;
 
+  /** Compatibility access to the transport's bounded task queue. Tasks added directly are not retried. */
   promiseBuffer: PromiseBuffer<Response | void>;
 
-  private readonly rateLimitBackoffMs: number;
+  private readonly defaultPromiseBuffer: PromiseBuffer<Response | void>;
+  private readonly defaultBufferAdd: PromiseBuffer<Response | void>['add'];
+  private readonly customPromiseBuffer: PromiseBuffer<Response | void>;
+  private pendingCustomSends = 0;
   private readonly getNow: () => number;
+  private readonly requestTimeoutMs: number;
   private readonly compressionEnabled: boolean;
-  private disabledUntil: Date = new Date(0);
+  private readonly deliveryQueue: ReliableDeliveryQueue;
 
-  constructor(private options: FetchTransportOptions) {
+  constructor(private readonly options: FetchTransportOptions) {
     super();
 
-    this.rateLimitBackoffMs = options.defaultRateLimitBackoffMs ?? DEFAULT_RATE_LIMIT_BACKOFF_MS;
-    this.getNow = options.getNow ?? (() => Date.now());
+    this.getNow = options.getNow ?? Date.now;
+    this.requestTimeoutMs = options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
+    this.compressionEnabled = (options.requestCompression ?? false) && typeof CompressionStream !== 'undefined';
 
-    const requestCompression = options.requestCompression ?? false;
-
-    if (requestCompression && typeof CompressionStream === 'undefined') {
-      this.compressionEnabled = false;
+    if (options.requestCompression && !this.compressionEnabled) {
       this.logWarn(
         'requestCompression is enabled but CompressionStream is not available. Falling back to uncompressed.'
       );
-    } else {
-      this.compressionEnabled = requestCompression;
+    }
+    if (this.requestTimeoutMs > 0 && typeof AbortController === 'undefined') {
+      this.logWarn('AbortController is unavailable. Requests will be sent without the configured timeout.');
     }
 
-    this.promiseBuffer = createPromiseBuffer({
+    this.deliveryQueue = new ReliableDeliveryQueue({
+      bufferSize: options.bufferSize ?? DEFAULT_BUFFER_SIZE,
+      concurrency: options.concurrency ?? DEFAULT_CONCURRENCY,
+      retry: {
+        maxAttempts: options.retry?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS,
+        initialBackoffMs:
+          options.retry?.initialBackoffMs ?? options.defaultRateLimitBackoffMs ?? DEFAULT_INITIAL_BACKOFF_MS,
+        maxBackoffMs: options.retry?.maxBackoffMs ?? DEFAULT_MAX_BACKOFF_MS,
+        backoffMultiplier: options.retry?.backoffMultiplier ?? DEFAULT_BACKOFF_MULTIPLIER,
+      },
+      getNow: this.getNow,
+      getRandom: options.getRandom ?? Math.random,
+      onRetry: (delayMs, nextAttempt) => {
+        this.logDebug(`Retrying failed request after ${delayMs}ms. Attempt ${nextAttempt}.`);
+      },
+    });
+
+    this.customPromiseBuffer = createPromiseBuffer({
       size: options.bufferSize ?? DEFAULT_BUFFER_SIZE,
       concurrency: options.concurrency ?? DEFAULT_CONCURRENCY,
     });
+    this.defaultPromiseBuffer = {
+      add: (producer) => {
+        // A replacement may wrap or asynchronously forward a producer through
+        // the original buffer. Keep that outer scheduling separate from the
+        // delivery workers it awaits, so a one-worker buffer cannot deadlock.
+        if (
+          this.promiseBuffer !== this.defaultPromiseBuffer ||
+          this.promiseBuffer.add !== this.defaultBufferAdd ||
+          this.pendingCustomSends > 0
+        ) {
+          return this.customPromiseBuffer.add(producer);
+        }
+        const reservation = this.deliveryQueue.reserve();
+        if (!reservation) {
+          throw new Error('Task buffer full');
+        }
+        return this.runBufferedTask(reservation, producer);
+      },
+    };
+    this.defaultBufferAdd = this.defaultPromiseBuffer.add;
+    this.promiseBuffer = this.defaultPromiseBuffer;
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pagehide', () => this.deliveryQueue.flush());
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+          this.deliveryQueue.resume();
+        }
+      });
+    }
   }
 
   async send(items: TransportItem[]): Promise<void> {
+    const buffer = this.promiseBuffer;
+    if (buffer === this.defaultPromiseBuffer && buffer.add === this.defaultBufferAdd) {
+      await this.deliver(items);
+      return;
+    }
+
+    this.pendingCustomSends++;
     try {
-      if (this.disabledUntil > new Date(this.getNow())) {
-        this.logWarn(`Dropping transport item due to too many requests. Backoff until ${this.disabledUntil}`);
+      await buffer.add(() => this.deliver(items));
+    } catch (error) {
+      this.logError('Permanent delivery failure', { error, attempts: 0, elapsedTimeMs: 0 });
+    } finally {
+      this.pendingCustomSends--;
+    }
+  }
 
-        return Promise.resolve();
-      }
-
-      await this.promiseBuffer.add(async () => {
-        const jsonBody = JSON.stringify(getTransportBody(items));
-
-        const { url, requestOptions, apiKey } = this.options;
-
-        const { headers = {}, ...restOfRequestOptions } = requestOptions ?? {};
-        const { keepalive: configuredKeepalive, ...requestOptionsWithoutKeepalive } = restOfRequestOptions;
-
-        let sessionId;
-        const sessionMeta = this.metas.value.session;
-        if (sessionMeta != null) {
-          sessionId = sessionMeta.id;
-        }
-
-        const resolvedHeaders: Record<string, string> = {};
-        for (const [key, value] of Object.entries(headers)) {
-          resolvedHeaders[key] = typeof value === 'function' ? await Promise.resolve(value()) : value;
-        }
-
-        let body: string | Blob = jsonBody;
-        let bodySize = getBodyByteSize(jsonBody);
-        const compressionHeaders: Record<string, string> = {};
-
-        if (this.compressionEnabled) {
-          body = await this.compress(jsonBody);
-          bodySize = body.size;
-          compressionHeaders['Content-Encoding'] = 'gzip';
-        }
-
-        const requestInit: RequestInit = {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...compressionHeaders,
-            ...resolvedHeaders,
-            ...(apiKey ? { 'x-api-key': apiKey } : {}),
-            ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
-          },
-          body,
-          ...(requestOptionsWithoutKeepalive ?? {}),
-        };
-
-        return this.fetchWithKeepaliveRetry(url, requestInit, bodySize, configuredKeepalive).catch((err) => {
-          this.logError('Failed sending payload to the receiver\n', JSON.parse(jsonBody), err);
-        });
+  private async runBufferedTask(
+    reservation: DeliveryReservation,
+    producer: PromiseProducer<Response | void>
+  ): Promise<Response | void> {
+    let result: Response | void = undefined;
+    try {
+      await reservation.deliver(async () => {
+        result = await producer();
+        return { kind: 'success', attemptsMade: 1 };
       });
-    } catch (err) {
-      this.logError(err);
+      return result;
+    } finally {
+      reservation.release();
+    }
+  }
+
+  private async deliver(items: TransportItem[]): Promise<void> {
+    const reservation = this.deliveryQueue.reserve();
+    if (!reservation) {
+      this.logError('Permanent delivery failure', {
+        error: 'Reliable delivery queue is full',
+        attempts: 0,
+        elapsedTimeMs: 0,
+      });
+      return;
+    }
+
+    try {
+      const prepared = await this.prepareRequest(items);
+      const outcome = await reservation.deliver((attemptsRemaining, unloading) =>
+        this.performAttempt(prepared, attemptsRemaining, unloading)
+      );
+      if (outcome.kind === 'terminal') {
+        this.logError(
+          outcome.reason === 'retries-exhausted' ? 'Delivery retries exhausted' : 'Permanent delivery failure',
+          {
+            ...outcome.failure,
+            reason: outcome.reason,
+            attempts: outcome.attempts,
+            elapsedTimeMs: outcome.elapsedTimeMs,
+          }
+        );
+      }
+    } catch (error) {
+      this.logError('Permanent delivery failure', { error, attempts: 0, elapsedTimeMs: 0 });
+    } finally {
+      reservation.release();
     }
   }
 
@@ -138,121 +203,215 @@ export class FetchTransport extends BaseTransport {
     return true;
   }
 
-  private getRetryAfterDate(response: Response): Date {
-    const now = this.getNow();
-    const retryAfterHeader = response.headers.get('Retry-After');
+  private async prepareRequest(
+    items: TransportItem[]
+  ): Promise<{ requestInit: RequestInit; bodySize: number; sessionId: string | undefined }> {
+    // Async headers and compression can outlive a session. Bind both the header
+    // and its response handling to the payload, not the current session.
+    const transportBody = getTransportBody(items);
+    const sessionId = transportBody.meta.session?.id;
+    const jsonBody = JSON.stringify(transportBody);
 
-    if (retryAfterHeader) {
-      const delay = Number(retryAfterHeader);
+    const { headers = {}, ...requestOptions } = this.options.requestOptions ?? {};
+    const { keepalive: _keepalive, signal: _signal, ...requestOptionsWithoutManagedFields } = requestOptions;
+    const resolvedHeaders: Record<string, string> = {};
 
-      if (!isNaN(delay)) {
-        return new Date(delay * 1000 + now);
-      }
-
-      const date = Date.parse(retryAfterHeader);
-
-      if (!isNaN(date)) {
-        return new Date(date);
-      }
+    for (const [key, value] of Object.entries(headers)) {
+      resolvedHeaders[key] = typeof value === 'function' ? await value() : value;
     }
 
-    return new Date(now + this.rateLimitBackoffMs);
-  }
-
-  private reserveKeepalive(bodySize: number, configuredKeepalive?: boolean): KeepaliveReservation {
-    if (configuredKeepalive === false) {
-      return {
-        keepalive: false,
-        release: noop,
-      };
+    let body: string | Blob = jsonBody;
+    let bodySize = getBodyByteSize(jsonBody);
+    const compressionHeaders: Record<string, string> = {};
+    if (this.compressionEnabled) {
+      body = await this.compress(jsonBody);
+      bodySize = body.size;
+      compressionHeaders['Content-Encoding'] = 'gzip';
     }
-
-    if (
-      bodySize > BEACON_BODY_SIZE_LIMIT ||
-      pendingKeepaliveBodySize + bodySize > BEACON_BODY_SIZE_LIMIT ||
-      pendingKeepaliveRequests >= MAX_KEEPALIVE_REQUESTS
-    ) {
-      this.logDebug('Disabling keepalive because the pending keepalive request budget would be exceeded.');
-
-      return {
-        keepalive: false,
-        release: noop,
-      };
-    }
-
-    pendingKeepaliveBodySize += bodySize;
-    pendingKeepaliveRequests++;
-
-    let released = false;
 
     return {
-      keepalive: true,
-      release: () => {
-        if (released) {
-          return;
-        }
-
-        released = true;
-        pendingKeepaliveBodySize = Math.max(0, pendingKeepaliveBodySize - bodySize);
-        pendingKeepaliveRequests = Math.max(0, pendingKeepaliveRequests - 1);
+      bodySize,
+      sessionId,
+      requestInit: {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...compressionHeaders,
+          ...resolvedHeaders,
+          ...(this.options.apiKey ? { 'x-api-key': this.options.apiKey } : {}),
+          ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
+          // Unlike dynamic headers, this key is generated once and must remain stable across attempts.
+          'Idempotency-Key': genShortID(20),
+        },
+        body,
+        ...requestOptionsWithoutManagedFields,
       },
     };
   }
 
-  private async fetchWithKeepaliveRetry(
-    url: string,
+  private async performAttempt(
+    prepared: { requestInit: RequestInit; bodySize: number; sessionId: string | undefined },
+    attemptsRemaining: number,
+    unloading: boolean
+  ): Promise<AttemptOutcome> {
+    const callerSignal = this.options.requestOptions?.signal;
+    if (callerSignal?.aborted) {
+      return { kind: 'terminal', failure: { error: callerSignal.reason }, attemptsMade: 0 };
+    }
+
+    let attemptsMade = 0;
+    try {
+      const response = await this.fetchWithKeepaliveFallback(
+        prepared.requestInit,
+        prepared.bodySize,
+        unloading ? true : this.options.requestOptions?.keepalive,
+        attemptsRemaining,
+        () => attemptsMade++
+      );
+      this.handleResponse(response, prepared.sessionId);
+
+      if (response.status >= 200 && response.status < 300) {
+        return { kind: 'success', attemptsMade };
+      }
+
+      const failure = { status: response.status };
+      if (!RETRYABLE_STATUS_CODES.has(response.status) || unloading) {
+        return { kind: 'terminal', failure, attemptsMade };
+      }
+
+      return {
+        kind: 'retry',
+        failure,
+        attemptsMade,
+        retryAfterMs: WAIT_INTERVAL_STATUS_CODES.has(response.status) ? this.getRetryAfterDelayMs(response) : undefined,
+      };
+    } catch (error) {
+      const failure: DeliveryFailure = { error };
+      if (callerSignal?.aborted || !this.isFetchNetworkError(error) || unloading) {
+        return { kind: 'terminal', failure, attemptsMade };
+      }
+      return { kind: 'retry', failure, attemptsMade };
+    }
+  }
+
+  private async fetchWithKeepaliveFallback(
     requestInit: RequestInit,
     bodySize: number,
-    configuredKeepalive?: boolean
+    configuredKeepalive: boolean | undefined,
+    attemptsRemaining: number,
+    onFetch: () => void
   ): Promise<Response> {
-    const keepaliveReservation = this.reserveKeepalive(bodySize, configuredKeepalive);
+    const startedAt = this.getNow();
+    const reservation = this.reserveKeepalive(bodySize, configuredKeepalive);
+    try {
+      return await this.fetchWithTimeout(
+        { ...requestInit, keepalive: reservation.keepalive },
+        this.requestTimeoutMs,
+        onFetch
+      );
+    } catch (error) {
+      if (
+        reservation.keepalive &&
+        attemptsRemaining > 1 &&
+        this.isFetchNetworkError(error) &&
+        !(error instanceof RequestTimeoutError) &&
+        !this.options.requestOptions?.signal?.aborted
+      ) {
+        this.logDebug('Retrying failed keepalive request with keepalive disabled.');
+        const remainingTimeoutMs = this.requestTimeoutMs - (this.getNow() - startedAt);
+        return this.fetchWithTimeout({ ...requestInit, keepalive: false }, remainingTimeoutMs, onFetch);
+      }
+      throw error;
+    } finally {
+      reservation.release();
+    }
+  }
+
+  private async fetchWithTimeout(requestInit: RequestInit, timeoutMs: number, onFetch: () => void): Promise<Response> {
+    const callerSignal = this.options.requestOptions?.signal;
+    if (this.requestTimeoutMs <= 0 || typeof AbortController === 'undefined') {
+      onFetch();
+      return fetch(this.options.url, { ...requestInit, signal: callerSignal });
+    }
+    if (timeoutMs <= 0) {
+      throw new RequestTimeoutError('Request timed out');
+    }
+
+    const controller = new AbortController();
+    const abortFromCaller = () => controller.abort(callerSignal?.reason);
+    callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
 
     try {
-      const response = await fetch(url, {
-        ...requestInit,
-        keepalive: keepaliveReservation.keepalive,
-      });
-
-      return this.handleResponse(response);
-    } catch (err) {
-      if (keepaliveReservation.keepalive && this.isFetchNetworkError(err)) {
-        this.logDebug('Retrying failed keepalive request with keepalive disabled.');
-
-        const response = await fetch(url, {
-          ...requestInit,
-          keepalive: false,
-        });
-
-        return this.handleResponse(response);
+      onFetch();
+      return await fetch(this.options.url, { ...requestInit, signal: controller.signal });
+    } catch (error) {
+      if (timedOut && !callerSignal?.aborted) {
+        throw new RequestTimeoutError('Request timed out');
       }
-
-      throw err;
+      throw error;
     } finally {
-      keepaliveReservation.release();
+      clearTimeout(timeout);
+      callerSignal?.removeEventListener('abort', abortFromCaller);
     }
   }
 
-  private async handleResponse(response: Response): Promise<Response> {
-    if (response.status === ACCEPTED) {
-      const sessionExpired = response.headers.get('X-Faro-Session-Status') === 'invalid';
+  private getRetryAfterDelayMs(response: Response): number | undefined {
+    const value = response.headers.get('Retry-After');
+    if (!value) {
+      return undefined;
+    }
+    if (/^\d+$/.test(value)) {
+      const delay = Number(value) * 1000;
+      return Number.isFinite(delay) ? delay : Number.POSITIVE_INFINITY;
+    }
+    const now = this.getNow();
+    const retryAt = parseHttpDate(value, now);
+    return retryAt == null ? undefined : Math.max(0, retryAt - now);
+  }
 
-      if (sessionExpired) {
-        this.extendFaroSession(this.config, this.logDebug);
-      }
+  private reserveKeepalive(bodySize: number, configuredKeepalive?: boolean): KeepaliveReservation {
+    if (
+      configuredKeepalive === false ||
+      bodySize > BEACON_BODY_SIZE_LIMIT ||
+      pendingKeepaliveBodySize + bodySize > BEACON_BODY_SIZE_LIMIT ||
+      pendingKeepaliveRequests >= MAX_KEEPALIVE_REQUESTS
+    ) {
+      return { keepalive: false, release: noop };
     }
 
-    if (response.status === TOO_MANY_REQUESTS) {
-      this.disabledUntil = this.getRetryAfterDate(response);
-      this.logWarn(`Too many requests, backing off until ${this.disabledUntil}`);
-    }
+    pendingKeepaliveBodySize += bodySize;
+    pendingKeepaliveRequests++;
+    let released = false;
+    return {
+      keepalive: true,
+      release: () => {
+        if (!released) {
+          released = true;
+          pendingKeepaliveBodySize -= bodySize;
+          pendingKeepaliveRequests--;
+        }
+      },
+    };
+  }
 
-    // read the body so the connection can be closed
+  private handleResponse(response: Response, requestSessionId: string | undefined): void {
+    if (response.status === ACCEPTED && response.headers.get('X-Faro-Session-Status') === 'invalid') {
+      this.extendFaroSession(this.config, this.logDebug.bind(this), requestSessionId);
+    }
     response.text().catch(noop);
-    return response;
   }
 
-  private isFetchNetworkError(err: unknown): boolean {
-    return err instanceof TypeError;
+  private isFetchNetworkError(error: unknown): boolean {
+    return (
+      error instanceof TypeError ||
+      error instanceof RequestTimeoutError ||
+      (error instanceof DOMException && error.name === 'AbortError')
+    );
   }
 
   private async compress(body: string): Promise<Blob> {
@@ -262,32 +421,40 @@ export class FetchTransport extends BaseTransport {
         controller.close();
       },
     }).pipeThrough(new CompressionStream('gzip'));
-
-    const reader = stream.getReader();
     const chunks: BlobPart[] = [];
+    const reader = stream.getReader();
     for (;;) {
       const { done, value } = await reader.read();
       if (done) {
-        break;
+        return new Blob(chunks);
       }
       chunks.push(value);
     }
-    return new Blob(chunks);
   }
 
-  private extendFaroSession(config: Config, logDebug: BaseExtension['logDebug']) {
-    const SessionExpiredString = `Session expired`;
-
+  private extendFaroSession(
+    config: Config,
+    logDebug: BaseExtension['logDebug'],
+    requestSessionId: string | undefined
+  ): void {
     const sessionTrackingConfig = config.sessionTracking;
-
-    if (sessionTrackingConfig?.enabled) {
-      const { fetchUserSession, storeUserSession } = getSessionManagerByConfig(sessionTrackingConfig);
-
-      getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
-
-      logDebug(`${SessionExpiredString} created new session.`);
-    } else {
-      logDebug(`${SessionExpiredString}.`);
+    if (!sessionTrackingConfig?.enabled) {
+      logDebug('Session expired.');
+      return;
     }
+
+    const { fetchUserSession, storeUserSession } = getSessionManagerByConfig(sessionTrackingConfig);
+
+    // A delayed response must not rotate a newer session, including one another
+    // tab has already established in shared storage.
+    const currentSessionId = this.metas.value.session?.id;
+    const storedSessionId = fetchUserSession()?.sessionId;
+    if (!requestSessionId || requestSessionId !== currentSessionId || requestSessionId !== storedSessionId) {
+      logDebug('Ignoring stale or cross-tab session-invalid response; request session no longer current.');
+      return;
+    }
+
+    getUserSessionUpdater({ fetchUserSession, storeUserSession })({ forceSessionExtend: true });
+    logDebug('Session expired; created new session.');
   }
 }

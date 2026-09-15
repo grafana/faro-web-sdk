@@ -317,39 +317,23 @@ describe('config', () => {
     );
     expect(navigationInstrumentation).toBeUndefined();
   });
-  it('keeps the existing Fetch transport as the default', () => {
+  it('uses the reliable Fetch transport under the existing public name by default', () => {
     const config = makeCoreConfig({ url: 'http://example.com/collect', app: {} });
 
     expect(config.transports[0]?.name).toBe('@grafana/faro-web-sdk:transport-fetch');
-    expect(config.experimental?.fetchTransportV2).toBe(false);
   });
 
-  it('selects the reliable Fetch transport when the experimental flag is enabled', () => {
-    const config = makeCoreConfig({
-      url: 'http://example.com/collect',
-      app: {},
-      experimental: { fetchTransportV2: true },
-    });
-
-    expect(config.transports[0]?.name).toBe('@grafana/faro-web-sdk:transport-fetch-v2');
-    expect(config.experimental?.fetchTransportV2).toBe(true);
-  });
-
-  it('reports when the reliable transport flag cannot affect explicit transports', () => {
+  it('keeps explicit transports', () => {
     const error = jest.fn();
     const explicitTransport = new MockTransport();
 
     const config = makeCoreConfig({
       app: {},
       transports: [explicitTransport],
-      experimental: { fetchTransportV2: true },
       unpatchedConsole: { error } as unknown as Console,
     });
 
     expect(config.transports).toEqual([explicitTransport]);
-    expect(error).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.stringContaining('experimental.fetchTransportV2 cannot take effect')
-    );
+    expect(error).not.toHaveBeenCalled();
   });
 });

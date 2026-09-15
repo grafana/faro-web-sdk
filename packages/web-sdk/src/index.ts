@@ -30,6 +30,8 @@ export type {
   ConsoleTransportOptions,
   FetchTransportOptions,
   FetchTransportRequestOptions,
+  RandomFn,
+  RetryOptions,
 } from './transports';
 
 export {
@@ -40,6 +42,7 @@ export {
   BaseTransport,
   createInternalLogger,
   createPromiseBuffer,
+  captureMetas,
   deepEqual,
   defaultExceptionType,
   defaultGlobalObjectKey,
