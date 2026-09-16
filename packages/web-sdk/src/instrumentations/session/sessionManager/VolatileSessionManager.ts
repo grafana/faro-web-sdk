@@ -19,7 +19,7 @@ export class VolatileSessionsManager {
   // session. Stubbed so the instrumentation can treat both managers uniformly.
   isAdopting = (): boolean => false;
 
-  constructor(private readonly context?: UserSessionUpdaterContext) {
+  constructor(private readonly context: UserSessionUpdaterContext | undefined = undefined) {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
       storeUserSession: VolatileSessionsManager.storeUserSession,

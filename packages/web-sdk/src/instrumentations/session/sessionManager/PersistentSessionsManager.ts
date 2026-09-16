@@ -35,7 +35,7 @@ export class PersistentSessionsManager {
     }
   };
 
-  constructor(private readonly context?: UserSessionUpdaterContext) {
+  constructor(private readonly context: UserSessionUpdaterContext | undefined = undefined) {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: PersistentSessionsManager.fetchUserSession,
       storeUserSession: PersistentSessionsManager.storeUserSession,
