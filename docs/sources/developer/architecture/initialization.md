@@ -28,6 +28,11 @@ By default, Faro is a global singleton that can be initialized only once. Howeve
 by marking them as isolated using the `isolate` config option. This is useful in large applications that contain
 multiple sub-applications which should be instrumented independently.
 
+Once a non-isolated instance is initialized, the exported `faro` singleton stays bound to it. When using `isolate: true`,
+use the instance returned by `initializeFaro()` to access that instance's API. For compatibility, if only isolated
+instances have been initialized, the export refers to the most recently initialized one. This is independent of
+`preventGlobalExposure` and `globalObjectKey`.
+
 The process of isolation check is pretty easy: when a singleton Faro instance is initialized, we define it on the
 global object of the environment (either `window` in browsers or `global` in Node.js). If we detect that there is an
 instance already initialized, we stop the process here.

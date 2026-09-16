@@ -8,7 +8,7 @@ import type { Transports } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 
 import { setFaroOnGlobalObject } from './faroGlobalObject';
-import { setInternalFaroOnGlobalObject } from './internalFaroGlobalObject';
+import { isInternalFaroOnGlobalObject, setInternalFaroOnGlobalObject } from './internalFaroGlobalObject';
 import type { Faro } from './types';
 
 export let faro: Faro = { api: getNoopAPI() } as Faro;
@@ -24,7 +24,7 @@ export function registerFaro(
 ): Faro {
   internalLogger.debug('Initializing Faro');
 
-  faro = {
+  const instance: Faro = {
     api,
     config,
     instrumentations,
@@ -36,9 +36,14 @@ export function registerFaro(
     unpause: transports.unpause,
   };
 
-  setInternalFaroOnGlobalObject(faro);
+  // Preserve isolated-only usage until a non-isolated singleton is registered.
+  if (!config.isolate || !isInternalFaroOnGlobalObject()) {
+    faro = instance;
+  }
 
-  setFaroOnGlobalObject(faro);
+  setInternalFaroOnGlobalObject(instance);
 
-  return faro;
+  setFaroOnGlobalObject(instance);
+
+  return instance;
 }
