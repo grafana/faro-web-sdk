@@ -1,4 +1,5 @@
 import { faro, stringifyExternalJson } from '@grafana/faro-core';
+import type { MetaSession } from '@grafana/faro-core';
 
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
@@ -14,15 +15,26 @@ export class VolatileSessionsManager {
   private static storageTypeSession = webStorageType.session;
   private updateUserSession: ReturnType<typeof getUserSessionUpdater>;
 
-  // sessionStorage is tab-local, so this manager never adopts another tab's
-  // session. Stubbed so the instrumentation can treat both managers uniformly.
-  isAdopting = (): boolean => false;
+  // Same-origin frames in a tab share sessionStorage but have separate Faro instances.
+  private adopting = false;
+
+  isAdopting = (): boolean => this.adopting;
+
+  private adoptSession = (sessionMeta: MetaSession): void => {
+    this.adopting = true;
+    try {
+      faro.api?.setSession(sessionMeta);
+    } finally {
+      this.adopting = false;
+    }
+  };
 
   constructor() {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
       storeUserSession: VolatileSessionsManager.storeUserSession,
       updateInterval: STORAGE_UPDATE_DELAY,
+      adoptSession: this.adoptSession,
     });
 
     this.init();

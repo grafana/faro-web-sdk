@@ -9,6 +9,7 @@
 
 ### Bug Fixes
 
+- **session:** synchronize volatile sessions between same-origin frames after session rotation
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
 
 ## [2.11.0](https://github.com/grafana/faro-web-sdk/compare/v2.10.0...v2.11.0) (2026-08-26)
