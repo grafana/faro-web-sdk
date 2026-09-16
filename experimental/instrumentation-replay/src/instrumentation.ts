@@ -64,6 +64,11 @@ const USER_INTERACTION_EVENTS: readonly string[] = [
   'input', // Input (covers typing without keydown, e.g. autofill)
 ];
 
+// Bounds on the dedupe set, for pages whose error messages vary per call
+// (e.g. a generated class name in the failing selector).
+const MAX_OBSERVED_ERROR_SIGNATURES = 50;
+const MAX_ERROR_SIGNATURE_LENGTH = 256;
+
 export class ReplayInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-instrumentation-replay';
   readonly version: string = VERSION;
@@ -74,6 +79,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   private options: ReplayInstrumentationOptions = defaultReplayInstrumentationOptions;
   private inactivityTimer: ReturnType<typeof setTimeout> | null = null;
   private boundOnUserInteraction: (() => void) | null = null;
+  private observedErrorSignatures = new Set<string>();
 
   private recordingState: ReplayRecordingState | undefined;
   private pageHidden = false;
@@ -349,6 +355,10 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.stopRrweb();
     this.isRecording = false;
     this.isPaused = false;
+    // Cleared whenever recording stops, so each new recording reports a given
+    // error once. An inactivity pause keeps the set, because it goes through
+    // stopRrweb rather than here.
+    this.observedErrorSignatures.clear();
     this.logDebug('Session replay stopped');
   }
 
@@ -373,9 +383,59 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       inlineStylesheet: this.options.inlineStylesheet,
       recordAfter: this.options.recordAfter,
       errorHandler: (err) => {
-        this.logError('Error occurred during session replay', err);
+        this.handleObservedError(err);
       },
     };
+  }
+
+  // rrweb routes every exception raised inside a callback it wraps through
+  // `errorHandler` (see rrweb's `callbackWrapper`). The handler is given no
+  // context, so it cannot tell what a given failure cost the recording:
+  //   - An app passing a selector no browser recognises to
+  //     `CSSStyleSheet.insertRule`: rrweb emits the rule before calling through,
+  //     so the recording gains a rule the page never applied.
+  //   - A `maskInputFn` that throws: rrweb's input handler aborts before it
+  //     emits, so that input change is never recorded.
+  // So the message promises only that recording continues, and the level is
+  // `warn`, which is silent under the default internal logger level (ERROR).
+  // Failures to start recording still surface from `startRecording`'s catch.
+  //
+  // Do not return `true` here: rrweb would swallow the exception instead of
+  // rethrowing, the caller would believe its operation succeeded, and we would
+  // introduce a real bug in the host application.
+  private handleObservedError(err: unknown): void {
+    const signature = this.getErrorSignature(err);
+
+    if (this.observedErrorSignatures.has(signature)) {
+      return;
+    }
+
+    if (this.observedErrorSignatures.size >= MAX_OBSERVED_ERROR_SIGNATURES) {
+      return;
+    }
+
+    this.observedErrorSignatures.add(signature);
+
+    this.logWarn(
+      'Session replay caught an error thrown by the page. Recording continues, but this event may not have been captured.',
+      err
+    );
+  }
+
+  private getErrorSignature(err: unknown): string {
+    let signature: string;
+
+    if (err instanceof Error) {
+      signature = `${err.name}: ${err.message}`;
+    } else {
+      try {
+        signature = String(err);
+      } catch {
+        signature = 'unknown error';
+      }
+    }
+
+    return signature.slice(0, MAX_ERROR_SIGNATURE_LENGTH);
   }
 
   // Passive: capture reconciliation must happen before validating the attempt.
