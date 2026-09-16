@@ -81,8 +81,22 @@ export class BatchExecutor {
       return;
     }
 
-    const itemGroups = this.groupItems(this.signalBuffer);
-    itemGroups.forEach(this.sendFn);
+    const snapshot = this.signalBuffer;
     this.signalBuffer = [];
+
+    try {
+      const itemGroups = this.groupItems(snapshot);
+      itemGroups.forEach(this.sendFn);
+    } catch (error) {
+      this.signalBuffer = [...snapshot, ...this.signalBuffer];
+      this.trimBufferToLimit();
+      throw error;
+    }
+  }
+
+  private trimBufferToLimit(): void {
+    if (this.signalBuffer.length > this.itemLimit) {
+      this.signalBuffer = this.signalBuffer.slice(0, this.itemLimit);
+    }
   }
 }
