@@ -388,12 +388,17 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     };
   }
 
-  // rrweb routes every exception raised inside an API it patches through
-  // `errorHandler` (see rrweb's `callbackWrapper`), including exceptions thrown by
-  // the host application itself — e.g. an app passing a selector no browser
-  // recognises to `CSSStyleSheet.insertRule`. These are not replay failures, so
-  // they are logged at `warn`, which is silent under the default internal logger
-  // level (ERROR). Genuine failures still surface from `startRecording`'s catch.
+  // rrweb routes every exception raised inside a callback it wraps through
+  // `errorHandler` (see rrweb's `callbackWrapper`). The handler is given no
+  // context, so it cannot tell what a given failure cost the recording:
+  //   - An app passing a selector no browser recognises to
+  //     `CSSStyleSheet.insertRule`: rrweb emits the rule before calling through,
+  //     so the recording gains a rule the page never applied.
+  //   - A `maskInputFn` that throws: rrweb's input handler aborts before it
+  //     emits, so that input change is never recorded.
+  // So the message promises only that recording continues, and the level is
+  // `warn`, which is silent under the default internal logger level (ERROR).
+  // Failures to start recording still surface from `startRecording`'s catch.
   //
   // Do not return `true` here: rrweb would swallow the exception instead of
   // rethrowing, the caller would believe its operation succeeded, and we would
@@ -411,7 +416,10 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
     this.observedErrorSignatures.add(signature);
 
-    this.logWarn('Session replay observed an error thrown by the page. Recording is unaffected.', err);
+    this.logWarn(
+      'Session replay caught an error thrown by the page. Recording continues, but this event may not have been captured.',
+      err
+    );
   }
 
   private getErrorSignature(err: unknown): string {

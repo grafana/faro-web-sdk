@@ -434,7 +434,7 @@ describe('ReplayInstrumentation', () => {
       expect(logErrorSpy).not.toHaveBeenCalled();
       expect(logWarnSpy).toHaveBeenCalledTimes(1);
       expect(logWarnSpy).toHaveBeenCalledWith(
-        'Session replay observed an error thrown by the page. Recording is unaffected.',
+        'Session replay caught an error thrown by the page. Recording continues, but this event may not have been captured.',
         expect.any(SyntaxError)
       );
     });
