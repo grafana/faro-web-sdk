@@ -9,6 +9,7 @@
 
 ### Bug Fixes
 
+- **session:** synchronize volatile sessions between same-origin frames after session rotation
 - **web-sdk:** use Web Crypto for session sampling when available
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
 - **web-sdk:** prevent duplicate sessions when Chrome activates a prerendered page
