@@ -1,3 +1,4 @@
+import type { API } from '../api';
 import type { Config } from '../config';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
@@ -11,6 +12,7 @@ export interface Extension {
   unpatchedConsole: UnpatchedConsole;
   config: Config;
   metas: Metas;
+  api?: API;
 
   logDebug(...args: unknown[]): void;
   logInfo(...args: unknown[]): void;

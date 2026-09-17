@@ -85,6 +85,24 @@ describe('sessionManagerUtils', () => {
     });
   });
 
+  it('uses the caller generateSessionId even when a different global instance exists', () => {
+    initializeFaro(
+      mockConfig({
+        isolate: true,
+        preventGlobalExposure: true,
+        sessionTracking: {
+          enabled: true,
+          generateSessionId() {
+            return 'global-id';
+          },
+        },
+      })
+    );
+
+    const isolatedSession = createUserSessionObject({ generateSessionId: () => 'isolated-id' });
+    expect(isolatedSession.sessionId).toBe('isolated-id');
+  });
+
   it('checks if user session is valid', () => {
     jest.spyOn(faroCore, 'genShortID').mockReturnValueOnce(mockSessionId);
 
@@ -396,6 +414,80 @@ describe('sessionManagerUtils', () => {
     expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
     expect(mockSetSession).toHaveBeenCalledTimes(1);
     expect(mockOnSessionChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('coalesces concurrent forceSessionExtend calls when no session id was captured', () => {
+    jest.spyOn(samplingModule, 'isSampled').mockReturnValue(true);
+
+    const mockFetchUserSession = jest.fn().mockReturnValue(null);
+    const mockStoreUserSession = jest.fn();
+    const mockSetSession = jest.fn();
+    let sessionId: string | undefined;
+
+    const updateSession = getUserSessionUpdater({
+      fetchUserSession: mockFetchUserSession,
+      storeUserSession: mockStoreUserSession,
+      context: {
+        getInMemorySessionId: () => sessionId,
+        getSessionTrackingConfig: () => ({ enabled: true, persistent: false }),
+        setSession: (meta) => {
+          sessionId = meta.id;
+          mockSetSession(meta);
+        },
+      },
+    });
+
+    updateSession({ forceSessionExtend: true });
+    updateSession({ forceSessionExtend: true });
+
+    expect(mockStoreUserSession).toHaveBeenCalledTimes(1);
+    expect(mockSetSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips forceSessionExtend when a session already exists but the batch had no session id', () => {
+    const mockFetchUserSession = jest.fn().mockReturnValue(null);
+    const mockStoreUserSession = jest.fn();
+    const mockSetSession = jest.fn();
+
+    const updateSession = getUserSessionUpdater({
+      fetchUserSession: mockFetchUserSession,
+      storeUserSession: mockStoreUserSession,
+      context: {
+        getInMemorySessionId: () => 'already-rotated',
+        getSessionTrackingConfig: () => ({ enabled: true, persistent: false }),
+        setSession: mockSetSession,
+      },
+    });
+
+    updateSession({ forceSessionExtend: true });
+
+    expect(mockStoreUserSession).not.toHaveBeenCalled();
+    expect(mockSetSession).not.toHaveBeenCalled();
+  });
+
+  it('skips forceSessionExtend when storage already holds a different session', () => {
+    const mockStoreUserSession = jest.fn();
+    const mockSetSession = jest.fn();
+
+    const updateSession = getUserSessionUpdater({
+      fetchUserSession: jest.fn().mockReturnValue({
+        sessionId: 'tab-b-session',
+        started: fakeSystemTime,
+        lastActivity: fakeSystemTime,
+        isSampled: true,
+      }),
+      storeUserSession: mockStoreUserSession,
+      context: {
+        getInMemorySessionId: () => 'stale-session',
+        getSessionTrackingConfig: () => ({ enabled: true, persistent: true }),
+        setSession: mockSetSession,
+      },
+    });
+
+    updateSession({ forceSessionExtend: true, invalidatedSessionId: 'stale-session' });
+
+    expect(mockStoreUserSession).not.toHaveBeenCalled();
+    expect(mockSetSession).not.toHaveBeenCalled();
   });
 
   it('adopts a divergent valid session from storage into in-memory metas', () => {
