@@ -2,6 +2,8 @@ import { isEmpty, type Metas, type MetaSession, type SessionMetaUpdate, type Tra
 
 export interface PendingSessionChanges {
   reset: boolean;
+  /** Explicit session.overrides replaces the base; API override options merge into it. */
+  inheritOverrides: boolean;
   session: MetaSession;
 }
 
@@ -24,6 +26,7 @@ export class PrerenderSession {
     if (update.type === 'overrides') {
       this.pending = {
         reset: previous?.reset ?? false,
+        inheritOverrides: previous?.inheritOverrides ?? true,
         session: {
           ...previous?.session,
           overrides: { ...previous?.session.overrides, ...update.overrides },
@@ -34,14 +37,18 @@ export class PrerenderSession {
 
     const session = update.session;
     const reset = isEmpty(session) || (session != null && 'id' in session && !session.id);
+    // A reset or replacement without overrides keeps the previous effective overrides.
+    const overrides = session?.overrides ?? previous?.session.overrides;
     this.pending = {
       reset: reset || (!session?.id && (previous?.reset ?? false)),
+      inheritOverrides:
+        !update.overrides && session?.overrides !== undefined ? false : (previous?.inheritOverrides ?? true),
       session: {
         id: session?.id,
         attributes: session?.attributes && { ...session.attributes },
         overrides: update.overrides
           ? { ...previous?.session.overrides, ...update.overrides }
-          : session?.overrides && { ...session.overrides },
+          : overrides && { ...overrides },
       },
     };
   };

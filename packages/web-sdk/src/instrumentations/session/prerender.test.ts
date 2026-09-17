@@ -107,6 +107,72 @@ describe('prerendered sessions', () => {
   });
 
   describe.each([false, true])('explicit API writes with persistent=%s', (persistent) => {
+    describe.each([false, true])('override inheritance with prerendering=%s', (isPrerendering) => {
+      it.each([{ serviceName: 'replacement-app' }, {}])(
+        'respects explicit replacement overrides %j across a reset',
+        (overrides) => {
+          prerendering = isPrerendering;
+          storeExistingSession(persistent);
+          start({ sessionTracking: { persistent, samplingRate: 1 } });
+          faro.api.setView({ name: 'checkout' }, { overrides: { serviceName: 'checkout' } });
+          faro.api.setSession({ id: 'replacement', overrides });
+          faro.api.resetSession();
+          prerendering = false;
+          document.dispatchEvent(new Event('prerenderingchange'));
+          faro.api.pushEvent('after-write');
+          jest.advanceTimersByTime(2000);
+
+          const expected = Object.keys(overrides).length > 0 ? overrides : undefined;
+          expect(faro.api.getSession()?.overrides).toEqual(expected);
+          expect(events().find((item) => item.payload.name === 'after-write')?.meta.session?.overrides).toEqual(
+            expected
+          );
+        }
+      );
+
+      it.each([
+        { source: 'setView', write: 'reset' },
+        { source: 'setView', write: 'replace' },
+        { source: 'storage', write: 'reset' },
+        { source: 'storage', write: 'replace' },
+      ])('preserves overrides from $source after $write', ({ source, write }) => {
+        prerendering = isPrerendering;
+        const storage = storeExistingSession(persistent);
+        start({
+          sessionTracking: {
+            persistent,
+            samplingRate: 1,
+            session: { overrides: { serviceName: 'configured-app' } },
+          },
+        });
+        if (source === 'setView') {
+          faro.api.setView({ name: 'checkout' }, { overrides: { serviceName: 'checkout' } });
+        }
+        if (write === 'reset') {
+          faro.api.resetSession();
+        } else {
+          faro.api.setSession({ id: 'replacement' });
+        }
+        prerendering = false;
+        document.dispatchEvent(new Event('prerenderingchange'));
+        faro.api.pushEvent('after-write');
+        jest.advanceTimersByTime(2000);
+
+        const overrides = {
+          serviceName: source === 'setView' ? 'checkout' : 'previous-app',
+          geoLocationTrackingEnabled: true,
+        };
+        expect(faro.api.getSession()?.overrides).toEqual(overrides);
+        expect(JSON.parse(storage.getItem(STORAGE_KEY)!).sessionMeta.overrides).toEqual(overrides);
+        const event = events().find((item) => item.payload.name === 'after-write');
+        expect(event?.meta.session?.overrides).toEqual(overrides);
+        expect(faro.api.getSession()?.id).not.toBe('stored-session');
+        if (write === 'replace') {
+          expect(faro.api.getSession()?.id).toBe('replacement');
+        }
+      });
+    });
+
     it.each(['setSession', 'setView', 'sessionPayload'] as const)(
       'keeps %s overrides that equal configuration',
       (method) => {
@@ -125,7 +191,11 @@ describe('prerendered sessions', () => {
         document.dispatchEvent(new Event('prerenderingchange'));
 
         expect(faro.api.getSession()?.id).toBe('stored-session');
-        expect(faro.api.getSession()?.overrides).toEqual({ serviceName: 'checkout', geoLocationTrackingEnabled: true });
+        expect(faro.api.getSession()?.overrides).toEqual(
+          method === 'sessionPayload'
+            ? { serviceName: 'checkout' }
+            : { serviceName: 'checkout', geoLocationTrackingEnabled: true }
+        );
       }
     );
 

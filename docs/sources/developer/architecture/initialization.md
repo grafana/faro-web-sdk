@@ -93,6 +93,8 @@ application explicitly sets a session. Metadata updates remain available, includ
 set through `api.setSession()` or `api.setView()`. Pending changes are applied to the session established at activation.
 Explicit API writes are tracked separately from configuration, including overrides whose values match configuration.
 Calling `api.resetSession()` while prerendering starts a fresh session at activation instead of resuming storage.
+Resets and session replacements retain effective overrides when none are supplied, including overrides from storage.
+Explicit `session.overrides` replaces those overrides; an empty object clears them.
 Speculative telemetry is discarded before API deduplication and buffering, so it cannot suppress matching signals
 after activation. Session replay initialization also waits for activation, even when the application supplies a sampled
 session beforehand, so its opening snapshot is retained. Normal

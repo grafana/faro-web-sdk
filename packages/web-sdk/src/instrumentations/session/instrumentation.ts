@@ -81,10 +81,11 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
     let lifecycleType: LifecycleType;
     let initialSession: FaroUserSession;
+    const hasValidStoredSession = isUserSessionValid(storedUserSession);
 
     if (
       !pendingChanges?.reset &&
-      isUserSessionValid(storedUserSession) &&
+      hasValidStoredSession &&
       (!pendingSession?.id || pendingSession.id === storedUserSession?.sessionId)
     ) {
       const sessionId = storedUserSession?.sessionId;
@@ -124,7 +125,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
         isSampled: isSampled(),
       });
 
-      const overrides = sessionsConfig.session?.overrides;
+      // A pending reset or replacement inherits the session it would have updated
+      // after normal initialization, including overrides read from storage at activation.
+      const storedOverrides =
+        pendingChanges && hasValidStoredSession ? storedUserSession?.sessionMeta?.overrides : undefined;
+      const overrides = storedOverrides
+        ? { ...sessionsConfig.session?.overrides, ...storedOverrides }
+        : sessionsConfig.session?.overrides;
 
       initialSession.sessionMeta = {
         id: sessionId,
@@ -132,7 +139,6 @@ export class SessionInstrumentation extends BaseInstrumentation {
           isSampled: initialSession.isSampled.toString(),
           ...sessionsConfig.session?.attributes,
         },
-        // new session we don't care about previous overrides
         ...(overrides ? { overrides } : {}),
       };
 
@@ -147,10 +153,17 @@ export class SessionInstrumentation extends BaseInstrumentation {
           ...pendingSession.attributes,
           isSampled: initialSession.isSampled.toString(),
         },
-        ...(pendingSession.overrides && {
-          overrides: { ...initialSession.sessionMeta?.overrides, ...pendingSession.overrides },
-        }),
       };
+      if (pendingSession.overrides) {
+        const overrides = pendingChanges?.inheritOverrides
+          ? { ...initialSession.sessionMeta.overrides, ...pendingSession.overrides }
+          : pendingSession.overrides;
+        if (Object.keys(overrides).length > 0) {
+          initialSession.sessionMeta.overrides = overrides;
+        } else {
+          delete initialSession.sessionMeta.overrides;
+        }
+      }
     }
 
     return { initialSession, lifecycleType };
