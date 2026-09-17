@@ -29,8 +29,8 @@ by marking them as isolated using the `isolate` config option. This is useful in
 multiple sub-applications which should be instrumented independently.
 
 The process of isolation check is pretty easy: when a singleton Faro instance is initialized, we define it on the
-global object of the environment (either `window` in browsers or `global` in Node.js). If we detect that there is an
-instance already initialized, we stop the process here.
+global object of the environment (`globalThis` when available, then `global` or `self`). If we detect that there is an
+instance already initialized, we reuse it and stop the process here.
 
 However, the isolation mode should not be mistaken with global object exposure. The global object exposure is a way to
 make Faro available to the end-user on the global object. Two Faro instances can be instantiated as isolated but they
