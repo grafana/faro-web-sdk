@@ -80,6 +80,49 @@ describe.each([true, false])('Replay through Fetch with persistent=%s', (persist
     expect(owners.size).toBe(2);
   }
 
+  it('starts one session and recording only after prerender activation', async () => {
+    const originalPrerendering = Object.getOwnPropertyDescriptor(document, 'prerendering');
+    let prerendering = true;
+    Object.defineProperty(document, 'prerendering', { configurable: true, get: () => prerendering });
+    const faro = start(0);
+
+    try {
+      faro.api.pushEvent('speculative-event');
+      await flush();
+      expect(faro.api.getSession()).toBeUndefined();
+      expect(requests).toEqual([]);
+
+      window.sessionStorage.clear();
+      prerendering = false;
+      document.dispatchEvent(new Event('prerenderingchange'));
+      await flush();
+      document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 11 }));
+      await flush();
+
+      const sessionId = faro.api.getSession()?.id;
+      expect(sessionId).toEqual(expect.any(String));
+      expect(
+        requests.every((request) => request.sessionId === sessionId && request.body.meta.session?.id === sessionId)
+      ).toBe(true);
+      const names = requests.flatMap(({ body }) => (body.events ?? []).map((event) => event.name));
+      expect(names.filter((name) => name === 'session_start')).toHaveLength(1);
+      expect(names.filter((name) => name === 'faro.session_recording.started')).toHaveLength(1);
+      expect(names).not.toContain('speculative-event');
+      expect(recordings().length).toBeGreaterThanOrEqual(2);
+      expect(new Set(recordings().map((event) => event.attributes['recording_id'])).size).toBe(1);
+      expect(recordings().map((event) => event.attributes['seq'])).toEqual(
+        recordings().map((_, index) => String(index))
+      );
+    } finally {
+      faro.instrumentations.remove(...faro.instrumentations.instrumentations);
+      if (originalPrerendering) {
+        Object.defineProperty(document, 'prerendering', originalPrerendering);
+      } else {
+        Reflect.deleteProperty(document, 'prerendering');
+      }
+    }
+  });
+
   it('starts a new recording before resuming an expired session', async () => {
     const faro = start(1000);
     const sessionA = faro.api.getSession()?.id;

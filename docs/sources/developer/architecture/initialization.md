@@ -83,6 +83,16 @@ then the transports and finally the instrumentations.
 
 ## Web SDK
 
+With session tracking enabled, a prerendered document waits until activation to create or resume its session.
+Chromium replaces the prerender's temporary `sessionStorage` on activation, so creating a session earlier can split
+one visit into two session IDs. The session instrumentation also establishes the session before capturing signals
+from other activation listeners, such as web vitals.
+
+`initializeFaro()` still returns synchronously. Before activation, `api.getSession()` returns `undefined` unless the
+application explicitly sets a session. Metadata updates such as `api.setUser()` remain available, while speculative
+telemetry is discarded. Session replay can start once the activated session is eligible for recording. Normal
+navigations and applications with session tracking disabled retain their existing initialization behavior.
+
 ## Tracing
 
 [initial-values]: #initial-values

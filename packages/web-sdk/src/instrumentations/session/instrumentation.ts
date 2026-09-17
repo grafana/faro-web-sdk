@@ -31,6 +31,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
   private captureListener: (() => void) | undefined;
   private beforeSendHook: BeforeSendHook | undefined;
   private sessionStartListener: ((meta: Meta) => void) | undefined;
+  private prerenderListener: (() => void) | undefined;
 
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
@@ -168,6 +169,34 @@ export class SessionInstrumentation extends BaseInstrumentation {
     const sessionTrackingConfig = this.config.sessionTracking;
 
     if (sessionTrackingConfig?.enabled) {
+      const prerenderDocument = document as Document & { prerendering?: boolean };
+      if (prerenderDocument.prerendering) {
+        // Chromium replaces prerender sessionStorage on activation. Creating a
+        // session now would export an ID that its session manager then loses.
+        const beforeSendHook = () => null;
+        const activate = () => {
+          if (prerenderDocument.prerendering) {
+            return;
+          }
+          document.removeEventListener('prerenderingchange', activate);
+          this.prerenderListener = undefined;
+          this.metas.removeCaptureListener?.(activate);
+          this.captureListener = undefined;
+          this.transports.removeBeforeSendHooks(beforeSendHook);
+          this.beforeSendHook = undefined;
+          this.initialize();
+        };
+        this.beforeSendHook = beforeSendHook;
+        this.transports.addBeforeSendHooks(beforeSendHook);
+        this.prerenderListener = activate;
+        document.addEventListener('prerenderingchange', activate, { once: true });
+        // Web vitals may emit from an earlier activation listener. Establish
+        // their session before capture, regardless of listener registration order.
+        this.captureListener = activate;
+        this.metas.addCaptureListener?.(activate);
+        return;
+      }
+
       const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
 
       const sessionManager = new SessionManager();
@@ -203,6 +232,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   destroy(): void {
+    if (this.prerenderListener) {
+      document.removeEventListener('prerenderingchange', this.prerenderListener);
+      this.prerenderListener = undefined;
+    }
     if (this.captureListener) {
       this.metas.removeCaptureListener?.(this.captureListener);
       this.captureListener = undefined;
