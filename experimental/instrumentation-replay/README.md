@@ -95,6 +95,11 @@ These classes work without configuration and remain active alongside custom sele
 | `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                                                           |
 | `inactivityThresholdMs`    | `number`                       | `60000`  | Pause recording after this many milliseconds of inactivity; resumes automatically on the next interaction. Set to `0` to disable                |
 
+Once initialized, a `ReplayInstrumentation` instance can also be controlled
+explicitly with `pauseRecording()` and `resumeRecording()`. Resuming starts a
+new rrweb recording with a fresh DOM checkpoint. An explicitly paused recording
+stays paused until `resumeRecording()` is called.
+
 #### Sub-sampling example
 
 ```typescript
