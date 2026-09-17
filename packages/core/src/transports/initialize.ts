@@ -125,7 +125,7 @@ export function initializeTransports(
   // 3i. If batching is enabled, enqueue the signal
   // 3ii. Send the signal instantly to all un-batched transports
   const execute: Transports['execute'] = (item) => {
-    if (config.paused) {
+    if (config.paused || metas.shouldCapture?.() === false) {
       return;
     }
 

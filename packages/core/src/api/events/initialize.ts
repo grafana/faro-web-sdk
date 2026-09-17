@@ -37,6 +37,9 @@ export function initializeEventsAPI({
     { skipDedupe, spanContext, timestampOverwriteMs, customPayloadTransformer = (payload: EventEvent) => payload } = {}
   ) => {
     try {
+      if (metas.shouldCapture?.() === false) {
+        return;
+      }
       const attrs = stringifyObjectValues(attributes);
 
       const payload = customPayloadTransformer({

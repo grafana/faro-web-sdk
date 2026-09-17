@@ -40,6 +40,9 @@ export function initializeLogsAPI({
     { context, level, skipDedupe, spanContext, timestampOverwriteMs } = {}
   ) => {
     try {
+      if (metas.shouldCapture?.() === false) {
+        return;
+      }
       const ctx = stringifyObjectValues(context);
 
       const payload: LogEvent = {

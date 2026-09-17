@@ -77,6 +77,9 @@ export function initializeExceptionsAPI({
       return;
     }
     try {
+      if (metas.shouldCapture?.() === false) {
+        return;
+      }
       const ctx = stringifyObjectValues({
         ...parseCause(originalError ?? error),
         ...(context ?? {}),

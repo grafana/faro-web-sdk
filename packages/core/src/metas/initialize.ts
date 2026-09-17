@@ -14,6 +14,7 @@ export function initializeMetas(
   let items: MetaItem[] = [];
   let listeners: MetasListener[] = [];
   let captureListeners: Array<() => void> = [];
+  let captureFilters: Array<() => boolean> = [];
   let pendingCaptureListeners: Array<() => void> | undefined;
   let nextCaptureListener = 0;
   let captureListenerCount = 0;
@@ -93,6 +94,13 @@ export function initializeMetas(
     },
     removeCaptureListener: (listener) => {
       captureListeners = captureListeners.filter((current) => current !== listener);
+    },
+    shouldCapture: () => captureFilters.every((filter) => filter()),
+    addCaptureFilter: (filter) => {
+      captureFilters.push(filter);
+    },
+    removeCaptureFilter: (filter) => {
+      captureFilters = captureFilters.filter((current) => current !== filter);
     },
     get value() {
       return getValue();

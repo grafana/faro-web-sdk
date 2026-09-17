@@ -89,8 +89,10 @@ one visit into two session IDs. The session instrumentation also establishes the
 from other activation listeners, such as web vitals.
 
 `initializeFaro()` still returns synchronously. Before activation, `api.getSession()` returns `undefined` unless the
-application explicitly sets a session. Metadata updates such as `api.setUser()` remain available, while speculative
-telemetry is discarded. Session replay can start once the activated session is eligible for recording. Normal
+application explicitly sets a session. Metadata updates remain available, including session attributes and overrides
+set through `api.setSession()` or `api.setView()`. Pending changes are applied to the session established at activation.
+Speculative telemetry is discarded before API deduplication and buffering, so it cannot suppress matching signals
+after activation. Session replay can start once the activated session is eligible for recording. Normal
 navigations and applications with session tracking disabled retain their existing initialization behavior.
 
 ## Tracing

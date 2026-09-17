@@ -13,6 +13,10 @@ export interface Metas {
   capture?: (callback?: () => void) => Meta;
   addCaptureListener?: (listener: () => void) => void;
   removeCaptureListener?: (listener: () => void) => void;
+  /** Filter signals before API deduplication and buffering, without blocking metadata updates. */
+  shouldCapture?: () => boolean;
+  addCaptureFilter?: (filter: () => boolean) => void;
+  removeCaptureFilter?: (filter: () => boolean) => void;
   value: Meta;
 }
 

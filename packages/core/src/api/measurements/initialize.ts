@@ -37,6 +37,9 @@ export function initializeMeasurementsAPI({
     { skipDedupe, context, spanContext, timestampOverwriteMs } = {}
   ) => {
     try {
+      if (metas.shouldCapture?.() === false) {
+        return;
+      }
       const ctx = stringifyObjectValues(context);
 
       const measurement: MeasurementEvent = {

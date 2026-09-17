@@ -40,6 +40,9 @@ export function initializeTracesAPI(
 
   const pushTraces: TracesAPI['pushTraces'] = (payload) => {
     try {
+      if (metas.shouldCapture?.() === false) {
+        return;
+      }
       const item: TransportItem<TraceEvent> = {
         type: TransportItemType.TRACE,
         payload,

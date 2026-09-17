@@ -6,7 +6,7 @@ import {
   EVENT_SESSION_START,
   VERSION,
 } from '@grafana/faro-core';
-import type { BeforeSendHook, Config, Meta, MetaSession } from '@grafana/faro-core';
+import type { BeforeSendHook, Config, Meta, MetaOverrides, MetaSession } from '@grafana/faro-core';
 
 import type { TransportItem } from '../..';
 import { createSession } from '../../metas';
@@ -32,6 +32,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
   private beforeSendHook: BeforeSendHook | undefined;
   private sessionStartListener: ((meta: Meta) => void) | undefined;
   private prerenderListener: (() => void) | undefined;
+  private captureFilter: (() => boolean) | undefined;
 
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
@@ -58,7 +59,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
   private createInitialSession(
     SessionManager: SessionManager,
-    sessionsConfig: Required<Config>['sessionTracking']
+    sessionsConfig: Required<Config>['sessionTracking'],
+    pendingSession?: MetaSession
   ): {
     initialSession: FaroUserSession;
     lifecycleType: LifecycleType;
@@ -79,7 +81,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
     let lifecycleType: LifecycleType;
     let initialSession: FaroUserSession;
 
-    if (isUserSessionValid(storedUserSession)) {
+    if (
+      isUserSessionValid(storedUserSession) &&
+      (!pendingSession?.id || pendingSession.id === storedUserSession?.sessionId)
+    ) {
       const sessionId = storedUserSession?.sessionId;
 
       initialSession = createUserSessionObject({
@@ -108,7 +113,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       lifecycleType = EVENT_SESSION_RESUME;
     } else {
-      const sessionId = sessionsConfig.session?.id ?? createSession().id;
+      const sessionId = pendingSession?.id ?? sessionsConfig.session?.id ?? createSession().id;
 
       initialSession = createUserSessionObject({
         sessionId,
@@ -128,6 +133,20 @@ export class SessionInstrumentation extends BaseInstrumentation {
       };
 
       lifecycleType = EVENT_SESSION_START;
+    }
+
+    if (pendingSession) {
+      initialSession.sessionMeta = {
+        ...initialSession.sessionMeta,
+        attributes: {
+          ...initialSession.sessionMeta?.attributes,
+          ...pendingSession.attributes,
+          isSampled: initialSession.isSampled.toString(),
+        },
+        ...(pendingSession.overrides && {
+          overrides: { ...initialSession.sessionMeta?.overrides, ...pendingSession.overrides },
+        }),
+      };
     }
 
     return { initialSession, lifecycleType };
@@ -173,6 +192,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
       if (prerenderDocument.prerendering) {
         // Chromium replaces prerender sessionStorage on activation. Creating a
         // session now would export an ID that its session manager then loses.
+        const initialSessionMeta = this.api.getSession();
+        this.captureFilter = () => !prerenderDocument.prerendering;
+        this.metas.addCaptureFilter?.(this.captureFilter);
         const beforeSendHook = () => null;
         const activate = () => {
           if (prerenderDocument.prerendering) {
@@ -184,7 +206,28 @@ export class SessionInstrumentation extends BaseInstrumentation {
           this.captureListener = undefined;
           this.transports.removeBeforeSendHooks(beforeSendHook);
           this.beforeSendHook = undefined;
-          this.initialize();
+          this.metas.removeCaptureFilter?.(this.captureFilter!);
+          this.captureFilter = undefined;
+          const currentSession = this.api.getSession();
+          // Carry API changes forward without letting unchanged configuration
+          // overwrite newer metadata from the activated tab's storage.
+          const overrides = Object.fromEntries(
+            Object.entries(currentSession?.overrides ?? {}).filter(
+              ([key, value]) => value !== initialSessionMeta?.overrides?.[key as keyof MetaOverrides]
+            )
+          );
+          const pendingSession =
+            currentSession !== initialSessionMeta
+              ? {
+                  id: currentSession?.id !== initialSessionMeta?.id ? currentSession?.id : undefined,
+                  attributes:
+                    currentSession?.attributes !== initialSessionMeta?.attributes
+                      ? currentSession?.attributes
+                      : undefined,
+                  ...(Object.keys(overrides).length > 0 && { overrides }),
+                }
+              : undefined;
+          this.initializeSession(pendingSession);
         };
         this.beforeSendHook = beforeSendHook;
         this.transports.addBeforeSendHooks(beforeSendHook);
@@ -196,14 +239,25 @@ export class SessionInstrumentation extends BaseInstrumentation {
         this.metas.addCaptureListener?.(activate);
         return;
       }
+    }
 
+    this.initializeSession();
+  }
+
+  private initializeSession(pendingSession?: MetaSession): void {
+    const sessionTrackingConfig = this.config.sessionTracking;
+    if (sessionTrackingConfig?.enabled) {
       const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
 
       const sessionManager = new SessionManager();
       this.isAdoptingSession = sessionManager.isAdopting;
       this.registerBeforeSendHook(sessionManager.recordActivity);
 
-      const { initialSession, lifecycleType } = this.createInitialSession(SessionManager, sessionTrackingConfig);
+      const { initialSession, lifecycleType } = this.createInitialSession(
+        SessionManager,
+        sessionTrackingConfig,
+        pendingSession
+      );
 
       SessionManager.storeUserSession(initialSession);
 
@@ -232,6 +286,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   destroy(): void {
+    if (this.captureFilter) {
+      this.metas.removeCaptureFilter?.(this.captureFilter);
+      this.captureFilter = undefined;
+    }
     if (this.prerenderListener) {
       document.removeEventListener('prerenderingchange', this.prerenderListener);
       this.prerenderListener = undefined;

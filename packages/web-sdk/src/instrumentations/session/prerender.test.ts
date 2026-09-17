@@ -1,4 +1,4 @@
-import { type EventEvent, type Faro, type TransportItem } from '@grafana/faro-core';
+import { type EventEvent, type Faro, type TransportItem, TransportItemType } from '@grafana/faro-core';
 import { MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import type { BrowserConfig } from '../../config';
@@ -100,6 +100,144 @@ describe('prerendered sessions', () => {
     expect(events().map((item) => item.payload.name)).toEqual(['session_start', 'after-activation']);
   });
 
+  it.each([false, true])('preserves pending session metadata when resuming, persistent=%s', (persistent) => {
+    const storage = persistent ? window.localStorage : window.sessionStorage;
+    start({
+      sessionTracking: {
+        persistent,
+        samplingRate: 1,
+        session: { attributes: { configured: 'kept' }, overrides: { geoLocationTrackingEnabled: false } },
+      },
+    });
+    faro.api.setSession({ attributes: { custom: 'pending', shared: 'pending' } });
+    faro.api.setView({ name: 'checkout' }, { overrides: { serviceName: 'checkout-service' } });
+    // Activation exposes the real tab's storage, including changes made since prerendering started.
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        sessionId: 'activated-session',
+        started: Date.now(),
+        lastActivity: Date.now(),
+        isSampled: true,
+        sessionMeta: {
+          id: 'activated-session',
+          attributes: { stored: 'kept', shared: 'stored', isSampled: 'true' },
+          overrides: { serviceName: 'stored-service', geoLocationTrackingEnabled: true },
+        },
+      })
+    );
+    prerendering = false;
+    document.dispatchEvent(new Event('prerenderingchange'));
+    faro.api.pushEvent('after-activation');
+    jest.advanceTimersByTime(2000);
+
+    const session = faro.api.getSession();
+    expect(session).toEqual({
+      id: 'activated-session',
+      attributes: { configured: 'kept', stored: 'kept', custom: 'pending', shared: 'pending', isSampled: 'true' },
+      overrides: { serviceName: 'checkout-service', geoLocationTrackingEnabled: true },
+    });
+    expect(JSON.parse(storage.getItem(STORAGE_KEY)!).sessionMeta).toEqual(session);
+    expect(events().map((item) => item.payload.name)).toEqual(['session_resume', 'after-activation']);
+    expect(events().every((item) => item.meta.session?.overrides?.serviceName === 'checkout-service')).toBe(true);
+    expect(events().every((item) => item.meta.view?.name === 'checkout')).toBe(true);
+  });
+
+  it('preserves a session ID, attributes and overrides explicitly set before activation', () => {
+    start();
+    faro.api.setSession(
+      { id: 'manual-session', attributes: { custom: 'kept' } },
+      { overrides: { serviceName: 'manual-service' } }
+    );
+    faro.api.pushEvent('speculative-event');
+    activate();
+    jest.advanceTimersByTime(2000);
+
+    expect(faro.api.getSession()).toEqual({
+      id: 'manual-session',
+      attributes: { custom: 'kept', isSampled: 'true' },
+      overrides: { serviceName: 'manual-service' },
+    });
+    expect(events().map((item) => item.payload.name)).toEqual(['session_start']);
+  });
+
+  it('does not queue speculative signals even with an explicitly sampled session', () => {
+    const beforeSend = jest.fn((item: TransportItem) => item);
+    start({ beforeSend });
+    faro.api.setSession({ id: 'manual-session', attributes: { isSampled: 'true' } });
+    faro.api.pushEvent('speculative-event');
+    faro.api.pushMeasurement({ type: 'test', values: { value: 1 } });
+    activate();
+    faro.api.pushMeasurement({ type: 'test', values: { value: 1 } });
+    jest.advanceTimersByTime(2000);
+
+    expect(events().filter((item) => item.payload.name === 'speculative-event')).toEqual([]);
+    expect(transport.items.filter((item) => item.type === TransportItemType.MEASUREMENT)).toHaveLength(1);
+    expect(beforeSend).toHaveBeenCalledTimes(2);
+  });
+
+  it('preserves setView overrides without overwriting newer stored metadata with configuration', () => {
+    start({
+      sessionTracking: {
+        samplingRate: 1,
+        session: {
+          id: 'configured-session',
+          attributes: { shared: 'configured' },
+          overrides: { serviceName: 'configured-service', geoLocationTrackingEnabled: false },
+        },
+      },
+    });
+    faro.api.setView({ name: 'checkout' }, { overrides: { serviceName: 'checkout-service' } });
+    window.sessionStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        sessionId: 'stored-session',
+        started: Date.now(),
+        lastActivity: Date.now(),
+        isSampled: true,
+        sessionMeta: {
+          id: 'stored-session',
+          attributes: { shared: 'stored', isSampled: 'true' },
+          overrides: { serviceName: 'stored-service', geoLocationTrackingEnabled: true },
+        },
+      })
+    );
+    prerendering = false;
+    document.dispatchEvent(new Event('prerenderingchange'));
+
+    expect(faro.api.getSession()).toEqual({
+      id: 'stored-session',
+      attributes: { shared: 'stored', isSampled: 'true' },
+      overrides: { serviceName: 'checkout-service', geoLocationTrackingEnabled: true },
+    });
+  });
+
+  it.each([true, false])('does not let discarded signals suppress signals at activation, batched=%s', (batched) => {
+    const error = new Error('same error');
+    const pushSignals = () => {
+      faro.api.pushMeasurement({ type: 'test', values: { value: 1 } });
+      faro.api.pushLog(['same log']);
+      faro.api.pushError(error);
+      faro.api.pushEvent('same event');
+    };
+    // This listener runs before the session instrumentation's activation listener.
+    document.addEventListener('prerenderingchange', pushSignals, { once: true });
+    start({ batching: { enabled: batched }, dedupe: true });
+    pushSignals();
+    jest.advanceTimersByTime(2000);
+    expect(transport.items).toEqual([]);
+
+    activate();
+    pushSignals();
+    jest.advanceTimersByTime(2000);
+
+    for (const type of [TransportItemType.MEASUREMENT, TransportItemType.LOG, TransportItemType.EXCEPTION]) {
+      expect(transport.items.filter((item) => item.type === type)).toHaveLength(1);
+    }
+    expect(events().filter((item) => item.payload.name === 'same event')).toHaveLength(1);
+    expect(transport.items.every((item) => item.meta.session?.id === faro.api.getSession()?.id)).toBe(true);
+  });
+
   it('assigns the session to web vitals emitted by an earlier activation listener', () => {
     // WebVitalsInstrumentation initializes before SessionInstrumentation.
     document.addEventListener(
@@ -167,6 +305,7 @@ describe('prerendered sessions', () => {
   it('does not create a session when removed before activation', () => {
     start();
     faro.instrumentations.remove(instrumentation);
+    expect(faro.metas.shouldCapture?.()).toBe(true);
     activate();
     jest.advanceTimersByTime(2000);
 
