@@ -104,6 +104,84 @@ describe('utils', () => {
         meta: {},
       });
     });
+
+    it('strips credentials, query string, and fragment from the body page URL', () => {
+      const hrefWithCredentials = new URL('https://example.com/app/dashboard?token=secret#fragment');
+      hrefWithCredentials.username = 'user';
+      hrefWithCredentials.password = 'password';
+
+      const log = generateLog('This is a log', {
+        page: {
+          id: 'page-id',
+          url: hrefWithCredentials.href,
+          attributes: {
+            route: '/app/dashboard',
+          },
+        },
+      });
+      const body = getTransportBody([log]);
+
+      expect(body.meta.page).toEqual({
+        id: 'page-id',
+        url: 'https://example.com/app/dashboard',
+        attributes: {
+          route: '/app/dashboard',
+        },
+      });
+      expect(log.meta.page?.url).toBe(hrefWithCredentials.href);
+    });
+
+    it('strips query string and fragment from file page URLs', () => {
+      const log = generateLog('This is a log', {
+        page: {
+          url: 'file:///android_asset/www/index.html?token=secret#fragment',
+        },
+      });
+      const body = getTransportBody([log]);
+
+      expect(body.meta.page?.url).toBe('file:///android_asset/www/index.html');
+    });
+
+    it('leaves malformed page URLs unchanged', () => {
+      const log = generateLog('This is a log', {
+        page: {
+          url: 'not-a-valid-url',
+        },
+      });
+      const body = getTransportBody([log]);
+
+      expect(body.meta.page?.url).toBe('not-a-valid-url');
+    });
+
+    it('leaves clean page URLs unchanged', () => {
+      const cleanUrl = 'https://example.com';
+      const log = generateLog('This is a log', {
+        page: {
+          url: cleanUrl,
+        },
+      });
+      const body = getTransportBody([log]);
+
+      expect(body.meta.page?.url).toBe(cleanUrl);
+    });
+
+    it('uses sanitized page metadata from the first item in a batch', () => {
+      const log = generateLog('This is a log', {
+        page: {
+          url: 'https://example.com/callback?code=abc#fragment',
+        },
+      });
+      const event = generateEvent('session_start', {
+        page: {
+          url: 'https://example.com/ignored?token=secret#fragment',
+        },
+      });
+      const body = getTransportBody([log, event]);
+
+      expect(body.meta.page?.url).toBe('https://example.com/callback');
+      expect(body.logs).toEqual([log.payload]);
+      expect(body.events).toEqual([event.payload]);
+    });
   });
 });
 
