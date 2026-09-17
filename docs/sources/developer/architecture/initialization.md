@@ -91,8 +91,11 @@ from other activation listeners, such as web vitals.
 `initializeFaro()` still returns synchronously. Before activation, `api.getSession()` returns `undefined` unless the
 application explicitly sets a session. Metadata updates remain available, including session attributes and overrides
 set through `api.setSession()` or `api.setView()`. Pending changes are applied to the session established at activation.
+Explicit API writes are tracked separately from configuration, including overrides whose values match configuration.
+Calling `api.resetSession()` while prerendering starts a fresh session at activation instead of resuming storage.
 Speculative telemetry is discarded before API deduplication and buffering, so it cannot suppress matching signals
-after activation. Session replay can start once the activated session is eligible for recording. Normal
+after activation. Session replay initialization also waits for activation, even when the application supplies a sampled
+session beforehand, so its opening snapshot is retained. Normal
 navigations and applications with session tracking disabled retain their existing initialization behavior.
 
 ## Tracing

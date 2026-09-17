@@ -26,6 +26,28 @@ describe('Meta API', () => {
     window = originalWindow;
   });
 
+  it('reports explicit session writes, view overrides and resets without inferred values', () => {
+    const { api, metas } = initializeFaro(
+      mockConfig({
+        sessionTracking: { session: { id: 'configured', overrides: { serviceName: 'checkout' } } },
+      })
+    );
+    const listener = jest.fn();
+    metas.addSessionUpdateListener!(listener);
+    api.setView({ name: 'checkout' }, { overrides: { serviceName: 'checkout' } });
+    api.setSession({ id: 'configured' }, { overrides: { serviceName: 'checkout' } });
+    api.resetSession();
+
+    expect(listener.mock.calls.map(([update]) => update)).toEqual([
+      { type: 'overrides', overrides: { serviceName: 'checkout' } },
+      { type: 'replace', session: { id: 'configured' }, overrides: { serviceName: 'checkout' } },
+      { type: 'replace', session: undefined, overrides: undefined },
+    ]);
+    metas.removeSessionUpdateListener!(listener);
+    api.setSession({ id: 'after-removal' });
+    expect(listener).toHaveBeenCalledTimes(3);
+  });
+
   describe('setView', () => {
     it('updates the view meta if the new view meta is different to the previous one', () => {
       const { api } = initializeFaro(mockConfig());

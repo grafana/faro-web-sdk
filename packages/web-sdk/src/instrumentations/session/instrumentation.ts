@@ -6,11 +6,12 @@ import {
   EVENT_SESSION_START,
   VERSION,
 } from '@grafana/faro-core';
-import type { BeforeSendHook, Config, Meta, MetaOverrides, MetaSession } from '@grafana/faro-core';
+import type { BeforeSendHook, Config, Meta, MetaSession } from '@grafana/faro-core';
 
 import type { TransportItem } from '../..';
 import { createSession } from '../../metas';
 
+import { type PendingSessionChanges, PrerenderSession } from './prerenderSession';
 import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
 import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
 import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
@@ -31,8 +32,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
   private captureListener: (() => void) | undefined;
   private beforeSendHook: BeforeSendHook | undefined;
   private sessionStartListener: ((meta: Meta) => void) | undefined;
-  private prerenderListener: (() => void) | undefined;
-  private captureFilter: (() => boolean) | undefined;
+  private prerenderSession: PrerenderSession | undefined;
 
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
@@ -60,11 +60,12 @@ export class SessionInstrumentation extends BaseInstrumentation {
   private createInitialSession(
     SessionManager: SessionManager,
     sessionsConfig: Required<Config>['sessionTracking'],
-    pendingSession?: MetaSession
+    pendingChanges?: PendingSessionChanges
   ): {
     initialSession: FaroUserSession;
     lifecycleType: LifecycleType;
   } {
+    const pendingSession = pendingChanges?.session;
     let storedUserSession: FaroUserSession | null = SessionManager.fetchUserSession();
 
     if (sessionsConfig.persistent && sessionsConfig.maxSessionPersistenceTime && storedUserSession) {
@@ -82,6 +83,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     let initialSession: FaroUserSession;
 
     if (
+      !pendingChanges?.reset &&
       isUserSessionValid(storedUserSession) &&
       (!pendingSession?.id || pendingSession.id === storedUserSession?.sessionId)
     ) {
@@ -113,7 +115,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       lifecycleType = EVENT_SESSION_RESUME;
     } else {
-      const sessionId = pendingSession?.id ?? sessionsConfig.session?.id ?? createSession().id;
+      const sessionId = pendingChanges?.reset
+        ? createSession().id
+        : (pendingSession?.id ?? sessionsConfig.session?.id ?? createSession().id);
 
       initialSession = createUserSessionObject({
         sessionId,
@@ -185,66 +189,21 @@ export class SessionInstrumentation extends BaseInstrumentation {
   initialize(): void {
     this.logDebug('init session instrumentation');
 
-    const sessionTrackingConfig = this.config.sessionTracking;
-
-    if (sessionTrackingConfig?.enabled) {
-      const prerenderDocument = document as Document & { prerendering?: boolean };
-      if (prerenderDocument.prerendering) {
-        // Chromium replaces prerender sessionStorage on activation. Creating a
-        // session now would export an ID that its session manager then loses.
-        const initialSessionMeta = this.api.getSession();
-        this.captureFilter = () => !prerenderDocument.prerendering;
-        this.metas.addCaptureFilter?.(this.captureFilter);
-        const beforeSendHook = () => null;
-        const activate = () => {
-          if (prerenderDocument.prerendering) {
-            return;
-          }
-          document.removeEventListener('prerenderingchange', activate);
-          this.prerenderListener = undefined;
-          this.metas.removeCaptureListener?.(activate);
-          this.captureListener = undefined;
-          this.transports.removeBeforeSendHooks(beforeSendHook);
-          this.beforeSendHook = undefined;
-          this.metas.removeCaptureFilter?.(this.captureFilter!);
-          this.captureFilter = undefined;
-          const currentSession = this.api.getSession();
-          // Carry API changes forward without letting unchanged configuration
-          // overwrite newer metadata from the activated tab's storage.
-          const overrides = Object.fromEntries(
-            Object.entries(currentSession?.overrides ?? {}).filter(
-              ([key, value]) => value !== initialSessionMeta?.overrides?.[key as keyof MetaOverrides]
-            )
-          );
-          const pendingSession =
-            currentSession !== initialSessionMeta
-              ? {
-                  id: currentSession?.id !== initialSessionMeta?.id ? currentSession?.id : undefined,
-                  attributes:
-                    currentSession?.attributes !== initialSessionMeta?.attributes
-                      ? currentSession?.attributes
-                      : undefined,
-                  ...(Object.keys(overrides).length > 0 && { overrides }),
-                }
-              : undefined;
-          this.initializeSession(pendingSession);
-        };
-        this.beforeSendHook = beforeSendHook;
-        this.transports.addBeforeSendHooks(beforeSendHook);
-        this.prerenderListener = activate;
-        document.addEventListener('prerenderingchange', activate, { once: true });
-        // Web vitals may emit from an earlier activation listener. Establish
-        // their session before capture, regardless of listener registration order.
-        this.captureListener = activate;
-        this.metas.addCaptureListener?.(activate);
-        return;
-      }
+    const prerendering = (document as Document & { prerendering?: boolean }).prerendering;
+    if (this.config.sessionTracking?.enabled && prerendering) {
+      // Chromium discards speculative sessionStorage writes on activation.
+      this.prerenderSession = new PrerenderSession(this.metas, this.transports, (changes) => {
+        this.prerenderSession = undefined;
+        this.initializeSession(changes);
+      });
+      this.prerenderSession.initialize();
+      return;
     }
 
     this.initializeSession();
   }
 
-  private initializeSession(pendingSession?: MetaSession): void {
+  private initializeSession(pendingChanges?: PendingSessionChanges): void {
     const sessionTrackingConfig = this.config.sessionTracking;
     if (sessionTrackingConfig?.enabled) {
       const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
@@ -256,7 +215,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
       const { initialSession, lifecycleType } = this.createInitialSession(
         SessionManager,
         sessionTrackingConfig,
-        pendingSession
+        pendingChanges
       );
 
       SessionManager.storeUserSession(initialSession);
@@ -286,14 +245,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   destroy(): void {
-    if (this.captureFilter) {
-      this.metas.removeCaptureFilter?.(this.captureFilter);
-      this.captureFilter = undefined;
-    }
-    if (this.prerenderListener) {
-      document.removeEventListener('prerenderingchange', this.prerenderListener);
-      this.prerenderListener = undefined;
-    }
+    this.prerenderSession?.destroy();
+    this.prerenderSession = undefined;
     if (this.captureListener) {
       this.metas.removeCaptureListener?.(this.captureListener);
       this.captureListener = undefined;

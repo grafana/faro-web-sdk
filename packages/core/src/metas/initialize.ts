@@ -4,7 +4,7 @@ import type { UnpatchedConsole } from '../unpatchedConsole';
 import { isFunction } from '../utils';
 
 import { markMetaCaptured } from './capture';
-import type { Meta, MetaItem, Metas, MetasListener } from './types';
+import type { Meta, MetaItem, Metas, MetasListener, SessionMetaUpdate } from './types';
 
 export function initializeMetas(
   _unpatchedConsole: UnpatchedConsole,
@@ -13,6 +13,7 @@ export function initializeMetas(
 ): Metas {
   let items: MetaItem[] = [];
   let listeners: MetasListener[] = [];
+  let sessionUpdateListeners: Array<(update: SessionMetaUpdate) => void> = [];
   let captureListeners: Array<() => void> = [];
   let captureFilters: Array<() => boolean> = [];
   let pendingCaptureListeners: Array<() => void> | undefined;
@@ -88,6 +89,15 @@ export function initializeMetas(
     remove,
     addListener,
     removeListener,
+    addSessionUpdateListener: (listener) => {
+      sessionUpdateListeners.push(listener);
+    },
+    removeSessionUpdateListener: (listener) => {
+      sessionUpdateListeners = sessionUpdateListeners.filter((current) => current !== listener);
+    },
+    notifySessionUpdate: (update) => {
+      sessionUpdateListeners.forEach((listener) => listener(update));
+    },
     capture,
     addCaptureListener: (listener) => {
       captureListeners.push(listener);

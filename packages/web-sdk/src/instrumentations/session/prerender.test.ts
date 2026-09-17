@@ -68,6 +68,81 @@ describe('prerendered sessions', () => {
     return transport.items as Array<TransportItem<EventEvent>>;
   }
 
+  function storeExistingSession(persistent: boolean) {
+    const storage = persistent ? window.localStorage : window.sessionStorage;
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        sessionId: 'stored-session',
+        started: Date.now(),
+        lastActivity: Date.now(),
+        isSampled: true,
+        sessionMeta: {
+          id: 'stored-session',
+          attributes: { isSampled: 'true' },
+          overrides: { serviceName: 'previous-app', geoLocationTrackingEnabled: true },
+        },
+      })
+    );
+    return storage;
+  }
+
+  it.each([false, true])('honors a reset before activation, persistent=%s', (persistent) => {
+    start({ sessionTracking: { persistent, samplingRate: 1, session: { id: 'configured-session' } } });
+    faro.api.setSession({ id: 'discarded-session', attributes: { discarded: 'true' } });
+    faro.api.resetSession();
+    faro.api.setView({ name: 'checkout' }, { overrides: { serviceName: 'checkout' } });
+    const storage = storeExistingSession(persistent);
+    prerendering = false;
+    document.dispatchEvent(new Event('prerenderingchange'));
+    jest.advanceTimersByTime(2000);
+
+    const session = faro.api.getSession();
+    expect(session?.id).toEqual(expect.any(String));
+    expect(['configured-session', 'stored-session', 'discarded-session']).not.toContain(session?.id);
+    expect(session?.attributes?.['discarded']).toBeUndefined();
+    expect(session?.overrides?.serviceName).toBe('checkout');
+    expect(JSON.parse(storage.getItem(STORAGE_KEY)!).sessionId).toBe(session?.id);
+    expect(events().map((item) => item.payload.name)).toEqual(['session_start']);
+  });
+
+  describe.each([false, true])('explicit API writes with persistent=%s', (persistent) => {
+    it.each(['setSession', 'setView', 'sessionPayload'] as const)(
+      'keeps %s overrides that equal configuration',
+      (method) => {
+        start({
+          sessionTracking: { persistent, samplingRate: 1, session: { overrides: { serviceName: 'checkout' } } },
+        });
+        if (method === 'setSession') {
+          faro.api.setSession({ attributes: { pending: 'kept' } }, { overrides: { serviceName: 'checkout' } });
+        } else if (method === 'sessionPayload') {
+          faro.api.setSession({ overrides: { serviceName: 'checkout' } });
+        } else {
+          faro.api.setView({ name: 'checkout' }, { overrides: { serviceName: 'checkout' } });
+        }
+        storeExistingSession(persistent);
+        prerendering = false;
+        document.dispatchEvent(new Event('prerenderingchange'));
+
+        expect(faro.api.getSession()?.id).toBe('stored-session');
+        expect(faro.api.getSession()?.overrides).toEqual({ serviceName: 'checkout', geoLocationTrackingEnabled: true });
+      }
+    );
+
+    it('honors an explicit session ID matching configuration after a reset', () => {
+      start({ sessionTracking: { persistent, samplingRate: 1, session: { id: 'configured-session' } } });
+      faro.api.resetSession();
+      faro.api.setSession({ id: 'configured-session' });
+      storeExistingSession(persistent);
+      prerendering = false;
+      document.dispatchEvent(new Event('prerenderingchange'));
+      jest.advanceTimersByTime(2000);
+
+      expect(faro.api.getSession()?.id).toBe('configured-session');
+      expect(events().map((item) => item.payload.name)).toEqual(['session_start']);
+    });
+  });
+
   it.each([true, false])('creates and emits exactly one session after activation, batched=%s', (batched) => {
     start({ batching: { enabled: batched } });
     faro.api.setUser({ id: 'user-before-activation' });
