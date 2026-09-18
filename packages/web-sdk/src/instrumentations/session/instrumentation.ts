@@ -203,9 +203,9 @@ export class SessionInstrumentation extends BaseInstrumentation {
     this.logDebug('init session instrumentation');
 
     const prerendering = (document as Document & { prerendering?: boolean }).prerendering;
-    if (this.config.sessionTracking?.enabled && prerendering) {
+    if (this.config.sessionTracking?.enabled && (prerendering || this.prerenderSession)) {
       // Chromium discards speculative sessionStorage writes on activation.
-      this.prerenderSession = new PrerenderSession(this.metas, this.transports, (changes) => {
+      this.prerenderSession ??= new PrerenderSession(this.metas, this.transports, (changes) => {
         this.prerenderSession = undefined;
         this.initializeSession(changes);
       });
@@ -258,8 +258,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   destroy(): void {
+    // Keep pending API writes if this instance is readded before they are applied.
     this.prerenderSession?.destroy();
-    this.prerenderSession = undefined;
     if (this.captureListener) {
       this.metas.removeCaptureListener?.(this.captureListener);
       this.captureListener = undefined;

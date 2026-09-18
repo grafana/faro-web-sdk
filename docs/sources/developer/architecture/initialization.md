@@ -95,10 +95,15 @@ Explicit API writes are tracked separately from configuration, including overrid
 Calling `api.resetSession()` while prerendering starts a fresh session at activation instead of resuming storage.
 Resets and session replacements retain effective overrides when none are supplied, including overrides from storage.
 Explicit `session.overrides` replaces those overrides; an empty object clears them.
+Removing and readding the same session instrumentation preserves pending API writes, including reset intent.
 Speculative telemetry is discarded before API deduplication and buffering, so it cannot suppress matching signals
 after activation. Session replay initialization also waits for activation, even when the application supplies a sampled
-session beforehand, so its opening snapshot is retained. Normal
-navigations and applications with session tracking disabled retain their existing initialization behavior.
+session beforehand, so its opening snapshot is retained.
+
+Performance instrumentation reads buffered navigation and resource timings after activation, preserving the navigation
+event and its resource correlation. View instrumentation reports the current view once on activation and skips
+intermediate views set while prerendering. Normal navigations retain their existing initialization behavior.
+Disabling session tracking still bypasses the session activation guard.
 
 ## Tracing
 

@@ -3,6 +3,7 @@ import { MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import type { BrowserConfig } from '../../config';
 import { initializeFaro } from '../../initialize';
+import { ViewInstrumentation } from '../view';
 
 import { SessionInstrumentation } from './instrumentation';
 import { STORAGE_KEY } from './sessionManager';
@@ -470,6 +471,97 @@ describe('prerendered sessions', () => {
 
     expect(events().map((item) => item.payload.name)).toEqual(['session_start']);
     expect(faro.transports.getBeforeSendHooks()).toHaveLength(1);
+  });
+
+  it.each([false, true])(
+    'preserves pending session writes when readded after activation=%s',
+    (readdAfterActivation) => {
+      start();
+      faro.api.setSession({ id: 'explicit-session', attributes: { custom: 'preserved' } });
+      faro.api.setView({ name: 'checkout' }, { overrides: { serviceName: 'checkout' } });
+      faro.instrumentations.remove(instrumentation);
+      if (readdAfterActivation) {
+        activate();
+      }
+      faro.instrumentations.add(instrumentation);
+      if (!readdAfterActivation) {
+        activate();
+      }
+      document.dispatchEvent(new Event('prerenderingchange'));
+      jest.advanceTimersByTime(2000);
+
+      expect(faro.api.getSession()).toEqual({
+        id: 'explicit-session',
+        attributes: { custom: 'preserved', isSampled: 'true' },
+        overrides: { serviceName: 'checkout' },
+      });
+      expect(events().map((item) => [item.payload.name, item.meta.session?.id])).toEqual([
+        ['session_start', 'explicit-session'],
+      ]);
+      expect(faro.transports.getBeforeSendHooks()).toHaveLength(1);
+    }
+  );
+
+  it('preserves a pending reset when session instrumentation is readded', () => {
+    start({ sessionTracking: { samplingRate: 1, session: { id: 'configured-session' } } });
+    faro.api.resetSession();
+    faro.instrumentations.remove(instrumentation);
+    faro.instrumentations.add(instrumentation);
+    storeExistingSession(false);
+    prerendering = false;
+    document.dispatchEvent(new Event('prerenderingchange'));
+    jest.advanceTimersByTime(2000);
+
+    expect(faro.api.getSession()?.id).toEqual(expect.any(String));
+    expect(['configured-session', 'stored-session']).not.toContain(faro.api.getSession()?.id);
+    expect(events().map((item) => item.payload.name)).toEqual(['session_start']);
+  });
+
+  it.each([false, true])('reports only the activated view with view instrumentation first=%s', (viewFirst) => {
+    const view = new ViewInstrumentation();
+    start({ instrumentations: viewFirst ? [view, instrumentation] : [instrumentation, view] });
+    faro.api.setSession({ attributes: { custom: 'preserved' } });
+    faro.api.setView({ name: 'loading' });
+    faro.api.setView({ name: 'checkout' });
+    jest.advanceTimersByTime(2000);
+    expect(transport.items).toEqual([]);
+
+    activate();
+    document.dispatchEvent(new Event('prerenderingchange'));
+    faro.api.setView({ name: 'checkout' });
+    faro.api.setUser({ id: 'user' });
+    jest.advanceTimersByTime(2000);
+
+    const viewEvents = () => events().filter((item) => item.payload.name === 'view_changed');
+    expect(viewEvents().map((item) => item.payload.attributes)).toEqual([{ fromView: 'unknown', toView: 'checkout' }]);
+    expect(viewEvents()[0]?.meta.session?.id).toBe(faro.api.getSession()?.id);
+    expect(viewEvents()[0]?.meta.session?.id).toEqual(expect.any(String));
+    expect(viewEvents()[0]?.meta.session?.attributes?.['custom']).toBe('preserved');
+
+    faro.api.setView({ name: 'confirmation' });
+    jest.advanceTimersByTime(2000);
+    expect(viewEvents().map((item) => item.payload.attributes)).toEqual([
+      { fromView: 'unknown', toView: 'checkout' },
+      { fromView: 'checkout', toView: 'confirmation' },
+    ]);
+    faro.instrumentations.remove(view);
+  });
+
+  it.each([false, true])('cancels the pending view notification when removed with activated=%s', (activated) => {
+    const view = new ViewInstrumentation();
+    start({ instrumentations: [instrumentation, view] });
+    faro.api.setView({ name: 'checkout' });
+    if (activated) {
+      activate();
+    }
+    faro.instrumentations.remove(view);
+    if (!activated) {
+      activate();
+    }
+    faro.api.setView({ name: 'confirmation' });
+    jest.advanceTimersByTime(2000);
+
+    expect(events().map((item) => item.payload.name)).toEqual(['session_start']);
   });
 
   it('preserves an explicit pause across activation', () => {

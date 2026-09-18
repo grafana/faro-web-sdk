@@ -69,6 +69,8 @@ export class PrerenderSession {
     document.addEventListener('prerenderingchange', this.activate);
     // Earlier activation listeners can emit web vitals before our DOM listener runs.
     this.metas.addCaptureListener?.(this.activate);
+    // The document may have activated while this instrumentation was removed.
+    this.activate();
   }
 
   destroy(): void {
