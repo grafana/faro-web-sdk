@@ -12,7 +12,7 @@ export function registerOnunhandledrejection(api: API): void {
   const handler = (evt: ExtendedPromiseRejectionEvent) => {
     let error = evt;
 
-    if (Reflect.has(evt, 'reason')) {
+    if ('reason' in (evt as object)) {
       error = evt.reason;
     } else if (evt.detail && 'reason' in evt.detail) {
       error = evt.detail?.reason;

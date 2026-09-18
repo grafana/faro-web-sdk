@@ -42,10 +42,10 @@ afterEach(() => {
   }
   __resetConsoleMonitorForTests();
   __resetOnunhandledrejectionForTests();
-  Reflect.deleteProperty(globalThis, 'onerror');
-  Reflect.deleteProperty(globalThis, 'self');
-  Reflect.deleteProperty(globalThis, 'addEventListener');
-  Reflect.deleteProperty(globalThis, 'removeEventListener');
+  delete (globalThis as Partial<typeof globalThis>).onerror;
+  delete (globalThis as Partial<typeof globalThis>).self;
+  delete (globalThis as Partial<typeof globalThis>).addEventListener;
+  delete (globalThis as Partial<typeof globalThis>).removeEventListener;
   jest.restoreAllMocks();
 });
 
@@ -75,7 +75,7 @@ it.each(['DedicatedWorkerGlobalScope', 'SharedWorkerGlobalScope', 'ServiceWorker
 );
 
 it('does not mistake a non-browser runtime for a worker', () => {
-  Reflect.deleteProperty(globalThis, 'self');
+  delete (globalThis as Partial<typeof globalThis>).self;
   expect(isWorker()).toBe(false);
 });
 

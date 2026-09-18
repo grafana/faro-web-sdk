@@ -18,7 +18,7 @@ describe('getDefaultOTELInstrumentations', () => {
   });
 
   it('does not construct XHR instrumentation in a service worker without XMLHttpRequest', () => {
-    Reflect.deleteProperty(globalThis, 'XMLHttpRequest');
+    delete (globalThis as Partial<typeof globalThis>).XMLHttpRequest;
     const instrumentations = getDefaultOTELInstrumentations();
     expect(instrumentations).toHaveLength(1);
     expect(instrumentations[0]).toBeInstanceOf(FetchInstrumentation);
