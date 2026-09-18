@@ -11,10 +11,20 @@ import {
   ViewInstrumentation,
   WebVitalsInstrumentation,
 } from '../instrumentations';
+import { isWorker } from '../utils/worker';
 
 import type { GetWebInstrumentationsOptions } from './types';
 
 export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {
+  if (isWorker()) {
+    // Establish sampling before any other instrumentation can emit a signal.
+    return [
+      new SessionInstrumentation(),
+      new ErrorsInstrumentation(),
+      ...(options.captureConsole !== false ? [new ConsoleInstrumentation()] : []),
+    ];
+  }
+
   const instrumentations: Instrumentation[] = [
     new UserActionInstrumentation(),
     new ErrorsInstrumentation(),

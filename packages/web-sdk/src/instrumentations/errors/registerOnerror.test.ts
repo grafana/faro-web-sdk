@@ -59,6 +59,23 @@ describe('registerOnerror', () => {
     expect(transport.items).toHaveLength(1);
   });
 
+  it('can remove isolated handlers out of order without restoring a removed handler', () => {
+    const hostHandler = jest.fn();
+    window.onerror = hostHandler;
+    const first = initializeFaro(mockConfig({ transports: [new MockTransport()] }));
+    const secondTransport = new MockTransport();
+    const second = initializeFaro(mockConfig({ transports: [secondTransport] }));
+    const removeFirst = registerOnerror(first.api);
+    const removeSecond = registerOnerror(second.api);
+
+    removeFirst();
+    window.onerror?.('after removal', 'worker-host.js', 1, 1, new Error('after removal'));
+    expect(secondTransport.items).toHaveLength(1);
+    expect(hostHandler).toHaveBeenCalledTimes(1);
+    removeSecond();
+    expect(window.onerror).toBe(hostHandler);
+  });
+
   it('In case of an error, the original error is not lost', () => {
     const originalError = new Error('original error');
     const transport = new MockTransport();
