@@ -41,6 +41,8 @@ export class TracingInstrumentation extends BaseInstrumentation {
   name = '@grafana/faro-web-tracing';
   version: string = VERSION;
 
+  private unsubscribeTransportChanges?: () => void;
+
   static SCHEDULED_BATCH_DELAY_MS = 1000;
 
   constructor(private options: TracingInstrumentationOptions = {}) {
@@ -141,21 +143,55 @@ export class TracingInstrumentation extends BaseInstrumentation {
     const { propagateTraceHeaderCorsUrls, fetchInstrumentationOptions, xhrInstrumentationOptions } =
       this.options.instrumentationOptions ?? {};
 
-    registerInstrumentations({
-      instrumentations:
-        options.instrumentations ??
-        getDefaultOTELInstrumentations({
+    this.unsubscribeTransportChanges?.();
+    const defaultInstrumentations = options.instrumentations
+      ? undefined
+      : getDefaultOTELInstrumentations({
           ignoreUrls: this.getIgnoreUrls(),
           propagateTraceHeaderCorsUrls,
           fetchInstrumentationOptions,
           xhrInstrumentationOptions,
-        }),
+        });
+
+    registerInstrumentations({
+      instrumentations: options.instrumentations ?? defaultInstrumentations,
     });
+
+    if (defaultInstrumentations) {
+      // Keep caller-supplied instrumentations under the caller's control.
+      this.unsubscribeTransportChanges = this.transports.onChange?.(() => {
+        const ignoreUrls = this.getIgnoreUrls();
+        for (const instrumentation of defaultInstrumentations.flat()) {
+          const config = { ...instrumentation.getConfig(), ignoreUrls };
+          instrumentation.setConfig(config);
+        }
+      });
+    }
 
     this.api.initOTEL(trace, context);
   }
 
+  destroy(): void {
+    this.unsubscribeTransportChanges?.();
+    this.unsubscribeTransportChanges = undefined;
+  }
+
   private getIgnoreUrls(): Array<string | RegExp> {
-    return this.transports.transports.flatMap((transport: Transport) => transport.getIgnoreUrls());
+    const patterns = [
+      ...(this.config.ignoreUrls ?? []),
+      ...this.transports.transports.flatMap((transport: Transport) => transport.getIgnoreUrls()),
+    ];
+    return patterns.flatMap<string | RegExp>((pattern) => {
+      if (typeof pattern !== 'string') {
+        return [pattern];
+      }
+      try {
+        // OTel compares against absolute request URLs; honor relative endpoints and <base>.
+        const url = new URL(pattern, typeof document === 'undefined' ? undefined : document.baseURI).href;
+        return url === pattern ? [pattern] : [pattern, url];
+      } catch {
+        return [pattern];
+      }
+    });
   }
 }
