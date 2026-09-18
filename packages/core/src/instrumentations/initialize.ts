@@ -60,7 +60,7 @@ export function initializeInstrumentations(
             return existingTransportIndex;
           }
 
-          return null;
+          return acc;
         },
         null
       );
