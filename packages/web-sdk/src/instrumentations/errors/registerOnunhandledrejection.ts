@@ -6,9 +6,9 @@ import { getErrorDetails } from './getErrorDetails';
 import type { ExtendedPromiseRejectionEvent } from './types';
 
 // Store handlers for cleanup in tests
-const registeredHandlers = new Set<() => void>();
+const registeredHandlers: Array<(evt: ExtendedPromiseRejectionEvent) => void> = [];
 
-export function registerOnunhandledrejection(api: API): () => void {
+export function registerOnunhandledrejection(api: API): void {
   const handler = (evt: ExtendedPromiseRejectionEvent) => {
     let error = evt;
 
@@ -34,15 +34,13 @@ export function registerOnunhandledrejection(api: API): () => void {
   };
 
   globalObject.addEventListener('unhandledrejection', handler);
-  const cleanup = () => {
-    globalObject.removeEventListener('unhandledrejection', handler);
-    registeredHandlers.delete(cleanup);
-  };
-  registeredHandlers.add(cleanup);
-  return cleanup;
+  registeredHandlers.push(handler);
 }
 
 // Test-only utility to reset state between tests
 export function __resetOnunhandledrejectionForTests(): void {
-  registeredHandlers.forEach((cleanup) => cleanup());
+  registeredHandlers.forEach((handler) => {
+    globalObject.removeEventListener('unhandledrejection', handler);
+  });
+  registeredHandlers.length = 0;
 }

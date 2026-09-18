@@ -143,8 +143,9 @@ several tabs, and the SDK does not infer which tab owns a request.
 
 Workers have no pagehide or document visibility lifecycle. Telemetry uses normal
 batch timers; abruptly terminating a worker can lose pending telemetry. Service
-worker activation, suspension, and `waitUntil` delivery are not supported, even
-though the common instrumentation has unit coverage without DOM or XHR APIs.
+workers have not been tested in a browser and remain unsupported. Unit tests only
+cover common code with simulated worker globals and missing DOM/XHR APIs; they do
+not validate service-worker activation, suspension, or `waitUntil` delivery.
 
 Worker lifetime is controlled by the browser. In the tested Playwright WebKit 26.5
 build, a shared worker stopped responding after its creating tab closed despite

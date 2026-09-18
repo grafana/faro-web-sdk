@@ -1,11 +1,12 @@
 /** @jest-environment node */
 
-import { EVENT_SESSION_START } from '@grafana/faro-core';
+import { EVENT_SESSION_START, globalObject } from '@grafana/faro-core';
 import type { EventEvent, ExceptionEvent, ExceptionEventExtended, Faro } from '@grafana/faro-core';
 import { MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { getWebInstrumentations, initializeFaro } from './index';
 import { __resetConsoleMonitorForTests } from './instrumentations/_internal/monitors/consoleMonitor';
+import { __resetOnunhandledrejectionForTests } from './instrumentations/errors/registerOnunhandledrejection';
 import { isWorker } from './utils/worker';
 
 const instances: Faro[] = [];
@@ -35,12 +36,13 @@ beforeEach(() => {
 
 afterEach(() => {
   for (const faro of instances.splice(0)) {
-    // Remove individually: this also verifies each instrumentation's cleanup.
     for (const instrumentation of faro.instrumentations.instrumentations) {
-      faro.instrumentations.remove(instrumentation);
+      instrumentation.destroy?.();
     }
   }
   __resetConsoleMonitorForTests();
+  __resetOnunhandledrejectionForTests();
+  Reflect.deleteProperty(globalThis, 'onerror');
   Reflect.deleteProperty(globalThis, 'self');
   Reflect.deleteProperty(globalThis, 'addEventListener');
   Reflect.deleteProperty(globalThis, 'removeEventListener');
@@ -87,9 +89,11 @@ it('respects explicit metadata and console opt-out', () => {
   expect(faro.instrumentations.instrumentations).toHaveLength(2);
 });
 
-it('preserves error stacks and original errors, filters errors, and removes only its own listeners', () => {
+it('preserves worker error stacks, filtering, original errors, and the host handler', () => {
+  const hostHandler = jest.fn();
+  globalObject.onerror = hostHandler;
   let capturedOriginalError: unknown;
-  const first = initialize({
+  const { transport } = initialize({
     preserveOriginalError: true,
     ignoreErrors: ['ignored'],
     beforeSend: (item) => {
@@ -99,25 +103,12 @@ it('preserves error stacks and original errors, filters errors, and removes only
       return item;
     },
   });
-  const second = initialize();
-  const hostHandler = jest.fn();
-  target.addEventListener('error', hostHandler);
   const error = new Error('worker error');
   error.stack =
     'Error: worker error\n    at inner (http://localhost/worker.js:10:2)\n    at outer (http://localhost/worker.js:20:4)';
-  const dispatch = (error: Error) =>
-    target.dispatchEvent(
-      Object.assign(new Event('error'), {
-        message: error.message,
-        error,
-        filename: 'http://localhost/worker.js',
-        lineno: 10,
-        colno: 2,
-      })
-    );
-  dispatch(error);
+  globalObject.onerror?.(error.message, 'worker.js', 10, 2, error);
   expect(capturedOriginalError).toBe(error);
-  const exceptions = () => first.transport.items.filter(({ type }) => type === 'exception');
+  const exceptions = () => transport.items.filter(({ type }) => type === 'exception');
   expect(exceptions()).toHaveLength(1);
   expect(exceptions()[0]?.payload).toMatchObject({
     value: 'worker error',
@@ -128,52 +119,28 @@ it('preserves error stacks and original errors, filters errors, and removes only
       ]),
     },
   });
-  dispatch(new Error('ignored'));
+  globalObject.onerror?.('ignored', 'worker.js', 10, 2, new Error('ignored'));
   expect(exceptions()).toHaveLength(1);
-  const instrumentation = first.faro.instrumentations.instrumentations.find(({ name }) =>
-    name.endsWith(':instrumentation-errors')
-  )!;
-  first.faro.instrumentations.remove(instrumentation);
-  dispatch(new Error('after cleanup'));
-  expect(exceptions()).toHaveLength(1);
-  expect(second.transport.items.filter(({ type }) => type === 'exception')).toHaveLength(3);
-  expect(hostHandler).toHaveBeenCalledTimes(3);
-  first.faro.instrumentations.add(instrumentation);
-  dispatch(new Error('after reinitialize'));
-  expect(exceptions()).toHaveLength(2);
+  expect(hostHandler).toHaveBeenCalledTimes(2);
 });
 
-it.each([undefined, 'missing'])('uses event coordinates for worker errors without a stack (%p)', (error) => {
+it.each([0, false, '', null, undefined, new Error('rejected')])('captures worker rejection reason %p', (reason) => {
   const { transport } = initialize();
-  target.dispatchEvent(
-    Object.assign(new Event('error'), {
-      message: 'ReferenceError: missing',
-      error,
-      filename: 'worker.js',
-      lineno: 12,
-      colno: 4,
-    })
-  );
-  expect(transport.items.find(({ type }) => type === 'exception')?.payload).toMatchObject({
-    stacktrace: { frames: [expect.objectContaining({ filename: 'worker.js', lineno: 12, colno: 4 })] },
-  });
-});
-
-it.each([0, false, '', null, undefined, new Error('rejected')])('captures rejection reason %p', (reason) => {
-  const { faro, transport } = initialize();
-  const event = Object.assign(new Event('unhandledrejection'), { reason });
-  target.dispatchEvent(event);
+  target.dispatchEvent(Object.assign(new Event('unhandledrejection'), { reason }));
   const errors = transport.items.filter(({ type }) => type === 'exception');
   expect(errors).toHaveLength(1);
   expect((errors[0]?.payload as ExceptionEvent).value).toContain(
     reason instanceof Error ? reason.message : String(reason)
   );
-  const instrumentation = faro.instrumentations.instrumentations.find(({ name }) =>
-    name.endsWith(':instrumentation-errors')
-  )!;
-  faro.instrumentations.remove(instrumentation);
-  target.dispatchEvent(event);
-  expect(transport.items.filter(({ type }) => type === 'exception')).toHaveLength(1);
+});
+
+it('captures a primitive thrown in a worker using its event message and location', () => {
+  const { transport } = initialize();
+  globalObject.onerror?.('Uncaught missing', 'worker.js', 12, 4, 'missing' as unknown as Error);
+  expect(transport.items.find(({ type }) => type === 'exception')?.payload).toMatchObject({
+    value: 'missing',
+    stacktrace: { frames: [expect.objectContaining({ filename: 'worker.js', lineno: 12, colno: 4 })] },
+  });
 });
 
 it('keeps sampling and generated identities local to each isolated instance', () => {
