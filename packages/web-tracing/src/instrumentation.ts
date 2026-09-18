@@ -11,7 +11,7 @@ import {
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
 } from '@opentelemetry/semantic-conventions';
 
-import { BaseInstrumentation, isArray, VERSION } from '@grafana/faro-web-sdk';
+import { BaseInstrumentation, captureMetas, isArray, VERSION } from '@grafana/faro-web-sdk';
 import type { Transport } from '@grafana/faro-web-sdk';
 
 import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
@@ -109,8 +109,10 @@ export class TracingInstrumentation extends BaseInstrumentation {
       resource,
       sampler: {
         shouldSample: () => {
+          // An earlier activation listener can start a span before the session is initialized.
+          // Reconcile it before sampling, since nonrecording spans never reach metadata capture.
           return {
-            decision: getSamplingDecision(this.api.getSession()),
+            decision: getSamplingDecision(captureMetas(this.metas).session),
           };
         },
       },

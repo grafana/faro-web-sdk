@@ -1,5 +1,6 @@
 import type { APIEvent, ExceptionEvent } from '../api';
 import type { Config } from '../config';
+import { getInternalMetas } from '../internal';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import { captureMetas, isMetaCaptured, markMetaCaptured } from '../metas/capture';
@@ -125,7 +126,7 @@ export function initializeTransports(
   // 3i. If batching is enabled, enqueue the signal
   // 3ii. Send the signal instantly to all un-batched transports
   const execute: Transports['execute'] = (item) => {
-    if (config.paused) {
+    if (config.paused || !getInternalMetas(metas).shouldCapture()) {
       return;
     }
 

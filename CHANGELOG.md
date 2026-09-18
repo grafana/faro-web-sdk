@@ -10,6 +10,7 @@
 ### Bug Fixes
 
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
+- **web-sdk:** prevent duplicate sessions when Chrome activates a prerendered page
 
 ## [2.12.0](https://github.com/grafana/faro-web-sdk/compare/v2.11.0...v2.12.0) (2026-09-18)
 

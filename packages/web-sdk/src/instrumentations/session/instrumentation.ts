@@ -11,6 +11,7 @@ import type { BeforeSendHook, Config, Meta, MetaSession } from '@grafana/faro-co
 import type { TransportItem } from '../..';
 import { createSession } from '../../metas';
 
+import { type PendingSessionChanges, PrerenderSession } from './prerenderSession';
 import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
 import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
 import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
@@ -31,6 +32,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
   private captureListener: (() => void) | undefined;
   private beforeSendHook: BeforeSendHook | undefined;
   private sessionStartListener: ((meta: Meta) => void) | undefined;
+  private prerenderSession: PrerenderSession | undefined;
 
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
@@ -57,11 +59,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
   private createInitialSession(
     SessionManager: SessionManager,
-    sessionsConfig: Required<Config>['sessionTracking']
+    sessionsConfig: Required<Config>['sessionTracking'],
+    pendingChanges?: PendingSessionChanges
   ): {
     initialSession: FaroUserSession;
     lifecycleType: LifecycleType;
   } {
+    const pendingSession = pendingChanges?.session;
     let storedUserSession: FaroUserSession | null = SessionManager.fetchUserSession();
 
     if (sessionsConfig.persistent && sessionsConfig.maxSessionPersistenceTime && storedUserSession) {
@@ -77,8 +81,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
     let lifecycleType: LifecycleType;
     let initialSession: FaroUserSession;
+    const hasValidStoredSession = isUserSessionValid(storedUserSession);
 
-    if (isUserSessionValid(storedUserSession)) {
+    if (
+      !pendingChanges?.reset &&
+      hasValidStoredSession &&
+      (!pendingSession?.id || pendingSession.id === storedUserSession?.sessionId)
+    ) {
       const sessionId = storedUserSession?.sessionId;
 
       initialSession = createUserSessionObject({
@@ -107,14 +116,22 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       lifecycleType = EVENT_SESSION_RESUME;
     } else {
-      const sessionId = sessionsConfig.session?.id ?? createSession().id;
+      const sessionId = pendingChanges?.reset
+        ? createSession().id
+        : (pendingSession?.id ?? sessionsConfig.session?.id ?? createSession().id);
 
       initialSession = createUserSessionObject({
         sessionId,
         isSampled: isSampled(),
       });
 
-      const overrides = sessionsConfig.session?.overrides;
+      // A pending reset or replacement inherits the session it would have updated
+      // after normal initialization, including overrides read from storage at activation.
+      const storedOverrides =
+        pendingChanges && hasValidStoredSession ? storedUserSession?.sessionMeta?.overrides : undefined;
+      const overrides = storedOverrides
+        ? { ...sessionsConfig.session?.overrides, ...storedOverrides }
+        : sessionsConfig.session?.overrides;
 
       initialSession.sessionMeta = {
         id: sessionId,
@@ -122,11 +139,31 @@ export class SessionInstrumentation extends BaseInstrumentation {
           isSampled: initialSession.isSampled.toString(),
           ...sessionsConfig.session?.attributes,
         },
-        // new session we don't care about previous overrides
         ...(overrides ? { overrides } : {}),
       };
 
       lifecycleType = EVENT_SESSION_START;
+    }
+
+    if (pendingSession) {
+      initialSession.sessionMeta = {
+        ...initialSession.sessionMeta,
+        attributes: {
+          ...initialSession.sessionMeta?.attributes,
+          ...pendingSession.attributes,
+          isSampled: initialSession.isSampled.toString(),
+        },
+      };
+      if (pendingSession.overrides) {
+        const overrides = pendingChanges?.inheritOverrides
+          ? { ...initialSession.sessionMeta.overrides, ...pendingSession.overrides }
+          : pendingSession.overrides;
+        if (Object.keys(overrides).length > 0) {
+          initialSession.sessionMeta.overrides = overrides;
+        } else {
+          delete initialSession.sessionMeta.overrides;
+        }
+      }
     }
 
     return { initialSession, lifecycleType };
@@ -165,8 +202,22 @@ export class SessionInstrumentation extends BaseInstrumentation {
   initialize(): void {
     this.logDebug('init session instrumentation');
 
-    const sessionTrackingConfig = this.config.sessionTracking;
+    const prerendering = (document as Document & { prerendering?: boolean }).prerendering;
+    if (this.config.sessionTracking?.enabled && (prerendering || this.prerenderSession)) {
+      // Chromium discards speculative sessionStorage writes on activation.
+      this.prerenderSession ??= new PrerenderSession(this.metas, this.transports, (changes) => {
+        this.prerenderSession = undefined;
+        this.initializeSession(changes);
+      });
+      this.prerenderSession.initialize();
+      return;
+    }
 
+    this.initializeSession();
+  }
+
+  private initializeSession(pendingChanges?: PendingSessionChanges): void {
+    const sessionTrackingConfig = this.config.sessionTracking;
     if (sessionTrackingConfig?.enabled) {
       const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
 
@@ -174,7 +225,11 @@ export class SessionInstrumentation extends BaseInstrumentation {
       this.isAdoptingSession = sessionManager.isAdopting;
       this.registerBeforeSendHook(sessionManager.recordActivity);
 
-      const { initialSession, lifecycleType } = this.createInitialSession(SessionManager, sessionTrackingConfig);
+      const { initialSession, lifecycleType } = this.createInitialSession(
+        SessionManager,
+        sessionTrackingConfig,
+        pendingChanges
+      );
 
       SessionManager.storeUserSession(initialSession);
 
@@ -203,6 +258,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   destroy(): void {
+    // Keep pending API writes if this instance is readded before they are applied.
+    this.prerenderSession?.destroy();
     if (this.captureListener) {
       this.metas.removeCaptureListener?.(this.captureListener);
       this.captureListener = undefined;
