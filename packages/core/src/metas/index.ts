@@ -21,5 +21,4 @@ export type {
   MetaView,
   Metas,
   MetaOverrides,
-  SessionMetaUpdate,
 } from './types';

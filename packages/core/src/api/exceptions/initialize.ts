@@ -1,4 +1,5 @@
 import type { Config, Patterns } from '../../config';
+import { getInternalMetas } from '../../internal';
 import type { InternalLogger } from '../../internalLogger';
 import { captureMetas, type Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
@@ -77,7 +78,7 @@ export function initializeExceptionsAPI({
       return;
     }
     try {
-      if (metas.shouldCapture?.() === false) {
+      if (!getInternalMetas(metas).shouldCapture()) {
         return;
       }
       const ctx = stringifyObjectValues({

@@ -4,27 +4,15 @@ export type MetaItem<P = Partial<Meta>> = P | MetaGetter<P>;
 
 export type MetasListener = (value: Meta) => void;
 
-/** An explicit session API write, before defaults or existing metadata are merged. */
-export type SessionMetaUpdate =
-  | { type: 'replace'; session?: MetaSession; overrides?: MetaOverrides }
-  | { type: 'overrides'; overrides: MetaOverrides };
-
 export interface Metas {
   add: (...getters: MetaItem[]) => void;
   remove: (...getters: MetaItem[]) => void;
   addListener: (listener: MetasListener) => void;
   removeListener: (listener: MetasListener) => void;
-  addSessionUpdateListener?: (listener: (update: SessionMetaUpdate) => void) => void;
-  removeSessionUpdateListener?: (listener: (update: SessionMetaUpdate) => void) => void;
-  notifySessionUpdate?: (update: SessionMetaUpdate) => void;
   /** Reconcile before capture. Optional for compatibility with older extension implementations. */
   capture?: (callback?: () => void) => Meta;
   addCaptureListener?: (listener: () => void) => void;
   removeCaptureListener?: (listener: () => void) => void;
-  /** Filter signals before API deduplication and buffering, without blocking metadata updates. */
-  shouldCapture?: () => boolean;
-  addCaptureFilter?: (filter: () => boolean) => void;
-  removeCaptureFilter?: (filter: () => boolean) => void;
   value: Meta;
 }
 

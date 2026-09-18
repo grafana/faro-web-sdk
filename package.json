@@ -12,6 +12,7 @@
   "private": true,
   "workspaces": [
     "packages/**",
+    "!packages/core/internal",
     "experimental/**",
     "e2e/*"
   ],

@@ -1,4 +1,5 @@
-import { isEmpty, type Metas, type MetaSession, type SessionMetaUpdate, type Transports } from '@grafana/faro-core';
+import { isEmpty, type Metas, type MetaSession, type Transports } from '@grafana/faro-core';
+import { getInternalMetas, type SessionMetaUpdate } from '@grafana/faro-core/internal';
 
 export interface PendingSessionChanges {
   reset: boolean;
@@ -63,8 +64,8 @@ export class PrerenderSession {
 
   initialize(): void {
     this.waiting = true;
-    this.metas.addSessionUpdateListener?.(this.recordUpdate);
-    this.metas.addCaptureFilter?.(this.shouldCapture);
+    getInternalMetas(this.metas).addSessionUpdateListener(this.recordUpdate);
+    getInternalMetas(this.metas).addCaptureFilter(this.shouldCapture);
     this.transports.addBeforeSendHooks(this.discard);
     document.addEventListener('prerenderingchange', this.activate);
     // Earlier activation listeners can emit web vitals before our DOM listener runs.
@@ -76,9 +77,9 @@ export class PrerenderSession {
   destroy(): void {
     this.waiting = false;
     document.removeEventListener('prerenderingchange', this.activate);
-    this.metas.removeSessionUpdateListener?.(this.recordUpdate);
+    getInternalMetas(this.metas).removeSessionUpdateListener(this.recordUpdate);
     this.metas.removeCaptureListener?.(this.activate);
-    this.metas.removeCaptureFilter?.(this.shouldCapture);
+    getInternalMetas(this.metas).removeCaptureFilter(this.shouldCapture);
     this.transports.removeBeforeSendHooks(this.discard);
   }
 }

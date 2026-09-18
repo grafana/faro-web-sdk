@@ -1,4 +1,5 @@
 import type { Config } from '../../config';
+import { getInternalMetas } from '../../internal';
 import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas } from '../../metas';
 import type { Transports } from '../../transports';
@@ -65,7 +66,7 @@ export function initializeMetaAPI({
   };
 
   const setSession: MetaAPI['setSession'] = (session, options) => {
-    metas.notifySessionUpdate?.({ type: 'replace', session, overrides: options?.overrides });
+    getInternalMetas(metas).notifySessionUpdate({ type: 'replace', session, overrides: options?.overrides });
     updateSession(session, options);
   };
 
@@ -73,7 +74,7 @@ export function initializeMetaAPI({
 
   const setView: MetaAPI['setView'] = (view, options) => {
     if (options?.overrides) {
-      metas.notifySessionUpdate?.({ type: 'overrides', overrides: options.overrides });
+      getInternalMetas(metas).notifySessionUpdate({ type: 'overrides', overrides: options.overrides });
       updateSession(getSession(), { overrides: options.overrides });
     }
 

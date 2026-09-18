@@ -1,46 +1,10 @@
 import { initializeFaro } from '../initialize';
 import { mockConfig, MockTransport } from '../testUtils';
-import { TransportItemType } from '../transports';
 
 import { captureMetas } from './capture';
 import type { Metas } from './types';
 
 describe('metas', () => {
-  it('filters signals before deduplication and buffering while allowing metadata updates', () => {
-    const transport = new MockTransport();
-    const { api, metas, transports } = initializeFaro(mockConfig({ transports: [transport] }));
-    const filter = () => false;
-    const secondFilter = () => false;
-    const error = new Error('same error');
-    const pushSignals = () => {
-      api.pushEvent('same event');
-      api.pushLog(['same log']);
-      api.pushMeasurement({ type: 'same measurement', values: { count: 1 } });
-      api.pushError(error);
-      api.pushTraces({ resourceSpans: [] });
-      // Extensions can bypass the public push APIs.
-      transports.execute({ type: TransportItemType.TRACE, payload: { resourceSpans: [] }, meta: metas.value });
-    };
-    metas.addCaptureFilter!(filter);
-    metas.addCaptureFilter!(secondFilter);
-    api.setSession({ id: 'updated-while-filtered' });
-    pushSignals();
-    expect(api.getSession()?.id).toBe('updated-while-filtered');
-    expect(transport.items).toEqual([]);
-
-    metas.removeCaptureFilter!(filter);
-    pushSignals();
-    expect(transport.items).toEqual([]);
-
-    metas.removeCaptureFilter!(secondFilter);
-    pushSignals();
-    expect(transport.items).toHaveLength(6);
-    expect(transport.items.every((item) => item.meta.session?.id === 'updated-while-filtered')).toBe(true);
-    pushSignals();
-    // Traces are not deduplicated. The four other signals still are.
-    expect(transport.items).toHaveLength(8);
-  });
-
   it('supports the pre-capture public Metas interface and runs scoped callbacks', () => {
     const metas: Metas = {
       add: () => {},

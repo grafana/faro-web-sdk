@@ -1,4 +1,5 @@
 import type { Config } from '../../config';
+import { getInternalMetas } from '../../internal';
 import type { InternalLogger } from '../../internalLogger';
 import { captureMetas, type Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
@@ -37,7 +38,7 @@ export function initializeMeasurementsAPI({
     { skipDedupe, context, spanContext, timestampOverwriteMs } = {}
   ) => {
     try {
-      if (metas.shouldCapture?.() === false) {
+      if (!getInternalMetas(metas).shouldCapture()) {
         return;
       }
       const ctx = stringifyObjectValues(context);

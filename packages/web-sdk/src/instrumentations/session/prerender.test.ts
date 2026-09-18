@@ -449,9 +449,12 @@ describe('prerendered sessions', () => {
   });
 
   it('does not create a session when removed before activation', () => {
-    start();
+    start({ batching: { enabled: false } });
     faro.instrumentations.remove(instrumentation);
-    expect(faro.metas.shouldCapture?.()).toBe(true);
+    // Removing the instrumentation must release its capture filter even before activation.
+    faro.api.pushEvent('after-removal');
+    expect(events().map((item) => item.payload.name)).toEqual(['after-removal']);
+    transport.items = [];
     activate();
     jest.advanceTimersByTime(2000);
 

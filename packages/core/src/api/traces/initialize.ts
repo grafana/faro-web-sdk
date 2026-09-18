@@ -1,4 +1,5 @@
 import type { Config } from '../../config';
+import { getInternalMetas } from '../../internal';
 import type { InternalLogger } from '../../internalLogger';
 import { captureMetas, type Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
@@ -40,7 +41,7 @@ export function initializeTracesAPI(
 
   const pushTraces: TracesAPI['pushTraces'] = (payload) => {
     try {
-      if (metas.shouldCapture?.() === false) {
+      if (!getInternalMetas(metas).shouldCapture()) {
         return;
       }
       const item: TransportItem<TraceEvent> = {

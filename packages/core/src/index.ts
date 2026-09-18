@@ -75,7 +75,6 @@ export type {
   MetaUser,
   MetaView,
   MetaOverrides,
-  SessionMetaUpdate,
 } from './metas';
 
 export {
