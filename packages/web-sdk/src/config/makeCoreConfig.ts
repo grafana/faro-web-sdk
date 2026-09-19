@@ -5,6 +5,7 @@ import {
   defaultInternalLoggerLevel,
   defaultLogArgsSerializer,
   defaultUnpatchedConsole,
+  globalObject,
   isBoolean,
   isEmpty,
   isObject,
@@ -148,7 +149,7 @@ function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
     sdkMeta,
   ];
 
-  const isK6BrowserSession = isObject((window as any)?.k6);
+  const isK6BrowserSession = isObject(globalObject['k6']);
   if (isK6BrowserSession) {
     return [...initialMetas, k6Meta];
   }

@@ -54,7 +54,7 @@ Besides the mandatory properties, Faro configuration also supports the following
 ## Faro instance
 
 Faro instance is an object which can be accessed by either importing it from the package or by referencing it from the
-global object (`window` in browsers and `global` in Node.js).
+global object (`globalThis` when available, then `global` or `self`).
 
 ```ts
 // Browser/Node.js
@@ -62,11 +62,8 @@ import { faro } from '@grafana/faro-core';
 
 faro.api.pushLog(/* ... */);
 
-// Browser
-window.faro.api.pushLog(/* ... */);
-
-// Node.js
-global.faro.api.pushLog(/* ... */);
+// Browser/Node.js/Web workers
+globalThis.faro.api.pushLog(/* ... */);
 ```
 
 ## API

@@ -3,7 +3,7 @@ import type { Config } from './config';
 import { initializeInstrumentations, registerInitialInstrumentations } from './instrumentations';
 import { initializeInternalLogger } from './internalLogger';
 import { initializeMetas, registerInitialMetas } from './metas';
-import { isInternalFaroOnGlobalObject, registerFaro } from './sdk';
+import { getInternalFaroFromGlobalObject, isInternalFaroOnGlobalObject, registerFaro } from './sdk';
 import type { Faro } from './sdk';
 import { initializeTransports, registerInitialTransports } from './transports';
 import { initializeUnpatchedConsole } from './unpatchedConsole';
@@ -13,11 +13,11 @@ export function initializeFaro(config: Config): Faro {
   const internalLogger = initializeInternalLogger(unpatchedConsole, config);
 
   if (isInternalFaroOnGlobalObject() && !config.isolate) {
-    internalLogger.error(
-      'Faro is already registered. Either add instrumentations, transports etc. to the global faro instance or use the "isolate" property'
+    internalLogger.warn(
+      'Faro is already registered. Reusing the existing global Faro instance. Either add instrumentations, transports etc. to the global faro instance or use the "isolate" property'
     );
 
-    return undefined!;
+    return getInternalFaroFromGlobalObject()!;
   }
 
   internalLogger.debug('Initializing');
