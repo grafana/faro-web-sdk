@@ -9,6 +9,8 @@
 
 ### Bug Fixes
 
+- **core:** prevent isolated initialization from replacing an existing non-isolated `faro` export
+  ([#1846](https://github.com/grafana/faro-web-sdk/issues/1846)).
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
 
 ## [2.12.0](https://github.com/grafana/faro-web-sdk/compare/v2.11.0...v2.12.0) (2026-09-18)
