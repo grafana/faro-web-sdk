@@ -20,6 +20,7 @@ import { browserMeta, osMeta, sdkMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
+import { isWorker } from '../utils/worker';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
@@ -138,6 +139,10 @@ function getFilteredInstrumentations(
 }
 
 function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
+  if (isWorker()) {
+    return [browserMeta, osMeta, sdkMeta];
+  }
+
   const { page, generatePageId } = browserConfig?.pageTracking ?? {};
 
   const initialMetas: MetaItem[] = [

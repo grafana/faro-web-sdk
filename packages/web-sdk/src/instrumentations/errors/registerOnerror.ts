@@ -1,13 +1,19 @@
+import { globalObject } from '@grafana/faro-core';
 import type { API, PushErrorOptions } from '@grafana/faro-core';
 
 import { getDetailsFromErrorArgs } from './getErrorDetails';
 
 export function registerOnerror(api: API): void {
-  const oldOnerror = window.onerror;
+  const target = typeof window !== 'undefined' ? window : globalObject;
+  const oldOnerror = target.onerror;
 
-  window.onerror = (...args) => {
+  target.onerror = (...args) => {
     try {
-      const { value, type, stackFrames } = getDetailsFromErrorArgs(args);
+      let { value, type, stackFrames } = getDetailsFromErrorArgs(args);
+      if (typeof window === 'undefined' && !value) {
+        // Retain the event message/location when a worker throws a primitive.
+        ({ value, type, stackFrames } = getDetailsFromErrorArgs(args.slice(0, 4)));
+      }
       const originalError = args[4];
 
       if (value) {
@@ -20,7 +26,7 @@ export function registerOnerror(api: API): void {
         api.pushError(new Error(value), options);
       }
     } finally {
-      oldOnerror?.apply(window, args);
+      oldOnerror?.apply(target, args);
     }
   };
 }
