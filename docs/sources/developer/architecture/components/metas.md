@@ -214,6 +214,7 @@ Methods and properties:
 - `remove()` - removes a specific meta
 - `replace(previous, replacement)` - atomically removes the previous item and appends its replacement
 - `beginSessionUpdate()` - rejects captures until a session replacement commits; returns a cancellation function
+- `assertCaptureAllowed()` - checks capture admission without reconciling or selecting new ownership
 - `addListener()` - adds a new listener
 - `removeListener()` - removes a specific listener
 - `capture(callback?)` - runs capture listeners and returns metadata assembled before the optional
