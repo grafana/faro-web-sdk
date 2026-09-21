@@ -9,7 +9,6 @@ import {
 import type { BeforeSendHook, Config, Meta, MetaSession } from '@grafana/faro-core';
 
 import type { TransportItem } from '../..';
-import { createSession } from '../../metas';
 
 import { type PendingSessionChanges, PrerenderSession } from './prerenderSession';
 import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
@@ -90,11 +89,14 @@ export class SessionInstrumentation extends BaseInstrumentation {
     ) {
       const sessionId = storedUserSession?.sessionId;
 
-      initialSession = createUserSessionObject({
-        sessionId,
-        isSampled: storedUserSession!.isSampled || false,
-        started: storedUserSession?.started,
-      });
+      initialSession = createUserSessionObject(
+        {
+          sessionId,
+          isSampled: storedUserSession!.isSampled || false,
+          started: storedUserSession?.started,
+        },
+        this
+      );
 
       const storedUserSessionMeta = storedUserSession?.sessionMeta;
 
@@ -116,14 +118,14 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       lifecycleType = EVENT_SESSION_RESUME;
     } else {
-      const sessionId = pendingChanges?.reset
-        ? createSession().id
-        : (pendingSession?.id ?? sessionsConfig.session?.id ?? createSession().id);
-
-      initialSession = createUserSessionObject({
-        sessionId,
-        isSampled: isSampled(),
-      });
+      initialSession = createUserSessionObject(
+        {
+          sessionId: pendingChanges?.reset ? undefined : (pendingSession?.id ?? sessionsConfig.session?.id),
+          isSampled: isSampled(this),
+        },
+        this
+      );
+      const sessionId = initialSession.sessionId;
 
       // A pending reset or replacement inherits the session it would have updated
       // after normal initialization, including overrides read from storage at activation.
@@ -221,7 +223,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
     if (sessionTrackingConfig?.enabled) {
       const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
 
-      const sessionManager = new SessionManager();
+      const sessionManager = new SessionManager(this);
       this.isAdoptingSession = sessionManager.isAdopting;
       this.registerBeforeSendHook(sessionManager.recordActivity);
 

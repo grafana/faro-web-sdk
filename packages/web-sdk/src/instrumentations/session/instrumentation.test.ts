@@ -10,7 +10,6 @@ import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config/makeCoreConfig';
 import { createSession } from '../../metas/session';
-import * as createSessionMock from '../../metas/session';
 
 import { SessionInstrumentation } from './instrumentation';
 import {
@@ -586,13 +585,13 @@ describe('SessionInstrumentation', () => {
 
   it('creates new session meta for browser with no faro session stored in web storage.', () => {
     const mockSessionMeta = { id: 'new-session', attributes: { isSampled: 'true' } };
-    jest.spyOn(createSessionMock, 'createSession').mockReturnValueOnce(mockSessionMeta);
 
     const { metas } = initializeFaro(
       mockConfig({
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
           enabled: true,
+          generateSessionId: () => mockSessionMeta.id,
           samplingRate: 1, // default
         },
       })

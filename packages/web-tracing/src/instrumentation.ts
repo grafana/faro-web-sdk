@@ -3,7 +3,7 @@ import type { Attributes } from '@opentelemetry/api';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
-import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
+import { BatchSpanProcessor, SamplingDecision, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
@@ -109,6 +109,10 @@ export class TracingInstrumentation extends BaseInstrumentation {
       resource,
       sampler: {
         shouldSample: () => {
+          // Drop speculative spans before OpenTelemetry can queue them for export after activation.
+          if ((document as Document & { prerendering?: boolean }).prerendering) {
+            return { decision: SamplingDecision.NOT_RECORD };
+          }
           // An earlier activation listener can start a span before the session is initialized.
           // Reconcile it before sampling, since nonrecording spans never reach metadata capture.
           return {

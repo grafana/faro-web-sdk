@@ -2,7 +2,7 @@ import { context, propagation, trace } from '@opentelemetry/api';
 import type { ReadableSpan } from '@opentelemetry/sdk-trace-web';
 
 import { MockTransport } from '@grafana/faro-core/src/testUtils';
-import { initializeFaro, SessionInstrumentation } from '@grafana/faro-web-sdk';
+import { initializeFaro, SessionInstrumentation, STORAGE_KEY, TransportItemType } from '@grafana/faro-web-sdk';
 import type { Faro } from '@grafana/faro-web-sdk';
 
 import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
@@ -51,6 +51,76 @@ describe('tracing during prerender activation', () => {
   });
 
   describe.each([false, true])('persistent=%s', (persistent) => {
+    it.each(['configuration', 'API'])(
+      'does not queue prerender spans with an explicitly sampled session from %s',
+      async (source) => {
+        const transport = new MockTransport();
+        const explicitSession = { id: 'explicit-session', attributes: { isSampled: 'true' } };
+        faro = initializeFaro({
+          app: { name: 'prerender-test' },
+          isolate: true,
+          preventGlobalExposure: true,
+          batching: { enabled: false },
+          transports: [transport],
+          instrumentations: [session, new TracingInstrumentation({ instrumentations: [] })],
+          sessionTracking: {
+            persistent,
+            samplingRate: 1,
+            ...(source === 'configuration' && { session: explicitSession }),
+          },
+        });
+        if (source === 'API') {
+          faro.api.setSession(explicitSession);
+        }
+        const tracer = trace.getTracer('prerender-test');
+        const speculative = tracer.startSpan('speculative-span');
+        const wasRecording = speculative.isRecording();
+        speculative.end();
+
+        // Activate before OpenTelemetry's batch timer exports the ended span.
+        const storage = persistent ? window.localStorage : window.sessionStorage;
+        storage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            sessionId: 'stored-session',
+            started: Date.now(),
+            lastActivity: Date.now(),
+            isSampled: true,
+            sessionMeta: { id: 'stored-session', attributes: { isSampled: 'true' } },
+          })
+        );
+        prerendering = false;
+        document.dispatchEvent(new Event('prerenderingchange'));
+        const visible = tracer.startSpan('visible-span');
+        visible.end();
+        await jest.advanceTimersByTimeAsync(TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS + 1);
+
+        const traces = transport.items.filter((item) => item.type === TransportItemType.TRACE);
+        expect(traces).toHaveLength(1);
+        const activatedId = source === 'configuration' ? 'stored-session' : 'explicit-session';
+        expect(traces[0]?.meta.session?.id).toBe(activatedId);
+        expect(traces[0]?.payload).toMatchObject({
+          resourceSpans: [
+            {
+              scopeSpans: [
+                {
+                  spans: [
+                    {
+                      name: 'visible-span',
+                      attributes: expect.arrayContaining([
+                        { key: ATTR_SESSION_ID, value: { stringValue: activatedId } },
+                      ]),
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        });
+        expect(wasRecording).toBe(false);
+      }
+    );
+
     describe.each(['before', 'after'])('application listener registered %s Faro', (listenerOrder) => {
       it.each([0, 1])('uses the activated session to sample spans at samplingRate=%s', (samplingRate) => {
         const endedSpans: ReadableSpan[] = [];
