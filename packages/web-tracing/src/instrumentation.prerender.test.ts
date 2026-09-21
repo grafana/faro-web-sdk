@@ -50,6 +50,39 @@ describe('tracing during prerender activation', () => {
     window.localStorage.clear();
   });
 
+  describe.each([false, true])('session tracking disabled with prerendering=%s', (isPrerendering) => {
+    it.each(['true', 'false', undefined])('honors application-managed isSampled=%s', async (isSampled) => {
+      prerendering = isPrerendering;
+      const transport = new MockTransport();
+      faro = initializeFaro({
+        app: { name: 'prerender-test' },
+        isolate: true,
+        preventGlobalExposure: true,
+        batching: { enabled: false },
+        transports: [transport],
+        instrumentations: [session, new TracingInstrumentation({ instrumentations: [] })],
+        sessionTracking: { enabled: false },
+      });
+      faro.api.setSession({
+        id: 'application-managed',
+        ...(isSampled !== undefined && { attributes: { isSampled } }),
+      });
+
+      const span = trace.getTracer('prerender-test').startSpan('application-span');
+      const wasRecording = span.isRecording();
+      span.end();
+      await jest.advanceTimersByTimeAsync(TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS + 1);
+
+      const traces = transport.items.filter((item) => item.type === TransportItemType.TRACE);
+      const sampled = isSampled === 'true';
+      expect(wasRecording).toBe(sampled);
+      expect(traces).toHaveLength(sampled ? 1 : 0);
+      if (sampled) {
+        expect(traces[0]?.meta.session?.id).toBe('application-managed');
+      }
+    });
+  });
+
   describe.each([false, true])('persistent=%s', (persistent) => {
     it.each(['configuration', 'API'])(
       'does not queue prerender spans with an explicitly sampled session from %s',

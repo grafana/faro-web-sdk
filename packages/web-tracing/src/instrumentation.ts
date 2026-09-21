@@ -110,7 +110,10 @@ export class TracingInstrumentation extends BaseInstrumentation {
       sampler: {
         shouldSample: () => {
           // Drop speculative spans before OpenTelemetry can queue them for export after activation.
-          if ((document as Document & { prerendering?: boolean }).prerendering) {
+          if (
+            this.config.sessionTracking?.enabled &&
+            (document as Document & { prerendering?: boolean }).prerendering
+          ) {
             return { decision: SamplingDecision.NOT_RECORD };
           }
           // An earlier activation listener can start a span before the session is initialized.
