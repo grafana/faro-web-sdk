@@ -214,10 +214,21 @@ export function getSessionMetaUpdateHandler({
     const hasSessionIdChanged = !!session && sessionId !== sessionFromSessionStorage?.sessionId;
 
     if (hasSessionIdChanged || hasAttributesChanged || hasSessionOverridesChanged) {
-      const userSession = addSessionMetadataToNextSession(
-        createUserSessionObject({ sessionId, isSampled: isSampled() }),
-        sessionFromSessionStorage
-      );
+      const isCurrentSession = sessionFromSessionStorage != null && sessionId === sessionFromSessionStorage.sessionId;
+      const userSession = isCurrentSession
+        ? addSessionMetadataToNextSession(sessionFromSessionStorage, sessionFromSessionStorage)
+        : addSessionMetadataToNextSession(
+            createUserSessionObject({ sessionId, isSampled: isSampled() }),
+            sessionFromSessionStorage
+          );
+
+      const storedPreviousSession = sessionFromSessionStorage?.sessionMeta?.attributes?.['previousSession'];
+      if (isCurrentSession && storedPreviousSession != null && storedPreviousSession !== userSession.sessionId) {
+        userSession.sessionMeta.attributes!['previousSession'] = storedPreviousSession;
+      }
+      if (userSession.sessionMeta.attributes?.['previousSession'] === userSession.sessionId) {
+        delete userSession.sessionMeta.attributes['previousSession'];
+      }
 
       storeUserSession(userSession);
       sendOverrideEvent(hasSessionOverridesChanged, sessionOverrides, storedSessionMetaOverrides);
