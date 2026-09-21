@@ -7,6 +7,12 @@ export type MetasListener = (value: Meta) => void;
 export interface Metas {
   add: (...getters: MetaItem[]) => void;
   remove: (...getters: MetaItem[]) => void;
+  /** Replace an item atomically, giving the replacement precedence over existing metadata. */
+  replace?: (previous: MetaItem | undefined, replacement: MetaItem) => void;
+  /** Reject captures until a session replacement commits, or the preparation is cancelled. */
+  beginSessionUpdate?: () => () => void;
+  /** Check admission without reconciling or changing an already selected owner. */
+  assertCaptureAllowed?: () => void;
   addListener: (listener: MetasListener) => void;
   removeListener: (listener: MetasListener) => void;
   /** Reconcile before capture. Optional for compatibility with older extension implementations. */
