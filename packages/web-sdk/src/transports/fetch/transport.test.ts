@@ -578,6 +578,7 @@ describe('reliable FetchTransport', () => {
       const { transport, internalLogger } = createTransport();
       transport.config = faro.config;
       transport.metas = faro.metas;
+      transport.api = faro.api;
       return { faro, transport, internalLogger };
     };
 

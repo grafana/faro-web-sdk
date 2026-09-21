@@ -105,4 +105,18 @@ describe('Sampling.', () => {
     initializeFaro(config);
     expect(isSampled()).toBe(true);
   });
+
+  it('uses the provided sampling config instead of the global Faro instance', () => {
+    initializeFaro(
+      mockConfig({
+        sessionTracking: {
+          enabled: true,
+          samplingRate: 1,
+        },
+      })
+    );
+
+    expect(isSampled({ sessionTracking: { samplingRate: 0 } })).toBe(false);
+    expect(isSampled({ sessionTracking: { samplingRate: 1 } })).toBe(true);
+  });
 });

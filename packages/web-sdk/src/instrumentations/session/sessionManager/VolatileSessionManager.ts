@@ -7,6 +7,7 @@ import {
   getSessionMetaUpdateHandler,
   getUserSessionActivityRecorder,
   getUserSessionUpdater,
+  type UserSessionUpdaterContext,
 } from './sessionManagerUtils';
 import type { FaroUserSession } from './types';
 
@@ -18,11 +19,12 @@ export class VolatileSessionsManager {
   // session. Stubbed so the instrumentation can treat both managers uniformly.
   isAdopting = (): boolean => false;
 
-  constructor() {
+  constructor(private readonly context: UserSessionUpdaterContext | undefined = undefined) {
     this.updateUserSession = getUserSessionUpdater({
       fetchUserSession: VolatileSessionsManager.fetchUserSession,
       storeUserSession: VolatileSessionsManager.storeUserSession,
       updateInterval: STORAGE_UPDATE_DELAY,
+      context,
     });
 
     this.init();
@@ -59,18 +61,19 @@ export class VolatileSessionsManager {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.updateSession({ refreshActivity: false });
-        const sessionId = faro.api?.getSession()?.id;
+        const sessionId = this.context?.getInMemorySessionId?.() ?? faro.api?.getSession()?.id;
         if (sessionId) {
           this.recordActivity(sessionId);
         }
       }
     });
 
-    // Users can call the setSession() method, so we need to sync this with the local storage session
-    faro.metas.addListener(
+    const metas = this.context?.metas ?? faro.metas;
+    metas.addListener(
       getSessionMetaUpdateHandler({
         fetchUserSession: VolatileSessionsManager.fetchUserSession,
         storeUserSession: VolatileSessionsManager.storeUserSession,
+        context: this.context,
       })
     );
   }
