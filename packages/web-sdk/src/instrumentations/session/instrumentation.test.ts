@@ -717,6 +717,74 @@ describe('SessionInstrumentation', () => {
     expect(transport.items).toHaveLength(3);
   });
 
+  it.each([true, false])(
+    'keeps SDK session state when setSession extends the current session with persistent=%s',
+    (persistent) => {
+      const sampler = jest.fn().mockReturnValueOnce(0).mockReturnValue(1);
+      const { api } = initializeFaro(
+        mockConfig({
+          instrumentations: [new SessionInstrumentation()],
+          sessionTracking: {
+            enabled: true,
+            persistent,
+            sampler,
+            session: {
+              id: 'current-session',
+              attributes: { previousSession: 'prior-session' },
+            },
+          },
+        })
+      );
+
+      const before = JSON.parse(mockStorage[STORAGE_KEY]!) as FaroUserSession;
+      sampler.mockClear();
+      jest.advanceTimersByTime(1);
+
+      api.setSession({ ...api.getSession()!, attributes: { customerAttribute: 'customer-value' } });
+
+      const after = JSON.parse(mockStorage[STORAGE_KEY]!) as FaroUserSession;
+      expect(sampler).not.toHaveBeenCalled();
+      expect(api.getSession()?.attributes?.['isSampled']).toBe('false');
+      expect(after).toMatchObject({
+        sessionId: before.sessionId,
+        isSampled: before.isSampled,
+        started: before.started,
+        lastActivity: before.lastActivity,
+        sessionMeta: {
+          id: before.sessionId,
+          attributes: {
+            customerAttribute: 'customer-value',
+            isSampled: before.isSampled.toString(),
+            previousSession: 'prior-session',
+          },
+        },
+      });
+    }
+  );
+
+  it.each([true, false])(
+    'keeps stored session overrides when setSession updates attributes with persistent=%s',
+    (persistent) => {
+      const { api } = initializeFaro(
+        mockConfig({
+          instrumentations: [new SessionInstrumentation()],
+          sessionTracking: {
+            enabled: true,
+            persistent,
+            session: {
+              id: 'current-session',
+              overrides: { serviceName: 'custom-service' },
+            },
+          },
+        })
+      );
+
+      api.setSession({ id: api.getSession()!.id, attributes: { customerAttribute: 'customer-value' } });
+
+      expect(api.getSession()?.overrides).toStrictEqual({ serviceName: 'custom-service' });
+    }
+  );
+
   it('Will use sampling decision from valid session from web storage.', () => {
     const initialIsSampled = true;
     const mockUserSession = createUserSessionObject({
