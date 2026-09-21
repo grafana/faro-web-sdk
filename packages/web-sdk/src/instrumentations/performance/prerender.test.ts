@@ -17,8 +17,10 @@ describe('prerendered performance timings', () => {
   let readyCallbacks: Array<() => void>;
   let observed: PerformanceObserverInit[];
   let faro: Faro;
+  let otherFaro: Faro | undefined;
   let transport: MockTransport;
   let instrumentation: PerformanceInstrumentation;
+  let resourceInitiatorType: string;
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -27,12 +29,17 @@ describe('prerendered performance timings', () => {
     ready = false;
     readyCallbacks = [];
     observed = [];
+    otherFaro = undefined;
+    resourceInitiatorType = performanceResourceEntry.initiatorType;
     Object.defineProperty(document, 'prerendering', { configurable: true, get: () => prerendering });
     window.PerformanceObserver = class {
       constructor(private callback: PerformanceObserverCallback) {}
       observe(options: PerformanceObserverInit) {
         observed.push(options);
-        const entry = options.type === 'navigation' ? performanceNavigationEntry : performanceResourceEntry;
+        const entry =
+          options.type === 'navigation'
+            ? performanceNavigationEntry
+            : { ...performanceResourceEntry, initiatorType: resourceInitiatorType };
         this.callback(
           { getEntries: () => [{ ...entry, toJSON: () => entry }] } as unknown as PerformanceObserverEntryList,
           this as unknown as PerformanceObserver
@@ -48,6 +55,9 @@ describe('prerendered performance timings', () => {
     });
     transport = new MockTransport();
     instrumentation = new PerformanceInstrumentation();
+  });
+
+  function start(trackResources: boolean | undefined) {
     faro = initializeFaro({
       app: { name: 'prerender-performance' },
       isolate: true,
@@ -55,11 +65,12 @@ describe('prerendered performance timings', () => {
       transports: [transport],
       instrumentations: [instrumentation, new SessionInstrumentation()],
       sessionTracking: { samplingRate: 1 },
-      trackResources: true,
+      trackResources,
     });
-  });
+  }
 
   afterEach(() => {
+    otherFaro?.pause();
     faro.pause();
     faro.instrumentations.remove(...faro.instrumentations.instrumentations.reverse());
     if (originalPrerendering) {
@@ -88,6 +99,7 @@ describe('prerendered performance timings', () => {
   it.each([false, true])(
     'keeps navigation and resource timings when load finishes before activation=%s',
     async (loaded) => {
+      start(true);
       if (loaded) {
         finishLoading();
       }
@@ -121,6 +133,7 @@ describe('prerendered performance timings', () => {
   );
 
   it.each([false, true])('cancels pending collection when destroyed with activated=%s', async (activated) => {
+    start(true);
     if (activated) {
       activate();
     }
@@ -136,4 +149,38 @@ describe('prerendered performance timings', () => {
     const events = transport.items as Array<TransportItem<EventEvent>>;
     expect(events.map((item) => item.payload.name)).toEqual(['session_start']);
   });
+
+  it.each([
+    { trackResources: false, otherTrackResources: true, initiatorType: 'img', expectedResources: 0 },
+    { trackResources: true, otherTrackResources: false, initiatorType: 'img', expectedResources: 1 },
+    { trackResources: undefined, otherTrackResources: true, initiatorType: 'img', expectedResources: 0 },
+    { trackResources: undefined, otherTrackResources: false, initiatorType: 'fetch', expectedResources: 1 },
+  ])(
+    'uses its own trackResources=$trackResources for $initiatorType entries after activation',
+    async ({ trackResources, otherTrackResources, initiatorType, expectedResources }) => {
+      resourceInitiatorType = initiatorType;
+      start(trackResources);
+      finishLoading();
+      otherFaro = initializeFaro({
+        app: { name: 'other-sdk' },
+        isolate: true,
+        preventGlobalExposure: true,
+        transports: [new MockTransport()],
+        instrumentations: [],
+        sessionTracking: { enabled: false },
+        trackResources: otherTrackResources,
+      });
+
+      activate();
+      await Promise.resolve();
+      jest.advanceTimersByTime(2000);
+
+      const events = transport.items as Array<TransportItem<EventEvent>>;
+      expect(events.filter((item) => item.payload.name === 'faro.performance.navigation')).toHaveLength(1);
+      expect(events.filter((item) => item.payload.name === 'faro.performance.resource')).toHaveLength(
+        expectedResources
+      );
+      expect(events.every((item) => item.meta.app?.name === 'prerender-performance')).toBe(true);
+    }
+  );
 });

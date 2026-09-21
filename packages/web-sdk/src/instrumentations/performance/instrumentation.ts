@@ -29,7 +29,7 @@ export class PerformanceInstrumentation extends BaseInstrumentation {
         const { faroNavigationId } = await getNavigationTimings(pushEvent);
 
         if (!cancelled && faroNavigationId != null) {
-          observeResourceTimings(faroNavigationId, pushEvent, performanceEntriesSubscription);
+          observeResourceTimings(faroNavigationId, pushEvent, performanceEntriesSubscription, this.config);
         }
       });
     };
