@@ -9,6 +9,7 @@
 
 ### Bug Fixes
 
+- **web-sdk:** use Web Crypto for session sampling when available
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
 
 ## [2.12.0](https://github.com/grafana/faro-web-sdk/compare/v2.11.0...v2.12.0) (2026-09-18)
