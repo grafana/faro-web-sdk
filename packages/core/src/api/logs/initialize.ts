@@ -1,4 +1,5 @@
 import type { Config } from '../../config';
+import { getInternalMetas } from '../../internal';
 import type { InternalLogger } from '../../internalLogger';
 import { captureMetas, type Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
@@ -40,6 +41,9 @@ export function initializeLogsAPI({
     { context, level, skipDedupe, spanContext, timestampOverwriteMs } = {}
   ) => {
     try {
+      if (!getInternalMetas(metas).shouldCapture()) {
+        return;
+      }
       const ctx = stringifyObjectValues(context);
 
       const payload: LogEvent = {
