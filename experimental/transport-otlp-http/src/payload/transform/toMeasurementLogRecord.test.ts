@@ -10,7 +10,13 @@ const item: TransportItem<MeasurementEvent> = {
   payload: {
     type: 'web-vitals',
     timestamp: '2023-01-27T09:53:01.035Z',
-    values: { fcp: 213.7000000011176 },
+    values: {
+      fcp: 213.7000000011176,
+      delta: 0.3,
+      input_delay: 5.3,
+      processing_duration: 0.3,
+      presentation_delay: 18.4,
+    },
     trace: {
       trace_id: 'trace-id',
       span_id: 'span-id',
@@ -175,6 +181,20 @@ const matchMeasurementLogRecord = {
       key: 'measurement.value',
       value: { doubleValue: 213.7000000011176 },
     },
+    {
+      key: 'measurement.values',
+      value: {
+        kvlistValue: {
+          values: [
+            { key: 'fcp', value: { doubleValue: 213.7000000011176 } },
+            { key: 'delta', value: { doubleValue: 0.3 } },
+            { key: 'input_delay', value: { doubleValue: 5.3 } },
+            { key: 'processing_duration', value: { doubleValue: 0.3 } },
+            { key: 'presentation_delay', value: { doubleValue: 18.4 } },
+          ],
+        },
+      },
+    },
   ],
 
   traceId: 'trace-id',
@@ -185,6 +205,26 @@ describe('toMeasurementLogRecord', () => {
   it('Builds resource payload object for given transport item.', () => {
     const measurementLogRecord = getLogTransforms(mockInternalLogger).toScopeLog(item).logRecords[0];
     expect(measurementLogRecord).toStrictEqual(matchMeasurementLogRecord);
+  });
+
+  it('Serializes all values of a measurement and emits no duplicate attribute keys.', () => {
+    const measurementLogRecord = getLogTransforms(mockInternalLogger).toScopeLog(item).logRecords[0];
+
+    const attributeKeys = (measurementLogRecord?.attributes ?? []).map((attribute) => attribute.key);
+
+    expect(new Set(attributeKeys).size).toBe(attributeKeys.length);
+
+    const valuesAttribute = measurementLogRecord?.attributes?.find(
+      (attribute) => attribute.key === 'measurement.values'
+    );
+
+    expect(valuesAttribute?.value?.kvlistValue?.values).toStrictEqual([
+      { key: 'fcp', value: { doubleValue: 213.7000000011176 } },
+      { key: 'delta', value: { doubleValue: 0.3 } },
+      { key: 'input_delay', value: { doubleValue: 5.3 } },
+      { key: 'processing_duration', value: { doubleValue: 0.3 } },
+      { key: 'presentation_delay', value: { doubleValue: 18.4 } },
+    ]);
   });
 
   it('Builds resource payload object for given transport item with custom body attached.', () => {
