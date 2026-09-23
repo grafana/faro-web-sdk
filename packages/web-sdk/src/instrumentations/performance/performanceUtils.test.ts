@@ -81,6 +81,15 @@ describe('performanceUtils', () => {
     } as FaroResourceTiming);
   });
 
+  it('reports no TLS negotiation time for a non-secure resource', () => {
+    const faroResourceTiming = createFaroResourceTiming({
+      ...performanceResourceEntry,
+      secureConnectionStart: 0,
+    });
+
+    expect(faroResourceTiming.tlsNegotiationTime).toBe('0');
+  });
+
   it(`extracts httpHost from the resource name`, () => {
     expect(createFaroResourceTiming({ name: 'http://example.com/path' } as any).httpHost).toBe('example.com');
     expect(createFaroResourceTiming({ name: 'http://example.com:8080/path' } as any).httpHost).toBe('example.com:8080');
