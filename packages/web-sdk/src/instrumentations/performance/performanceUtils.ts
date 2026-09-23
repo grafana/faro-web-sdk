@@ -129,7 +129,11 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
     duration: toFaroPerformanceTimingString(duration),
     tcpHandshakeTime: toFaroPerformanceTimingString(connectEnd - connectStart),
     dnsLookupTime: toFaroPerformanceTimingString(domainLookupEnd - domainLookupStart),
-    tlsNegotiationTime: toFaroPerformanceTimingString(connectEnd - secureConnectionStart),
+    // secureConnectionStart is 0 when the request did not negotiate TLS. Subtracting
+    // it from connectEnd would report a time-origin timestamp as a duration.
+    tlsNegotiationTime: toFaroPerformanceTimingString(
+      secureConnectionStart > 0 ? connectEnd - secureConnectionStart : 0
+    ),
     responseStatus: toFaroPerformanceTimingString(responseStatus),
     redirectTime: toFaroPerformanceTimingString(redirectEnd - redirectStart),
     requestTime: toFaroPerformanceTimingString(responseStart - requestStart),
