@@ -1,6 +1,6 @@
-const { getTsdownConfigBase } = require('../../tsdown.config.base.js');
+import { getTsdownConfigBase } from '../../tsdown.config.base.js';
 
-module.exports = getTsdownConfigBase({
+export default getTsdownConfigBase({
   bundleName: 'faro-core',
   globalName: 'GrafanaFaroCore',
   bundleInlines: [/^@opentelemetry\//],
