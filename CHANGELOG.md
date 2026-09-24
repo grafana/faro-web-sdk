@@ -9,7 +9,19 @@
 
 ### Bug Fixes
 
+- **web-sdk:** use Web Crypto for session sampling when available
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
+- **web-sdk:** prevent duplicate sessions when Chrome activates a prerendered page
+
+## [2.12.1](https://github.com/grafana/faro-web-sdk/compare/v2.12.0...v2.12.1) (2026-09-22)
+
+### Bug Fixes
+
+- **deps:** update npm-dependencies ([#2232](https://github.com/grafana/faro-web-sdk/issues/2232)) ([8cd1f9e](https://github.com/grafana/faro-web-sdk/commit/8cd1f9e6b3192bc08a3fdce0869fbfaef962c5db))
+- **security:** pin pacote to 21.5.1 (CVE-2026-9496) ([#2296](https://github.com/grafana/faro-web-sdk/issues/2296)) ([1b6fc3c](https://github.com/grafana/faro-web-sdk/commit/1b6fc3c25d65771da55a430649b82b7e625447fb))
+- **session:** preserve sampling state on metadata updates ([#2301](https://github.com/grafana/faro-web-sdk/issues/2301)) ([389cf09](https://github.com/grafana/faro-web-sdk/commit/389cf092465990c24a8b2c460ef567010b586947))
+- **web-sdk:** use stronger randomness for session sampling ([#2299](https://github.com/grafana/faro-web-sdk/issues/2299)) ([1b51d37](https://github.com/grafana/faro-web-sdk/commit/1b51d374711a763e5eedd72a1d21e2f97f167c77))
+- **web-sdk:** wait for prerender activation before starting sessions ([#2291](https://github.com/grafana/faro-web-sdk/issues/2291)) ([e4bf94d](https://github.com/grafana/faro-web-sdk/commit/e4bf94d00fe9d080734210c5b596fee1eeeb20ad))
 
 ## [2.12.0](https://github.com/grafana/faro-web-sdk/compare/v2.11.0...v2.12.0) (2026-09-18)
 

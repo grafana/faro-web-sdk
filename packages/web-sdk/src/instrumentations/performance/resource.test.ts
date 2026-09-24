@@ -90,9 +90,9 @@ describe('Resource observer', () => {
       return url === 'resource_fetch' || url === 'resource_xmlhttprequest';
     });
 
-    initializeFaro(mockConfig({ trackResources: true }));
+    const { config } = initializeFaro(mockConfig({ trackResources: true }));
 
-    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable, config);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(1);
     expect(mockPushEvent).toHaveBeenCalledWith(
@@ -110,9 +110,9 @@ describe('Resource observer', () => {
 
     jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValue(true);
 
-    initializeFaro(mockConfig({ trackResources: true }));
+    const { config } = initializeFaro(mockConfig({ trackResources: true }));
 
-    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable, config);
 
     expect(mockPushEvent).not.toHaveBeenCalled();
   });
@@ -122,9 +122,9 @@ describe('Resource observer', () => {
 
     jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValue(false);
 
-    initializeFaro(mockConfig({ trackResources: true }));
+    const { config } = initializeFaro(mockConfig({ trackResources: true }));
 
-    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable, config);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(3);
   });
@@ -143,9 +143,9 @@ describe('Resource observer', () => {
     const dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(mockWallNow);
     const perfNowSpy = jest.spyOn(performance, 'now').mockReturnValue(mockMonoNow);
 
-    initializeFaro(mockConfig({ trackResources: true }));
+    const { config } = initializeFaro(mockConfig({ trackResources: true }));
 
-    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable, config);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(3);
 
@@ -172,10 +172,10 @@ describe('Resource observer', () => {
     const mockPushEvent = jest.fn();
     jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
-    const trackResourcesNotSetConfig = mockConfig({});
-    initializeFaro(trackResourcesNotSetConfig);
+    const config = mockConfig({});
+    initializeFaro(config);
 
-    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable, config);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(2);
   });
@@ -184,10 +184,10 @@ describe('Resource observer', () => {
     const mockPushEvent = jest.fn();
     jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
-    const trackAllResourcesConfig = mockConfig({ trackResources: true });
-    initializeFaro(trackAllResourcesConfig);
+    const config = mockConfig({ trackResources: true });
+    initializeFaro(config);
 
-    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable, config);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(3);
   });
@@ -196,10 +196,10 @@ describe('Resource observer', () => {
     const mockPushEvent = jest.fn();
     jest.spyOn(urlUtilsModule, 'isUrlIgnored').mockReturnValueOnce(false);
 
-    const trackAllResourcesConfig = mockConfig({ trackResources: false });
-    initializeFaro(trackAllResourcesConfig);
+    const config = mockConfig({ trackResources: false });
+    initializeFaro(config);
 
-    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable, config);
 
     expect(mockPushEvent).toHaveBeenCalledTimes(0);
   });
@@ -211,7 +211,7 @@ describe('Resource observer', () => {
     const config = mockConfig({});
     initializeFaro(config);
 
-    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable);
+    observeResourceTimings(mockNavigationId, mockPushEvent, mockObservable, config);
 
     expect(mockObservable.notify).toHaveBeenCalledTimes(3);
     expect(mockObservable.notify).toHaveBeenCalledWith({ type: 'resource' });

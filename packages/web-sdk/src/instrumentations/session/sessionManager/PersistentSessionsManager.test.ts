@@ -309,7 +309,7 @@ describe('Persistent Sessions Manager.', () => {
       expect(JSON.parse(mockStorage[STORAGE_KEY]!)).toStrictEqual(storedSession);
     });
 
-    it('Creates a new Faro user session if new meta attributes are added.', () => {
+    it('Updates the current Faro user session if new meta attributes are added.', () => {
       const storedSession: FaroUserSession = {
         sessionId: mockInitialSessionId,
         isSampled: true,
@@ -329,7 +329,6 @@ describe('Persistent Sessions Manager.', () => {
       const newMetaAttributes = {
         id: mockInitialSessionId,
         attributes: {
-          previousSession: mockInitialSessionId,
           isSampled: 'true',
           newAttribute: 'newValue',
         },
