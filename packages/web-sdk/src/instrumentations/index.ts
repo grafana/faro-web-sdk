@@ -31,3 +31,5 @@ export { UserActionInstrumentation, userActionDataAttribute, userActionTimeoutDa
 export { CSPInstrumentation } from './csp';
 
 export { NavigationInstrumentation } from './navigation';
+
+export { FrustrationInstrumentation } from './frustration';
