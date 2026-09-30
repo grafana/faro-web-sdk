@@ -1,4 +1,4 @@
-import { BaseInstrumentation, monoNow, Observable, shouldIgnoreEvent, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, dateNow, monoNow, Observable, shouldIgnoreEvent, VERSION } from '@grafana/faro-core';
 import type { Subscription } from '@grafana/faro-core';
 
 import { monitorDomMutations } from '../_internal/monitors/domMutationMonitor';
@@ -48,6 +48,7 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
       clientX: event.clientX,
       clientY: event.clientY,
       time: now,
+      timestamp: dateNow(),
       gotResponse: this.lastResponseTime !== undefined && this.lastResponseTime >= start,
       threwError: false,
       changedSelection: this.pointerDown !== undefined && getSelectionText() !== this.pointerDown.selection,
@@ -154,11 +155,21 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
     this.flushTids.add(tid);
   }
 
-  private report({ type, click, clickCount }: FrustrationSignal): void {
-    this.api.pushEvent(`faro.frustration.${type}`, {
-      target: describeElement(click.target),
-      clickCount: String(clickCount),
-    });
+  private report({ type, click, clickCount, durationMs }: FrustrationSignal): void {
+    this.api.pushEvent(
+      `faro.frustration.${type}`,
+      {
+        target: describeElement(click.target),
+        clickCount: String(clickCount),
+        clientX: String(click.clientX),
+        clientY: String(click.clientY),
+        ...(type === 'rage_click' ? { durationMs: String(Math.round(durationMs)) } : {}),
+      },
+      undefined,
+      // Signals are reported after the burst ends, so the timestamp is set to the click. Repeated signals on the
+      // same element are separate frustrations and must not be deduplicated.
+      { timestampOverwriteMs: click.timestamp, skipDedupe: true }
+    );
   }
 }
 

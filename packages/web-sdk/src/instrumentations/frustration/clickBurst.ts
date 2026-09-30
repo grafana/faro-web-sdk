@@ -8,7 +8,10 @@ export type TrackedClick = {
   target: Element;
   clientX: number;
   clientY: number;
+  // Monotonic, for comparing clicks with each other
   time: number;
+  // Wall clock, to place the click on the same timeline as a session replay
+  timestamp: number;
   gotResponse: boolean;
   threwError: boolean;
   changedSelection: boolean;
@@ -19,6 +22,7 @@ export type FrustrationSignal = {
   type: 'rage_click' | 'dead_click' | 'error_click';
   click: TrackedClick;
   clickCount: number;
+  durationMs: number;
 };
 
 // Input types whose clicks toggle or submit something, so a missing page response is meaningful
@@ -35,13 +39,14 @@ export function belongsToBurst(last: TrackedClick, next: TrackedClick): boolean 
  * A rage burst produces a single signal. Otherwise every click is judged on its own.
  */
 export function detectFrustrationSignals(burst: TrackedClick[]): FrustrationSignal[] {
-  const [first] = burst;
-  if (!first) {
+  const first = burst[0];
+  const last = burst[burst.length - 1];
+  if (!first || !last) {
     return [];
   }
 
   if (isRageBurst(burst)) {
-    return [{ type: 'rage_click', click: first, clickCount: burst.length }];
+    return [{ type: 'rage_click', click: first, clickCount: burst.length, durationMs: last.time - first.time }];
   }
 
   // Double and triple clicks that select text are expected to leave the page untouched
@@ -51,11 +56,11 @@ export function detectFrustrationSignals(burst: TrackedClick[]): FrustrationSign
     const signals: FrustrationSignal[] = [];
 
     if (click.threwError) {
-      signals.push({ type: 'error_click', click, clickCount: 1 });
+      signals.push({ type: 'error_click', click, clickCount: 1, durationMs: 0 });
     }
 
     if (!selectsText && isUnresponsive(click)) {
-      signals.push({ type: 'dead_click', click, clickCount: 1 });
+      signals.push({ type: 'dead_click', click, clickCount: 1, durationMs: 0 });
     }
 
     return signals;

@@ -85,9 +85,30 @@ describe('FrustrationInstrumentation', () => {
     expect(events()).toEqual([
       expect.objectContaining({
         name: 'faro.frustration.dead_click',
-        attributes: { target: 'button#save.btn.primary', clickCount: '1' },
+        attributes: { target: 'button#save.btn.primary', clickCount: '1', clientX: '10', clientY: '10' },
       }),
     ]);
+  });
+
+  it('reports repeated dead clicks on the same element separately', () => {
+    setup();
+
+    click();
+    jest.advanceTimersByTime(2000);
+    click();
+    jest.advanceTimersByTime(2000);
+
+    expect(events().map(({ name }) => name)).toEqual(['faro.frustration.dead_click', 'faro.frustration.dead_click']);
+  });
+
+  it('timestamps a signal with the time of the click instead of the time it is reported', () => {
+    setup();
+    const clickedAt = Date.now();
+
+    click();
+    jest.advanceTimersByTime(2000);
+
+    expect(events()[0]?.timestamp).toBe(new Date(clickedAt).toISOString());
   });
 
   it('reports a click as dead when the page activity starts too late', () => {
@@ -162,7 +183,13 @@ describe('FrustrationInstrumentation', () => {
     expect(events()).toEqual([
       expect.objectContaining({
         name: 'faro.frustration.rage_click',
-        attributes: { target: 'button#save.btn.primary', clickCount: '5' },
+        attributes: {
+          target: 'button#save.btn.primary',
+          clickCount: '5',
+          clientX: '10',
+          clientY: '10',
+          durationMs: '800',
+        },
       }),
     ]);
   });
@@ -240,7 +267,7 @@ describe('FrustrationInstrumentation', () => {
     expect(events()).toEqual([
       expect.objectContaining({
         name: 'faro.frustration.error_click',
-        attributes: { target: 'button#save.btn.primary', clickCount: '1' },
+        attributes: { target: 'button#save.btn.primary', clickCount: '1', clientX: '10', clientY: '10' },
       }),
     ]);
   });
