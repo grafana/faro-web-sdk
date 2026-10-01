@@ -6,6 +6,7 @@ export {
   type UserActionImportanceType,
   UserActionState,
   userActionsMessageBus,
+  shouldIgnoreEvent,
 } from './api';
 export type {
   API,

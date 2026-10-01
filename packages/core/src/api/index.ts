@@ -35,3 +35,5 @@ export {
 } from './userActions';
 
 export type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './traces';
+
+export { shouldIgnoreEvent } from './utils';
