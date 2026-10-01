@@ -85,7 +85,7 @@ describe('FrustrationInstrumentation', () => {
     expect(events()).toEqual([
       expect.objectContaining({
         name: 'faro.frustration.dead_click',
-        attributes: { target: 'button#save.btn.primary', clickCount: '1', clientX: '10', clientY: '10' },
+        attributes: { target: 'button', clickCount: '1', clientX: '10', clientY: '10' },
       }),
     ]);
   });
@@ -147,6 +147,12 @@ describe('FrustrationInstrumentation', () => {
     ['a text input', '<input type="text" />', 'input'],
     ['a link', '<a href="#foo"><span>link</span></a>', 'span'],
     ['a label of a text input', '<label for="name">Name</label><input id="name" />', 'label'],
+    [
+      'the content of a label of a text input',
+      '<label for="name"><span>Name</span></label><input id="name" />',
+      'span',
+    ],
+    ['the content of a label wrapping a text input', '<label><span>Name</span><input /></label>', 'span'],
   ])('does not report dead clicks on %s', (_, html, selector) => {
     setup();
     document.body.innerHTML = html;
@@ -184,7 +190,7 @@ describe('FrustrationInstrumentation', () => {
       expect.objectContaining({
         name: 'faro.frustration.rage_click',
         attributes: {
-          target: 'button#save.btn.primary',
+          target: 'button',
           clickCount: '5',
           clientX: '10',
           clientY: '10',
@@ -256,6 +262,56 @@ describe('FrustrationInstrumentation', () => {
     expect(events()).toEqual([]);
   });
 
+  it('does not report a rage click when the user scrolls between clicks', () => {
+    setup();
+
+    click();
+    domMutation();
+    jest.advanceTimersByTime(200);
+    window.dispatchEvent(new Event('scroll'));
+    jest.advanceTimersByTime(100);
+    click();
+    domMutation();
+    jest.advanceTimersByTime(100);
+    click();
+    domMutation();
+    jest.advanceTimersByTime(2000);
+
+    expect(events()).toEqual([]);
+  });
+
+  it('does not send element ids or classes', () => {
+    setup();
+
+    click();
+    jest.advanceTimersByTime(2000);
+
+    expect(JSON.stringify(events())).not.toMatch(/save|btn|primary/);
+  });
+
+  it('names the element by the closest user action name', () => {
+    setup();
+    button.innerHTML = '<span>Save</span>';
+    button.setAttribute('data-faro-user-action-name', 'save-settings');
+
+    click(button.querySelector('span')!);
+    jest.advanceTimersByTime(2000);
+
+    expect(events()[0]?.attributes).toEqual(
+      expect.objectContaining({ target: 'span', userActionName: 'save-settings' })
+    );
+  });
+
+  it('uses the configured user action data attribute', () => {
+    setup({ userActionsInstrumentation: { dataAttributeName: 'data-track' } });
+    button.setAttribute('data-track', 'save-settings');
+
+    click();
+    jest.advanceTimersByTime(2000);
+
+    expect(events()[0]?.attributes).toEqual(expect.objectContaining({ userActionName: 'save-settings' }));
+  });
+
   it('reports a click followed by an error as an error click', () => {
     setup();
 
@@ -267,7 +323,7 @@ describe('FrustrationInstrumentation', () => {
     expect(events()).toEqual([
       expect.objectContaining({
         name: 'faro.frustration.error_click',
-        attributes: { target: 'button#save.btn.primary', clickCount: '1', clientX: '10', clientY: '10' },
+        attributes: { target: 'button', clickCount: '1', clientX: '10', clientY: '10' },
       }),
     ]);
   });
@@ -322,9 +378,22 @@ describe('FrustrationInstrumentation', () => {
     expect(events()).toEqual([
       expect.objectContaining({
         name: 'faro.frustration.dead_click',
-        attributes: expect.objectContaining({ target: 'button#save.btn.primary' }),
+        attributes: expect.objectContaining({ target: 'button' }),
       }),
     ]);
+  });
+
+  it('subscribes to the shared page monitors on initialize and unsubscribes on destroy', () => {
+    const subscriberCount = () =>
+      [dom$, http$, perf$].map(
+        (observable) => (observable as unknown as { subscribers: unknown[] }).subscribers.length
+      );
+
+    setup();
+    expect(subscriberCount()).toEqual([1, 1, 1]);
+
+    instrumentation.destroy();
+    expect(subscriberCount()).toEqual([0, 0, 0]);
   });
 
   it('stops listening after destroy', () => {

@@ -15,6 +15,7 @@ export type TrackedClick = {
   gotResponse: boolean;
   threwError: boolean;
   changedSelection: boolean;
+  // The user scrolled since the previous click of the burst, or right after this click
   scrolled: boolean;
 };
 
@@ -79,12 +80,12 @@ export function isRageBurst(burst: TrackedClick[]): boolean {
 }
 
 export function isUnresponsive(click: TrackedClick): boolean {
-  if (click.gotResponse || click.scrolled) {
+  if (click.gotResponse) {
     return false;
   }
 
-  // A label forwards the click to its control
-  const target = click.target instanceof HTMLLabelElement ? (click.target.control ?? click.target) : click.target;
+  // A label forwards clicks on itself and on its content to its control
+  const target = click.target.closest('label')?.control ?? click.target;
 
   return !reactsWithoutPageChange(target);
 }

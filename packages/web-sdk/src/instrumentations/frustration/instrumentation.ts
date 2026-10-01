@@ -4,7 +4,8 @@ import type { Subscription } from '@grafana/faro-core';
 import { monitorDomMutations } from '../_internal/monitors/domMutationMonitor';
 import { monitorHttpRequests } from '../_internal/monitors/httpRequestMonitor';
 import { monitorPerformanceEntries } from '../_internal/monitors/performanceEntriesMonitor';
-import { isRequestEndMessage } from '../userActions/util';
+import { userActionDataAttribute } from '../userActions/const';
+import { isRequestEndMessage, normalizeDataAttributeName } from '../userActions/util';
 
 import { belongsToBurst, BURST_MAX_GAP_MS, detectFrustrationSignals } from './clickBurst';
 import type { FrustrationSignal, TrackedClick } from './clickBurst';
@@ -24,6 +25,7 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
   private responseSub?: Subscription;
   private pointerDown?: { time: number; selection: string };
   private lastResponseTime?: number;
+  private lastScrollTime?: number;
   // Clicks that can still be credited with a page response
   private clicksAwaitingResponse: TrackedClick[] = [];
   private burst: TrackedClick[] = [];
@@ -60,6 +62,8 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
     if (previous && !belongsToBurst(previous, click)) {
       // The previous burst's last click may still get its page response
       this.flushBurst(RESPONSE_WINDOW_MS);
+    } else if (previous && this.lastScrollTime !== undefined && this.lastScrollTime >= previous.time) {
+      click.scrolled = true;
     }
 
     this.burst.push(click);
@@ -77,6 +81,7 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
   };
 
   private readonly onScroll = (): void => {
+    this.lastScrollTime = monoNow();
     this.markResponse((click) => {
       click.gotResponse = true;
       click.scrolled = true;
@@ -155,11 +160,22 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
     this.flushTids.add(tid);
   }
 
+  // Ids and classes can hold user data, so the element is only named by the user action name a developer gave it
+  private getUserActionName(element: Element): { userActionName?: string } {
+    const attributeName = normalizeDataAttributeName(
+      this.config.userActionsInstrumentation?.dataAttributeName ?? userActionDataAttribute
+    );
+    const userActionName = element.closest(`[${attributeName}]`)?.getAttribute(attributeName);
+
+    return userActionName ? { userActionName } : {};
+  }
+
   private report({ type, click, clickCount, durationMs }: FrustrationSignal): void {
     this.api.pushEvent(
       `faro.frustration.${type}`,
       {
-        target: describeElement(click.target),
+        target: click.target.tagName.toLowerCase(),
+        ...this.getUserActionName(click.target),
         clickCount: String(clickCount),
         clientX: String(click.clientX),
         clientY: String(click.clientY),
@@ -181,11 +197,4 @@ function resolveClickTarget(event: Event): Element | undefined {
 
 function getSelectionText(): string {
   return window.getSelection?.()?.toString() ?? '';
-}
-
-function describeElement(element: Element): string {
-  const id = element.id ? `#${element.id}` : '';
-  const classes = Array.from(element.classList, (className) => `.${className}`).join('');
-
-  return `${element.tagName.toLowerCase()}${id}${classes}`;
 }
