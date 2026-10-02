@@ -102,7 +102,7 @@
     "tmp": "^0.2.7",
     "form-data": "4.0.6",
     "lerna/js-yaml": "5.4.2",
-    "smol-toml@npm:1.6.1": "1.8.0",
+    "smol-toml@npm:1.6.1": "1.9.0",
     "pacote@npm:21.0.1": "22.0.0",
     "js-yaml@npm:^4.1.0": "5.4.2",
     "postcss": "^8.5.18",
