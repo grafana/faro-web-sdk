@@ -76,7 +76,7 @@ describe('ReplayInstrumentation', () => {
     }
   });
   function initSampled(
-    options: ReplayInstrumentationOptions = {},
+    options?: ReplayInstrumentationOptions,
     sessionId: string = 'test-session'
   ): ReplayInstrumentation {
     const inst = new ReplayInstrumentation(options);
@@ -93,6 +93,71 @@ describe('ReplayInstrumentation', () => {
 
       expect(instrumentation.name).toBe('@grafana/faro-instrumentation-replay');
       expect(instrumentation.version).toBeDefined();
+    });
+
+    describe('privacy defaults in recorded output', () => {
+      let fixture: HTMLDivElement;
+
+      beforeEach(() => {
+        mockRecord.mockImplementation(jest.requireActual('@grafana/rrweb').record);
+        fixture = document.createElement('div');
+        fixture.innerHTML =
+          '<p>Private text</p><input value="private-input"><input type="password" value="private-password">' +
+          '<section class="private-section"><span id="blocked-content">Hidden content</span></section>';
+        document.body.appendChild(fixture);
+      });
+
+      afterEach(() => {
+        instrumentation.destroy();
+        fixture.remove();
+        mockRecord.mockReset();
+      });
+
+      function recordSnapshot(options?: ReplayInstrumentationOptions): string {
+        instrumentation = initSampled(options, 'privacy-session');
+        window.dispatchEvent(new Event('load'));
+
+        const snapshots = mockPushEvent.mock.calls
+          .filter(([name]) => name === 'faro.session_recording.event')
+          .map(([, attributes]) => JSON.parse(attributes.event))
+          .filter((event) => event.type === EventType.FullSnapshot);
+        expect(snapshots).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ data: expect.objectContaining({ node: expect.any(Object) }) }),
+          ])
+        );
+        return JSON.stringify(snapshots);
+      }
+
+      it('masks text and input values when constructed without options', () => {
+        const snapshot = recordSnapshot();
+
+        expect(snapshot).toContain('"textContent":"******* ****"');
+        expect(snapshot).toContain('"value":"******"');
+        expect(snapshot).not.toContain('Private text');
+        expect(snapshot).not.toContain('private-input');
+        expect(snapshot).not.toContain('private-password');
+      });
+
+      it('preserves default masking when only a block selector is supplied', () => {
+        const snapshot = recordSnapshot({ blockSelector: '.private-section' });
+
+        expect(snapshot).toContain('"textContent":"******* ****"');
+        expect(snapshot).toContain('"value":"******"');
+        expect(snapshot).not.toContain('private-input');
+        expect(snapshot).not.toContain('private-password');
+        expect(snapshot).not.toContain('blocked-content');
+      });
+
+      it('honors input masking overrides while retaining password and text masking defaults', () => {
+        const snapshot = recordSnapshot({ maskAllInputs: false });
+
+        expect(snapshot).toContain('"value":"private-input"');
+        expect(snapshot).toContain('"value":"******"');
+        expect(snapshot).not.toContain('private-password');
+        expect(snapshot).toContain('"textContent":"******* ****"');
+        expect(snapshot).not.toContain('Private text');
+      });
     });
   });
 
