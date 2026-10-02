@@ -1,4 +1,4 @@
-exports.jestBaseConfig = {
+export const jestBaseConfig = {
   verbose: true,
   moduleNameMapper: {
     '@grafana/faro-core$': '<rootDir>/packages/core/src/index.ts',

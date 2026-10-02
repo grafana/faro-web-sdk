@@ -1,6 +1,6 @@
-const { jestBaseConfig } = require('../../jest.config.base.js');
+import { jestBaseConfig } from '../../jest.config.base.js';
 
-module.exports = {
+export default {
   ...jestBaseConfig,
   roots: ['experimental/transport-otlp-http/src'],
   testEnvironment: 'jsdom',
