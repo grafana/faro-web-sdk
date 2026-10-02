@@ -76,7 +76,7 @@ describe('ReplayInstrumentation', () => {
     }
   });
   function initSampled(
-    options: ReplayInstrumentationOptions = {},
+    options?: ReplayInstrumentationOptions,
     sessionId: string = 'test-session'
   ): ReplayInstrumentation {
     const inst = new ReplayInstrumentation(options);
@@ -95,98 +95,69 @@ describe('ReplayInstrumentation', () => {
       expect(instrumentation.version).toBeDefined();
     });
 
-    it('should use default options when none provided', () => {
-      instrumentation = new ReplayInstrumentation();
+    describe('privacy defaults in recorded output', () => {
+      let fixture: HTMLDivElement;
 
-      const expectedDefaults: ReplayInstrumentationOptions = {
-        recordCrossOriginIframes: false,
-        recordAfter: 'load',
-        maskAllInputs: true,
-        maskInputOptions: {
-          password: true,
-        },
-        maskInputFn: defaultMaskInputFn,
-        collectFonts: false,
-        inlineImages: false,
-        inlineStylesheet: false,
-        recordCanvas: false,
-        maskTextSelector: '*',
-        blockSelector: undefined,
-        ignoreSelector: undefined,
-        beforeSend: undefined,
-        sanitizeMetaHref: true,
-        samplingRate: 1,
-        inactivityThresholdMs: 60_000,
-      };
+      beforeEach(() => {
+        mockRecord.mockImplementation(jest.requireActual('@grafana/rrweb').record);
+        fixture = document.createElement('div');
+        fixture.innerHTML =
+          '<p>Private text</p><input value="private-input"><input type="password" value="private-password">' +
+          '<section class="private-section"><span id="blocked-content">Hidden content</span></section>';
+        document.body.appendChild(fixture);
+      });
 
-      expect(instrumentation['options']).toEqual(expectedDefaults);
-    });
+      afterEach(() => {
+        instrumentation.destroy();
+        fixture.remove();
+        mockRecord.mockReset();
+      });
 
-    it('should use custom options when provided', () => {
-      const beforeSendFn = jest.fn();
-      const maskInputFn: MaskInputFn = jest.fn((text, _element) => '*'.repeat(text.length));
-      const customOptions: ReplayInstrumentationOptions = {
-        recordCrossOriginIframes: true,
-        maskAllInputs: true,
-        maskInputOptions: {
-          password: true,
-          email: true,
-        },
-        maskInputFn,
-        collectFonts: true,
-        inlineImages: true,
-        inlineStylesheet: true,
-        recordCanvas: true,
-        recordAfter: 'DOMContentLoaded',
-        maskTextSelector: '.mask-me',
-        blockSelector: '.block-me',
-        ignoreSelector: '.ignore-me',
-        beforeSend: beforeSendFn,
-        sanitizeMetaHref: false,
-        samplingRate: 1,
-        inactivityThresholdMs: 30_000,
-      };
+      function recordSnapshot(options?: ReplayInstrumentationOptions): string {
+        instrumentation = initSampled(options, 'privacy-session');
+        window.dispatchEvent(new Event('load'));
 
-      instrumentation = new ReplayInstrumentation(customOptions);
+        const snapshots = mockPushEvent.mock.calls
+          .filter(([name]) => name === 'faro.session_recording.event')
+          .map(([, attributes]) => JSON.parse(attributes.event))
+          .filter((event) => event.type === EventType.FullSnapshot);
+        expect(snapshots).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ data: expect.objectContaining({ node: expect.any(Object) }) }),
+          ])
+        );
+        return JSON.stringify(snapshots);
+      }
 
-      expect(instrumentation['options']).toEqual(customOptions);
-    });
+      it('masks text and input values when constructed without options', () => {
+        const snapshot = recordSnapshot();
 
-    it('should merge partial custom options with defaults', () => {
-      const partialOptions: ReplayInstrumentationOptions = {
-        recordAfter: 'DOMContentLoaded',
-        maskAllInputs: false,
-        recordCanvas: true,
-      };
+        expect(snapshot).toContain('"textContent":"******* ****"');
+        expect(snapshot).toContain('"value":"******"');
+        expect(snapshot).not.toContain('Private text');
+        expect(snapshot).not.toContain('private-input');
+        expect(snapshot).not.toContain('private-password');
+      });
 
-      instrumentation = new ReplayInstrumentation(partialOptions);
+      it('preserves default masking when only a block selector is supplied', () => {
+        const snapshot = recordSnapshot({ blockSelector: '.private-section' });
 
-      expect(instrumentation['options'].maskAllInputs).toBe(false);
-      expect(instrumentation['options'].recordCanvas).toBe(true);
+        expect(snapshot).toContain('"textContent":"******* ****"');
+        expect(snapshot).toContain('"value":"******"');
+        expect(snapshot).not.toContain('private-input');
+        expect(snapshot).not.toContain('private-password');
+        expect(snapshot).not.toContain('blocked-content');
+      });
 
-      // Defaults should still be present
-      const expected: ReplayInstrumentationOptions = {
-        recordCrossOriginIframes: false,
-        recordAfter: 'DOMContentLoaded',
-        maskAllInputs: false,
-        maskInputOptions: {
-          password: true,
-        },
-        maskInputFn: defaultMaskInputFn,
-        collectFonts: false,
-        inlineImages: false,
-        inlineStylesheet: false,
-        recordCanvas: true,
-        maskTextSelector: '*',
-        blockSelector: undefined,
-        ignoreSelector: undefined,
-        beforeSend: undefined,
-        sanitizeMetaHref: true,
-        samplingRate: 1,
-        inactivityThresholdMs: 60_000,
-      };
+      it('honors input masking overrides while retaining password and text masking defaults', () => {
+        const snapshot = recordSnapshot({ maskAllInputs: false });
 
-      expect(instrumentation['options']).toEqual(expected);
+        expect(snapshot).toContain('"value":"private-input"');
+        expect(snapshot).toContain('"value":"******"');
+        expect(snapshot).not.toContain('private-password');
+        expect(snapshot).toContain('"textContent":"******* ****"');
+        expect(snapshot).not.toContain('Private text');
+      });
     });
   });
 
@@ -304,55 +275,6 @@ describe('ReplayInstrumentation', () => {
           recordAfter: 'load',
           maskAllInputs: true,
           maskTextSelector: '*',
-        })
-      );
-    });
-
-    it('should pass correct options to rrweb record', () => {
-      const maskInputFn: MaskInputFn = jest.fn((text, _element) => '*'.repeat(text.length));
-      const customOptions: ReplayInstrumentationOptions = {
-        maskAllInputs: true,
-        blockSelector: '.secret',
-        recordCanvas: true,
-        collectFonts: true,
-        inlineImages: true,
-        inlineStylesheet: true,
-        recordCrossOriginIframes: true,
-        maskTextSelector: '.mask',
-        ignoreSelector: '.ignore',
-        maskInputOptions: { password: true, email: true },
-        maskInputFn,
-        recordAfter: 'DOMContentLoaded',
-      };
-
-      instrumentation = new ReplayInstrumentation(customOptions);
-
-      // Mock sampled session
-      mockGetSession.mockReturnValue({
-        id: 'test-session',
-        attributes: { isSampled: 'true' },
-      });
-      instrumentation['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
-      instrumentation['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
-
-      instrumentation.initialize();
-
-      expect(mockRecord).toHaveBeenCalledWith(
-        expect.objectContaining({
-          maskAllInputs: true,
-          blockSelector: '.secret',
-          recordCanvas: true,
-          collectFonts: true,
-          inlineImages: true,
-          inlineStylesheet: true,
-          recordCrossOriginIframes: true,
-          maskTextSelector: '.mask',
-          ignoreSelector: '.ignore',
-          maskInputOptions: { password: true, email: true },
-          maskInputFn,
-          recordAfter: 'DOMContentLoaded',
-          recordDOM: true,
-          checkoutEveryNms: 300_000,
         })
       );
     });

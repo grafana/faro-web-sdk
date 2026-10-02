@@ -2,6 +2,9 @@
 
 Faro instrumentation for session replay with rrweb.
 
+Canvas 2D and WebGL content capture is not supported. Canvas elements can appear in
+the recorded DOM, but replaying their drawing content is not supported.
+
 ## Installation
 
 ```bash
@@ -89,7 +92,6 @@ These classes work without configuration and remain active alongside custom sele
 | `samplingRate`             | `number`                       | `1`      | Fraction of globally-sampled sessions that will be recorded. Applied on top of `sessionTracking.samplingRate`. Out-of-range values are clamped. |
 | `recordAfter`              | `'load' \| 'DOMContentLoaded'` | `'load'` | When to start recording if the document is not ready yet                                                                                        |
 | `recordCrossOriginIframes` | `boolean`                      | `false`  | Whether to record cross-origin iframes. rrweb must be injected in each child iframe for this to work                                            |
-| `recordCanvas`             | `boolean`                      | `false`  | Whether to record canvas element content                                                                                                        |
 | `collectFonts`             | `boolean`                      | `false`  | Whether to collect fonts used in the website                                                                                                    |
 | `inlineImages`             | `boolean`                      | `false`  | Whether to record image content                                                                                                                 |
 | `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                                                           |
@@ -155,13 +157,5 @@ new ReplayInstrumentation({
   blockSelector: '.payment-form, .credit-card-info',
   // Ignore certain elements (won't be recorded at all)
   ignoreSelector: '.analytics-widget',
-  // Filter or transform events before sending
-  beforeSend: (event) => {
-    // Example: Skip events that might contain sensitive data
-    if (event.type === 3 && event.data?.source === 'CanvasMutation') {
-      return null; // Skip this event
-    }
-    return event; // Send the event as-is
-  },
 });
 ```

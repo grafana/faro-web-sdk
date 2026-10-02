@@ -56,12 +56,6 @@ export interface ReplayInstrumentationOptions {
   inlineStylesheet?: boolean;
 
   /**
-   * Whether to record canvas
-   * @default false
-   */
-  recordCanvas?: boolean;
-
-  /**
    * Whether to record cross-origin iframes
    * @default false
    */
