@@ -19,6 +19,22 @@ export function initializeTransports(
   internalLogger.debug('Initializing transports');
 
   const transports: Transport[] = [];
+  const changeListeners = new Set<() => void>();
+  const onChange: Transports['onChange'] = (listener) => {
+    changeListeners.add(listener);
+    return () => {
+      changeListeners.delete(listener);
+    };
+  };
+  const notifyChange = () => {
+    for (const listener of changeListeners) {
+      try {
+        listener();
+      } catch (error) {
+        internalLogger.error('Transport change listener failed', error);
+      }
+    }
+  };
 
   // `config.paused` is the single source of truth so that the paused state stays
   // observable through `faro.config.paused` after `faro.pause()` / `faro.unpause()`
@@ -26,6 +42,7 @@ export function initializeTransports(
 
   const add: Transports['add'] = (...newTransports) => {
     internalLogger.debug('Adding transports');
+    let changed = false;
 
     newTransports.forEach((newTransport) => {
       internalLogger.debug(`Adding "${newTransport.name}" transport`);
@@ -44,7 +61,11 @@ export function initializeTransports(
       newTransport.metas = metas;
 
       transports.push(newTransport);
+      changed = true;
     });
+    if (changed) {
+      notifyChange();
+    }
   };
 
   const addBeforeSendHooks: Transports['addBeforeSendHooks'] = (...newBeforeSendHooks) => {
@@ -173,6 +194,7 @@ export function initializeTransports(
 
   const remove: Transports['remove'] = (...transportsToRemove) => {
     internalLogger.debug('Removing transports');
+    let changed = false;
 
     transportsToRemove.forEach((transportToRemove) => {
       internalLogger.debug(`Removing "${transportToRemove.name}" transport`);
@@ -186,7 +208,11 @@ export function initializeTransports(
       }
 
       transports.splice(existingTransportIndex, 1);
+      changed = true;
     });
+    if (changed) {
+      notifyChange();
+    }
   };
 
   const removeBeforeSendHooks: Transports['removeBeforeSendHooks'] = (...beforeSendHooksToRemove) => {
@@ -203,6 +229,7 @@ export function initializeTransports(
   };
 
   return {
+    onChange,
     add,
     addBeforeSendHooks,
     getBeforeSendHooks,

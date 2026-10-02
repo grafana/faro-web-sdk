@@ -38,6 +38,8 @@ export interface TransportBody {
 }
 
 export interface Transports {
+  /** Observe transport additions/removals. Returns a function that removes the listener. */
+  onChange: (listener: () => void) => () => void;
   add: (...transports: Transport[]) => void;
   addBeforeSendHooks: (...hooks: Array<BeforeSendHook | undefined>) => void;
   execute: (transportItem: TransportItem) => void;

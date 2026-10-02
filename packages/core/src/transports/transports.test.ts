@@ -340,3 +340,32 @@ function makeExceptionTransportItem(type: string, value: string): TransportItem<
     meta: {},
   };
 }
+
+describe('transport change listeners', () => {
+  it('notifies once after each real change and supports unsubscribing', () => {
+    const { transports } = initializeFaro(mockConfig({ transports: [] }));
+    const snapshots: Transport[][] = [];
+    const unsubscribe = transports.onChange(() => snapshots.push(transports.transports));
+    const first = new MockTransport();
+    const second = new MockTransport();
+    transports.add(first, second);
+    transports.add(first);
+    transports.remove(new MockTransport());
+    transports.remove(first);
+    expect(snapshots).toEqual([[first, second], [second]]);
+    unsubscribe();
+    transports.remove(second);
+    expect(snapshots).toHaveLength(2);
+  });
+
+  it('continues notifying other listeners when a listener throws', () => {
+    const { transports } = initializeFaro(mockConfig({ transports: [] }));
+    transports.onChange(() => {
+      throw new Error('listener failure');
+    });
+    const listener = jest.fn();
+    transports.onChange(listener);
+    expect(() => transports.add(new MockTransport())).not.toThrow();
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+});
