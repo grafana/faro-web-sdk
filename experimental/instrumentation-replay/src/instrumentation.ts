@@ -393,7 +393,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       maskTextSelector: this.options.maskTextSelector,
       blockSelector: this.options.blockSelector,
       ignoreSelector: this.options.ignoreSelector,
-      recordCanvas: this.options.recordCanvas,
+      recordCanvas: false,
       collectFonts: this.options.collectFonts,
       inlineImages: this.options.inlineImages,
       recordDOM: true,
