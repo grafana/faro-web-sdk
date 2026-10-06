@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-instrumentation-replay",
-  "packageManager": "yarn@4.18.0",
+  "packageManager": "yarn@4.18.1",
   "version": "2.12.1",
   "description": "Faro instrumentation for session replay with rrweb",
   "keywords": [
