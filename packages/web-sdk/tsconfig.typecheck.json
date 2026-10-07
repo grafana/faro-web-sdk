@@ -6,7 +6,8 @@
     "isolatedDeclarations": true,
     "noEmit": true,
     "paths": {
-      "@grafana/faro-core": ["../core/src"]
+      "@grafana/faro-core": ["../core/src"],
+      "@grafana/faro-core/internal": ["../core/src/internal"]
     }
   },
   "include": ["./src"],

@@ -1,6 +1,6 @@
 /** @jest-environment node */
 
-import { EVENT_SESSION_START, globalObject } from '@grafana/faro-core';
+import { EVENT_SESSION_START, globalObject, InternalLoggerLevel } from '@grafana/faro-core';
 import type { EventEvent, ExceptionEvent, ExceptionEventExtended, Faro } from '@grafana/faro-core';
 import { MockTransport } from '@grafana/faro-core/src/testUtils';
 
@@ -28,6 +28,7 @@ function initialize(options: Partial<Parameters<typeof initializeFaro>[0]> = {})
 beforeEach(() => {
   target = new EventTarget();
   Object.defineProperties(globalThis, {
+    location: { configurable: true, value: { href: 'http://localhost/worker.js' } },
     self: { configurable: true, value: { [Symbol.toStringTag]: 'SharedWorkerGlobalScope' } },
     addEventListener: { configurable: true, value: target.addEventListener.bind(target) },
     removeEventListener: { configurable: true, value: target.removeEventListener.bind(target) },
@@ -42,6 +43,7 @@ afterEach(() => {
   }
   __resetConsoleMonitorForTests();
   __resetOnunhandledrejectionForTests();
+  delete (globalThis as Partial<typeof globalThis>).location;
   delete (globalThis as Partial<typeof globalThis>).onerror;
   delete (globalThis as Partial<typeof globalThis>).self;
   delete (globalThis as Partial<typeof globalThis>).addEventListener;
@@ -206,3 +208,41 @@ it('removes worker session hooks on teardown', () => {
   expect(onSessionChange).not.toHaveBeenCalled();
   expect(transport.items).toHaveLength(1);
 });
+
+it.each(['DedicatedWorkerGlobalScope', 'SharedWorkerGlobalScope', 'ServiceWorkerGlobalScope'])(
+  'warns only for unsupported service workers in %s',
+  (scope) => {
+    Object.defineProperty(self, Symbol.toStringTag, { value: scope });
+    const warn = jest.fn();
+    initialize({
+      preventGlobalExposure: true,
+      internalLoggerLevel: InternalLoggerLevel.WARN,
+      unpatchedConsole: { ...console, warn },
+    });
+    if (scope === 'ServiceWorkerGlobalScope') {
+      expect(warn).toHaveBeenCalledWith(
+        expect.any(String),
+        'Service workers are not supported. Session lifecycle and telemetry delivery are untested.'
+      );
+    } else {
+      expect(warn).not.toHaveBeenCalled();
+    }
+  }
+);
+
+it.each(['DedicatedWorkerGlobalScope', 'SharedWorkerGlobalScope'])(
+  'captures console Error objects and errors with empty sources in %s',
+  (scope) => {
+    Object.defineProperty(self, Symbol.toStringTag, { value: scope });
+    const { transport } = initialize();
+    console.error(new Error('worker-console-error-object'));
+    globalObject.onerror?.('worker-empty-source', '', 12, 4);
+    const exceptions = transport.items.filter(({ type }) => type === 'exception');
+    expect(exceptions).toHaveLength(2);
+    expect(exceptions[0]?.payload).toMatchObject({ value: 'console.error: worker-console-error-object' });
+    expect(exceptions[1]?.payload).toMatchObject({
+      value: 'worker-empty-source',
+      stacktrace: { frames: [expect.objectContaining({ filename: location.href, lineno: 12, colno: 4 })] },
+    });
+  }
+);

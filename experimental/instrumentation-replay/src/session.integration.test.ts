@@ -1,5 +1,6 @@
-import { initializeFaro, type TransportBody } from '@grafana/faro-core';
+import { initializeFaro, type MetaSession, type TransportBody } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
+import { EventType } from '@grafana/rrweb-types';
 
 import { makeCoreConfig } from '../../../packages/web-sdk/src/config/makeCoreConfig';
 import { SessionInstrumentation } from '../../../packages/web-sdk/src/instrumentations/session/instrumentation';
@@ -40,14 +41,16 @@ describe.each([true, false])('Replay through Fetch with persistent=%s', (persist
     window.localStorage.clear();
   });
 
-  function start(inactivityThresholdMs: number) {
+  function start(inactivityThresholdMs: number, session?: MetaSession, replayFirst = false) {
     replay = new ReplayInstrumentation({ recordAfter: 'DOMContentLoaded', inactivityThresholdMs });
     return initializeFaro(
       makeCoreConfig(
         mockConfig({
           batching: {},
-          instrumentations: [new SessionInstrumentation(), replay],
-          sessionTracking: { enabled: true, persistent, samplingRate: 1 },
+          instrumentations: replayFirst
+            ? [replay, new SessionInstrumentation()]
+            : [new SessionInstrumentation(), replay],
+          sessionTracking: { enabled: true, persistent, samplingRate: 1, session },
           transports: [new FetchTransport({ url: 'https://collector.test/collect', requestTimeoutMs: 0 })],
         })
       )!
@@ -79,6 +82,90 @@ describe.each([true, false])('Replay through Fetch with persistent=%s', (persist
     }
     expect(owners.size).toBe(2);
   }
+
+  it.each(['none', 'api', 'config', 'api-replay-first', 'config-replay-first'])(
+    'starts a complete recording after prerender activation, sampled session from %s',
+    async (source) => {
+      const originalPrerendering = Object.getOwnPropertyDescriptor(document, 'prerendering');
+      let prerendering = true;
+      Object.defineProperty(document, 'prerendering', { configurable: true, get: () => prerendering });
+      const explicitSession = { id: 'explicit-session', attributes: { isSampled: 'true' } };
+      const faro = start(0, source.startsWith('config') ? explicitSession : undefined, source.endsWith('replay-first'));
+
+      try {
+        if (source.startsWith('api')) {
+          faro.api.setSession(explicitSession);
+        }
+        faro.api.pushEvent('speculative-event');
+        await flush();
+        if (source === 'none') {
+          expect(faro.api.getSession()).toBeUndefined();
+        }
+        expect(requests).toEqual([]);
+
+        window.sessionStorage.clear();
+        prerendering = false;
+        document.dispatchEvent(new Event('prerenderingchange'));
+        await flush();
+        document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 11 }));
+        await flush();
+
+        const sessionId = faro.api.getSession()?.id;
+        expect(sessionId).toEqual(expect.any(String));
+        expect(
+          requests.every((request) => request.sessionId === sessionId && request.body.meta.session?.id === sessionId)
+        ).toBe(true);
+        const names = requests.flatMap(({ body }) => (body.events ?? []).map((event) => event.name));
+        expect(names.filter((name) => name === 'session_start')).toHaveLength(1);
+        expect(names.filter((name) => name === 'faro.session_recording.started')).toHaveLength(1);
+        expect(names).not.toContain('speculative-event');
+        expect(recordings().length).toBeGreaterThanOrEqual(2);
+        expect(new Set(recordings().map((event) => event.attributes['recording_id'])).size).toBe(1);
+        expect(recordings().map((event) => event.attributes['seq'])).toEqual(
+          recordings().map((_, index) => String(index))
+        );
+        expect(
+          recordings()
+            .slice(0, 2)
+            .map((event) => JSON.parse(event.attributes['event']!).type)
+        ).toEqual([EventType.Meta, EventType.FullSnapshot]);
+      } finally {
+        faro.instrumentations.remove(...faro.instrumentations.instrumentations);
+        if (originalPrerendering) {
+          Object.defineProperty(document, 'prerendering', originalPrerendering);
+        } else {
+          Reflect.deleteProperty(document, 'prerendering');
+        }
+      }
+    }
+  );
+
+  it.each([false, true])('cleans up a deferred replay initialization, readd=%s', async (readd) => {
+    const originalPrerendering = Object.getOwnPropertyDescriptor(document, 'prerendering');
+    let prerendering = true;
+    Object.defineProperty(document, 'prerendering', { configurable: true, get: () => prerendering });
+    const faro = start(0, { id: 'explicit-session', attributes: { isSampled: 'true' } });
+    try {
+      faro.instrumentations.remove(replay);
+      if (readd) {
+        faro.instrumentations.add(replay);
+      }
+      await flush();
+      expect(requests).toEqual([]);
+      prerendering = false;
+      document.dispatchEvent(new Event('prerenderingchange'));
+      await flush();
+
+      expect(recordings().map((event) => event.attributes['seq'])).toEqual(readd ? ['0', '1'] : []);
+    } finally {
+      faro.instrumentations.remove(...faro.instrumentations.instrumentations);
+      if (originalPrerendering) {
+        Object.defineProperty(document, 'prerendering', originalPrerendering);
+      } else {
+        Reflect.deleteProperty(document, 'prerendering');
+      }
+    }
+  });
 
   it('starts a new recording before resuming an expired session', async () => {
     const faro = start(1000);

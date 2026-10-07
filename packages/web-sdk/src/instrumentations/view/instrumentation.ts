@@ -9,26 +9,52 @@ export class ViewInstrumentation extends BaseInstrumentation {
   // previously notified view, to ensure we don't send view changed
   // event twice for the same view
   private notifiedView: MetaView | undefined;
+  private waitingForActivation = false;
 
-  private sendViewChangedEvent(meta: Meta): void {
+  private readonly sendViewChangedEvent = (meta: Meta): void => {
+    if (this.waitingForActivation || (document as Document & { prerendering?: boolean }).prerendering) {
+      return;
+    }
     const view = meta.view;
 
     if (view && view.name !== this.notifiedView?.name) {
+      const fromView = this.notifiedView?.name ?? unknownString;
+      // Capturing the event can establish the session and notify metas again.
+      this.notifiedView = view;
       this.api.pushEvent(
         EVENT_VIEW_CHANGED,
         {
-          fromView: this.notifiedView?.name ?? unknownString,
+          fromView,
           toView: view.name ?? unknownString,
         },
         undefined,
         { skipDedupe: true }
       );
+    }
+  };
 
-      this.notifiedView = view;
+  private readonly prerenderListener = (): void => {
+    // Session activation can temporarily remove pending metadata before replacing
+    // it. Wait until activation listeners finish before reporting the current view.
+    window.queueMicrotask(() => {
+      if (this.waitingForActivation) {
+        this.waitingForActivation = false;
+        this.sendViewChangedEvent(this.metas.value);
+      }
+    });
+  };
+
+  initialize(): void {
+    this.metas.addListener(this.sendViewChangedEvent);
+    if ((document as Document & { prerendering?: boolean }).prerendering) {
+      this.waitingForActivation = true;
+      document.addEventListener('prerenderingchange', this.prerenderListener, { once: true });
     }
   }
 
-  initialize(): void {
-    this.metas.addListener(this.sendViewChangedEvent.bind(this));
+  destroy(): void {
+    this.waitingForActivation = false;
+    this.metas.removeListener(this.sendViewChangedEvent);
+    document.removeEventListener('prerenderingchange', this.prerenderListener);
   }
 }

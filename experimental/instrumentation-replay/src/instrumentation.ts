@@ -101,6 +101,13 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     this.checkAndUpdateRecording(true);
   };
 
+  private readonly prerenderListener = (): void => {
+    if (!this.destroyed) {
+      // Let all activation listeners establish the final session before recording.
+      this.initializeRecording(true);
+    }
+  };
+
   private readonly pageHideListener = (): void => {
     if (this.destroyed) {
       return;
@@ -158,6 +165,14 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   initialize(): void {
     this.destroyed = false;
+    if ((document as Document & { prerendering?: boolean }).prerendering) {
+      document.addEventListener('prerenderingchange', this.prerenderListener, { once: true });
+      return;
+    }
+    this.initializeRecording(false);
+  }
+
+  private initializeRecording(deferStart: boolean): void {
     this.pageHidden = false;
     // Owner identity excludes deployment versions so navigation can cross releases.
     this.recordingOwnerNamespace = JSON.stringify([
@@ -186,7 +201,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     window.addEventListener('pageshow', this.pageShowListener, { capture: true });
     window.addEventListener('storage', this.storageListener);
 
-    this.checkAndUpdateRecording(false);
+    this.checkAndUpdateRecording(deferStart);
   }
 
   private getSessionStorage(): Storage | undefined {
@@ -843,6 +858,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   destroy(): void {
     this.destroyed = true;
+    document.removeEventListener('prerenderingchange', this.prerenderListener);
     this.pendingStart = false;
     this.metas.removeListener?.(this.metasListener);
     window.removeEventListener('pagehide', this.pageHideListener, { capture: true });

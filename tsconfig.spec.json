@@ -6,7 +6,8 @@
     "noImplicitAny": false,
     "moduleResolution": "node",
     "paths": {
-      "@grafana/faro-core": ["./packages/core/src"]
+      "@grafana/faro-core": ["./packages/core/src"],
+      "@grafana/faro-core/internal": ["./packages/core/src/internal"]
     }
   },
   "include": ["packages/*/src/**/*.ts", "experimental/*/src/**/*.ts"]

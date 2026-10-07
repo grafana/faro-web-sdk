@@ -8,6 +8,7 @@ import {
   isBoolean,
   isEmpty,
   isObject,
+  isToString,
 } from '@grafana/faro-core';
 import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
@@ -29,6 +30,10 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   const transports: Transport[] = [];
 
   const internalLogger = createInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
+
+  if (typeof self !== 'undefined' && isToString(self, 'ServiceWorkerGlobalScope')) {
+    internalLogger.warn('Service workers are not supported. Session lifecycle and telemetry delivery are untested.');
+  }
 
   if (browserConfig.transports) {
     if (browserConfig.url || browserConfig.apiKey) {

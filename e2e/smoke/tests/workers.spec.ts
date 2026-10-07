@@ -74,7 +74,14 @@ for (const kind of ['shared', 'dedicated'] as const) {
 
       await expect
         .poll(() => bodies.flatMap((body) => body.exceptions ?? []).map(({ value }) => value))
-        .toEqual(expect.arrayContaining(['worker-uncaught', 'worker-rejection']));
+        .toEqual(
+          expect.arrayContaining([
+            'worker-uncaught',
+            'worker-rejection',
+            'console.error: worker-console-error-object',
+            'worker-empty-source',
+          ])
+        );
       expect(bodies.flatMap((body) => body.logs ?? []).map(({ message }) => message)).toContain('worker-console');
       expect(bodies.flatMap((body) => body.events ?? []).map(({ name }) => name)).toContain('worker-event');
       expect(bodies.flatMap((body) => body.measurements ?? []).map(({ type }) => type)).toContain('worker-measurement');

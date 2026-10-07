@@ -26,6 +26,8 @@ function connect(port: MessagePort) {
       faro.api.pushEvent('worker-event');
       faro.api.pushMeasurement({ type: 'worker-measurement', values: { messages: 1 } });
       console.info('worker-console');
+      console.error(new Error('worker-console-error-object'));
+      self.dispatchEvent(new ErrorEvent('error', { message: 'worker-empty-source' }));
       await fetch('/index.html?worker-relative-request');
       await fetch(new Request(data.collector.replace('/collect', '/fetch')));
       if (typeof XMLHttpRequest !== 'undefined') {

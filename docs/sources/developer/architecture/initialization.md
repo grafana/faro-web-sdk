@@ -83,6 +83,28 @@ then the transports and finally the instrumentations.
 
 ## Web SDK
 
+With session tracking enabled, a prerendered document waits until activation to create or resume its session.
+Chromium replaces the prerender's temporary `sessionStorage` on activation, so creating a session earlier can split
+one visit into two session IDs. The session instrumentation also establishes the session before capturing signals
+from other activation listeners, such as web vitals.
+
+`initializeFaro()` still returns synchronously. Before activation, `api.getSession()` returns `undefined` unless the
+application explicitly sets a session. Metadata updates remain available, including session attributes and overrides
+set through `api.setSession()` or `api.setView()`. Pending changes are applied to the session established at activation.
+Explicit API writes are tracked separately from configuration, including overrides whose values match configuration.
+Calling `api.resetSession()` while prerendering starts a fresh session at activation instead of resuming storage.
+Resets and session replacements retain effective overrides when none are supplied, including overrides from storage.
+Explicit `session.overrides` replaces those overrides; an empty object clears them.
+Removing and readding the same session instrumentation preserves pending API writes, including reset intent.
+Speculative telemetry is discarded before API deduplication and buffering, so it cannot suppress matching signals
+after activation. Session replay initialization also waits for activation, even when the application supplies a sampled
+session beforehand, so its opening snapshot is retained.
+
+Performance instrumentation reads buffered navigation and resource timings after activation, preserving the navigation
+event and its resource correlation. View instrumentation reports the current view once on activation and skips
+intermediate views set while prerendering. Normal navigations retain their existing initialization behavior.
+Disabling session tracking still bypasses the session activation guard.
+
 ## Tracing
 
 [initial-values]: #initial-values

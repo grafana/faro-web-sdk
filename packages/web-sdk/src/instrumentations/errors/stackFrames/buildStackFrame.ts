@@ -9,7 +9,7 @@ export function buildStackFrame(
   colno: number | undefined
 ): ExceptionStackFrame {
   const stackFrame: ExceptionStackFrame = {
-    filename: filename || document.location.href,
+    filename: filename || (typeof location !== 'undefined' ? location.href : unknownSymbolString),
     function: func || unknownSymbolString,
   };
 

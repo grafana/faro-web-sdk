@@ -8,7 +8,7 @@ import {
   getUserSessionActivityRecorder,
   getUserSessionUpdater,
 } from './sessionManagerUtils';
-import type { FaroUserSession } from './types';
+import type { FaroUserSession, SessionContext } from './types';
 
 export class VolatileSessionsManager {
   private static storageTypeSession = webStorageType.session;
@@ -18,12 +18,15 @@ export class VolatileSessionsManager {
   // session. Stubbed so the instrumentation can treat both managers uniformly.
   isAdopting = (): boolean => false;
 
-  constructor() {
-    this.updateUserSession = getUserSessionUpdater({
-      fetchUserSession: VolatileSessionsManager.fetchUserSession,
-      storeUserSession: VolatileSessionsManager.storeUserSession,
-      updateInterval: STORAGE_UPDATE_DELAY,
-    });
+  constructor(private readonly context: SessionContext = faro) {
+    this.updateUserSession = getUserSessionUpdater(
+      {
+        fetchUserSession: VolatileSessionsManager.fetchUserSession,
+        storeUserSession: VolatileSessionsManager.storeUserSession,
+        updateInterval: STORAGE_UPDATE_DELAY,
+      },
+      context
+    );
 
     this.init();
   }
@@ -59,7 +62,7 @@ export class VolatileSessionsManager {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.updateSession({ refreshActivity: false });
-        const sessionId = faro.api?.getSession()?.id;
+        const sessionId = this.context.api?.getSession()?.id;
         if (sessionId) {
           this.recordActivity(sessionId);
         }
@@ -67,11 +70,14 @@ export class VolatileSessionsManager {
     });
 
     // Users can call the setSession() method, so we need to sync this with the local storage session
-    faro.metas.addListener(
-      getSessionMetaUpdateHandler({
-        fetchUserSession: VolatileSessionsManager.fetchUserSession,
-        storeUserSession: VolatileSessionsManager.storeUserSession,
-      })
+    this.context.metas.addListener(
+      getSessionMetaUpdateHandler(
+        {
+          fetchUserSession: VolatileSessionsManager.fetchUserSession,
+          storeUserSession: VolatileSessionsManager.storeUserSession,
+        },
+        this.context
+      )
     );
   }
 }

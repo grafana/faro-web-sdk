@@ -9,7 +9,7 @@ import {
   getUserSessionActivityRecorder,
   getUserSessionUpdater,
 } from './sessionManagerUtils';
-import type { FaroUserSession } from './types';
+import type { FaroUserSession, SessionContext } from './types';
 
 export class PersistentSessionsManager {
   private static storageTypeLocal = webStorageType.local;
@@ -24,19 +24,22 @@ export class PersistentSessionsManager {
   private adoptSession = (sessionMeta: MetaSession): void => {
     this.adopting = true;
     try {
-      faro.api?.setSession(sessionMeta);
+      this.context.api?.setSession(sessionMeta);
     } finally {
       this.adopting = false;
     }
   };
 
-  constructor() {
-    this.updateUserSession = getUserSessionUpdater({
-      fetchUserSession: PersistentSessionsManager.fetchUserSession,
-      storeUserSession: PersistentSessionsManager.storeUserSession,
-      adoptSession: this.adoptSession,
-      updateInterval: STORAGE_UPDATE_DELAY,
-    });
+  constructor(private readonly context: SessionContext = faro) {
+    this.updateUserSession = getUserSessionUpdater(
+      {
+        fetchUserSession: PersistentSessionsManager.fetchUserSession,
+        storeUserSession: PersistentSessionsManager.storeUserSession,
+        adoptSession: this.adoptSession,
+        updateInterval: STORAGE_UPDATE_DELAY,
+      },
+      context
+    );
 
     this.init();
   }
@@ -72,7 +75,7 @@ export class PersistentSessionsManager {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.updateSession({ refreshActivity: false });
-        const sessionId = faro.api?.getSession()?.id;
+        const sessionId = this.context.api?.getSession()?.id;
         if (sessionId) {
           this.recordActivity(sessionId);
         }
@@ -80,11 +83,14 @@ export class PersistentSessionsManager {
     });
 
     // Users can call the setSession() method, so we need to sync this with the local storage session
-    faro.metas.addListener(
-      getSessionMetaUpdateHandler({
-        fetchUserSession: PersistentSessionsManager.fetchUserSession,
-        storeUserSession: PersistentSessionsManager.storeUserSession,
-      })
+    this.context.metas.addListener(
+      getSessionMetaUpdateHandler(
+        {
+          fetchUserSession: PersistentSessionsManager.fetchUserSession,
+          storeUserSession: PersistentSessionsManager.storeUserSession,
+        },
+        this.context
+      )
     );
   }
 }

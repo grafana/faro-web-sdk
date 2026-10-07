@@ -1,4 +1,5 @@
 import type { Config } from '../../config';
+import { getInternalMetas } from '../../internal';
 import type { InternalLogger } from '../../internalLogger';
 import type { Meta, Metas } from '../../metas';
 import type { Transports } from '../../transports';
@@ -38,7 +39,7 @@ export function initializeMetaAPI({
     metas.add(metaUser);
   };
 
-  const setSession: MetaAPI['setSession'] = (session, options) => {
+  const updateSession: MetaAPI['setSession'] = (session, options) => {
     const newOverrides = options?.overrides;
     const overrides = newOverrides
       ? {
@@ -64,11 +65,17 @@ export function initializeMetaAPI({
     metas.add(metaSession);
   };
 
+  const setSession: MetaAPI['setSession'] = (session, options) => {
+    getInternalMetas(metas).notifySessionUpdate({ type: 'replace', session, overrides: options?.overrides });
+    updateSession(session, options);
+  };
+
   const getSession: MetaAPI['getSession'] = () => metas.value.session;
 
   const setView: MetaAPI['setView'] = (view, options) => {
     if (options?.overrides) {
-      setSession(getSession(), { overrides: options.overrides });
+      getInternalMetas(metas).notifySessionUpdate({ type: 'overrides', overrides: options.overrides });
+      updateSession(getSession(), { overrides: options.overrides });
     }
 
     if (metaView?.view?.name === view?.name) {
