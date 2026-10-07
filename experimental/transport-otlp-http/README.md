@@ -79,7 +79,7 @@ initializeFaro({
           // it ads unnecessary bytes to the requests and your storage solution
           // This example is to show how we can use the transport-item to built a custom string
           const { payload } = item;
-          const [measurementName, measurementValue] = Object.entries(payload.values).flat();
+          const [measurementName, measurementValue] = Object.entries(payload.values)[0] ?? [];
           const body = `faro.signal.measurement: type=${payload.type} name=${measurementName} value=${measurementValue}`;
           return body;
         },
