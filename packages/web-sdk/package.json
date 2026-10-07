@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-web-sdk",
-  "packageManager": "yarn@4.18.0",
+  "packageManager": "yarn@4.18.1",
   "version": "2.12.1",
   "description": "Faro instrumentations, metas, transports for web.",
   "keywords": [
@@ -55,7 +55,7 @@
     "web-vitals": "^6.0.0"
   },
   "devDependencies": {
-    "@types/node": "24.13.6",
+    "@types/node": "24.19.1",
     "@types/ua-parser-js": "0.7.39",
     "user-agent-data-types": "0.4.3"
   },

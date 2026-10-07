@@ -16,7 +16,6 @@ export const defaultReplayInstrumentationOptions: ReplayInstrumentationOptions =
   collectFonts: false,
   inlineImages: false,
   inlineStylesheet: false,
-  recordCanvas: false,
   recordCrossOriginIframes: false,
   beforeSend: undefined,
   sanitizeMetaHref: true,
