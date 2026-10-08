@@ -17,17 +17,15 @@
 
 ## [2.13.0](https://github.com/grafana/faro-web-sdk/compare/v2.12.1...v2.13.0) (2026-10-08)
 
-
 ### Features
 
-* **web-sdk:** report rage, dead and error clicks ([#2314](https://github.com/grafana/faro-web-sdk/issues/2314)) ([9382a99](https://github.com/grafana/faro-web-sdk/commit/9382a99180f6c5396ed385f7338ebec1477c7666))
-
+- **web-sdk:** report rage, dead and error clicks ([#2314](https://github.com/grafana/faro-web-sdk/issues/2314)) ([9382a99](https://github.com/grafana/faro-web-sdk/commit/9382a99180f6c5396ed385f7338ebec1477c7666))
 
 ### Bug Fixes
 
-* **replay:** disable unsupported canvas recording ([#2317](https://github.com/grafana/faro-web-sdk/issues/2317)) ([bd9099c](https://github.com/grafana/faro-web-sdk/commit/bd9099cfac7411604ae28b45196be02ff3126c13))
-* **session:** adopt rotated sessions in same-origin iframes ([#2286](https://github.com/grafana/faro-web-sdk/issues/2286)) ([4697c87](https://github.com/grafana/faro-web-sdk/commit/4697c879d398932919332e472b084631f82ac6bc))
-* **transport-otlp-http:** serialize all measurement values as OTLP attributes ([#2288](https://github.com/grafana/faro-web-sdk/issues/2288)) ([94a5aeb](https://github.com/grafana/faro-web-sdk/commit/94a5aebac4d306d3cc2105f72c452e4ee3972588))
+- **replay:** disable unsupported canvas recording ([#2317](https://github.com/grafana/faro-web-sdk/issues/2317)) ([bd9099c](https://github.com/grafana/faro-web-sdk/commit/bd9099cfac7411604ae28b45196be02ff3126c13))
+- **session:** adopt rotated sessions in same-origin iframes ([#2286](https://github.com/grafana/faro-web-sdk/issues/2286)) ([4697c87](https://github.com/grafana/faro-web-sdk/commit/4697c879d398932919332e472b084631f82ac6bc))
+- **transport-otlp-http:** serialize all measurement values as OTLP attributes ([#2288](https://github.com/grafana/faro-web-sdk/issues/2288)) ([94a5aeb](https://github.com/grafana/faro-web-sdk/commit/94a5aebac4d306d3cc2105f72c452e4ee3972588))
 
 ## [2.12.1](https://github.com/grafana/faro-web-sdk/compare/v2.12.0...v2.12.1) (2026-09-22)
 
