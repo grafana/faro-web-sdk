@@ -12,7 +12,7 @@ import {
 } from './util';
 
 export function getUserEventHandler(
-  faro: Faro,
+  faro: Pick<Faro, 'api' | 'config' | 'internalLogger'>,
   onTimeoutWarning: TimeoutWarning = noop
 ): {
   processUserEvent: (event: PointerEvent | KeyboardEvent) => void;
