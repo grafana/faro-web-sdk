@@ -20,7 +20,7 @@ export function initializeTransports(
 
   const transports: Transport[] = [];
   const changeListeners = new Set<() => void>();
-  const onChange: Transports['onChange'] = (listener) => {
+  const onChange: NonNullable<Transports['onChange']> = (listener) => {
     changeListeners.add(listener);
     return () => {
       changeListeners.delete(listener);

@@ -345,7 +345,7 @@ describe('transport change listeners', () => {
   it('notifies once after each real change and supports unsubscribing', () => {
     const { transports } = initializeFaro(mockConfig({ transports: [] }));
     const snapshots: Transport[][] = [];
-    const unsubscribe = transports.onChange(() => snapshots.push(transports.transports));
+    const unsubscribe = transports.onChange!(() => snapshots.push(transports.transports));
     const first = new MockTransport();
     const second = new MockTransport();
     transports.add(first, second);
@@ -360,11 +360,11 @@ describe('transport change listeners', () => {
 
   it('continues notifying other listeners when a listener throws', () => {
     const { transports } = initializeFaro(mockConfig({ transports: [] }));
-    transports.onChange(() => {
+    transports.onChange!(() => {
       throw new Error('listener failure');
     });
     const listener = jest.fn();
-    transports.onChange(listener);
+    transports.onChange!(listener);
     expect(() => transports.add(new MockTransport())).not.toThrow();
     expect(listener).toHaveBeenCalledTimes(1);
   });
