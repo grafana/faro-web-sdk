@@ -380,48 +380,56 @@ describe('SessionInstrumentation', () => {
     });
   });
 
-  it('silently adopts a session rotated by another tab without emitting a lifecycle event.', () => {
-    const transport = new MockTransport();
+  it.each([true, false])(
+    'silently adopts a shared session (persistent=%s) without a lifecycle event.',
+    (persistent) => {
+      const transport = new MockTransport();
+      const onSessionChange = jest.fn();
 
-    // this tab starts on S0 (resumed from shared storage)
-    mockStorage[STORAGE_KEY] = JSON.stringify(createUserSessionObject({ sessionId: 'S0' }));
+      // this document starts on S0 (resumed from shared storage)
+      mockStorage[STORAGE_KEY] = JSON.stringify(createUserSessionObject({ sessionId: 'S0' }));
 
-    const { api, metas } = initializeFaro(
-      mockConfig({
-        transports: [transport],
-        instrumentations: [new SessionInstrumentation()],
-        sessionTracking: {
-          enabled: true,
-          persistent: true,
-          samplingRate: 1,
-        },
-      })
-    );
+      const { api, metas } = initializeFaro(
+        mockConfig({
+          transports: [transport],
+          instrumentations: [new SessionInstrumentation()],
+          sessionTracking: {
+            enabled: true,
+            persistent,
+            samplingRate: 1,
+            onSessionChange,
+          },
+        })
+      );
 
-    expect(transport.items).toHaveLength(1);
-    expect((transport.items[0]! as TransportItem<EventEvent>).payload.name).toEqual(EVENT_SESSION_RESUME);
-    expect(metas.value.session?.id).toEqual('S0');
+      expect(transport.items).toHaveLength(1);
+      expect((transport.items[0]! as TransportItem<EventEvent>).payload.name).toEqual(EVENT_SESSION_RESUME);
+      expect(metas.value.session?.id).toEqual('S0');
 
-    // clear the updateSession throttle, then another tab rotates the shared
-    // session: a different, still-valid session lands in storage
-    jest.advanceTimersByTime(STORAGE_UPDATE_DELAY + 1);
-    mockStorage[STORAGE_KEY] = JSON.stringify({
-      ...createUserSessionObject({ sessionId: 'A1' }),
-      sessionMeta: { id: 'A1', attributes: { isSampled: 'true', previousSession: 'S0' } },
-    });
+      // clear the updateSession throttle, then another document rotates the shared
+      // session: a different, still-valid session lands in storage
+      jest.advanceTimersByTime(STORAGE_UPDATE_DELAY + 1);
+      mockStorage[STORAGE_KEY] = JSON.stringify({
+        ...createUserSessionObject({ sessionId: 'A1' }),
+        sessionMeta: { id: 'A1', attributes: { isSampled: 'true', previousSession: 'S0' } },
+      });
 
-    // a send triggers updateSession, which adopts A1
-    api.pushLog(['trigger']);
+      // a send triggers updateSession, which adopts A1
+      api.pushLog(['trigger']);
 
-    // this tab converged to A1...
-    expect(metas.value.session?.id).toEqual('A1');
-    // ...silently: no session_start / session_extend event was emitted
-    const lifecycleEvents = transport.items.filter((item) => {
-      const name = (item as TransportItem<EventEvent>).payload.name;
-      return name === EVENT_SESSION_START || name === EVENT_SESSION_EXTEND;
-    });
-    expect(lifecycleEvents).toHaveLength(0);
-  });
+      // this document converged to A1...
+      expect(metas.value.session?.id).toEqual('A1');
+      expect(transport.items).toHaveLength(2);
+      expect(transport.items[1]!.meta.session?.id).toEqual('A1');
+      expect(onSessionChange).not.toHaveBeenCalled();
+      // ...silently: no session_start / session_extend event was emitted
+      const lifecycleEvents = transport.items.filter((item) => {
+        const name = (item as TransportItem<EventEvent>).payload.name;
+        return name === EVENT_SESSION_START || name === EVENT_SESSION_EXTEND;
+      });
+      expect(lifecycleEvents).toHaveLength(0);
+    }
+  );
 
   it('Initialize session meta with user defined id and attributes provided via the initial session property.', () => {
     const mockSessionMeta: MetaSession = {
