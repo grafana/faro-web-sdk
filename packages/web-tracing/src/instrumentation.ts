@@ -112,6 +112,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
           // Drop speculative spans before OpenTelemetry can queue them for export after activation.
           if (
             this.config.sessionTracking?.enabled &&
+            typeof document !== 'undefined' &&
             (document as Document & { prerendering?: boolean }).prerendering
           ) {
             return { decision: SamplingDecision.NOT_RECORD };

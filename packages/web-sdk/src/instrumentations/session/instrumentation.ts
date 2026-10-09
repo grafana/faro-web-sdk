@@ -4,11 +4,13 @@ import {
   EVENT_SESSION_EXTEND,
   EVENT_SESSION_RESUME,
   EVENT_SESSION_START,
+  genShortID,
   VERSION,
 } from '@grafana/faro-core';
 import type { BeforeSendHook, Config, Meta, MetaSession } from '@grafana/faro-core';
 
 import type { TransportItem } from '../..';
+import { isWorker } from '../../utils/worker';
 
 import { type PendingSessionChanges, PrerenderSession } from './prerenderSession';
 import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
@@ -204,6 +206,11 @@ export class SessionInstrumentation extends BaseInstrumentation {
   initialize(): void {
     this.logDebug('init session instrumentation');
 
+    if (isWorker()) {
+      this.initializeWorkerSession();
+      return;
+    }
+
     const prerendering = (document as Document & { prerendering?: boolean }).prerendering;
     if (this.config.sessionTracking?.enabled && (prerendering || this.prerenderSession)) {
       // Chromium discards speculative sessionStorage writes on activation.
@@ -256,6 +263,63 @@ export class SessionInstrumentation extends BaseInstrumentation {
     }
 
     this.sessionStartListener = this.sendSessionStartEvent.bind(this);
+    this.metas.addListener(this.sessionStartListener);
+  }
+
+  private initializeWorkerSession(): void {
+    const config = this.config.sessionTracking;
+    if (!config?.enabled) {
+      return;
+    }
+
+    if (config.persistent) {
+      this.logWarn('Worker sessions are kept in memory; persistent session storage is unavailable.');
+    }
+
+    // Worker sessions live as long as this instance, independently of connected tabs.
+    const initialSession: MetaSession = {
+      ...config.session,
+      id: config.session?.id ?? config.generateSessionId?.() ?? genShortID(),
+      attributes: {
+        isSampled: String(isSampled(this)),
+        ...config.session?.attributes,
+      },
+    };
+    this.registerBeforeSendHook(() => {});
+    this.notifiedSession = initialSession;
+    this.api.setSession(initialSession);
+    this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
+
+    this.sessionStartListener = (meta) => {
+      const session = meta.session;
+      if (!session) {
+        return;
+      }
+      const previousSession = this.notifiedSession;
+      const changed = session.id !== previousSession?.id;
+      if (!changed && session.attributes?.['isSampled'] != null) {
+        this.notifiedSession = session;
+        return;
+      }
+      // setSession/resetSession may omit the sampling decision or the identity.
+      const nextSession: MetaSession = {
+        ...session,
+        id: session.id ?? config.generateSessionId?.() ?? genShortID(),
+        attributes: {
+          ...session.attributes,
+          isSampled:
+            session.attributes?.['isSampled'] ??
+            (!changed ? previousSession?.attributes?.['isSampled'] : undefined) ??
+            String(isSampled(this)),
+        },
+      };
+      this.notifiedSession = nextSession;
+      this.api.setSession(nextSession);
+      if (changed) {
+        config.onSessionChange?.(previousSession ?? null, nextSession);
+        this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
+      }
+    };
     this.metas.addListener(this.sessionStartListener);
   }
 
