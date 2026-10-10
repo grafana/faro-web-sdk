@@ -37,7 +37,7 @@
     "@vitejs/plugin-react-swc": "4.3.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "start-server-and-test": "3.0.12",
-    "vite": "8.3.2"
+    "start-server-and-test": "3.0.13",
+    "vite": "8.3.3"
   }
 }
