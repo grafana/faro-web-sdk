@@ -90,6 +90,10 @@ Properties:
 - `id` - the name of the browser
 - `attributes` - a key-value object with additional attributes about the current page
 
+When core constructs a Faro transport body with `getTransportBody`, it strips credentials, query string, and fragment
+from `page.url` in the body metadata. The original transport item metadata is not mutated, and arbitrary URLs inside
+signal payloads are not changed.
+
 ### SDK
 
 The SDK meta contains information about the Faro library itself and is
