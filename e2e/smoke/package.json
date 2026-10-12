@@ -31,7 +31,7 @@
     "@grafana/faro-transport-otlp-http": "^2.12.1",
     "@grafana/faro-web-sdk": "^2.12.1",
     "@grafana/faro-web-tracing": "^2.12.1",
-    "@playwright/test": "1.63.0",
+    "@playwright/test": "1.64.0",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react-swc": "4.3.3",
