@@ -8,7 +8,7 @@ user-invocable: true
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit
 compatibility:
   faro-web-sdk: '^2.0.0'
-  faro-instrumentation-replay: '>=0.1.0' # Session Replay (optional); requires faro-web-sdk >= 2.8.2
+  faro-instrumentation-replay: '^2.8.2' # Session Replay (optional); version-aligned with faro-web-sdk
   frameworks:
     react: '>=16.8'
     next: '>=13'

@@ -826,7 +826,7 @@ Confirm with a short summary:
 >
 > - Session Replay is **public preview**.
 > - Canvas 2D and WebGL drawing content is NOT recorded.
-> - PII in page URLs (e.g. tokens in query strings) is NOT masked by default — review your URL structure.
+> - URLs rendered inside the DOM (link `href`s, image `src`s, text containing URLs) are NOT masked. The primary page URL is sanitized by default (`sanitizeMetaHref: true` strips credentials, query strings, and fragments from Meta event hrefs), but URLs serialized elsewhere in the recording and in Faro transport metadata are not.
 > - Recordings are retained for 30 days (not configurable).
 > - You are responsible for presenting Session Replay in your cookie banner / CMP as an **analytics** tracker and for giving end users a way to opt out. See [Data privacy in Session Replay](https://grafana.com/docs/grafana-cloud/observe-and-act/monitor-applications/session-replay/data-privacy/).
 
@@ -839,10 +839,11 @@ Full option set (pass to `new ReplayInstrumentation({...})`). Only configure wha
 - `samplingRate` (number, default `1`) — fraction of globally sampled sessions recorded.
 - `recordAfter` (`'load' | 'DOMContentLoaded'`, default `'load'`) — when to start recording.
 - `recordCrossOriginIframes` (boolean, default `false`) — opt-in; each child iframe must also be instrumented.
+- `recordCanvas` (boolean, default `false`) — note: Canvas 2D and WebGL drawing content is not currently supported by the player; option exists but has no visible effect.
 - `collectFonts` (boolean, default `false`).
 - `inlineImages` (boolean, default `false`) — opt-in; records image content.
 - `inlineStylesheet` (boolean, default `false`).
-- `inactivityThresholdMs` (number, default `60000`) — pause recording after N ms idle; `0` disables.
+- `inactivityThresholdMs` (number, default `60000`) — pause recording after N ms idle; `0` or `undefined` disables.
 
 **Privacy / masking:**
 
@@ -852,6 +853,7 @@ Full option set (pass to `new ReplayInstrumentation({...})`). Only configure wha
 - `maskTextSelector` (string, default `'*'`) — CSS selector for text to mask.
 - `blockSelector` (string) — CSS selector for elements replaced by a placeholder.
 - `ignoreSelector` (string) — CSS selector for elements whose input events are dropped.
+- `sanitizeMetaHref` (boolean, default `true`) — strips `username`, `password`, `search` (query string), and `hash` (fragment) from `window.location.href` in rrweb Meta events. Does not sanitize URLs embedded in DOM snapshots or in Faro transport metadata.
 
 **Hooks:**
 
