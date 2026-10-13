@@ -740,11 +740,7 @@ import { ReplayInstrumentation } from '@grafana/faro-instrumentation-replay';
 
 initializeFaro({
   // ... existing config ...
-  instrumentations: [
-    ...getWebInstrumentations(),
-    new TracingInstrumentation(),
-    new ReplayInstrumentation(),
-  ],
+  instrumentations: [...getWebInstrumentations(), new TracingInstrumentation(), new ReplayInstrumentation()],
 });
 ```
 
