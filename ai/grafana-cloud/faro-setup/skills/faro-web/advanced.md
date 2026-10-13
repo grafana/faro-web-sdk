@@ -754,7 +754,7 @@ Defaults are safe for most apps: `maskAllInputs: true`, `maskTextSelector: '*'` 
 >
 > 1. **Replay sampling rate** — record only a fraction of sessions (e.g. 10%)
 > 2. **Relax text masking** — stop masking all visible text (keep input masking on)
-> 3. **Block or mask specific elements** — target CSS selectors for sensitive areas
+> 3. **Block or ignore specific elements** — add CSS selectors for sensitive areas (keeps default masking in place)
 > 4. **Load only after consent** — conditionally initialize Session Replay inside a cookie-consent gate
 
 Apply only the picks the user selects. After each, ask: _"Anything else from the list, or back to the Step 4 menu?"_
@@ -778,19 +778,18 @@ new ReplayInstrumentation({
 
 Warn the user: any text they do NOT want recorded (names, emails, dashboards) must be opted back into masking via `maskTextSelector` (e.g. `.sensitive-data, .pii`) or `blockSelector`.
 
-**3 — Block or mask specific elements.** Ask for CSS selectors:
+**3 — Block or ignore specific elements.** Ask for CSS selectors. This option **only** adds `blockSelector` and `ignoreSelector`; it does NOT change `maskTextSelector`, so the default `'*'` (mask all visible text) stays in place. If the user wants to narrow text masking as well, they must also pick option 2 — do not set `maskTextSelector` here, or text outside the new selector would silently become recordable:
 
 ```ts
 new ReplayInstrumentation({
-  maskTextSelector: '.sensitive-data, .pii',
+  // maskTextSelector stays at its default '*' — all visible text is still masked
   blockSelector: '.payment-form, .credit-card-info',
   ignoreSelector: '.analytics-widget',
 });
 ```
 
-- `maskTextSelector`: text content is replaced with asterisks.
-- `blockSelector`: element is replaced with a same-dimension placeholder — nothing recorded.
-- `ignoreSelector`: input events on these elements are not recorded.
+- `blockSelector`: element is replaced with a same-dimension placeholder — nothing about it is recorded.
+- `ignoreSelector`: input events on these elements are not recorded (the element itself still appears in the recording).
 
 **4 — Load only after consent.** For opt-in jurisdictions (EEA, UK, Switzerland, South Korea), Session Replay must stay off until the user accepts a consent banner. Wrap the import and `initializeFaro` call in a consent check (use dynamic imports so the replay bundle isn't downloaded until needed):
 
