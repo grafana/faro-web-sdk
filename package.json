@@ -84,9 +84,9 @@
   "packageManager": "yarn@4.18.1",
   "resolutions": {
     "jsdom@npm:^26.1.0": "patch:jsdom@npm%3A26.1.0#~/.yarn/patches/jsdom-npm-26.1.0-3857255f02.patch",
-    "lerna/js-yaml": "5.4.2",
-    "smol-toml@npm:1.6.1": "1.8.0",
-    "pacote@npm:21.0.1": "22.0.0"
+    "nx/undici": "7.29.1",
+    "smol-toml@npm:~1.7.0": "1.9.1",
+    "markdownlint-cli/js-yaml": "5.4.3"
   },
   "directories": {
     "doc": "docs"
