@@ -31,13 +31,13 @@
     "@grafana/faro-transport-otlp-http": "^2.12.1",
     "@grafana/faro-web-sdk": "^2.12.1",
     "@grafana/faro-web-tracing": "^2.12.1",
-    "@playwright/test": "1.63.0",
+    "@playwright/test": "1.64.0",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react-swc": "4.3.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "start-server-and-test": "3.0.12",
-    "vite": "8.3.2"
+    "start-server-and-test": "3.0.13",
+    "vite": "8.3.4"
   }
 }

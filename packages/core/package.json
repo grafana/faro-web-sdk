@@ -53,10 +53,10 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/otlp-transformer": "^0.222.0"
+    "@opentelemetry/otlp-transformer": "^0.223.0"
   },
   "devDependencies": {
-    "@types/node": "24.19.1"
+    "@types/node": "24.19.2"
   },
   "publishConfig": {
     "access": "public"
