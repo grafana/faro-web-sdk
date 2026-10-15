@@ -27,8 +27,5 @@
     "sourceMap": true,
     "strict": true,
     "types": ["jest", "node"]
-  },
-  "ts-node": {
-    "esm": true
   }
 }

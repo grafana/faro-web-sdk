@@ -1,12 +1,14 @@
-const path = require('path');
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const { jestBaseConfig } = require('../../jest.config.base.js');
+import { jestBaseConfig } from '../../jest.config.base.js';
 
-const repoRoot = path.join(__dirname, '..', '..');
-const matrixTsconfig = path.join(__dirname, 'tsconfig.matrix.json');
-const matrixEsmTsconfig = path.join(__dirname, 'tsconfig.matrix.esm.json');
-const setupFile = path.join(__dirname, 'jest.setup.ts');
-const fetchEnv = path.join(__dirname, 'jsdom-fetch.env.js');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const repoRoot = join(__dirname, '..', '..');
+const matrixTsconfig = join(__dirname, 'tsconfig.matrix.json');
+const matrixEsmTsconfig = join(__dirname, 'tsconfig.matrix.esm.json');
+const setupFile = join(__dirname, 'jest.setup.ts');
+const fetchEnv = join(__dirname, 'jsdom-fetch.env.js');
 
 const matrixDir = '<rootDir>/packages/react/src/router/__matrix__';
 
@@ -40,7 +42,7 @@ const cjsProject = ({ displayName, testMatch, moduleNameMapper }) => ({
   },
 });
 
-module.exports = {
+export default {
   projects: [
     // Existing unit tests (mocked deps, profiler). Unchanged behaviour, React 19, CJS.
     {
@@ -50,7 +52,7 @@ module.exports = {
       roots: ['packages/react/src'],
       testPathIgnorePatterns: ['/node_modules/', '/__matrix__/'],
       transform: {
-        '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: path.join(__dirname, 'tsconfig.spec.json') }],
+        '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: join(__dirname, 'tsconfig.spec.json') }],
       },
     },
 
