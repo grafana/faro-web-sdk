@@ -27,7 +27,9 @@ jobs:
             BlueOak-1.0.0, Unlicense, CC0-1.0,
             CC-BY-4.0,
             Artistic-2.0
-          # Per-package exceptions for Category B or internal licenses:
+          # Per-package license exceptions:
+          # - argparse: PSF-2.0, dev-only via js-yaml; Apache Category A
+          #   https://www.apache.org/legal/resolved.html#category-a
           # - grafana/shared-workflows: AGPL-3.0, internal Grafana action
           # - @ltd/j-toml: LGPL-3.0, dev-only transitive dep via lerna -> nx >=22.6.0
           # - lightningcss: MPL-2.0, transitive dep via vite 8 (was optional peer in vite 7)
@@ -35,6 +37,7 @@ jobs:
             pkg:githubactions/grafana/shared-workflows/actions/lint-pr-title,
             pkg:githubactions/grafana/shared-workflows/actions/create-github-app-token,
             pkg:npm/@ltd/j-toml,
+            pkg:npm/argparse,
             pkg:npm/lightningcss,
             pkg:npm/lightningcss-android-arm64,
             pkg:npm/lightningcss-darwin-arm64,

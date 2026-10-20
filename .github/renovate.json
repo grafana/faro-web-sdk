@@ -60,6 +60,12 @@
       "enabled": false
     },
     {
+      "description": "Keep TypeScript below 7 until @typescript-eslint, ts-jest and detective-typescript support it. TypeScript remains in the formatters-and-linters group.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7.0.0"
+    },
+    {
       "description": "Restrict ua-parser-js to version below 2.x.x as it changes licensing model with v2 onwards",
       "matchPackageNames": ["ua-parser-js"],
       "allowedVersions": "<2.0.0"
