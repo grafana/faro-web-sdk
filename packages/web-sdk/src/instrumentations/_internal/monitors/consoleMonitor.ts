@@ -43,7 +43,7 @@ export function monitorConsole(unpatchedConsole?: UnpatchedConsole): Observable<
 }
 
 // Test-only utility to reset state between tests
-export function __resetConsoleMonitorForTests() {
+export function __resetConsoleMonitorForTests(): void {
   // Restore original console methods from defaultUnpatchedConsole
   for (const level of allLogLevels) {
     if (defaultUnpatchedConsole[level]) {

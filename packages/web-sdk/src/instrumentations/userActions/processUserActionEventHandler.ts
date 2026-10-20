@@ -1,38 +1,89 @@
+import { noop } from '@grafana/faro-core';
 import type { Faro, Subscription, UserActionInterface, UserActionInternalInterface } from '@grafana/faro-core';
 
-import { userActionDataAttributeParsed as userActionDataAttribute } from './const';
+import { defaultInitialActivityTimeout, userActionDataAttribute } from './const';
 import { UserActionController } from './userActionController';
-import { convertDataAttributeName } from './util';
+import {
+  convertDataAttributeName,
+  deriveUserActionTimeoutDataAttribute,
+  normalizeDataAttributeName,
+  normalizeInitialActivityTimeout,
+  type TimeoutWarning,
+} from './util';
 
-export function getUserEventHandler(faro: Faro) {
-  const { api, config } = faro;
+export function getUserEventHandler(
+  faro: Faro,
+  onTimeoutWarning: TimeoutWarning = noop
+): {
+  processUserEvent: (event: PointerEvent | KeyboardEvent) => void;
+  processUserActionStarted: (userAction: UserActionInterface, initialActivityTimeout?: number) => void;
+} {
+  const { api, config, internalLogger } = faro;
+  const globalInitialActivityTimeout = normalizeInitialActivityTimeout(
+    config.userActionsInstrumentation?.initialActivityTimeout,
+    defaultInitialActivityTimeout,
+    onTimeoutWarning
+  );
 
-  function processUserEvent(event: PointerEvent | KeyboardEvent) {
-    const userActionName = getUserActionNameFromElement(
-      event.target as HTMLElement,
-      config.userActionsInstrumentation?.dataAttributeName ?? userActionDataAttribute
-    );
+  function processUserEvent(event: PointerEvent | KeyboardEvent): void {
+    const dataAttributeName = config.userActionsInstrumentation?.dataAttributeName ?? userActionDataAttribute;
 
-    // We don't have a data attribute
-    if (!userActionName) {
+    const target = event.target;
+    if (!(target instanceof Element)) {
       return;
     }
 
-    const userAction = api.startUserAction(userActionName, {}, { triggerName: event.type });
-    if (userAction) {
-      processUserActionStarted(userAction);
+    const element = findClosestElementWithAttribute(target, normalizeDataAttributeName(dataAttributeName));
+    const userActionName = getUserActionNameFromElement(element, dataAttributeName);
+
+    // We don't have a matching element or data attribute
+    if (!element || !userActionName) {
+      return;
     }
+
+    const initialActivityTimeout = getUserActionTimeoutFromElement(element, dataAttributeName);
+    api.startUserAction(userActionName, {}, { triggerName: event.type, initialActivityTimeout });
   }
 
-  function processUserActionStarted(userAction: UserActionInterface) {
+  function processUserActionStarted(userAction: UserActionInterface, initialActivityTimeout?: number): void {
     const internalUserAction = userAction as unknown as UserActionInternalInterface;
-    new UserActionController(internalUserAction).attach();
+    const effectiveInitialActivityTimeout = normalizeInitialActivityTimeout(
+      initialActivityTimeout,
+      globalInitialActivityTimeout,
+      onTimeoutWarning
+    );
+    new UserActionController(internalUserAction, internalLogger.debug, effectiveInitialActivityTimeout).attach();
   }
 
   return { processUserEvent, processUserActionStarted };
 }
 
-export function getUserActionNameFromElement(element: HTMLElement, dataAttributeName: string): string | undefined {
+function findClosestElementWithAttribute(element: Element, attributeName: string): HTMLElement | null {
+  let current: Element | null = element;
+
+  while (current) {
+    if (current.hasAttribute(attributeName)) {
+      return current as HTMLElement;
+    }
+    current = current.parentElement;
+  }
+
+  return null;
+}
+
+export function getUserActionTimeoutFromElement(element: HTMLElement, dataAttributeName: string): number | undefined {
+  const value = element.getAttribute(deriveUserActionTimeoutDataAttribute(dataAttributeName));
+  return value === null ? undefined : Number(value);
+}
+
+export function getUserActionNameFromElement(
+  element: HTMLElement | null,
+  dataAttributeName: string
+): string | undefined {
+  if (!element) {
+    return undefined;
+  }
+
   const parsedDataAttributeName = convertDataAttributeName(dataAttributeName);
   const dataset = element.dataset;
 
@@ -45,6 +96,6 @@ export function getUserActionNameFromElement(element: HTMLElement, dataAttribute
   return undefined;
 }
 
-export function unsubscribeAllMonitors(allMonitorsSub: Subscription | undefined) {
+export function unsubscribeAllMonitors(allMonitorsSub: Subscription | undefined): void {
   allMonitorsSub?.unsubscribe();
 }

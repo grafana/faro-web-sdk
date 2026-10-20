@@ -26,6 +26,9 @@ describe('faroMetaAttributesSpanProcessor', () => {
       remove: jest.fn(),
       addListener: jest.fn(),
       removeListener: jest.fn(),
+      capture: jest.fn(),
+      addCaptureListener: jest.fn(),
+      removeCaptureListener: jest.fn(),
     }
   );
 
@@ -65,6 +68,9 @@ describe('faroMetaAttributesSpanProcessor', () => {
         remove: jest.fn(),
         addListener: jest.fn(),
         removeListener: jest.fn(),
+        capture: jest.fn(),
+        addCaptureListener: jest.fn(),
+        removeCaptureListener: jest.fn(),
       }
     );
 
@@ -85,6 +91,9 @@ describe('faroMetaAttributesSpanProcessor', () => {
         remove: jest.fn(),
         addListener: jest.fn(),
         removeListener: jest.fn(),
+        capture: jest.fn(),
+        addCaptureListener: jest.fn(),
+        removeCaptureListener: jest.fn(),
       }
     );
 

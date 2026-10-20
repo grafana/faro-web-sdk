@@ -27,13 +27,13 @@ jobs:
 
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit # start with audit; switch to "block" + allowed-endpoints once traffic is mapped
 
       - name: Mint GitHub App token
         id: app-token
-        uses: grafana/shared-workflows/actions/create-github-app-token@259ba21cb3ff07724f331e26d926d655d24b317b
+        uses: grafana/shared-workflows/actions/create-github-app-token@5bbb526b1728ca57fbe1750c4c27ab6ab06171c2 # create-github-app-token/v1.0
         with:
           github_app: app-o11y-kwl-ci
 
@@ -95,7 +95,7 @@ jobs:
       # on the release PR.
       - name: Commit and push release fixes
         if: ${{ steps.refresh.outputs.changed == 'true' }}
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           # Hardening: pass inputs through env (read via process.env) instead of interpolating
           # ${{ }} expressions into the script body, which avoids expression injection.
@@ -172,7 +172,7 @@ jobs:
 
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
@@ -193,6 +193,9 @@ jobs:
 
       - name: Build
         run: yarn build
+
+      - name: Type check
+        run: yarn quality:typecheck
 
       - name: Lint
         run: yarn quality:lint
@@ -219,7 +222,7 @@ jobs:
 
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 

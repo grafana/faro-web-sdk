@@ -7,7 +7,7 @@ import type { InternalLogger } from './types';
 
 export function createInternalLogger(
   unpatchedConsole: UnpatchedConsole = defaultUnpatchedConsole,
-  internalLoggerLevel = defaultInternalLoggerLevel
+  internalLoggerLevel: InternalLoggerLevel = defaultInternalLoggerLevel
 ): InternalLogger {
   const internalLogger = defaultInternalLogger;
 

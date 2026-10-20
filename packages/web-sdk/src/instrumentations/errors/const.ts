@@ -8,5 +8,5 @@ export const objectEventValue = 'Non-Error exception captured with keys:';
 
 export const unknownSymbolString = '?';
 
-export const valueTypeRegex =
+export const valueTypeRegex: RegExp =
   /^(?:[Uu]ncaught (?:exception: )?)?(?:((?:Eval|Internal|Range|Reference|Syntax|Type|URI|)Error): )?(.*)$/i;

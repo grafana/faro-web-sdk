@@ -1,5 +1,6 @@
-import { defaultLogArgsSerializer, isFunction } from '@grafana/faro-core';
+import { defaultLogArgsSerializer, InternalLoggerLevel, isFunction } from '@grafana/faro-core';
 import type { LogArgsSerializer } from '@grafana/faro-core';
+import { MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { userActionDataAttribute } from '../instrumentations/userActions';
 
@@ -189,6 +190,7 @@ describe('config', () => {
 
     expect(config).toBeTruthy();
     expect(config?.userActionsInstrumentation?.dataAttributeName).toBe(userActionDataAttribute);
+    expect(config?.userActionsInstrumentation?.initialActivityTimeout).toBe(100);
   });
 
   it('trackUserActions setting are added to the config as provided by the user', () => {
@@ -203,6 +205,44 @@ describe('config', () => {
 
     expect(config).toBeTruthy();
     expect(config?.userActionsInstrumentation?.dataAttributeName).toBe('data-test-action-name');
+  });
+
+  it('normalizes a camelCase user action attribute name', () => {
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      userActionsInstrumentation: { dataAttributeName: 'testActionName' },
+    });
+
+    expect(config.userActionsInstrumentation?.dataAttributeName).toBe('data-test-action-name');
+  });
+
+  it('falls back and warns for an invalid global initial activity timeout', () => {
+    const warn = jest.fn();
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      internalLoggerLevel: InternalLoggerLevel.WARN,
+      unpatchedConsole: { warn } as unknown as Console,
+      userActionsInstrumentation: { initialActivityTimeout: Number.NaN },
+    });
+
+    expect(config.userActionsInstrumentation?.initialActivityTimeout).toBe(100);
+    expect(warn).toHaveBeenCalled();
+  });
+
+  it('clamps and warns for a global initial activity timeout above 1000 ms', () => {
+    const warn = jest.fn();
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      internalLoggerLevel: InternalLoggerLevel.WARN,
+      unpatchedConsole: { warn } as unknown as Console,
+      userActionsInstrumentation: { initialActivityTimeout: 1001 },
+    });
+
+    expect(config.userActionsInstrumentation?.initialActivityTimeout).toBe(1000);
+    expect(warn).toHaveBeenCalled();
   });
 
   it('experimental settings defaults are applied', () => {
@@ -276,5 +316,24 @@ describe('config', () => {
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
     expect(navigationInstrumentation).toBeUndefined();
+  });
+  it('uses the reliable Fetch transport under the existing public name by default', () => {
+    const config = makeCoreConfig({ url: 'http://example.com/collect', app: {} });
+
+    expect(config.transports[0]?.name).toBe('@grafana/faro-web-sdk:transport-fetch');
+  });
+
+  it('keeps explicit transports', () => {
+    const error = jest.fn();
+    const explicitTransport = new MockTransport();
+
+    const config = makeCoreConfig({
+      app: {},
+      transports: [explicitTransport],
+      unpatchedConsole: { error } as unknown as Console,
+    });
+
+    expect(config.transports).toEqual([explicitTransport]);
+    expect(error).not.toHaveBeenCalled();
   });
 });

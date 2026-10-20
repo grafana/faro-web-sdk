@@ -1,9 +1,70 @@
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
-import { convertDataAttributeName, isRequestEndMessage, isRequestStartMessage } from './util';
+import {
+  convertDataAttributeName,
+  deriveUserActionTimeoutDataAttribute,
+  isRequestEndMessage,
+  isRequestStartMessage,
+  normalizeDataAttributeName,
+  normalizeInitialActivityTimeout,
+  startTimeout,
+} from './util';
 
 describe('util', () => {
   it('converts data attribute to camelCase and remove the "data-" prefix', () => {
     expect(convertDataAttributeName('data-test-action-name')).toBe('testActionName');
+  });
+
+  it.each([
+    ['data-test-action-name', 'data-test-action-name'],
+    ['testActionName', 'data-test-action-name'],
+  ])('normalizes the action attribute %s to HTML form', (input, expected) => {
+    expect(normalizeDataAttributeName(input)).toBe(expected);
+  });
+
+  it.each([
+    ['data-test-action-name', 'data-test-action-timeout'],
+    ['testActionName', 'data-test-action-timeout'],
+    ['data-test-action', 'data-test-action-timeout'],
+  ])('derives the timeout attribute for %s', (input, expected) => {
+    expect(deriveUserActionTimeoutDataAttribute(input)).toBe(expected);
+  });
+
+  it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+    'warns and falls back for an invalid initial activity timeout: %s',
+    (input) => {
+      const warn = jest.fn();
+
+      expect(normalizeInitialActivityTimeout(input, 250, warn)).toBe(250);
+      expect(warn).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it('warns and falls back when the initial activity timeout cannot be converted to a number', () => {
+    const warn = jest.fn();
+
+    expect(normalizeInitialActivityTimeout(Symbol(), 250, warn)).toBe(250);
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it('accepts a valid initial activity timeout', () => {
+    expect(normalizeInitialActivityTimeout(450)).toBe(450);
+  });
+
+  it('warns and clamps an initial activity timeout above the maximum', () => {
+    const warn = jest.fn();
+
+    expect(normalizeInitialActivityTimeout(1001, 100, warn)).toBe(1000);
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears an existing timeout with an id of zero', () => {
+    const clearTimeoutSpy = jest.spyOn(window, 'clearTimeout');
+
+    const timeoutId = startTimeout(0, jest.fn(), 100);
+
+    expect(clearTimeoutSpy).toHaveBeenCalledWith(0);
+    clearTimeout(timeoutId);
+    clearTimeoutSpy.mockRestore();
   });
 
   it('isRequestStartMessage type guard', () => {

@@ -2,12 +2,105 @@
 
 ## Next
 
+### Features
+
+- **web-sdk:** report rage clicks, dead clicks and error clicks as frustration events by default
+- **user-actions:** add configurable initial activity timeouts globally, through `startUserAction`, and with
+  `data-faro-user-action-timeout` element overrides
+
+### Bug Fixes
+
+- **session:** synchronize volatile sessions between same-origin frames after session rotation
+- **web-sdk:** use Web Crypto for session sampling when available
+- **user-actions:** prevent declarative user actions from attaching duplicate controllers
+- **web-sdk:** prevent duplicate sessions when Chrome activates a prerendered page
+
+## [2.12.1](https://github.com/grafana/faro-web-sdk/compare/v2.12.0...v2.12.1) (2026-09-22)
+
+### Bug Fixes
+
+- **deps:** update npm-dependencies ([#2232](https://github.com/grafana/faro-web-sdk/issues/2232)) ([8cd1f9e](https://github.com/grafana/faro-web-sdk/commit/8cd1f9e6b3192bc08a3fdce0869fbfaef962c5db))
+- **security:** pin pacote to 21.5.1 (CVE-2026-9496) ([#2296](https://github.com/grafana/faro-web-sdk/issues/2296)) ([1b6fc3c](https://github.com/grafana/faro-web-sdk/commit/1b6fc3c25d65771da55a430649b82b7e625447fb))
+- **session:** preserve sampling state on metadata updates ([#2301](https://github.com/grafana/faro-web-sdk/issues/2301)) ([389cf09](https://github.com/grafana/faro-web-sdk/commit/389cf092465990c24a8b2c460ef567010b586947))
+- **web-sdk:** use stronger randomness for session sampling ([#2299](https://github.com/grafana/faro-web-sdk/issues/2299)) ([1b51d37](https://github.com/grafana/faro-web-sdk/commit/1b51d374711a763e5eedd72a1d21e2f97f167c77))
+- **web-sdk:** wait for prerender activation before starting sessions ([#2291](https://github.com/grafana/faro-web-sdk/issues/2291)) ([e4bf94d](https://github.com/grafana/faro-web-sdk/commit/e4bf94d00fe9d080734210c5b596fee1eeeb20ad))
+
+## [2.12.0](https://github.com/grafana/faro-web-sdk/compare/v2.11.0...v2.12.0) (2026-09-18)
+
+### Features
+
+- **replay:** expose recording pause controls ([#2265](https://github.com/grafana/faro-web-sdk/issues/2265)) ([5eb9397](https://github.com/grafana/faro-web-sdk/commit/5eb93978e91cdefe2deef25f548283de9a18f64f))
+- **replay:** preserve recording identity across tab handoffs ([#2256](https://github.com/grafana/faro-web-sdk/issues/2256)) ([6891fad](https://github.com/grafana/faro-web-sdk/commit/6891fad755ed8b0a74f7d8f32741a0cf8302a4df))
+- **replay:** use Grafana privacy classes by default ([#2262](https://github.com/grafana/faro-web-sdk/issues/2262)) ([adb4bea](https://github.com/grafana/faro-web-sdk/commit/adb4bea4f5fd656c0cb6b53189990c826557177c))
+- **session:** reconcile ownership before telemetry capture ([#2261](https://github.com/grafana/faro-web-sdk/issues/2261)) ([ea5de81](https://github.com/grafana/faro-web-sdk/commit/ea5de814e01570be8a8ef9225f872e8226e0422e))
+- **web-sdk:** make reliable Fetch transport the default ([#2264](https://github.com/grafana/faro-web-sdk/issues/2264)) ([002103d](https://github.com/grafana/faro-web-sdk/commit/002103dfc64c736a588126cd6580825e22aa2e26))
+
+### Bug Fixes
+
+- **core:** do not drop signals added during BatchExecutor flush ([#2257](https://github.com/grafana/faro-web-sdk/issues/2257)) ([227a8d1](https://github.com/grafana/faro-web-sdk/commit/227a8d1c4a241524adac39a6c0f398539c1151f1))
+- **deps:** patch Joi prototype pollution vulnerabilities ([#2281](https://github.com/grafana/faro-web-sdk/issues/2281)) ([879b04a](https://github.com/grafana/faro-web-sdk/commit/879b04a0f224b085bade369aeb5a10f2a1c44bcc))
+- **deps:** patch js-yaml CVE-2026-84375 ([#2279](https://github.com/grafana/faro-web-sdk/issues/2279)) ([224edc1](https://github.com/grafana/faro-web-sdk/commit/224edc14086cf27367f9dcdddd2b4aeb8a652f0a))
+- **deps:** patch smol-toml denial of service ([#2280](https://github.com/grafana/faro-web-sdk/issues/2280)) ([0a216b0](https://github.com/grafana/faro-web-sdk/commit/0a216b0d48e41c62dcb3c24a733812cc4cbf9330))
+- **fetch-v2:** bind session invalidation to request identity ([#2259](https://github.com/grafana/faro-web-sdk/issues/2259)) ([104e1a7](https://github.com/grafana/faro-web-sdk/commit/104e1a7ae57e3e9bd379ff85191a94a9a123e5a5))
+- **replay:** discard invalidated recorder attempts ([#2260](https://github.com/grafana/faro-web-sdk/issues/2260)) ([f3e8f24](https://github.com/grafana/faro-web-sdk/commit/f3e8f2496cc3b1f0c5bdc29c3fb220f3b039ddf5))
+- **replay:** stop logging page errors as session replay errors ([#2284](https://github.com/grafana/faro-web-sdk/issues/2284)) ([0b8fafd](https://github.com/grafana/faro-web-sdk/commit/0b8fafd0ca5bb1e1e96d3123f44cbd08b3161069))
+- **user-actions:** trigger user actions from clicks on nested child elements ([#2239](https://github.com/grafana/faro-web-sdk/issues/2239)) ([dbe7340](https://github.com/grafana/faro-web-sdk/commit/dbe73403cf0c371376bb367e879d9b9823ce60fe))
+
+## [2.11.0](https://github.com/grafana/faro-web-sdk/compare/v2.10.0...v2.11.0) (2026-08-26)
+
+### Features
+
+- **web-tracing:** omit trace context for unsampled sessions ([#2251](https://github.com/grafana/faro-web-sdk/issues/2251)) ([f839439](https://github.com/grafana/faro-web-sdk/commit/f8394392cf76e4bf04dd42a994f817d78fef32e3))
+
+### Bug Fixes
+
+- **web-sdk:** retry transient Faro delivery failures ([#2247](https://github.com/grafana/faro-web-sdk/issues/2247)) ([8f15301](https://github.com/grafana/faro-web-sdk/commit/8f15301e943e87889258748c57f77cc12617aaba))
+
+## [2.10.0](https://github.com/grafana/faro-web-sdk/compare/v2.9.0...v2.10.0) (2026-08-17)
+
+### Features
+
+- **web-sdk:** forward LCP resource details and LoAF-based INP attribution in web vitals measurements ([#2187](https://github.com/grafana/faro-web-sdk/issues/2187)) ([557e94d](https://github.com/grafana/faro-web-sdk/commit/557e94d9d171c19ba0879f4834014e3b7eb09b1c))
+
+### Bug Fixes
+
+- **core:** keep config.paused in sync with pause and unpause ([#2196](https://github.com/grafana/faro-web-sdk/issues/2196)) ([dd2f505](https://github.com/grafana/faro-web-sdk/commit/dd2f5051cd3b14ab7c2bc54a637f3931c265b4f2))
+- **core:** make removeBeforeSendHooks remove the hooks ([#2208](https://github.com/grafana/faro-web-sdk/issues/2208)) ([4378883](https://github.com/grafana/faro-web-sdk/commit/43788833147ae0bb679d84f92eda2b54714a720b))
+- **deps:** bump vulnerable transitive deps ([#2193](https://github.com/grafana/faro-web-sdk/issues/2193)) ([41065ec](https://github.com/grafana/faro-web-sdk/commit/41065ecb63e607b1dd28cd6844c0e9c3b281632e))
+- **deps:** update dependency web-vitals to v6 ([#2164](https://github.com/grafana/faro-web-sdk/issues/2164)) ([42f154f](https://github.com/grafana/faro-web-sdk/commit/42f154f33ac99c97c4d02d33a03cc4468eb1414e))
+- **deps:** update npm-dependencies ([#2154](https://github.com/grafana/faro-web-sdk/issues/2154)) ([9bc88e6](https://github.com/grafana/faro-web-sdk/commit/9bc88e63dfd1be55cc93f493639fd8e5fe8ae69b))
+- **replay:** strip query string and fragment from rrweb Meta event href ([#2127](https://github.com/grafana/faro-web-sdk/issues/2127)) ([fd0fa45](https://github.com/grafana/faro-web-sdk/commit/fd0fa452aaf5102e99a1319cb2fb1c6b31f8cb8b))
+- **replay:** use fixed-length mask for input values ([#2126](https://github.com/grafana/faro-web-sdk/issues/2126)) ([80dac72](https://github.com/grafana/faro-web-sdk/commit/80dac72b90b7639b047ba4afb5f57f0ad255867d))
+- **security/high/packages/react:** update dependency react-router to v7.18.2 [security] ([#2214](https://github.com/grafana/faro-web-sdk/issues/2214)) ([635bee6](https://github.com/grafana/faro-web-sdk/commit/635bee6b8b8cf7b4517f8569bceff8b665fdeaf1))
+- **security/high/:** update dependency brace-expansion to v5.0.9 [security] ([#2204](https://github.com/grafana/faro-web-sdk/issues/2204)) ([ffc90b0](https://github.com/grafana/faro-web-sdk/commit/ffc90b0271d7e9732ffb23c9a6dec2bf2df70307))
+- **security/medium/:** update dependency postcss to v8.5.23 [security] ([#2205](https://github.com/grafana/faro-web-sdk/issues/2205)) ([23894be](https://github.com/grafana/faro-web-sdk/commit/23894be300b7edf1c2752327621b6ce3d50355e4))
+- **web-sdk:** measure the keepalive budget in bytes ([#2199](https://github.com/grafana/faro-web-sdk/issues/2199)) ([c68f22d](https://github.com/grafana/faro-web-sdk/commit/c68f22dcfb1ce502644e1468de31377d257f61db))
+- **web-sdk:** stop stack parsing from stalling on large error payloads ([#2197](https://github.com/grafana/faro-web-sdk/issues/2197)) ([12f3a39](https://github.com/grafana/faro-web-sdk/commit/12f3a399dd6fb6a8b7edebecabb1166c0c21b181))
+- **web-tracing:** stop injecting traceparent while Faro is paused ([#2198](https://github.com/grafana/faro-web-sdk/issues/2198)) ([bb09041](https://github.com/grafana/faro-web-sdk/commit/bb09041ff3599539126d93d1de83e6519aa4c5d2))
+- **web-tracing:** type the full set of fetch and xhr instrumentation options ([#2200](https://github.com/grafana/faro-web-sdk/issues/2200)) ([4b90404](https://github.com/grafana/faro-web-sdk/commit/4b904045c93fb08a4f0b26f95f3b7f39c5373c1c))
+
+## [2.9.0](https://github.com/grafana/faro-web-sdk/compare/v2.8.2...v2.9.0) (2026-07-29)
+
+### Features
+
+- **user-actions:** add configurable initial activity timeout ([#2183](https://github.com/grafana/faro-web-sdk/issues/2183)) ([dd10a3d](https://github.com/grafana/faro-web-sdk/commit/dd10a3da7a6f775cd2fe630d0de36ca42f8bee05))
+
+### Bug Fixes
+
+- **security/critical/:** update dependency tar to v7.5.21 [security] ([#2180](https://github.com/grafana/faro-web-sdk/issues/2180)) ([d4aac6d](https://github.com/grafana/faro-web-sdk/commit/d4aac6d757dbf86c91c4ed0de01fbeb9f8b86f2a))
+- **security/high/:** update dependency js-yaml to v4.3.0 [security] ([#2181](https://github.com/grafana/faro-web-sdk/issues/2181)) ([741dc5d](https://github.com/grafana/faro-web-sdk/commit/741dc5d1eddfa058265f71b3aa4e9d2750bb6347))
+- **web-sdk:** derive performance timestamps from wall clock to survive system suspend ([#2182](https://github.com/grafana/faro-web-sdk/issues/2182)) ([623efe2](https://github.com/grafana/faro-web-sdk/commit/623efe261a48adffff57a1e68616096366a2ad14))
+
 ## [2.8.2](https://github.com/grafana/faro-web-sdk/compare/v2.8.1...v2.8.2) (2026-07-01)
 
 ### Bug Fixes
 
-- **session:** attribute the rotation-triggering signal to the new session ([#2168](https://github.com/grafana/faro-web-sdk/issues/2168)) ([923d3b8](https://github.com/grafana/faro-web-sdk/commit/923d3b80cea70ebac284e805df7fdfd68975783b))
-- **session:** stop a background tab from emitting an expired session id ([#2167](https://github.com/grafana/faro-web-sdk/issues/2167)) ([eba5c2f](https://github.com/grafana/faro-web-sdk/commit/eba5c2fbc7d5341912b537ad518092489d82c68b))
+- **session:** attribute the rotation-triggering signal to the new session
+  ([#2168](https://github.com/grafana/faro-web-sdk/issues/2168))
+  ([923d3b8](https://github.com/grafana/faro-web-sdk/commit/923d3b80cea70ebac284e805df7fdfd68975783b))
+- **session:** stop a background tab from emitting an expired session id
+  ([#2167](https://github.com/grafana/faro-web-sdk/issues/2167))
+  ([eba5c2f](https://github.com/grafana/faro-web-sdk/commit/eba5c2fbc7d5341912b537ad518092489d82c68b))
 
 ## [2.8.1](https://github.com/grafana/faro-web-sdk/compare/v2.8.0...v2.8.1) (2026-06-26)
 
@@ -19,28 +112,50 @@
 
 ### Features
 
-- **web-sdk:** add gzip request compression to FetchTransport ([#2028](https://github.com/grafana/faro-web-sdk/issues/2028)) ([acf7e29](https://github.com/grafana/faro-web-sdk/commit/acf7e29121cf6f04d0719ad7eebd610909457c1a))
+- **web-sdk:** add gzip request compression to FetchTransport
+  ([#2028](https://github.com/grafana/faro-web-sdk/issues/2028))
+  ([acf7e29](https://github.com/grafana/faro-web-sdk/commit/acf7e29121cf6f04d0719ad7eebd610909457c1a))
 
 ### Bug Fixes
 
-- **ci:** align Renovate npm cooldown with yarn 7-day age gate ([#2133](https://github.com/grafana/faro-web-sdk/issues/2133)) ([62be84c](https://github.com/grafana/faro-web-sdk/commit/62be84cb0acad9ac7e2b46741d4a3df4176c5b80))
-- **ci:** sign release-please lockfile-refresh commit via GitHub API ([#2150](https://github.com/grafana/faro-web-sdk/issues/2150)) ([d662d78](https://github.com/grafana/faro-web-sdk/commit/d662d78fdc815ddd246fffe2000579408ad123b2))
+- **ci:** align Renovate npm cooldown with yarn 7-day age gate
+  ([#2133](https://github.com/grafana/faro-web-sdk/issues/2133))
+  ([62be84c](https://github.com/grafana/faro-web-sdk/commit/62be84cb0acad9ac7e2b46741d4a3df4176c5b80))
+- **ci:** sign release-please lockfile-refresh commit via GitHub API
+  ([#2150](https://github.com/grafana/faro-web-sdk/issues/2150))
+  ([d662d78](https://github.com/grafana/faro-web-sdk/commit/d662d78fdc815ddd246fffe2000579408ad123b2))
 - **core:** allow BatchExecutor to run in worker scopes ([#2122](https://github.com/grafana/faro-web-sdk/issues/2122)) ([07d5282](https://github.com/grafana/faro-web-sdk/commit/07d5282962df56f1a194be120891720591704e1d))
 - **deps:** update npm-dependencies past 7-day cooldown ([#2138](https://github.com/grafana/faro-web-sdk/issues/2138)) ([f8ef28e](https://github.com/grafana/faro-web-sdk/commit/f8ef28e8e130b0c1a663ea5f49a0345ae4453999))
-- **security/high/e2e/smoke:** update security e2e/smoke vite to v8.0.16 [security] ([#2129](https://github.com/grafana/faro-web-sdk/issues/2129)) ([f52baee](https://github.com/grafana/faro-web-sdk/commit/f52baeeb407126b4cc3f732e863c7da04ec86c8d))
-- **security/medium/:** update security tar to v7.5.16 [security] ([#2130](https://github.com/grafana/faro-web-sdk/issues/2130)) ([cec1026](https://github.com/grafana/faro-web-sdk/commit/cec1026a1e64151f13a7814c214a2cb51f455e19))
-- **web-sdk:** report service worker time as 0 when no service worker is used ([#2149](https://github.com/grafana/faro-web-sdk/issues/2149)) ([13ab0a4](https://github.com/grafana/faro-web-sdk/commit/13ab0a4cf95f4d325c3c352bd7bddb3c3fc4324d))
-- **web-tracing:** update @opentelemetry/core to v2.8.0 [security] ([#2136](https://github.com/grafana/faro-web-sdk/issues/2136)) ([a73fb1f](https://github.com/grafana/faro-web-sdk/commit/a73fb1f50ac906110f6e059438c46a4c823e8b8c))
+- **security/high/e2e/smoke:** update security e2e/smoke vite to v8.0.16 [security]
+  ([#2129](https://github.com/grafana/faro-web-sdk/issues/2129))
+  ([f52baee](https://github.com/grafana/faro-web-sdk/commit/f52baeeb407126b4cc3f732e863c7da04ec86c8d))
+- **security/medium/:** update security tar to v7.5.16 [security]
+  ([#2130](https://github.com/grafana/faro-web-sdk/issues/2130))
+  ([cec1026](https://github.com/grafana/faro-web-sdk/commit/cec1026a1e64151f13a7814c214a2cb51f455e19))
+- **web-sdk:** report service worker time as 0 when no service worker is used
+  ([#2149](https://github.com/grafana/faro-web-sdk/issues/2149))
+  ([13ab0a4](https://github.com/grafana/faro-web-sdk/commit/13ab0a4cf95f4d325c3c352bd7bddb3c3fc4324d))
+- **web-tracing:** update @opentelemetry/core to v2.8.0 [security]
+  ([#2136](https://github.com/grafana/faro-web-sdk/issues/2136))
+  ([a73fb1f](https://github.com/grafana/faro-web-sdk/commit/a73fb1f50ac906110f6e059438c46a4c823e8b8c))
 
 ## [2.7.1](https://github.com/grafana/faro-web-sdk/compare/v2.7.0...v2.7.1) (2026-06-03)
 
 ### Bug Fixes
 
 - **core:** use crypto.getRandomValues in genShortID ([#2108](https://github.com/grafana/faro-web-sdk/issues/2108)) ([7f54972](https://github.com/grafana/faro-web-sdk/commit/7f549728a023b0ac22bcd5e141fad22dea0347d9))
-- **deps:** regenerate yarn.lock to drop stale semver descriptor ([#2107](https://github.com/grafana/faro-web-sdk/issues/2107)) ([9ada1a0](https://github.com/grafana/faro-web-sdk/commit/9ada1a06630b8b4aae0769f96d868453e1c57b5e))
-- **instrumentation:** incomplete regular expression for hostnames ([#2096](https://github.com/grafana/faro-web-sdk/issues/2096)) ([fc43fb5](https://github.com/grafana/faro-web-sdk/commit/fc43fb581820949d4a3eb8ce46e426d6c6582932))
-- **react:** import unknownString from declared @grafana/faro-web-sdk ([#2116](https://github.com/grafana/faro-web-sdk/issues/2116)) ([28e1efd](https://github.com/grafana/faro-web-sdk/commit/28e1efd1e3a07ec0f75e3ad28eec6f742191a000))
-- **web-sdk:** cap stack-frame line length to bound regex backtracking ([#2109](https://github.com/grafana/faro-web-sdk/issues/2109)) ([b484c31](https://github.com/grafana/faro-web-sdk/commit/b484c31ac1b6614eaea43802ef332322f9ab3716))
+- **deps:** regenerate yarn.lock to drop stale semver descriptor
+  ([#2107](https://github.com/grafana/faro-web-sdk/issues/2107))
+  ([9ada1a0](https://github.com/grafana/faro-web-sdk/commit/9ada1a06630b8b4aae0769f96d868453e1c57b5e))
+- **instrumentation:** incomplete regular expression for hostnames
+  ([#2096](https://github.com/grafana/faro-web-sdk/issues/2096))
+  ([fc43fb5](https://github.com/grafana/faro-web-sdk/commit/fc43fb581820949d4a3eb8ce46e426d6c6582932))
+- **react:** import unknownString from declared @grafana/faro-web-sdk
+  ([#2116](https://github.com/grafana/faro-web-sdk/issues/2116))
+  ([28e1efd](https://github.com/grafana/faro-web-sdk/commit/28e1efd1e3a07ec0f75e3ad28eec6f742191a000))
+- **web-sdk:** cap stack-frame line length to bound regex backtracking
+  ([#2109](https://github.com/grafana/faro-web-sdk/issues/2109))
+  ([b484c31](https://github.com/grafana/faro-web-sdk/commit/b484c31ac1b6614eaea43802ef332322f9ab3716))
 
 ## [2.7.0](https://github.com/grafana/faro-web-sdk/compare/v2.6.3...v2.7.0) (2026-05-20)
 
@@ -50,9 +165,15 @@
 
 ### Bug Fixes
 
-- **core:** fall back to window when resolving Metro bundle id ([#2079](https://github.com/grafana/faro-web-sdk/issues/2079)) ([3cfd620](https://github.com/grafana/faro-web-sdk/commit/3cfd6204b7bc83e5c440c523b6287993ccfbd728))
-- **demo:** bind Tempo OTLP receiver to 0.0.0.0 so Alloy can reach it ([#2038](https://github.com/grafana/faro-web-sdk/issues/2038)) ([7a0af53](https://github.com/grafana/faro-web-sdk/commit/7a0af536a4a7254bf62473b20d04cf937ecd246a))
-- **demo:** use `grafana server` subcommand for Grafana 13 image ([#2035](https://github.com/grafana/faro-web-sdk/issues/2035)) ([5d92107](https://github.com/grafana/faro-web-sdk/commit/5d9210769e5e0752f41a3f543089397d9fe8149a))
+- **core:** fall back to window when resolving Metro bundle id
+  ([#2079](https://github.com/grafana/faro-web-sdk/issues/2079))
+  ([3cfd620](https://github.com/grafana/faro-web-sdk/commit/3cfd6204b7bc83e5c440c523b6287993ccfbd728))
+- **demo:** bind Tempo OTLP receiver to 0.0.0.0 so Alloy can reach it
+  ([#2038](https://github.com/grafana/faro-web-sdk/issues/2038))
+  ([7a0af53](https://github.com/grafana/faro-web-sdk/commit/7a0af536a4a7254bf62473b20d04cf937ecd246a))
+- **demo:** use `grafana server` subcommand for Grafana 13 image
+  ([#2035](https://github.com/grafana/faro-web-sdk/issues/2035))
+  ([5d92107](https://github.com/grafana/faro-web-sdk/commit/5d9210769e5e0752f41a3f543089397d9fe8149a))
 - **deps:** update npm-dependencies ([#2077](https://github.com/grafana/faro-web-sdk/issues/2077)) ([8574f55](https://github.com/grafana/faro-web-sdk/commit/8574f5579b8c84a829269aa7e19e76238daa6b6e))
 - pin package manager and disable yarn/npm scripts ([#2075](https://github.com/grafana/faro-web-sdk/issues/2075)) ([ef2d248](https://github.com/grafana/faro-web-sdk/commit/ef2d248259f99e3e712bceff0f6fc99f6b0d81e1))
 
@@ -66,30 +187,48 @@
 
 ### Bug Fixes
 
-- **ci:** include ${component} in release-please PR title ([#2066](https://github.com/grafana/faro-web-sdk/issues/2066)) ([367aacc](https://github.com/grafana/faro-web-sdk/commit/367aacc76fbb4777a61da40652bbe891826e0039))
+- **ci:** include ${component} in release-please PR title
+  ([#2066](https://github.com/grafana/faro-web-sdk/issues/2066))
+  ([367aacc](https://github.com/grafana/faro-web-sdk/commit/367aacc76fbb4777a61da40652bbe891826e0039))
 
 ## [2.6.1](https://github.com/grafana/faro-web-sdk/compare/v2.6.0...v2.6.1) (2026-05-11)
 
 ### Bug Fixes
 
-- **ci:** set release-please PR title pattern with version ([#2063](https://github.com/grafana/faro-web-sdk/issues/2063)) ([4310b16](https://github.com/grafana/faro-web-sdk/commit/4310b1685b4963de539919a15edd797aa21d032b))
+- **ci:** set release-please PR title pattern with version
+  ([#2063](https://github.com/grafana/faro-web-sdk/issues/2063))
+  ([4310b16](https://github.com/grafana/faro-web-sdk/commit/4310b1685b4963de539919a15edd797aa21d032b))
 
 ## [2.6.0](https://github.com/grafana/faro-web-sdk/compare/v2.5.0...v2.6.0) (2026-05-11)
 
 ### Features
 
 - **replay:** pause recording after user inactivity ([#2015](https://github.com/grafana/faro-web-sdk/issues/2015)) ([fedbe7f](https://github.com/grafana/faro-web-sdk/commit/fedbe7ff41c592a7782737ea2200680cf8796800))
-- **web-sdk:** add `httpHost` to `faro.performance.resource` events ([#2014](https://github.com/grafana/faro-web-sdk/issues/2014)) ([517d26f](https://github.com/grafana/faro-web-sdk/commit/517d26f17f96d21990e52c5804a0b77676f685df))
+- **web-sdk:** add `httpHost` to `faro.performance.resource` events
+  ([#2014](https://github.com/grafana/faro-web-sdk/issues/2014))
+  ([517d26f](https://github.com/grafana/faro-web-sdk/commit/517d26f17f96d21990e52c5804a0b77676f685df))
 
 ### Bug Fixes
 
-- **ci:** anchor release-please at v2.5.0 commit on main ([#2061](https://github.com/grafana/faro-web-sdk/issues/2061)) ([9a99abf](https://github.com/grafana/faro-web-sdk/commit/9a99abf6c119c17652335880d0116321d0036a1e))
-- **ci:** consolidate release-please into single changelog and unblock release PR ([#2048](https://github.com/grafana/faro-web-sdk/issues/2048)) ([1454048](https://github.com/grafana/faro-web-sdk/commit/14540489ca20ff2e1797700f14e440a7ea637709))
-- **ci:** correct jsonpath syntax in release-please extra-files ([#2049](https://github.com/grafana/faro-web-sdk/issues/2049)) ([0ca2dfe](https://github.com/grafana/faro-web-sdk/commit/0ca2dfe5d833c871ed115b9ed07854ea4e4fdbfb))
-- **ci:** correct release-please changelog-path to unblock release flow ([#2045](https://github.com/grafana/faro-web-sdk/issues/2045)) ([1682dd9](https://github.com/grafana/faro-web-sdk/commit/1682dd9b959f7ac336d61fd65b91838e9166e87c))
+- **ci:** anchor release-please at v2.5.0 commit on main
+  ([#2061](https://github.com/grafana/faro-web-sdk/issues/2061))
+  ([9a99abf](https://github.com/grafana/faro-web-sdk/commit/9a99abf6c119c17652335880d0116321d0036a1e))
+- **ci:** consolidate release-please into single changelog and unblock release PR
+  ([#2048](https://github.com/grafana/faro-web-sdk/issues/2048))
+  ([1454048](https://github.com/grafana/faro-web-sdk/commit/14540489ca20ff2e1797700f14e440a7ea637709))
+- **ci:** correct jsonpath syntax in release-please extra-files
+  ([#2049](https://github.com/grafana/faro-web-sdk/issues/2049))
+  ([0ca2dfe](https://github.com/grafana/faro-web-sdk/commit/0ca2dfe5d833c871ed115b9ed07854ea4e4fdbfb))
+- **ci:** correct release-please changelog-path to unblock release flow
+  ([#2045](https://github.com/grafana/faro-web-sdk/issues/2045))
+  ([1682dd9](https://github.com/grafana/faro-web-sdk/commit/1682dd9b959f7ac336d61fd65b91838e9166e87c))
 - **ci:** exclude CHANGELOG.md from markdownlint ([#2062](https://github.com/grafana/faro-web-sdk/issues/2062)) ([844256b](https://github.com/grafana/faro-web-sdk/commit/844256be8dfaf615c254f65bacb958c4a7eebfb4))
-- **ci:** pre-format release-please PR to satisfy prettier check ([#2051](https://github.com/grafana/faro-web-sdk/issues/2051)) ([848ad90](https://github.com/grafana/faro-web-sdk/commit/848ad907e7b1dc8b866b10335b3ecce3354e99a2))
-- **ci:** two-stage yarn install in release-please cleanup step ([#2053](https://github.com/grafana/faro-web-sdk/issues/2053)) ([b87bd7c](https://github.com/grafana/faro-web-sdk/commit/b87bd7c5e50eb76555a2477b0bdecda43c6ff473))
+- **ci:** pre-format release-please PR to satisfy prettier check
+  ([#2051](https://github.com/grafana/faro-web-sdk/issues/2051))
+  ([848ad90](https://github.com/grafana/faro-web-sdk/commit/848ad907e7b1dc8b866b10335b3ecce3354e99a2))
+- **ci:** two-stage yarn install in release-please cleanup step
+  ([#2053](https://github.com/grafana/faro-web-sdk/issues/2053))
+  ([b87bd7c](https://github.com/grafana/faro-web-sdk/commit/b87bd7c5e50eb76555a2477b0bdecda43c6ff473))
 - **deps:** update npm-dependencies ([#2058](https://github.com/grafana/faro-web-sdk/issues/2058)) ([7f4f4d5](https://github.com/grafana/faro-web-sdk/commit/7f4f4d5f679671f04cdab654c194bdbb9ed42332))
 
 ## 2.5.0
@@ -410,9 +549,7 @@ Breaking changes coming with Faro version 2
       // ...
       new TracingInstrumentation({
         contextManager: new ZoneContextManager(),
-        instrumentations: [
-          /* custom instruments */
-        ],
+        instrumentations: [/* custom instruments */],
       }),
     ],
     // ...

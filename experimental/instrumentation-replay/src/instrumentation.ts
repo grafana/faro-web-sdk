@@ -1,14 +1,56 @@
-import { BaseInstrumentation, clampSamplingRate, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, captureMetas, clampSamplingRate, genShortID, VERSION } from '@grafana/faro-core';
 import { record, type recordOptions } from '@grafana/rrweb';
-import type { eventWithTime } from '@grafana/rrweb-types';
+import { EventType, type eventWithTime } from '@grafana/rrweb-types';
 
-import { defaultReplayInstrumentationOptions } from './const';
+import { defaultMaskInputFn, defaultReplayInstrumentationOptions } from './const';
+import { createMemoryStorage, type ReplayRecordingState, ReplayRecordingStateStore } from './recordingState';
 import type { ReplayInstrumentationOptions } from './types';
 
 const faroSessionReplayEventName = 'faro.session_recording.event';
 const faroSessionReplayStartedEventName = 'faro.session_recording.started';
 const faroSessionReplayPausedEventName = 'faro.session_recording.paused';
 const faroSessionReplayResumedEventName = 'faro.session_recording.resumed';
+
+// When localStorage cannot be accessed or written, checkpoints live only as long as this
+// Document: same-document replacement still continues, cross-Document navigation starts a
+// recovery recording.
+let documentLocalCheckpointStorage: Storage | undefined;
+const sharedStorageProbeKey = 'com.grafana.faro.replay.probe';
+
+interface ActiveRecordingHandoff {
+  sessionId: string;
+  recordingId: string;
+}
+
+interface RecordingOwnerState {
+  handoff?: ActiveRecordingHandoff;
+  abandonedRecordingIds: Set<string>;
+}
+
+const recordingOwners = new WeakMap<Document, Map<string, RecordingOwnerState>>();
+
+function getRecordingOwnerState(namespace: string): RecordingOwnerState {
+  let owners = recordingOwners.get(document);
+  if (!owners) {
+    owners = new Map();
+    recordingOwners.set(document, owners);
+  }
+  let owner = owners.get(namespace);
+  if (!owner) {
+    owner = { abandonedRecordingIds: new Set() };
+    owners.set(namespace, owner);
+  }
+  return owner;
+}
+
+function takeActiveRecordingHandoff(namespace: string): ActiveRecordingHandoff | undefined {
+  const owner = getRecordingOwnerState(namespace);
+  const handoff = owner.handoff;
+  delete owner.handoff;
+  return handoff;
+}
+
+type RrwebEmit = (event: eventWithTime) => void;
 
 // DOM events that signal a human is present.  Aligned with rrweb's
 // IncrementalSource 1-5 (MouseMove, MouseInteraction, Scroll,
@@ -22,16 +64,93 @@ const USER_INTERACTION_EVENTS: readonly string[] = [
   'input', // Input (covers typing without keydown, e.g. autofill)
 ];
 
+// Bounds on the dedupe set, for pages whose error messages vary per call
+// (e.g. a generated class name in the failing selector).
+const MAX_OBSERVED_ERROR_SIGNATURES = 50;
+const MAX_ERROR_SIGNATURE_LENGTH = 256;
+
 export class ReplayInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-instrumentation-replay';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   private stopFn: { (): void } | null = null;
   private isRecording: boolean = false;
   private isPaused: boolean = false;
+  private isManuallyPaused: boolean = false;
   private options: ReplayInstrumentationOptions = defaultReplayInstrumentationOptions;
   private inactivityTimer: ReturnType<typeof setTimeout> | null = null;
   private boundOnUserInteraction: (() => void) | null = null;
+  private observedErrorSignatures = new Set<string>();
+
+  private recordingState: ReplayRecordingState | undefined;
+  private pageHidden = false;
+  private recordingStateStore: ReplayRecordingStateStore | undefined;
+  private recordingOwnerNamespace!: string;
+
+  // record() may notify listeners before returning its stop function.
+  private isStarting: boolean = false;
+  // Coalesce re-entrant session changes into one deferred start.
+  private pendingStart: boolean = false;
+  private destroyed: boolean = false;
+  // Deferred starts belong to the lifecycle that scheduled them.
+  private lifecycle = 0;
+  // Prevent an invalidated attempt from reviving if the same session returns.
+  private attemptRevision = 0;
+
+  private readonly metasListener = (): void => {
+    this.checkAndUpdateRecording(true);
+  };
+
+  private readonly prerenderListener = (): void => {
+    if (!this.destroyed) {
+      // Let all activation listeners establish the final session before recording.
+      this.initializeRecording(true);
+    }
+  };
+
+  private readonly pageHideListener = (): void => {
+    if (this.destroyed) {
+      return;
+    }
+    this.pageHidden = true;
+    if (!this.recordingState) {
+      return;
+    }
+    this.stopRecording();
+    this.recordingStateStore?.seal(this.recordingState);
+  };
+
+  private readonly pageShowListener = (event: PageTransitionEvent): void => {
+    if (this.destroyed || !event.persisted || !this.pageHidden) {
+      return;
+    }
+    this.pageHidden = false;
+    this.recordingState = undefined;
+    this.checkAndUpdateRecording(false);
+  };
+
+  // A competing claim can arrive after that Document has already sealed its checkpoint.
+  // Revoke this identity before restarting, rather than adopting its now-clean counters.
+  private readonly storageListener = (event: StorageEvent): void => {
+    if (this.destroyed || this.pageHidden || !this.recordingState) {
+      return;
+    }
+    if (
+      !this.recordingStateStore?.hasLostOwnership(
+        this.recordingState.recordingId,
+        event.key,
+        event.newValue,
+        event.storageArea
+      )
+    ) {
+      return;
+    }
+    this.logDebug('Recording checkpoint was claimed by another document, starting a recovery recording');
+    this.recordingStateStore.abandon(this.recordingState.recordingId);
+    this.stopRecording();
+    this.recordingState = undefined;
+    this.checkAndUpdateRecording(false);
+  };
 
   constructor(options: ReplayInstrumentationOptions = {}) {
     super();
@@ -40,26 +159,113 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       ...defaultReplayInstrumentationOptions,
       ...options,
     };
+
+    this.options.maskInputFn ??= defaultMaskInputFn;
   }
 
   initialize(): void {
-    // Check if current session is sampled before starting recording
-    this.checkAndUpdateRecording();
-
-    // Listen for session changes
-    this.metas.addListener(() => {
-      this.checkAndUpdateRecording();
-    });
+    this.destroyed = false;
+    if ((document as Document & { prerendering?: boolean }).prerendering) {
+      document.addEventListener('prerenderingchange', this.prerenderListener, { once: true });
+      return;
+    }
+    this.initializeRecording(false);
   }
 
-  private checkAndUpdateRecording(): void {
-    const session = this.api.getSession();
-    const isSampled = session?.attributes?.['isSampled'] === 'true';
-    const sessionId = session?.id ?? null;
+  private initializeRecording(deferStart: boolean): void {
+    this.pageHidden = false;
+    // Owner identity excludes deployment versions so navigation can cross releases.
+    this.recordingOwnerNamespace = JSON.stringify([
+      this.config.globalObjectKey,
+      this.config.app?.name ?? '',
+      this.config.app?.namespace ?? '',
+      this.config.app?.environment ?? '',
+    ]);
+    this.recordingStateStore = new ReplayRecordingStateStore({
+      tabStorage: this.getSessionStorage(),
+      sharedStorage: this.getSharedCheckpointStorage(),
+      ownerNamespace: this.recordingOwnerNamespace,
+      documentId: genShortID(),
+      generateRecordingId: genShortID,
+      abandonedRecordingIds: getRecordingOwnerState(this.recordingOwnerNamespace).abandonedRecordingIds,
+    });
+    this.recordingStateStore.removeLegacyState();
+    this.lifecycle++;
+    // A listener already being notified can still queue work after destroy().
+    this.pendingStart = false;
 
-    if (!isSampled || sessionId === null) {
+    // Listen for session changes. Starts triggered from the listener are deferred out
+    // of the call stack (see scheduleStartRecording).
+    this.metas.addListener(this.metasListener);
+    window.addEventListener('pagehide', this.pageHideListener, { capture: true });
+    window.addEventListener('pageshow', this.pageShowListener, { capture: true });
+    window.addEventListener('storage', this.storageListener);
+
+    this.checkAndUpdateRecording(deferStart);
+  }
+
+  private getSessionStorage(): Storage | undefined {
+    try {
+      return typeof window === 'undefined' ? undefined : window.sessionStorage;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private getSharedCheckpointStorage(): Storage | undefined {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const storage = window.localStorage;
+        // Access can succeed while writes fail, for example once the origin's quota is
+        // full. Probe once so a broken storage degrades to the Document-local fallback
+        // instead of failing every checkpoint.
+        storage.setItem(sharedStorageProbeKey, '1');
+        storage.removeItem(sharedStorageProbeKey);
+        return storage;
+      }
+    } catch {
+      // Fall through to the Document-local fallback.
+    }
+
+    documentLocalCheckpointStorage ??= createMemoryStorage();
+    return documentLocalCheckpointStorage;
+  }
+
+  private checkAndUpdateRecording(deferStart: boolean): void {
+    if (this.pageHidden) {
+      return;
+    }
+
+    // A notification can arrive synchronously while rrweb's record() is still executing,
+    // before the stop function is installed. Reconcile once the current call stack has
+    // finished so the start attempt can finish setting up its state.
+    if (this.isStarting) {
+      const session = this.api.getSession();
+      if (session !== undefined && !this.isRecordingSessionEligible()) {
+        this.attemptRevision++;
+      }
+      this.scheduleStartRecording();
+      return;
+    }
+
+    const session = this.api.getSession();
+
+    // Core's setSession removes and re-adds the session meta, notifying listeners on
+    // each step, so mid-rotation the listener transiently observes NO session meta at
+    // all. Acting on that transient notification would stop and restart recording on
+    // every setSession call; the follow-up notification carries the session to act on.
+    // A deliberate session clear (resetSession / setSession(undefined)) is different:
+    // it re-adds a session meta WITHOUT an id, which must stop recording below.
+    if (session === undefined) {
+      this.logDebug('No session meta present, awaiting the next session meta notification');
+      return;
+    }
+
+    const sessionId = this.currentEligibleSessionId();
+
+    if (sessionId === null) {
       if (this.isRecording) {
-        this.logDebug('Session is not sampled, stopping recording');
+        this.logDebug('Session is not eligible for replay (unsampled or missing id), stopping recording');
         this.stopRecording();
       } else {
         this.logDebug('Session is not sampled, recording not started');
@@ -67,19 +273,62 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       return;
     }
 
-    // Globally sampled — apply replay sub-sampling using a deterministic hash of the
-    // session ID so the decision is stable across page reloads within the same session.
-    const replaySampled = this.shouldReplaySample(sessionId);
+    if (this.isRecording) {
+      if (this.recordingState?.sessionId === sessionId) {
+        return;
+      }
 
-    if (replaySampled && !this.isRecording) {
-      this.logDebug('Session is sampled for replay, starting recording');
-      this.startRecording();
-    } else if (!replaySampled && this.isRecording) {
-      this.logDebug('Session is not sampled for replay, stopping recording');
+      // The session rotated while recording: a recording belongs to exactly one
+      // session, so end this one now (stopping pushes no events, making it safe inside
+      // the listener call stack) and start the new session's recording deferred.
+      this.logDebug('Session changed, restarting recording for the new session');
       this.stopRecording();
-    } else if (!replaySampled) {
-      this.logDebug('Session is not sampled for replay, recording not started');
     }
+
+    if (deferStart) {
+      this.scheduleStartRecording();
+    } else {
+      this.startRecording(sessionId);
+    }
+  }
+
+  // Defer starts out of re-entrant metadata callbacks and transport hooks.
+  // Re-evaluate the latest session when the coalesced start executes.
+  private scheduleStartRecording(): void {
+    if (this.pendingStart) {
+      return;
+    }
+    this.pendingStart = true;
+    const lifecycle = this.lifecycle;
+
+    void Promise.resolve().then(() => {
+      if (lifecycle !== this.lifecycle) {
+        return;
+      }
+      this.pendingStart = false;
+      if (this.destroyed) {
+        return;
+      }
+
+      this.checkAndUpdateRecording(false);
+    });
+  }
+
+  // Passive eligibility check; capture reconciliation is explicit at the caller.
+  private currentEligibleSessionId(): string | null {
+    const session = this.api.getSession();
+    if (session === undefined) {
+      return null;
+    }
+
+    const sessionId = session.id ?? null;
+    const isSampled = session.attributes?.['isSampled'] === 'true';
+
+    if (sessionId === null || !isSampled || !this.shouldReplaySample(sessionId)) {
+      return null;
+    }
+
+    return sessionId;
   }
 
   private shouldReplaySample(sessionId: string): boolean {
@@ -119,72 +368,279 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   private stopRecording(): void {
     this.teardownInactivityTracking();
-    if (this.stopFn) {
-      this.stopFn();
-      this.stopFn = null;
-    }
+    this.stopRrweb();
     this.isRecording = false;
     this.isPaused = false;
+    // Cleared whenever recording stops, so each new recording reports a given
+    // error once. An inactivity pause keeps the set, because it goes through
+    // stopRrweb rather than here.
+    this.observedErrorSignatures.clear();
+    this.isManuallyPaused = false;
     this.logDebug('Session replay stopped');
   }
 
-  private buildRecordOptions(): recordOptions<eventWithTime> {
+  private buildRecordOptions(emit: RrwebEmit): recordOptions<eventWithTime> {
     return {
-      emit: (event: eventWithTime, isCheckout?: boolean): void => {
-        this.handleEvent(event, isCheckout);
-      },
+      emit,
       checkoutEveryNms: 300_000, // 5 minutes
       recordCrossOriginIframes: this.options.recordCrossOriginIframes,
       maskAllInputs: this.options.maskAllInputs,
       maskInputOptions: this.options.maskInputOptions,
       maskInputFn: this.options.maskInputFn,
+      maskTextClass: 'grafana-mask',
+      blockClass: 'grafana-block',
+      ignoreClass: 'grafana-ignore',
       maskTextSelector: this.options.maskTextSelector,
       blockSelector: this.options.blockSelector,
       ignoreSelector: this.options.ignoreSelector,
-      recordCanvas: this.options.recordCanvas,
+      recordCanvas: false,
       collectFonts: this.options.collectFonts,
       inlineImages: this.options.inlineImages,
       recordDOM: true,
       inlineStylesheet: this.options.inlineStylesheet,
       recordAfter: this.options.recordAfter,
       errorHandler: (err) => {
-        this.logError('Error occurred during session replay', err);
+        this.handleObservedError(err);
       },
     };
   }
 
-  private startRrweb(): boolean {
-    const stop = record(this.buildRecordOptions());
-    if (stop) {
-      this.stopFn = stop;
-      return true;
+  // rrweb routes every exception raised inside a callback it wraps through
+  // `errorHandler` (see rrweb's `callbackWrapper`). The handler is given no
+  // context, so it cannot tell what a given failure cost the recording:
+  //   - An app passing a selector no browser recognises to
+  //     `CSSStyleSheet.insertRule`: rrweb emits the rule before calling through,
+  //     so the recording gains a rule the page never applied.
+  //   - A `maskInputFn` that throws: rrweb's input handler aborts before it
+  //     emits, so that input change is never recorded.
+  // So the message promises only that recording continues, and the level is
+  // `warn`, which is silent under the default internal logger level (ERROR).
+  // Failures to start recording still surface from `startRecording`'s catch.
+  //
+  // Do not return `true` here: rrweb would swallow the exception instead of
+  // rethrowing, the caller would believe its operation succeeded, and we would
+  // introduce a real bug in the host application.
+  private handleObservedError(err: unknown): void {
+    const signature = this.getErrorSignature(err);
+
+    if (this.observedErrorSignatures.has(signature)) {
+      return;
     }
-    return false;
+
+    if (this.observedErrorSignatures.size >= MAX_OBSERVED_ERROR_SIGNATURES) {
+      return;
+    }
+
+    this.observedErrorSignatures.add(signature);
+
+    this.logWarn(
+      'Session replay caught an error thrown by the page. Recording continues, but this event may not have been captured.',
+      err
+    );
+  }
+
+  private getErrorSignature(err: unknown): string {
+    let signature: string;
+
+    if (err instanceof Error) {
+      signature = `${err.name}: ${err.message}`;
+    } else {
+      try {
+        signature = String(err);
+      } catch {
+        signature = 'unknown error';
+      }
+    }
+
+    return signature.slice(0, MAX_ERROR_SIGNATURE_LENGTH);
+  }
+
+  // Passive: capture reconciliation must happen before validating the attempt.
+  private isRecordingSessionEligible(): boolean {
+    if (this.destroyed || this.pageHidden || !this.recordingState) {
+      return false;
+    }
+
+    const session = this.api.getSession();
+    return (
+      session?.id === this.recordingState.sessionId &&
+      session.attributes?.['isSampled'] === 'true' &&
+      this.shouldReplaySample(this.recordingState.sessionId)
+    );
+  }
+
+  // rrweb can emit snapshots synchronously before returning its stop function.
+  // Publish only after startup succeeds and the attempt remains eligible.
+  private startRrweb(lifecycleEventName: string): boolean {
+    const state = this.recordingState!;
+    const bufferedEvents: eventWithTime[] = [];
+    const attempt: { phase: 'buffering' | 'active' | 'discarded' } = { phase: 'buffering' };
+    const revision = this.attemptRevision;
+    const isValid = (): boolean =>
+      attempt.phase !== 'discarded' && revision === this.attemptRevision && this.isRecordingSessionEligible();
+    const wasRecording = this.isRecording;
+    const wasPaused = this.isPaused;
+    const discardAttempt = (): void => {
+      attempt.phase = 'discarded';
+      bufferedEvents.length = 0;
+    };
+
+    this.isStarting = true;
+    let stop: (() => void) | undefined;
+    try {
+      stop = record(
+        this.buildRecordOptions((event) => {
+          if (attempt.phase === 'buffering') {
+            bufferedEvents.push(event);
+          } else if (attempt.phase === 'active') {
+            this.handleEvent(event, isCurrentAttempt);
+          }
+        })
+      );
+    } catch (err) {
+      discardAttempt();
+      throw err;
+    } finally {
+      this.isStarting = false;
+    }
+
+    if (!stop) {
+      discardAttempt();
+      return false;
+    }
+
+    if (!isValid()) {
+      // Stop before publishing anything from an invalidated startup.
+      discardAttempt();
+      try {
+        stop();
+      } catch (err) {
+        this.logWarn('Failed to stop session replay', err);
+      } finally {
+        this.stopRecording();
+      }
+      this.logDebug('Recorder start attempt invalidated');
+      return false;
+    }
+
+    const stopAttempt = (): void => {
+      discardAttempt();
+      stop!();
+    };
+    const recordingId = state.recordingId;
+    const isCurrentAttempt = (): boolean =>
+      isValid() && this.isRecording && this.stopFn === stopAttempt && this.recordingState === state;
+
+    this.stopFn = stopAttempt;
+    this.isRecording = true;
+    this.isPaused = false;
+
+    // Telemetry failure does not undo a successfully installed recorder.
+    try {
+      this.api.pushEvent(lifecycleEventName, { recording_id: recordingId });
+    } catch (err) {
+      this.logWarn(`Failed to push ${lifecycleEventName} event`, err);
+    }
+
+    try {
+      for (const event of bufferedEvents) {
+        if (!isCurrentAttempt()) {
+          discardAttempt();
+          return true;
+        }
+        this.handleEvent(event, isCurrentAttempt);
+      }
+
+      if (!isCurrentAttempt()) {
+        discardAttempt();
+        return true;
+      }
+
+      bufferedEvents.length = 0;
+      attempt.phase = 'active';
+      return true;
+    } catch (err) {
+      if (this.stopFn === stopAttempt) {
+        this.stopRrweb();
+        this.isRecording = wasRecording;
+        this.isPaused = wasPaused;
+      }
+      throw err;
+    }
   }
 
   private stopRrweb(): void {
-    if (this.stopFn) {
-      this.stopFn();
-      this.stopFn = null;
+    this.attemptRevision++;
+    const stop = this.stopFn;
+    this.stopFn = null;
+
+    if (stop) {
+      try {
+        stop();
+      } catch (err) {
+        this.logWarn('Failed to stop session replay', err);
+      }
     }
   }
 
-  private startRecording(): void {
+  private startRecording(sessionId: string): void {
     try {
-      this.startRrweb();
+      captureMetas(this.metas, () => {
+        // A capture listener may have reinitialized and started this instrumentation.
+        if (this.isRecording) {
+          return;
+        }
 
-      this.isRecording = true;
-      this.isPaused = false;
-      this.logDebug('Session replay started');
-      this.api.pushEvent(faroSessionReplayStartedEventName, {});
+        const eligibleSessionId = this.currentEligibleSessionId();
+        if (this.destroyed || this.pageHidden || eligibleSessionId === null || eligibleSessionId !== sessionId) {
+          this.logDebug('Session changed during reconciliation, deferring recording start');
+          return;
+        }
 
-      this.setupInactivityTracking();
+        if (this.recordingState?.sessionId !== sessionId) {
+          const handoff = takeActiveRecordingHandoff(this.recordingOwnerNamespace);
+          this.recordingState = this.recordingStateStore!.claim(
+            sessionId,
+            handoff?.sessionId === sessionId ? handoff.recordingId : undefined
+          );
+        }
+
+        if (!this.startRrweb(faroSessionReplayStartedEventName)) {
+          // Not marked as recording, so a later session notification can retry.
+          this.logWarn('Failed to start session replay: rrweb did not start');
+          return;
+        }
+
+        if (!this.isRecording) {
+          return;
+        }
+
+        this.isManuallyPaused = false;
+        this.logDebug('Session replay started');
+
+        this.setupInactivityTracking();
+      });
     } catch (err) {
       this.logWarn('Failed to start session replay', err);
     }
   }
 
-  private pauseRecording(): void {
+  /**
+   * Pauses the current session recording.
+   *
+   * While paused, rrweb does not capture events. Calling this method when
+   * recording is not active or is already paused has no effect.
+   */
+  public pauseRecording(): void {
+    if (!this.isRecording) {
+      return;
+    }
+
+    this.isManuallyPaused = true;
+    this.pauseRecordingInternal('manual control');
+  }
+
+  private pauseRecordingInternal(reason: 'inactivity' | 'manual control'): void {
     if (!this.isRecording || this.isPaused) {
       return;
     }
@@ -194,31 +650,85 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       this.inactivityTimer = null;
     }
 
+    // Metadata reconciliation must not prevent the local inactivity pause.
     this.stopRrweb();
     this.isPaused = true;
-    this.logDebug('Session replay paused due to inactivity');
-    this.api.pushEvent(faroSessionReplayPausedEventName, {});
+    this.logDebug(`Session replay paused due to ${reason}`);
+
+    try {
+      captureMetas(this.metas, () => {
+        if (!this.isRecording || !this.isPaused || !this.isRecordingSessionEligible()) {
+          return;
+        }
+
+        this.api.pushEvent(faroSessionReplayPausedEventName, { recording_id: this.recordingState!.recordingId });
+      });
+    } catch (err) {
+      this.logWarn('Failed to push session replay paused event', err);
+    }
   }
 
-  private resumeRecording(): void {
+  /**
+   * Resumes a paused session recording with a fresh DOM checkpoint.
+   *
+   * Calling this method when the recording is not paused has no effect.
+   */
+  public resumeRecording(): void {
     if (!this.isPaused) {
       return;
     }
 
+    if (this.resumeRecordingInternal('manual control')) {
+      this.isManuallyPaused = false;
+    }
+  }
+
+  private resumeRecordingInternal(reason: 'user interaction' | 'manual control'): boolean {
+    if (!this.isPaused) {
+      return false;
+    }
+
     try {
-      this.startRrweb();
+      let resumed = false;
+      captureMetas(this.metas, () => {
+        // A capture listener may have installed a fresh recorder.
+        if (this.isRecording && !this.isPaused) {
+          return;
+        }
 
-      this.isPaused = false;
-      this.logDebug('Session replay resumed after user interaction');
-      this.api.pushEvent(faroSessionReplayResumedEventName, {});
+        if (!this.isRecording || !this.isPaused || !this.isRecordingSessionEligible()) {
+          this.logDebug('Recording session no longer eligible, stopping instead of resuming');
+          this.stopRecording();
+          return;
+        }
 
-      this.resetInactivityTimer();
+        if (!this.startRrweb(faroSessionReplayResumedEventName)) {
+          // Stays paused, so the next user interaction can retry the resume.
+          this.logWarn('Failed to resume session replay: rrweb did not start');
+          return;
+        }
+
+        if (!this.isRecording || this.isPaused) {
+          return;
+        }
+
+        this.logDebug(`Session replay resumed by ${reason}`);
+
+        this.resetInactivityTimer();
+        resumed = true;
+      });
+      return resumed;
     } catch (err) {
       this.logWarn('Failed to resume session replay', err);
+      return false;
     }
   }
 
   private setupInactivityTracking(): void {
+    // Defensive: a re-entrant stop/start cycle must never leak a previous closure's
+    // document listeners.
+    this.teardownInactivityTracking();
+
     const threshold = this.options.inactivityThresholdMs;
     if (!threshold || threshold <= 0) {
       return;
@@ -226,7 +736,9 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
     this.boundOnUserInteraction = () => {
       if (this.isPaused) {
-        this.resumeRecording();
+        if (!this.isManuallyPaused) {
+          this.resumeRecordingInternal('user interaction');
+        }
       } else {
         this.resetInactivityTimer();
       }
@@ -259,28 +771,85 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       return;
     }
 
-    if (this.inactivityTimer !== null) {
-      clearTimeout(this.inactivityTimer);
-    }
+    clearTimeout(this.inactivityTimer ?? undefined);
 
     this.inactivityTimer = setTimeout(() => {
-      this.pauseRecording();
+      this.pauseRecordingInternal('inactivity');
     }, threshold);
   }
 
-  private handleEvent(event: eventWithTime, _isCheckout?: boolean): void {
+  private sanitizeMetaHref(event: eventWithTime): void {
+    if (event.type !== EventType.Meta || this.options.sanitizeMetaHref === false) {
+      return;
+    }
+
+    const data = event.data;
+    if (data == null || typeof data !== 'object' || !('href' in data) || typeof data.href !== 'string') {
+      return;
+    }
+
+    data.href = this.sanitizeUrl(data.href);
+  }
+
+  private sanitizeUrl(href: string): string {
     try {
-      // Apply beforeSend transformation if provided
-      let processedEvent: eventWithTime | null | undefined = event;
-      if (this.options.beforeSend) {
-        processedEvent = this.options.beforeSend(event);
-        if (processedEvent === null || processedEvent === undefined) {
+      const url = new URL(href);
+      url.username = '';
+      url.password = '';
+      url.search = '';
+      url.hash = '';
+      return url.href;
+    } catch {
+      // Malformed URL — leave as-is rather than risk breaking the event.
+      return href;
+    }
+  }
+
+  private handleEvent(event: eventWithTime, isCurrentAttempt: () => boolean): void {
+    const state = this.recordingState;
+    try {
+      captureMetas(this.metas, () => {
+        if (!state || !isCurrentAttempt()) {
           return;
         }
-      }
 
-      this.api.pushEvent(faroSessionReplayEventName, {
-        event: JSON.stringify(processedEvent),
+        this.sanitizeMetaHref(event);
+
+        // Apply beforeSend transformation if provided
+        let processedEvent: eventWithTime | null | undefined = event;
+        if (this.options.beforeSend) {
+          processedEvent = this.options.beforeSend(event);
+          if (processedEvent === null || processedEvent === undefined) {
+            return;
+          }
+          this.sanitizeMetaHref(processedEvent);
+        }
+
+        // beforeSend is user code and may itself synchronously rotate the session or
+        // otherwise invalidate this attempt; re-validate after it runs, not just before.
+        if (!isCurrentAttempt()) {
+          return;
+        }
+
+        if (processedEvent.type === EventType.Meta) {
+          state.gen++;
+        }
+        // Reserve after acceptance but before serialization: a failed event leaves
+        // a detectable gap, without moving its snapshot back to the previous gen.
+        // Capture gen alongside seq: serialization runs user code (toJSON) that may
+        // re-enter with a later Meta and advance state.gen before we read it.
+        const seq = state.nextSeq++;
+        const gen = Math.max(state.gen, 0);
+        const serializedEvent = JSON.stringify(processedEvent);
+        if (!isCurrentAttempt()) {
+          return;
+        }
+        this.api.pushEvent(faroSessionReplayEventName, {
+          event: serializedEvent,
+          recording_id: state.recordingId,
+          gen: String(gen),
+          seq: String(seq),
+        });
       });
     } catch (err) {
       this.logWarn(`Failed to push ${faroSessionReplayEventName} event`, err);
@@ -288,6 +857,20 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   }
 
   destroy(): void {
+    this.destroyed = true;
+    document.removeEventListener('prerenderingchange', this.prerenderListener);
+    this.pendingStart = false;
+    this.metas.removeListener?.(this.metasListener);
+    window.removeEventListener('pagehide', this.pageHideListener, { capture: true });
+    window.removeEventListener('pageshow', this.pageShowListener, { capture: true });
+    window.removeEventListener('storage', this.storageListener);
     this.stopRecording();
+    const state = this.recordingState;
+    if (state) {
+      if (this.recordingStateStore?.checkpoint(state)) {
+        getRecordingOwnerState(this.recordingOwnerNamespace).handoff = state;
+      }
+      this.recordingState = undefined;
+    }
   }
 }

@@ -191,6 +191,55 @@ describe('transports', () => {
     });
   });
 
+  describe('removeBeforeSendHooks', () => {
+    it('stops calling a hook after it is removed', () => {
+      const transport = new MockTransport();
+      const hook = jest.fn((item: TransportItem) => item);
+
+      const { transports } = initializeFaro(
+        mockConfig({
+          isolate: true,
+          instrumentations: [],
+          transports: [transport],
+        })
+      );
+
+      transports.addBeforeSendHooks(hook);
+      transports.execute(makeExceptionTransportItem('Error', 'Kaboom'));
+      expect(hook).toHaveBeenCalledTimes(1);
+
+      transports.removeBeforeSendHooks(hook);
+      expect(transports.getBeforeSendHooks()).not.toContain(hook);
+
+      transports.execute(makeExceptionTransportItem('Error', 'Kaboom'));
+      expect(hook).toHaveBeenCalledTimes(1);
+      expect(transport.sentItems).toHaveLength(2);
+    });
+
+    it('keeps the hooks which are not removed', () => {
+      const transport = new MockTransport();
+      const hookToRemove = jest.fn((item: TransportItem) => item);
+      const hookToKeep = jest.fn((item: TransportItem) => item);
+
+      const { transports } = initializeFaro(
+        mockConfig({
+          isolate: true,
+          instrumentations: [],
+          transports: [transport],
+        })
+      );
+
+      transports.addBeforeSendHooks(hookToRemove, hookToKeep);
+      transports.removeBeforeSendHooks(hookToRemove);
+
+      transports.execute(makeExceptionTransportItem('Error', 'Kaboom'));
+
+      expect(hookToRemove).not.toHaveBeenCalled();
+      expect(hookToKeep).toHaveBeenCalledTimes(1);
+      expect(transports.getBeforeSendHooks()).toEqual([hookToKeep]);
+    });
+  });
+
   describe('multiple transports of the same type', () => {
     const transport1 = new MockTransport();
     const transport2 = new MockTransport();

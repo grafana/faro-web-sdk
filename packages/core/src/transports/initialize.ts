@@ -1,7 +1,9 @@
 import type { APIEvent, ExceptionEvent } from '../api';
 import type { Config } from '../config';
+import { getInternalMetas } from '../internal';
 import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
+import { captureMetas, isMetaCaptured, markMetaCaptured } from '../metas/capture';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 
 import { BatchExecutor } from './batchExecutor';
@@ -18,8 +20,8 @@ export function initializeTransports(
 
   const transports: Transport[] = [];
 
-  let paused = config.paused;
-
+  // `config.paused` is the single source of truth so that the paused state stays
+  // observable through `faro.config.paused` after `faro.pause()` / `faro.unpause()`
   let beforeSendHooks: BeforeSendHook[] = [];
 
   const add: Transports['add'] = (...newTransports) => {
@@ -112,7 +114,7 @@ export function initializeTransports(
     batchExecutor = new BatchExecutor(batchedSend, {
       sendTimeout: config.batching.sendTimeout,
       itemLimit: config.batching.itemLimit,
-      paused,
+      paused: config.paused,
     });
   }
 
@@ -124,8 +126,31 @@ export function initializeTransports(
   // 3i. If batching is enabled, enqueue the signal
   // 3ii. Send the signal instantly to all un-batched transports
   const execute: Transports['execute'] = (item) => {
-    if (paused) {
+    if (config.paused || !getInternalMetas(metas).shouldCapture()) {
       return;
+    }
+
+    // Older extensions submit fresh items using metas.value. Reconcile those at
+    // entry, while previously captured items (including delayed user actions)
+    // retain their ownership. Explicitly supplied different sessions stay intact.
+    if (!isMetaCaptured(item.meta)) {
+      const previousSessionId = metas.value.session?.id;
+      const meta = captureMetas(metas);
+      if (config.paused) {
+        return;
+      }
+      const itemMeta = { ...item.meta };
+      if (itemMeta.session?.id === previousSessionId && meta.session?.id !== previousSessionId) {
+        if (meta.session === undefined) {
+          delete itemMeta.session;
+        } else {
+          itemMeta.session = meta.session;
+        }
+      }
+      item = {
+        ...item,
+        meta: markMetaCaptured(itemMeta),
+      };
     }
 
     if (config.batching?.enabled) {
@@ -137,13 +162,13 @@ export function initializeTransports(
 
   const getBeforeSendHooks: Transports['getBeforeSendHooks'] = () => [...beforeSendHooks];
 
-  const isPaused: Transports['isPaused'] = () => paused;
+  const isPaused: Transports['isPaused'] = () => config.paused;
 
   const pause: Transports['pause'] = () => {
     internalLogger.debug('Pausing transports');
     batchExecutor?.pause();
 
-    paused = true;
+    config.paused = true;
   };
 
   const remove: Transports['remove'] = (...transportsToRemove) => {
@@ -165,14 +190,16 @@ export function initializeTransports(
   };
 
   const removeBeforeSendHooks: Transports['removeBeforeSendHooks'] = (...beforeSendHooksToRemove) => {
-    beforeSendHooks.filter((beforeSendHook) => !beforeSendHooksToRemove.includes(beforeSendHook));
+    internalLogger.debug('Removing beforeSendHooks');
+
+    beforeSendHooks = beforeSendHooks.filter((beforeSendHook) => !beforeSendHooksToRemove.includes(beforeSendHook));
   };
 
   const unpause: Transports['unpause'] = () => {
     internalLogger.debug('Unpausing transports');
     batchExecutor?.start();
 
-    paused = false;
+    config.paused = false;
   };
 
   return {

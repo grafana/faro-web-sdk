@@ -8,7 +8,7 @@ import { monitorUrlChanges } from '../_internal/monitors/urlChangeMonitor';
 
 export class NavigationInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-navigation';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   override initialize(): void {
     const httpMonitor = monitorHttpRequests();

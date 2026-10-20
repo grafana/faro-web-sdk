@@ -5,7 +5,7 @@ import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../uti
 
 import { isSampled } from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
-import type { FaroUserSession } from './types';
+import type { FaroUserSession, SessionContext } from './types';
 
 type CreateUserSessionObjectParams = {
   sessionId?: string;
@@ -14,15 +14,13 @@ type CreateUserSessionObjectParams = {
   isSampled?: boolean;
 };
 
-export function createUserSessionObject({
-  sessionId,
-  started,
-  lastActivity,
-  isSampled = true,
-}: CreateUserSessionObjectParams = {}): FaroUserSession {
+export function createUserSessionObject(
+  { sessionId, started, lastActivity, isSampled = true }: CreateUserSessionObjectParams = {},
+  context: SessionContext = faro
+): FaroUserSession {
   const now = dateNow();
 
-  const generateSessionId = faro.config?.sessionTracking?.generateSessionId;
+  const generateSessionId = context.config?.sessionTracking?.generateSessionId;
 
   if (sessionId == null) {
     sessionId = typeof generateSessionId === 'function' ? generateSessionId() : genShortID();
@@ -58,21 +56,30 @@ type GetUserSessionUpdaterParams = {
   // Silently adopt another tab's session into in-memory metas (cross-tab sync).
   // Optional: only the valid (non-force-extend) branch uses it.
   adoptSession?: (sessionMeta: NonNullable<FaroUserSession['sessionMeta']>) => void;
+  updateInterval?: number;
 };
 
-type UpdateSessionParams = { forceSessionExtend: boolean };
+type UpdateSessionParams = { forceSessionExtend?: boolean; refreshActivity?: boolean };
 
-export function getUserSessionUpdater({
-  fetchUserSession,
-  storeUserSession,
-  adoptSession,
-}: GetUserSessionUpdaterParams): (options?: UpdateSessionParams) => void {
-  return function updateSession({ forceSessionExtend } = { forceSessionExtend: false }): void {
+export function getUserSessionUpdater(
+  { fetchUserSession, storeUserSession, adoptSession, updateInterval = 0 }: GetUserSessionUpdaterParams,
+  context: SessionContext = faro
+): (options?: UpdateSessionParams) => void {
+  let nextUpdate = 0;
+  return function updateSession({
+    forceSessionExtend = false,
+    refreshActivity = true,
+  }: UpdateSessionParams = {}): void {
     if (!fetchUserSession || !storeUserSession) {
       return;
     }
 
-    const sessionTrackingConfig = faro.config.sessionTracking;
+    const now = dateNow();
+    if (!forceSessionExtend && now < nextUpdate && nextUpdate - now <= updateInterval) {
+      return;
+    }
+
+    const sessionTrackingConfig = context.config.sessionTracking;
     const isPersistentSessions = sessionTrackingConfig?.persistent;
 
     if ((isPersistentSessions && !isLocalStorageAvailable) || (!isPersistentSessions && !isSessionStorageAvailable)) {
@@ -80,12 +87,21 @@ export function getUserSessionUpdater({
     }
 
     const sessionFromStorage = fetchUserSession();
+    // Bound checks by both expiry deadlines. A backward clock adjustment must
+    // not turn the storage interval into a long suspension of reconciliation.
+    nextUpdate = Math.min(
+      now + updateInterval,
+      (sessionFromStorage?.started ?? now) + SESSION_EXPIRATION_TIME,
+      (sessionFromStorage?.lastActivity ?? now) + SESSION_INACTIVITY_TIME
+    );
 
     if (forceSessionExtend === false && isUserSessionValid(sessionFromStorage)) {
-      storeUserSession({ ...sessionFromStorage!, lastActivity: dateNow() });
+      if (refreshActivity) {
+        storeUserSession({ ...sessionFromStorage!, lastActivity: now });
+      }
 
       // Another tab rotated the shared session; adopt it so we stop emitting the stale id.
-      const inMemorySessionId = faro.metas.value.session?.id;
+      const inMemorySessionId = context.metas.value.session?.id;
       if (
         adoptSession != null &&
         sessionFromStorage!.sessionMeta != null &&
@@ -95,32 +111,65 @@ export function getUserSessionUpdater({
       }
     } else {
       let newSession = addSessionMetadataToNextSession(
-        createUserSessionObject({ isSampled: isSampled() }),
-        sessionFromStorage
+        createUserSessionObject({ isSampled: isSampled(context) }, context),
+        sessionFromStorage,
+        context
       );
+      nextUpdate = now + updateInterval;
 
       storeUserSession(newSession);
 
-      faro.api?.setSession(newSession.sessionMeta);
+      context.api?.setSession(newSession.sessionMeta);
       sessionTrackingConfig?.onSessionChange?.(sessionFromStorage?.sessionMeta ?? null, newSession.sessionMeta!);
     }
   };
 }
 
-export function addSessionMetadataToNextSession(newSession: FaroUserSession, previousSession: FaroUserSession | null) {
+export function getUserSessionActivityRecorder({
+  fetchUserSession,
+  storeUserSession,
+  updateInterval = 0,
+}: Pick<GetUserSessionUpdaterParams, 'fetchUserSession' | 'storeUserSession' | 'updateInterval'>): (
+  sessionId: string
+) => void {
+  let lastSessionId: string | undefined;
+  let nextUpdate = 0;
+
+  return (sessionId) => {
+    const now = dateNow();
+    if (sessionId === lastSessionId && now < nextUpdate && nextUpdate - now <= updateInterval) {
+      return;
+    }
+    lastSessionId = sessionId;
+    nextUpdate = now + updateInterval;
+    const session = fetchUserSession();
+    // Accepted old batches must not refresh a replacement session or resurrect
+    // an expired one. This path records activity only; it never rotates.
+    if (session?.sessionId !== sessionId || !isUserSessionValid(session)) {
+      return;
+    }
+    storeUserSession({ ...session, lastActivity: now });
+  };
+}
+
+export function addSessionMetadataToNextSession(
+  newSession: FaroUserSession,
+  previousSession: FaroUserSession | null,
+  context: SessionContext = faro
+): Required<FaroUserSession> {
   const sessionWithMeta: Required<FaroUserSession> = {
     ...newSession,
     sessionMeta: {
       id: newSession.sessionId,
       attributes: removeUndefinedValues({
-        ...faro.config.sessionTracking?.session?.attributes,
-        ...(faro.metas.value.session?.attributes ?? {}),
+        ...context.config.sessionTracking?.session?.attributes,
+        ...(context.metas.value.session?.attributes ?? {}),
         isSampled: newSession.isSampled.toString(),
       }),
     },
   };
 
-  const overrides = faro.metas.value.session?.overrides ?? previousSession?.sessionMeta?.overrides;
+  const overrides = context.metas.value.session?.overrides ?? previousSession?.sessionMeta?.overrides;
   if (!isEmpty(overrides)) {
     sessionWithMeta.sessionMeta.overrides = overrides;
   }
@@ -138,13 +187,13 @@ type GetUserSessionMetaUpdateHandlerParams = {
   fetchUserSession: () => FaroUserSession | null;
 };
 
-export function getSessionMetaUpdateHandler({
-  fetchUserSession,
-  storeUserSession,
-}: GetUserSessionMetaUpdateHandlerParams) {
+export function getSessionMetaUpdateHandler(
+  { fetchUserSession, storeUserSession }: GetUserSessionMetaUpdateHandlerParams,
+  context: SessionContext = faro
+) {
   let isSyncing = false;
 
-  return function syncSessionIfChangedExternally(meta: Meta) {
+  return function syncSessionIfChangedExternally(meta: Meta): void {
     if (isSyncing) {
       return;
     }
@@ -163,17 +212,29 @@ export function getSessionMetaUpdateHandler({
     const hasSessionIdChanged = !!session && sessionId !== sessionFromSessionStorage?.sessionId;
 
     if (hasSessionIdChanged || hasAttributesChanged || hasSessionOverridesChanged) {
-      const userSession = addSessionMetadataToNextSession(
-        createUserSessionObject({ sessionId, isSampled: isSampled() }),
-        sessionFromSessionStorage
-      );
+      const isCurrentSession = sessionFromSessionStorage != null && sessionId === sessionFromSessionStorage.sessionId;
+      const userSession = isCurrentSession
+        ? addSessionMetadataToNextSession(sessionFromSessionStorage, sessionFromSessionStorage, context)
+        : addSessionMetadataToNextSession(
+            createUserSessionObject({ sessionId, isSampled: isSampled(context) }, context),
+            sessionFromSessionStorage,
+            context
+          );
+
+      const storedPreviousSession = sessionFromSessionStorage?.sessionMeta?.attributes?.['previousSession'];
+      if (isCurrentSession && storedPreviousSession != null && storedPreviousSession !== userSession.sessionId) {
+        userSession.sessionMeta.attributes!['previousSession'] = storedPreviousSession;
+      }
+      if (userSession.sessionMeta.attributes?.['previousSession'] === userSession.sessionId) {
+        delete userSession.sessionMeta.attributes['previousSession'];
+      }
 
       storeUserSession(userSession);
-      sendOverrideEvent(hasSessionOverridesChanged, sessionOverrides, storedSessionMetaOverrides);
+      sendOverrideEvent(context, hasSessionOverridesChanged, sessionOverrides, storedSessionMetaOverrides);
 
       isSyncing = true;
       try {
-        faro.api.setSession(userSession.sessionMeta);
+        context.api.setSession(userSession.sessionMeta);
       } finally {
         isSyncing = false;
       }
@@ -193,6 +254,7 @@ function removeUndefinedValues(obj: Record<string, string | undefined>): Record<
 }
 
 function sendOverrideEvent(
+  context: SessionContext,
   hasSessionOverridesChanged: boolean,
   sessionOverrides: MetaOverrides = {},
   storedSessionOverrides: MetaOverrides = {}
@@ -202,10 +264,10 @@ function sendOverrideEvent(
   }
 
   const serviceName = sessionOverrides.serviceName;
-  const previousServiceName = storedSessionOverrides.serviceName ?? faro.metas.value.app?.name ?? '';
+  const previousServiceName = storedSessionOverrides.serviceName ?? context.metas.value.app?.name ?? '';
 
   if (serviceName && serviceName !== previousServiceName) {
-    faro.api.pushEvent(EVENT_OVERRIDES_SERVICE_NAME, {
+    context.api.pushEvent(EVENT_OVERRIDES_SERVICE_NAME, {
       serviceName,
       previousServiceName,
     });

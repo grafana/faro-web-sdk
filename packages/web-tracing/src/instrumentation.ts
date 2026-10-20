@@ -3,7 +3,7 @@ import type { Attributes } from '@opentelemetry/api';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
-import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
+import { BatchSpanProcessor, SamplingDecision, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
@@ -11,13 +11,14 @@ import {
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
 } from '@opentelemetry/semantic-conventions';
 
-import { BaseInstrumentation, isArray, VERSION } from '@grafana/faro-web-sdk';
+import { BaseInstrumentation, captureMetas, isArray, VERSION } from '@grafana/faro-web-sdk';
 import type { Transport } from '@grafana/faro-web-sdk';
 
 import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
+import { FaroPausablePropagator } from './faroPausablePropagator';
 import { FaroTraceExporter } from './faroTraceExporter';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
-import { getSamplingDecision } from './sampler';
+import { getSamplingDecision, isSessionSampled } from './sampler';
 import {
   ATTR_BROWSER_BRANDS,
   ATTR_BROWSER_LANGUAGE,
@@ -39,7 +40,7 @@ import type { TracingInstrumentationOptions } from './types';
 
 export class TracingInstrumentation extends BaseInstrumentation {
   name = '@grafana/faro-web-tracing';
-  version = VERSION;
+  version: string = VERSION;
 
   static SCHEDULED_BATCH_DELAY_MS = 1000;
 
@@ -136,8 +137,17 @@ export class TracingInstrumentation extends BaseInstrumentation {
       resource,
       sampler: {
         shouldSample: () => {
+          // Drop speculative spans before OpenTelemetry can queue them for export after activation.
+          if (
+            this.config.sessionTracking?.enabled &&
+            (document as Document & { prerendering?: boolean }).prerendering
+          ) {
+            return { decision: SamplingDecision.NOT_RECORD };
+          }
+          // An earlier activation listener can start a span before the session is initialized.
+          // Reconcile it before sampling, since nonrecording spans never reach metadata capture.
           return {
-            decision: getSamplingDecision(this.api.getSession()),
+            decision: getSamplingDecision(captureMetas(this.metas).session),
           };
         },
       },
@@ -153,8 +163,15 @@ export class TracingInstrumentation extends BaseInstrumentation {
       ],
     });
 
+    const omitForUnsampledSessions = options.omitTraceContextForUnsampledSessions === true;
+
     provider.register({
-      propagator: options.propagator ?? new W3CTraceContextPropagator(),
+      // wrapped so that pausing Faro, or running an unsampled session, also stops trace context
+      // from being injected into requests
+      propagator: new FaroPausablePropagator(
+        options.propagator ?? new W3CTraceContextPropagator(),
+        () => this.transports.isPaused() || (omitForUnsampledSessions && !isSessionSampled(this.api.getSession()))
+      ),
       contextManager: options.contextManager,
     });
 

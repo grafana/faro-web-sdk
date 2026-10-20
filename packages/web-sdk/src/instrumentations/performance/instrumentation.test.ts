@@ -115,7 +115,7 @@ describe('Performance Instrumentation', () => {
     expect(await mockObserveAndGetNavigationTimings).toHaveBeenCalledTimes(1);
 
     expect(mockObserveResourceTimings).toHaveBeenCalledTimes(1);
-    expect(mockObserveResourceTimings).toHaveBeenCalledWith('123', expect.anything(), expect.anything());
+    expect(mockObserveResourceTimings).toHaveBeenCalledWith('123', expect.anything(), expect.anything(), config);
   });
 
   it('Excludes entries which match the global ignoreUrls ', async () => {

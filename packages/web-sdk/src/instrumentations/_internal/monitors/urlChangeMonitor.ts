@@ -114,7 +114,7 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
 }
 
 // Test-only utility to reset state between tests
-export function __resetUrlChangeMonitorForTests() {
+export function __resetUrlChangeMonitorForTests(): void {
   if (onPopStateHandler) {
     window.removeEventListener('popstate', onPopStateHandler);
   }

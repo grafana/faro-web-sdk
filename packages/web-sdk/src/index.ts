@@ -19,6 +19,7 @@ export {
   CSPInstrumentation,
   UserActionInstrumentation,
   NavigationInstrumentation,
+  FrustrationInstrumentation,
 } from './instrumentations';
 export type { ErrorEvent, ExtendedPromiseRejectionEvent } from './instrumentations';
 
@@ -30,6 +31,8 @@ export type {
   ConsoleTransportOptions,
   FetchTransportOptions,
   FetchTransportRequestOptions,
+  RandomFn,
+  RetryOptions,
 } from './transports';
 
 export {
@@ -40,6 +43,7 @@ export {
   BaseTransport,
   createInternalLogger,
   createPromiseBuffer,
+  captureMetas,
   deepEqual,
   defaultExceptionType,
   defaultGlobalObjectKey,
@@ -179,4 +183,4 @@ export {
 
 export { getIgnoreUrls, getUrlFromResource } from './utils/url';
 
-export { userActionDataAttribute } from './instrumentations/userActions';
+export { userActionDataAttribute, userActionTimeoutDataAttribute } from './instrumentations/userActions';

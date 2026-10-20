@@ -7,11 +7,11 @@ export class ItemBuffer<T> {
     this.buffer = [];
   }
 
-  addItem(item: T) {
+  addItem(item: T): void {
     this.buffer.push(item);
   }
 
-  flushBuffer(cb?: (item: T) => void) {
+  flushBuffer(cb?: (item: T) => void): void {
     if (isFunction(cb)) {
       for (const item of this.buffer) {
         cb(item);
@@ -21,7 +21,7 @@ export class ItemBuffer<T> {
     this.buffer.length = 0;
   }
 
-  size() {
+  size(): number {
     return this.buffer.length;
   }
 }

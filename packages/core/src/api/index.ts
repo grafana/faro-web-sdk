@@ -25,6 +25,7 @@ export type { MetaAPI } from './meta';
 
 export {
   UserActionImportance,
+  type StartUserActionOptions,
   type UserActionImportanceType,
   UserActionState,
   type UserActionInterface,
@@ -34,3 +35,5 @@ export {
 } from './userActions';
 
 export type { OTELApi, TraceContext, TraceEvent, TracesAPI } from './traces';
+
+export { shouldIgnoreEvent } from './utils';

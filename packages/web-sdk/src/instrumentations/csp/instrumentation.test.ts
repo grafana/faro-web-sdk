@@ -64,8 +64,12 @@ describe('CSPInstrumentation', () => {
     expect(attributes?.['sample']).toBe('alert("xss")');
   });
 
-  it('ensures listener gets removed on teardown', () => {
+  it('removes the same listener reference that it registered on teardown', () => {
+    // removeEventListener matches listeners by identity, so asserting only that it was called is not
+    // enough: passing it a different function object than the one registered removes nothing and
+    // leaves the instrumentation reporting after teardown.
     const mockTransport = new MockTransport();
+    const addSpy = jest.spyOn(document, 'addEventListener');
     const removeSpy = jest.spyOn(document, 'removeEventListener');
 
     const instrumentation = new CSPInstrumentation();
@@ -79,7 +83,13 @@ describe('CSPInstrumentation', () => {
     );
     faro.internalLogger.warn = jest.fn();
 
+    const registered = addSpy.mock.calls.find(([type]) => type === 'securitypolicyviolation')?.[1];
+
     faro.instrumentations.remove(instrumentation);
-    expect(removeSpy).toHaveBeenCalledWith('securitypolicyviolation', instrumentation.securitypolicyviolationHandler);
+
+    const removed = removeSpy.mock.calls.find(([type]) => type === 'securitypolicyviolation')?.[1];
+
+    expect(registered).toBeDefined();
+    expect(removed).toBe(registered);
   });
 });

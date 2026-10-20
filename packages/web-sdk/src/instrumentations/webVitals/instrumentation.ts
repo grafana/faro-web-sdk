@@ -4,7 +4,7 @@ import { WebVitalsWithAttribution } from './webVitalsWithAttribution';
 
 export class WebVitalsInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-web-vitals';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   initialize(): void {
     this.logDebug('Initializing');

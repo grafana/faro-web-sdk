@@ -1,7 +1,9 @@
 import type { Config } from '../config';
 import { defaultInternalLogger } from '../internalLogger';
+import type { InternalLogger } from '../internalLogger';
 import type { Metas } from '../metas';
 import { defaultUnpatchedConsole } from '../unpatchedConsole';
+import type { UnpatchedConsole } from '../unpatchedConsole';
 
 import type { Extension } from './types';
 
@@ -9,8 +11,8 @@ export abstract class BaseExtension implements Extension {
   abstract readonly name: string;
   abstract readonly version: string;
 
-  unpatchedConsole = defaultUnpatchedConsole;
-  internalLogger = defaultInternalLogger;
+  unpatchedConsole: UnpatchedConsole = defaultUnpatchedConsole;
+  internalLogger: InternalLogger = defaultInternalLogger;
   config = {} as Config;
   metas = {} as Metas;
 

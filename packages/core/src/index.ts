@@ -6,6 +6,7 @@ export {
   type UserActionImportanceType,
   UserActionState,
   userActionsMessageBus,
+  shouldIgnoreEvent,
 } from './api';
 export type {
   API,
@@ -32,6 +33,7 @@ export type {
   PushMeasurementOptions,
   Stacktrace,
   StacktraceParser,
+  StartUserActionOptions,
   TraceContext,
   TraceEvent,
   TracesAPI,
@@ -160,5 +162,6 @@ export type {
 } from './utils';
 
 export { VERSION } from './version';
+export { captureMetas } from './metas';
 
 export { unknownString } from './consts';

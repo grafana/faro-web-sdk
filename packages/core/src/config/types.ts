@@ -173,6 +173,17 @@ export interface Config<P = APIEvent> {
      * for measuring these metrics in production.
      */
     reportAllChanges?: boolean;
+
+    /**
+     * Track attribution fields that identify the source behind a metric value: the LCP resource
+     * (`resource_url`, `resource_delivery_type`, `resource_initiator_type`) and the INP longest script
+     * (`longest_script_invoker`, `longest_script_source_url`, `longest_script_source_function_name`,
+     * `longest_script_source_char_position`).
+     * These fields may contain sensitive URLs or DOM identifiers, so this is disabled by default,
+     * following the same approach as `trackResources`.
+     * @default false
+     */
+    trackAttributionSources?: boolean;
   };
 
   /**
@@ -237,6 +248,12 @@ export interface Config<P = APIEvent> {
      * Configure your own attribute name for tracking user actions. Default is 'data-faro-user-action-name'
      */
     dataAttributeName?: string;
+
+    /**
+     * Time in milliseconds to wait for the first qualifying signal after a user action starts.
+     * Values above 1000 ms are clamped. Default is 100 ms.
+     */
+    initialActivityTimeout?: number;
 
     /**
      * Predicate function to exclude items from user actions.

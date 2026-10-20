@@ -1,12 +1,15 @@
 import { faro, stringifyExternalJson } from '@grafana/faro-core';
 import type { MetaSession } from '@grafana/faro-core';
 
-import { throttle } from '../../../utils';
 import { getItem, removeItem, setItem, webStorageType } from '../../../utils/webStorage';
 
 import { STORAGE_KEY, STORAGE_UPDATE_DELAY } from './sessionConstants';
-import { getSessionMetaUpdateHandler, getUserSessionUpdater } from './sessionManagerUtils';
-import type { FaroUserSession } from './types';
+import {
+  getSessionMetaUpdateHandler,
+  getUserSessionActivityRecorder,
+  getUserSessionUpdater,
+} from './sessionManagerUtils';
+import type { FaroUserSession, SessionContext } from './types';
 
 export class PersistentSessionsManager {
   private static storageTypeLocal = webStorageType.local;
@@ -21,23 +24,27 @@ export class PersistentSessionsManager {
   private adoptSession = (sessionMeta: MetaSession): void => {
     this.adopting = true;
     try {
-      faro.api?.setSession(sessionMeta);
+      this.context.api?.setSession(sessionMeta);
     } finally {
       this.adopting = false;
     }
   };
 
-  constructor() {
-    this.updateUserSession = getUserSessionUpdater({
-      fetchUserSession: PersistentSessionsManager.fetchUserSession,
-      storeUserSession: PersistentSessionsManager.storeUserSession,
-      adoptSession: this.adoptSession,
-    });
+  constructor(private readonly context: SessionContext = faro) {
+    this.updateUserSession = getUserSessionUpdater(
+      {
+        fetchUserSession: PersistentSessionsManager.fetchUserSession,
+        storeUserSession: PersistentSessionsManager.storeUserSession,
+        adoptSession: this.adoptSession,
+        updateInterval: STORAGE_UPDATE_DELAY,
+      },
+      context
+    );
 
     this.init();
   }
 
-  static removeUserSession() {
+  static removeUserSession(): void {
     removeItem(STORAGE_KEY, PersistentSessionsManager.storageTypeLocal);
   }
 
@@ -55,21 +62,35 @@ export class PersistentSessionsManager {
     return null;
   }
 
-  updateSession = throttle(() => this.updateUserSession(), STORAGE_UPDATE_DELAY);
+  updateSession = ({ refreshActivity = true }: { refreshActivity?: boolean } = {}): void =>
+    this.updateUserSession({ refreshActivity });
+
+  recordActivity: (sessionId: string) => void = getUserSessionActivityRecorder({
+    fetchUserSession: PersistentSessionsManager.fetchUserSession,
+    storeUserSession: PersistentSessionsManager.storeUserSession,
+    updateInterval: STORAGE_UPDATE_DELAY,
+  });
 
   private init(): void {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
-        this.updateSession();
+        this.updateSession({ refreshActivity: false });
+        const sessionId = this.context.api?.getSession()?.id;
+        if (sessionId) {
+          this.recordActivity(sessionId);
+        }
       }
     });
 
     // Users can call the setSession() method, so we need to sync this with the local storage session
-    faro.metas.addListener(
-      getSessionMetaUpdateHandler({
-        fetchUserSession: PersistentSessionsManager.fetchUserSession,
-        storeUserSession: PersistentSessionsManager.storeUserSession,
-      })
+    this.context.metas.addListener(
+      getSessionMetaUpdateHandler(
+        {
+          fetchUserSession: PersistentSessionsManager.fetchUserSession,
+          storeUserSession: PersistentSessionsManager.storeUserSession,
+        },
+        this.context
+      )
     );
   }
 }
