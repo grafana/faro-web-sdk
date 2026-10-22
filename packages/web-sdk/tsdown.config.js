@@ -1,6 +1,6 @@
-const { getTsdownConfigBase } = require('../../tsdown.config.base.js');
+import { getTsdownConfigBase } from '../../tsdown.config.base.js';
 
-module.exports = getTsdownConfigBase({
+export default getTsdownConfigBase({
   bundleName: 'faro-web-sdk',
   globalName: 'GrafanaFaroWebSdk',
   // The bundle is self contained: faro-core and the browser dependencies are all inlined. These are

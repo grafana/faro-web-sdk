@@ -1,4 +1,4 @@
-const JSDOMEnvironment = require('jest-environment-jsdom').default;
+import { TestEnvironment as JSDOMEnvironment } from 'jest-environment-jsdom';
 
 // jsdom does not expose the Fetch API (or a few other web globals) that
 // react-router data routers rely on during navigation. Node provides native
@@ -28,4 +28,4 @@ class JsdomFetchEnvironment extends JSDOMEnvironment {
   }
 }
 
-module.exports = JsdomFetchEnvironment;
+export default JsdomFetchEnvironment;
