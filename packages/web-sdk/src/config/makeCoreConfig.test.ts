@@ -260,6 +260,19 @@ describe('config', () => {
     expect(config).not.toHaveProperty('experimental');
   });
 
+  it('filters out navigation instrumentation when trackNavigation is false', () => {
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      trackNavigation: false,
+    });
+
+    const navigationInstrumentation = config.instrumentations.find(
+      (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
+    );
+    expect(navigationInstrumentation).toBeUndefined();
+  });
+
   it('ignores the removed experimental navigation option', () => {
     const config = makeCoreConfig({
       url: 'http://example.com/my-collector',

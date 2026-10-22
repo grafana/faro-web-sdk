@@ -9,7 +9,7 @@ import {
   isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
@@ -58,6 +58,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     metas = createDefaultMetas(browserConfig),
     paused = false,
     preventGlobalExposure = false,
+    trackNavigation = true,
     unpatchedConsole = defaultUnpatchedConsole,
     url: browserConfigUrl,
     // Ignore the removed experimental config if a legacy caller still provides it.
@@ -88,7 +89,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations,
+    instrumentations: getFilteredInstrumentations(instrumentations, trackNavigation),
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -116,6 +117,16 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     userActionsInstrumentation,
   };
+}
+
+function getFilteredInstrumentations(instrumentations: Instrumentation[], trackNavigation: boolean): Instrumentation[] {
+  if (trackNavigation !== false) {
+    return instrumentations;
+  }
+
+  return instrumentations.filter((instrumentation) => {
+    return instrumentation.name !== '@grafana/faro-web-sdk:instrumentation-navigation';
+  });
 }
 
 function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {

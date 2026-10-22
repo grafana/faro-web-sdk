@@ -21,6 +21,9 @@ Alternatively, you can use the CDN version of the library. See [use cdn library]
 - navigation - captures soft navigations and reports their URL changes and durations
 - frustration - sends an event for each rage click, dead click and error click, but not for ordinary clicks
 
+Navigation instrumentation is enabled by default. Set `trackNavigation: false` to disable it, or provide a custom
+`instrumentations` array without `NavigationInstrumentation`.
+
 ## Metas
 
 - browser - captures browser metadata: name, version, etc
