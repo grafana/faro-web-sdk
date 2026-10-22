@@ -9,7 +9,7 @@ import {
   isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
@@ -60,13 +60,11 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     preventGlobalExposure = false,
     unpatchedConsole = defaultUnpatchedConsole,
     url: browserConfigUrl,
-    experimental,
+    // Ignore the removed experimental config if a legacy caller still provides it.
+    experimental: _experimental,
     // Properties without default values or which aren't used to create derived config
     ...restProperties
-  }: BrowserConfig = browserConfig;
-
-  // Extract experimental features with defaults
-  const trackNavigation = experimental?.trackNavigation ?? false;
+  }: BrowserConfig & { experimental?: unknown } = browserConfig;
 
   // Extract user actions instrumentation with defaults
   const userActionsInstrumentation = {
@@ -90,7 +88,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations: getFilteredInstrumentations(instrumentations, browserConfig),
+    instrumentations,
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -117,24 +115,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
       }),
     },
     userActionsInstrumentation,
-    experimental: {
-      trackNavigation,
-    },
   };
-}
-
-function getFilteredInstrumentations(
-  instrumentations: Instrumentation[],
-  { experimental }: BrowserConfig
-): Instrumentation[] {
-  const trackNavigation = experimental?.trackNavigation ?? false;
-
-  return instrumentations.filter((instr) => {
-    if (instr.name === '@grafana/faro-web-sdk:instrumentation-navigation' && !trackNavigation) {
-      return false;
-    }
-    return true;
-  });
 }
 
 function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
