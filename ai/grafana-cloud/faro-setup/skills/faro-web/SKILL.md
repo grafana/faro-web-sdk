@@ -1,6 +1,6 @@
 ---
 name: faro-setup-web
-description: Instruments a web app with Grafana Faro Web SDK for frontend observability. Use when setting up error tracking, Web Vitals, session monitoring, or distributed tracing in a browser app.
+description: Instruments a web app with Grafana Faro Web SDK for frontend observability. Use when setting up error tracking, Web Vitals, session monitoring, distributed tracing, or Session Replay in a browser app.
 version: 0.1.0
 author: Grafana Labs
 license: Apache-2.0
@@ -8,6 +8,7 @@ user-invocable: true
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit
 compatibility:
   faro-web-sdk: '^2.0.0'
+  faro-instrumentation-replay: '^2.8.2' # Session Replay (optional); version-aligned with faro-web-sdk
   frameworks:
     react: '>=16.8'
     next: '>=13'
@@ -357,10 +358,11 @@ Handle one picked item at a time. After each, ask:
 > 2. Cookie consent gate — delay tracking until consent accepted (→ advanced.md section G)
 > 3. Cross-origin tracing — trace headers for API calls on other domains (→ advanced.md section A)
 > 4. Session settings — persistence, inactivity timeout (→ advanced.md section F)
-> 5. Disable console log capture (→ advanced.md section L)
-> 6. Disable distributed tracing (→ advanced.md section M)
-> 7. Exclude additional errors — suppress app-specific error patterns (→ advanced.md section D)
-> 8. Exclude additional URLs — suppress more network domains (→ advanced.md section E)
+> 5. Session Replay — record user sessions for debugging (requires privacy consent, Faro SDK ≥ 2.8.2) (→ advanced.md section N)
+> 6. Disable console log capture (→ advanced.md section L)
+> 7. Disable distributed tracing (→ advanced.md section M)
+> 8. Exclude additional errors — suppress app-specific error patterns (→ advanced.md section D)
+> 9. Exclude additional URLs — suppress more network domains (→ advanced.md section E)
 >    [if detected:] ⭐ Microfrontend coordination — found [framework] (→ advanced.md section J)
 >    [if detected:] ⭐ iFrame guidance — found cross-frame patterns (→ advanced.md section I)
 
@@ -481,6 +483,7 @@ Generate the checklist dynamically based on what was configured:
 > [✅ Navigation / route tracking — OR — ☐ Navigation tracking: not configured]
 > [✅ React Error Boundary — OR — (omit for non-React)]
 > [✅ Cookie consent gate (paused mode) — OR — (omit if not configured)]
+> [✅ Session Replay — [sampling rate]%, [masking summary] — OR — (omit if not configured)]
 > [✅ Microfrontend: host initializes Faro / child uses faro.api — OR — (omit if not applicable)]
 >
 > **What you can add later:**
@@ -493,6 +496,9 @@ Generate the checklist dynamically based on what was configured:
 >
 > ☐ **Source map upload** — resolve minified stack traces to real source lines in production.
 > See: [Faro source maps docs](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/faro-web-sdk/upload-source-maps/)
+>
+> [omit if already configured:] ☐ **Session Replay** — record a structured playback of user interactions for debugging UI issues. Requires end-user consent in opt-in jurisdictions.
+> See: [Session Replay docs](https://grafana.com/docs/grafana-cloud/observe-and-act/monitor-applications/session-replay/)
 >
 > ☐ **Alerting** — create alerts on error rate spikes or Web Vitals degradation from the Grafana Cloud Frontend Observability panel.
 >
