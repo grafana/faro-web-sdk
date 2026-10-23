@@ -245,55 +245,10 @@ describe('config', () => {
     expect(warn).toHaveBeenCalled();
   });
 
-  it('experimental settings defaults are applied', () => {
+  it('includes navigation instrumentation by default', () => {
     const browserConfig = {
       url: 'http://example.com/my-collector',
       app: {},
-    };
-    const config = makeCoreConfig(browserConfig);
-
-    expect(config).toBeTruthy();
-    expect(config?.experimental?.trackNavigation).toBe(false);
-  });
-
-  it('experimental.trackNavigation setting is added to the config as provided by the user', () => {
-    const browserConfig = {
-      url: 'http://example.com/my-collector',
-      app: {},
-      experimental: {
-        trackNavigation: true,
-      },
-    };
-    const config = makeCoreConfig(browserConfig);
-
-    expect(config).toBeTruthy();
-    expect(config?.experimental?.trackNavigation).toBe(true);
-  });
-
-  it('filters out navigation instrumentation when experimental.trackNavigation is false', () => {
-    const browserConfig = {
-      url: 'http://example.com/my-collector',
-      app: {},
-      experimental: {
-        trackNavigation: false,
-      },
-    };
-    const config = makeCoreConfig(browserConfig);
-
-    expect(config).toBeTruthy();
-    const navigationInstrumentation = config?.instrumentations?.find(
-      (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
-    );
-    expect(navigationInstrumentation).toBeUndefined();
-  });
-
-  it('includes navigation instrumentation when experimental.trackNavigation is true', () => {
-    const browserConfig = {
-      url: 'http://example.com/my-collector',
-      app: {},
-      experimental: {
-        trackNavigation: true,
-      },
     };
     const config = makeCoreConfig(browserConfig);
 
@@ -302,21 +257,43 @@ describe('config', () => {
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
     expect(navigationInstrumentation).toBeDefined();
+    expect(config.trackNavigation).toBe(true);
+    expect(config).not.toHaveProperty('experimental');
   });
 
-  it('filters out navigation instrumentation by default when experimental is not provided', () => {
-    const browserConfig = {
+  it('filters out navigation instrumentation when trackNavigation is false', () => {
+    const config = makeCoreConfig({
       url: 'http://example.com/my-collector',
       app: {},
-    };
-    const config = makeCoreConfig(browserConfig);
+      trackNavigation: false,
+    });
 
-    expect(config).toBeTruthy();
-    const navigationInstrumentation = config?.instrumentations?.find(
+    const navigationInstrumentation = config.instrumentations.find(
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
     expect(navigationInstrumentation).toBeUndefined();
+    expect(config.trackNavigation).toBe(false);
   });
+
+  it('ignores the removed experimental navigation option', () => {
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      experimental: {
+        trackNavigation: false,
+      },
+    } as Parameters<typeof makeCoreConfig>[0] & {
+      experimental: { trackNavigation: boolean };
+    });
+
+    const navigationInstrumentation = config.instrumentations.find(
+      (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
+    );
+    expect(navigationInstrumentation).toBeDefined();
+    expect(config.trackNavigation).toBe(true);
+    expect(config).not.toHaveProperty('experimental');
+  });
+
   it('uses the reliable Fetch transport under the existing public name by default', () => {
     const config = makeCoreConfig({ url: 'http://example.com/collect', app: {} });
 

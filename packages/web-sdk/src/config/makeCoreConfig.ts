@@ -58,15 +58,14 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     metas = createDefaultMetas(browserConfig),
     paused = false,
     preventGlobalExposure = false,
+    trackNavigation = true,
     unpatchedConsole = defaultUnpatchedConsole,
     url: browserConfigUrl,
-    experimental,
+    // Ignore the removed experimental config if a legacy caller still provides it.
+    experimental: _experimental,
     // Properties without default values or which aren't used to create derived config
     ...restProperties
-  }: BrowserConfig = browserConfig;
-
-  // Extract experimental features with defaults
-  const trackNavigation = experimental?.trackNavigation ?? false;
+  }: BrowserConfig & { experimental?: unknown } = browserConfig;
 
   // Extract user actions instrumentation with defaults
   const userActionsInstrumentation = {
@@ -90,7 +89,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations: getFilteredInstrumentations(instrumentations, browserConfig),
+    instrumentations: getFilteredInstrumentations(instrumentations, trackNavigation),
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -116,24 +115,18 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
         sessionTracking: browserConfig.sessionTracking,
       }),
     },
+    trackNavigation,
     userActionsInstrumentation,
-    experimental: {
-      trackNavigation,
-    },
   };
 }
 
-function getFilteredInstrumentations(
-  instrumentations: Instrumentation[],
-  { experimental }: BrowserConfig
-): Instrumentation[] {
-  const trackNavigation = experimental?.trackNavigation ?? false;
+function getFilteredInstrumentations(instrumentations: Instrumentation[], trackNavigation: boolean): Instrumentation[] {
+  if (trackNavigation !== false) {
+    return instrumentations;
+  }
 
-  return instrumentations.filter((instr) => {
-    if (instr.name === '@grafana/faro-web-sdk:instrumentation-navigation' && !trackNavigation) {
-      return false;
-    }
-    return true;
+  return instrumentations.filter((instrumentation) => {
+    return instrumentation.name !== '@grafana/faro-web-sdk:instrumentation-navigation';
   });
 }
 

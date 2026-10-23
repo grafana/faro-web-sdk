@@ -277,15 +277,9 @@ export interface Config<P = APIEvent> {
   preserveOriginalError?: boolean;
 
   /**
-   * Configuration for experimental features.
-   * These features have been tested thoroughly, but it is possible that they might not work as expected in all cases.
+   * Enable navigation tracking. Defaults to true.
    */
-  experimental?: {
-    /**
-     * Track navigation events.
-     */
-    trackNavigation?: boolean;
-  };
+  trackNavigation?: boolean;
 }
 
 export type Patterns = Array<string | RegExp>;

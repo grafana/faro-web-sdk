@@ -18,7 +18,11 @@ Alternatively, you can use the CDN version of the library. See [use cdn library]
 - web-vitals - captures performance metrics reported by web vitals API
 - session - sends session start event
 - view - sends view changed event
+- navigation - captures soft navigations and reports their URL changes and durations
 - frustration - sends an event for each rage click, dead click and error click, but not for ordinary clicks
+
+Navigation instrumentation is enabled by default. Set `trackNavigation: false` to disable it, or provide a custom
+`instrumentations` array without `NavigationInstrumentation`.
 
 ## Metas
 
