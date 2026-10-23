@@ -24,6 +24,7 @@ export const mockMetas: {
 };
 
 export const mockTransports: Transports = {
+  onChange: jest.fn(() => jest.fn()),
   add: jest.fn(),
   addBeforeSendHooks: jest.fn(),
   execute: jest.fn(),
