@@ -8,6 +8,7 @@ import {
   isBoolean,
   isEmpty,
   isObject,
+  isToString,
 } from '@grafana/faro-core';
 import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
@@ -20,6 +21,7 @@ import { browserMeta, osMeta, sdkMeta } from '../metas';
 import { k6Meta } from '../metas/k6';
 import { createPageMeta } from '../metas/page';
 import { FetchTransport } from '../transports';
+import { isWorker } from '../utils/worker';
 
 import { getWebInstrumentations } from './getWebInstrumentations';
 import type { BrowserConfig } from './types';
@@ -28,6 +30,10 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
   const transports: Transport[] = [];
 
   const internalLogger = createInternalLogger(browserConfig.unpatchedConsole, browserConfig.internalLoggerLevel);
+
+  if (typeof self !== 'undefined' && isToString(self, 'ServiceWorkerGlobalScope')) {
+    internalLogger.warn('Service workers are not supported. Session lifecycle and telemetry delivery are untested.');
+  }
 
   if (browserConfig.transports) {
     if (browserConfig.url || browserConfig.apiKey) {
@@ -138,6 +144,10 @@ function getFilteredInstrumentations(
 }
 
 function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
+  if (isWorker()) {
+    return [browserMeta, osMeta, sdkMeta];
+  }
+
   const { page, generatePageId } = browserConfig?.pageTracking ?? {};
 
   const initialMetas: MetaItem[] = [

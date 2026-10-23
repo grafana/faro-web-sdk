@@ -16,7 +16,10 @@ export function getDefaultOTELInstrumentations(options: DefaultInstrumentationsO
   const fetchOpts = createFetchInstrumentationOptions(fetchInstrumentationOptions, sharedOptions);
   const xhrOpts = createXhrInstrumentationOptions(xhrInstrumentationOptions, sharedOptions);
 
-  return [new FetchInstrumentation(fetchOpts), new FaroXhrInstrumentation(xhrOpts)];
+  return [
+    new FetchInstrumentation(fetchOpts),
+    ...(typeof XMLHttpRequest !== 'undefined' ? [new FaroXhrInstrumentation(xhrOpts)] : []),
+  ];
 }
 function createFetchInstrumentationOptions(
   fetchInstrumentationOptions: DefaultInstrumentationsOptions['fetchInstrumentationOptions'],
