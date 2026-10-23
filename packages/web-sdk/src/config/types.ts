@@ -4,10 +4,6 @@ export interface BrowserConfig extends Partial<Omit<Config, 'app' | 'parseStackt
   url?: string;
   apiKey?: string;
   requestCompression?: boolean;
-  /**
-   * Enable navigation tracking. Defaults to true.
-   */
-  trackNavigation?: boolean;
 }
 
 export interface GetWebInstrumentationsOptions {

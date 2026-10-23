@@ -257,6 +257,7 @@ describe('config', () => {
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
     expect(navigationInstrumentation).toBeDefined();
+    expect(config.trackNavigation).toBe(true);
     expect(config).not.toHaveProperty('experimental');
   });
 
@@ -271,6 +272,7 @@ describe('config', () => {
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
     expect(navigationInstrumentation).toBeUndefined();
+    expect(config.trackNavigation).toBe(false);
   });
 
   it('ignores the removed experimental navigation option', () => {
@@ -288,6 +290,7 @@ describe('config', () => {
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
     expect(navigationInstrumentation).toBeDefined();
+    expect(config.trackNavigation).toBe(true);
     expect(config).not.toHaveProperty('experimental');
   });
 

@@ -115,6 +115,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
         sessionTracking: browserConfig.sessionTracking,
       }),
     },
+    trackNavigation,
     userActionsInstrumentation,
   };
 }

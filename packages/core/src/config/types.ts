@@ -275,6 +275,11 @@ export interface Config<P = APIEvent> {
    * Faro exception payload to include additional context or fix missing information.
    */
   preserveOriginalError?: boolean;
+
+  /**
+   * Enable navigation tracking. Defaults to true.
+   */
+  trackNavigation?: boolean;
 }
 
 export type Patterns = Array<string | RegExp>;
