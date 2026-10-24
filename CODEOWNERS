@@ -2,3 +2,6 @@
 * @grafana/frontend-o11y
 
 /experimental/instrumentation-replay/ @grafana/session-replay
+
+# Release PRs update this manifest; either team can approve package metadata changes.
+/experimental/instrumentation-replay/package.json @grafana/frontend-o11y @grafana/session-replay

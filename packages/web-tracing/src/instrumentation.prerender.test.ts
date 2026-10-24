@@ -8,6 +8,7 @@ import type { Faro } from '@grafana/faro-web-sdk';
 import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
 import { TracingInstrumentation } from './instrumentation';
 import { ATTR_SESSION_ID } from './semconv';
+import { resetTracingOwnerForTests } from './tracingOwner';
 
 describe('tracing during prerender activation', () => {
   let prerendering: boolean;
@@ -35,6 +36,7 @@ describe('tracing during prerender activation', () => {
     for (const [type, listener, options] of documentListeners.mock.calls) {
       document.removeEventListener(type, listener, options);
     }
+    resetTracingOwnerForTests();
     trace.disable();
     context.disable();
     propagation.disable();
