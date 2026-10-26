@@ -1,4 +1,11 @@
-import { __resetUrlChangeMonitorForTests, MESSAGE_TYPE_URL_CHANGE, monitorUrlChanges } from './urlChangeMonitor';
+import {
+  __resetUrlChangeMonitorForTests,
+  MESSAGE_TYPE_NAVIGATION_TRANSITION_END,
+  MESSAGE_TYPE_NAVIGATION_TRANSITION_START,
+  MESSAGE_TYPE_URL_CHANGE,
+  monitorNavigationTransitions,
+  monitorUrlChanges,
+} from './urlChangeMonitor';
 
 describe('monitorUrlChanges', () => {
   afterEach(() => {
@@ -205,5 +212,146 @@ describe('monitorUrlChanges', () => {
         trigger: 'popstate',
       });
     });
+  });
+});
+
+function createDeferred() {
+  let resolve!: () => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<void>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
+describe('monitorNavigationTransitions', () => {
+  let originalNavigation: any;
+  let navigation: any;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    originalNavigation = (window as any).navigation;
+
+    const listeners: Record<string, Function[]> = { navigate: [] };
+    navigation = {
+      transition: null,
+      addEventListener: jest.fn((type: string, cb: Function) => listeners[type]?.push(cb)),
+      removeEventListener: (type: string, cb: Function) => {
+        const arr = listeners[type];
+        const idx = arr?.indexOf(cb) ?? -1;
+        if (idx >= 0) {
+          arr!.splice(idx, 1);
+        }
+      },
+      _dispatch: (type: string) => listeners[type]?.forEach((cb) => cb({})),
+    };
+    (window as any).navigation = navigation;
+  });
+
+  afterEach(() => {
+    __resetUrlChangeMonitorForTests();
+    (window as any).navigation = originalNavigation;
+    jest.useRealTimers();
+  });
+
+  it('emits start and end messages around a deferred commit', async () => {
+    const observable = monitorNavigationTransitions();
+    const subscriber = jest.fn();
+    observable.subscribe(subscriber);
+
+    const committed = createDeferred();
+    navigation.transition = { committed: committed.promise };
+    navigation._dispatch('navigate');
+
+    expect(subscriber).not.toHaveBeenCalled();
+    jest.runAllTimers();
+
+    expect(subscriber).toHaveBeenCalledTimes(1);
+    expect(subscriber).toHaveBeenCalledWith({
+      type: MESSAGE_TYPE_NAVIGATION_TRANSITION_START,
+      transitionId: expect.any(String),
+    });
+    const { transitionId } = subscriber.mock.calls[0][0];
+
+    committed.resolve();
+    await Promise.resolve();
+
+    expect(subscriber).toHaveBeenCalledTimes(2);
+    expect(subscriber).toHaveBeenLastCalledWith({ type: MESSAGE_TYPE_NAVIGATION_TRANSITION_END, transitionId });
+  });
+
+  it('emits the end message when the navigation fails before commit', async () => {
+    const observable = monitorNavigationTransitions();
+    const subscriber = jest.fn();
+    observable.subscribe(subscriber);
+
+    const committed = createDeferred();
+    navigation.transition = { committed: committed.promise };
+    navigation._dispatch('navigate');
+    jest.runAllTimers();
+    const { transitionId } = subscriber.mock.calls[0][0];
+
+    committed.reject(new Error('aborted'));
+    await Promise.resolve();
+
+    expect(subscriber).toHaveBeenCalledTimes(2);
+    expect(subscriber).toHaveBeenLastCalledWith({ type: MESSAGE_TYPE_NAVIGATION_TRANSITION_END, transitionId });
+  });
+
+  it('checks for a transition only after the other navigate listeners have run', () => {
+    const observable = monitorNavigationTransitions();
+    const subscriber = jest.fn();
+    observable.subscribe(subscriber);
+
+    navigation._dispatch('navigate');
+    // A router listener registered after ours intercepts the navigation
+    navigation.transition = { committed: createDeferred().promise };
+    jest.runAllTimers();
+
+    expect(subscriber).toHaveBeenCalledTimes(1);
+    expect(subscriber).toHaveBeenCalledWith({
+      type: MESSAGE_TYPE_NAVIGATION_TRANSITION_START,
+      transitionId: expect.any(String),
+    });
+  });
+
+  it('ignores navigations that are not intercepted', () => {
+    const observable = monitorNavigationTransitions();
+    const subscriber = jest.fn();
+    observable.subscribe(subscriber);
+
+    navigation._dispatch('navigate');
+    jest.runAllTimers();
+
+    expect(subscriber).not.toHaveBeenCalled();
+  });
+
+  it('ignores transitions without a committed promise', () => {
+    const observable = monitorNavigationTransitions();
+    const subscriber = jest.fn();
+    observable.subscribe(subscriber);
+
+    navigation.transition = { finished: createDeferred().promise };
+    navigation._dispatch('navigate');
+    jest.runAllTimers();
+
+    expect(subscriber).not.toHaveBeenCalled();
+  });
+
+  it('returns the same observable on subsequent calls and listens once', () => {
+    const first = monitorNavigationTransitions();
+    const second = monitorNavigationTransitions();
+
+    expect(second).toBe(first);
+    expect(navigation.addEventListener).toHaveBeenCalledTimes(1);
+    expect(navigation.addEventListener).toHaveBeenCalledWith('navigate', expect.any(Function));
+  });
+
+  it('does not listen when the Navigation API is unavailable', () => {
+    (window as any).navigation = undefined;
+
+    expect(monitorNavigationTransitions()).toBeDefined();
+    expect(navigation.addEventListener).not.toHaveBeenCalled();
   });
 });

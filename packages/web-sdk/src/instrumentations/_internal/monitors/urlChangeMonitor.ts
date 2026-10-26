@@ -1,4 +1,4 @@
-import { Observable } from '@grafana/faro-core';
+import { genShortID, Observable } from '@grafana/faro-core';
 
 export const MESSAGE_TYPE_URL_CHANGE = 'url-change';
 
@@ -103,6 +103,72 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
   return urlChangeObservable;
 }
 
+export const MESSAGE_TYPE_NAVIGATION_TRANSITION_START = 'navigation-transition-start';
+export const MESSAGE_TYPE_NAVIGATION_TRANSITION_END = 'navigation-transition-end';
+
+export type NavigationTransitionStartMessage = {
+  type: typeof MESSAGE_TYPE_NAVIGATION_TRANSITION_START;
+  transitionId: string;
+};
+
+export type NavigationTransitionEndMessage = {
+  type: typeof MESSAGE_TYPE_NAVIGATION_TRANSITION_END;
+  transitionId: string;
+};
+
+type NavigationTransitionMessage = NavigationTransitionStartMessage | NavigationTransitionEndMessage;
+
+let navigationTransitionObservable: Observable<NavigationTransitionMessage> | undefined;
+let transitionNavigation: any;
+let onNavigateHandler: (() => void) | undefined;
+
+/**
+ * Monitors intercepted Navigation API navigations until they commit. A router can defer the commit with
+ * `intercept({ precommitHandler })`, so the URL change may arrive long after the navigation started.
+ */
+export function monitorNavigationTransitions(): Observable<NavigationTransitionMessage> {
+  if (navigationTransitionObservable) {
+    return navigationTransitionObservable;
+  }
+
+  const observable = new Observable<NavigationTransitionMessage>();
+  navigationTransitionObservable = observable;
+
+  const navigationApi = (window as any).navigation;
+  if (typeof navigationApi?.addEventListener !== 'function') {
+    return observable;
+  }
+
+  onNavigateHandler = () => {
+    // Defer until all navigate listeners have run. For browser-initiated navigations, microtasks run between
+    // listeners, so a microtask would run before a router listener registered after ours calls intercept().
+    setTimeout(() => {
+      try {
+        // Only intercepted navigations have a transition. Without precommitHandler support there is no
+        // `committed` promise, and those navigations always commit immediately.
+        const committed = navigationApi.transition?.committed;
+        if (typeof committed?.then !== 'function') {
+          return;
+        }
+
+        const transitionId = genShortID();
+        observable.notify({ type: MESSAGE_TYPE_NAVIGATION_TRANSITION_START, transitionId });
+
+        const onSettled = () => {
+          observable.notify({ type: MESSAGE_TYPE_NAVIGATION_TRANSITION_END, transitionId });
+        };
+        committed.then(onSettled, onSettled);
+      } catch (_err) {
+        // Swallow to avoid impacting host app
+      }
+    }, 0);
+  };
+  navigationApi.addEventListener('navigate', onNavigateHandler);
+  transitionNavigation = navigationApi;
+
+  return observable;
+}
+
 // Test-only utility to reset state between tests
 export function __resetUrlChangeMonitorForTests() {
   if (onPopStateHandler) {
@@ -120,7 +186,13 @@ export function __resetUrlChangeMonitorForTests() {
   if (originalReplaceState) {
     window.history.replaceState = originalReplaceState;
   }
+  if (onNavigateHandler) {
+    transitionNavigation?.removeEventListener?.('navigate', onNavigateHandler);
+  }
   urlChangeObservable = undefined;
+  navigationTransitionObservable = undefined;
+  transitionNavigation = undefined;
+  onNavigateHandler = undefined;
   isInstrumented = false;
   lastHref = undefined;
   onPopStateHandler = undefined;
