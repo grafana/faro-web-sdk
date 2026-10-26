@@ -18,15 +18,17 @@ let onPopStateHandler: ((this: Window, ev: PopStateEvent) => any) | undefined;
 let onHashChangeHandler: ((this: Window, ev: HashChangeEvent) => any) | undefined;
 let onCurrentEntryChangeHandler: ((this: any, ev: any) => any) | undefined;
 
-function getNavigationTrigger(navigationType: string | undefined): UrlChangeMessage['trigger'] {
+function getNavigationTrigger(navigationType: string | undefined): UrlChangeMessage['trigger'] | undefined {
   switch (navigationType) {
     case 'push':
       return 'pushState';
     case 'replace':
       return 'replaceState';
     case 'traverse':
-    default:
+    case undefined:
       return 'popstate';
+    default:
+      return undefined;
   }
 }
 
@@ -57,9 +59,9 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
       onCurrentEntryChangeHandler = (event: any) => {
         try {
           const currentUrl = navigationApi.currentEntry?.url;
-          if (typeof currentUrl === 'string' && event?.navigationType !== 'reload') {
+          const trigger = getNavigationTrigger(event?.navigationType);
+          if (typeof currentUrl === 'string' && trigger) {
             const fromUrl = event?.from?.url;
-            const trigger = getNavigationTrigger(event?.navigationType);
             emit(trigger, currentUrl, typeof fromUrl === 'string' ? fromUrl : undefined);
           }
         } catch (_err) {
