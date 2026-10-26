@@ -277,19 +277,14 @@ export interface Config<P = APIEvent> {
   preserveOriginalError?: boolean;
 
   /**
-   * @deprecated Use the top-level `trackNavigation` option instead.
+   * @deprecated Use the `trackNavigation` option on `getWebInstrumentations` instead.
    */
   experimental?: {
     /**
-     * @deprecated Use the top-level `trackNavigation` option instead.
+     * @deprecated Use the `trackNavigation` option on `getWebInstrumentations` instead.
      */
     trackNavigation?: boolean;
   };
-
-  /**
-   * Enable navigation tracking. Defaults to true.
-   */
-  trackNavigation?: boolean;
 }
 
 export type Patterns = Array<string | RegExp>;

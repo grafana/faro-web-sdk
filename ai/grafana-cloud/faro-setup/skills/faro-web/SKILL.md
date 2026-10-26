@@ -242,7 +242,7 @@ Read `frameworks.md` now. Use the section matching the detected framework for in
 Run the package install command from the matching `frameworks.md` section (skip for CDN projects).
 
 Navigation tracking is enabled by default in the Faro Web SDK. If **no router was detected** or the detected router has no supported Faro integration, no additional configuration is needed.
-Auto-navigation tracking captures URL changes and navigation timing without a router. To disable it, set the top-level `trackNavigation: false` option or provide a custom `instrumentations` array without `NavigationInstrumentation`.
+Auto-navigation tracking captures URL changes and navigation timing without a router. To disable it, pass `trackNavigation: false` to `getWebInstrumentations()` or provide a custom `instrumentations` array without `NavigationInstrumentation`.
 
 ---
 
@@ -339,7 +339,7 @@ Handle one picked item at a time. After each, ask:
 **1 — Route tracking** → Read `advanced.md` section B.
 
 - Router detected: offer router integration (gives route patterns like `/users/:id`).
-- No router: auto-navigation is already enabled by default. No config change is needed. Set the top-level `trackNavigation: false` option only if navigation tracking should be disabled.
+- No router: auto-navigation is already enabled by default. No config change is needed. Pass `trackNavigation: false` to `getWebInstrumentations()` only if navigation tracking should be disabled.
   Note to user: it captures actual URLs, not route patterns. Upgrade to router integration (advanced.md section B) when a router is added.
 
 **2 — User identity** → Read `advanced.md` section K.

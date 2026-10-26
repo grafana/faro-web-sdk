@@ -43,7 +43,7 @@ Faro has two complementary approaches for tracking SPA navigations. Present both
 ### B1. Auto-navigation tracking (any framework)
 
 Auto-navigation tracking is enabled by default in the Faro Web SDK, so no additional configuration is needed. It is included in
-`getWebInstrumentations()`. To disable it, set the top-level `trackNavigation: false` option or provide a custom
+`getWebInstrumentations()`. To disable it, pass `trackNavigation: false` to `getWebInstrumentations()` or provide a custom
 `instrumentations` array without `NavigationInstrumentation`.
 
 **What it captures:** `faro.navigation` events with `fromUrl`, `toUrl`, `sameDocument: "true"`, and `duration`. Uses the

@@ -4,6 +4,7 @@ import { MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { userActionDataAttribute } from '../instrumentations/userActions';
 
+import { getWebInstrumentations } from './getWebInstrumentations';
 import { makeCoreConfig } from './makeCoreConfig';
 
 describe('defaultMetas', () => {
@@ -257,22 +258,24 @@ describe('config', () => {
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
     expect(navigationInstrumentation).toBeDefined();
-    expect(config.trackNavigation).toBe(true);
+    expect(config).not.toHaveProperty('trackNavigation');
     expect(config.experimental?.trackNavigation).toBe(true);
   });
 
-  it('filters out navigation instrumentation when trackNavigation is false', () => {
+  it('uses custom instrumentations without filtering them', () => {
     const config = makeCoreConfig({
       url: 'http://example.com/my-collector',
       app: {},
-      trackNavigation: false,
+      experimental: {
+        trackNavigation: false,
+      },
+      instrumentations: getWebInstrumentations(),
     });
 
     const navigationInstrumentation = config.instrumentations.find(
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
-    expect(navigationInstrumentation).toBeUndefined();
-    expect(config.trackNavigation).toBe(false);
+    expect(navigationInstrumentation).toBeDefined();
     expect(config.experimental?.trackNavigation).toBe(false);
   });
 
@@ -289,26 +292,8 @@ describe('config', () => {
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
     expect(navigationInstrumentation).toBeUndefined();
-    expect(config.trackNavigation).toBe(false);
+    expect(config).not.toHaveProperty('trackNavigation');
     expect(config.experimental?.trackNavigation).toBe(false);
-  });
-
-  it('prefers top-level trackNavigation over the deprecated experimental option', () => {
-    const config = makeCoreConfig({
-      url: 'http://example.com/my-collector',
-      app: {},
-      trackNavigation: true,
-      experimental: {
-        trackNavigation: false,
-      },
-    });
-
-    const navigationInstrumentation = config.instrumentations.find(
-      (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
-    );
-    expect(navigationInstrumentation).toBeDefined();
-    expect(config.trackNavigation).toBe(true);
-    expect(config.experimental?.trackNavigation).toBe(true);
   });
 
   it('uses the reliable Fetch transport under the existing public name by default', () => {
