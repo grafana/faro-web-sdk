@@ -1,6 +1,6 @@
 const path = require('path');
 
-const { jestBaseConfig } = require('../../jest.config.base.js');
+const { jestBaseConfig, jestCoverageConfig } = require('../../jest.config.base.js');
 
 const repoRoot = path.join(__dirname, '..', '..');
 const matrixTsconfig = path.join(__dirname, 'tsconfig.matrix.json');
@@ -41,6 +41,8 @@ const cjsProject = ({ displayName, testMatch, moduleNameMapper }) => ({
 });
 
 module.exports = {
+  rootDir: repoRoot,
+  ...jestCoverageConfig('packages/react'),
   projects: [
     // Existing unit tests (mocked deps, profiler). Unchanged behaviour, React 19, CJS.
     {
