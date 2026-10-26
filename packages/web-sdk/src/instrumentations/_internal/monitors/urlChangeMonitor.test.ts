@@ -123,6 +123,42 @@ describe('monitorUrlChanges', () => {
       expect(replaceDesc?.value).toBeDefined();
     });
 
+    it('maps replace navigations to replaceState', () => {
+      const initialHref = window.location.href;
+      const observable = monitorUrlChanges();
+      const subscriber = jest.fn();
+      observable.subscribe(subscriber);
+
+      (window as any).navigation.currentEntry = { url: initialHref + '/replace' };
+      (window as any).navigation._dispatch('currententrychange', {
+        from: { url: initialHref },
+        navigationType: 'replace',
+      });
+
+      expect(subscriber).toHaveBeenCalledTimes(1);
+      expect(subscriber).toHaveBeenCalledWith({
+        type: MESSAGE_TYPE_URL_CHANGE,
+        from: initialHref,
+        to: initialHref + '/replace',
+        trigger: 'replaceState',
+      });
+    });
+
+    it('does not emit reload navigations', () => {
+      const initialHref = window.location.href;
+      const observable = monitorUrlChanges();
+      const subscriber = jest.fn();
+      observable.subscribe(subscriber);
+
+      (window as any).navigation.currentEntry = { url: initialHref + '/reload' };
+      (window as any).navigation._dispatch('currententrychange', {
+        from: { url: initialHref },
+        navigationType: 'reload',
+      });
+
+      expect(subscriber).not.toHaveBeenCalled();
+    });
+
     it('does not let uncommitted navigate events corrupt the next committed from URL', () => {
       const initialHref = window.location.href;
       const observable = monitorUrlChanges();
