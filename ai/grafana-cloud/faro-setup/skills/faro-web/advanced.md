@@ -695,3 +695,175 @@ Also remove the import line for `TracingInstrumentation` and uninstall the packa
 ```
 [package-manager] remove @grafana/faro-web-tracing
 ```
+
+---
+
+## N. Session Replay
+
+Session Replay records a structured playback of the browser session (DOM snapshots and mutations, pointer movements, clicks, scrolls, input events, page URLs) so you can debug UI issues. It is **public preview** and **off by default** — it only produces recordings when the `@grafana/faro-instrumentation-replay` package is wired into `initializeFaro`.
+
+### N1. Privacy consent gate — ASK BEFORE INSTALLING
+
+Session Replay captures end-user interactions with the app. Before writing any code, surface the privacy disclosure and get explicit confirmation from the person running the skill:
+
+> ⚠️ **Session Replay captures end-user data (DOM, pointer movements, clicks, URLs, and input events).**
+>
+> By turning on this feature, you confirm that you have complied with applicable laws (e.g., ePrivacy, GDPR, CCPA) to process the personal data (e.g. IP addresses) of your end users, including obtaining consent where required.
+>
+> Learn more: https://grafana.com/docs/grafana-cloud/observe-and-act/monitor-applications/session-replay/data-privacy/
+>
+> Type **y** to confirm and continue, **n** to cancel.
+
+If the user types **n** (or anything other than **y / yes**): stop. Do not install the package, do not modify the init file. Confirm nothing changed and return to the Step 4 menu.
+
+If the user types **y**: continue to N2.
+
+### N2. Preflight — Faro SDK version check
+
+`@grafana/faro-instrumentation-replay` requires `@grafana/faro-web-sdk` (or `@grafana/faro-react`) **≥ 2.8.2**. Read `package.json` and check the installed version:
+
+- If `< 2.8.2`: tell the user and offer to upgrade the Faro packages before proceeding. Do not install replay until Faro is on a supported version.
+- If `>= 2.8.2`: proceed.
+
+### N3. Install
+
+```
+[package-manager] add @grafana/faro-instrumentation-replay
+```
+
+### N4. Wire into `initializeFaro`
+
+Add the import and append `new ReplayInstrumentation(...)` to the existing `instrumentations` array. Preserve any existing items (e.g. `TracingInstrumentation`, `ReactIntegration`).
+
+```ts
+import { ReplayInstrumentation } from '@grafana/faro-instrumentation-replay';
+
+initializeFaro({
+  // ... existing config ...
+  instrumentations: [...getWebInstrumentations(), new TracingInstrumentation(), new ReplayInstrumentation()],
+});
+```
+
+Defaults are safe for most apps: `maskAllInputs: true`, `maskTextSelector: '*'` (all visible text masked), `samplingRate: 1` (record every globally-sampled session), `recordAfter: 'load'`, cross-origin iframes and inline images **not** recorded.
+
+### N5. Offer common tuning options (one message, pick numbers)
+
+> ✅ Session Replay installed with safe defaults (all inputs and visible text masked, 100% sampling of globally-sampled sessions).
+>
+> Want to tune any of these? Pick numbers, or say **done** to skip.
+>
+> 1. **Replay sampling rate** — record only a fraction of sessions (e.g. 10%)
+> 2. **Relax text masking** — stop masking all visible text (keep input masking on)
+> 3. **Block or ignore specific elements** — add CSS selectors for sensitive areas (keeps default masking in place)
+> 4. **Load only after consent** — conditionally initialize Session Replay inside a cookie-consent gate
+
+Apply only the picks the user selects. After each, ask: _"Anything else from the list, or back to the Step 4 menu?"_
+
+**1 — Sampling rate.** Ask for a decimal between `0` and `1`. Combines multiplicatively with `sessionTracking.samplingRate`:
+
+```ts
+new ReplayInstrumentation({
+  samplingRate: 0.1, // record 10% of globally sampled sessions
+});
+```
+
+**2 — Relax text masking.** Override the `maskTextSelector: '*'` default so visible page text is kept while inputs stay masked:
+
+```ts
+new ReplayInstrumentation({
+  maskAllInputs: true,
+  maskTextSelector: undefined, // stop masking all text
+});
+```
+
+Warn the user: any text they do NOT want recorded (names, emails, dashboards) must be opted back into masking via `maskTextSelector` (e.g. `.sensitive-data, .pii`) or `blockSelector`.
+
+**3 — Block or ignore specific elements.** Ask for CSS selectors. This option **only** adds `blockSelector` and `ignoreSelector`; it does NOT change `maskTextSelector`, so the default `'*'` (mask all visible text) stays in place. If the user wants to narrow text masking as well, they must also pick option 2 — do not set `maskTextSelector` here, or text outside the new selector would silently become recordable:
+
+```ts
+new ReplayInstrumentation({
+  // maskTextSelector stays at its default '*' — all visible text is still masked
+  blockSelector: '.payment-form, .credit-card-info',
+  ignoreSelector: '.analytics-widget',
+});
+```
+
+- `blockSelector`: element is replaced with a same-dimension placeholder — nothing about it is recorded.
+- `ignoreSelector`: input events on these elements are not recorded (the element itself still appears in the recording).
+
+**4 — Load only after consent.** For opt-in jurisdictions (EEA, UK, Switzerland, South Korea), Session Replay must stay off until the user accepts a consent banner. Wrap the import and `initializeFaro` call in a consent check (use dynamic imports so the replay bundle isn't downloaded until needed):
+
+```ts
+if (userHasConsentedToAnalytics()) {
+  const { getWebInstrumentations, initializeFaro } = await import('@grafana/faro-web-sdk');
+  const { ReplayInstrumentation } = await import('@grafana/faro-instrumentation-replay');
+
+  initializeFaro({
+    url: '<COLLECTOR_URL>',
+    app: { name: '<APP_NAME>' },
+    instrumentations: [...getWebInstrumentations(), new ReplayInstrumentation()],
+  });
+}
+```
+
+Replace `userHasConsentedToAnalytics()` with the API from the user's consent manager (Cookiebot, OneTrust, Osano, custom). If Faro is already using section G's `paused: true` gate for base telemetry, keep that in place — but Session Replay should still be gated by the dynamic import so no replay code loads until consent.
+
+**Withdrawing consent:** reload the page so neither Faro nor Session Replay reinitialize. Existing recordings follow the 30-day retention window and are then automatically deleted.
+
+### N6. What to tell the user when it's wired
+
+Confirm with a short summary:
+
+> ✅ Session Replay is wired in. Current config:
+>
+> - Install: `@grafana/faro-instrumentation-replay`
+> - Sampling: [100% or configured %] of globally-sampled sessions
+> - Masking: [defaults OR configured selectors]
+> - Recordings land in **Grafana Cloud → Frontend Observability → your app → Sessions tab** (up to 5 min delay for the first segment)
+>
+> Reminders:
+>
+> - Session Replay is **public preview**.
+> - Canvas 2D and WebGL drawing content is NOT recorded.
+> - URLs rendered inside the DOM (link `href`s, image `src`s, text containing URLs) are NOT masked. The primary page URL is sanitized by default (`sanitizeMetaHref: true` strips credentials, query strings, and fragments from Meta event hrefs), but URLs serialized elsewhere in the recording and in Faro transport metadata are not.
+> - Recordings are retained for 30 days (not configurable).
+> - You are responsible for presenting Session Replay in your cookie banner / CMP as an **analytics** tracker and for giving end users a way to opt out. See [Data privacy in Session Replay](https://grafana.com/docs/grafana-cloud/observe-and-act/monitor-applications/session-replay/data-privacy/).
+
+### N7. Reference options
+
+Full option set (pass to `new ReplayInstrumentation({...})`). Only configure what the user asks for — defaults are safe.
+
+**Recording:**
+
+- `samplingRate` (number, default `1`) — fraction of globally sampled sessions recorded.
+- `recordAfter` (`'load' | 'DOMContentLoaded'`, default `'load'`) — when to start recording.
+- `recordCrossOriginIframes` (boolean, default `false`) — opt-in; each child iframe must also be instrumented.
+- `recordCanvas` (boolean, default `false`) — note: Canvas 2D and WebGL drawing content is not currently supported by the player; option exists but has no visible effect.
+- `collectFonts` (boolean, default `false`).
+- `inlineImages` (boolean, default `false`) — opt-in; records image content.
+- `inlineStylesheet` (boolean, default `false`).
+- `inactivityThresholdMs` (number, default `60000`) — pause recording after N ms idle; `0` or `undefined` disables.
+
+**Privacy / masking:**
+
+- `maskAllInputs` (boolean, default `true`).
+- `maskInputOptions` (object, default `{ password: true }`) — only applied when `maskAllInputs: false`.
+- `maskInputFn` ((value, el) => string) — custom input masker.
+- `maskTextSelector` (string, default `'*'`) — CSS selector for text to mask.
+- `blockSelector` (string) — CSS selector for elements replaced by a placeholder.
+- `ignoreSelector` (string) — CSS selector for elements whose input events are dropped.
+- `sanitizeMetaHref` (boolean, default `true`) — strips `username`, `password`, `search` (query string), and `hash` (fragment) from `window.location.href` in rrweb Meta events. Does not sanitize URLs embedded in DOM snapshots or in Faro transport metadata.
+
+**Hooks:**
+
+- `beforeSend((event) => eventWithTime | null | undefined)` — transform or drop replay events before send. Return `null`/`undefined` to drop.
+
+### N8. Verify
+
+Before closing out:
+
+1. Deploy or run the app and interact for ~10 seconds.
+2. Open **Grafana Cloud → Frontend Observability → \[your app\] → Sessions**.
+3. Find the session and open it — a recording tab should be visible (first segment may take up to 5 minutes to appear).
+
+If the recording never shows up, point the user at the [Session Replay troubleshooting guide](https://grafana.com/docs/grafana-cloud/observe-and-act/monitor-applications/session-replay/troubleshoot/).
