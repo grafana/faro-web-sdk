@@ -5,8 +5,8 @@ Create file `faro-initializer.ts` and add your SDK configuration:
 ```typescript
 import { initializeFaro, getWebInstrumentations } from '@grafana/faro-web-sdk';
 
-export function faroInitializer(): Function {
-  return async () => {
+export function faroInitializer(): () => void {
+  return () => {
     initializeFaro({
       url: 'https://collector-host:12345/collect',
       apiKey: 'secret',
@@ -14,7 +14,10 @@ export function faroInitializer(): Function {
         name: 'frontend',
         version: '1.0.0',
       },
-      instrumentations: [...getWebInstrumentations({ captureConsole: true, captureConsoleDisabledLevels: [] })],
+      instrumentations: [...getWebInstrumentations({ captureConsole: true })],
+      consoleInstrumentation: {
+        disabledLevels: [],
+      },
     });
   };
 }
@@ -38,15 +41,11 @@ import { APP_INITIALIZER, NgModule } from '@angular/core';
 export class AppModule {}
 ```
 
-At this stage all your logs will be auto-captured and sent to Grafana Faro!
+At this stage all your console messages will be auto-captured and sent to Grafana Faro.
 
-However, you will not see any errors in the Error Awareness page.
-By default Angular errors are printed to the console and
-cannot be automatically captured as a Faro error log.
-
-The solution involves implementing and customizing Angular's
-default ErrorHandler class and manually capturing exceptions
-at a global level by using the Faro API to capture errors.
+Angular errors are normally handled by Angular's `ErrorHandler` and printed to the console.
+To capture them explicitly as Faro errors in the Frontend Observability Errors page,
+customize Angular's global error handler.
 
 Create a file `global-error-handler.ts` and add the following code:
 
@@ -56,11 +55,12 @@ import { faro } from '@grafana/faro-web-sdk';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {
-  handleError(error: any) {
-    if (error instanceof Error) {
-      faro.api.pushError(error);
-    }
-    console.error(error);
+  handleError(error: unknown): void {
+    const normalizedError = error instanceof Error ? error : new Error(String(error));
+
+    faro.api.pushError(normalizedError);
+    // Preserve console output without creating a second Faro error.
+    (faro.unpatchedConsole ?? console).error(error);
   }
 }
 ```
