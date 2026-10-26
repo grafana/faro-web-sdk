@@ -258,7 +258,7 @@ describe('config', () => {
     );
     expect(navigationInstrumentation).toBeDefined();
     expect(config.trackNavigation).toBe(true);
-    expect(config).not.toHaveProperty('experimental');
+    expect(config.experimental?.trackNavigation).toBe(true);
   });
 
   it('filters out navigation instrumentation when trackNavigation is false', () => {
@@ -273,17 +273,34 @@ describe('config', () => {
     );
     expect(navigationInstrumentation).toBeUndefined();
     expect(config.trackNavigation).toBe(false);
+    expect(config.experimental?.trackNavigation).toBe(false);
   });
 
-  it('ignores the removed experimental navigation option', () => {
+  it('uses the deprecated experimental navigation option as a fallback', () => {
     const config = makeCoreConfig({
       url: 'http://example.com/my-collector',
       app: {},
       experimental: {
         trackNavigation: false,
       },
-    } as Parameters<typeof makeCoreConfig>[0] & {
-      experimental: { trackNavigation: boolean };
+    });
+
+    const navigationInstrumentation = config.instrumentations.find(
+      (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
+    );
+    expect(navigationInstrumentation).toBeUndefined();
+    expect(config.trackNavigation).toBe(false);
+    expect(config.experimental?.trackNavigation).toBe(false);
+  });
+
+  it('prefers top-level trackNavigation over the deprecated experimental option', () => {
+    const config = makeCoreConfig({
+      url: 'http://example.com/my-collector',
+      app: {},
+      trackNavigation: true,
+      experimental: {
+        trackNavigation: false,
+      },
     });
 
     const navigationInstrumentation = config.instrumentations.find(
@@ -291,7 +308,7 @@ describe('config', () => {
     );
     expect(navigationInstrumentation).toBeDefined();
     expect(config.trackNavigation).toBe(true);
-    expect(config).not.toHaveProperty('experimental');
+    expect(config.experimental?.trackNavigation).toBe(true);
   });
 
   it('uses the reliable Fetch transport under the existing public name by default', () => {

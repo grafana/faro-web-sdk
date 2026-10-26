@@ -58,14 +58,15 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     metas = createDefaultMetas(browserConfig),
     paused = false,
     preventGlobalExposure = false,
-    trackNavigation = true,
+    trackNavigation,
     unpatchedConsole = defaultUnpatchedConsole,
     url: browserConfigUrl,
-    // Ignore the removed experimental config if a legacy caller still provides it.
-    experimental: _experimental,
+    experimental,
     // Properties without default values or which aren't used to create derived config
     ...restProperties
-  }: BrowserConfig & { experimental?: unknown } = browserConfig;
+  }: BrowserConfig = browserConfig;
+
+  const resolvedTrackNavigation = trackNavigation ?? experimental?.trackNavigation ?? true;
 
   // Extract user actions instrumentation with defaults
   const userActionsInstrumentation = {
@@ -89,7 +90,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations: getFilteredInstrumentations(instrumentations, trackNavigation),
+    instrumentations: getFilteredInstrumentations(instrumentations, resolvedTrackNavigation),
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -115,7 +116,10 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
         sessionTracking: browserConfig.sessionTracking,
       }),
     },
-    trackNavigation,
+    experimental: {
+      trackNavigation: resolvedTrackNavigation,
+    },
+    trackNavigation: resolvedTrackNavigation,
     userActionsInstrumentation,
   };
 }

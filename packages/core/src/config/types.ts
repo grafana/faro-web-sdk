@@ -277,6 +277,16 @@ export interface Config<P = APIEvent> {
   preserveOriginalError?: boolean;
 
   /**
+   * @deprecated Use the top-level `trackNavigation` option instead.
+   */
+  experimental?: {
+    /**
+     * @deprecated Use the top-level `trackNavigation` option instead.
+     */
+    trackNavigation?: boolean;
+  };
+
+  /**
    * Enable navigation tracking. Defaults to true.
    */
   trackNavigation?: boolean;
