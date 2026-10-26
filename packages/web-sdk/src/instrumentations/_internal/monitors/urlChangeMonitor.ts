@@ -6,7 +6,7 @@ export type UrlChangeMessage = {
   type: typeof MESSAGE_TYPE_URL_CHANGE;
   from: string;
   to: string;
-  trigger: 'pushState' | 'replaceState' | 'popstate' | 'hashchange' | 'reload';
+  trigger: 'pushState' | 'replaceState' | 'popstate' | 'hashchange';
 };
 
 let urlChangeObservable: Observable<UrlChangeMessage> | undefined;
@@ -24,8 +24,6 @@ function getNavigationTrigger(navigationType: string | undefined): UrlChangeMess
       return 'pushState';
     case 'replace':
       return 'replaceState';
-    case 'reload':
-      return 'reload';
     case 'traverse':
     default:
       return 'popstate';
@@ -59,7 +57,7 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
       onCurrentEntryChangeHandler = (event: any) => {
         try {
           const currentUrl = navigationApi.currentEntry?.url;
-          if (typeof currentUrl === 'string') {
+          if (typeof currentUrl === 'string' && event?.navigationType !== 'reload') {
             const fromUrl = event?.from?.url;
             const trigger = getNavigationTrigger(event?.navigationType);
             emit(trigger, currentUrl, typeof fromUrl === 'string' ? fromUrl : undefined);

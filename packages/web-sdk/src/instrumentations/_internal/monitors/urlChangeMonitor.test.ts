@@ -132,6 +132,7 @@ describe('monitorUrlChanges', () => {
       (window as any).navigation._dispatch('navigate', {
         destination: { url: initialHref + '/pending', sameDocument: true },
       });
+      expect(subscriber).not.toHaveBeenCalled();
 
       (window as any).navigation.currentEntry = { url: initialHref + '/committed' };
       (window as any).navigation._dispatch('currententrychange', {
