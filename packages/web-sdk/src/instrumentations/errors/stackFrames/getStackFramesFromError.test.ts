@@ -215,6 +215,40 @@ describe('getStackFramesFromError', () => {
 
     expect(result).toEqual([buildStackFrame(`http://localhost:8080/${filler}.js`, 'boundaryFrame', 41, 27)]);
   });
+
+  // Wallet and RPC libraries put large hex payloads into error messages, and those lines used to
+  // cost hundreds of milliseconds each in the Firefox line regex. See issue #844.
+  describe('error messages carrying large non-frame payloads', () => {
+    const hexPayloadError = (payloadLength: number) => ({
+      message: 'User rejected the request.',
+      name: 'TransactionExecutionError',
+      stack:
+        'TransactionExecutionError: User rejected the request.\n' +
+        '  from:   0xB770B86b1544eDf51BBf82Dd01e8e867607Dba51\n' +
+        `  data:   0x${'0'.repeat(payloadLength)}\n` +
+        '  gas:    467935\n' +
+        '    at sendTransaction (http://localhost:5173/deps/chunk.js:1750:11)',
+    });
+
+    it('does not report the payload lines as stack frames', () => {
+      const result = getStackFramesFromError(hexPayloadError(600) as any);
+
+      expect(result).toEqual([buildStackFrame('http://localhost:5173/deps/chunk.js', 'sendTransaction', 1750, 11)]);
+    });
+
+    it('parses without blocking on the payload lines', () => {
+      // The payload sits just under the max line length so it is parsed rather than skipped.
+      const error = hexPayloadError(1000) as any;
+
+      const start = performance.now();
+      getStackFramesFromError(error);
+      const elapsed = performance.now() - start;
+
+      // Before the fast reject in firefoxLineRegex this single line took ~500ms. The budget is
+      // deliberately loose so the test asserts "not pathological" rather than a wall-clock target.
+      expect(elapsed).toBeLessThan(100);
+    });
+  });
 });
 
 /* Taken from: https://github.com/stacktracejs/error-stack-parser/blob/master/spec/fixtures/captured-errors.js */

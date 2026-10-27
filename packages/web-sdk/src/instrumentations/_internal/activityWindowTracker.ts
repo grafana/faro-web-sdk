@@ -88,7 +88,7 @@ export class ActivityWindowTracker extends Observable {
       });
   }
 
-  startTracking() {
+  startTracking(): void {
     if (this._tracking) {
       return;
     }
@@ -109,7 +109,7 @@ export class ActivityWindowTracker extends Observable {
     this._scheduleInactivityCheck();
   }
 
-  stopTracking() {
+  stopTracking(): void {
     this._tracking = false;
     this._clearTimer(this._inactivityTid);
     this._clearTimer(this._drainTid);

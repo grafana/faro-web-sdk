@@ -83,7 +83,55 @@ then the transports and finally the instrumentations.
 
 ## Web SDK
 
+With session tracking enabled, a prerendered document waits until activation to create or resume its session.
+Chromium replaces the prerender's temporary `sessionStorage` on activation, so creating a session earlier can split
+one visit into two session IDs. The session instrumentation also establishes the session before capturing signals
+from other activation listeners, such as web vitals.
+
+`initializeFaro()` still returns synchronously. Before activation, `api.getSession()` returns `undefined` unless the
+application explicitly sets a session. Metadata updates remain available, including session attributes and overrides
+set through `api.setSession()` or `api.setView()`. Pending changes are applied to the session established at activation.
+Explicit API writes are tracked separately from configuration, including overrides whose values match configuration.
+Calling `api.resetSession()` while prerendering starts a fresh session at activation instead of resuming storage.
+Resets and session replacements retain effective overrides when none are supplied, including overrides from storage.
+Explicit `session.overrides` replaces those overrides; an empty object clears them.
+Removing and readding the same session instrumentation preserves pending API writes, including reset intent.
+Speculative telemetry is discarded before API deduplication and buffering, so it cannot suppress matching signals
+after activation. Session replay initialization also waits for activation, even when the application supplies a sampled
+session beforehand, so its opening snapshot is retained.
+
+Performance instrumentation reads buffered navigation and resource timings after activation, preserving the navigation
+event and its resource correlation. View instrumentation reports the current view once on activation and skips
+intermediate views set while prerendering. Normal navigations retain their existing initialization behavior.
+Disabling session tracking still bypasses the session activation guard.
+
 ## Tracing
+
+The `TracingInstrumentation` from `@grafana/faro-web-tracing` builds on OpenTelemetry, which allows
+only a single global tracer provider, propagator and context manager per browsing context. The
+fetch/XHR instrumentations also patch the global `fetch`/`XMLHttpRequest` only once.
+
+Because of these constraints, tracing has a single owner per page. The first Faro instance to
+initialize a `TracingInstrumentation` claims ownership (tracked on the global object so the claim is
+shared even across independently bundled micro-frontends). That owner registers the tracer provider
+and instruments fetch/XHR. Any later instance that adds a `TracingInstrumentation` detects the
+existing owner, logs a warning, and skips registration instead of registering a second provider
+(which OpenTelemetry would reject as a duplicate) or re-patching fetch/XHR with a different
+configuration.
+
+Consequently, all spans are exported by the owning instance — using its exporter, its resource
+(`service.name`), and its collector — no matter which instance created them, and only the owner
+produces automatic fetch/XHR spans. Later instances register no exporter of their own, so they never
+export spans directly; they can still create spans against the shared provider via
+`faro.api.getOTEL()` (for example, manual spans), but those spans are exported by the owning instance
+and attributed to it. This is independent of the `isolate` config option, because tracer-provider
+registration and fetch/XHR patching are inherently global.
+
+To avoid regressing distributed traces, cross-origin trace-header propagation is unioned across
+instances: every instance's `propagateTraceHeaderCorsUrls` is merged into the owner (via the shared
+owner slot on the global object), so the owning instance keeps injecting W3C trace headers for URLs
+configured by any instance. Per-instance custom span attributes (`applyCustomAttributesOnSpan`) are
+not merged — only the owner's are applied.
 
 [initial-values]: #initial-values
 [components-api]: ./components/api.md

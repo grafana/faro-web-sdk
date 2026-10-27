@@ -3,11 +3,23 @@ import type { Transports } from '../transports';
 import type { TracesAPI } from './traces/types';
 import type { UserActionsAPI } from './userActions/types';
 
-export const mockMetas = {
+export const mockMetas: {
+  add: jest.Mock;
+  remove: jest.Mock;
+  addListener: jest.Mock;
+  removeListener: jest.Mock;
+  capture: () => {};
+  addCaptureListener: jest.Mock;
+  removeCaptureListener: jest.Mock;
+  value: {};
+} = {
   add: jest.fn(),
   remove: jest.fn(),
   addListener: jest.fn(),
   removeListener: jest.fn(),
+  capture: () => mockMetas.value,
+  addCaptureListener: jest.fn(),
+  removeCaptureListener: jest.fn(),
   value: {},
 };
 

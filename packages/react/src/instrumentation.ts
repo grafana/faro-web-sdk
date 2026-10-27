@@ -6,7 +6,7 @@ import type { ReactIntegrationConfig } from './types';
 
 export class ReactIntegration extends BaseInstrumentation {
   name = '@grafana/faro-react';
-  version = VERSION;
+  version: string = VERSION;
 
   constructor(private options: ReactIntegrationConfig = {}) {
     super();

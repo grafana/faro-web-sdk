@@ -1,4 +1,5 @@
 import { initializeFaro } from '@grafana/faro-core';
+import { getInternalMetas } from '@grafana/faro-core/internal';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 const originalWindow = window;
@@ -24,6 +25,28 @@ describe('Meta API', () => {
 
   afterAll(() => {
     window = originalWindow;
+  });
+
+  it('reports explicit session writes, view overrides and resets without inferred values', () => {
+    const { api, metas } = initializeFaro(
+      mockConfig({
+        sessionTracking: { session: { id: 'configured', overrides: { serviceName: 'checkout' } } },
+      })
+    );
+    const listener = jest.fn();
+    getInternalMetas(metas).addSessionUpdateListener(listener);
+    api.setView({ name: 'checkout' }, { overrides: { serviceName: 'checkout' } });
+    api.setSession({ id: 'configured' }, { overrides: { serviceName: 'checkout' } });
+    api.resetSession();
+
+    expect(listener.mock.calls.map(([update]) => update)).toEqual([
+      { type: 'overrides', overrides: { serviceName: 'checkout' } },
+      { type: 'replace', session: { id: 'configured' }, overrides: { serviceName: 'checkout' } },
+      { type: 'replace', session: undefined, overrides: undefined },
+    ]);
+    getInternalMetas(metas).removeSessionUpdateListener(listener);
+    api.setSession({ id: 'after-removal' });
+    expect(listener).toHaveBeenCalledTimes(3);
   });
 
   describe('setView', () => {

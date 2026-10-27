@@ -5,26 +5,50 @@ import { onDocumentReady, performanceObserverSupported } from './performanceUtil
 import { observeResourceTimings } from './resource';
 import type { ResourceEntryMessage } from './types';
 
-export const performanceEntriesSubscription = new Observable<ResourceEntryMessage>();
+export const performanceEntriesSubscription: Observable<ResourceEntryMessage> = new Observable<ResourceEntryMessage>();
 
 export class PerformanceInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-performance';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
+  private cancelInitialization: (() => void) | undefined;
 
-  initialize() {
+  initialize(): void {
     if (!performanceObserverSupported()) {
       this.logDebug('performance observer not supported. Disable performance instrumentation.');
       return;
     }
 
-    onDocumentReady(async () => {
-      const pushEvent = this.api.pushEvent;
+    let cancelled = false;
+    const startObserving = () => {
+      onDocumentReady(async () => {
+        if (cancelled) {
+          return;
+        }
+        const pushEvent = this.api.pushEvent;
 
-      const { faroNavigationId } = await getNavigationTimings(pushEvent);
+        const { faroNavigationId } = await getNavigationTimings(pushEvent);
 
-      if (faroNavigationId != null) {
-        observeResourceTimings(faroNavigationId, pushEvent, performanceEntriesSubscription);
-      }
-    });
+        if (!cancelled && faroNavigationId != null) {
+          observeResourceTimings(faroNavigationId, pushEvent, performanceEntriesSubscription, this.config);
+        }
+      });
+    };
+    this.cancelInitialization = () => {
+      cancelled = true;
+      document.removeEventListener('prerenderingchange', startObserving);
+    };
+
+    if ((document as Document & { prerendering?: boolean }).prerendering) {
+      // Read buffered navigation timings after activation so the event and its
+      // stored navigation ID survive, and resource events can refer back to it.
+      document.addEventListener('prerenderingchange', startObserving, { once: true });
+    } else {
+      startObserving();
+    }
+  }
+
+  destroy(): void {
+    this.cancelInitialization?.();
+    this.cancelInitialization = undefined;
   }
 }

@@ -6,11 +6,11 @@ import {
   EVENT_SESSION_START,
   VERSION,
 } from '@grafana/faro-core';
-import type { Config, Meta, MetaSession } from '@grafana/faro-core';
+import type { BeforeSendHook, Config, Meta, MetaSession } from '@grafana/faro-core';
 
 import type { TransportItem } from '../..';
-import { createSession } from '../../metas';
 
+import { type PendingSessionChanges, PrerenderSession } from './prerenderSession';
 import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
 import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
 import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
@@ -20,16 +20,29 @@ type LifecycleType = typeof EVENT_SESSION_RESUME | typeof EVENT_SESSION_START;
 
 export class SessionInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-session';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   // previously notified session, to ensure we don't send session start
   // event twice for the same session
   private notifiedSession: MetaSession | undefined;
 
+  // Reads the session manager's adoption flag (set once the manager exists).
+  private isAdoptingSession: () => boolean = () => false;
+  private captureListener: (() => void) | undefined;
+  private beforeSendHook: BeforeSendHook | undefined;
+  private sessionStartListener: ((meta: Meta) => void) | undefined;
+  private prerenderSession: PrerenderSession | undefined;
+
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
 
     if (session && session.id !== this.notifiedSession?.id) {
+      // Adopting another tab's session: track it but emit nothing (the creating tab already did).
+      if (this.isAdoptingSession()) {
+        this.notifiedSession = session;
+        return;
+      }
+
       if (this.notifiedSession && this.notifiedSession.id === session.attributes?.['previousSession']) {
         this.api.pushEvent(EVENT_SESSION_EXTEND, {}, undefined, { skipDedupe: true });
         this.notifiedSession = session;
@@ -45,11 +58,13 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
   private createInitialSession(
     SessionManager: SessionManager,
-    sessionsConfig: Required<Config>['sessionTracking']
+    sessionsConfig: Required<Config>['sessionTracking'],
+    pendingChanges?: PendingSessionChanges
   ): {
     initialSession: FaroUserSession;
     lifecycleType: LifecycleType;
   } {
+    const pendingSession = pendingChanges?.session;
     let storedUserSession: FaroUserSession | null = SessionManager.fetchUserSession();
 
     if (sessionsConfig.persistent && sessionsConfig.maxSessionPersistenceTime && storedUserSession) {
@@ -65,15 +80,23 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
     let lifecycleType: LifecycleType;
     let initialSession: FaroUserSession;
+    const hasValidStoredSession = isUserSessionValid(storedUserSession);
 
-    if (isUserSessionValid(storedUserSession)) {
+    if (
+      !pendingChanges?.reset &&
+      hasValidStoredSession &&
+      (!pendingSession?.id || pendingSession.id === storedUserSession?.sessionId)
+    ) {
       const sessionId = storedUserSession?.sessionId;
 
-      initialSession = createUserSessionObject({
-        sessionId,
-        isSampled: storedUserSession!.isSampled || false,
-        started: storedUserSession?.started,
-      });
+      initialSession = createUserSessionObject(
+        {
+          sessionId,
+          isSampled: storedUserSession!.isSampled || false,
+          started: storedUserSession?.started,
+        },
+        this
+      );
 
       const storedUserSessionMeta = storedUserSession?.sessionMeta;
 
@@ -95,14 +118,22 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       lifecycleType = EVENT_SESSION_RESUME;
     } else {
-      const sessionId = sessionsConfig.session?.id ?? createSession().id;
+      initialSession = createUserSessionObject(
+        {
+          sessionId: pendingChanges?.reset ? undefined : (pendingSession?.id ?? sessionsConfig.session?.id),
+          isSampled: isSampled(this),
+        },
+        this
+      );
+      const sessionId = initialSession.sessionId;
 
-      initialSession = createUserSessionObject({
-        sessionId,
-        isSampled: isSampled(),
-      });
-
-      const overrides = sessionsConfig.session?.overrides;
+      // A pending reset or replacement inherits the session it would have updated
+      // after normal initialization, including overrides read from storage at activation.
+      const storedOverrides =
+        pendingChanges && hasValidStoredSession ? storedUserSession?.sessionMeta?.overrides : undefined;
+      const overrides = storedOverrides
+        ? { ...sessionsConfig.session?.overrides, ...storedOverrides }
+        : sessionsConfig.session?.overrides;
 
       initialSession.sessionMeta = {
         id: sessionId,
@@ -110,22 +141,46 @@ export class SessionInstrumentation extends BaseInstrumentation {
           isSampled: initialSession.isSampled.toString(),
           ...sessionsConfig.session?.attributes,
         },
-        // new session we don't care about previous overrides
         ...(overrides ? { overrides } : {}),
       };
 
       lifecycleType = EVENT_SESSION_START;
     }
 
+    if (pendingSession) {
+      initialSession.sessionMeta = {
+        ...initialSession.sessionMeta,
+        attributes: {
+          ...initialSession.sessionMeta?.attributes,
+          ...pendingSession.attributes,
+          isSampled: initialSession.isSampled.toString(),
+        },
+      };
+      if (pendingSession.overrides) {
+        const overrides = pendingChanges?.inheritOverrides
+          ? { ...initialSession.sessionMeta.overrides, ...pendingSession.overrides }
+          : pendingSession.overrides;
+        if (Object.keys(overrides).length > 0) {
+          initialSession.sessionMeta.overrides = overrides;
+        } else {
+          delete initialSession.sessionMeta.overrides;
+        }
+      }
+    }
+
     return { initialSession, lifecycleType };
   }
 
-  private registerBeforeSendHook(SessionManager: SessionManager) {
-    const { updateSession } = new SessionManager();
-
-    this.transports?.addBeforeSendHooks((item) => {
-      updateSession();
-
+  private registerBeforeSendHook(recordActivity: (sessionId: string) => void) {
+    this.beforeSendHook = (item) => {
+      // config.beforeSend runs before this hook. Sampling and hooks added later
+      // retain their existing order and do not undo session activity.
+      const sessionId = item.meta.session?.id;
+      if (sessionId && !this.transports.isPaused()) {
+        recordActivity(sessionId);
+      }
+      // Delivery filters using the captured session's sampling decision. It must
+      // never rotate or reassign an item that already belongs to a session.
       const attributes = item.meta.session?.attributes;
 
       if (attributes && attributes?.['isSampled'] === 'true') {
@@ -142,20 +197,41 @@ export class SessionInstrumentation extends BaseInstrumentation {
       }
 
       return null;
-    });
+    };
+    this.transports?.addBeforeSendHooks(this.beforeSendHook);
   }
 
-  initialize() {
+  initialize(): void {
     this.logDebug('init session instrumentation');
 
-    const sessionTrackingConfig = this.config.sessionTracking;
+    const prerendering = (document as Document & { prerendering?: boolean }).prerendering;
+    if (this.config.sessionTracking?.enabled && (prerendering || this.prerenderSession)) {
+      // Chromium discards speculative sessionStorage writes on activation.
+      this.prerenderSession ??= new PrerenderSession(this.metas, this.transports, (changes) => {
+        this.prerenderSession = undefined;
+        this.initializeSession(changes);
+      });
+      this.prerenderSession.initialize();
+      return;
+    }
 
+    this.initializeSession();
+  }
+
+  private initializeSession(pendingChanges?: PendingSessionChanges): void {
+    const sessionTrackingConfig = this.config.sessionTracking;
     if (sessionTrackingConfig?.enabled) {
       const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
 
-      this.registerBeforeSendHook(SessionManager);
+      const sessionManager = new SessionManager(this);
+      this.isAdoptingSession = sessionManager.isAdopting;
+      this.registerBeforeSendHook(sessionManager.recordActivity);
 
-      const { initialSession, lifecycleType } = this.createInitialSession(SessionManager, sessionTrackingConfig);
+      const { initialSession, lifecycleType } = this.createInitialSession(
+        SessionManager,
+        sessionTrackingConfig,
+        pendingChanges
+      );
 
       SessionManager.storeUserSession(initialSession);
 
@@ -163,6 +239,12 @@ export class SessionInstrumentation extends BaseInstrumentation {
 
       this.notifiedSession = initialSessionMeta;
       this.api.setSession(initialSessionMeta);
+      this.captureListener = () => {
+        if (!this.transports.isPaused()) {
+          sessionManager.updateSession({ refreshActivity: false });
+        }
+      };
+      this.metas.addCaptureListener?.(this.captureListener);
 
       if (lifecycleType === EVENT_SESSION_START) {
         this.api.pushEvent(EVENT_SESSION_START, {}, undefined, { skipDedupe: true });
@@ -173,6 +255,24 @@ export class SessionInstrumentation extends BaseInstrumentation {
       }
     }
 
-    this.metas.addListener(this.sendSessionStartEvent.bind(this));
+    this.sessionStartListener = this.sendSessionStartEvent.bind(this);
+    this.metas.addListener(this.sessionStartListener);
+  }
+
+  destroy(): void {
+    // Keep pending API writes if this instance is readded before they are applied.
+    this.prerenderSession?.destroy();
+    if (this.captureListener) {
+      this.metas.removeCaptureListener?.(this.captureListener);
+      this.captureListener = undefined;
+    }
+    if (this.beforeSendHook) {
+      this.transports.removeBeforeSendHooks(this.beforeSendHook);
+      this.beforeSendHook = undefined;
+    }
+    if (this.sessionStartListener) {
+      this.metas.removeListener(this.sessionStartListener);
+      this.sessionStartListener = undefined;
+    }
   }
 }

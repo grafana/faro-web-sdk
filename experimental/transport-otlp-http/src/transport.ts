@@ -14,7 +14,7 @@ const TOO_MANY_REQUESTS = 429;
 
 export class OtlpHttpTransport extends BaseTransport {
   readonly name = '@grafana/faro-web-sdk:transport-otlp-http';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   private readonly promiseBuffer: PromiseBuffer<Response | void>;
   private readonly rateLimitBackoffMs: number;

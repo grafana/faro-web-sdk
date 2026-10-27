@@ -1,6 +1,7 @@
 import type { Config } from '../../config';
+import { getInternalMetas } from '../../internal';
 import type { InternalLogger } from '../../internalLogger';
-import type { Metas } from '../../metas';
+import { captureMetas, type Metas } from '../../metas';
 import { TransportItemType } from '../../transports';
 import type { TransportItem, Transports } from '../../transports/types';
 import type { UnpatchedConsole } from '../../unpatchedConsole';
@@ -40,10 +41,13 @@ export function initializeTracesAPI(
 
   const pushTraces: TracesAPI['pushTraces'] = (payload) => {
     try {
+      if (!getInternalMetas(metas).shouldCapture()) {
+        return;
+      }
       const item: TransportItem<TraceEvent> = {
         type: TransportItemType.TRACE,
         payload,
-        meta: metas.value,
+        meta: captureMetas(metas),
       };
 
       internalLogger.debug('Pushing trace\n', item);

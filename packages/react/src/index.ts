@@ -137,6 +137,7 @@ export {
   ViewInstrumentation,
   WebVitalsInstrumentation,
   userActionDataAttribute,
+  userActionTimeoutDataAttribute,
 } from '@grafana/faro-web-sdk';
 
 export type {

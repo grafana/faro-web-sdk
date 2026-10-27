@@ -1,0 +1,145 @@
+name: Stale PRs
+
+on:
+  schedule:
+    - cron: '0 9 * * *' # Daily at 09:00 UTC
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Report what would be labelled or closed, without changing anything'
+        type: boolean
+        default: false
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      # actions/stale keeps a state cache through @actions/cache to resume when
+      # it runs out of operations, and its README asks for actions: write. With
+      # an explicit permissions map every omitted scope is denied.
+      actions: write
+      issues: write # labels are applied through the issues API
+      pull-requests: write
+
+    steps:
+      # actions/stale swallows the error when it cannot apply its label, so a
+      # missing label would leave PRs commented on but never labelled or
+      # closed. Creating both labels here keeps the workflow self-contained.
+      # --force makes this idempotent, so any nonzero exit is a real failure
+      # (auth, permissions, API) and should fail the job loudly.
+      - name: Ensure the stale and keep-open labels exist
+        if: ${{ !inputs.dryRun }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create stale \
+            --force \
+            --repo "$GITHUB_REPOSITORY" \
+            --color aaaaaa \
+            --description "No activity for 60 days. Closes automatically after 14 more days."
+
+          gh label create keep-open \
+            --force \
+            --repo "$GITHUB_REPOSITORY" \
+            --color 0e8a16 \
+            --description "Never closed automatically, however long it stays open."
+
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
+        with:
+          # Only manage PRs. There is no automated policy for issues.
+          days-before-issue-stale: -1
+          days-before-issue-close: -1
+
+          # Label PRs with no activity for 60 days
+          days-before-pr-stale: 60
+          # Close 14 days after the label is applied
+          days-before-pr-close: 14
+
+          stale-pr-label: 'stale'
+
+          # Do not @-mention the author here, and do not replace this with a
+          # step that does. A mention makes GitHub record `mentioned` and
+          # `subscribed` events, and hasOnlyStaleLabelingEventsSince requires
+          # every event since the label to be a `labeled` event, so
+          # remove-stale-when-updated below would strip the label on the next
+          # run and the PR would never close. It would only be re-labelled and
+          # re-warned every 60 days. A comment without a mention creates no
+          # events at all, and the action ignores its own bot comment because it
+          # only counts activity from authors of type User.
+          # See docs/PULL_REQUESTS.md for the policy this message describes.
+          stale-pr-message: >
+            This pull request has had no activity for 60 days, so it has been
+            labelled `stale`. It will be closed automatically in 14 days.
+
+            Thank you for the contribution. If you are waiting on a review from
+            a maintainer, a comment here is enough to keep this open.
+
+            To keep it open, push a commit or leave a comment. That works for
+            everyone, including contributors from outside Grafana.
+
+            Maintainers can also remove the `stale` label, or add the
+            `keep-open` label to exempt this pull request from now on. Changing
+            labels needs write access to this repository, so if you do not have
+            it, ask for it in a comment.
+
+            Closing is not final. The branch is kept, so a closed pull request
+            can be reopened at any time.
+
+            Draft pull requests are included, so parked work in progress is also
+            affected.
+
+          close-pr-message: >
+            This pull request has been closed because there was no activity for
+            74 days. The branch was not deleted, so you can reopen this pull
+            request at any time to continue the work.
+
+          # Never stale these.
+          #
+          # Closing a Renovate PR would drop that version update silently,
+          # because renovate.json does not set recreateWhen. `dependencies` is
+          # the label renovate.json now applies to every PR it opens. It is set
+          # there with `addLabels`, not `labels`, on purpose: `labels` is
+          # non-mergeable, so the `labels` under `vulnerabilityAlerts` would
+          # replace it and a security PR would arrive without `dependencies`.
+          # update-major is listed as well: major bumps are the ones most likely
+          # to sit unreviewed, and they only gained `dependencies` from
+          # renovate.json in this change, so older ones do not carry it.
+          #
+          # automerge-security-update, security-needs-review and 1.security are
+          # the labels security PRs carry in this repository. They come from
+          # Grafana-wide automation rather than from renovate.json, so they are
+          # a second line of defence, not the first one. There are also
+          # severity:* labels, deliberately not listed: the security labels
+          # above already cover every security PR, and exempting only some
+          # severities would be an inconsistent half-set.
+          #
+          # `autorelease: pending` is the release-please PR. It is meant to stay
+          # open between releases, and closing it would break the release
+          # process.
+          #
+          # The colon in `autorelease: pending` is why this is a folded block
+          # scalar. The action splits the list on commas only, so the space
+          # inside the label name survives.
+          exempt-pr-labels: >-
+            dependencies,
+            update-major,
+            automerge-security-update,
+            security-needs-review,
+            1.security,
+            autorelease: pending,
+            keep-open
+
+          # Drafts are included. A draft nobody has touched for two months is
+          # abandoned too. Use the keep-open label to park work in progress.
+          exempt-draft-pr: false
+
+          # Reset the clock on any activity
+          remove-stale-when-updated: true
+
+          # A closed PR must stay reopenable
+          delete-branch: false
+
+          # The default of 30 would silently truncate the run
+          operations-per-run: 100
+
+          debug-only: ${{ inputs.dryRun == true }}

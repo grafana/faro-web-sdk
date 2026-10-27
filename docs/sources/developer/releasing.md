@@ -69,10 +69,10 @@ The `publish` job pauses on the `publish` GitHub Environment until a member of
 [`@grafana/frontend-o11y`](https://github.com/orgs/grafana/teams/frontend-o11y)
 approves the deployment.
 
-**A release requires two people.** GitHub does not allow you to approve your own
-deployment, so whoever merges the Release PR (and thereby triggers the publish
-run) **cannot** approve it. A _different_ member of `@grafana/frontend-o11y` must
-approve.
+**A release requires two people.** The `publish` environment has the
+**Prevent self-review** protection setting enabled, so whoever merges the Release
+PR (and thereby triggers the publish run) **cannot** approve it. A _different_
+member of `@grafana/frontend-o11y` must approve.
 
 To approve:
 
@@ -83,8 +83,8 @@ To approve:
    **Approve and deploy**.
 
 If you don't see the **Review deployments** button, it's almost always because
-you triggered the run yourself — ask another team member to approve. The CLI
-equivalent (for an eligible approver) is:
+you triggered the run yourself and **Prevent self-review** is enabled — ask
+another team member to approve. The CLI equivalent (for an eligible approver) is:
 
 ```sh
 # Find the pending environment id:

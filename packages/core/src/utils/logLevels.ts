@@ -7,7 +7,7 @@ export enum LogLevel {
   ERROR = 'error',
 }
 
-export const defaultLogLevel = LogLevel.LOG;
+export const defaultLogLevel: LogLevel.LOG = LogLevel.LOG;
 
 export const allLogLevels: Readonly<Array<Readonly<LogLevel>>> = [
   LogLevel.TRACE,

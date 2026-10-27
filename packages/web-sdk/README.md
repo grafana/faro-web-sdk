@@ -18,6 +18,7 @@ Alternatively, you can use the CDN version of the library. See [use cdn library]
 - web-vitals - captures performance metrics reported by web vitals API
 - session - sends session start event
 - view - sends view changed event
+- frustration - sends an event for each rage click, dead click and error click, but not for ordinary clicks
 
 ## Metas
 

@@ -5,7 +5,7 @@ import { VERSION } from '../version';
 
 export class MockTransport extends BaseTransport implements Transport {
   readonly name = '@grafana/transport-mock';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   items: TransportItem[] = [];
 

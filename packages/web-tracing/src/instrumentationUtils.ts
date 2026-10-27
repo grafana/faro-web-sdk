@@ -17,12 +17,16 @@ export interface FetchError {
  * Issue: https://github.com/open-telemetry/opentelemetry-js/issues/3564
  * Spec: https://github.com/open-telemetry/opentelemetry-specification/blob/v1.20.0/specification/trace/semantic_conventions/http.md#status
  */
-export function setSpanStatusOnFetchError(span: Span, _request: Request | RequestInit, result: Response | FetchError) {
+export function setSpanStatusOnFetchError(
+  span: Span,
+  _request: Request | RequestInit,
+  result: Response | FetchError
+): void {
   const httpStatusCode = result instanceof Error ? 0 : result.status;
   setSpanStatus(span, httpStatusCode);
 }
 
-export function setSpanStatusOnXMLHttpRequestError(span: Span, xhr: XMLHttpRequest) {
+export function setSpanStatusOnXMLHttpRequestError(span: Span, xhr: XMLHttpRequest): void {
   setSpanStatus(span, xhr.status);
 }
 
@@ -39,14 +43,18 @@ function setSpanStatus(span: Span, httpStatusCode?: number) {
   }
 }
 
-export function fetchCustomAttributeFunctionWithDefaults(callback?: FetchCustomAttributeFunction) {
+export function fetchCustomAttributeFunctionWithDefaults(
+  callback?: FetchCustomAttributeFunction
+): (span: Span, request: Request | RequestInit, result: Response | FetchError) => void {
   return (span: Span, request: Request | RequestInit, result: Response | FetchError) => {
     setSpanStatusOnFetchError(span, request, result);
     callback?.(span, request, result);
   };
 }
 
-export function xhrCustomAttributeFunctionWithDefaults(callback?: XHRCustomAttributeFunction) {
+export function xhrCustomAttributeFunctionWithDefaults(
+  callback?: XHRCustomAttributeFunction
+): (span: Span, xhr: XMLHttpRequest) => void {
   return (span: Span, xhr: XMLHttpRequest) => {
     setSpanStatusOnXMLHttpRequestError(span, xhr);
     callback?.(span, xhr);

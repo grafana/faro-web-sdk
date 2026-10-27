@@ -43,3 +43,19 @@ for inspection).
 This repo intentionally does **not** ship a Docker-based local stack: those configurations drift
 silently with upstream version bumps and inflate the SDK's contributor surface. Run your own
 infrastructure with the tools you already use.
+
+## Formatting
+
+`yarn install` sets up a Git pre-commit hook that formats the files you stage, so in normal use you do
+not need to think about formatting at all. If continuous integration still reports auto-fixable lint
+issues, for example because you committed with `--no-verify`, run the fixer and then review what it
+changed:
+
+```bash
+yarn quality:lint:fix
+git diff
+```
+
+Commit those changes and continuous integration goes green. To check whether anything is outstanding
+without printing a diff, use `git diff --exit-code`, which exits with a non-zero status when there are
+uncommitted changes.

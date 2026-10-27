@@ -3,7 +3,7 @@ import { mockConfig, mockInternalLogger } from '../../testUtils';
 import { mockTransports } from '../apiTestHelpers';
 
 import { userActionEventName } from './const';
-import { initializeUserActionsAPI } from './initialize';
+import { initializeUserActionsAPI, userActionsMessageBus } from './initialize';
 import { UserActionInternalInterface, UserActionsAPI } from './types';
 import UserAction from './userAction';
 
@@ -62,6 +62,21 @@ describe('initializeUserActionsAPI', () => {
     );
   });
 
+  it('publishes the per-action initial activity timeout', () => {
+    const messageSpy = jest.fn();
+    const subscription = userActionsMessageBus.subscribe(messageSpy);
+
+    api.startUserAction('first', undefined, { initialActivityTimeout: 450 });
+
+    expect(messageSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        initialActivityTimeout: 450,
+      })
+    );
+
+    subscription.unsubscribe();
+  });
+
   it('subsequent startUserAction calls will return undefined as long as there is an action running', () => {
     api.startUserAction('A');
     const a2 = api.startUserAction('B');
@@ -84,7 +99,7 @@ describe('initializeUserActionsAPI', () => {
     const action = api.startUserAction(
       'test-action',
       { foo: 'bar' },
-      { importance: UserActionImportance.Critical, triggerName: 'foo' }
+      { importance: UserActionImportance.Critical, triggerName: 'foo', initialActivityTimeout: 450 }
     );
     (action as unknown as UserActionInternalInterface)?.end();
 
@@ -102,5 +117,6 @@ describe('initializeUserActionsAPI', () => {
       undefined,
       expect.any(Object)
     );
+    expect(mockPushEvent.mock.calls[0]?.[1]).not.toHaveProperty('initialActivityTimeout');
   });
 });

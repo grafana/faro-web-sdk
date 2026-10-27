@@ -21,7 +21,7 @@ export interface Transport extends Extension {
 
   // returns URLs to be ignored by tracing, to not cause a feedback loop
   getIgnoreUrls(): Patterns;
-  // returns wether the transport supports processing of a batches of items
+  // returns whether the transport supports processing batches of items
   isBatched(): boolean;
 }
 
@@ -52,9 +52,9 @@ export interface Transports {
 
 export interface BatchExecutorOptions {
   readonly enabled?: boolean;
-  // If no new signal arrives after "batchSendTimeout" ms, send the payload. If set to 0, timeout is disabled
+  // If no new signal arrives after "sendTimeout" ms, send the payload. If set to 0, timeout is disabled
   readonly sendTimeout?: number;
-  // Buffer "sendLimit" is the number of signals before sending the payload
+  // Buffer "itemLimit" is the number of signals before sending the payload
   readonly itemLimit?: number;
   readonly paused?: boolean;
 }

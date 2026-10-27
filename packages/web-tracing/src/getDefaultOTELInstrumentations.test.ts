@@ -1,6 +1,9 @@
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
+import { mockConfig } from '@grafana/faro-core/src/testUtils';
+import { initializeFaro } from '@grafana/faro-web-sdk';
+
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 
 jest.mock('@opentelemetry/instrumentation-fetch');
@@ -62,5 +65,39 @@ describe('getDefaultOTELInstrumentations', () => {
       ignoreNetworkEvents: false,
       applyCustomAttributesOnSpan: expect.any(Function),
     });
+  });
+
+  // The option types used to expose only applyCustomAttributesOnSpan and ignoreNetworkEvents even
+  // though every key is spread onto the OTel instrumentation. See issue #1464.
+  it('forwards the full set of OTel instrumentation options', () => {
+    const forwardedOptions = { clearTimingResources: true, measureRequestSize: true };
+
+    getDefaultOTELInstrumentations({
+      fetchInstrumentationOptions: forwardedOptions,
+      xhrInstrumentationOptions: forwardedOptions,
+    });
+
+    expect(FetchInstrumentation).toHaveBeenCalledWith(expect.objectContaining(forwardedOptions));
+    expect(XMLHttpRequestInstrumentation).toHaveBeenCalledWith(expect.objectContaining(forwardedOptions));
+  });
+
+  it('runs a caller supplied fetch requestHook alongside the Faro one', () => {
+    const faro = initializeFaro(mockConfig());
+    const userAction = faro.api.startUserAction('test-action');
+
+    const requestHook = jest.fn();
+
+    getDefaultOTELInstrumentations({ fetchInstrumentationOptions: { requestHook } });
+
+    const fetchOptions = (FetchInstrumentation as jest.Mock).mock.calls[0]![0];
+    const span = { setAttribute: jest.fn() };
+    const request = {} as Request;
+
+    fetchOptions.requestHook(span, request);
+
+    // both halves of the composed hook run: Faro's attributes and the caller's hook
+    expect(span.setAttribute).toHaveBeenCalledWith('faro.action.user.name', 'test-action');
+    expect(span.setAttribute).toHaveBeenCalledWith('faro.action.user.parentId', userAction?.parentId);
+    expect(requestHook).toHaveBeenCalledWith(span, request);
   });
 });

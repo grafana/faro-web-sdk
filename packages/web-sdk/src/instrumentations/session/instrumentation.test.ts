@@ -10,7 +10,6 @@ import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { makeCoreConfig } from '../../config/makeCoreConfig';
 import { createSession } from '../../metas/session';
-import * as createSessionMock from '../../metas/session';
 
 import { SessionInstrumentation } from './instrumentation';
 import {
@@ -19,6 +18,7 @@ import {
   SESSION_EXPIRATION_TIME,
   SESSION_INACTIVITY_TIME,
   STORAGE_KEY,
+  STORAGE_UPDATE_DELAY,
 } from './sessionManager';
 import * as samplingModuleMock from './sessionManager/sampling';
 import { createUserSessionObject } from './sessionManager/sessionManagerUtils';
@@ -77,6 +77,61 @@ describe('SessionInstrumentation', () => {
     expect(event.payload.name).toEqual(EVENT_SESSION_START);
     expect(event.meta.session?.attributes).toEqual({ foo: 'bar' });
     expect(event.meta.session?.id).toEqual(session.id);
+  });
+
+  it.each(['same', 'replacement'])('delivers sampled events after readding the %s instance', (instance) => {
+    const transport = new MockTransport();
+    const instrumentation = new SessionInstrumentation();
+    const faro = initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [instrumentation],
+        sessionTracking: { enabled: true, persistent: false, samplingRate: 1 },
+      })
+    );
+
+    faro.api.pushEvent('before');
+    expect(transport.items).toContainEqual(
+      expect.objectContaining({ payload: expect.objectContaining({ name: 'before' }) })
+    );
+
+    faro.instrumentations.remove(instrumentation);
+    faro.instrumentations.add(instance === 'same' ? instrumentation : new SessionInstrumentation());
+    faro.api.pushEvent('after');
+
+    expect(transport.items).toContainEqual(
+      expect.objectContaining({ payload: expect.objectContaining({ name: 'after' }) })
+    );
+  });
+
+  it('stops emitting session lifecycle events after removal and lets a replacement observe changes', () => {
+    const transport = new MockTransport();
+    const instrumentation = new SessionInstrumentation();
+    const faro = initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [instrumentation],
+        sessionTracking: { enabled: false },
+      })
+    );
+
+    faro.api.setSession({ id: 'before-removal' });
+    expect(transport.items.map((item) => (item.payload as EventEvent).name)).toEqual([EVENT_SESSION_START]);
+    transport.items.length = 0;
+
+    faro.instrumentations.remove(instrumentation);
+    instrumentation.destroy();
+    faro.api.setSession({ id: 'while-removed' });
+    expect(transport.items).toEqual([]);
+
+    faro.instrumentations.add(new SessionInstrumentation());
+    faro.api.setSession({ id: 'after-replacement' });
+    expect(transport.items).toEqual([
+      expect.objectContaining({
+        payload: expect.objectContaining({ name: EVENT_SESSION_START }),
+        meta: expect.objectContaining({ session: expect.objectContaining({ id: 'after-replacement' }) }),
+      }),
+    ]);
   });
 
   it('will send session start event for new session.', () => {
@@ -177,6 +232,204 @@ describe('SessionInstrumentation', () => {
     event = transport.items[3]! as TransportItem<EventEvent>;
     expect(event.payload.name).toEqual(EVENT_SESSION_EXTEND);
   });
+
+  it('stamps the rotation-triggering signal with the new session id, not the expired one.', () => {
+    const transport = new MockTransport();
+    mockStorage[STORAGE_KEY] = JSON.stringify(createUserSessionObject({ sessionId: 'S0' }));
+
+    const { api } = initializeFaro(
+      mockConfig({
+        transports: [transport],
+        instrumentations: [new SessionInstrumentation()],
+        sessionTracking: {
+          enabled: true,
+          persistent: true,
+          samplingRate: 1,
+        },
+      })
+    );
+
+    expect(transport.items).toHaveLength(1); // resume event from init
+
+    jest.advanceTimersByTime(SESSION_EXPIRATION_TIME + 1); // session lifetime lapses
+
+    // Capture reconciles expiry before assigning the signal's session.
+    api.pushEvent('after-gap');
+
+    const rotatedId = api.getSession()?.id;
+    expect(rotatedId).not.toEqual('S0');
+
+    const afterGap = transport.items.find(
+      (item) => (item as TransportItem<EventEvent>).payload.name === 'after-gap'
+    ) as TransportItem<EventEvent> | undefined;
+
+    // The first post-expiry signal already belongs to the new session.
+    expect(afterGap).toBeDefined();
+    expect(afterGap!.meta.session?.id).toEqual(rotatedId);
+  });
+
+  it('captures every post-expiry signal under the new session before flushing.', () => {
+    const transport = new MockTransport();
+    mockStorage[STORAGE_KEY] = JSON.stringify(createUserSessionObject({ sessionId: 'S0' }));
+
+    const { api } = initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [transport],
+          instrumentations: [new SessionInstrumentation()],
+          sessionTracking: { enabled: true, persistent: true, samplingRate: 1 },
+          batching: { itemLimit: 10, sendTimeout: 1000 }, // buffer the burst into one flush
+        })
+      )!
+    );
+
+    jest.advanceTimersByTime(SESSION_EXPIRATION_TIME + 1); // session lifetime lapses
+
+    // A burst captured after expiry is flushed together.
+    api.pushEvent('gap-1');
+    api.pushEvent('gap-2');
+    api.pushEvent('gap-3');
+    jest.advanceTimersByTime(1000);
+
+    const rotatedId = api.getSession()?.id;
+    expect(rotatedId).not.toEqual('S0');
+
+    const gapItems = transport.items.filter((item) =>
+      /^gap-/.test((item as TransportItem<EventEvent>).payload.name)
+    ) as Array<TransportItem<EventEvent>>;
+
+    // Every signal in the batch belongs to the session established at capture.
+    expect(gapItems).toHaveLength(3);
+    expect(gapItems.every((item) => item.meta.session?.id === rotatedId)).toBe(true);
+  });
+
+  it('does not rotate a session merely because a delayed batch is flushed', () => {
+    const transport = new MockTransport();
+    const { api } = initializeFaro(
+      makeCoreConfig(
+        mockConfig({
+          transports: [transport],
+          batching: {},
+          instrumentations: [new SessionInstrumentation()],
+          sessionTracking: { enabled: true, persistent: false, samplingRate: 1 },
+        })
+      )!
+    );
+    jest.advanceTimersByTime(250);
+    transport.items.length = 0;
+    const capturedId = api.getSession()?.id;
+    api.pushEvent('buffered');
+    expect(transport.items).toEqual([]);
+    jest.setSystemTime(dateNow() + SESSION_INACTIVITY_TIME + 1);
+    jest.advanceTimersByTime(250);
+    expect(transport.items.map((item) => item.meta.session?.id)).toEqual([capturedId]);
+    expect(api.getSession()?.id).toBe(capturedId);
+    api.pushEvent('new-activity');
+    expect(api.getSession()?.id).not.toBe(capturedId);
+  });
+
+  describe.each([true, false])('immutable capture with persistent=%s', (persistent) => {
+    it.each([
+      ['inactivity', true, true],
+      ['inactivity', true, false],
+      ['inactivity', false, true],
+      ['lifetime', true, true],
+      ['lifetime', true, false],
+      ['lifetime', false, true],
+    ] as const)('preserves queued ownership across %s expiry (%s → %s)', (expiry, wasSampled, nextSampled) => {
+      const transport = new MockTransport();
+      mockStorage[STORAGE_KEY] = JSON.stringify(
+        createUserSessionObject({
+          sessionId: 'S0',
+          isSampled: wasSampled,
+          started: expiry === 'lifetime' ? dateNow() - SESSION_EXPIRATION_TIME + 1000 : dateNow(),
+        })
+      );
+      const { api } = initializeFaro(
+        makeCoreConfig(
+          mockConfig({
+            transports: [transport],
+            batching: {},
+            instrumentations: [new SessionInstrumentation()],
+            sessionTracking: { enabled: true, persistent, samplingRate: 1 },
+          })
+        )!
+      );
+      jest.advanceTimersByTime(250);
+      transport.items.length = 0;
+      api.pushEvent('before-expiry');
+      expect(transport.items).toEqual([]);
+      jest.setSystemTime(dateNow() + (expiry === 'lifetime' ? 2000 : SESSION_INACTIVITY_TIME + 1));
+      expect(api.getSession()?.id).toBe('S0');
+
+      jest.spyOn(samplingModuleMock, 'isSampled').mockReturnValue(nextSampled);
+      api.pushEvent('after-expiry');
+      const newSessionId = api.getSession()?.id;
+      expect(newSessionId).not.toBe('S0');
+      jest.advanceTimersByTime(250);
+
+      const before = transport.items.filter(
+        (item) => (item as TransportItem<EventEvent>).payload.name === 'before-expiry'
+      );
+      const after = transport.items.filter(
+        (item) => (item as TransportItem<EventEvent>).payload.name === 'after-expiry'
+      );
+      expect(before.map((item) => item.meta.session?.id)).toEqual(wasSampled ? ['S0'] : []);
+      expect(after.map((item) => item.meta.session?.id)).toEqual(nextSampled ? [newSessionId] : []);
+      expect(transport.items.every((item) => item.meta.session?.attributes?.['isSampled'] === undefined)).toBe(true);
+    });
+  });
+
+  it.each([true, false])(
+    'silently adopts a shared session (persistent=%s) without a lifecycle event.',
+    (persistent) => {
+      const transport = new MockTransport();
+      const onSessionChange = jest.fn();
+
+      // this document starts on S0 (resumed from shared storage)
+      mockStorage[STORAGE_KEY] = JSON.stringify(createUserSessionObject({ sessionId: 'S0' }));
+
+      const { api, metas } = initializeFaro(
+        mockConfig({
+          transports: [transport],
+          instrumentations: [new SessionInstrumentation()],
+          sessionTracking: {
+            enabled: true,
+            persistent,
+            samplingRate: 1,
+            onSessionChange,
+          },
+        })
+      );
+
+      expect(transport.items).toHaveLength(1);
+      expect((transport.items[0]! as TransportItem<EventEvent>).payload.name).toEqual(EVENT_SESSION_RESUME);
+      expect(metas.value.session?.id).toEqual('S0');
+
+      // clear the updateSession throttle, then another document rotates the shared
+      // session: a different, still-valid session lands in storage
+      jest.advanceTimersByTime(STORAGE_UPDATE_DELAY + 1);
+      mockStorage[STORAGE_KEY] = JSON.stringify({
+        ...createUserSessionObject({ sessionId: 'A1' }),
+        sessionMeta: { id: 'A1', attributes: { isSampled: 'true', previousSession: 'S0' } },
+      });
+
+      // a send triggers updateSession, which adopts A1
+      api.pushLog(['trigger']);
+
+      // this document converged to A1...
+      expect(metas.value.session?.id).toEqual('A1');
+      expect(transport.items).toHaveLength(2);
+      expect(transport.items[1]!.meta.session?.id).toEqual('A1');
+      expect(onSessionChange).not.toHaveBeenCalled();
+      // ...silently: no session_start / session_extend event was emitted
+      const lifecycleEvents = transport.items.filter((item) => {
+        const name = (item as TransportItem<EventEvent>).payload.name;
+        return name === EVENT_SESSION_START || name === EVENT_SESSION_EXTEND;
+      });
+      expect(lifecycleEvents).toHaveLength(0);
+    }
+  );
 
   it('Initialize session meta with user defined id and attributes provided via the initial session property.', () => {
     const mockSessionMeta: MetaSession = {
@@ -340,13 +593,13 @@ describe('SessionInstrumentation', () => {
 
   it('creates new session meta for browser with no faro session stored in web storage.', () => {
     const mockSessionMeta = { id: 'new-session', attributes: { isSampled: 'true' } };
-    jest.spyOn(createSessionMock, 'createSession').mockReturnValueOnce(mockSessionMeta);
 
     const { metas } = initializeFaro(
       mockConfig({
         instrumentations: [new SessionInstrumentation()],
         sessionTracking: {
           enabled: true,
+          generateSessionId: () => mockSessionMeta.id,
           samplingRate: 1, // default
         },
       })
@@ -471,6 +724,74 @@ describe('SessionInstrumentation', () => {
     api.pushLog(['this log should not be sent']);
     expect(transport.items).toHaveLength(3);
   });
+
+  it.each([true, false])(
+    'keeps SDK session state when setSession extends the current session with persistent=%s',
+    (persistent) => {
+      const sampler = jest.fn().mockReturnValueOnce(0).mockReturnValue(1);
+      const { api } = initializeFaro(
+        mockConfig({
+          instrumentations: [new SessionInstrumentation()],
+          sessionTracking: {
+            enabled: true,
+            persistent,
+            sampler,
+            session: {
+              id: 'current-session',
+              attributes: { previousSession: 'prior-session' },
+            },
+          },
+        })
+      );
+
+      const before = JSON.parse(mockStorage[STORAGE_KEY]!) as FaroUserSession;
+      sampler.mockClear();
+      jest.advanceTimersByTime(1);
+
+      api.setSession({ ...api.getSession()!, attributes: { customerAttribute: 'customer-value' } });
+
+      const after = JSON.parse(mockStorage[STORAGE_KEY]!) as FaroUserSession;
+      expect(sampler).not.toHaveBeenCalled();
+      expect(api.getSession()?.attributes?.['isSampled']).toBe('false');
+      expect(after).toMatchObject({
+        sessionId: before.sessionId,
+        isSampled: before.isSampled,
+        started: before.started,
+        lastActivity: before.lastActivity,
+        sessionMeta: {
+          id: before.sessionId,
+          attributes: {
+            customerAttribute: 'customer-value',
+            isSampled: before.isSampled.toString(),
+            previousSession: 'prior-session',
+          },
+        },
+      });
+    }
+  );
+
+  it.each([true, false])(
+    'keeps stored session overrides when setSession updates attributes with persistent=%s',
+    (persistent) => {
+      const { api } = initializeFaro(
+        mockConfig({
+          instrumentations: [new SessionInstrumentation()],
+          sessionTracking: {
+            enabled: true,
+            persistent,
+            session: {
+              id: 'current-session',
+              overrides: { serviceName: 'custom-service' },
+            },
+          },
+        })
+      );
+
+      api.setSession({ id: api.getSession()!.id, attributes: { customerAttribute: 'customer-value' } });
+
+      expect(api.getSession()?.overrides).toStrictEqual({ serviceName: 'custom-service' });
+    }
+  );
 
   it('Will use sampling decision from valid session from web storage.', () => {
     const initialIsSampled = true;

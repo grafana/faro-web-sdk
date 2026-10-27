@@ -26,8 +26,10 @@ export {
 
 export { PerformanceInstrumentation } from './performance';
 
-export { UserActionInstrumentation, userActionDataAttribute } from './userActions';
+export { UserActionInstrumentation, userActionDataAttribute, userActionTimeoutDataAttribute } from './userActions';
 
 export { CSPInstrumentation } from './csp';
 
 export { NavigationInstrumentation } from './navigation';
+
+export { FrustrationInstrumentation } from './frustration';

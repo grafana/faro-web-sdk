@@ -2,6 +2,9 @@
 
 Faro instrumentation for session replay with rrweb.
 
+Canvas 2D and WebGL content capture is not supported. Canvas elements can appear in
+the recorded DOM, but replaying their drawing content is not supported.
+
 ## Installation
 
 ```bash
@@ -35,14 +38,31 @@ initializeFaro({
 
 ### Privacy & Masking Options
 
-| Key                | Type                                              | Default              | Description                                                                                                                              |
-| ------------------ | ------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `maskAllInputs`    | `boolean`                                         | `true`               | Mask all input content as `*`                                                                                                            |
-| `maskInputOptions` | `MaskInputOptions`                                | `{ password: true }` | Selectively mask specific input types (used only when `maskAllInputs` is `false`)                                                        |
-| `maskInputFn`      | `(value: string, element: HTMLElement) => string` | `undefined`          | Customize mask input content recording logic                                                                                             |
-| `maskTextSelector` | `string`                                          | `'*'`                | CSS selector for elements whose text content should be masked                                                                            |
-| `blockSelector`    | `string`                                          | `undefined`          | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions |
-| `ignoreSelector`   | `string`                                          | `undefined`          | CSS selector for elements whose input events should be ignored                                                                           |
+| Key                | Type                                              | Default                 | Description                                                                                                                                                                  |
+| ------------------ | ------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sanitizeMetaHref` | `boolean`                                         | `true`                  | Strip credentials, query string, and fragment from `window.location.href` in rrweb Meta events before sending. URLs may still appear in transport metadata and DOM snapshots |
+| `maskAllInputs`    | `boolean`                                         | `true`                  | Mask all input content                                                                                                                                                       |
+| `maskInputOptions` | `MaskInputOptions`                                | `{ password: true }`    | Selectively mask specific input types (used only when `maskAllInputs` is `false`)                                                                                            |
+| `maskInputFn`      | `(value: string, element: HTMLElement) => string` | Fixed-length `'******'` | Customize mask input content recording logic. The default returns a fixed-length mask regardless of input length to prevent length leakage                                   |
+| `maskTextSelector` | `string`                                          | `'*'`                   | CSS selector for elements whose text content should be masked                                                                                                                |
+| `blockSelector`    | `string`                                          | `undefined`             | CSS selector for elements that should be blocked from recording. Blocked elements are replaced with a placeholder of the same dimensions                                     |
+| `ignoreSelector`   | `string`                                          | `undefined`             | CSS selector for elements whose input events should be ignored                                                                                                               |
+
+#### Built-in CSS classes
+
+These classes work without configuration and remain active alongside custom selectors:
+
+| Class            | Behavior                                                                       |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `grafana-mask`   | Masks text in the element and its descendants, not input values or attributes. |
+| `grafana-block`  | Excludes the subtree's content and replaces it with a layout placeholder.      |
+| `grafana-ignore` | Suppresses input-change recording on the matching input, textarea, or select.  |
+
+```html
+<span class="grafana-mask">Jane Doe</span>
+<div class="grafana-block">Sensitive content</div>
+<input class="grafana-ignore" type="search" />
+```
 
 #### `maskInputOptions`
 
@@ -72,10 +92,15 @@ initializeFaro({
 | `samplingRate`             | `number`                       | `1`      | Fraction of globally-sampled sessions that will be recorded. Applied on top of `sessionTracking.samplingRate`. Out-of-range values are clamped. |
 | `recordAfter`              | `'load' \| 'DOMContentLoaded'` | `'load'` | When to start recording if the document is not ready yet                                                                                        |
 | `recordCrossOriginIframes` | `boolean`                      | `false`  | Whether to record cross-origin iframes. rrweb must be injected in each child iframe for this to work                                            |
-| `recordCanvas`             | `boolean`                      | `false`  | Whether to record canvas element content                                                                                                        |
 | `collectFonts`             | `boolean`                      | `false`  | Whether to collect fonts used in the website                                                                                                    |
 | `inlineImages`             | `boolean`                      | `false`  | Whether to record image content                                                                                                                 |
 | `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                                                           |
+| `inactivityThresholdMs`    | `number`                       | `60000`  | Pause recording after this many milliseconds of inactivity; resumes automatically on the next interaction. Set to `0` to disable                |
+
+Once initialized, a `ReplayInstrumentation` instance can also be controlled
+explicitly with `pauseRecording()` and `resumeRecording()`. Resuming starts a
+new rrweb recording with a fresh DOM checkpoint. An explicitly paused recording
+stays paused until `resumeRecording()` is called.
 
 #### Sub-sampling example
 
@@ -132,13 +157,5 @@ new ReplayInstrumentation({
   blockSelector: '.payment-form, .credit-card-info',
   // Ignore certain elements (won't be recorded at all)
   ignoreSelector: '.analytics-widget',
-  // Filter or transform events before sending
-  beforeSend: (event) => {
-    // Example: Skip events that might contain sensitive data
-    if (event.type === 3 && event.data?.source === 'CanvasMutation') {
-      return null; // Skip this event
-    }
-    return event; // Send the event as-is
-  },
 });
 ```

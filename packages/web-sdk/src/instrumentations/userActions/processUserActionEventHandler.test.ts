@@ -55,6 +55,11 @@ describe('Utility functions', () => {
     expect(result).toBeUndefined();
   });
 
+  it('getUserActionNameFromElement returns undefined when the element is null', () => {
+    const result = getUserActionNameFromElement(null, defaultDataAttribute);
+    expect(result).toBeUndefined();
+  });
+
   it('unsubscribeAllMonitors calls unsubscribe on subscription', () => {
     const sub: Subscription = { unsubscribe: jest.fn() };
     unsubscribeAllMonitors(sub);
@@ -114,6 +119,77 @@ describe('getUserEventHandler', () => {
     processUserEvent(event);
 
     expect(startSpy).toHaveBeenCalledWith('my-action', {}, { triggerName: 'click' });
+  });
+
+  it('finds the data attribute on an ancestor when the event target is a nested child element', () => {
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+
+    const button = document.createElement('button');
+    button.setAttribute('data-foo-bar', 'save');
+    const span = document.createElement('span');
+    span.textContent = 'Save';
+    button.appendChild(span);
+
+    processUserEvent({ type: 'click', target: span } as unknown as PointerEvent);
+
+    expect(startSpy).toHaveBeenCalledWith('save', {}, { triggerName: 'click' });
+  });
+
+  it('does not start a user action when no ancestor has the data attribute', () => {
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+
+    const wrapper = document.createElement('div');
+    const span = document.createElement('span');
+    wrapper.appendChild(span);
+
+    processUserEvent({ type: 'click', target: span } as unknown as PointerEvent);
+
+    expect(startSpy).not.toHaveBeenCalled();
+  });
+
+  it('passes the element initial activity timeout to the user action start message', () => {
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+    const element = document.createElement('div');
+    element.setAttribute('data-foo-bar', 'my-action');
+    element.setAttribute('data-foo-bar-timeout', '450');
+
+    processUserEvent({ type: 'pointerdown', target: element } as unknown as PointerEvent);
+
+    expect(startSpy).toHaveBeenCalledWith('my-action', {}, { triggerName: 'pointerdown', initialActivityTimeout: 450 });
+  });
+
+  it('derives the timeout attribute from a camelCase action attribute ending in Name', () => {
+    faro.config!.userActionsInstrumentation!.dataAttributeName = 'customActionName';
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+    const element = document.createElement('div');
+    element.setAttribute('data-custom-action-name', 'my-action');
+    element.setAttribute('data-custom-action-timeout', '350');
+
+    processUserEvent({ type: 'pointerdown', target: element } as unknown as PointerEvent);
+
+    expect(startSpy).toHaveBeenCalledWith('my-action', {}, { triggerName: 'pointerdown', initialActivityTimeout: 350 });
+  });
+
+  it('passes a malformed element timeout through for validation by the instrumentation', () => {
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+    const element = document.createElement('div');
+    element.setAttribute('data-foo-bar', 'my-action');
+    element.setAttribute('data-foo-bar-timeout', 'not-a-number');
+
+    processUserEvent({ type: 'pointerdown', target: element } as unknown as PointerEvent);
+
+    expect(startSpy).toHaveBeenCalledWith('my-action', {}, { triggerName: 'pointerdown', initialActivityTimeout: NaN });
+  });
+
+  it('does not throw when the configured data attribute name contains CSS selector special characters', () => {
+    faro.config!.userActionsInstrumentation!.dataAttributeName = 'data-foo]';
+    const { processUserEvent } = getUserEventHandler(faro as Faro);
+
+    const element = document.createElement('div');
+    const event = { type: 'click', target: element } as unknown as PointerEvent;
+
+    expect(() => processUserEvent(event)).not.toThrow();
+    expect(startSpy).not.toHaveBeenCalled();
   });
 
   it('does not start a new action if one already exists', () => {

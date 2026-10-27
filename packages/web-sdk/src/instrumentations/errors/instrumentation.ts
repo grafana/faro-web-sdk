@@ -5,7 +5,7 @@ import { registerOnunhandledrejection } from './registerOnunhandledrejection';
 
 export class ErrorsInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-errors';
-  readonly version = VERSION;
+  readonly version: string = VERSION;
 
   initialize(): void {
     this.logDebug('Initializing');
