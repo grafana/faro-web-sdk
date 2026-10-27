@@ -18,6 +18,17 @@
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
 - **web-sdk:** prevent duplicate sessions when Chrome activates a prerendered page
 
+## [2.14.0](https://github.com/grafana/faro-web-sdk/compare/v2.13.0...v2.14.0) (2026-10-27)
+
+### Features
+
+- **ai-skill:** add Session Replay to faro-web setup skill ([#2323](https://github.com/grafana/faro-web-sdk/issues/2323)) ([0984c67](https://github.com/grafana/faro-web-sdk/commit/0984c675eac846726e804cc21dbbfad7a98c7476))
+- **web-sdk:** enable navigation instrumentation by default ([#2334](https://github.com/grafana/faro-web-sdk/issues/2334)) ([b2e6418](https://github.com/grafana/faro-web-sdk/commit/b2e64183d310d2a7bc37d1b9f02075c5dd57b860))
+
+### Bug Fixes
+
+- emit navigation changes after commit ([#2345](https://github.com/grafana/faro-web-sdk/issues/2345)) ([f1b27d3](https://github.com/grafana/faro-web-sdk/commit/f1b27d3d629c0984a9951cea390b267d4d97825e))
+
 ## [2.13.0](https://github.com/grafana/faro-web-sdk/compare/v2.12.1...v2.13.0) (2026-10-22)
 
 ### Features
