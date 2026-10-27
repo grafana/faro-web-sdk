@@ -65,12 +65,11 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     ...restProperties
   }: BrowserConfig = browserConfig;
 
-  const resolvedInstrumentations = getWebInstrumentations(
-    {
+  const resolvedInstrumentations =
+    instrumentations ??
+    getWebInstrumentations({
       trackNavigation: experimental?.trackNavigation,
-    },
-    instrumentations
-  );
+    });
 
   // Extract user actions instrumentation with defaults
   const userActionsInstrumentation = {

@@ -15,13 +15,8 @@ import {
 
 import type { GetWebInstrumentationsOptions } from './types';
 
-const navigationInstrumentationName = '@grafana/faro-web-sdk:instrumentation-navigation';
-
-export function getWebInstrumentations(
-  options: GetWebInstrumentationsOptions = {},
-  customInstrumentations?: Instrumentation[]
-): Instrumentation[] {
-  const instrumentations: Instrumentation[] = customInstrumentations ?? [
+export function getWebInstrumentations(options: GetWebInstrumentationsOptions = {}): Instrumentation[] {
+  const instrumentations: Instrumentation[] = [
     new UserActionInstrumentation(),
     new ErrorsInstrumentation(),
     new WebVitalsInstrumentation(),
@@ -31,23 +26,17 @@ export function getWebInstrumentations(
     new FrustrationInstrumentation(),
   ];
 
-  if (customInstrumentations === undefined) {
-    if (options.enablePerformanceInstrumentation !== false) {
-      // unshift to ensure that initialization starts before the other instrumentations
-      instrumentations.unshift(new PerformanceInstrumentation());
-    }
-
-    if (options.enableContentSecurityPolicyInstrumentation !== false) {
-      instrumentations.push(new CSPInstrumentation());
-    }
-
-    if (options.captureConsole !== false) {
-      instrumentations.push(new ConsoleInstrumentation());
-    }
+  if (options.enablePerformanceInstrumentation !== false) {
+    // unshift to ensure that initialization starts before the other instrumentations
+    instrumentations.unshift(new PerformanceInstrumentation());
   }
 
-  if (options.trackNavigation === false) {
-    return instrumentations.filter(({ name }) => name !== navigationInstrumentationName);
+  if (options.enableContentSecurityPolicyInstrumentation !== false) {
+    instrumentations.push(new CSPInstrumentation());
+  }
+
+  if (options.captureConsole !== false) {
+    instrumentations.push(new ConsoleInstrumentation());
   }
 
   return instrumentations;
