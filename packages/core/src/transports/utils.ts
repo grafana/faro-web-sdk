@@ -5,6 +5,9 @@ import type { EventEvent, ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent
 import { TransportItemType, transportItemTypeToBodyKey } from './const';
 import type { TransportBody, TransportItem } from './types';
 
+const SEMVER_REGEX =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+
 export function mergeResourceSpans(traces?: TraceEvent, resourceSpans?: IResourceSpans[]): TraceEvent | undefined {
   if (resourceSpans === undefined) {
     return traces;
@@ -41,7 +44,7 @@ export function getTransportBody(item: TransportItem[]): TransportBody {
   };
 
   if (item[0] !== undefined) {
-    body.meta = item[0].meta;
+    body.meta = sanitizeSdkVersion(item[0].meta);
   }
 
   item.forEach((currentItem: TransportItem) => {
@@ -70,4 +73,20 @@ export function getTransportBody(item: TransportItem[]): TransportBody {
   });
 
   return body;
+}
+
+function sanitizeSdkVersion(meta: TransportItem['meta']): TransportItem['meta'] {
+  const sdk = meta.sdk;
+
+  if (sdk?.version === undefined || SEMVER_REGEX.test(sdk.version)) {
+    return meta;
+  }
+
+  const sanitizedSdk = { ...sdk };
+  delete sanitizedSdk.version;
+
+  return {
+    ...meta,
+    sdk: sanitizedSdk,
+  };
 }
