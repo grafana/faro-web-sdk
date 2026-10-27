@@ -42,20 +42,12 @@ Faro has two complementary approaches for tracking SPA navigations. Present both
 
 ### B1. Auto-navigation tracking (any framework)
 
-Add `experimental.trackNavigation` to the Faro config:
+Auto-navigation tracking is enabled by default in the Faro Web SDK, so no additional configuration is needed. It is included in
+`getWebInstrumentations()`. To disable it, pass `trackNavigation: false` to `getWebInstrumentations()` or provide a custom
+`instrumentations` array without `NavigationInstrumentation`.
 
-```ts
-initializeFaro({
-  // ... existing config ...
-  experimental: {
-    trackNavigation: true,
-  },
-});
-```
-
-This is already included in `getWebInstrumentations()` but filtered out by default. The flag enables it. No other code changes needed.
-
-**What it captures:** `faro.navigation` events with `fromUrl`, `toUrl`, `sameDocument: "true"`, and `duration`. Uses the Navigation API in modern browsers, falls back to History API patching (`pushState`, `replaceState`, `popstate`).
+**What it captures:** `faro.navigation` events with `fromUrl`, `toUrl`, `sameDocument: "true"`, and `duration`. Uses the
+Navigation API in modern browsers, falling back to History API patching (`pushState`, `replaceState`, `popstate`).
 
 ### B2. Router integration
 
