@@ -14,4 +14,10 @@ describe('getWebInstrumentations', () => {
 
     expect(instrumentations.some(({ name }) => name === navigationInstrumentationName)).toBe(false);
   });
+
+  it('excludes navigation instrumentation from custom instrumentations when trackNavigation is false', () => {
+    const instrumentations = getWebInstrumentations({ trackNavigation: false }, getWebInstrumentations());
+
+    expect(instrumentations.some(({ name }) => name === navigationInstrumentationName)).toBe(false);
+  });
 });

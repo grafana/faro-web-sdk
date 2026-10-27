@@ -9,7 +9,7 @@ import {
   isEmpty,
   isObject,
 } from '@grafana/faro-core';
-import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
@@ -65,12 +65,11 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     ...restProperties
   }: BrowserConfig = browserConfig;
 
-  const resolvedInstrumentations = getFilteredInstrumentations(
-    instrumentations ??
-      getWebInstrumentations({
-        trackNavigation: experimental?.trackNavigation,
-      }),
-    experimental?.trackNavigation
+  const resolvedInstrumentations = getWebInstrumentations(
+    {
+      trackNavigation: experimental?.trackNavigation,
+    },
+    instrumentations
   );
 
   // Extract user actions instrumentation with defaults
@@ -126,19 +125,6 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     userActionsInstrumentation,
   };
-}
-
-function getFilteredInstrumentations(
-  instrumentations: Instrumentation[],
-  legacyTrackNavigation?: boolean
-): Instrumentation[] {
-  if (legacyTrackNavigation !== false) {
-    return instrumentations;
-  }
-
-  return instrumentations.filter((instrumentation) => {
-    return instrumentation.name !== '@grafana/faro-web-sdk:instrumentation-navigation';
-  });
 }
 
 function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
