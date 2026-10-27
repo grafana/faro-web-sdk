@@ -262,7 +262,7 @@ describe('config', () => {
     expect(config.experimental?.trackNavigation).toBe(true);
   });
 
-  it('uses custom instrumentations without filtering them', () => {
+  it('filters navigation from custom instrumentations for the deprecated option', () => {
     const config = makeCoreConfig({
       url: 'http://example.com/my-collector',
       app: {},
@@ -275,7 +275,7 @@ describe('config', () => {
     const navigationInstrumentation = config.instrumentations.find(
       (instr) => instr.name === '@grafana/faro-web-sdk:instrumentation-navigation'
     );
-    expect(navigationInstrumentation).toBeDefined();
+    expect(navigationInstrumentation).toBeUndefined();
     expect(config.experimental?.trackNavigation).toBe(false);
   });
 

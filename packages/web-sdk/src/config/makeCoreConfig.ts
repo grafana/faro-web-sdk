@@ -70,6 +70,10 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     getWebInstrumentations({
       trackNavigation: experimental?.trackNavigation,
     });
+  const instrumentationsWithLegacyOptOut =
+    experimental?.trackNavigation === false
+      ? resolvedInstrumentations.filter(({ name }) => name !== '@grafana/faro-web-sdk:instrumentation-navigation')
+      : resolvedInstrumentations;
 
   // Extract user actions instrumentation with defaults
   const userActionsInstrumentation = {
@@ -93,7 +97,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations: resolvedInstrumentations,
+    instrumentations: instrumentationsWithLegacyOptOut,
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
