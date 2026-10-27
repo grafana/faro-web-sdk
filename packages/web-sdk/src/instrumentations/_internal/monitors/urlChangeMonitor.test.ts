@@ -316,6 +316,25 @@ describe('monitorNavigationTransitions', () => {
     });
   });
 
+  it('counts a transition once when the timer of an earlier navigation also sees it', () => {
+    const observable = monitorNavigationTransitions();
+    const subscriber = jest.fn();
+    observable.subscribe(subscriber);
+
+    // The first navigation finishes (or is aborted) before its timer runs, and a second one starts with a
+    // deferred commit, so both timers see the second transition
+    navigation._dispatch('navigate');
+    navigation.transition = { committed: createDeferred().promise };
+    navigation._dispatch('navigate');
+    jest.runAllTimers();
+
+    expect(subscriber).toHaveBeenCalledTimes(1);
+    expect(subscriber).toHaveBeenCalledWith({
+      type: MESSAGE_TYPE_NAVIGATION_TRANSITION_START,
+      transitionId: expect.any(String),
+    });
+  });
+
   it('ignores navigations that are not intercepted', () => {
     const observable = monitorNavigationTransitions();
     const subscriber = jest.fn();

@@ -121,6 +121,7 @@ type NavigationTransitionMessage = NavigationTransitionStartMessage | Navigation
 let navigationTransitionObservable: Observable<NavigationTransitionMessage> | undefined;
 let transitionNavigation: any;
 let onNavigateHandler: (() => void) | undefined;
+let trackedTransitions = new WeakSet<object>();
 
 /**
  * Monitors intercepted Navigation API navigations until they commit. A router can defer the commit with
@@ -146,10 +147,14 @@ export function monitorNavigationTransitions(): Observable<NavigationTransitionM
       try {
         // Only intercepted navigations have a transition. Without precommitHandler support there is no
         // `committed` promise, and those navigations always commit immediately.
-        const committed = navigationApi.transition?.committed;
-        if (typeof committed?.then !== 'function') {
+        const transition = navigationApi.transition;
+        const committed = transition?.committed;
+        // The timer of an earlier navigation can run after a later one has started and see its transition, so
+        // count each transition once, whichever timer sees it first
+        if (typeof committed?.then !== 'function' || trackedTransitions.has(transition)) {
           return;
         }
+        trackedTransitions.add(transition);
 
         const transitionId = genShortID();
         observable.notify({ type: MESSAGE_TYPE_NAVIGATION_TRANSITION_START, transitionId });
@@ -193,6 +198,7 @@ export function __resetUrlChangeMonitorForTests() {
   navigationTransitionObservable = undefined;
   transitionNavigation = undefined;
   onNavigateHandler = undefined;
+  trackedTransitions = new WeakSet<object>();
   isInstrumented = false;
   lastHref = undefined;
   onPopStateHandler = undefined;
