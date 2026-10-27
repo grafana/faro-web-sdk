@@ -38,21 +38,22 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
     lastHref = location.href;
   }
 
-  function emit(trigger: UrlChangeMessage['trigger'], toOverride?: string, fromOverride?: string) {
+  function emit(trigger: UrlChangeMessage['trigger'], toOverride?: string) {
     const next = toOverride ?? location.href;
-    const previous = fromOverride ?? lastHref;
-    if (previous && next !== previous) {
-      urlChangeObservable!.notify({ type: MESSAGE_TYPE_URL_CHANGE, from: previous, to: next, trigger });
+    if (next !== lastHref) {
+      urlChangeObservable!.notify({ type: MESSAGE_TYPE_URL_CHANGE, from: lastHref!, to: next, trigger });
       lastHref = next;
     }
   }
 
   if (!isInstrumented) {
     const navigationApi = (window as any).navigation;
+    // currentEntry is null where the API has entries and events disabled (e.g. opaque origins), and
+    // currententrychange never fires there
     const hasNavigation =
       typeof navigationApi?.addEventListener === 'function' &&
       typeof navigationApi?.removeEventListener === 'function' &&
-      'currentEntry' in navigationApi;
+      navigationApi.currentEntry != null;
 
     if (hasNavigation) {
       // Prefer Navigation API when supported: do not patch history or add popstate/hashchange listeners
@@ -61,8 +62,7 @@ export function monitorUrlChanges(): Observable<UrlChangeMessage> {
           const currentUrl = navigationApi.currentEntry?.url;
           const trigger = getNavigationTrigger(event?.navigationType);
           if (typeof currentUrl === 'string' && trigger) {
-            const fromUrl = event?.from?.url;
-            emit(trigger, currentUrl, typeof fromUrl === 'string' ? fromUrl : undefined);
+            emit(trigger, currentUrl);
           }
         } catch (_err) {
           // Swallow to avoid impacting host app

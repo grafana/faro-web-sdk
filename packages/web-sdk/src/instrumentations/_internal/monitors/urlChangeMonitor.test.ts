@@ -70,6 +70,9 @@ describe('monitorUrlChanges', () => {
     expect(pushStateSpy).toHaveBeenCalled();
     expect(replaceStateSpy).toHaveBeenCalled();
 
+    // The monitor captured the spies as the originals, so reset it before restoring them. Otherwise the reset in
+    // afterEach puts the spies back on window.history, and resetAllMocks turns them into no-ops for later tests.
+    __resetUrlChangeMonitorForTests();
     addEventListenerSpy.mockRestore();
     pushStateSpy.mockRestore();
     replaceStateSpy.mockRestore();
@@ -177,7 +180,32 @@ describe('monitorUrlChanges', () => {
       });
       expect(subscriber).not.toHaveBeenCalled();
 
+      // No `from` on the event, so the source URL comes from the monitor's own state
       (window as any).navigation.currentEntry = { url: initialHref + '/committed' };
+      (window as any).navigation._dispatch('currententrychange', { navigationType: 'push' });
+
+      expect(subscriber).toHaveBeenCalledTimes(1);
+      expect(subscriber).toHaveBeenCalledWith({
+        type: MESSAGE_TYPE_URL_CHANGE,
+        from: initialHref,
+        to: initialHref + '/committed',
+        trigger: 'pushState',
+      });
+    });
+
+    it('emits once when a listener redirects while handling currententrychange', () => {
+      const initialHref = window.location.href;
+      const observable = monitorUrlChanges();
+      const subscriber = jest.fn();
+      observable.subscribe(subscriber);
+
+      // A listener registered before ours redirects /first to /redirected, so ours sees the nested change
+      // first and then the outer one, both with the redirected URL as the current entry
+      (window as any).navigation.currentEntry = { url: initialHref + '/redirected' };
+      (window as any).navigation._dispatch('currententrychange', {
+        from: { url: initialHref + '/first' },
+        navigationType: 'replace',
+      });
       (window as any).navigation._dispatch('currententrychange', {
         from: { url: initialHref },
         navigationType: 'push',
@@ -187,7 +215,26 @@ describe('monitorUrlChanges', () => {
       expect(subscriber).toHaveBeenCalledWith({
         type: MESSAGE_TYPE_URL_CHANGE,
         from: initialHref,
-        to: initialHref + '/committed',
+        to: initialHref + '/redirected',
+        trigger: 'replaceState',
+      });
+    });
+
+    it('falls back to history patching when there is no current entry', () => {
+      // Opaque-origin documents have the Navigation API, but no current entry and no currententrychange events
+      (window as any).navigation.currentEntry = null;
+      const initialHref = window.location.href;
+      const observable = monitorUrlChanges();
+      const subscriber = jest.fn();
+      observable.subscribe(subscriber);
+
+      window.history.pushState({}, '', '/opaque-origin');
+
+      expect(subscriber).toHaveBeenCalledTimes(1);
+      expect(subscriber).toHaveBeenCalledWith({
+        type: MESSAGE_TYPE_URL_CHANGE,
+        from: initialHref,
+        to: window.location.href,
         trigger: 'pushState',
       });
     });
