@@ -10,7 +10,7 @@ import {
   isObject,
   isToString,
 } from '@grafana/faro-core';
-import type { Config, Instrumentation, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
+import type { Config, MetaItem, MetaSession, Transport } from '@grafana/faro-core';
 
 import { defaultEventDomain } from '../consts';
 import { parseStacktrace } from '../instrumentations';
@@ -57,7 +57,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     dedupe = true,
     eventDomain = defaultEventDomain,
     globalObjectKey = defaultGlobalObjectKey,
-    instrumentations = getWebInstrumentations(),
+    instrumentations,
     internalLoggerLevel = defaultInternalLoggerLevel,
     isolate = false,
     logArgsSerializer = defaultLogArgsSerializer,
@@ -71,8 +71,15 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     ...restProperties
   }: BrowserConfig = browserConfig;
 
-  // Extract experimental features with defaults
-  const trackNavigation = experimental?.trackNavigation ?? false;
+  const resolvedInstrumentations =
+    instrumentations ??
+    getWebInstrumentations({
+      trackNavigation: experimental?.trackNavigation,
+    });
+  const instrumentationsWithLegacyOptOut =
+    experimental?.trackNavigation === false
+      ? resolvedInstrumentations.filter(({ name }) => name !== '@grafana/faro-web-sdk:instrumentation-navigation')
+      : resolvedInstrumentations;
 
   // Extract user actions instrumentation with defaults
   const userActionsInstrumentation = {
@@ -96,7 +103,7 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
     },
     dedupe: dedupe,
     globalObjectKey,
-    instrumentations: getFilteredInstrumentations(instrumentations, browserConfig),
+    instrumentations: instrumentationsWithLegacyOptOut,
     internalLoggerLevel,
     isolate,
     logArgsSerializer,
@@ -122,25 +129,11 @@ export function makeCoreConfig(browserConfig: BrowserConfig): Config {
         sessionTracking: browserConfig.sessionTracking,
       }),
     },
-    userActionsInstrumentation,
     experimental: {
-      trackNavigation,
+      trackNavigation: experimental?.trackNavigation ?? true,
     },
+    userActionsInstrumentation,
   };
-}
-
-function getFilteredInstrumentations(
-  instrumentations: Instrumentation[],
-  { experimental }: BrowserConfig
-): Instrumentation[] {
-  const trackNavigation = experimental?.trackNavigation ?? false;
-
-  return instrumentations.filter((instr) => {
-    if (instr.name === '@grafana/faro-web-sdk:instrumentation-navigation' && !trackNavigation) {
-      return false;
-    }
-    return true;
-  });
 }
 
 function createDefaultMetas(browserConfig: BrowserConfig): MetaItem[] {
