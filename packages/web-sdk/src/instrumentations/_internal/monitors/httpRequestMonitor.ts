@@ -68,7 +68,7 @@ function monitorXhr({
   }
 
   XMLHttpRequest.prototype.open = function () {
-    const url = arguments[1];
+    const url = getUrlFromResource(arguments[1]) ?? '';
     const isIgnoredUrl = isUrlIgnored(url);
     const method = arguments[0];
 
