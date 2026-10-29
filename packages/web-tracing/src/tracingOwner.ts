@@ -1,5 +1,6 @@
 import { globalObject } from '@grafana/faro-web-sdk';
 
+import { resetTracingRegistryForTests } from './tracingRegistry';
 import type { MatchUrlDefinitions } from './types';
 
 /**
@@ -87,4 +88,5 @@ export function addPropagateTraceHeaderCorsUrls(urls?: MatchUrlDefinitions): Arr
  */
 export function resetTracingOwnerForTests(): void {
   delete getGlobal()[tracingOwnerKey];
+  resetTracingRegistryForTests();
 }

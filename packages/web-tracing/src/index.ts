@@ -6,7 +6,8 @@ export { TracingInstrumentation } from './instrumentation';
 
 export { getSamplingDecision } from './sampler';
 
-export type { FaroTraceExporterConfig, TracingInstrumentationOptions } from './types';
+export type { FaroTraceExporterConfig, TracingInstrumentationOptions, UrlMatcher, UrlMatcherTarget } from './types';
+export type { TracingMode } from './tracingRegistry';
 
 export { setSpanStatusOnFetchError, fetchCustomAttributeFunctionWithDefaults } from './instrumentationUtils';
 

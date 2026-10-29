@@ -24,6 +24,10 @@ export class FaroXhrInstrumentation extends XMLHttpRequestInstrumentation {
     return (original: OpenFunction): OpenFunction => {
       const plugin = this;
       return function patchOpen(this: XMLHttpRequest, ...args): void {
+        if (!(plugin as unknown as { _isEnabled: boolean })._isEnabled) {
+          return original.apply(this, args);
+        }
+
         let span: Span | undefined;
         try {
           const method: string = args[0];

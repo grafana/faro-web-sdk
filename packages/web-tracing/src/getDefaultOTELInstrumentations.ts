@@ -10,17 +10,28 @@ import {
 } from './instrumentationUtils';
 import type { DefaultInstrumentationsOptions, InstrumentationOption } from './types';
 
-export function getDefaultOTELInstrumentations(options: DefaultInstrumentationsOptions = {}): InstrumentationOption[] {
-  const { fetchInstrumentationOptions, xhrInstrumentationOptions, ...sharedOptions } = options;
+type InternalDefaultInstrumentationsOptions = DefaultInstrumentationsOptions & {
+  shouldRunFaroDefaults?: (span: Span) => boolean;
+};
 
-  const fetchOpts = createFetchInstrumentationOptions(fetchInstrumentationOptions, sharedOptions);
-  const xhrOpts = createXhrInstrumentationOptions(xhrInstrumentationOptions, sharedOptions);
+export function getDefaultOTELInstrumentations(
+  options: InternalDefaultInstrumentationsOptions = {}
+): InstrumentationOption[] {
+  const { fetchInstrumentationOptions, xhrInstrumentationOptions, shouldRunFaroDefaults, ...sharedOptions } = options;
+
+  const fetchOpts = createFetchInstrumentationOptions(
+    fetchInstrumentationOptions,
+    sharedOptions,
+    shouldRunFaroDefaults
+  );
+  const xhrOpts = createXhrInstrumentationOptions(xhrInstrumentationOptions, sharedOptions, shouldRunFaroDefaults);
 
   return [new FetchInstrumentation(fetchOpts), new FaroXhrInstrumentation(xhrOpts)];
 }
 function createFetchInstrumentationOptions(
   fetchInstrumentationOptions: DefaultInstrumentationsOptions['fetchInstrumentationOptions'],
-  sharedOptions: Record<string, unknown>
+  sharedOptions: Record<string, unknown>,
+  shouldRunFaroDefaults?: (span: Span) => boolean
 ) {
   return {
     ...sharedOptions,
@@ -29,18 +40,22 @@ function createFetchInstrumentationOptions(
     ...fetchInstrumentationOptions,
     // always keep these functions, they compose the caller's callback with Faro's own
     applyCustomAttributesOnSpan: fetchCustomAttributeFunctionWithDefaults(
-      fetchInstrumentationOptions?.applyCustomAttributesOnSpan
+      fetchInstrumentationOptions?.applyCustomAttributesOnSpan,
+      shouldRunFaroDefaults
     ),
-    requestHook: fetchRequestHookWithDefaults(fetchInstrumentationOptions?.requestHook),
+    requestHook: fetchRequestHookWithDefaults(fetchInstrumentationOptions?.requestHook, shouldRunFaroDefaults),
   };
 }
 
 /**
  * Adds the active user action to every span, then runs the caller's own hook.
  */
-function fetchRequestHookWithDefaults(callback?: FetchRequestHookFunction) {
+function fetchRequestHookWithDefaults(
+  callback?: FetchRequestHookFunction,
+  shouldRunFaroDefaults?: (span: Span) => boolean
+) {
   return (span: Span, request: Request | RequestInit) => {
-    const currentAction = faro.api.getActiveUserAction();
+    const currentAction = shouldRunFaroDefaults?.(span) === false ? undefined : faro.api.getActiveUserAction();
     if (
       currentAction &&
       (currentAction as unknown as UserActionInternalInterface)?.getState() === UserActionState.Started
@@ -55,7 +70,8 @@ function fetchRequestHookWithDefaults(callback?: FetchRequestHookFunction) {
 
 function createXhrInstrumentationOptions(
   xhrInstrumentationOptions: DefaultInstrumentationsOptions['xhrInstrumentationOptions'],
-  sharedOptions: Record<string, unknown>
+  sharedOptions: Record<string, unknown>,
+  shouldRunFaroDefaults?: (span: Span) => boolean
 ) {
   return {
     ...sharedOptions,
@@ -64,7 +80,8 @@ function createXhrInstrumentationOptions(
     ...xhrInstrumentationOptions,
     // always keep this function
     applyCustomAttributesOnSpan: xhrCustomAttributeFunctionWithDefaults(
-      xhrInstrumentationOptions?.applyCustomAttributesOnSpan
+      xhrInstrumentationOptions?.applyCustomAttributesOnSpan,
+      shouldRunFaroDefaults
     ),
   };
 }
