@@ -7,26 +7,37 @@ See [quick start document][quick-start] for instructions how to set up and use.
 
 ## Multiple Faro instances on one page (micro-frontends)
 
-OpenTelemetry allows only a single global tracer provider, propagator and context manager per
-browsing context, and the fetch/XHR instrumentations patch the global `fetch`/`XMLHttpRequest` only
-once. Because of this, when several Faro instances run on the same page (for example in a
-micro-frontend architecture), **only the first instance to initialize tracing owns it**: it registers
-the tracer provider and instruments fetch/XHR. Any Faro instance that adds a `TracingInstrumentation`
-afterwards detects the existing owner, logs a warning, and does not register a second provider or
-re-patch fetch/XHR (this also avoids OpenTelemetry "duplicate registration" errors).
+Tracing is legacy-compatible by default. The first tracing-enabled instance selects the page mode;
+omitting `mode` selects `legacy`, while `mode: 'routing'` opts the page into shared network routing.
+The mode is fixed for the page lifetime, and later instances inherit it. An external OpenTelemetry
+provider causes Faro to yield without patching fetch/XHR.
 
-As a result, **all spans are exported by the owning instance** — using its exporter, its resource
-(`service.name`), and its collector — no matter which instance created them, and only the owner
-produces automatic fetch/XHR spans. Later instances register no exporter of their own, so they never
-export spans directly; they can still create spans against the shared provider via
-`faro.api.getOTEL()` (for example, manual spans), but those spans are exported by the owning instance
-and attributed to it. This applies regardless of the `isolate` config option, since tracer-provider
-registration and fetch/XHR patching are inherently global.
+Routing mode lets each app retain its own provider, resource (`service.name`), processors, exporter,
+transport, credentials, and callbacks while one page-owned fetch/XHR capture wrapper resolves every
+request. Configure it on each routing-enabled instance:
 
-Cross-origin trace-header propagation is preserved across instances: every instance's
-`propagateTraceHeaderCorsUrls` is merged into the owner, so the owning instance still injects W3C
-trace headers for URLs configured by any instance. Per-instance custom span attributes
-(`applyCustomAttributesOnSpan`) are not merged — only the owner's are applied.
+```ts
+new TracingInstrumentation({
+  mode: 'routing',
+  apiUrlMatchers: [{ pattern: 'https://api.example.test/orders', target: 'full-url' }],
+  pageRouteMatchers: [{ pattern: '/orders', target: 'pathname' }],
+  drainTimeoutMs: 30_000,
+});
+```
+
+Matchers are exact strings or regular expressions and explicitly target the full URL (including
+query/hash) or pathname. A unique API claimant wins; otherwise a unique current page-route claimant
+wins across all active apps; ambiguous or unresolved requests use the active global/non-isolated app,
+or the earliest active isolated app. Ownership is fixed at fetch/span creation or XHR `open()` and
+is not reassigned by navigation or later registration.
+
+Call `destroy()` when an app unmounts. New requests stop selecting it, while already-started spans
+finish through its original pipeline until the single bounded drain deadline (default 30 seconds,
+maximum 5 minutes; `0` expires immediately). When no active app remains, capture stays patched but is
+dormant and is re-enabled for a later registration. Collector exclusions remain page-wide during
+drain; app-specific exclusions and pause suppress the span, Faro HTTP event, and Faro headers without
+rerouting. Phase 1 does not infer ownership from JavaScript stacks. To roll back routing, select
+`mode: 'legacy'` on the next page load; the live global provider is not replaced in place.
 
 [faro-web-sdk-package]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk
 [opentelemetry-js]: https://opentelemetry.io/docs/instrumentation/js/

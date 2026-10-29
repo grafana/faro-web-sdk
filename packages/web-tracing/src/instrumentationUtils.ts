@@ -44,19 +44,25 @@ function setSpanStatus(span: Span, httpStatusCode?: number) {
 }
 
 export function fetchCustomAttributeFunctionWithDefaults(
-  callback?: FetchCustomAttributeFunction
+  callback?: FetchCustomAttributeFunction,
+  shouldRunDefaults?: (span: Span) => boolean
 ): (span: Span, request: Request | RequestInit, result: Response | FetchError) => void {
   return (span: Span, request: Request | RequestInit, result: Response | FetchError) => {
-    setSpanStatusOnFetchError(span, request, result);
+    if (shouldRunDefaults?.(span) !== false) {
+      setSpanStatusOnFetchError(span, request, result);
+    }
     callback?.(span, request, result);
   };
 }
 
 export function xhrCustomAttributeFunctionWithDefaults(
-  callback?: XHRCustomAttributeFunction
+  callback?: XHRCustomAttributeFunction,
+  shouldRunDefaults?: (span: Span) => boolean
 ): (span: Span, xhr: XMLHttpRequest) => void {
   return (span: Span, xhr: XMLHttpRequest) => {
-    setSpanStatusOnXMLHttpRequestError(span, xhr);
+    if (shouldRunDefaults?.(span) !== false) {
+      setSpanStatusOnXMLHttpRequestError(span, xhr);
+    }
     callback?.(span, xhr);
   };
 }
