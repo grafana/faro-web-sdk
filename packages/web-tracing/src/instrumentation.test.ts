@@ -1,5 +1,7 @@
+import { context, propagation, trace } from '@opentelemetry/api';
+import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
+import { StackContextManager, TracerProvider } from '@opentelemetry/sdk-trace';
 
 import type { API, Config, InternalLogger, Metas, Transports } from '@grafana/faro-web-sdk';
 
@@ -43,13 +45,15 @@ describe('TracingInstrumentation single-owner behavior', () => {
   let registerSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    registerSpy = jest.spyOn(WebTracerProvider.prototype, 'register').mockImplementation(() => {});
+    registerSpy = jest.spyOn(trace, 'setGlobalTracerProvider').mockReturnValue(true);
+    jest.spyOn(context, 'setGlobalContextManager').mockReturnValue(true);
+    jest.spyOn(propagation, 'setGlobalPropagator').mockReturnValue(true);
   });
 
   afterEach(() => {
     resetTracingOwnerForTests();
     jest.clearAllMocks();
-    registerSpy.mockRestore();
+    jest.restoreAllMocks();
   });
 
   it('registers the provider and instrumentations for the first (owning) instance', () => {
@@ -58,8 +62,42 @@ describe('TracingInstrumentation single-owner behavior', () => {
     instrumentation.initialize();
 
     expect(registerSpy).toHaveBeenCalledTimes(1);
+    expect(registerSpy).toHaveBeenCalledWith(expect.any(TracerProvider));
     expect(registerInstrumentations).toHaveBeenCalledTimes(1);
     expect(api.initOTEL).toHaveBeenCalledTimes(1);
+  });
+
+  it('enables and registers the default stack context manager', () => {
+    const enable = jest.spyOn(StackContextManager.prototype, 'enable');
+    const { instrumentation } = setupInstrumentation('app-a');
+
+    instrumentation.initialize();
+
+    expect(enable).toHaveBeenCalledTimes(1);
+    expect(context.setGlobalContextManager).toHaveBeenCalledWith(enable.mock.instances[0]);
+  });
+
+  it('enables and registers the supplied context manager', () => {
+    const contextManager = new StackContextManager();
+    const enable = jest.spyOn(contextManager, 'enable');
+    const { instrumentation } = setupInstrumentation('app-a', { contextManager });
+
+    instrumentation.initialize();
+
+    expect(enable).toHaveBeenCalledTimes(1);
+    expect(context.setGlobalContextManager).toHaveBeenCalledWith(contextManager);
+  });
+
+  it('registers the pausable wrapper around the supplied propagator', () => {
+    const propagator = new W3CTraceContextPropagator();
+    const fields = jest.spyOn(propagator, 'fields');
+    const { instrumentation } = setupInstrumentation('app-a', { propagator });
+
+    instrumentation.initialize();
+
+    const registered = jest.mocked(propagation.setGlobalPropagator).mock.calls[0]?.[0];
+    expect(registered?.fields()).toEqual(['traceparent', 'tracestate']);
+    expect(fields).toHaveBeenCalledTimes(1);
   });
 
   it('does not re-register for a second instance and warns instead', () => {
@@ -72,6 +110,8 @@ describe('TracingInstrumentation single-owner behavior', () => {
     second.instrumentation.initialize();
 
     expect(registerSpy).not.toHaveBeenCalled();
+    expect(context.setGlobalContextManager).not.toHaveBeenCalled();
+    expect(propagation.setGlobalPropagator).not.toHaveBeenCalled();
     expect(registerInstrumentations).not.toHaveBeenCalled();
     // manual tracing must still work against the shared provider
     expect(second.api.initOTEL).toHaveBeenCalledTimes(1);

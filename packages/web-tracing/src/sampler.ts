@@ -1,4 +1,4 @@
-import { SamplingDecision } from '@opentelemetry/sdk-trace-web';
+import { SamplingDecision } from '@opentelemetry/sdk-trace';
 
 import type { MetaSession } from '@grafana/faro-web-sdk';
 
