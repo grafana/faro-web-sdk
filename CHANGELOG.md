@@ -4,6 +4,7 @@
 
 ### Features
 
+- **web-sdk:** include hard page loads in navigation events, with `sameDocument: false` and a load-end duration.
 - **web-sdk:** enable navigation instrumentation by default. Pass `trackNavigation: false` to
   `getWebInstrumentations()` or omit `NavigationInstrumentation` from a custom `instrumentations` array to disable it.
   The deprecated `experimental.trackNavigation` option remains supported as a fallback for compatibility.
