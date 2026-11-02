@@ -1,0 +1,92 @@
+name: PR Respond or Close - Author Response
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [synchronize]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: respond-or-close-response-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  check-author-response:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check author response and remove respond-or-close label
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          IS_PR: ${{ github.event.issue.pull_request != null || github.event.pull_request != null }}
+          PR_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          SENDER: ${{ github.event.sender.login }}
+          COMMENT_USER: ${{ github.event.comment.user.login }}
+          COMMENT_USER_TYPE: ${{ github.event.comment.user.type }}
+          PR_AUTHOR: ${{ github.event.issue.user.login || github.event.pull_request.user.login }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const isPr = process.env.IS_PR === 'true';
+            if (!isPr) {
+              return;
+            }
+
+            const prNumber = parseInt(process.env.PR_NUMBER, 10);
+            const eventName = process.env.EVENT_NAME;
+            const prAuthor = process.env.PR_AUTHOR;
+            const commentUser = process.env.COMMENT_USER;
+            const commentUserType = process.env.COMMENT_USER_TYPE;
+            const sender = process.env.SENDER;
+
+            let isAuthorResponse = false;
+
+            if (eventName === 'issue_comment') {
+              if (commentUserType === 'Bot') {
+                console.log(`Ignoring bot comment by @${commentUser}`);
+                return;
+              }
+              if (commentUser === prAuthor) {
+                isAuthorResponse = true;
+              } else {
+                console.log(`Comment by non-author @${commentUser} on PR #${prNumber} does not reset respond-or-close`);
+                return;
+              }
+            } else if (eventName === 'pull_request_target') {
+              if (sender === prAuthor) {
+                isAuthorResponse = true;
+              } else {
+                console.log(`Commit pushed by non-author @${sender} on PR #${prNumber} does not reset respond-or-close`);
+                return;
+              }
+            }
+
+            if (!isAuthorResponse) {
+              return;
+            }
+
+            const { owner, repo } = context.repo;
+
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner,
+              repo,
+              issue_number: prNumber,
+            });
+
+            const hasLabel = labels.some((l) => l.name === 'respond-or-close');
+            if (!hasLabel) {
+              console.log(`PR #${prNumber} does not have 'respond-or-close' label.`);
+              return;
+            }
+
+            console.log(`Removing 'respond-or-close' label from PR #${prNumber} following author response.`);
+            await github.rest.issues.removeLabel({
+              owner,
+              repo,
+              issue_number: prNumber,
+              name: 'respond-or-close',
+            });

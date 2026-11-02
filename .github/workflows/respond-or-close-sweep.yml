@@ -1,0 +1,67 @@
+name: PR Respond or Close - Daily Sweep
+
+on:
+  schedule:
+    - cron: '0 9 * * *' # Daily at 09:00 UTC
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Report what would be closed or recreated, without changing anything'
+        type: boolean
+        default: false
+      prNumber:
+        description: 'Optional single pull request number to process'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: respond-or-close-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 'lts/*'
+
+      - name: Ensure the respond-or-close label exists
+        if: ${{ !inputs.dryRun }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create respond-or-close \
+            --force \
+            --repo "$GITHUB_REPOSITORY" \
+            --color e11d48 \
+            --description "Awaiting author response. Automatically closed and recreated if unresponsive for 7 days."
+
+      - name: Mint GitHub App token
+        id: app-token
+        if: ${{ !inputs.dryRun }}
+        continue-on-error: true
+        uses: grafana/shared-workflows/actions/create-github-app-token@5bbb526b1728ca57fbe1750c4c27ab6ab06171c2 # create-github-app-token/v1.0
+        with:
+          github_app: app-o11y-kwl-ci
+
+      - name: Run PR sweep
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BOT_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          DRY_RUN: ${{ inputs.dryRun || false }}
+          PR_NUMBER: ${{ inputs.prNumber || '' }}
+        run: node .github/workflows/scripts/respond-or-close.mjs
