@@ -96,6 +96,7 @@ describe('NavigationInstrumentation hard page load', () => {
   const originalPerformanceObserver = (global as any).PerformanceObserver;
   const originalPrerendering = Object.getOwnPropertyDescriptor(document, 'prerendering');
   const originalReferrer = Object.getOwnPropertyDescriptor(document, 'referrer');
+  const originalGetEntriesByType = Object.getOwnPropertyDescriptor(performance, 'getEntriesByType');
 
   let observerCallback: PerformanceObserverCallback | undefined;
   let observeOptions: PerformanceObserverInit | undefined;
@@ -103,6 +104,7 @@ describe('NavigationInstrumentation hard page load', () => {
   let transport: MockTransport;
   let instrumentation: Instrumentation;
   let observe: jest.Mock;
+  let getEntriesByType: jest.Mock;
 
   class MockPerformanceObserver {
     constructor(cb: PerformanceObserverCallback) {
@@ -124,6 +126,13 @@ describe('NavigationInstrumentation hard page load', () => {
     );
   }
 
+  // The load event ends, the entry gets its loadEventEnd and the next task runs
+  function finishLoading(entry: NavigationEntry) {
+    getEntriesByType.mockReturnValue([entry]);
+    window.dispatchEvent(new Event('load'));
+    jest.advanceTimersByTime(0);
+  }
+
   function setup() {
     transport = new MockTransport();
     instrumentation = new NavigationInstrumentation();
@@ -142,6 +151,10 @@ describe('NavigationInstrumentation hard page load', () => {
     disconnect = jest.fn();
     observe = jest.fn();
     (global as any).PerformanceObserver = MockPerformanceObserver;
+    // keep the real performance object so the getEntriesByType mock below stays in place
+    jest.useFakeTimers({ doNotFake: ['performance'] });
+    getEntriesByType = jest.fn(() => []);
+    Object.defineProperty(performance, 'getEntriesByType', { configurable: true, value: getEntriesByType });
   });
 
   afterEach(() => {
@@ -150,6 +163,13 @@ describe('NavigationInstrumentation hard page load', () => {
     __resetHttpRequestMonitorForTests();
     __resetInteractionMonitorForTests();
     __resetUrlChangeMonitorForTests();
+    jest.useRealTimers();
+
+    if (originalGetEntriesByType) {
+      Object.defineProperty(performance, 'getEntriesByType', originalGetEntriesByType);
+    } else {
+      delete (performance as any).getEntriesByType;
+    }
 
     if (originalPerformanceObserver) {
       (global as any).PerformanceObserver = originalPerformanceObserver;
@@ -261,6 +281,65 @@ describe('NavigationInstrumentation hard page load', () => {
     expect(navigationEvents()).toHaveLength(1);
     expect(navigationEvents()[0]?.attributes?.['duration']).toBe('150');
     expect(disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads the entry after the load event when it was observed before the page loaded', () => {
+    setup();
+    // WebKit gives each observer the navigation entry once, so this incomplete entry is never redelivered
+    deliver([{ name: 'https://example.com/to', duration: 0, loadEventEnd: 0 }]);
+
+    expect(navigationEvents()).toHaveLength(0);
+
+    finishLoading({ name: 'https://example.com/to', duration: 250, loadEventEnd: 250 });
+
+    expect(getEntriesByType).toHaveBeenCalledWith('navigation');
+    expect(disconnect).toHaveBeenCalledTimes(1);
+    expect(navigationEvents()).toHaveLength(1);
+    expect(navigationEvents()[0]?.attributes).toMatchObject({
+      toUrl: 'https://example.com/to',
+      sameDocument: 'false',
+      duration: '250',
+    });
+  });
+
+  it.each(['observer', 'load event'])('reports once when the %s sees the loaded entry first', (first) => {
+    setup();
+    deliver([{ name: 'https://example.com/to', duration: 0, loadEventEnd: 0 }]);
+
+    // Chromium and Firefox deliver the entry again once it is complete, besides the read after load
+    const loaded = { name: 'https://example.com/to', duration: 250, loadEventEnd: 250 };
+    if (first === 'observer') {
+      deliver([loaded]);
+      finishLoading(loaded);
+    } else {
+      finishLoading(loaded);
+      deliver([loaded]);
+    }
+
+    expect(navigationEvents()).toHaveLength(1);
+    expect(disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not read the entry after load once removed', () => {
+    setup();
+    deliver([{ name: 'https://example.com/to', duration: 0, loadEventEnd: 0 }]);
+    instrumentation.destroy!();
+
+    finishLoading({ name: 'https://example.com/to', duration: 250, loadEventEnd: 250 });
+
+    expect(getEntriesByType).not.toHaveBeenCalled();
+    expect(navigationEvents()).toHaveLength(0);
+  });
+
+  it('cancels the pending read when removed during the load event', () => {
+    setup();
+    deliver([{ name: 'https://example.com/to', duration: 0, loadEventEnd: 0 }]);
+    window.dispatchEvent(new Event('load'));
+    instrumentation.destroy!();
+    jest.advanceTimersByTime(0);
+
+    expect(getEntriesByType).not.toHaveBeenCalled();
+    expect(navigationEvents()).toHaveLength(0);
   });
 
   it('does not throw when navigation entries are unsupported', () => {
