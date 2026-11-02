@@ -100,7 +100,7 @@ export class NavigationInstrumentation extends BaseInstrumentation {
       // prerendered pages count from activation, the time the user actually saw the page
       const duration = Math.max(entry.duration - (entry.activationStart ?? 0), 0);
 
-      faro.api.pushEvent('faro.navigation', {
+      this.api.pushEvent('faro.navigation', {
         fromUrl: document.referrer,
         toUrl: entry.name,
         sameDocument: String(false),
