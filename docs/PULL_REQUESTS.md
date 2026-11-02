@@ -43,3 +43,28 @@ Some pull requests are never closed by the workflow. Renovate pull requests are
 exempt, because closing one would drop that dependency update without telling
 anyone. Security pull requests and the automated release pull request are exempt
 as well. The full list is the `exempt-pr-labels` option in the workflow file.
+
+## Awaiting author response (`respond-or-close`)
+
+When maintainers need feedback or code changes from a pull request author before
+review can continue, they can apply the `respond-or-close` label to the pull
+request.
+
+The workflow operates on a 7-day timeline:
+
+1. **Maintainers apply `respond-or-close`**: This indicates that review progress
+   is blocked pending author input.
+2. **Author response**: When the PR author responds—either by leaving a new
+   non-bot comment or pushing a commit—the `respond-or-close` label is
+   automatically removed. Comments or commits from maintainers, bots, or third
+   parties do not remove the label or reset the 7-day clock.
+3. **Automatic closure and re-creation**: If 7 days pass without an author
+   response, the pull request is closed automatically. The author's source
+   branch is kept intact, and a replacement pull request is opened from the same
+   branch by the repository bot (`app-o11y-kwl-ci`), targeting the original base
+   branch and linking back to the closed pull request. This allows maintainers to
+   take over, finish, and merge the contribution without losing work.
+
+The same exemptions as the stale workflow apply: pull requests carrying
+`keep-open`, dependency updates, security labels, or `autorelease: pending` are
+never closed by this policy.
