@@ -13,6 +13,8 @@ import { monitorInteractions } from '../_internal/monitors/interactionMonitor';
 import { monitorNavigationTransitions, monitorUrlChanges } from '../_internal/monitors/urlChangeMonitor';
 import { performanceObserverSupported } from '../performance/performanceUtils';
 
+type NavigationEntry = PerformanceNavigationTiming & { activationStart?: number };
+
 export class NavigationInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-navigation';
   readonly version: string = VERSION;
@@ -85,27 +87,46 @@ export class NavigationInstrumentation extends BaseInstrumentation {
 
     let observer: PerformanceObserver | undefined;
     let cancelled = false;
+    let readEntryTimeout: number | undefined;
+
+    const reportHardNavigation = (entry: NavigationEntry | undefined) => {
+      if (cancelled || entry == null || entry.loadEventEnd === 0) {
+        return;
+      }
+
+      cancelled = true;
+      observer?.disconnect();
+
+      // prerendered pages count from activation, the time the user actually saw the page
+      const duration = Math.max(entry.duration - (entry.activationStart ?? 0), 0);
+
+      faro.api.pushEvent('faro.navigation', {
+        fromUrl: document.referrer,
+        toUrl: entry.name,
+        sameDocument: String(false),
+        duration: String(duration),
+      });
+    };
+
+    // loadEventEnd is set once the load event handlers have run, so read the entry in the next task
+    const readEntryAfterLoad = () => {
+      readEntryTimeout = window.setTimeout(() => {
+        const [entry] = performance.getEntriesByType('navigation') as NavigationEntry[];
+        reportHardNavigation(entry);
+      }, 0);
+    };
 
     const observeNavigationEntry = () => {
       observer = new PerformanceObserver((list) => {
-        const [entry] = list.getEntries() as Array<PerformanceNavigationTiming & { activationStart?: number }>;
+        const [entry] = list.getEntries() as NavigationEntry[];
 
-        if (cancelled || entry == null || entry.loadEventEnd === 0) {
-          return;
+        // WebKit gives each observer the navigation entry only once, so an entry observed before the page
+        // has loaded is not delivered again when loadEventEnd is set. Read it after the load event instead.
+        if (!cancelled && entry?.loadEventEnd === 0) {
+          window.addEventListener('load', readEntryAfterLoad, { once: true });
         }
 
-        cancelled = true;
-        observer?.disconnect();
-
-        // prerendered pages count from activation, the time the user actually saw the page
-        const duration = Math.max(entry.duration - (entry.activationStart ?? 0), 0);
-
-        faro.api.pushEvent('faro.navigation', {
-          fromUrl: document.referrer,
-          toUrl: entry.name,
-          sameDocument: String(false),
-          duration: String(duration),
-        });
+        reportHardNavigation(entry);
       });
 
       try {
@@ -120,6 +141,8 @@ export class NavigationInstrumentation extends BaseInstrumentation {
       cancelled = true;
       observer?.disconnect();
       document.removeEventListener('prerenderingchange', observeNavigationEntry);
+      window.removeEventListener('load', readEntryAfterLoad);
+      window.clearTimeout(readEntryTimeout);
     };
 
     if ((document as Document & { prerendering?: boolean }).prerendering) {
