@@ -1,5 +1,5 @@
 import { context, propagation, trace } from '@opentelemetry/api';
-import type { Attributes, Span } from '@opentelemetry/api';
+import type { Attributes, Span, Tracer, TracerOptions } from '@opentelemetry/api';
 import { isUrlIgnored, W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import type { Instrumentation } from '@opentelemetry/instrumentation';
@@ -20,7 +20,7 @@ import {
 } from '@opentelemetry/semantic-conventions';
 
 import { BaseInstrumentation, captureMetas, isArray, VERSION } from '@grafana/faro-web-sdk';
-import type { Transport } from '@grafana/faro-web-sdk';
+import type { API, Transport } from '@grafana/faro-web-sdk';
 
 import { resolveNetworkAttribution, warnOnAttributionConflict } from './attributionResolver';
 import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
@@ -167,6 +167,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
   protected registrationId?: number;
   private routingProvider?: WebTracerProvider;
+  private appTracerProvider?: WebTracerProvider;
   private tracingLifecycle?: TracingLifecycle;
   private routingInstrumentations?: Instrumentation[];
 
@@ -174,17 +175,21 @@ export class TracingInstrumentation extends BaseInstrumentation {
     super();
   }
 
-  initialize(): void {
-    const options = this.options;
-
-    if (hasExternalGlobalTracerProvider()) {
-      this.logWarn(
-        'An external global OpenTelemetry tracer provider is already registered. Faro will not register a provider or instrument fetch/XHR.'
-      );
-      this.api.initOTEL(trace, context);
-      return;
+  /**
+   * Returns a tracer bound to this Faro instance's provider for manual spans.
+   * Use this instead of the page-global OTEL tracer when a manual span should be exported by this app.
+   * This is available after this instrumentation has initialized with its own provider.
+   */
+  getTracer(name: string, version?: string, options?: TracerOptions): Tracer {
+    if (!this.appTracerProvider) {
+      throw new Error('TracingInstrumentation must initialize its own provider before getTracer() can be used.');
     }
 
+    return this.appTracerProvider.getTracer(name, version, options);
+  }
+
+  initialize(): void {
+    const options = this.options;
     const modeSelection = selectTracingMode(options.mode);
 
     if (modeSelection.invalidRequestedMode) {
@@ -208,6 +213,19 @@ export class TracingInstrumentation extends BaseInstrumentation {
       this.logWarn(
         `Tracing mode "${modeSelection.conflictingRequestedMode}" conflicts with the page mode "${modeSelection.mode}"; the existing page mode will be kept.`
       );
+    }
+
+    if (modeSelection.mode === 'routing' && hasExternalGlobalTracerProvider()) {
+      this.logWarn(
+        'An external global OpenTelemetry tracer provider is already registered. Faro will not register a provider or instrument fetch/XHR.'
+      );
+      this.api.initOTEL(trace, context);
+      return;
+    }
+
+    if (modeSelection.mode === 'routing' && getTracingOwner() && !modeSelection.registry?.captureProvider) {
+      this.initializeLegacy(options, true);
+      return;
     }
 
     if (modeSelection.mode === 'legacy' && ('apiUrlMatchers' in options || 'pageRouteMatchers' in options)) {
@@ -258,6 +276,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
           options.instrumentationOptions?.fetchInstrumentationOptions?.applyCustomAttributesOnSpan,
         xhrApplyCustomAttributesOnSpan:
           options.instrumentationOptions?.xhrInstrumentationOptions?.applyCustomAttributesOnSpan,
+        getActiveUserAction: () => this.api.getActiveUserAction(),
       },
       provider,
       isPaused: () => this.transports.isPaused(),
@@ -353,6 +372,12 @@ export class TracingInstrumentation extends BaseInstrumentation {
         return;
       }
 
+      if (!claimTracingOwner(this.config.app.name)) {
+        this.logWarn('Faro tracing could not claim page ownership after registering the routing provider.');
+        this.api.initOTEL(trace, context);
+        return;
+      }
+
       registry.captureProvider = routingProvider;
       registry.captureOwnerRegistrationId = registration.registrationId;
       registry.captureGatesInstalled = false;
@@ -417,6 +442,16 @@ export class TracingInstrumentation extends BaseInstrumentation {
             resolution?.registration && resolution.suppressed !== true && resolution.isSuppressed?.() !== true
           );
         },
+        resolveUserAction: (span) => {
+          const resolution = routingProvider.getResolution(span);
+          if (!resolution?.registration || resolution.suppressed === true || resolution.isSuppressed?.()) {
+            return undefined;
+          }
+
+          const getActiveUserAction = resolution.registration.configuration['getActiveUserAction'] as
+            (() => ReturnType<API['getActiveUserAction']>) | undefined;
+          return getActiveUserAction?.();
+        },
         fetchInstrumentationOptions,
         xhrInstrumentationOptions,
       }) as Instrumentation[];
@@ -428,6 +463,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
       registry.captureInstrumentationsRegistered = typeof registrationCleanup === 'function';
     }
 
+    this.appTracerProvider = provider;
     this.updateRoutingCaptureState();
     const registryAfterCapture = getTracingRegistry();
     if (registryAfterCapture?.captureInstrumentationsRegistered && registryAfterCapture.captureProvider) {
@@ -474,7 +510,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
     return true;
   }
 
-  private initializeLegacy(options: TracingInstrumentationOptions): void {
+  private initializeLegacy(options: TracingInstrumentationOptions, routingFallback = false): void {
     // OpenTelemetry allows only a single global tracer provider and patches global fetch/XHR once
     // per browsing context. When multiple Faro instances run on the same page (micro-frontends),
     // only the first to initialize owns tracing; later instances would otherwise re-register the
@@ -489,10 +525,14 @@ export class TracingInstrumentation extends BaseInstrumentation {
       addPropagateTraceHeaderCorsUrls(this.options.instrumentationOptions?.propagateTraceHeaderCorsUrls);
 
       this.logWarn(
-        `Tracing is already owned by another Faro instance${
-          owner?.appName ? ` ("${owner.appName}")` : ''
-        }. This instance will not register a tracer provider or instrument fetch/XHR. ` +
-          'Only one Faro instance can own tracing per page.'
+        routingFallback
+          ? `Routing is unavailable because tracing is already owned by another Faro instance${
+              owner?.appName ? ` ("${owner.appName}")` : ''
+            }. This instance will use legacy non-owner behavior.`
+          : `Tracing is already owned by another Faro instance${
+              owner?.appName ? ` ("${owner.appName}")` : ''
+            }. This instance will not register a tracer provider or instrument fetch/XHR. ` +
+              'Only one Faro instance can own tracing per page.'
       );
 
       // Still expose the global OTEL trace/context so manual tracing keeps working against the
@@ -503,6 +543,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
     }
 
     const provider = this.createProvider(options);
+    this.appTracerProvider = provider;
     const omitForUnsampledSessions = options.omitTraceContextForUnsampledSessions === true;
 
     provider.register({

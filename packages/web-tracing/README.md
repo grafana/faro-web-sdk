@@ -9,8 +9,14 @@ See [quick start document][quick-start] for instructions how to set up and use.
 
 Tracing is legacy-compatible by default. The first tracing-enabled instance selects the page mode;
 omitting `mode` selects `legacy`, while `mode: 'routing'` opts the page into shared network routing.
-The mode is fixed for the page lifetime, and later instances inherit it. An external OpenTelemetry
-provider causes Faro to yield without patching fetch/XHR.
+The mode is fixed for the page lifetime, and later instances inherit it. In routing mode, Faro yields
+without installing its router when an external global OpenTelemetry provider is already registered;
+legacy mode retains its existing behavior and instruments fetch/XHR against the global provider.
+
+Routing mode interoperates with bundles that use the legacy `_faroTracingOwner` contract. If a
+legacy Faro bundle already owns tracing before routing capture starts, routing falls back to legacy
+non-owner behavior. Once routing capture is installed, it claims that owner key so later legacy
+bundles do not install a second fetch/XHR wrapper.
 
 Routing mode lets each app retain its own provider, resource (`service.name`), processors, exporter,
 transport, credentials, and callbacks while one page-owned fetch/XHR capture wrapper resolves every
@@ -30,6 +36,22 @@ query/hash) or pathname. A unique API claimant wins; otherwise a unique current 
 wins across all active apps; ambiguous or unresolved requests use the active global/non-isolated app,
 or the earliest active isolated app. Ownership is fixed at fetch/span creation or XHR `open()` and
 is not reassigned by navigation or later registration.
+
+Manual spans created through the page-global `faro.api.getOTEL()` use the fallback app because that
+API does not identify which micro-frontend called it. To explicitly export manual spans through one
+app's provider, retain its `TracingInstrumentation` instance and use `getTracer()` after Faro is
+initialized:
+
+```ts
+const tracing = new TracingInstrumentation({ mode: 'routing' });
+initializeFaro({ instrumentations: [tracing] });
+
+const span = tracing.getTracer('checkout').startSpan('checkout');
+// ...work...
+span.end();
+```
+
+`getTracer()` is only available when that instrumentation successfully initialized its own provider.
 
 Call `destroy()` when an app unmounts. New requests stop selecting it, while already-started spans
 finish through its original pipeline until the single bounded drain deadline (default 30 seconds,

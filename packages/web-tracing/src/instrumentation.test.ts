@@ -4,10 +4,11 @@ import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import type { FetchRequestHookFunction } from '@opentelemetry/instrumentation-fetch';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 
+import { UserActionState } from '@grafana/faro-web-sdk';
 import type { API, Config, InternalLogger, Metas, Transports } from '@grafana/faro-web-sdk';
 
 import { TracingInstrumentation } from './instrumentation';
-import { getTracingOwner, resetTracingOwnerForTests } from './tracingOwner';
+import { claimTracingOwner, getTracingOwner, resetTracingOwnerForTests } from './tracingOwner';
 import { getFallbackTracingRegistration, getTracingRegistry } from './tracingRegistry';
 import type { TracingInstrumentationOptions } from './types';
 
@@ -140,12 +141,33 @@ describe('TracingInstrumentation single-owner behavior', () => {
     expect(getTracingRegistry()?.registrations.every(({ provider }) => provider)).toBe(true);
     expect(getTracingRegistry()?.captureProvider).toBeDefined();
     expect(registerInstrumentations).toHaveBeenCalledTimes(1);
+    expect(getTracingOwner()?.appName).toBe('app-a');
+    expect(claimTracingOwner('legacy-2.13-app')).toBe(false);
 
     first.instrumentation.destroy();
 
     expect(getTracingRegistry()?.registrations[0]?.state).toBe('draining');
     expect(getFallbackTracingRegistration()?.registrationId).toBe(1);
     expect(getTracingRegistry()?.captureProvider).toBeDefined();
+  });
+
+  it('provides an explicit per-app tracer for manually attributed spans', () => {
+    const first = setupInstrumentation('app-a', { mode: 'routing' });
+    first.instrumentation.initialize();
+    const second = setupInstrumentation('app-b', { mode: 'routing' });
+    second.instrumentation.initialize();
+
+    const registrations = getTracingRegistry()?.registrations ?? [];
+    const firstProvider = registrations[0]?.provider!;
+    const secondProvider = registrations[1]?.provider!;
+    const firstGetTracer = jest.spyOn(firstProvider, 'getTracer');
+    const secondGetTracer = jest.spyOn(secondProvider, 'getTracer');
+
+    const span = second.instrumentation.getTracer('manual-checkout').startSpan('checkout');
+
+    expect(secondGetTracer).toHaveBeenCalledWith('manual-checkout', undefined, undefined);
+    expect(firstGetTracer).not.toHaveBeenCalled();
+    span.end();
   });
 
   it('keeps generated collector exclusions page-wide while filtering app-only ignores', () => {
@@ -208,6 +230,66 @@ describe('TracingInstrumentation single-owner behavior', () => {
     span.end();
   });
 
+  it('uses the routed app user action for fetch and XHR spans', () => {
+    const actionA = {
+      name: 'action-a',
+      parentId: 'parent-a',
+      getState: () => UserActionState.Started,
+    };
+    const actionB = {
+      name: 'action-b',
+      parentId: 'parent-b',
+      getState: () => UserActionState.Started,
+    };
+    const first = setupInstrumentation('app-a', {
+      mode: 'routing',
+      apiUrlMatchers: [{ pattern: 'https://api.example.test/a', target: 'full-url' }],
+    });
+    (first.api.getActiveUserAction as jest.Mock).mockReturnValue(actionA);
+    first.instrumentation.initialize();
+
+    const second = setupInstrumentation('app-b', {
+      mode: 'routing',
+      apiUrlMatchers: [{ pattern: 'https://api.example.test/b', target: 'full-url' }],
+    });
+    (second.api.getActiveUserAction as jest.Mock).mockReturnValue(actionB);
+    second.instrumentation.initialize();
+
+    const registry = getTracingRegistry()!;
+    const captureProvider = registry.captureProvider!;
+    const fetchSpan = captureProvider
+      .getTracer('@opentelemetry/instrumentation-fetch')
+      .startSpan('GET', { attributes: { 'url.full': 'https://api.example.test/b' } });
+    const fetchActionAttributes = jest.spyOn(fetchSpan, 'setAttribute');
+    const fetchInstrumentation = registry.captureInstrumentations?.[0] as unknown as {
+      getConfig: () => { requestHook: (span: Span, request: Request | RequestInit) => void };
+    };
+    fetchInstrumentation.getConfig().requestHook(fetchSpan, {});
+
+    expect(fetchActionAttributes).toHaveBeenCalledWith('faro.action.user.name', 'action-b');
+    expect(fetchActionAttributes).toHaveBeenCalledWith('faro.action.user.parentId', 'parent-b');
+    fetchSpan.end();
+
+    const xhrSpan = captureProvider
+      .getTracer('@opentelemetry/instrumentation-xml-http-request')
+      .startSpan('GET', { attributes: { 'url.full': 'https://api.example.test/b' } });
+    const xhrActionAttributes = jest.spyOn(xhrSpan, 'setAttribute');
+    const xhrInstrumentation = registry.captureInstrumentations?.[1] as unknown as {
+      parentCreateSpan: () => Span;
+      _patchOpen: () => (original: (...args: unknown[]) => void) => (...args: unknown[]) => void;
+      _isEnabled: boolean;
+    };
+    xhrInstrumentation.parentCreateSpan = () => xhrSpan;
+    xhrInstrumentation._isEnabled = true;
+    const originalOpen = jest.fn();
+    const open = xhrInstrumentation._patchOpen()(originalOpen);
+    open.call({} as XMLHttpRequest, 'GET', 'https://api.example.test/b');
+
+    expect(xhrActionAttributes).toHaveBeenCalledWith('faro.action.user.name', 'action-b');
+    expect(xhrActionAttributes).toHaveBeenCalledWith('faro.action.user.parentId', 'parent-b');
+    xhrSpan.end();
+  });
+
   it('disables dormant capture without unpatching and re-enables it for a later registration', () => {
     const first = setupInstrumentation('app-a', { mode: 'routing', drainTimeoutMs: 0 });
     first.instrumentation.initialize();
@@ -244,7 +326,40 @@ describe('TracingInstrumentation single-owner behavior', () => {
     expect((registerInstrumentations as jest.Mock).mock.calls[0]?.[0].instrumentations).toHaveLength(2);
   });
 
-  it('yields to an external provider used only for manual spans', () => {
+  it('falls back to legacy non-owner behavior when an older Faro bundle already owns tracing', () => {
+    expect(claimTracingOwner('legacy-2.13-app')).toBe(true);
+
+    const { instrumentation, api, internalLogger } = setupInstrumentation('routing-app', { mode: 'routing' });
+
+    instrumentation.initialize();
+
+    expect(getTracingRegistry()?.mode).toBe('routing');
+    expect(getTracingRegistry()?.registrations).toHaveLength(0);
+    expect(registerSpy).not.toHaveBeenCalled();
+    expect(registerInstrumentations).not.toHaveBeenCalled();
+    expect(getTracingOwner()?.appName).toBe('legacy-2.13-app');
+    expect(api.initOTEL).toHaveBeenCalledTimes(1);
+    expect((internalLogger.warn as jest.Mock).mock.calls[0]?.join(' ')).toContain(
+      'Routing is unavailable because tracing is already owned by another Faro instance'
+    );
+  });
+
+  it('preserves legacy capture behavior when an external provider is already registered', () => {
+    const externalProvider = { getTracer: jest.fn(() => ({ startSpan: jest.fn() })) };
+    expect(trace.setGlobalTracerProvider(externalProvider as never)).toBe(true);
+
+    const { instrumentation, internalLogger } = setupInstrumentation('legacy-app');
+
+    instrumentation.initialize();
+
+    expect(registerSpy).toHaveBeenCalledTimes(1);
+    expect(registerInstrumentations).toHaveBeenCalledTimes(1);
+    expect((registerInstrumentations as jest.Mock).mock.calls[0]?.[0].instrumentations).toHaveLength(2);
+    expect(getTracingOwner()?.appName).toBe('legacy-app');
+    expect(internalLogger.warn).not.toHaveBeenCalled();
+  });
+
+  it('yields to an external provider used only for manual spans in routing mode', () => {
     const externalProvider = { getTracer: jest.fn(() => ({ startSpan: jest.fn() })) };
     expect(trace.setGlobalTracerProvider(externalProvider as never)).toBe(true);
 

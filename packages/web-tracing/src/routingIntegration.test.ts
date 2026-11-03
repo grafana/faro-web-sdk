@@ -4,7 +4,8 @@ import type { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import type { API, Config, InternalLogger, Metas, Transports } from '@grafana/faro-web-sdk';
 
 import type { TracingInstrumentation as TracingInstrumentationType } from './instrumentation';
-import { getTracingRegistry, resetTracingRegistryForTests } from './tracingRegistry';
+import { resetTracingOwnerForTests } from './tracingOwner';
+import { getTracingRegistry } from './tracingRegistry';
 
 const hadPerformanceObserver = Boolean(globalThis.PerformanceObserver);
 const originalRequest = globalThis.Request;
@@ -109,7 +110,7 @@ describe('routing network integration', () => {
   afterEach(() => {
     trace.disable();
     context.disable();
-    resetTracingRegistryForTests();
+    resetTracingOwnerForTests();
     Object.defineProperty(globalThis, 'fetch', {
       configurable: true,
       writable: true,
