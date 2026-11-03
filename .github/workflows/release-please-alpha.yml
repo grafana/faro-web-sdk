@@ -1,0 +1,251 @@
+name: Release please (alpha)
+
+on:
+  push:
+    branches:
+      - alpha
+
+# Hardening: default to read-only at the workflow level; jobs elevate id-token only where OIDC is needed.
+permissions:
+  contents: read
+
+# Hardening: avoid concurrent release/publish runs (risk of double-publishing).
+concurrency:
+  group: release-please-alpha-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/alpha'
+    permissions:
+      contents: read
+      id-token: write # needed to mint the GitHub App token via OIDC (GATB)
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit # start with audit; switch to "block" + allowed-endpoints once traffic is mapped
+
+      - name: Mint GitHub App token
+        id: app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@5bbb526b1728ca57fbe1750c4c27ab6ab06171c2 # create-github-app-token/v1.0
+        with:
+          github_app: app-o11y-kwl-ci
+
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
+        id: release
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config-alpha.json
+          manifest-file: .release-please-manifest-alpha.json
+          target-branch: alpha
+
+      - name: Resolve release PR branch
+        id: release-branch
+        if: ${{ steps.release.outputs.prs_created == 'true' }}
+        env:
+          PR_JSON: ${{ steps.release.outputs.pr }}
+        run: |
+          BRANCH="$(echo "$PR_JSON" | jq -r '.headBranchName')"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release PR branch
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ steps.release-branch.outputs.branch }}
+          persist-credentials: false # Hardening: keep the token OUT of git config while yarn install
+
+      - name: Setup Node.js
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Refresh yarn.lock and format release PR
+        id: refresh
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        run: |
+          set -euo pipefail
+          corepack enable
+          yarn install --mode update-lockfile
+          yarn install --immutable
+          yarn quality:lint:fix
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No lockfile or formatting changes."
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # Hardening: the token is introduced only HERE (after the untrusted install code has run),
+      # via the github-script `github-token` input — not persisted in git config for the whole job.
+      #
+      # The commit is created via the GitHub API (createCommitOnBranch, called through Octokit in
+      # actions/github-script), NOT a runner-side `git commit`/`git push`. API-created commits are
+      # automatically signed by GitHub and therefore satisfy the "Commits must have verified
+      # signatures" branch ruleset. A plain runner commit is unsigned and gets rejected (GH013),
+      # which previously left the refreshed yarn.lock unpushed and broke `yarn install --immutable`
+      # on the release PR.
+      - name: Commit and push release fixes
+        if: ${{ steps.refresh.outputs.changed == 'true' }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          # Hardening: pass inputs through env (read via process.env) instead of interpolating
+          # ${{ }} expressions into the script body, which avoids expression injection.
+          BRANCH: ${{ steps.release-branch.outputs.branch }}
+          MESSAGE: 'chore: refresh yarn.lock and format release files'
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const { execSync } = require('node:child_process');
+            const fs = require('node:fs');
+
+            const expectedHeadOid = execSync('git rev-parse HEAD').toString().trim();
+
+            // Commit only modifications/deletions of already-tracked files (working-tree diff vs
+            // HEAD). Untracked files are intentionally excluded: the refresh step (yarn.lock update
+            // + lint:fix) only ever modifies tracked files, so not staging untracked output shrinks
+            // the set of bytes an untrusted `yarn install` could fold into this GitHub-signed commit.
+            //
+            // `--name-status -z` emits STATUS\0PATH\0 pairs; `--no-renames` keeps statuses to
+            // single-letter M/T/D (no R/C rename or copy records) so parsing stays a simple 2-field
+            // pairing. Reading contents via fs (base64 in-process) avoids the ARG_MAX limit a
+            // shelled `base64` would hit on a large yarn.lock.
+
+            const entries = execSync('git diff -z --no-renames --name-status')
+              .toString()
+              .split('\0')
+              .filter(Boolean);
+
+            const additions = [];
+            const deletions = [];
+            for (let i = 0; i < entries.length; i += 2) {
+              const status = entries[i];
+              const path = entries[i + 1];
+              if (status === 'D') {
+                deletions.push({ path });
+                continue;
+              }
+              // createCommitOnBranch can only represent regular file blobs. Skip symlinks and other
+              // non-regular entries: lstat inspects the link itself (not its target), so a symlink
+              // is not dereferenced — otherwise fs.readFileSync would commit the target's contents
+              // (a possible exfiltration of runner-local files into a public branch).
+              if (!fs.lstatSync(path).isFile()) {
+                core.warning(`Skipping non-regular file: ${path}`);
+                continue;
+              }
+              additions.push({ path, contents: fs.readFileSync(path).toString('base64') });
+            }
+
+            const mutation = `
+              mutation($input: CreateCommitOnBranchInput!) {
+                createCommitOnBranch(input: $input) { commit { oid } }
+              }`;
+
+            // Octokit rejects on GraphQL-level errors, so no manual error inspection is needed.
+            const result = await github.graphql(mutation, {
+              input: {
+                branch: {
+                  repositoryNameWithOwner: process.env.GITHUB_REPOSITORY,
+                  branchName: process.env.BRANCH,
+                },
+                message: { headline: process.env.MESSAGE },
+                expectedHeadOid,
+                fileChanges: { additions, deletions },
+              },
+            });
+
+            core.info(`Created signed commit ${result.createCommitOnBranch.commit.oid}`);
+
+  test:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
+        with:
+          node-version-file: .nvmrc
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build
+        run: yarn build
+
+      - name: Type check
+        run: yarn quality:typecheck
+
+      - name: Lint
+        run: yarn quality:lint
+
+      - name: Check circular dependencies
+        run: yarn quality:circular-deps
+
+      - name: Unit tests
+        run: yarn quality:test
+
+  publish:
+    permissions:
+      contents: read
+      id-token: write # npm provenance / trusted publishing (OIDC)
+
+    runs-on: ubuntu-latest
+    needs: [release-please, test]
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    environment: publish-alpha # Hardening: protect this environment with required reviewers + branch restriction
+
+    env:
+      NPM_CONFIG_ACCESS: public
+      NPM_CONFIG_PROVENANCE: true
+
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
+        with:
+          node-version-file: .nvmrc
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build
+        run: yarn build
+
+      - name: Publish package to NPM
+        run: npm run publish -- from-package --yes --dist-tag alpha --pre-dist-tag alpha
+        # Hardening: use npm trusted publishing (OIDC) instead of a long-lived NPM_TOKEN.
+        # id-token: write is already granted — then NODE_AUTH_TOKEN/NPM_TOKEN can be removed entirely.
