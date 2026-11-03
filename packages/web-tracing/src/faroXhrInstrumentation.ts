@@ -25,6 +25,11 @@ export class FaroXhrInstrumentation extends XMLHttpRequestInstrumentation {
     return (original: OpenFunction): OpenFunction => {
       const plugin = this;
       return function patchOpen(this: XMLHttpRequest, ...args): void {
+        // disable() keeps open patched, so skip span creation like the parent does
+        if (!plugin._enabled) {
+          return original.apply(this, args);
+        }
+
         let span: Span | undefined;
         try {
           const method: string = args[0];
