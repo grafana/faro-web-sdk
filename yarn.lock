@@ -766,7 +766,6 @@ __metadata:
   resolution: "@grafana/faro-core@workspace:packages/core"
   dependencies:
     "@opentelemetry/api": "npm:^1.9.0"
-    "@opentelemetry/otlp-transformer": "npm:^0.223.0"
     "@types/node": "npm:24.19.2"
   languageName: unknown
   linkType: soft
@@ -846,7 +845,6 @@ __metadata:
   resolution: "@grafana/faro-transport-otlp-http@workspace:experimental/transport-otlp-http"
   dependencies:
     "@grafana/faro-core": "npm:^2.13.0"
-    "@opentelemetry/otlp-transformer": "npm:^0.223.0"
     "@opentelemetry/semantic-conventions": "npm:^1.28.0"
   languageName: unknown
   linkType: soft
