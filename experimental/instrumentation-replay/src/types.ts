@@ -26,6 +26,11 @@ export interface ReplayInstrumentationOptions {
   maskTextSelector?: string;
 
   /**
+   * Custom function to transform text matched by `maskTextSelector` or `grafana-mask`.
+   */
+  maskTextFn?: (text: string, element: HTMLElement | null) => string;
+
+  /**
    * Custom CSS selector to block elements
    * @default undefined
    */

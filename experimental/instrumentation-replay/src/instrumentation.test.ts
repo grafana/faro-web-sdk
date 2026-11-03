@@ -158,6 +158,46 @@ describe('ReplayInstrumentation', () => {
         expect(snapshot).toContain('"textContent":"******* ****"');
         expect(snapshot).not.toContain('Private text');
       });
+
+      it('uses a custom text mask with the live element in full snapshots', () => {
+        const maskTextFn = jest.fn((text: string, element: HTMLElement | null) =>
+          element?.tagName === 'P' ? '[redacted text]' : text.replace(/\S/g, '*')
+        );
+        const snapshot = recordSnapshot({ maskTextFn });
+
+        expect(maskTextFn).toHaveBeenCalledWith('Private text', fixture.querySelector('p'));
+        expect(snapshot).toContain('"textContent":"[redacted text]"');
+        expect(snapshot).not.toContain('Private text');
+        expect(snapshot).not.toContain('private-input');
+        expect(snapshot).not.toContain('private-password');
+      });
+
+      it('uses a custom text mask for added nodes and text changes', async () => {
+        const maskTextFn = jest.fn(() => '[redacted text]');
+        recordSnapshot({ maskTextFn });
+        mockPushEvent.mockClear();
+        maskTextFn.mockClear();
+
+        const paragraph = fixture.querySelector('p')!;
+        paragraph.firstChild!.textContent = 'Changed private text';
+        const added = document.createElement('span');
+        added.textContent = 'Added private text';
+        fixture.appendChild(added);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(maskTextFn).toHaveBeenCalledWith('Changed private text', paragraph);
+        expect(maskTextFn).toHaveBeenCalledWith('Added private text', added);
+        const events = mockPushEvent.mock.calls
+          .filter(([name]) => name === 'faro.session_recording.event')
+          .map(([, attributes]) => JSON.parse(attributes.event))
+          .filter((event) => event.type === EventType.IncrementalSnapshot);
+        const mutations = JSON.stringify(events);
+        expect(mutations).toContain('"texts":[{"id":');
+        expect(mutations).toContain('"value":"[redacted text]"');
+        expect(mutations).toContain('"textContent":"[redacted text]"');
+        expect(mutations).not.toContain('Changed private text');
+        expect(mutations).not.toContain('Added private text');
+      });
     });
   });
 
