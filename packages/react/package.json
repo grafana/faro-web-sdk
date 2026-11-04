@@ -41,6 +41,7 @@
     "quality:test": "run-s quality:test:cjs quality:test:esm",
     "quality:test:cjs": "jest --passWithNoTests --selectProjects react rr-v5 rr-v6 rr-v7",
     "quality:test:esm": "NODE_OPTIONS=--experimental-vm-modules jest --selectProjects rr-v8",
+    "quality:test:coverage": "jest --coverage --passWithNoTests --selectProjects react rr-v5 rr-v6 rr-v7",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/react --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s quality:lint:eslint quality:lint:prettier quality:lint:md",
     "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/react \"./**/*.{js,jsx,ts,tsx}\"",
