@@ -489,10 +489,18 @@ describe('reliable FetchTransport', () => {
     const largeItem = { ...item, payload: { ...item.payload, message: 'a'.repeat(14_000) } };
     const oversizedItem = { ...item, payload: { ...item.payload, message: 'b'.repeat(70_000) } };
     let finishAll: (firstStatus?: number) => void;
+    let maxInFlight: number;
 
     beforeEach(() => {
       const pending: Array<(value: TestResponse) => void> = [];
-      fetchMock.mockImplementation(() => new Promise((resolve) => pending.push(resolve)));
+      maxInFlight = 0;
+      fetchMock.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            pending.push(resolve);
+            maxInFlight = Math.max(maxInFlight, pending.length);
+          })
+      );
       finishAll = (firstStatus = 202) =>
         pending.splice(0).forEach((resolve, index) => resolve(response(index === 0 ? firstStatus : 202)));
     });
@@ -567,7 +575,7 @@ describe('reliable FetchTransport', () => {
     });
 
     it('plans the ninth keepalive request around in-flight requests and warns for later chunks', async () => {
-      const { transport, internalLogger } = createTransport({ concurrency: 10 });
+      const { transport, internalLogger } = createTransport({ concurrency: 11 });
       const active = Array.from({ length: 8 }, () => transport.send([item]));
       await jest.advanceTimersByTimeAsync(0);
       expect(fetchMock.mock.calls.every(([, init]) => init.keepalive)).toBe(true);
@@ -644,6 +652,60 @@ describe('reliable FetchTransport', () => {
       finishAll();
       await sending;
       expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it.each([1, 2])('keeps split batches within a concurrency of %i', async (concurrency) => {
+      fetchMock.mockRejectedValueOnce(new TypeError('keepalive request lost'));
+      const { transport, internalLogger } = createTransport({ concurrency });
+      window.dispatchEvent(new Event('pagehide'));
+      const batches = [0, 1].map((batch) =>
+        Array.from({ length: 5 }, (_, index) => ({
+          ...item,
+          payload: { ...item.payload, message: `${batch}-${index}`.padEnd(14_000, 'a') },
+        }))
+      );
+
+      let settled = false;
+      void Promise.all(batches.map((batch) => transport.send(batch))).then(() => (settled = true));
+      while (!settled) {
+        await jest.advanceTimersByTimeAsync(0);
+        finishAll();
+      }
+
+      expect(maxInFlight).toBe(concurrency);
+      const sent = fetchMock.mock.calls.flatMap(([, init]) =>
+        JSON.parse(init.body as string).logs.map((log: LogEvent) => log.message)
+      );
+      expect(new Set(sent)).toEqual(new Set(batches.flat().map((entry) => entry.payload.message)));
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it('counts every request of a split batch and does not retry it after the page is restored', async () => {
+      fetchMock.mockRejectedValueOnce(new TypeError('keepalive request lost')).mockResolvedValueOnce(response(202));
+      const { transport, internalLogger } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      const pageShowEvent = new Event('pageshow');
+      Object.defineProperty(pageShowEvent, 'persisted', { value: true });
+      window.dispatchEvent(pageShowEvent);
+      finishAll(503);
+      await sending;
+
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 3 },
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 1 },
+        { keepalive: false, logs: 3 },
+      ]);
+      expect(internalLogger.error).toHaveBeenCalledWith(
+        expect.any(String),
+        'Permanent delivery failure',
+        expect.objectContaining({ attempts: 4, status: 503 })
+      );
+      await jest.advanceTimersByTimeAsync(60000);
+      expect(fetchMock).toHaveBeenCalledTimes(4);
     });
   });
 
@@ -735,9 +797,9 @@ describe('reliable FetchTransport', () => {
 
     // Wires the transport into a real, isolated Faro instance so the invalidation guard's
     // "current in-memory session" and the session updater's global lookups agree.
-    const setupFaroBackedTransport = (persistent = false) => {
+    const setupFaroBackedTransport = (persistent = false, options: Omit<FetchTransportOptions, 'url'> = {}) => {
       const faro = initializeFaro(mockConfig({ sessionTracking: { enabled: true, persistent } }));
-      const { transport, internalLogger } = createTransport();
+      const { transport, internalLogger } = createTransport(options);
       transport.config = faro.config;
       transport.metas = faro.metas;
       return { faro, transport, internalLogger };
@@ -813,6 +875,40 @@ describe('reliable FetchTransport', () => {
         (first!.headers as Record<string, string>)['x-faro-session-id']
       );
       expect((first!.headers as Record<string, string>)['x-faro-session-id']).toBe('A');
+    });
+
+    it('keeps the original metadata and session on every chunk of a split batch', async () => {
+      fetchMock
+        .mockResolvedValueOnce(response(202))
+        .mockResolvedValueOnce(response(202))
+        .mockResolvedValueOnce(sessionInvalidResponse());
+      const message = 'a'.repeat(14_000);
+      const batch = ['A', 'B', 'B', 'B', 'B'].map((id) => ({
+        ...itemWithSession(id),
+        payload: { ...item.payload, message },
+      }));
+      const { faro, transport } = setupFaroBackedTransport(false, {
+        requestOptions: {
+          headers: {
+            Authorization: async () => {
+              batch[0]!.meta.session!.id = 'changed';
+              return 'token';
+            },
+          },
+        },
+      });
+      faro.metas.add({ session: { id: 'A' } });
+      VolatileSessionsManager.storeUserSession(storedSession('A'));
+
+      window.dispatchEvent(new Event('pagehide'));
+      await transport.send(batch);
+
+      const sent = fetchMock.mock.calls.map(([, init]) => [
+        JSON.parse(init.body as string).meta,
+        (init.headers as Record<string, string>)['x-faro-session-id'],
+      ]);
+      expect(sent).toEqual(Array(3).fill([{ session: { id: 'A' } }, 'A']));
+      expect(JSON.parse(mockStorage[STORAGE_KEY]!).sessionId).not.toBe('A');
     });
 
     it('rotates the session when an invalid response matches the current session in memory and storage', async () => {
