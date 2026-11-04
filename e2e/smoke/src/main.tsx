@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 
 import {
   FaroErrorBoundary,
+  FetchTransport,
   getWebInstrumentations,
   initializeFaro,
   LogLevel,
@@ -22,7 +23,7 @@ const instrumentations = persistentSession
   : [...getWebInstrumentations(), new ReactIntegration(), new TracingInstrumentation()];
 
 const faro = initializeFaro({
-  url: '/collect',
+  ...(params.has('lateTransport') ? { transports: [] } : { url: '/collect' }),
   app: {
     name: 'faro-web-sdk-smoke',
     version: '0.0.0',
@@ -31,6 +32,11 @@ const faro = initializeFaro({
   instrumentations,
   ...(sessionTracking ? { sessionTracking } : {}),
 });
+
+function addLateTransport(url: string) {
+  faro.transports.remove(...faro.transports.transports);
+  faro.transports.add(new FetchTransport({ url }));
+}
 
 function Thrower() {
   const [explode, setExplode] = useState(false);
@@ -50,6 +56,18 @@ function App() {
   return (
     <main>
       <h1>Faro Web SDK smoke harness</h1>
+      <button data-cy="btn-add-transport" onClick={() => addLateTransport('/telemetry')}>
+        Add transport
+      </button>
+      <button
+        data-cy="btn-replace-transport"
+        onClick={() => addLateTransport(`${window.location.origin}/telemetry-next`)}
+      >
+        Replace transport
+      </button>
+      <button data-cy="btn-fetch-old-endpoint" onClick={() => void fetch('/telemetry')}>
+        Fetch old endpoint
+      </button>
       <button data-cy="btn-push-log" onClick={() => faro.api.pushLog(['smoke harness log'], { level: LogLevel.INFO })}>
         Push log
       </button>
