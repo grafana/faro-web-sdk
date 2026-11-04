@@ -1,4 +1,4 @@
-import { SamplingDecision } from '@opentelemetry/sdk-trace-web';
+import { SamplingDecision } from '@opentelemetry/sdk-trace';
 
 import { getSamplingDecision, isSessionSampled } from './sampler';
 
