@@ -1,4 +1,4 @@
-import { onINP, onLCP } from 'web-vitals/attribution';
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals/attribution';
 import type { MetricWithAttribution } from 'web-vitals/attribution';
 
 import { WebVitalsWithAttribution } from './webVitalsWithAttribution';
@@ -22,7 +22,7 @@ jest.mock('web-vitals/attribution', () => {
   }
 
   return {
-    onCLS: (cb: (metric: MetricWithAttribution) => void) => {
+    onCLS: jest.fn((cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('CLS', {
           largestShiftValue: 0.1,
@@ -31,8 +31,8 @@ jest.mock('web-vitals/attribution', () => {
           loadState: 'loading',
         })
       );
-    },
-    onFCP: (cb: (metric: MetricWithAttribution) => void) => {
+    }),
+    onFCP: jest.fn((cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('FCP', {
           firstByteToFCP: 0.1,
@@ -40,7 +40,7 @@ jest.mock('web-vitals/attribution', () => {
           loadState: 'loading',
         })
       );
-    },
+    }),
     onLCP: jest.fn((cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('LCP', {
@@ -54,7 +54,7 @@ jest.mock('web-vitals/attribution', () => {
         })
       );
     }),
-    onTTFB: (cb: (metric: MetricWithAttribution) => void) => {
+    onTTFB: jest.fn((cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('TTFB', {
           dnsDuration: 0.1,
@@ -64,7 +64,7 @@ jest.mock('web-vitals/attribution', () => {
           cacheDuration: 0.1,
         })
       );
-    },
+    }),
     onINP: jest.fn((cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('INP', {
@@ -79,6 +79,49 @@ jest.mock('web-vitals/attribution', () => {
 });
 
 describe('WebVitalsWithAttributionInstrumentation', () => {
+  describe('target generation options', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it.each([
+      ['CLS', onCLS],
+      ['INP', onINP],
+      ['LCP', onLCP],
+    ])('forwards the custom target generator and reportAllChanges to %s', (_, report) => {
+      const generateTarget = jest.fn(() => 'checkout-button');
+      const config = { reportAllChanges: true, generateTarget };
+
+      new WebVitalsWithAttribution(jest.fn(), config).initialize();
+
+      expect(report).toHaveBeenLastCalledWith(expect.any(Function), {
+        reportAllChanges: true,
+        generateTarget,
+      });
+    });
+
+    it('keeps default target generation when no callback is configured', () => {
+      new WebVitalsWithAttribution(jest.fn()).initialize();
+
+      for (const report of [onCLS, onINP, onLCP]) {
+        expect(report).toHaveBeenLastCalledWith(expect.any(Function), {
+          reportAllChanges: undefined,
+          generateTarget: undefined,
+        });
+      }
+    });
+
+    it('does not pass the target generator to metrics without an element', () => {
+      const config = { reportAllChanges: true, generateTarget: jest.fn(() => 'checkout-button') };
+
+      new WebVitalsWithAttribution(jest.fn(), config).initialize();
+
+      for (const report of [onFCP, onTTFB]) {
+        expect(report).toHaveBeenLastCalledWith(expect.any(Function), { reportAllChanges: true });
+      }
+    });
+  });
+
   it('send cls metrics correctly', () => {
     const pushMeasurement = jest.fn();
     new WebVitalsWithAttribution(pushMeasurement).initialize();
