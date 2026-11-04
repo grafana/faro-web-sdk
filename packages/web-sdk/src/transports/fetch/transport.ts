@@ -7,7 +7,7 @@ import {
   noop,
   VERSION,
 } from '@grafana/faro-core';
-import type { Config, Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
+import type { Config, Meta, Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
 
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
 import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
@@ -36,6 +36,13 @@ let pendingKeepaliveRequests = 0;
 interface KeepaliveReservation {
   keepalive: boolean;
   release: () => void;
+}
+interface PreparedRequest {
+  requestInit: RequestInit;
+  bodySize: number;
+  meta: Meta;
+  sessionId: string | undefined;
+  resolvedHeaders: Record<string, string>;
 }
 class RequestTimeoutError extends Error {}
 
@@ -174,8 +181,10 @@ export class FetchTransport extends BaseTransport {
 
     try {
       const prepared = await this.prepareRequest(items);
-      const outcome = await reservation.deliver((attemptsRemaining, unloading) =>
-        this.performAttempt(prepared, attemptsRemaining, unloading)
+      const outcome = await reservation.deliver((attemptsRemaining, unloading, isRedelivery) =>
+        unloading && !isRedelivery
+          ? this.performUnloadAttempt(items, prepared, attemptsRemaining)
+          : this.performAttempt(prepared, attemptsRemaining, unloading)
       );
       if (outcome.kind === 'terminal') {
         this.logError(
@@ -203,21 +212,24 @@ export class FetchTransport extends BaseTransport {
     return true;
   }
 
-  private async prepareRequest(
-    items: TransportItem[]
-  ): Promise<{ requestInit: RequestInit; bodySize: number; sessionId: string | undefined }> {
+  private async prepareRequest(items: TransportItem[], original?: PreparedRequest): Promise<PreparedRequest> {
     // Async headers and compression can outlive a session. Bind both the header
     // and its response handling to the payload, not the current session.
+    // Copy the metadata first, so the chunks of a split batch keep the original
+    // identity even if the items change later.
     const transportBody = getTransportBody(items);
-    const sessionId = transportBody.meta.session?.id;
-    const jsonBody = JSON.stringify(transportBody);
+    const meta: Meta = original?.meta ?? JSON.parse(JSON.stringify(transportBody.meta));
+    const sessionId = meta.session?.id;
+    const jsonBody = JSON.stringify({ ...transportBody, meta });
 
     const { headers = {}, ...requestOptions } = this.options.requestOptions ?? {};
     const { keepalive: _keepalive, signal: _signal, ...requestOptionsWithoutManagedFields } = requestOptions;
-    const resolvedHeaders: Record<string, string> = {};
-
-    for (const [key, value] of Object.entries(headers)) {
-      resolvedHeaders[key] = typeof value === 'function' ? await value() : value;
+    let resolvedHeaders = original?.resolvedHeaders;
+    if (!resolvedHeaders) {
+      resolvedHeaders = {};
+      for (const [key, value] of Object.entries(headers)) {
+        resolvedHeaders[key] = typeof value === 'function' ? await value() : value;
+      }
     }
 
     let body: string | Blob = jsonBody;
@@ -231,7 +243,9 @@ export class FetchTransport extends BaseTransport {
 
     return {
       bodySize,
+      meta,
       sessionId,
+      resolvedHeaders,
       requestInit: {
         method: 'POST',
         headers: {
@@ -240,7 +254,7 @@ export class FetchTransport extends BaseTransport {
           ...resolvedHeaders,
           ...(this.options.apiKey ? { 'x-api-key': this.options.apiKey } : {}),
           ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
-          // Unlike dynamic headers, this key is generated once and must remain stable across attempts.
+          // Each body gets its own key, reused across attempts.
           'Idempotency-Key': genShortID(20),
         },
         body,
@@ -249,10 +263,84 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
+  /** On unload, send an over-budget batch in chunks that fit the keepalive budget. */
+  private async performUnloadAttempt(
+    items: TransportItem[],
+    prepared: PreparedRequest,
+    attemptsRemaining: number
+  ): Promise<AttemptOutcome> {
+    const requests: Array<{ prepared: PreparedRequest; reservation: KeepaliveReservation }> = [];
+    try {
+      let remaining = items;
+      let remainingPrepared = prepared;
+      for (;;) {
+        let chunk = remaining;
+        let chunkPrepared = remainingPrepared;
+        while (
+          chunk.length > 1 &&
+          pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS &&
+          !this.fitsKeepaliveBudget(chunkPrepared.bodySize)
+        ) {
+          chunk = chunk.slice(0, Math.ceil(chunk.length / 2));
+          chunkPrepared = await this.prepareRequest(chunk, prepared);
+        }
+
+        // Hold the actual budget while asynchronous preparation allows other deliveries to run.
+        requests.push({ prepared: chunkPrepared, reservation: this.reserveKeepalive(chunkPrepared.bodySize, true) });
+        if (chunk === remaining) {
+          break;
+        }
+        remaining = remaining.slice(chunk.length);
+        remainingPrepared = await this.prepareRequest(remaining, prepared);
+      }
+    } catch {
+      // Nothing has been sent, so the original body and key are still safe to use.
+      requests.forEach(({ reservation }) => reservation.release());
+      return this.performAttempt(prepared, attemptsRemaining, true);
+    }
+
+    try {
+      // Send chunks from this attempt's slot and any idle ones, so they stay within the configured concurrency.
+      const outcomes: AttemptOutcome[] = [];
+      let next = 0;
+      const sendChunks = async (releaseSlot: () => void = noop): Promise<void> => {
+        try {
+          while (next < requests.length) {
+            const index = next++;
+            const { prepared, reservation } = requests[index]!;
+            outcomes[index] = await this.performAttempt(prepared, attemptsRemaining, true, reservation);
+          }
+        } finally {
+          releaseSlot();
+        }
+      };
+      const senders = [sendChunks()];
+      while (next < requests.length) {
+        const releaseSlot = this.deliveryQueue.claimIdleSlot();
+        if (!releaseSlot) {
+          break;
+        }
+        senders.push(sendChunks(releaseSlot));
+      }
+      await Promise.all(senders);
+
+      const attemptsMade = outcomes.reduce((total, outcome) => total + outcome.attemptsMade, 0);
+      for (const outcome of outcomes) {
+        if (outcome.kind !== 'success') {
+          return { kind: 'terminal', failure: outcome.failure, attemptsMade };
+        }
+      }
+      return { kind: 'success', attemptsMade };
+    } finally {
+      requests.forEach(({ reservation }) => reservation.release());
+    }
+  }
+
   private async performAttempt(
-    prepared: { requestInit: RequestInit; bodySize: number; sessionId: string | undefined },
+    prepared: PreparedRequest,
     attemptsRemaining: number,
-    unloading: boolean
+    unloading: boolean,
+    keepaliveReservation?: KeepaliveReservation
   ): Promise<AttemptOutcome> {
     const callerSignal = this.options.requestOptions?.signal;
     if (callerSignal?.aborted) {
@@ -265,8 +353,10 @@ export class FetchTransport extends BaseTransport {
         prepared.requestInit,
         prepared.bodySize,
         unloading ? true : this.options.requestOptions?.keepalive,
+        unloading,
         attemptsRemaining,
-        () => attemptsMade++
+        () => attemptsMade++,
+        keepaliveReservation
       );
       this.handleResponse(response, prepared.sessionId);
 
@@ -298,11 +388,16 @@ export class FetchTransport extends BaseTransport {
     requestInit: RequestInit,
     bodySize: number,
     configuredKeepalive: boolean | undefined,
+    unloading: boolean,
     attemptsRemaining: number,
-    onFetch: () => void
+    onFetch: () => void,
+    keepaliveReservation?: KeepaliveReservation
   ): Promise<Response> {
     const startedAt = this.getNow();
-    const reservation = this.reserveKeepalive(bodySize, configuredKeepalive);
+    const reservation = keepaliveReservation ?? this.reserveKeepalive(bodySize, configuredKeepalive);
+    if (!reservation.keepalive) {
+      this.warnOnUnloadWithoutKeepalive(bodySize, unloading);
+    }
     try {
       return await this.fetchWithTimeout(
         { ...requestInit, keepalive: reservation.keepalive },
@@ -318,12 +413,23 @@ export class FetchTransport extends BaseTransport {
         !this.options.requestOptions?.signal?.aborted
       ) {
         this.logDebug('Retrying failed keepalive request with keepalive disabled.');
+        this.warnOnUnloadWithoutKeepalive(bodySize, unloading);
         const remainingTimeoutMs = this.requestTimeoutMs - (this.getNow() - startedAt);
         return this.fetchWithTimeout({ ...requestInit, keepalive: false }, remainingTimeoutMs, onFetch);
       }
       throw error;
     } finally {
       reservation.release();
+    }
+  }
+
+  private warnOnUnloadWithoutKeepalive(bodySize: number, unloading: boolean): void {
+    if (unloading) {
+      this.logWarn('Sending request without keepalive during page unload. It may be cancelled with the page.', {
+        bodySize,
+        pendingKeepaliveBodySize,
+        pendingKeepaliveRequests,
+      });
     }
   }
 
@@ -375,12 +481,7 @@ export class FetchTransport extends BaseTransport {
   }
 
   private reserveKeepalive(bodySize: number, configuredKeepalive?: boolean): KeepaliveReservation {
-    if (
-      configuredKeepalive === false ||
-      bodySize > BEACON_BODY_SIZE_LIMIT ||
-      pendingKeepaliveBodySize + bodySize > BEACON_BODY_SIZE_LIMIT ||
-      pendingKeepaliveRequests >= MAX_KEEPALIVE_REQUESTS
-    ) {
+    if (configuredKeepalive === false || !this.fitsKeepaliveBudget(bodySize)) {
       return { keepalive: false, release: noop };
     }
 
@@ -397,6 +498,12 @@ export class FetchTransport extends BaseTransport {
         }
       },
     };
+  }
+
+  private fitsKeepaliveBudget(bodySize: number): boolean {
+    return (
+      pendingKeepaliveBodySize + bodySize <= BEACON_BODY_SIZE_LIMIT && pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS
+    );
   }
 
   private handleResponse(response: Response, requestSessionId: string | undefined): void {

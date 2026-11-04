@@ -23,7 +23,11 @@ export interface DeliveryOutcome {
   reason?: 'retries-exhausted' | 'retry-after-too-long';
 }
 
-export type PerformAttempt = (attemptsRemaining: number, unloading: boolean) => Promise<AttemptOutcome>;
+export type PerformAttempt = (
+  attemptsRemaining: number,
+  unloading: boolean,
+  isRedelivery: boolean
+) => Promise<AttemptOutcome>;
 
 export interface DeliveryQueueOptions {
   bufferSize: number;
@@ -101,7 +105,10 @@ export class ReliableDeliveryQueue {
 
         for (;;) {
           const attemptsRemaining = this.options.retry.maxAttempts - attempts;
-          const outcome = await this.runAttempt(() => performAttempt(attemptsRemaining, this.unloading), attempts > 0);
+          const outcome = await this.runAttempt(
+            () => performAttempt(attemptsRemaining, this.unloading, attempts > 0),
+            attempts > 0
+          );
           attempts += outcome.attemptsMade;
 
           if (outcome.kind === 'success') {
@@ -144,7 +151,7 @@ export class ReliableDeliveryQueue {
           const unloading = await this.waitForTurn(sequence, backoff);
           if (unloading) {
             const attemptsRemaining = this.options.retry.maxAttempts - attempts;
-            const flushOutcome = await this.runAttempt(() => performAttempt(attemptsRemaining, true));
+            const flushOutcome = await this.runAttempt(() => performAttempt(attemptsRemaining, true, true));
             attempts += flushOutcome.attemptsMade;
             return {
               kind: flushOutcome.kind === 'success' ? 'success' : 'terminal',
@@ -179,6 +186,26 @@ export class ReliableDeliveryQueue {
 
   resume(): void {
     this.unloading = false;
+  }
+
+  /**
+   * Claims an idle slot for extra work inside a running attempt. Returns undefined instead of
+   * waiting when no slot is idle or attempts are queued, so the caller continues in its own slot.
+   */
+  claimIdleSlot(): (() => void) | undefined {
+    if (this.inProgress >= this.options.concurrency || this.attemptQueue.length > 0) {
+      return undefined;
+    }
+
+    this.inProgress++;
+    let released = false;
+    return () => {
+      if (!released) {
+        released = true;
+        this.inProgress--;
+        this.runNextAttempt();
+      }
+    };
   }
 
   private runAttempt<T>(perform: () => Promise<T>, isRedelivery = false): Promise<T> {
