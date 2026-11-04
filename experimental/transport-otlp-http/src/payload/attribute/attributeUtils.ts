@@ -1,6 +1,5 @@
-import type { IAnyValue, IKeyValue } from '@opentelemetry/otlp-transformer/build/src/common/internal-types';
-
 import { isArray, isBoolean, isInt, isNumber, isObject, isString } from '@grafana/faro-core';
+import type { IAnyValue, IKeyValue } from '@grafana/faro-core';
 
 export function toAttributeValue(value: unknown): IAnyValue {
   if (isString(value)) {

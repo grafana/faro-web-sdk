@@ -1,0 +1,138 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`FaroTraceExporter payload compatibility preserves the trace payload and derived Faro event: derived Faro event 1`] = `
+[
+  [
+    "faro.tracing.fetch",
+    {
+      "duration_ns": "15000064",
+      "http.method": "GET",
+      "http.status_code": "503",
+      "retry": "false",
+      "tags": "[object Object]",
+    },
+    undefined,
+    {
+      "customPayloadTransformer": [Function],
+      "spanContext": {
+        "spanId": "1234567890123456",
+        "traceId": "12345678901234567890123456789012",
+      },
+      "timestampOverwriteMs": 1700000000015,
+    },
+  ],
+]
+`;
+
+exports[`FaroTraceExporter payload compatibility preserves the trace payload and derived Faro event: trace payload 1`] = `
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "test-app",
+            },
+          },
+        ],
+        "droppedAttributesCount": 0,
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "@opentelemetry/instrumentation-fetch",
+            "version": "0.223.0",
+          },
+          "spans": [
+            {
+              "attributes": [
+                {
+                  "key": "http.method",
+                  "value": {
+                    "stringValue": "GET",
+                  },
+                },
+                {
+                  "key": "http.status_code",
+                  "value": {
+                    "intValue": 503,
+                  },
+                },
+                {
+                  "key": "retry",
+                  "value": {
+                    "boolValue": false,
+                  },
+                },
+                {
+                  "key": "tags",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "a",
+                        },
+                        {
+                          "stringValue": "b",
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+              "droppedAttributesCount": 1,
+              "droppedEventsCount": 2,
+              "droppedLinksCount": 3,
+              "endTimeUnixNano": "1700000000015000000",
+              "events": [
+                {
+                  "attributes": [
+                    {
+                      "key": "attempt",
+                      "value": {
+                        "intValue": 1,
+                      },
+                    },
+                  ],
+                  "droppedAttributesCount": 0,
+                  "name": "retry",
+                  "timeUnixNano": "1700000000010000000",
+                },
+              ],
+              "flags": 769,
+              "kind": 3,
+              "links": [
+                {
+                  "attributes": [
+                    {
+                      "key": "linked",
+                      "value": {
+                        "boolValue": true,
+                      },
+                    },
+                  ],
+                  "droppedAttributesCount": 0,
+                  "flags": 257,
+                  "spanId": "abcdefabcdefabcd",
+                  "traceId": "abcdefabcdefabcdefabcdefabcdefab",
+                },
+              ],
+              "name": "GET /data",
+              "parentSpanId": "6543210987654321",
+              "spanId": "1234567890123456",
+              "startTimeUnixNano": "1700000000000000000",
+              "status": {
+                "code": 2,
+                "message": "request failed",
+              },
+              "traceId": "12345678901234567890123456789012",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
