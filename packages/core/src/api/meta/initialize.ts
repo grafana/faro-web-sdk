@@ -40,12 +40,16 @@ export function initializeMetaAPI({
   };
 
   const updateSession: MetaAPI['setSession'] = (session, options) => {
-    const newOverrides = options?.overrides;
-    const overrides = newOverrides
+    const nextSession = isEmpty(session) ? undefined : session;
+    // Option overrides used to replace the payload's overrides entirely. Keep
+    // the previous merge, and include payload overrides underneath so keys that
+    // exist only on the payload are not dropped. Option keys still win.
+    const overrides = options?.overrides
       ? {
           overrides: {
             ...metaSession?.session?.overrides,
-            ...newOverrides,
+            ...nextSession?.overrides,
+            ...options.overrides,
           },
         }
       : {};
@@ -57,7 +61,7 @@ export function initializeMetaAPI({
     metaSession = {
       session: {
         // if session is undefined, session manager force creates a new session
-        ...(isEmpty(session) ? undefined : session),
+        ...nextSession,
         ...overrides,
       },
     };

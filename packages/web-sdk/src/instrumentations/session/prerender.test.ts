@@ -307,6 +307,30 @@ describe('prerendered sessions', () => {
     expect(events().map((item) => item.payload.name)).toEqual(['session_start']);
   });
 
+  it('keeps payload overrides when option overrides are also provided', () => {
+    start();
+    faro.api.setSession(
+      { overrides: { geoLocationTrackingEnabled: true } },
+      { overrides: { serviceName: 'checkout' } }
+    );
+    activate();
+    jest.advanceTimersByTime(2000);
+
+    expect(faro.api.getSession()?.overrides).toEqual({
+      geoLocationTrackingEnabled: true,
+      serviceName: 'checkout',
+    });
+  });
+
+  it('lets option overrides replace the same key from the payload', () => {
+    start();
+    faro.api.setSession({ overrides: { serviceName: 'from-payload' } }, { overrides: { serviceName: 'from-options' } });
+    activate();
+    jest.advanceTimersByTime(2000);
+
+    expect(faro.api.getSession()?.overrides).toEqual({ serviceName: 'from-options' });
+  });
+
   it('does not queue speculative signals even with an explicitly sampled session', () => {
     const beforeSend = jest.fn((item: TransportItem) => item);
     start({ beforeSend });
