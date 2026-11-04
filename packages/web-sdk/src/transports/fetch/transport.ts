@@ -37,6 +37,11 @@ interface KeepaliveReservation {
   keepalive: boolean;
   release: () => void;
 }
+interface PreparedRequest {
+  requestInit: RequestInit;
+  bodySize: number;
+  sessionId: string | undefined;
+}
 class RequestTimeoutError extends Error {}
 
 function getBodyByteSize(body: string): number {
@@ -175,7 +180,9 @@ export class FetchTransport extends BaseTransport {
     try {
       const prepared = await this.prepareRequest(items);
       const outcome = await reservation.deliver((attemptsRemaining, unloading) =>
-        this.performAttempt(prepared, attemptsRemaining, unloading)
+        unloading
+          ? this.performUnloadAttempt(items, prepared, attemptsRemaining)
+          : this.performAttempt(prepared, attemptsRemaining, false)
       );
       if (outcome.kind === 'terminal') {
         this.logError(
@@ -203,9 +210,7 @@ export class FetchTransport extends BaseTransport {
     return true;
   }
 
-  private async prepareRequest(
-    items: TransportItem[]
-  ): Promise<{ requestInit: RequestInit; bodySize: number; sessionId: string | undefined }> {
+  private async prepareRequest(items: TransportItem[]): Promise<PreparedRequest> {
     // Async headers and compression can outlive a session. Bind both the header
     // and its response handling to the payload, not the current session.
     const transportBody = getTransportBody(items);
@@ -249,8 +254,53 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
+  /**
+   * On page unload a request without keepalive can be cancelled with the page. Instead of sending an
+   * over-budget batch as one plain request, send it in chunks that each fit the remaining keepalive
+   * budget. Whatever still doesn't fit goes out as one plain request, as before.
+   */
+  private async performUnloadAttempt(
+    items: TransportItem[],
+    prepared: PreparedRequest,
+    attemptsRemaining: number
+  ): Promise<AttemptOutcome> {
+    const sends: Array<Promise<AttemptOutcome>> = [];
+    let remaining = items;
+    let remainingPrepared = prepared;
+    for (;;) {
+      let chunk = remaining;
+      let chunkPrepared = remainingPrepared;
+      while (
+        chunk.length > 1 &&
+        pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS &&
+        !this.fitsKeepaliveBudget(chunkPrepared.bodySize)
+      ) {
+        chunk = chunk.slice(0, Math.ceil(chunk.length / 2));
+        chunkPrepared = await this.prepareRequest(chunk);
+      }
+
+      if (chunk === remaining || !this.fitsKeepaliveBudget(chunkPrepared.bodySize)) {
+        sends.push(this.performAttempt(remainingPrepared, attemptsRemaining, true));
+        break;
+      }
+      // The attempt reserves its keepalive budget synchronously, before the rest is prepared.
+      sends.push(this.performAttempt(chunkPrepared, attemptsRemaining, true));
+      remaining = remaining.slice(chunk.length);
+      remainingPrepared = await this.prepareRequest(remaining);
+    }
+
+    const outcomes = await Promise.all(sends);
+    const attemptsMade = Math.max(...outcomes.map((outcome) => outcome.attemptsMade));
+    for (const outcome of outcomes) {
+      if (outcome.kind !== 'success') {
+        return { kind: 'terminal', failure: outcome.failure, attemptsMade };
+      }
+    }
+    return { kind: 'success', attemptsMade };
+  }
+
   private async performAttempt(
-    prepared: { requestInit: RequestInit; bodySize: number; sessionId: string | undefined },
+    prepared: PreparedRequest,
     attemptsRemaining: number,
     unloading: boolean
   ): Promise<AttemptOutcome> {
@@ -265,6 +315,7 @@ export class FetchTransport extends BaseTransport {
         prepared.requestInit,
         prepared.bodySize,
         unloading ? true : this.options.requestOptions?.keepalive,
+        unloading,
         attemptsRemaining,
         () => attemptsMade++
       );
@@ -298,11 +349,19 @@ export class FetchTransport extends BaseTransport {
     requestInit: RequestInit,
     bodySize: number,
     configuredKeepalive: boolean | undefined,
+    unloading: boolean,
     attemptsRemaining: number,
     onFetch: () => void
   ): Promise<Response> {
     const startedAt = this.getNow();
     const reservation = this.reserveKeepalive(bodySize, configuredKeepalive);
+    if (unloading && !reservation.keepalive) {
+      this.logWarn('Sending request without keepalive during page unload. It may be cancelled with the page.', {
+        bodySize,
+        pendingKeepaliveBodySize,
+        pendingKeepaliveRequests,
+      });
+    }
     try {
       return await this.fetchWithTimeout(
         { ...requestInit, keepalive: reservation.keepalive },
@@ -375,12 +434,7 @@ export class FetchTransport extends BaseTransport {
   }
 
   private reserveKeepalive(bodySize: number, configuredKeepalive?: boolean): KeepaliveReservation {
-    if (
-      configuredKeepalive === false ||
-      bodySize > BEACON_BODY_SIZE_LIMIT ||
-      pendingKeepaliveBodySize + bodySize > BEACON_BODY_SIZE_LIMIT ||
-      pendingKeepaliveRequests >= MAX_KEEPALIVE_REQUESTS
-    ) {
+    if (configuredKeepalive === false || !this.fitsKeepaliveBudget(bodySize)) {
       return { keepalive: false, release: noop };
     }
 
@@ -397,6 +451,12 @@ export class FetchTransport extends BaseTransport {
         }
       },
     };
+  }
+
+  private fitsKeepaliveBudget(bodySize: number): boolean {
+    return (
+      pendingKeepaliveBodySize + bodySize <= BEACON_BODY_SIZE_LIMIT && pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS
+    );
   }
 
   private handleResponse(response: Response, requestSessionId: string | undefined): void {

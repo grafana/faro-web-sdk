@@ -485,6 +485,79 @@ describe('reliable FetchTransport', () => {
     );
   });
 
+  describe('over-budget batches on page hide', () => {
+    const largeItem = { ...item, payload: { ...item.payload, message: 'a'.repeat(14_000) } };
+    let finishAll: (firstStatus?: number) => void;
+
+    beforeEach(() => {
+      const pending: Array<(value: TestResponse) => void> = [];
+      fetchMock.mockImplementation(() => new Promise((resolve) => pending.push(resolve)));
+      finishAll = (firstStatus = 202) =>
+        pending.splice(0).forEach((resolve, index) => resolve(response(index === 0 ? firstStatus : 202)));
+    });
+
+    const sentRequests = () =>
+      fetchMock.mock.calls.map(([, init]) => ({
+        keepalive: init.keepalive,
+        logs: JSON.parse(init.body as string).logs.length,
+      }));
+
+    it('splits the batch into requests that fit the keepalive budget', async () => {
+      const { transport, internalLogger } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 3 },
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 1 },
+      ]);
+      expect(internalLogger.warn).toHaveBeenCalledTimes(1);
+      expect(internalLogger.warn).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('without keepalive during page unload'),
+        expect.objectContaining({ pendingKeepaliveRequests: 2 })
+      );
+
+      finishAll();
+      await sending;
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it('keeps the batch in one plain request while the page is visible', async () => {
+      const { transport, internalLogger } = createTransport();
+
+      const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(sentRequests()).toEqual([{ keepalive: false, logs: 5 }]);
+      expect(internalLogger.warn).not.toHaveBeenCalled();
+
+      finishAll();
+      await sending;
+    });
+
+    it('reports a failed chunk once as a permanent delivery failure', async () => {
+      const { transport, internalLogger } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      finishAll(503);
+      await sending;
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(internalLogger.error).toHaveBeenCalledTimes(1);
+      expect(internalLogger.error).toHaveBeenCalledWith(
+        expect.any(String),
+        'Permanent delivery failure',
+        expect.objectContaining({ attempts: 1, status: 503 })
+      );
+    });
+  });
+
   it('resumes retries after restoration from the back-forward cache', async () => {
     fetchMock.mockResolvedValueOnce(response(503)).mockResolvedValueOnce(response(202));
     const { transport } = createTransport();
