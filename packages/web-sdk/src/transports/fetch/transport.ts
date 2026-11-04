@@ -264,7 +264,9 @@ export class FetchTransport extends BaseTransport {
     prepared: PreparedRequest,
     attemptsRemaining: number
   ): Promise<AttemptOutcome> {
-    const sends: Array<Promise<AttemptOutcome>> = [];
+    const requests: PreparedRequest[] = [];
+    let plannedBodySize = 0;
+    let plannedRequests = 0;
     let remaining = items;
     let remainingPrepared = prepared;
     for (;;) {
@@ -272,24 +274,30 @@ export class FetchTransport extends BaseTransport {
       let chunkPrepared = remainingPrepared;
       while (
         chunk.length > 1 &&
-        pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS &&
-        !this.fitsKeepaliveBudget(chunkPrepared.bodySize)
+        pendingKeepaliveRequests + plannedRequests < MAX_KEEPALIVE_REQUESTS &&
+        !this.fitsKeepaliveBudget(chunkPrepared.bodySize, plannedBodySize, plannedRequests)
       ) {
         chunk = chunk.slice(0, Math.ceil(chunk.length / 2));
         chunkPrepared = await this.prepareRequest(chunk);
       }
 
       if (chunk === remaining) {
-        sends.push(this.performAttempt(remainingPrepared, attemptsRemaining, true));
+        requests.push(remainingPrepared);
         break;
       }
-      // The attempt reserves its keepalive budget synchronously, before the rest is prepared.
-      sends.push(this.performAttempt(chunkPrepared, attemptsRemaining, true));
+      requests.push(chunkPrepared);
+      // Account for earlier chunks without sending anything until preparation succeeds.
+      if (this.fitsKeepaliveBudget(chunkPrepared.bodySize, plannedBodySize, plannedRequests)) {
+        plannedBodySize += chunkPrepared.bodySize;
+        plannedRequests++;
+      }
       remaining = remaining.slice(chunk.length);
       remainingPrepared = await this.prepareRequest(remaining);
     }
 
-    const outcomes = await Promise.all(sends);
+    const outcomes = await Promise.all(
+      requests.map((request) => this.performAttempt(request, attemptsRemaining, true))
+    );
     const attemptsMade = Math.max(...outcomes.map((outcome) => outcome.attemptsMade));
     for (const outcome of outcomes) {
       if (outcome.kind !== 'success') {
@@ -460,9 +468,10 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
-  private fitsKeepaliveBudget(bodySize: number): boolean {
+  private fitsKeepaliveBudget(bodySize: number, plannedBodySize = 0, plannedRequests = 0): boolean {
     return (
-      pendingKeepaliveBodySize + bodySize <= BEACON_BODY_SIZE_LIMIT && pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS
+      pendingKeepaliveBodySize + plannedBodySize + bodySize <= BEACON_BODY_SIZE_LIMIT &&
+      pendingKeepaliveRequests + plannedRequests < MAX_KEEPALIVE_REQUESTS
     );
   }
 
