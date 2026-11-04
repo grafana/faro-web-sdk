@@ -755,12 +755,13 @@ describe('reliable FetchTransport', () => {
 
       expect(sendsBeforePreparation).toBe(0);
       if (fail) {
-        expect(fetchMock).not.toHaveBeenCalled();
-        expect(internalLogger.error).toHaveBeenCalledTimes(1);
-        expect(internalLogger.error).toHaveBeenCalledWith(
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(fetchMock.mock.calls[0]![1].body).toBe([...bodies.keys()][0]);
+        expect(internalLogger.error).not.toHaveBeenCalled();
+        expect(internalLogger.warn).toHaveBeenCalledWith(
           expect.any(String),
-          'Permanent delivery failure',
-          expect.objectContaining({ error: expect.any(Error), attempts: 0 })
+          expect.stringContaining('without keepalive during page unload'),
+          expect.objectContaining({ pendingKeepaliveRequests: 0 })
         );
         fetchMock.mockResolvedValue(response(202));
         await transport.send([largeItem, largeItem, largeItem, largeItem]);
@@ -774,13 +775,117 @@ describe('reliable FetchTransport', () => {
         }))
       ).toEqual(
         fail
-          ? [{ keepalive: true, logs: 4 }]
+          ? [
+              { keepalive: false, logs: 5 },
+              { keepalive: true, logs: 4 },
+            ]
           : [
               { keepalive: true, logs: 3 },
               { keepalive: true, logs: 1 },
               { keepalive: false, logs: 1 },
             ]
       );
+    });
+
+    it('reserves a prepared chunk while another transport sends during suffix compression', async () => {
+      let resolveCompression!: (value: Blob) => void;
+      const pendingCompression = new Promise<Blob>((resolve) => {
+        resolveCompression = resolve;
+      });
+      const { transport, internalLogger } = createTransport({ requestCompression: true });
+      const { transport: otherTransport } = createTransport();
+      const bodies = new Map<Blob, string>();
+      const toBlob = (body: string) => {
+        const blob = new Blob([body]);
+        bodies.set(blob, body);
+        return blob;
+      };
+      const compression = jest.spyOn(transport as unknown as { compress(body: string): Promise<Blob> }, 'compress');
+      compression
+        .mockImplementation(async (body) => toBlob(body))
+        .mockImplementationOnce(async (body) => toBlob(body))
+        .mockImplementationOnce(async (body) => toBlob(body))
+        .mockReturnValueOnce(pendingCompression);
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      expect(compression).toHaveBeenCalledTimes(3);
+      expect(fetchMock).not.toHaveBeenCalled();
+
+      const otherSending = otherTransport.send([largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 1 },
+      ]);
+
+      resolveCompression(toBlob(compression.mock.calls[2]![0]));
+      await jest.advanceTimersByTimeAsync(0);
+      expect(
+        fetchMock.mock.calls.slice(2).map(([, init]) => ({
+          keepalive: init.keepalive,
+          logs: JSON.parse(bodies.get(init.body as Blob)!).logs.length,
+        }))
+      ).toEqual([
+        { keepalive: true, logs: 3 },
+        { keepalive: false, logs: 1 },
+        { keepalive: false, logs: 1 },
+      ]);
+      const reservedBytes = fetchMock.mock.calls.reduce(
+        (sum, [, init]) =>
+          sum +
+          (init.keepalive
+            ? typeof init.body === 'string'
+              ? new TextEncoder().encode(init.body).byteLength
+              : (init.body as Blob).size
+            : 0),
+        0
+      );
+      expect(reservedBytes).toBeLessThanOrEqual(60000);
+      finishAll();
+      await Promise.all([sending, otherSending]);
+      expect(internalLogger.error).not.toHaveBeenCalled();
+
+      const nextSending = transport.send([largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      expect(fetchMock.mock.calls[5]![1].keepalive).toBe(true);
+      finishAll();
+      await nextSending;
+    });
+
+    it('releases prepared chunk reservations when the caller aborts before dispatch', async () => {
+      let resolveCompression!: (value: Blob) => void;
+      const pendingCompression = new Promise<Blob>((resolve) => {
+        resolveCompression = resolve;
+      });
+      const controller = new AbortController();
+      const { transport } = createTransport({
+        requestCompression: true,
+        requestOptions: { signal: controller.signal },
+      });
+      const compression = jest.spyOn(transport as unknown as { compress(body: string): Promise<Blob> }, 'compress');
+      compression
+        .mockImplementation(async (body) => new Blob([body]))
+        .mockImplementationOnce(async (body) => new Blob([body]))
+        .mockImplementationOnce(async (body) => new Blob([body]))
+        .mockReturnValueOnce(pendingCompression);
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      expect(compression).toHaveBeenCalledTimes(3);
+      controller.abort();
+      resolveCompression(new Blob([compression.mock.calls[2]![0]]));
+      await sending;
+      expect(fetchMock).not.toHaveBeenCalled();
+
+      const { transport: nextTransport } = createTransport();
+      const nextSending = nextTransport.send([largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      expect(sentRequests()).toEqual([{ keepalive: true, logs: 4 }]);
+      finishAll();
+      await nextSending;
     });
 
     it('splits the batch into requests that fit the keepalive budget', async () => {

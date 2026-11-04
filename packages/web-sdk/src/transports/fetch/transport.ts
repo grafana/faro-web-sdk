@@ -271,53 +271,57 @@ export class FetchTransport extends BaseTransport {
     prepared: PreparedRequest,
     attemptsRemaining: number
   ): Promise<AttemptOutcome> {
-    const requests: PreparedRequest[] = [];
-    let plannedBodySize = 0;
-    let plannedRequests = 0;
-    let remaining = items;
-    let remainingPrepared = prepared;
-    for (;;) {
-      let chunk = remaining;
-      let chunkPrepared = remainingPrepared;
-      while (
-        chunk.length > 1 &&
-        pendingKeepaliveRequests + plannedRequests < MAX_KEEPALIVE_REQUESTS &&
-        !this.fitsKeepaliveBudget(chunkPrepared.bodySize, plannedBodySize, plannedRequests)
-      ) {
-        chunk = chunk.slice(0, Math.ceil(chunk.length / 2));
-        chunkPrepared = await this.prepareRequest(chunk, prepared.resolvedHeaders);
-      }
+    const requests: Array<{ prepared: PreparedRequest; reservation: KeepaliveReservation }> = [];
+    try {
+      let remaining = items;
+      let remainingPrepared = prepared;
+      for (;;) {
+        let chunk = remaining;
+        let chunkPrepared = remainingPrepared;
+        while (
+          chunk.length > 1 &&
+          pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS &&
+          !this.fitsKeepaliveBudget(chunkPrepared.bodySize)
+        ) {
+          chunk = chunk.slice(0, Math.ceil(chunk.length / 2));
+          chunkPrepared = await this.prepareRequest(chunk, prepared.resolvedHeaders);
+        }
 
-      if (chunk === remaining) {
-        requests.push(remainingPrepared);
-        break;
+        // Hold the actual budget while asynchronous preparation allows other deliveries to run.
+        requests.push({ prepared: chunkPrepared, reservation: this.reserveKeepalive(chunkPrepared.bodySize, true) });
+        if (chunk === remaining) {
+          break;
+        }
+        remaining = remaining.slice(chunk.length);
+        remainingPrepared = await this.prepareRequest(remaining, prepared.resolvedHeaders);
       }
-      requests.push(chunkPrepared);
-      // Account for earlier chunks without sending anything until preparation succeeds.
-      if (this.fitsKeepaliveBudget(chunkPrepared.bodySize, plannedBodySize, plannedRequests)) {
-        plannedBodySize += chunkPrepared.bodySize;
-        plannedRequests++;
-      }
-      remaining = remaining.slice(chunk.length);
-      remainingPrepared = await this.prepareRequest(remaining, prepared.resolvedHeaders);
+    } catch {
+      // Nothing has been sent, so the original body and key are still safe to use.
+      requests.forEach(({ reservation }) => reservation.release());
+      return this.performAttempt(prepared, attemptsRemaining, true);
     }
 
-    const outcomes = await Promise.all(
-      requests.map((request) => this.performAttempt(request, attemptsRemaining, true))
-    );
-    const attemptsMade = Math.max(...outcomes.map((outcome) => outcome.attemptsMade));
-    for (const outcome of outcomes) {
-      if (outcome.kind !== 'success') {
-        return { kind: 'terminal', failure: outcome.failure, attemptsMade };
+    try {
+      const outcomes = await Promise.all(
+        requests.map(({ prepared, reservation }) => this.performAttempt(prepared, attemptsRemaining, true, reservation))
+      );
+      const attemptsMade = Math.max(...outcomes.map((outcome) => outcome.attemptsMade));
+      for (const outcome of outcomes) {
+        if (outcome.kind !== 'success') {
+          return { kind: 'terminal', failure: outcome.failure, attemptsMade };
+        }
       }
+      return { kind: 'success', attemptsMade };
+    } finally {
+      requests.forEach(({ reservation }) => reservation.release());
     }
-    return { kind: 'success', attemptsMade };
   }
 
   private async performAttempt(
     prepared: PreparedRequest,
     attemptsRemaining: number,
-    unloading: boolean
+    unloading: boolean,
+    keepaliveReservation?: KeepaliveReservation
   ): Promise<AttemptOutcome> {
     const callerSignal = this.options.requestOptions?.signal;
     if (callerSignal?.aborted) {
@@ -332,7 +336,8 @@ export class FetchTransport extends BaseTransport {
         unloading ? true : this.options.requestOptions?.keepalive,
         unloading,
         attemptsRemaining,
-        () => attemptsMade++
+        () => attemptsMade++,
+        keepaliveReservation
       );
       this.handleResponse(response, prepared.sessionId);
 
@@ -366,10 +371,11 @@ export class FetchTransport extends BaseTransport {
     configuredKeepalive: boolean | undefined,
     unloading: boolean,
     attemptsRemaining: number,
-    onFetch: () => void
+    onFetch: () => void,
+    keepaliveReservation?: KeepaliveReservation
   ): Promise<Response> {
     const startedAt = this.getNow();
-    const reservation = this.reserveKeepalive(bodySize, configuredKeepalive);
+    const reservation = keepaliveReservation ?? this.reserveKeepalive(bodySize, configuredKeepalive);
     if (!reservation.keepalive) {
       this.warnOnUnloadWithoutKeepalive(bodySize, unloading);
     }
@@ -475,10 +481,9 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
-  private fitsKeepaliveBudget(bodySize: number, plannedBodySize = 0, plannedRequests = 0): boolean {
+  private fitsKeepaliveBudget(bodySize: number): boolean {
     return (
-      pendingKeepaliveBodySize + plannedBodySize + bodySize <= BEACON_BODY_SIZE_LIMIT &&
-      pendingKeepaliveRequests + plannedRequests < MAX_KEEPALIVE_REQUESTS
+      pendingKeepaliveBodySize + bodySize <= BEACON_BODY_SIZE_LIMIT && pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS
     );
   }
 
