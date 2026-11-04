@@ -6,5 +6,5 @@
 # Release PRs update this manifest; either team can approve package metadata changes.
 /experimental/instrumentation-replay/package.json @grafana/frontend-o11y @grafana/session-replay
 
-# Either team can approve ownership changes.
-/CODEOWNERS @grafana/frontend-o11y @grafana/session-replay
+# Either team can approve changelog entries.
+/CHANGELOG.md @grafana/frontend-o11y @grafana/session-replay
