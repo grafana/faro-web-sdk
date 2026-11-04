@@ -180,10 +180,10 @@ export class FetchTransport extends BaseTransport {
 
     try {
       const prepared = await this.prepareRequest(items);
-      const outcome = await reservation.deliver((attemptsRemaining, unloading) =>
-        unloading
+      const outcome = await reservation.deliver((attemptsRemaining, unloading, isRedelivery) =>
+        unloading && !isRedelivery
           ? this.performUnloadAttempt(items, prepared, attemptsRemaining)
-          : this.performAttempt(prepared, attemptsRemaining, false)
+          : this.performAttempt(prepared, attemptsRemaining, unloading)
       );
       if (outcome.kind === 'terminal') {
         this.logError(
@@ -263,7 +263,8 @@ export class FetchTransport extends BaseTransport {
   /**
    * On page unload a request without keepalive can be cancelled with the page. Instead of sending an
    * over-budget batch as one plain request, send it in chunks that each fit the remaining keepalive
-   * budget. Items that still don't fit go out in plain requests.
+   * budget. Items that still don't fit go out in plain requests. Only split on the first attempt so
+   * redeliveries keep the original body and idempotency key.
    */
   private async performUnloadAttempt(
     items: TransportItem[],

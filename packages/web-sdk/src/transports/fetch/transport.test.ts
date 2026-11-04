@@ -521,6 +521,133 @@ describe('reliable FetchTransport', () => {
         logs: JSON.parse(init.body as string).logs.length,
       }));
 
+    it.each(['retryable response', 'lost response'])(
+      'keeps the original body and key on unload after a %s',
+      async (failure) => {
+        if (failure === 'retryable response') {
+          fetchMock.mockResolvedValueOnce(response(503));
+        } else {
+          fetchMock.mockRejectedValueOnce(new TypeError('response lost'));
+        }
+        const authorization = jest.fn().mockReturnValue('token');
+        const { transport, internalLogger } = createTransport({
+          requestOptions: { headers: { Authorization: authorization } },
+        });
+        const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+        await jest.advanceTimersByTimeAsync(0);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        const original = fetchMock.mock.calls[0]![1];
+
+        window.dispatchEvent(new Event('pagehide'));
+        await jest.advanceTimersByTimeAsync(0);
+        finishAll();
+        await sending;
+
+        expect(sentRequests()).toEqual([
+          { keepalive: false, logs: 5 },
+          { keepalive: false, logs: 5 },
+        ]);
+        expect(fetchMock.mock.calls[1]![1].body).toBe(original.body);
+        expect(fetchMock.mock.calls[1]![1].headers).toBe(original.headers);
+        expect(authorization).toHaveBeenCalledTimes(1);
+        expect(internalLogger.warn).toHaveBeenCalledTimes(1);
+        expect(internalLogger.warn).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.stringContaining('without keepalive during page unload'),
+          expect.objectContaining({ bodySize: new TextEncoder().encode(original.body as string).byteLength })
+        );
+        expect(internalLogger.error).not.toHaveBeenCalled();
+        await jest.advanceTimersByTimeAsync(60000);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+      }
+    );
+
+    it('preserves a redelivery queued behind an active request when the page unloads', async () => {
+      fetchMock.mockResolvedValueOnce(response(503));
+      const { transport } = createTransport({ concurrency: 1, getRandom: () => 0 });
+      const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      const original = fetchMock.mock.calls[0]![1];
+      const active = transport.send([item]);
+      await jest.advanceTimersByTimeAsync(1000);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+
+      window.dispatchEvent(new Event('pagehide'));
+      finishAll();
+      await jest.advanceTimersByTimeAsync(0);
+      finishAll();
+      await Promise.all([sending, active]);
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(fetchMock.mock.calls[2]![1].body).toBe(original.body);
+      expect(fetchMock.mock.calls[2]![1].headers).toBe(original.headers);
+      expect(fetchMock.mock.calls[2]![1].keepalive).toBe(false);
+    });
+
+    it('uses a chunk that exactly fills the remaining body budget', async () => {
+      const { transport, internalLogger } = createTransport();
+      const active = transport.send([item]);
+      await jest.advanceTimersByTimeAsync(0);
+      const activeSize = new TextEncoder().encode(fetchMock.mock.calls[0]![1].body as string).byteLength;
+      const emptyItem = { ...item, payload: { ...item.payload, message: '' } };
+      const overhead = new TextEncoder().encode(JSON.stringify(getTransportBody([emptyItem]))).byteLength;
+      const exactItem = {
+        ...emptyItem,
+        payload: { ...emptyItem.payload, message: 'a'.repeat(60000 - activeSize - overhead) },
+      };
+      window.dispatchEvent(new Event('pagehide'));
+      const sending = transport.send([exactItem, item]);
+      await jest.advanceTimersByTimeAsync(0);
+      finishAll();
+      await Promise.all([active, sending]);
+
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 1 },
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 1 },
+      ]);
+      expect(new TextEncoder().encode(fetchMock.mock.calls[1]![1].body as string).byteLength).toBe(60000 - activeSize);
+      expect(internalLogger.warn).toHaveBeenCalledTimes(1);
+      expect(internalLogger.warn).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('without keepalive during page unload'),
+        expect.objectContaining({ pendingKeepaliveBodySize: 60000, pendingKeepaliveRequests: 2 })
+      );
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it('plans the ninth keepalive request around in-flight requests and warns for later chunks', async () => {
+      const { transport, internalLogger } = createTransport({ concurrency: 10 });
+      const active = Array.from({ length: 8 }, () => transport.send([item]));
+      await jest.advanceTimersByTimeAsync(0);
+      expect(fetchMock.mock.calls.every(([, init]) => init.keepalive)).toBe(true);
+
+      window.dispatchEvent(new Event('pagehide'));
+      const sending = transport.send([item, oversizedItem, item]);
+      await jest.advanceTimersByTimeAsync(0);
+      const afterLimit = transport.send([item]);
+      await jest.advanceTimersByTimeAsync(0);
+      finishAll();
+      await Promise.all([...active, sending, afterLimit]);
+
+      expect(sentRequests().slice(8)).toEqual([
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 2 },
+        { keepalive: false, logs: 1 },
+      ]);
+      expect(fetchMock.mock.calls.filter(([, init]) => init.keepalive)).toHaveLength(9);
+      expect(internalLogger.warn).toHaveBeenCalledTimes(2);
+      for (const call of internalLogger.warn.mock.calls) {
+        expect(call).toEqual([
+          expect.any(String),
+          expect.stringContaining('without keepalive during page unload'),
+          expect.objectContaining({ pendingKeepaliveRequests: 9, pendingKeepaliveBodySize: expect.any(Number) }),
+        ]);
+        expect(call[2].pendingKeepaliveBodySize).toBeLessThan(60000);
+      }
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
     it.each([
       { position: 'first', items: [oversizedItem, item, item], keepalive: [false, true], logs: [1, 2] },
       { position: 'middle', items: [item, oversizedItem, item], keepalive: [true, false, true], logs: [1, 1, 1] },
