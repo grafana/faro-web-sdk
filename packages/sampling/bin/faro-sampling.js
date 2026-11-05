@@ -1,5 +1,5 @@
 #!/usr/bin/env node
- 
+
 // Command line entry point for the rules module, for customers and CI.
 //
 //   faro-sampling validate <rules.json>   parse the document; print warnings; exit 1 on an error
