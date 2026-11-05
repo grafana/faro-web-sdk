@@ -1,9 +1,9 @@
-import { context, trace } from '@opentelemetry/api';
+import { context, propagation, trace } from '@opentelemetry/api';
 import type { Attributes } from '@opentelemetry/api';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
-import { BatchSpanProcessor, SamplingDecision, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
+import { BatchSpanProcessor, SamplingDecision, StackContextManager, TracerProvider } from '@opentelemetry/sdk-trace';
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
@@ -133,7 +133,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     const resource = defaultResource().merge(resourceFromAttributes(attributes));
 
-    const provider = new WebTracerProvider({
+    const provider = new TracerProvider({
       resource,
       sampler: {
         shouldSample: () => {
@@ -154,7 +154,8 @@ export class TracingInstrumentation extends BaseInstrumentation {
       spanProcessors: [
         options.spanProcessor ??
           new FaroMetaAttributesSpanProcessor(
-            new BatchSpanProcessor(new FaroTraceExporter({ api: this.api }), {
+            new BatchSpanProcessor({
+              exporter: new FaroTraceExporter({ api: this.api }),
               scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
               maxExportBatchSize: 30,
             }),
@@ -165,15 +166,19 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     const omitForUnsampledSessions = options.omitTraceContextForUnsampledSessions === true;
 
-    provider.register({
+    trace.setGlobalTracerProvider(provider);
+    propagation.setGlobalPropagator(
       // wrapped so that pausing Faro, or running an unsampled session, also stops trace context
       // from being injected into requests
-      propagator: new FaroPausablePropagator(
+      new FaroPausablePropagator(
         options.propagator ?? new W3CTraceContextPropagator(),
         () => this.transports.isPaused() || (omitForUnsampledSessions && !isSessionSampled(this.api.getSession()))
-      ),
-      contextManager: options.contextManager,
-    });
+      )
+    );
+
+    const contextManager = options.contextManager ?? new StackContextManager();
+    contextManager.enable();
+    context.setGlobalContextManager(contextManager);
 
     const { fetchInstrumentationOptions, xhrInstrumentationOptions } = this.options.instrumentationOptions ?? {};
 
