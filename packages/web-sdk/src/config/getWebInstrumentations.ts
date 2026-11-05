@@ -22,7 +22,7 @@ export function getWebInstrumentations(options: GetWebInstrumentationsOptions = 
     new WebVitalsInstrumentation(),
     new SessionInstrumentation(),
     new ViewInstrumentation(),
-    new NavigationInstrumentation(),
+    ...(options.trackNavigation === false ? [] : [new NavigationInstrumentation()]),
     new FrustrationInstrumentation(),
   ];
 

@@ -66,6 +66,30 @@
       "allowedVersions": "<7.0.0"
     },
     {
+      "description": "Keep the stable OpenTelemetry JS SDK packages on 2.x until Faro migrates to SDK 3.x. SDK 3.x removes @opentelemetry/sdk-trace-web and only works with the 0.300 experimental packages and @opentelemetry/api 1.10, so all three must move in one migration pull request, which also removes this rule and the two after it.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@opentelemetry/core", "@opentelemetry/resources", "@opentelemetry/sdk-trace-web"],
+      "allowedVersions": "<3.0.0"
+    },
+    {
+      "description": "Keep the experimental OpenTelemetry JS packages below 0.300, the line released with SDK 3.x. 0.300 requires SDK 3.x and its exports map rejects Faro's imports from @opentelemetry/otlp-transformer/build/src. See the SDK 3.x rule above.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": [
+        "@opentelemetry/exporter-trace-otlp-http",
+        "@opentelemetry/instrumentation",
+        "@opentelemetry/instrumentation-fetch",
+        "@opentelemetry/instrumentation-xml-http-request",
+        "@opentelemetry/otlp-transformer"
+      ],
+      "allowedVersions": "<0.300.0"
+    },
+    {
+      "description": "Keep @opentelemetry/api below 1.10. SDK 2.x peers on '>=1.0.0 <1.10.0' and SDK 3.x on '>=1.10.0 <1.11.0', so the API can only move to 1.10 with the SDK 3.x migration. See the SDK 3.x rule above.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@opentelemetry/api"],
+      "allowedVersions": "<1.10.0"
+    },
+    {
       "description": "Restrict ua-parser-js to version below 2.x.x as it changes licensing model with v2 onwards",
       "matchPackageNames": ["ua-parser-js"],
       "allowedVersions": "<2.0.0"

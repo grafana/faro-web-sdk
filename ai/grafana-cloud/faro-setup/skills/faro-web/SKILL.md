@@ -1,6 +1,6 @@
 ---
 name: faro-setup-web
-description: Instruments a web app with Grafana Faro Web SDK for frontend observability. Use when setting up error tracking, Web Vitals, session monitoring, or distributed tracing in a browser app.
+description: Instruments a web app with Grafana Faro Web SDK for frontend observability. Use when setting up error tracking, Web Vitals, session monitoring, distributed tracing, or Session Replay in a browser app.
 version: 0.1.0
 author: Grafana Labs
 license: Apache-2.0
@@ -8,6 +8,7 @@ user-invocable: true
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit
 compatibility:
   faro-web-sdk: '^2.0.0'
+  faro-instrumentation-replay: '^2.8.2' # Session Replay (optional); version-aligned with faro-web-sdk
   frameworks:
     react: '>=16.8'
     next: '>=13'
@@ -241,7 +242,8 @@ Read `frameworks.md` now. Use the section matching the detected framework for in
 
 Run the package install command from the matching `frameworks.md` section (skip for CDN projects).
 
-If **no router was detected** or the detected router has no supported Faro integration, add `experimental: { trackNavigation: true }` to the `initializeFaro` call in the init file. Do NOT ask — apply it silently as part of the base config. This captures URL changes and navigation timing without a router.
+Navigation tracking is enabled by default in the Faro Web SDK. If **no router was detected** or the detected router has no supported Faro integration, no additional configuration is needed.
+Auto-navigation tracking captures URL changes and navigation timing without a router. To disable it, pass `trackNavigation: false` to `getWebInstrumentations()` or provide a custom `instrumentations` array without `NavigationInstrumentation`.
 
 ---
 
@@ -296,7 +298,7 @@ If **no router was detected** or the detected router has no supported Faro integ
    > - Wired: first import in `[entry point]`
    > - Filtered harmless browser errors (ResizeObserver, Script error, extension noise)
    >   [if services detected:] - Excluded from network tracking: [service names] — auto-detected in your project
-   >   [if no router detected:] - Auto-navigation tracking enabled (`experimental.trackNavigation`) — no router found
+   >   [if no router detected:] - Auto-navigation tracking enabled by default — no router found
    <!-- shared:noise-reduction:end -->
 4. Ask the user to do a quick sanity check **before** adding anything else (this is an early check — a final pre-PR verification happens in Step 5):
    > **One quick check** — start your app and open DevTools → Network. Filter by `collect`. You should see POST requests to your collector within a few seconds.
@@ -325,7 +327,7 @@ Show a **single message** with all options:
 
 > Here's what else I can set up — pick any numbers, or say **PR** to skip all:
 >
-> 1. **Route tracking** — [if router detected: route patterns + view grouping] [if no router: one-flag auto-navigation]
+> 1. **Route tracking** — [if router detected: route patterns + view grouping] [if no router: auto-navigation is already enabled]
 > 2. **User identity** — tag errors and sessions with who's logged in
 > 3. **More** — error boundary, cookie consent, cross-origin tracing, session settings, disable console capture, disable tracing
 
@@ -338,14 +340,8 @@ Handle one picked item at a time. After each, ask:
 **1 — Route tracking** → Read `advanced.md` section B.
 
 - Router detected: offer router integration (gives route patterns like `/users/:id`).
-- No router: enable auto-navigation with one flag:
-  ```ts
-  initializeFaro({
-    // ... existing config ...
-    experimental: { trackNavigation: true },
-  });
-  ```
-  Note to user: captures actual URLs, not route patterns. Upgrade to router integration (advanced.md section B) when a router is added.
+- No router: auto-navigation is already enabled by default. No config change is needed. Pass `trackNavigation: false` to `getWebInstrumentations()` only if navigation tracking should be disabled.
+  Note to user: it captures actual URLs, not route patterns. Upgrade to router integration (advanced.md section B) when a router is added.
 
 **2 — User identity** → Read `advanced.md` section K.
 
@@ -357,10 +353,11 @@ Handle one picked item at a time. After each, ask:
 > 2. Cookie consent gate — delay tracking until consent accepted (→ advanced.md section G)
 > 3. Cross-origin tracing — trace headers for API calls on other domains (→ advanced.md section A)
 > 4. Session settings — persistence, inactivity timeout (→ advanced.md section F)
-> 5. Disable console log capture (→ advanced.md section L)
-> 6. Disable distributed tracing (→ advanced.md section M)
-> 7. Exclude additional errors — suppress app-specific error patterns (→ advanced.md section D)
-> 8. Exclude additional URLs — suppress more network domains (→ advanced.md section E)
+> 5. Session Replay — record user sessions for debugging (requires privacy consent, Faro SDK ≥ 2.8.2) (→ advanced.md section N)
+> 6. Disable console log capture (→ advanced.md section L)
+> 7. Disable distributed tracing (→ advanced.md section M)
+> 8. Exclude additional errors — suppress app-specific error patterns (→ advanced.md section D)
+> 9. Exclude additional URLs — suppress more network domains (→ advanced.md section E)
 >    [if detected:] ⭐ Microfrontend coordination — found [framework] (→ advanced.md section J)
 >    [if detected:] ⭐ iFrame guidance — found cross-frame patterns (→ advanced.md section I)
 
@@ -481,6 +478,7 @@ Generate the checklist dynamically based on what was configured:
 > [✅ Navigation / route tracking — OR — ☐ Navigation tracking: not configured]
 > [✅ React Error Boundary — OR — (omit for non-React)]
 > [✅ Cookie consent gate (paused mode) — OR — (omit if not configured)]
+> [✅ Session Replay — [sampling rate]%, [masking summary] — OR — (omit if not configured)]
 > [✅ Microfrontend: host initializes Faro / child uses faro.api — OR — (omit if not applicable)]
 >
 > **What you can add later:**
@@ -493,6 +491,9 @@ Generate the checklist dynamically based on what was configured:
 >
 > ☐ **Source map upload** — resolve minified stack traces to real source lines in production.
 > See: [Faro source maps docs](https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/faro-web-sdk/upload-source-maps/)
+>
+> [omit if already configured:] ☐ **Session Replay** — record a structured playback of user interactions for debugging UI issues. Requires end-user consent in opt-in jurisdictions.
+> See: [Session Replay docs](https://grafana.com/docs/grafana-cloud/observe-and-act/monitor-applications/session-replay/)
 >
 > ☐ **Alerting** — create alerts on error rate spikes or Web Vitals degradation from the Grafana Cloud Frontend Observability panel.
 >

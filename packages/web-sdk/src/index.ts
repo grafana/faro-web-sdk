@@ -1,5 +1,5 @@
 export { getWebInstrumentations, makeCoreConfig } from './config';
-export type { BrowserConfig } from './config';
+export type { BrowserConfig, GetWebInstrumentationsOptions } from './config';
 
 export { defaultEventDomain } from './consts';
 

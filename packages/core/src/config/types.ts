@@ -277,12 +277,11 @@ export interface Config<P = APIEvent> {
   preserveOriginalError?: boolean;
 
   /**
-   * Configuration for experimental features.
-   * These features have been tested thoroughly, but it is possible that they might not work as expected in all cases.
+   * @deprecated Use the `trackNavigation` option on `getWebInstrumentations` instead.
    */
   experimental?: {
     /**
-     * Track navigation events.
+     * @deprecated Use the `trackNavigation` option on `getWebInstrumentations` instead.
      */
     trackNavigation?: boolean;
   };

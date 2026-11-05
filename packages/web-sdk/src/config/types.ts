@@ -10,4 +10,8 @@ export interface GetWebInstrumentationsOptions {
   captureConsole?: boolean;
   enablePerformanceInstrumentation?: boolean;
   enableContentSecurityPolicyInstrumentation?: boolean;
+  /**
+   * Enable navigation tracking. Defaults to true.
+   */
+  trackNavigation?: boolean;
 }

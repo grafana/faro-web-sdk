@@ -2,6 +2,12 @@ import { monoNow, Observable } from '@grafana/faro-core';
 
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './monitors/const';
 import type { HttpRequestEndMessage, HttpRequestStartMessage } from './monitors/types';
+import {
+  MESSAGE_TYPE_NAVIGATION_TRANSITION_END,
+  MESSAGE_TYPE_NAVIGATION_TRANSITION_START,
+  type NavigationTransitionEndMessage,
+  type NavigationTransitionStartMessage,
+} from './monitors/urlChangeMonitor';
 
 type OperationKey = string;
 
@@ -11,6 +17,14 @@ export function isRequestStartMessage(msg: any): msg is HttpRequestStartMessage 
 
 export function isRequestEndMessage(msg: any): msg is HttpRequestEndMessage {
   return msg.type === MESSAGE_TYPE_HTTP_REQUEST_END;
+}
+
+export function isNavigationTransitionStartMessage(msg: any): msg is NavigationTransitionStartMessage {
+  return msg.type === MESSAGE_TYPE_NAVIGATION_TRANSITION_START;
+}
+
+export function isNavigationTransitionEndMessage(msg: any): msg is NavigationTransitionEndMessage {
+  return msg.type === MESSAGE_TYPE_NAVIGATION_TRANSITION_END;
 }
 
 export interface ActivityWindowTrackerOptions<TMsg = any> {
