@@ -18,6 +18,8 @@
 - **web-sdk:** use Web Crypto for session sampling when available
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
 - **web-sdk:** prevent duplicate sessions when Chrome activates a prerendered page
+- **core:** send telemetry that other listeners queue while the page is being hidden, such as spans that tracing
+  exports when the page unloads
 
 ## [2.13.0](https://github.com/grafana/faro-web-sdk/compare/v2.12.1...v2.13.0) (2026-10-22)
 

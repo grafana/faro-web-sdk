@@ -27,11 +27,17 @@ export class BatchExecutor {
     // Send batched/buffered data when user navigates to new page, switches or closes the tab, minimizes or closes the browser.
     // If on mobile, it also sends data if user switches from the browser to a different app.
     if (typeof document !== 'undefined') {
-      document.addEventListener('visibilitychange', () => {
+      const flushWhenHidden = () => {
         if (document.visibilityState === 'hidden') {
           this.flush();
         }
-      });
+      };
+
+      document.addEventListener('visibilitychange', flushWhenHidden);
+      // Document listeners added after this one can push items during the same event, as
+      // OpenTelemetry's BatchSpanProcessor does when it exports on hide. The event bubbles to the
+      // window once every document listener has run, so flush again there before the page unloads.
+      document.defaultView?.addEventListener('visibilitychange', flushWhenHidden);
     }
   }
 
