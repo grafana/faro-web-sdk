@@ -97,61 +97,57 @@ gh api repos/grafana/faro-web-sdk/actions/runs/<run-id>/pending_deployments \
 
 ## Configuration
 
-- `release-please-config.json` — stable package list, plugins, changelog path.
-- `.release-please-manifest.json` — current stable versions per package (managed by the bot;
+- `release-please-config.json` — package list, plugins, changelog path.
+- `.release-please-manifest.json` — current versions per package (managed by the bot;
   do not hand-edit unless recovering from a broken state).
 - `.github/workflows/release-please.yml` — the stable release workflow.
-- `release-please-config-alpha.json` — prerelease package list and alpha configuration.
-- `.release-please-manifest-alpha.json` — current alpha baseline versions.
-- `.github/workflows/release-please-alpha.yml` — the alpha release workflow.
+- `.github/workflows/publish-alpha.yml` — manual workflow to publish prerelease alpha builds.
 
 ## Prerelease (alpha) flow
 
-When testing cross-package features (such as tracing attribution) across all
-linked Faro workspaces without affecting the stable `latest` channel, releases
-are published from the dedicated `alpha` branch.
+When testing cross-package features across all linked Faro workspaces without
+affecting the stable `latest` channel, releases are published on demand from a
+dedicated feature branch.
 
 ### How alpha releases work
 
-1. Merges to the `alpha` branch trigger
-   `.github/workflows/release-please-alpha.yml`.
-2. Release Please scans commits and opens or updates an Alpha Release PR
-   (`chore: alpha release …`), bumping all public packages and internal
-   dependencies to matching prerelease versions (e.g. `2.14.0-alpha.0`,
-   `2.14.0-alpha.1`).
-3. Merging the Alpha Release PR creates a prerelease git tag and runs the
-   chained test suite.
-4. The `publish` job runs under the `publish-alpha` GitHub Environment with
-   OIDC Trusted Publishing and publishes all packages to npm using the explicit
-   `alpha` dist-tag (`npm run publish -- from-package --yes --dist-tag alpha --pre-dist-tag alpha`).
-5. The stable `latest` dist-tag on npm remains completely unchanged. Default
-   installations (`npm install @grafana/faro-web-sdk`) will not install alpha
-   releases.
+1. **Create an alpha feature branch from `main`**:
 
-### Installing alpha packages
+   ```sh
+   git checkout -b alpha/my-feature origin/main
+   git push origin alpha/my-feature
+   ```
 
-Consumers and testers can install the prerelease packages explicitly:
+2. **Develop and merge feature PRs**: Target and merge PRs directly into
+   `alpha/my-feature`. **Do not bump version numbers in git commits** — git
+   history stays clean of prerelease version churn.
+3. **Trigger the alpha publish workflow**: In GitHub Actions under
+   [Publish alpha prerelease](../.github/workflows/publish-alpha.yml), click
+   **Run workflow** (`workflow_dispatch`) and provide:
+   - **`ref`**: the branch to publish from (e.g. `alpha/my-feature`).
+   - **`version`**: the explicit alpha version (e.g. `2.15.0-alpha.0`,
+     `2.15.0-alpha.1`).
+4. **Automated validation & publishing**:
+   - **Pre-publish check**: Verifies the version does not already exist on npm
+     for all six packages. If a previous publish partially failed, rerunning with
+     the same version resumes safely (`from-package` skips already published packages).
+   - **In-memory bump & CI checks**: Bumps all six public packages, internal
+     cross-dependencies, `lerna.json`, and the private smoke harness on the runner,
+     then runs the full quality suite (`build`, `typecheck`, `lint`,
+     `circular-deps`, and `unit tests`).
+   - **Publish to npm**: Runs under the `publish-alpha` GitHub Environment with
+     OIDC Trusted Publishing and publishes with `--dist-tag alpha --pre-dist-tag alpha`.
+   - **Post-publish check**: Confirms all six packages are published on npm.
+5. **Testing**: Applications testing the feature pin the exact version:
 
-```sh
-npm install @grafana/faro-web-sdk@alpha @grafana/faro-core@alpha
-```
+   ```sh
+   npm install @grafana/faro-web-sdk@2.15.0-alpha.0
+   ```
 
-Or by targeting the exact version:
-
-```sh
-npm install @grafana/faro-web-sdk@2.14.0-alpha.0
-```
-
-### Promoting alpha to stable
-
-When prerelease testing is complete:
-
-1. Open a pull request to merge the `alpha` branch into `main`.
-2. Once merged, the stable `.github/workflows/release-please.yml` runs on `main`
-   and opens a standard release PR for the next stable version (e.g. `2.14.0`).
-3. Merging that PR publishes the changes to npm under the `latest` dist-tag.
-4. Re-sync or fast-forward the `alpha` branch with `main` to align baselines for
-   the next prerelease cycle.
+6. **Promoting to `main`**: When testing is complete, open a PR from
+   `alpha/my-feature` into `main`. The branch merges cleanly with zero version or
+   changelog conflicts, and the standard stable Release Please workflow on
+   `main` handles the official release. The feature branch is then deleted.
 
 ## Skipping a release
 
