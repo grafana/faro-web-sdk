@@ -47,6 +47,12 @@ the [README.md][faro-web-sdk-readme] for more information.
 [@grafana/faro-web-tracing][faro-web-tracing] provides implementation for tracing web applications. See the
 [README.md][faro-web-tracing-readme] for more information.
 
+### Sampling
+
+[@grafana/faro-sampling][faro-sampling] is the adaptive sampling rules engine: it parses a rules document, decides
+once per session and produces the sampling verdict. Platform neutral, no Faro dependency. See the
+[README.md][faro-sampling-readme] for more information.
+
 ### React Support
 
 [@grafana/faro-react][faro-react] is a package that enables easier integration in projects built with React. See the
@@ -63,6 +69,8 @@ the [README.md][faro-web-sdk-readme] for more information.
 [faro-quick-start]: ./docs/sources/tutorials/quick-start-browser.md
 [faro-react]: ./packages/react
 [faro-react-readme]: ./packages/react/README.md
+[faro-sampling]: ./packages/sampling
+[faro-sampling-readme]: ./packages/sampling/README.md
 [faro-supported-environments]: https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/introduction/supported-environments/
 [faro-web-sdk]: ./packages/web-sdk
 [faro-web-sdk-readme]: ./packages/web-sdk/README.md

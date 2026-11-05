@@ -1,0 +1,224 @@
+[
+  {
+    "sessionId": "a",
+    "base": {
+      "input": "a",
+      "key_u32": 444641715
+    },
+    "replay": {
+      "input": "a\u0000replay\u0000",
+      "key_u32": 2260159780
+    },
+    "triggers": {
+      "errors": {
+        "input": "a\u0000trigger\u0000errors",
+        "key_u32": 1360462012
+      },
+      "checkout-failed": {
+        "input": "a\u0000trigger\u0000checkout-failed",
+        "key_u32": 3441123475
+      },
+      "replay": {
+        "input": "a\u0000trigger\u0000replay",
+        "key_u32": 450390187
+      },
+      "trigger": {
+        "input": "a\u0000trigger\u0000trigger",
+        "key_u32": 2883147978
+      },
+      "a": {
+        "input": "a\u0000trigger\u0000a",
+        "key_u32": 805027188
+      },
+      "A_Z-09": {
+        "input": "a\u0000trigger\u0000A_Z-09",
+        "key_u32": 3050637433
+      }
+    }
+  },
+  {
+    "sessionId": "foobar",
+    "base": {
+      "input": "foobar",
+      "key_u32": 202221276
+    },
+    "replay": {
+      "input": "foobar\u0000replay\u0000",
+      "key_u32": 312336908
+    },
+    "triggers": {
+      "errors": {
+        "input": "foobar\u0000trigger\u0000errors",
+        "key_u32": 2794226154
+      },
+      "checkout-failed": {
+        "input": "foobar\u0000trigger\u0000checkout-failed",
+        "key_u32": 2148529916
+      },
+      "replay": {
+        "input": "foobar\u0000trigger\u0000replay",
+        "key_u32": 663560069
+      },
+      "trigger": {
+        "input": "foobar\u0000trigger\u0000trigger",
+        "key_u32": 303843627
+      },
+      "a": {
+        "input": "foobar\u0000trigger\u0000a",
+        "key_u32": 952586004
+      },
+      "A_Z-09": {
+        "input": "foobar\u0000trigger\u0000A_Z-09",
+        "key_u32": 3497248077
+      }
+    }
+  },
+  {
+    "sessionId": "aB3kZ9pQx7",
+    "base": {
+      "input": "aB3kZ9pQx7",
+      "key_u32": 683122312
+    },
+    "replay": {
+      "input": "aB3kZ9pQx7\u0000replay\u0000",
+      "key_u32": 1290009050
+    },
+    "triggers": {
+      "errors": {
+        "input": "aB3kZ9pQx7\u0000trigger\u0000errors",
+        "key_u32": 920870207
+      },
+      "checkout-failed": {
+        "input": "aB3kZ9pQx7\u0000trigger\u0000checkout-failed",
+        "key_u32": 394667659
+      },
+      "replay": {
+        "input": "aB3kZ9pQx7\u0000trigger\u0000replay",
+        "key_u32": 1771391931
+      },
+      "trigger": {
+        "input": "aB3kZ9pQx7\u0000trigger\u0000trigger",
+        "key_u32": 4018499824
+      },
+      "a": {
+        "input": "aB3kZ9pQx7\u0000trigger\u0000a",
+        "key_u32": 3309104895
+      },
+      "A_Z-09": {
+        "input": "aB3kZ9pQx7\u0000trigger\u0000A_Z-09",
+        "key_u32": 1389355266
+      }
+    }
+  },
+  {
+    "sessionId": "550e8400-e29b-41d4-a716-446655440000",
+    "base": {
+      "input": "550e8400-e29b-41d4-a716-446655440000",
+      "key_u32": 2531564893
+    },
+    "replay": {
+      "input": "550e8400-e29b-41d4-a716-446655440000\u0000replay\u0000",
+      "key_u32": 616772811
+    },
+    "triggers": {
+      "errors": {
+        "input": "550e8400-e29b-41d4-a716-446655440000\u0000trigger\u0000errors",
+        "key_u32": 2782044495
+      },
+      "checkout-failed": {
+        "input": "550e8400-e29b-41d4-a716-446655440000\u0000trigger\u0000checkout-failed",
+        "key_u32": 642269921
+      },
+      "replay": {
+        "input": "550e8400-e29b-41d4-a716-446655440000\u0000trigger\u0000replay",
+        "key_u32": 1317157933
+      },
+      "trigger": {
+        "input": "550e8400-e29b-41d4-a716-446655440000\u0000trigger\u0000trigger",
+        "key_u32": 4102296303
+      },
+      "a": {
+        "input": "550e8400-e29b-41d4-a716-446655440000\u0000trigger\u0000a",
+        "key_u32": 2205619261
+      },
+      "A_Z-09": {
+        "input": "550e8400-e29b-41d4-a716-446655440000\u0000trigger\u0000A_Z-09",
+        "key_u32": 3293625288
+      }
+    }
+  },
+  {
+    "sessionId": "sess_0001000000",
+    "base": {
+      "input": "sess_0001000000",
+      "key_u32": 998462043
+    },
+    "replay": {
+      "input": "sess_0001000000\u0000replay\u0000",
+      "key_u32": 3170854345
+    },
+    "triggers": {
+      "errors": {
+        "input": "sess_0001000000\u0000trigger\u0000errors",
+        "key_u32": 2901536321
+      },
+      "checkout-failed": {
+        "input": "sess_0001000000\u0000trigger\u0000checkout-failed",
+        "key_u32": 447089350
+      },
+      "replay": {
+        "input": "sess_0001000000\u0000trigger\u0000replay",
+        "key_u32": 1199268171
+      },
+      "trigger": {
+        "input": "sess_0001000000\u0000trigger\u0000trigger",
+        "key_u32": 2310194140
+      },
+      "a": {
+        "input": "sess_0001000000\u0000trigger\u0000a",
+        "key_u32": 4265678992
+      },
+      "A_Z-09": {
+        "input": "sess_0001000000\u0000trigger\u0000A_Z-09",
+        "key_u32": 3095934012
+      }
+    }
+  },
+  {
+    "sessionId": "ünïcödé",
+    "base": {
+      "input": "ünïcödé",
+      "key_u32": 1932279587
+    },
+    "replay": {
+      "input": "ünïcödé\u0000replay\u0000",
+      "key_u32": 3694443515
+    },
+    "triggers": {
+      "errors": {
+        "input": "ünïcödé\u0000trigger\u0000errors",
+        "key_u32": 3569888605
+      },
+      "checkout-failed": {
+        "input": "ünïcödé\u0000trigger\u0000checkout-failed",
+        "key_u32": 1799558021
+      },
+      "replay": {
+        "input": "ünïcödé\u0000trigger\u0000replay",
+        "key_u32": 1303002128
+      },
+      "trigger": {
+        "input": "ünïcödé\u0000trigger\u0000trigger",
+        "key_u32": 4099314294
+      },
+      "a": {
+        "input": "ünïcödé\u0000trigger\u0000a",
+        "key_u32": 2868197859
+      },
+      "A_Z-09": {
+        "input": "ünïcödé\u0000trigger\u0000A_Z-09",
+        "key_u32": 1767392487
+      }
+    }
+  }
+]
