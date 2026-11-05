@@ -391,6 +391,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       blockClass: 'grafana-block',
       ignoreClass: 'grafana-ignore',
       maskTextSelector: this.options.maskTextSelector,
+      maskTextFn: this.options.maskTextFn,
       blockSelector: this.options.blockSelector,
       ignoreSelector: this.options.ignoreSelector,
       recordCanvas: false,
