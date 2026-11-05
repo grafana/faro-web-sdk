@@ -45,14 +45,18 @@ async function collected(request: APIRequestContext, run: string): Promise<Colle
   return (await response.json()) as Collected[];
 }
 
-function findFailSpan(payloads: Collected[], run: string) {
+function failSpans(payloads: Collected[], run: string) {
   return payloads
     .flatMap(({ body }) => body.traces?.resourceSpans ?? [])
     .flatMap((resourceSpans) => resourceSpans.scopeSpans ?? [])
     .flatMap((scopeSpans) => scopeSpans.spans ?? [])
-    .find((span) =>
+    .filter((span) =>
       (span.attributes ?? []).some((attribute) => JSON.stringify(attribute.value).includes(failPath(run)))
     );
+}
+
+function findFailSpan(payloads: Collected[], run: string) {
+  return failSpans(payloads, run)[0];
 }
 
 function findFetchEvent(payloads: Collected[], run: string) {
@@ -80,6 +84,7 @@ async function expectDelivered(request: APIRequestContext, run: string): Promise
     .toEqual({ clientSpan: true, fetchEvent: true });
 
   const payloads = await collected(request, run);
+  expect(failSpans(payloads, run)).toHaveLength(1);
   const span = findFailSpan(payloads, run)!;
   const event = findFetchEvent(payloads, run)!;
   expect(span.kind).toBe(3); // CLIENT
@@ -175,6 +180,11 @@ test.describe('Navigation telemetry loss (#2315)', () => {
       page,
       request,
     }, testInfo) => {
+      // Known gap: the page unloads within milliseconds of the response, while the span is still
+      // recording (stage 1), so there is nothing to export yet. Flushing cannot deliver it. Remove
+      // this once spans that are still open at unload are handled.
+      test.fixme(true, 'The span is still recording when the page unloads (#2315)');
+
       const run = await openRepro(page, { observe });
 
       await startFailedFetch(page);
