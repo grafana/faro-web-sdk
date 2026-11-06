@@ -157,12 +157,13 @@ class RoutingTracer implements Tracer {
     resolution: RoutingSpanResolution;
   } {
     const spanOptions = options ?? {};
-    const isFetchCorsAuxiliary =
-      this.name === '@opentelemetry/instrumentation-fetch' &&
+    const isHttpCorsAuxiliary =
+      (this.name === '@opentelemetry/instrumentation-fetch' ||
+        this.name === '@opentelemetry/instrumentation-xml-http-request') &&
       name === 'CORS Preflight' &&
       spanOptions.attributes?.['url.full'] === undefined;
-    const inheritedResolution = isFetchCorsAuxiliary ? this.getInheritedDecision(parentContext) : undefined;
-    if (inheritedResolution && isFetchCorsAuxiliary) {
+    const inheritedResolution = isHttpCorsAuxiliary ? this.getInheritedDecision(parentContext) : undefined;
+    if (inheritedResolution && isHttpCorsAuxiliary) {
       const parentSpan = trace.getSpan(parentContext ?? context.active());
       if (parentSpan) {
         inheritedResolution.registration?.allowAuxiliarySpan?.(parentSpan);

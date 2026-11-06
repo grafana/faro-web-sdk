@@ -244,6 +244,54 @@ describe('routing network integration', () => {
     }
   });
 
+  it('keeps an XHR CORS preflight with its request owner when it starts during drain', async () => {
+    jest.useFakeTimers();
+    const appA = api();
+    const appB = api();
+    const requestUrl = 'https://api.example.test/app-b';
+    const first = setupApp('app-a', '/a', appA);
+    const second = setupApp('app-b', '/b', appB, [], 30_000, requestUrl);
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: jest.fn(() => Promise.resolve({ status: 200, url: requestUrl } as Response)),
+    });
+    window.history.pushState({}, '', '/b');
+
+    try {
+      first.initialize();
+      second.initialize();
+
+      const requestTracer = trace.getTracer('@opentelemetry/instrumentation-xml-http-request');
+      const requestSpan = requestTracer.startSpan('GET', { attributes: { 'url.full': requestUrl } });
+      second.destroy();
+
+      const corsSpan = context.with(trace.setSpan(context.active(), requestSpan), () =>
+        requestTracer.startSpan('CORS Preflight')
+      );
+      corsSpan.end();
+      requestSpan.end();
+
+      const registrations = getTracingRegistry()!.registrations;
+      const providerA = registrations.find(({ appName }) => appName === 'app-a')!.provider as WebTracerProvider;
+      const providerB = registrations.find(({ appName }) => appName === 'app-b')!.provider as WebTracerProvider;
+      await Promise.all([providerA.forceFlush(), providerB.forceFlush()]);
+
+      const bSpans = (appB.pushTraces as jest.Mock).mock.calls.flatMap(([batch]) =>
+        batch.resourceSpans.flatMap((resourceSpan: { scopeSpans: Array<{ spans: Array<{ name: string }> }> }) =>
+          resourceSpan.scopeSpans.flatMap((scopeSpan: { spans: Array<{ name: string }> }) => scopeSpan.spans)
+        )
+      ) as Array<{ name: string }>;
+
+      expect(bSpans.map(({ name }) => name)).toEqual(expect.arrayContaining(['GET', 'CORS Preflight']));
+      expect(appA.pushTraces).not.toHaveBeenCalled();
+    } finally {
+      first.destroy();
+      second.destroy();
+      jest.runOnlyPendingTimers();
+    }
+  });
+
   it('creates one routed span for the page-route owner and preserves the parent trace', async () => {
     jest.useFakeTimers();
     const appA = api();

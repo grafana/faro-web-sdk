@@ -178,6 +178,48 @@ describe('RoutingTracerProvider', () => {
     );
   });
 
+  it('inherits XHR preflight ownership for a draining request instead of using the fallback', () => {
+    const requestSpan = { end: jest.fn() } as unknown as Span;
+    const auxiliarySpan = { end: jest.fn() } as unknown as Span;
+    const ownerTracer = {
+      startSpan: jest.fn().mockReturnValueOnce(requestSpan).mockReturnValueOnce(auxiliarySpan),
+    } as unknown as Tracer;
+    const fallbackTracer = { startSpan: jest.fn() } as unknown as Tracer;
+    const ownerProvider = { getTracer: jest.fn(() => ownerTracer) } as unknown as TracerProvider;
+    const fallbackProvider = { getTracer: jest.fn(() => fallbackTracer) } as unknown as TracerProvider;
+    const allowAuxiliarySpan = jest.fn();
+    const owner: TracingRegistration = {
+      ...makeRegistration(ownerProvider, 1),
+      allowAuxiliarySpan,
+    };
+    const fallback = makeRegistration(fallbackProvider, 0);
+    const routing = new RoutingTracerProvider((spanOptions) =>
+      spanOptions.attributes?.['url.full']
+        ? { registration: owner, strategy: 'api-url', fallback: false }
+        : { registration: fallback, strategy: 'fallback', fallback: true }
+    );
+    const tracer = routing.getTracer('@opentelemetry/instrumentation-xml-http-request');
+
+    const request = tracer.startSpan('GET', { attributes: { 'url.full': 'https://api.example.test/orders' } });
+    owner.state = 'draining';
+    const requestContext = trace.setSpan(ROOT_CONTEXT, request);
+    tracer.startSpan('CORS Preflight', {}, requestContext);
+
+    expect(ownerTracer.startSpan).toHaveBeenNthCalledWith(
+      2,
+      'CORS Preflight',
+      {
+        attributes: {
+          'faro.attribution.strategy': 'api-url',
+          'faro.attribution.fallback': false,
+        },
+      },
+      requestContext
+    );
+    expect(fallbackTracer.startSpan).not.toHaveBeenCalled();
+    expect(allowAuxiliarySpan).toHaveBeenCalledWith(request);
+  });
+
   it('returns a no-op tracer when no active registration can receive a span', () => {
     const routing = new RoutingTracerProvider(() => undefined);
     const span = routing.getTracer('scope').startSpan('orphan');
