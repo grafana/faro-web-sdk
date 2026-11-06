@@ -6,6 +6,15 @@ import type { SpanProcessor } from '@opentelemetry/sdk-trace-web';
 
 import type { API, Patterns } from '@grafana/faro-web-sdk';
 
+import type { TracingMode } from './tracingRegistry';
+
+export type UrlMatcherTarget = 'full-url' | 'pathname';
+
+export interface UrlMatcher {
+  pattern: string | RegExp;
+  target: UrlMatcherTarget;
+}
+
 // type got remove by with experimental/v0.52.0 and is replaced by the following type:
 // See: https://github.com/open-telemetry/opentelemetry-js/releases/tag/experimental%2Fv0.52.0
 export type InstrumentationOption = Instrumentation | Instrumentation[];
@@ -15,6 +24,15 @@ export interface FaroTraceExporterConfig {
 }
 
 export interface TracingInstrumentationOptions {
+  /**
+   * Selects the page-lifetime tracing behavior. Routing is opt-in; omission on the first instance
+   * preserves legacy behavior and omission on later instances inherits the selected page mode.
+   */
+  mode?: TracingMode;
+  apiUrlMatchers?: UrlMatcher[];
+  pageRouteMatchers?: UrlMatcher[];
+  drainTimeoutMs?: number;
+
   resourceAttributes?: Attributes;
   propagator?: TextMapPropagator;
   contextManager?: ContextManager;

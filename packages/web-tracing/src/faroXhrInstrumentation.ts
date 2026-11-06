@@ -12,7 +12,13 @@ type Parent = {
 export class FaroXhrInstrumentation extends XMLHttpRequestInstrumentation {
   private parentCreateSpan: Parent['_createSpan'];
 
-  constructor(config: XMLHttpRequestInstrumentationConfig = {}) {
+  constructor(
+    config: XMLHttpRequestInstrumentationConfig = {},
+    private readonly routingCallbacks: {
+      shouldRunFaroDefaults?: (span: Span) => boolean;
+      resolveUserAction?: (span: Span) => ReturnType<typeof faro.api.getActiveUserAction>;
+    } = {}
+  ) {
     super(config);
 
     const self = this as any as Parent;
@@ -24,6 +30,11 @@ export class FaroXhrInstrumentation extends XMLHttpRequestInstrumentation {
     return (original: OpenFunction): OpenFunction => {
       const plugin = this;
       return function patchOpen(this: XMLHttpRequest, ...args): void {
+        const flags = plugin as unknown as { _isEnabled?: boolean; _enabled?: boolean };
+        if ((flags._isEnabled ?? flags._enabled) === false) {
+          return original.apply(this, args);
+        }
+
         let span: Span | undefined;
         try {
           const method: string = args[0];
@@ -34,7 +45,13 @@ export class FaroXhrInstrumentation extends XMLHttpRequestInstrumentation {
           faro.internalLogger.error(error);
         }
 
-        const currentAction = faro.api.getActiveUserAction();
+        const shouldRunFaroDefaults = span && plugin.routingCallbacks.shouldRunFaroDefaults?.(span) !== false;
+        const currentAction =
+          span && shouldRunFaroDefaults
+            ? plugin.routingCallbacks.resolveUserAction
+              ? plugin.routingCallbacks.resolveUserAction(span)
+              : faro.api.getActiveUserAction()
+            : undefined;
         if (
           span &&
           currentAction &&
