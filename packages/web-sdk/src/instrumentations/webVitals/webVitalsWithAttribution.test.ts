@@ -1,4 +1,4 @@
-import { onINP, onLCP } from 'web-vitals/attribution';
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals/attribution';
 import type { MetricWithAttribution } from 'web-vitals/attribution';
 
 import { WebVitalsWithAttribution } from './webVitalsWithAttribution';
@@ -22,7 +22,7 @@ jest.mock('web-vitals/attribution', () => {
   }
 
   return {
-    onCLS: (cb: (metric: MetricWithAttribution) => void) => {
+    onCLS: jest.fn((cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('CLS', {
           largestShiftValue: 0.1,
@@ -31,8 +31,8 @@ jest.mock('web-vitals/attribution', () => {
           loadState: 'loading',
         })
       );
-    },
-    onFCP: (cb: (metric: MetricWithAttribution) => void) => {
+    }),
+    onFCP: jest.fn((cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('FCP', {
           firstByteToFCP: 0.1,
@@ -40,7 +40,7 @@ jest.mock('web-vitals/attribution', () => {
           loadState: 'loading',
         })
       );
-    },
+    }),
     onLCP: jest.fn((cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('LCP', {
@@ -54,7 +54,7 @@ jest.mock('web-vitals/attribution', () => {
         })
       );
     }),
-    onTTFB: (cb: (metric: MetricWithAttribution) => void) => {
+    onTTFB: jest.fn((cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('TTFB', {
           dnsDuration: 0.1,
@@ -64,7 +64,7 @@ jest.mock('web-vitals/attribution', () => {
           cacheDuration: 0.1,
         })
       );
-    },
+    }),
     onINP: jest.fn((cb: (metric: MetricWithAttribution) => void) => {
       cb(
         createMetric('INP', {
@@ -79,6 +79,10 @@ jest.mock('web-vitals/attribution', () => {
 });
 
 describe('WebVitalsWithAttributionInstrumentation', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('send cls metrics correctly', () => {
     const pushMeasurement = jest.fn();
     new WebVitalsWithAttribution(pushMeasurement).initialize();
@@ -508,5 +512,187 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
       },
       { context }
     );
+  });
+
+  describe('soft navigations', () => {
+    const allReporters = [onCLS, onFCP, onINP, onLCP, onTTFB] as jest.Mock[];
+
+    const findMeasurement = (pushMeasurement: jest.Mock, indicator: string) =>
+      pushMeasurement.mock.calls.find(([event]: [{ values: Record<string, unknown> }]) =>
+        Object.prototype.hasOwnProperty.call(event.values, indicator)
+      );
+
+    it('passes reportSoftNavs to all web vitals reporters when enabled', () => {
+      new WebVitalsWithAttribution(jest.fn(), { reportSoftNavs: true }).initialize();
+
+      allReporters.forEach((reporter) => {
+        expect(reporter).toHaveBeenCalledWith(expect.any(Function), {
+          reportAllChanges: undefined,
+          reportSoftNavs: true,
+        });
+      });
+    });
+
+    it('passes reportSoftNavs as undefined to all web vitals reporters when not set', () => {
+      new WebVitalsWithAttribution(jest.fn()).initialize();
+
+      allReporters.forEach((reporter) => {
+        expect(reporter).toHaveBeenCalledWith(expect.any(Function), {
+          reportAllChanges: undefined,
+          reportSoftNavs: undefined,
+        });
+      });
+    });
+
+    it('adds navigation_id and navigation_url for soft navigation metrics when reportSoftNavs is enabled', () => {
+      (onLCP as jest.Mock).mockImplementationOnce((cb: (metric: MetricWithAttribution) => void) => {
+        cb({
+          name: 'LCP',
+          value: 0.1,
+          rating: 'good',
+          delta: 0.1,
+          id: 'id',
+          entries: [],
+          navigationType: 'soft-navigation',
+          navigationId: 2,
+          navigationURL: 'https://example.com/route',
+          attribution: {
+            elementRenderDelay: 0.1,
+            target: 'element',
+          },
+        } as unknown as MetricWithAttribution);
+      });
+
+      const pushMeasurement = jest.fn();
+      new WebVitalsWithAttribution(pushMeasurement, { reportSoftNavs: true }).initialize();
+
+      const [, options] = findMeasurement(pushMeasurement, 'lcp')!;
+
+      expect(options.context).toEqual({
+        id: 'id',
+        rating: 'good',
+        navigation_entry_id: 'unknown',
+        navigation_type: 'soft-navigation',
+        navigation_id: '2',
+        navigation_url: 'https://example.com/route',
+        element: 'element',
+      });
+    });
+
+    it('adds navigation_id and navigation_url for hard navigation metrics when reportSoftNavs is enabled', () => {
+      (onLCP as jest.Mock).mockImplementationOnce((cb: (metric: MetricWithAttribution) => void) => {
+        cb({
+          name: 'LCP',
+          value: 0.1,
+          rating: 'good',
+          delta: 0.1,
+          id: 'id',
+          entries: [],
+          navigationType: 'navigate',
+          navigationId: 1,
+          navigationURL: 'https://example.com/',
+          attribution: {
+            target: 'element',
+          },
+        } as unknown as MetricWithAttribution);
+      });
+
+      const pushMeasurement = jest.fn();
+      new WebVitalsWithAttribution(pushMeasurement, { reportSoftNavs: true }).initialize();
+
+      const [, options] = findMeasurement(pushMeasurement, 'lcp')!;
+
+      expect(options.context).toMatchObject({
+        navigation_type: 'navigate',
+        navigation_id: '1',
+        navigation_url: 'https://example.com/',
+      });
+    });
+
+    it('does not add navigation_id and navigation_url when reportSoftNavs is not set', () => {
+      const pushMeasurement = jest.fn();
+      new WebVitalsWithAttribution(pushMeasurement).initialize();
+
+      pushMeasurement.mock.calls.forEach(([, options]) => {
+        expect(options.context).not.toHaveProperty('navigation_id');
+        expect(options.context).not.toHaveProperty('navigation_url');
+      });
+    });
+
+    it('does not send ttfb for soft navigations', () => {
+      (onTTFB as jest.Mock).mockImplementationOnce((cb: (metric: MetricWithAttribution) => void) => {
+        cb({
+          name: 'TTFB',
+          value: 0,
+          rating: 'good',
+          delta: 0,
+          id: 'id',
+          entries: [],
+          navigationType: 'soft-navigation',
+          navigationId: 2,
+          navigationURL: 'https://example.com/route',
+          attribution: {},
+        } as unknown as MetricWithAttribution);
+      });
+
+      const pushMeasurement = jest.fn();
+      new WebVitalsWithAttribution(pushMeasurement, { reportSoftNavs: true }).initialize();
+
+      expect(findMeasurement(pushMeasurement, 'ttfb')).toBeUndefined();
+    });
+
+    it('sends ttfb for hard navigations when reportSoftNavs is enabled', () => {
+      const pushMeasurement = jest.fn();
+      new WebVitalsWithAttribution(pushMeasurement, { reportSoftNavs: true }).initialize();
+
+      const [event, options] = findMeasurement(pushMeasurement, 'ttfb')!;
+
+      expect(event.values.ttfb).toBe(0.1);
+      expect(options.context).toMatchObject({ navigation_type: 'navigate', navigation_id: '0' });
+    });
+
+    it('sends an inp measurement without interaction fields when the metric has no interaction', () => {
+      (onINP as jest.Mock).mockImplementationOnce((cb: (metric: MetricWithAttribution) => void) => {
+        cb({
+          name: 'INP',
+          value: 0,
+          rating: 'good',
+          delta: 0,
+          id: 'id',
+          entries: [],
+          navigationType: 'soft-navigation',
+          navigationId: 2,
+          navigationURL: 'https://example.com/route',
+          attribution: {
+            interactionTarget: undefined,
+            interactionTime: undefined,
+            interactionType: undefined,
+            nextPaintTime: undefined,
+            processedEventEntries: [],
+            inputDelay: 0,
+            processingDuration: 0,
+            presentationDelay: 0,
+            loadState: 'complete',
+          },
+        } as unknown as MetricWithAttribution);
+      });
+
+      const pushMeasurement = jest.fn();
+
+      expect(() => new WebVitalsWithAttribution(pushMeasurement, { reportSoftNavs: true }).initialize()).not.toThrow();
+
+      const [event, options] = findMeasurement(pushMeasurement, 'inp')!;
+
+      expect(event.values).toEqual({ inp: 0, delta: 0 });
+      expect(options.context).toEqual({
+        id: 'id',
+        rating: 'good',
+        navigation_entry_id: 'unknown',
+        navigation_type: 'soft-navigation',
+        navigation_id: '2',
+        navigation_url: 'https://example.com/route',
+        load_state: 'complete',
+      });
+    });
   });
 });
