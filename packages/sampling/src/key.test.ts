@@ -234,7 +234,6 @@ describe('UTF-8 fallback (browsers without TextEncoder)', () => {
       // @ts-expect-error simulating Edge 16 to 18
       delete globalThis.TextEncoder;
       try {
-         
         const fresh = require('./key') as typeof import('./key');
         for (const [input, fnv, key] of VECTORS) {
           expect(fresh.fnv1a32(input)).toBe(fnv);
