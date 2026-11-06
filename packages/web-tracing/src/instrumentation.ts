@@ -79,7 +79,10 @@ function normalizeCaptureRequestUrl(input: unknown): string | undefined {
   }
 
   try {
-    return new URL(String(candidate), typeof location !== 'undefined' ? location.href : undefined).href;
+    const baseUrl =
+      (typeof document !== 'undefined' && document.baseURI) ||
+      (typeof location !== 'undefined' ? location.href : undefined);
+    return new URL(String(candidate), baseUrl).href;
   } catch {
     return undefined;
   }

@@ -147,6 +147,44 @@ describe('routing network integration', () => {
     }
   });
 
+  it('resolves relative fetch URLs against document.baseURI before capture suppression', async () => {
+    jest.useFakeTimers();
+    const app = api();
+    const requestUrl = `${window.location.origin}/api/orders`;
+    const instrumentation = setupApp('app-b', '/b', app, [requestUrl]);
+    const nativeFetch = jest.fn(() => Promise.resolve({ status: 200, url: requestUrl } as Response));
+    window.history.pushState({}, '', '/b');
+    const base = document.createElement('base');
+    base.href = `${window.location.origin}/api/`;
+    document.head.appendChild(base);
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: nativeFetch,
+    });
+
+    try {
+      instrumentation.initialize();
+      const registry = getTracingRegistry()!;
+      const captureProvider = registry.captureProvider as unknown as {
+        shouldBypassNetworkRequest: (url: string, scope: string) => boolean;
+      };
+      const shouldBypass = jest.spyOn(captureProvider, 'shouldBypassNetworkRequest');
+
+      await fetch('orders');
+
+      expect(shouldBypass).toHaveBeenCalledWith(requestUrl, '@opentelemetry/instrumentation-fetch');
+      // Suppressed requests reach native fetch with their original relative input, without entering OTel.
+      expect(nativeFetch).toHaveBeenCalledWith('orders');
+      expect((registry.captureInstrumentations![0] as unknown as { _tasksCount: number })._tasksCount).toBe(0);
+      expect(app.pushTraces).not.toHaveBeenCalled();
+    } finally {
+      instrumentation.destroy();
+      base.remove();
+      jest.runOnlyPendingTimers();
+    }
+  });
+
   it("keeps a draining app's XHR tracked until its load event completes", async () => {
     jest.useFakeTimers();
     const appA = api();
