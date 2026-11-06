@@ -820,6 +820,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@grafana/faro-sampling@workspace:packages/sampling":
+  version: 0.0.0-use.local
+  resolution: "@grafana/faro-sampling@workspace:packages/sampling"
+  bin:
+    faro-sampling: ./bin/faro-sampling.js
+  languageName: unknown
+  linkType: soft
+
 "@grafana/faro-smoke-harness@workspace:e2e/smoke":
   version: 0.0.0-use.local
   resolution: "@grafana/faro-smoke-harness@workspace:e2e/smoke"
