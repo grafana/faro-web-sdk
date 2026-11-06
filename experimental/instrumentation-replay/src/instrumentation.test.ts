@@ -5,6 +5,7 @@ import {
   initializeFaro,
   type TransportBody,
   type TransportItem,
+  TransportItemType,
 } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 import { EventType } from '@grafana/rrweb-types';
@@ -70,6 +71,7 @@ describe('ReplayInstrumentation', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.restoreAllMocks();
     if (instrumentation) {
       instrumentation.destroy();
@@ -86,6 +88,80 @@ describe('ReplayInstrumentation', () => {
     inst.initialize();
     return inst;
   }
+
+  describe('replay limit response', () => {
+    it('keeps the latch active across bounded timer rechecks and clears it after the UTC month changes', () => {
+      jest.useFakeTimers({ now: new Date('2026-01-01T00:00:00Z') });
+      const inst = initSampled();
+      instrumentation = inst;
+      inst['applyReplayLimit']();
+
+      jest.advanceTimersByTime(2_147_000_000);
+      expect(inst['replayLimitActive']).toBe(true);
+
+      jest.setSystemTime(new Date('2026-02-01T00:00:00Z'));
+      jest.advanceTimersByTime(2_147_000_000);
+      expect(inst['replayLimitActive']).toBe(false);
+    });
+
+    it('restores a current-month latch on reload and propagates storage events across instances', () => {
+      const first = initSampled();
+      first['applyReplayLimit']();
+      const key = first['replayLimitStorageKey'];
+      const storedValue = window.localStorage.getItem(key);
+      first.destroy();
+
+      mockRecord.mockClear();
+      const reloaded = initSampled();
+      expect(reloaded['replayLimitActive']).toBe(true);
+      expect(mockRecord).not.toHaveBeenCalled();
+      window.localStorage.removeItem(key);
+
+      const sibling = initSampled();
+      expect(sibling['replayLimitActive']).toBe(false);
+      const storageEvent = new Event('storage') as StorageEvent;
+      Object.defineProperties(storageEvent, { key: { value: key }, newValue: { value: storedValue } });
+      window.dispatchEvent(storageEvent);
+      expect(sibling['replayLimitActive']).toBe(true);
+      expect(mockRecord).toHaveBeenCalledTimes(1);
+
+      reloaded.destroy();
+      instrumentation = sibling;
+    });
+
+    it('stops capture and filters queued replay items while preserving ordinary telemetry', () => {
+      let onLimit: (() => void) | undefined;
+      let beforeSend: ((item: any) => any) | undefined;
+      const transport = {
+        addReplayLimitListener: (listener: () => void) => {
+          onLimit = listener;
+          return jest.fn();
+        },
+        getReplayLimitScope: () => 'https://collector.example/collect',
+      };
+      const inst = new ReplayInstrumentation();
+      mockGetSession.mockReturnValue({ id: 'limit-session', attributes: { isSampled: 'true' } });
+      inst['api'] = { getSession: mockGetSession, pushEvent: mockPushEvent } as any;
+      inst['metas'] = { addListener: mockAddListener, capture: mockCapture } as any;
+      inst['transports'] = {
+        transports: [transport],
+        addBeforeSendHooks: (hook: (item: any) => any) => {
+          beforeSend = hook;
+        },
+        removeBeforeSendHooks: jest.fn(),
+      } as any;
+      inst.initialize();
+      const stop = mockRecord.mock.results[0]!.value as jest.Mock;
+      onLimit!();
+      expect(stop).toHaveBeenCalledTimes(1);
+      expect(
+        beforeSend!({ type: TransportItemType.EVENT, payload: { name: 'faro.session_recording.event' } })
+      ).toBeNull();
+      const logItem = { type: TransportItemType.LOG, payload: { message: 'preserve' } };
+      expect(beforeSend!(logItem)).toBe(logItem);
+      instrumentation = inst;
+    });
+  });
 
   describe('constructor', () => {
     it('should have correct name and version', () => {
