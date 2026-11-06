@@ -8,7 +8,12 @@ import { UserActionState } from '@grafana/faro-web-sdk';
 import type { API, Config, InternalLogger, Metas, Transports } from '@grafana/faro-web-sdk';
 
 import { TracingInstrumentation } from './instrumentation';
-import { claimTracingOwner, getTracingOwner, resetTracingOwnerForTests } from './tracingOwner';
+import {
+  addPropagateTraceHeaderCorsUrls,
+  claimTracingOwner,
+  getTracingOwner,
+  resetTracingOwnerForTests,
+} from './tracingOwner';
 import { getFallbackTracingRegistration, getTracingRegistry } from './tracingRegistry';
 import type { TracingInstrumentationOptions } from './types';
 
@@ -122,6 +127,45 @@ describe('TracingInstrumentation single-owner behavior', () => {
     expect(registerSpy).toHaveBeenCalledTimes(1);
     expect(registerInstrumentations).toHaveBeenCalledTimes(1);
     expect(api.initOTEL).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves legacy owner propagation URLs through routing registry refreshes', () => {
+    const first = setupInstrumentation('app-a', {
+      mode: 'routing',
+      drainTimeoutMs: 0,
+      instrumentationOptions: { propagateTraceHeaderCorsUrls: ['https://routing-a.example.test'] },
+    });
+    first.instrumentation.initialize();
+
+    const registry = getTracingRegistry()!;
+    const ownerUrls = getTracingOwner()!.propagateTraceHeaderCorsUrls;
+    const fetchInstrumentation = registry.captureInstrumentations![0] as unknown as {
+      getConfig: () => { propagateTraceHeaderCorsUrls: Array<string | RegExp> };
+    };
+    expect(registry.propagateTraceHeaderCorsUrls).toBe(ownerUrls);
+    expect(fetchInstrumentation.getConfig().propagateTraceHeaderCorsUrls).toBe(ownerUrls);
+
+    // Simulate a separately bundled legacy Faro version appending to the owner contract after
+    // routing capture has already been installed.
+    addPropagateTraceHeaderCorsUrls(['https://legacy.example.test']);
+
+    const second = setupInstrumentation('app-b', {
+      mode: 'routing',
+      drainTimeoutMs: 0,
+      instrumentationOptions: { propagateTraceHeaderCorsUrls: ['https://routing-b.example.test'] },
+    });
+    second.instrumentation.initialize();
+
+    expect(ownerUrls).toEqual([
+      'https://legacy.example.test',
+      'https://routing-a.example.test',
+      'https://routing-b.example.test',
+    ]);
+
+    first.instrumentation.destroy();
+    expect(ownerUrls).toEqual(['https://legacy.example.test', 'https://routing-b.example.test']);
+    second.instrumentation.destroy();
+    expect(ownerUrls).toEqual(['https://legacy.example.test']);
   });
 
   it('registers each routing instance in the shared registry before capture integration', () => {

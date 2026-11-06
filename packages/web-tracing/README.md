@@ -13,6 +13,16 @@ The mode is fixed for the page lifetime, and later instances inherit it. In rout
 without installing its router when an external global OpenTelemetry provider is already registered;
 legacy mode retains its existing behavior and instruments fetch/XHR against the global provider.
 
+### Legacy mode (default)
+
+The first tracing-enabled Faro instance owns the page-global provider and the single fetch/XHR
+instrumentation. Its exporter, resource attributes, processors, and network-span callbacks apply to
+captured spans; later instances do not receive independent spans, even when initialized with
+`isolate: true`. Later instances' `propagateTraceHeaderCorsUrls` entries are merged into the owner's
+live allowlist. Use routing mode when each app needs its own exporter and span pipeline.
+
+### Routing mode
+
 Routing mode interoperates with bundles that use the legacy `_faroTracingOwner` contract. If a
 legacy Faro bundle already owns tracing before routing capture starts, routing falls back to legacy
 non-owner behavior. Once routing capture is installed, it claims that owner key so later legacy

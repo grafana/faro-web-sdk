@@ -52,6 +52,7 @@ import {
   registerTracingRegistration,
   removeTracingRegistration,
   selectTracingMode,
+  useTracingOwnerPropagationUrls,
 } from './tracingRegistry';
 import type { TracingRegistry } from './tracingRegistry';
 import type { TracingInstrumentationOptions } from './types';
@@ -378,6 +379,11 @@ export class TracingInstrumentation extends BaseInstrumentation {
         return;
       }
 
+      const tracingOwner = getTracingOwner();
+      if (tracingOwner) {
+        useTracingOwnerPropagationUrls(tracingOwner.propagateTraceHeaderCorsUrls);
+      }
+
       registry.captureProvider = routingProvider;
       registry.captureOwnerRegistrationId = registration.registrationId;
       registry.captureGatesInstalled = false;
@@ -691,7 +697,13 @@ export class TracingInstrumentation extends BaseInstrumentation {
     }
 
     if (getActiveTracingRegistrations().length === 0) {
-      instrumentations.forEach((instrumentation) => instrumentation.disable());
+      // OTel's XHR instrumentation clears its request tracking map on disable(). Keep the shared
+      // wrappers enabled until every draining registration has completed or expired.
+      const hasDrainingRegistrations =
+        getTracingRegistry()?.registrations.some((registration) => registration.state === 'draining') ?? false;
+      if (!hasDrainingRegistrations) {
+        instrumentations.forEach((instrumentation) => instrumentation.disable());
+      }
       return;
     }
 

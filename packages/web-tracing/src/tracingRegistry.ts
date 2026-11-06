@@ -65,6 +65,7 @@ export interface TracingRegistry {
   captureNativeFetch?: unknown;
   captureNativeXhrOpen?: unknown;
   propagateTraceHeaderCorsUrls: Array<string | RegExp>;
+  routingPropagationUrls?: Array<string | RegExp>;
   configurationVersion: number;
   ownershipWarnings: {
     configurationVersion: number;
@@ -160,6 +161,7 @@ function isTracingRegistry(value: unknown): value is TracingRegistry {
     ) &&
     captureStateValid &&
     Array.isArray(registry.propagateTraceHeaderCorsUrls) &&
+    (registry.routingPropagationUrls === undefined || Array.isArray(registry.routingPropagationUrls)) &&
     typeof registry.configurationVersion === 'number' &&
     Number.isInteger(registry.configurationVersion) &&
     registry.configurationVersion >= 0 &&
@@ -179,6 +181,7 @@ function createTracingRegistry(mode: TracingMode): TracingRegistry {
     nextRegistrationId: 0,
     registrations: [],
     propagateTraceHeaderCorsUrls: [],
+    routingPropagationUrls: [],
     configurationVersion: 0,
     ownershipWarnings: { configurationVersion: 0, keys: [] },
     collectorIgnoreUrls: [],
@@ -194,17 +197,58 @@ function createTracingRegistry(mode: TracingMode): TracingRegistry {
   return registry;
 }
 
+function samePropagationUrl(left: string | RegExp, right: string | RegExp): boolean {
+  if (typeof left === 'string' || typeof right === 'string') {
+    return left === right;
+  }
+
+  return left.source === right.source && left.flags === right.flags;
+}
+
 function refreshPropagationUrls(registry: TracingRegistry): void {
+  const previousRoutingUrls = registry.routingPropagationUrls ?? [];
+  const retainedUrls = [...registry.propagateTraceHeaderCorsUrls];
+
+  // Older Faro bundles append directly to _faroTracingOwner.propagateTraceHeaderCorsUrls. In
+  // routing mode that is the same live array used by OTel, so retain those additions while
+  // replacing only the URLs contributed by this registry's active routing registrations.
+  for (const previousUrl of previousRoutingUrls) {
+    const index = retainedUrls.findIndex((url) => samePropagationUrl(url, previousUrl));
+    if (index >= 0) {
+      retainedUrls.splice(index, 1);
+    }
+  }
+
+  const routingUrls = registry.registrations
+    .filter((registration) => registration.state === 'active')
+    .flatMap((registration) => {
+      const urls = registration.configuration['propagateTraceHeaderCorsUrls'];
+      return Array.isArray(urls) ? (urls as Array<string | RegExp>) : [];
+    });
+
   registry.propagateTraceHeaderCorsUrls.splice(
     0,
     registry.propagateTraceHeaderCorsUrls.length,
-    ...registry.registrations
-      .filter((registration) => registration.state === 'active')
-      .flatMap((registration) => {
-        const urls = registration.configuration['propagateTraceHeaderCorsUrls'];
-        return Array.isArray(urls) ? (urls as Array<string | RegExp>) : [];
-      })
+    ...retainedUrls,
+    ...routingUrls
   );
+  registry.routingPropagationUrls = routingUrls;
+}
+
+/**
+ * Uses the legacy owner allowlist as the live OTel configuration array. Older Faro bundles append
+ * to this array without knowing about the routing registry, so routing refreshes must preserve
+ * those entries while updating the active routing registrations' contribution.
+ */
+export function useTracingOwnerPropagationUrls(urls: Array<string | RegExp>): void {
+  const registry = getTracingRegistry();
+  if (!registry) {
+    return;
+  }
+
+  registry.propagateTraceHeaderCorsUrls = urls;
+  registry.routingPropagationUrls = [];
+  refreshPropagationUrls(registry);
 }
 
 function refreshCollectorIgnoreUrls(registry: TracingRegistry): void {

@@ -52,11 +52,14 @@ function setupApp(
   appName: string,
   pageRoute: string,
   api: API,
-  ignoreUrls: Array<string | RegExp> = []
+  ignoreUrls: Array<string | RegExp> = [],
+  drainTimeoutMs = 0,
+  apiUrl?: string
 ): TracingInstrumentationType {
   const instrumentation = new TracingInstrumentation({
     mode: 'routing',
-    drainTimeoutMs: 0,
+    drainTimeoutMs,
+    apiUrlMatchers: apiUrl ? [{ pattern: apiUrl, target: 'full-url' }] : undefined,
     pageRouteMatchers: [{ pattern: pageRoute, target: 'pathname' }],
   });
   Object.assign(instrumentation, {
@@ -141,6 +144,65 @@ describe('routing network integration', () => {
       expect(app.pushTraces).not.toHaveBeenCalled();
     } finally {
       instrumentation.destroy();
+    }
+  });
+
+  it("keeps a draining app's XHR tracked until its load event completes", async () => {
+    jest.useFakeTimers();
+    const appA = api();
+    const appB = api();
+    const requestA = 'https://api.example.test/app-a';
+    const requestB = 'https://api.example.test/app-b';
+    const first = setupApp('app-a', '/a', appA, [], 30_000, requestA);
+    const second = setupApp('app-b', '/b', appB, [], 30_000, requestB);
+    const nativeSend = jest.spyOn(XMLHttpRequest.prototype, 'send').mockImplementation(() => {});
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: jest.fn(() => Promise.resolve({ status: 200, url: requestA } as Response)),
+    });
+    window.history.pushState({}, '', '/b');
+
+    try {
+      first.initialize();
+      second.initialize();
+
+      const xhrA = new XMLHttpRequest();
+      xhrA.open('GET', requestA);
+      xhrA.send();
+      const xhrB = new XMLHttpRequest();
+      xhrB.open('GET', requestB);
+      xhrB.send();
+
+      const xhrInstrumentation = getTracingRegistry()!.captureInstrumentations![1] as unknown as {
+        _xhrMem: WeakMap<XMLHttpRequest, unknown>;
+      };
+      expect(xhrInstrumentation._xhrMem.get(xhrB)).toBeDefined();
+
+      first.destroy();
+      second.destroy();
+
+      xhrA.dispatchEvent(new Event('load'));
+      await jest.advanceTimersByTimeAsync(300);
+
+      // Completing app A's drain must not disable the shared XHR instrumentation while app B's
+      // request is still draining; upstream disable() clears this private tracking map.
+      expect(xhrInstrumentation._xhrMem.get(xhrB)).toBeDefined();
+      expect(getTracingRegistry()?.registrations.map(({ state }) => state)).toEqual(['draining']);
+
+      xhrB.dispatchEvent(new Event('load'));
+      await jest.advanceTimersByTimeAsync(300);
+
+      expect(appA.pushTraces).toHaveBeenCalledTimes(1);
+      expect(appB.pushTraces).toHaveBeenCalledTimes(1);
+      expect(getTracingRegistry()?.registrations).toHaveLength(0);
+    } finally {
+      first.destroy();
+      second.destroy();
+      const xhrInstrumentation = getTracingRegistry()?.captureInstrumentations?.[1] as
+        { disable: () => void } | undefined;
+      xhrInstrumentation?.disable();
+      nativeSend.mockRestore();
     }
   });
 
