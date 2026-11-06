@@ -62,7 +62,8 @@ npx faro-sampling hash rules.json       # the rulesHash the SDK stamps on verdic
   base rate. A drop is final: nothing is armed. Trigger rules are unordered; every matching one is armed, and keep
   actions union. A scope-less rule without a trigger placed above other rules without a trigger makes them unreachable
   and produces a warning.
-- Unknown trigger types are inert with a warning, not errors.
+- Unknown trigger types are inert with a warning, not errors. A `web_vital_threshold` whose `match.threshold` is not a
+  finite number is a parse error: `Number('200ms')` is NaN, and a NaN threshold would fire on every event.
 - Scope is matched once, at D, and never again. Events before D are queued and resolved at D against the armed set.
 - Each armed rule fires at most once per session; a `triggerRate` miss is remembered so repeated events do not re-roll.
 - `keptBy` moves `null -> trigger`, `sample -> both`; the first firing rule names `keptByRule` and `triggerRate`;

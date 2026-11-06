@@ -19,11 +19,49 @@ const FNV_PRIME = 0x01000193;
 
 const TWO_POW_32 = 4294967296;
 
-let encoder: TextEncoder | undefined;
+let encoder: TextEncoder | undefined | null;
 
+/**
+ * UTF-8 bytes of a string. Uses TextEncoder where it exists. The package ships to every
+ * browser with ES module support, and Edge 16 to 18 are in that set without TextEncoder, so
+ * the fallback below does the same encoding by hand. It has to agree with TextEncoder byte
+ * for byte, lone surrogates included (TextEncoder writes U+FFFD for those), because the
+ * vectors pin the hash of every input.
+ */
 function utf8(input: string): Uint8Array {
-  encoder ??= new TextEncoder();
-  return encoder.encode(input);
+  if (encoder === undefined) {
+    encoder = typeof TextEncoder === 'function' ? new TextEncoder() : null;
+  }
+  return encoder ? encoder.encode(input) : encodeUtf8(input);
+}
+
+/** The hand-written UTF-8 encoder behind utf8(). Exported for the tests only. */
+export function encodeUtf8(input: string): Uint8Array {
+  const out: number[] = [];
+  for (let i = 0; i < input.length; i++) {
+    let cp = input.charCodeAt(i);
+    if (cp >= 0xd800 && cp <= 0xdbff) {
+      const next = i + 1 < input.length ? input.charCodeAt(i + 1) : 0;
+      if (next >= 0xdc00 && next <= 0xdfff) {
+        cp = 0x10000 + ((cp - 0xd800) << 10) + (next - 0xdc00);
+        i++;
+      } else {
+        cp = 0xfffd;
+      }
+    } else if (cp >= 0xdc00 && cp <= 0xdfff) {
+      cp = 0xfffd;
+    }
+    if (cp < 0x80) {
+      out.push(cp);
+    } else if (cp < 0x800) {
+      out.push(0xc0 | (cp >> 6), 0x80 | (cp & 0x3f));
+    } else if (cp < 0x10000) {
+      out.push(0xe0 | (cp >> 12), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f));
+    } else {
+      out.push(0xf0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3f), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f));
+    }
+  }
+  return new Uint8Array(out);
 }
 
 /** FNV-1a 32-bit over UTF-8 bytes, as an unsigned 32-bit integer. */

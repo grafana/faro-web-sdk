@@ -2,6 +2,7 @@ import keysVectors from './__vectors__/keys.json';
 import rollsVectors from './__vectors__/rolls.json';
 import rulesHashVectors from './__vectors__/rules-hash.json';
 import {
+  encodeUtf8,
   fmix32,
   fnv1a32,
   fnv1a64Hex,
@@ -198,5 +199,56 @@ describe('fnv1a64Hex', () => {
       const s = `${genShortID(1 + (i % 40))}-ünï-日本語-🙂-${i}`;
       expect(fnv1a64Hex(s)).toBe(reference(s));
     }
+  });
+});
+
+describe('UTF-8 fallback (browsers without TextEncoder)', () => {
+  const samples = [
+    '',
+    'a',
+    'foobar',
+    'ünïcödé',
+    '日本語',
+    '\u{1f600} emoji and \u{10ffff} max',
+    'lone high surrogate \ud83d end',
+    'lone low surrogate \ude00 end',
+    'swapped pair \ude00\ud83d',
+    'high then non-low \ud83dA',
+    '\u0000 nul \u007f del \u0080 \u07ff \u0800 \uffff',
+  ];
+
+  it('encodeUtf8 agrees with TextEncoder byte for byte, lone surrogates included', () => {
+    const te = new TextEncoder();
+    for (const s of samples) {
+      expect(Array.from(encodeUtf8(s))).toEqual(Array.from(te.encode(s)));
+    }
+    for (let i = 0; i < 2_000; i++) {
+      const s = `${genShortID(1 + (i % 30))}-ünï-日本語-\u{1f600}-${i}`;
+      expect(Array.from(encodeUtf8(s))).toEqual(Array.from(te.encode(s)));
+    }
+  });
+
+  it('the key and rulesHash reproduce the vectors when TextEncoder is missing', () => {
+    jest.isolateModules(() => {
+      const saved = globalThis.TextEncoder;
+      // @ts-expect-error simulating Edge 16 to 18
+      delete globalThis.TextEncoder;
+      try {
+         
+        const fresh = require('./key') as typeof import('./key');
+        for (const [input, fnv, key] of VECTORS) {
+          expect(fresh.fnv1a32(input)).toBe(fnv);
+          expect(fresh.keyU32(input)).toBe(key);
+        }
+        for (const v of keysVectors.slice(0, 2_000)) {
+          expect(fresh.keyU32(v.id)).toBe(v.key_u32);
+        }
+        for (const v of rulesHashVectors) {
+          expect(fresh.fnv1a64Hex(v.canonical)).toBe(v.rulesHash);
+        }
+      } finally {
+        globalThis.TextEncoder = saved;
+      }
+    });
   });
 });

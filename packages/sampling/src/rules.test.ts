@@ -149,6 +149,30 @@ describe('parse', () => {
     rejects([{ id: 'x', priority: 10, action: 'keep_session', baseRate: 0.1 }], /no priority field/);
   });
 
+  it('rejects a web_vital_threshold whose threshold is not a number', () => {
+    // Number('200ms') is NaN, and `value < NaN` is false, so without this check the rule
+    // would fire on every web vital and keep every session.
+    const vital = (threshold: string) => [
+      {
+        id: 'slow',
+        trigger: { type: 'web_vital_threshold', match: { metric: 'INP', threshold } },
+        action: 'keep_session',
+      },
+    ];
+    rejects(vital('200ms'), /trigger\.match\.threshold must be a number, got "200ms"/);
+    rejects(vital(''), /must be a number/);
+    rejects(vital('NaN'), /must be a number/);
+    rejects(vital('Infinity'), /must be a number/);
+    expect(() => parse(doc(vital('200')))).not.toThrow();
+    expect(() => parse(doc(vital(' 200.5 ')))).not.toThrow();
+    // No threshold at all means any web vital of that metric fires; that stays allowed.
+    expect(() =>
+      parse(
+        doc([{ id: 'any', trigger: { type: 'web_vital_threshold', match: { metric: 'INP' } }, action: 'keep_session' }])
+      )
+    ).not.toThrow();
+  });
+
   it('allows one base rate rule per document, and it cannot be scoped', () => {
     rejects(
       [
@@ -262,6 +286,11 @@ describe('matching', () => {
     expect(matchTrigger(inp, { type: 'web_vital_threshold', fields: { metric: 'INP', value: '350' } })).toBe(true);
     expect(matchTrigger(inp, { type: 'web_vital_threshold', fields: { metric: 'INP', value: '120' } })).toBe(false);
     expect(matchTrigger(inp, { type: 'web_vital_threshold', fields: { metric: 'LCP', value: '9000' } })).toBe(false);
+    // A hand-built trigger with a bad threshold never fires, rather than always firing.
+    const bad = { type: 'web_vital_threshold', match: { metric: 'INP', threshold: '200ms' } };
+    expect(matchTrigger(bad, { type: 'web_vital_threshold', fields: { metric: 'INP', value: '1' } })).toBe(false);
+    expect(matchTrigger(bad, { type: 'web_vital_threshold', fields: { metric: 'INP', value: '99999' } })).toBe(false);
+    expect(matchTrigger(inp, { type: 'web_vital_threshold', fields: { metric: 'INP', value: 'fast' } })).toBe(false);
   });
 });
 

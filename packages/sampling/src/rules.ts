@@ -108,6 +108,17 @@ function isRate(v: unknown): v is number {
 }
 
 /**
+ * Trigger types whose named match field is compared as a number (fires at or above) instead
+ * of as a glob. The field must parse as a finite number; `parse()` rejects anything else,
+ * because `Number('200ms')` is NaN and a NaN threshold would make the rule fire on every event.
+ */
+const NUMERIC_TRIGGERS: Record<string, string> = { web_vital_threshold: 'threshold' };
+
+function isFiniteNumberString(v: string): boolean {
+  return v.trim() !== '' && Number.isFinite(Number(v));
+}
+
+/**
  * Shape-validates a document and classifies each rule. Throws RuleDocumentError on a
  * malformed document (the SDK adapter turns that into a warning and falls back to keeping
  * everything, today's default). Unknown trigger types are not errors: the rule is kept,
@@ -206,6 +217,15 @@ export function parse(input: unknown, supportedTriggers: ReadonlySet<string> = W
       }
       if (trigger['match'] !== undefined && !isStringMap(trigger['match'])) {
         throw new RuleDocumentError(`${where}: trigger.match must be a map of string globs`);
+      }
+      const numericField = NUMERIC_TRIGGERS[trigger['type']];
+      if (numericField !== undefined && isStringMap(trigger['match'])) {
+        const threshold = trigger['match'][numericField];
+        if (threshold !== undefined && !isFiniteNumberString(threshold)) {
+          throw new RuleDocumentError(
+            `${where}: trigger.match.${numericField} must be a number, got ${JSON.stringify(threshold)}`
+          );
+        }
       }
       // A triggered drop would mean un-keeping a session that is already streaming and
       // already billable. Drops are decisions at D only.
@@ -362,8 +382,6 @@ export interface SessionEvent {
   fields: Record<string, string>;
 }
 
-const NUMERIC_TRIGGERS: Record<string, string> = { web_vital_threshold: 'threshold' };
-
 export function matchTrigger(trigger: Trigger, event: SessionEvent): boolean {
   if (trigger.type !== event.type) {
     return false;
@@ -375,8 +393,11 @@ export function matchTrigger(trigger: Trigger, event: SessionEvent): boolean {
     const pattern = trigger.match[field]!;
     if (NUMERIC_TRIGGERS[trigger.type] === field) {
       // web_vital_threshold: { metric: "INP", threshold: "200" } fires when value >= threshold.
+      // parse() has already rejected a non-numeric threshold; the guard here is for a Trigger
+      // built by hand, so a NaN on either side never fires instead of always firing.
       const value = Number(event.fields['value']);
-      if (!Number.isFinite(value) || value < Number(pattern)) {
+      const threshold = Number(pattern);
+      if (!Number.isFinite(value) || !Number.isFinite(threshold) || value < threshold) {
         return false;
       }
       continue;
