@@ -51,7 +51,7 @@ export const PUBLISHED_PACKAGES: PublishedPackage[] = [
   },
   {
     name: '@grafana/faro-instrumentation-replay',
-    dir: 'experimental/instrumentation-replay',
+    dir: 'packages/instrumentation-replay',
     bundle: 'faro-instrumentation-replay',
     global: 'GrafanaFaroInstrumentationReplay',
     needs: [],
