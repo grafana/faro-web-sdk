@@ -1,5 +1,5 @@
 import { trace } from '@opentelemetry/api';
-import type { Span } from '@opentelemetry/api';
+import type { Span, Tracer, TracerOptions } from '@opentelemetry/api';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import type { FetchRequestHookFunction } from '@opentelemetry/instrumentation-fetch';
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
@@ -195,7 +195,7 @@ describe('TracingInstrumentation single-owner behavior', () => {
     expect(getTracingRegistry()?.captureProvider).toBeDefined();
   });
 
-  it('provides an explicit per-app tracer for manually attributed spans', () => {
+  it('uses the shared page-route tracer for manual spans in routing mode', () => {
     const first = setupInstrumentation('app-a', { mode: 'routing' });
     first.instrumentation.initialize();
     const second = setupInstrumentation('app-b', { mode: 'routing' });
@@ -206,11 +206,16 @@ describe('TracingInstrumentation single-owner behavior', () => {
     const secondProvider = registrations[1]?.provider!;
     const firstGetTracer = jest.spyOn(firstProvider, 'getTracer');
     const secondGetTracer = jest.spyOn(secondProvider, 'getTracer');
+    const captureProvider = getTracingRegistry()?.captureProvider as unknown as {
+      getPageRouteTracer: (name: string, version?: string, options?: TracerOptions) => Tracer;
+    };
+    const getPageRouteTracer = jest.spyOn(captureProvider, 'getPageRouteTracer');
 
     const span = second.instrumentation.getTracer('manual-checkout').startSpan('checkout');
 
-    expect(secondGetTracer).toHaveBeenCalledWith('manual-checkout', undefined, undefined);
-    expect(firstGetTracer).not.toHaveBeenCalled();
+    expect(getPageRouteTracer).toHaveBeenCalledWith('manual-checkout', undefined, undefined);
+    expect(firstGetTracer).toHaveBeenCalledWith('manual-checkout', undefined, undefined);
+    expect(secondGetTracer).not.toHaveBeenCalled();
     span.end();
   });
 
@@ -385,6 +390,7 @@ describe('TracingInstrumentation single-owner behavior', () => {
     expect(registerInstrumentations).not.toHaveBeenCalled();
     expect(getTracingOwner()?.appName).toBe('legacy-2.13-app');
     expect(api.initOTEL).toHaveBeenCalledTimes(1);
+    expect(() => instrumentation.getTracer('manual-checkout')).not.toThrow();
     expect((internalLogger.warn as jest.Mock).mock.calls[0]?.join(' ')).toContain(
       'Routing is unavailable because tracing is already owned by another Faro instance'
     );
@@ -416,6 +422,8 @@ describe('TracingInstrumentation single-owner behavior', () => {
     expect(registerSpy).not.toHaveBeenCalled();
     expect(registerInstrumentations).not.toHaveBeenCalled();
     expect(api.initOTEL).toHaveBeenCalledTimes(1);
+    instrumentation.getTracer('external-manual-tracer');
+    expect(externalProvider.getTracer).toHaveBeenCalledWith('external-manual-tracer', undefined, undefined);
     expect((internalLogger.warn as jest.Mock).mock.calls[0]?.join(' ')).toContain(
       'An external global OpenTelemetry tracer provider is already registered. Faro will not register a provider or instrument fetch/XHR.'
     );

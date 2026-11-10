@@ -74,7 +74,37 @@ export function warnOnAttributionConflict(attribution: NetworkAttribution, warn:
   const fallback =
     attribution.registration?.appName ?? `registration ${attribution.registration?.registrationId ?? 'none'}`;
 
-  warn(`Network tracing ownership conflict between apps [${apps}]; using fallback app ${fallback}.`);
+  warn(`Tracing ownership conflict between apps [${apps}]; using fallback app ${fallback}.`);
+}
+
+export function resolvePageRouteAttribution(
+  pageUrl: string | undefined,
+  registrations: TracingRegistration[] = getActiveTracingRegistrations()
+): NetworkAttribution | undefined {
+  const active = registrations.filter((registration) => registration.state === 'active');
+
+  if (active.length === 0) {
+    return undefined;
+  }
+
+  const pageRouteClaimants = pageUrl
+    ? active.filter((registration) => matchesAnyUrl(getMatchers(registration, 'pageRouteMatchers'), pageUrl, pageUrl))
+    : [];
+
+  if (pageRouteClaimants.length === 1) {
+    return {
+      registration: pageRouteClaimants[0],
+      strategy: 'page-route',
+      fallback: false,
+      apiClaimants: [],
+      pageRouteClaimants,
+    };
+  }
+
+  const conflict =
+    pageRouteClaimants.length > 1 ? { kind: 'page-route' as const, registrations: pageRouteClaimants } : undefined;
+
+  return fallbackAttribution(active, [], pageRouteClaimants, conflict);
 }
 
 export function resolveNetworkAttribution(

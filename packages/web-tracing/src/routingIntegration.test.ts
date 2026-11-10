@@ -244,6 +244,71 @@ describe('routing network integration', () => {
     }
   });
 
+  it('routes getTracer spans by the current page route at each startSpan call', async () => {
+    jest.useFakeTimers();
+    const appA = api();
+    const appB = api();
+    const first = setupApp('app-a', '/a', appA);
+    const second = setupApp('app-b', '/b', appB);
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: jest.fn(() => Promise.resolve({ status: 200, url: 'https://api.example.test/orders' } as Response)),
+    });
+    window.history.pushState({}, '', '/b');
+
+    try {
+      first.initialize();
+      second.initialize();
+
+      const tracer = second.getTracer('manual-navigation');
+      const parent = tracer.startSpan('parent-on-b');
+      window.history.pushState({}, '', '/a');
+      const child = context.with(trace.setSpan(context.active(), parent), () => tracer.startSpan('child-on-a'));
+      child.end();
+      parent.end();
+
+      const registrations = getTracingRegistry()!.registrations;
+      const providerA = registrations.find(({ appName }) => appName === 'app-a')!.provider as WebTracerProvider;
+      const providerB = registrations.find(({ appName }) => appName === 'app-b')!.provider as WebTracerProvider;
+      await Promise.all([providerA.forceFlush(), providerB.forceFlush()]);
+
+      const readSpans = (faro: API) =>
+        (faro.pushTraces as jest.Mock).mock.calls.flatMap(([batch]) =>
+          batch.resourceSpans.flatMap(
+            (resourceSpan: { scopeSpans: Array<{ spans: Array<Record<string, unknown>> }> }) =>
+              resourceSpan.scopeSpans.flatMap((scopeSpan: { spans: Array<Record<string, unknown>> }) => scopeSpan.spans)
+          )
+        ) as Array<{ name: string; traceId: string; attributes: Array<{ key: string; value: unknown }> }>;
+      const aSpans = readSpans(appA);
+      const bSpans = readSpans(appB);
+      const parentSpan = bSpans.find(({ name }) => name === 'parent-on-b');
+      const childSpan = aSpans.find(({ name }) => name === 'child-on-a');
+
+      expect(parentSpan).toBeDefined();
+      expect(childSpan).toBeDefined();
+      expect(aSpans.some(({ name }) => name === 'parent-on-b')).toBe(false);
+      expect(bSpans.some(({ name }) => name === 'child-on-a')).toBe(false);
+      expect(childSpan!.traceId).toBe(parentSpan!.traceId);
+      expect(parentSpan!.attributes).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: 'faro.attribution.strategy', value: { stringValue: 'page-route' } }),
+          expect.objectContaining({ key: 'faro.attribution.fallback', value: { boolValue: false } }),
+        ])
+      );
+      expect(childSpan!.attributes).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: 'faro.attribution.strategy', value: { stringValue: 'page-route' } }),
+          expect.objectContaining({ key: 'faro.attribution.fallback', value: { boolValue: false } }),
+        ])
+      );
+    } finally {
+      first.destroy();
+      second.destroy();
+      jest.runOnlyPendingTimers();
+    }
+  });
+
   it('keeps an XHR CORS preflight with its request owner when it starts during drain', async () => {
     jest.useFakeTimers();
     const appA = api();

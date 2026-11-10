@@ -22,7 +22,11 @@ import {
 import { BaseInstrumentation, captureMetas, isArray, VERSION } from '@grafana/faro-web-sdk';
 import type { API, Transport } from '@grafana/faro-web-sdk';
 
-import { resolveNetworkAttribution, warnOnAttributionConflict } from './attributionResolver';
+import {
+  resolveNetworkAttribution,
+  resolvePageRouteAttribution,
+  warnOnAttributionConflict,
+} from './attributionResolver';
 import { FaroMetaAttributesSpanProcessor } from './faroMetaAttributesSpanProcessor';
 import { FaroPausablePropagator } from './faroPausablePropagator';
 import { FaroTraceExporter } from './faroTraceExporter';
@@ -180,16 +184,26 @@ export class TracingInstrumentation extends BaseInstrumentation {
   }
 
   /**
-   * Returns a tracer bound to this Faro instance's provider for manual spans.
-   * Use this instead of the page-global OTEL tracer when a manual span should be exported by this app.
-   * This is available after this instrumentation has initialized with its own provider.
+   * Returns a tracer that routes manual spans using the current page route when this page is in
+   * routing mode. In legacy mode it uses this Faro instance's provider when available.
    */
   getTracer(name: string, version?: string, options?: TracerOptions): Tracer {
-    if (!this.appTracerProvider) {
-      throw new Error('TracingInstrumentation must initialize its own provider before getTracer() can be used.');
+    const registry = getTracingRegistry();
+    if (registry?.mode === 'routing') {
+      const captureProvider = registry.captureProvider as
+        | {
+            getPageRouteTracer?: (tracerName: string, tracerVersion?: string, tracerOptions?: TracerOptions) => Tracer;
+          }
+        | undefined;
+      return captureProvider?.getPageRouteTracer
+        ? captureProvider.getPageRouteTracer(name, version, options)
+        : trace.getTracerProvider().getTracer(name, version, options);
     }
 
-    return this.appTracerProvider.getTracer(name, version, options);
+    return (
+      this.appTracerProvider?.getTracer(name, version, options) ??
+      trace.getTracerProvider().getTracer(name, version, options)
+    );
   }
 
   initialize(): void {
@@ -317,59 +331,65 @@ export class TracingInstrumentation extends BaseInstrumentation {
     }
 
     if (!registry.captureProvider) {
-      const routingProvider = new RoutingTracerProvider((spanOptions, instrumentationScopeName) => {
-        const isAutomaticNetworkSpan =
-          instrumentationScopeName === '@opentelemetry/instrumentation-fetch' ||
-          instrumentationScopeName === '@opentelemetry/instrumentation-xml-http-request';
-        const requestUrl = isAutomaticNetworkSpan ? spanOptions.attributes?.['url.full'] : undefined;
-        const pageUrl = typeof location !== 'undefined' ? location.href : undefined;
-        const attribution = resolveNetworkAttribution(typeof requestUrl === 'string' ? requestUrl : undefined, pageUrl);
+      const routingProvider = new RoutingTracerProvider(
+        (spanOptions, instrumentationScopeName, routeManualSpansByPage) => {
+          const isAutomaticNetworkSpan =
+            instrumentationScopeName === '@opentelemetry/instrumentation-fetch' ||
+            instrumentationScopeName === '@opentelemetry/instrumentation-xml-http-request';
+          const requestUrl = isAutomaticNetworkSpan ? spanOptions.attributes?.['url.full'] : undefined;
+          const pageUrl = typeof location !== 'undefined' ? location.href : undefined;
+          const attribution =
+            routeManualSpansByPage && !isAutomaticNetworkSpan
+              ? resolvePageRouteAttribution(pageUrl)
+              : resolveNetworkAttribution(typeof requestUrl === 'string' ? requestUrl : undefined, pageUrl);
 
-        if (!attribution) {
-          return undefined;
-        }
+          if (!attribution) {
+            return undefined;
+          }
 
-        warnOnAttributionConflict(attribution, (message) => {
-          const warningRegistration = attribution.conflict?.registrations[0] ?? attribution.registration;
-          warningRegistration?.warn?.(message);
-        });
+          warnOnAttributionConflict(attribution, (message) => {
+            const warningRegistration = attribution.conflict?.registrations[0] ?? attribution.registration;
+            warningRegistration?.warn?.(message);
+          });
 
-        const registration = attribution.registration;
-        let suppressionLatched = false;
-        const shouldSuppressTraceContext = () => {
-          const suppressed = registration?.shouldSuppressTraceContext?.() === true;
-          suppressionLatched ||= suppressed;
-          return suppressionLatched;
-        };
+          const registration = attribution.registration;
+          let suppressionLatched = false;
+          const shouldSuppressTraceContext = () => {
+            const suppressed = registration?.shouldSuppressTraceContext?.() === true;
+            suppressionLatched ||= suppressed;
+            return suppressionLatched;
+          };
 
-        if (typeof requestUrl !== 'string') {
+          if (typeof requestUrl !== 'string') {
+            return {
+              registration,
+              ...(routeManualSpansByPage ? { strategy: attribution.strategy, fallback: attribution.fallback } : {}),
+              shouldSuppress: shouldSuppressTraceContext,
+              isSuppressed: () => suppressionLatched || registration?.shouldDropLateWork?.() === true,
+            };
+          }
+
+          const shouldSuppress = () => {
+            const suppressed =
+              shouldSuppressTraceContext() ||
+              isUrlIgnored(
+                requestUrl,
+                (registration?.configuration['appIgnoreUrls'] as Array<string | RegExp> | undefined) ?? []
+              );
+            suppressionLatched ||= suppressed;
+            return suppressionLatched;
+          };
+
           return {
             registration,
-            shouldSuppress: shouldSuppressTraceContext,
+            strategy: attribution.strategy,
+            fallback: attribution.fallback,
+            suppressed: shouldSuppress(),
+            shouldSuppress,
             isSuppressed: () => suppressionLatched || registration?.shouldDropLateWork?.() === true,
           };
         }
-
-        const shouldSuppress = () => {
-          const suppressed =
-            shouldSuppressTraceContext() ||
-            isUrlIgnored(
-              requestUrl,
-              (registration?.configuration['appIgnoreUrls'] as Array<string | RegExp> | undefined) ?? []
-            );
-          suppressionLatched ||= suppressed;
-          return suppressionLatched;
-        };
-
-        return {
-          registration,
-          strategy: attribution.strategy,
-          fallback: attribution.fallback,
-          suppressed: shouldSuppress(),
-          shouldSuppress,
-          isSuppressed: () => suppressionLatched || registration?.shouldDropLateWork?.() === true,
-        };
-      });
+      );
 
       if (!this.registerRoutingProvider(routingProvider, options)) {
         this.api.initOTEL(trace, context);

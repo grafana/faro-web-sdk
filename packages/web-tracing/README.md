@@ -47,21 +47,26 @@ wins across all active apps; ambiguous or unresolved requests use the active glo
 or the earliest active isolated app. Ownership is fixed at fetch/span creation or XHR `open()` and
 is not reassigned by navigation or later registration.
 
-Manual spans created through the page-global `faro.api.getOTEL()` use the fallback app because that
-API does not identify which micro-frontend called it. To explicitly export manual spans through one
-app's provider, retain its `TracingInstrumentation` instance and use `getTracer()` after Faro is
-initialized:
+Manual spans created through the page-global `faro.api.getOTEL()` continue to use the fallback app
+because that API does not identify which micro-frontend called it. For page-route attribution, retain
+a `TracingInstrumentation` instance and use its `getTracer()` method after Faro is initialized:
 
 ```ts
-const tracing = new TracingInstrumentation({ mode: 'routing' });
+const tracing = new TracingInstrumentation({
+  mode: 'routing',
+  pageRouteMatchers: [{ pattern: '/checkout', target: 'pathname' }],
+});
 initializeFaro({ instrumentations: [tracing] });
 
-const span = tracing.getTracer('checkout').startSpan('checkout');
+const tracer = tracing.getTracer('checkout');
+const span = tracer.startSpan('checkout');
 // ...work...
 span.end();
 ```
 
-`getTracer()` is only available when that instrumentation successfully initialized its own provider.
+In routing mode, `getTracer()` returns a shared page router. Ownership is resolved against the current
+page route at each `startSpan()` call, so a cached tracer follows client-side navigation. A unique
+page-route match owns the span; otherwise the active fallback is used. Parent context is preserved.
 
 Call `destroy()` when an app unmounts. New requests stop selecting it, while already-started spans
 finish through its original pipeline until the single bounded drain deadline (default 30 seconds,

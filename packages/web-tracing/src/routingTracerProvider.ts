@@ -15,7 +15,8 @@ export interface RoutingSpanResolution {
 
 export type RoutingRegistrationResolver = (
   spanOptions: SpanOptions,
-  instrumentationScopeName?: string
+  instrumentationScopeName?: string,
+  routeManualSpansByPage?: boolean
 ) => RoutingSpanResolution | undefined;
 
 /**
@@ -44,9 +45,22 @@ export class RoutingTracerProvider implements TracerProvider {
   }
 
   getTracer(name: string, version?: string, options?: TracerOptions): Tracer {
-    // The scope name/version identify the tracer; keep the options on the first tracer created for
-    // that scope rather than serializing arbitrary user objects (which may be circular).
-    const key = `${name}\u0000${version ?? ''}\u0000${options?.schemaUrl ?? ''}`;
+    return this.createTracer(name, version, options, false);
+  }
+
+  getPageRouteTracer(name: string, version?: string, options?: TracerOptions): Tracer {
+    return this.createTracer(name, version, options, true);
+  }
+
+  private createTracer(
+    name: string,
+    version: string | undefined,
+    options: TracerOptions | undefined,
+    routeManualSpansByPage: boolean
+  ): Tracer {
+    // The scope name/version and routing mode identify the tracer; keep options on the first
+    // tracer created for that scope rather than serializing arbitrary user objects.
+    const key = `${name}\u0000${version ?? ''}\u0000${options?.schemaUrl ?? ''}\u0000${routeManualSpansByPage}`;
     let tracer = this.tracers.get(key);
 
     if (!tracer) {
@@ -54,6 +68,7 @@ export class RoutingTracerProvider implements TracerProvider {
         name,
         version,
         options,
+        routeManualSpansByPage,
         this.resolveRegistration,
         this.noOpProvider,
         (span, resolution) => this.rememberDecision(span, resolution),
@@ -82,6 +97,7 @@ class RoutingTracer implements Tracer {
     private readonly name: string,
     private readonly version: string | undefined,
     private readonly tracerOptions: TracerOptions | undefined,
+    private readonly routeManualSpansByPage: boolean,
     private readonly resolveRegistration: RoutingRegistrationResolver,
     private readonly noOpProvider: TracerProvider,
     private readonly rememberDecision: (span: Span, resolution: RoutingSpanResolution) => void,
@@ -169,7 +185,8 @@ class RoutingTracer implements Tracer {
         inheritedResolution.registration?.allowAuxiliarySpan?.(parentSpan);
       }
     }
-    const resolution = inheritedResolution ?? this.resolveRegistration(spanOptions, this.name) ?? {};
+    const resolution =
+      inheritedResolution ?? this.resolveRegistration(spanOptions, this.name, this.routeManualSpansByPage) ?? {};
     const provider =
       resolution.suppressed === true ? this.noOpProvider : (resolution.registration?.provider ?? this.noOpProvider);
     const routedOptions =

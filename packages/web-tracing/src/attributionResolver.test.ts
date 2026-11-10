@@ -1,4 +1,8 @@
-import { resolveNetworkAttribution, warnOnAttributionConflict } from './attributionResolver';
+import {
+  resolveNetworkAttribution,
+  resolvePageRouteAttribution,
+  warnOnAttributionConflict,
+} from './attributionResolver';
 import { registerTracingRegistration, resetTracingRegistryForTests, selectTracingMode } from './tracingRegistry';
 import type { TracingRegistration } from './tracingRegistry';
 
@@ -56,6 +60,34 @@ describe('resolveNetworkAttribution', () => {
     expect(result?.registration).toBe(routeOwner);
     expect(result?.strategy).toBe('page-route');
     expect(result?.apiClaimants).toEqual([apiA, apiB]);
+  });
+
+  it('routes manual spans to a unique current page-route owner', () => {
+    const routeA = registration(1, 'route-a', {
+      pageRouteMatchers: [{ pattern: '/a', target: 'pathname' }],
+    });
+    const routeB = registration(2, 'route-b', {
+      pageRouteMatchers: [{ pattern: '/b', target: 'pathname' }],
+    });
+
+    const result = resolvePageRouteAttribution('https://app.example.test/b', [routeA, routeB]);
+
+    expect(result).toMatchObject({ registration: routeB, strategy: 'page-route', fallback: false });
+  });
+
+  it('uses the active fallback for manual spans with no unique page-route owner', () => {
+    const routeA = registration(1, 'route-a', {
+      pageRouteMatchers: [{ pattern: '/a', target: 'pathname' }],
+    });
+    const routeB = registration(2, 'route-b', {
+      pageRouteMatchers: [{ pattern: '/a', target: 'pathname' }],
+    });
+    const fallback = registration(3, 'global', {}, false);
+
+    const result = resolvePageRouteAttribution('https://app.example.test/a', [routeA, routeB, fallback]);
+
+    expect(result).toMatchObject({ registration: fallback, strategy: 'fallback', fallback: true });
+    expect(result?.conflict).toMatchObject({ kind: 'page-route', registrations: [routeA, routeB] });
   });
 
   it('uses a unique page route when no app claims the API', () => {

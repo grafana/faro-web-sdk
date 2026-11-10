@@ -78,6 +78,50 @@ describe('RoutingTracerProvider', () => {
     expect((firstSpan.end as jest.Mock).mock.calls).toHaveLength(1);
   });
 
+  it('resolves page-route tracer destinations separately for each span start', () => {
+    const firstTracer = { startSpan: jest.fn(() => ({ end: jest.fn() }) as unknown as Span) } as unknown as Tracer;
+    const secondTracer = { startSpan: jest.fn(() => ({ end: jest.fn() }) as unknown as Span) } as unknown as Tracer;
+    const firstProvider = { getTracer: jest.fn(() => firstTracer) } as unknown as TracerProvider;
+    const secondProvider = { getTracer: jest.fn(() => secondTracer) } as unknown as TracerProvider;
+    const first = makeRegistration(firstProvider, 1);
+    const second = makeRegistration(secondProvider, 2);
+    let destination = first;
+    const resolveRegistration = jest.fn((_spanOptions, _scopeName, routeManualSpansByPage) =>
+      routeManualSpansByPage
+        ? { registration: destination, strategy: 'page-route' as const, fallback: false }
+        : { registration: first }
+    );
+    const routing = new RoutingTracerProvider(resolveRegistration);
+    const tracer = routing.getPageRouteTracer('manual-scope');
+
+    tracer.startSpan('on-first-route');
+    destination = second;
+    tracer.startSpan('on-second-route');
+
+    expect(firstTracer.startSpan).toHaveBeenCalledWith(
+      'on-first-route',
+      {
+        attributes: {
+          'faro.attribution.strategy': 'page-route',
+          'faro.attribution.fallback': false,
+        },
+      },
+      undefined
+    );
+    expect(secondTracer.startSpan).toHaveBeenCalledWith(
+      'on-second-route',
+      {
+        attributes: {
+          'faro.attribution.strategy': 'page-route',
+          'faro.attribution.fallback': false,
+        },
+      },
+      undefined
+    );
+    expect(resolveRegistration).toHaveBeenNthCalledWith(1, {}, 'manual-scope', true);
+    expect(resolveRegistration).toHaveBeenNthCalledWith(2, {}, 'manual-scope', true);
+  });
+
   it('delegates startActiveSpan overloads to the selected provider', () => {
     const callback = jest.fn(() => 'result');
     const targetTracer = {
