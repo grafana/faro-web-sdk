@@ -1,8 +1,16 @@
-// Clicks further apart than this in time or space start a new burst
-export const BURST_MAX_GAP_MS = 1000;
-export const BURST_MAX_RADIUS_PX = 100;
-// Number of clicks inside BURST_MAX_GAP_MS that makes a burst a rage click
-export const RAGE_CLICK_THRESHOLD = 3;
+import type { Config } from '@grafana/faro-core';
+
+export type FrustrationThresholds = Required<NonNullable<Config['frustrationInstrumentation']>>;
+
+export const defaultFrustrationThresholds: FrustrationThresholds = {
+  // Clicks further apart than this in time or space start a new burst
+  burstMaxGapMs: 1000,
+  burstMaxRadiusPx: 100,
+  // Number of clicks inside burstMaxGapMs that makes a burst a rage click
+  rageClickThreshold: 3,
+  // Page activity that starts later than this after a click is not considered a response to it
+  responseWindowMs: 100,
+};
 
 export type TrackedClick = {
   target: Element;
@@ -29,24 +37,64 @@ export type FrustrationSignal = {
 // Input types whose clicks toggle or submit something, so a missing page response is meaningful
 const RESPONSIVE_INPUT_TYPES = ['button', 'checkbox', 'radio', 'range', 'reset', 'submit'];
 
-export function belongsToBurst(last: TrackedClick, next: TrackedClick): boolean {
+/**
+ * Applies the configured thresholds over the defaults. Invalid values fall back to the default.
+ */
+export function resolveFrustrationThresholds(
+  options: Config['frustrationInstrumentation'] = {},
+  warn: (message: string) => void
+): FrustrationThresholds {
+  const thresholds = { ...defaultFrustrationThresholds };
+
+  (Object.keys(thresholds) as Array<keyof FrustrationThresholds>).forEach((key) => {
+    const value = options[key];
+    if (value === undefined) {
+      return;
+    }
+
+    if (isValidThreshold(key, value)) {
+      thresholds[key] = value;
+    } else {
+      warn(`frustrationInstrumentation.${key} is invalid; using ${thresholds[key]}`);
+    }
+  });
+
+  return thresholds;
+}
+
+function isValidThreshold(key: keyof FrustrationThresholds, value: number): boolean {
+  if (key === 'rageClickThreshold') {
+    return Number.isInteger(value) && value >= 2;
+  }
+
+  return Number.isFinite(value) && value > 0;
+}
+
+export function belongsToBurst(last: TrackedClick, next: TrackedClick, thresholds: FrustrationThresholds): boolean {
   const distance = Math.hypot(next.clientX - last.clientX, next.clientY - last.clientY);
 
-  return last.target === next.target && distance <= BURST_MAX_RADIUS_PX && next.time - last.time <= BURST_MAX_GAP_MS;
+  return (
+    last.target === next.target &&
+    distance <= thresholds.burstMaxRadiusPx &&
+    next.time - last.time <= thresholds.burstMaxGapMs
+  );
 }
 
 /**
  * Turns a finished burst of clicks into frustration signals.
  * A rage burst produces a single signal. Otherwise every click is judged on its own.
  */
-export function detectFrustrationSignals(burst: TrackedClick[]): FrustrationSignal[] {
+export function detectFrustrationSignals(
+  burst: TrackedClick[],
+  thresholds: FrustrationThresholds
+): FrustrationSignal[] {
   const first = burst[0];
   const last = burst[burst.length - 1];
   if (!first || !last) {
     return [];
   }
 
-  if (isRageBurst(burst)) {
+  if (isRageBurst(burst, thresholds)) {
     return [{ type: 'rage_click', click: first, clickCount: burst.length, durationMs: last.time - first.time }];
   }
 
@@ -68,14 +116,14 @@ export function detectFrustrationSignals(burst: TrackedClick[]): FrustrationSign
   });
 }
 
-export function isRageBurst(burst: TrackedClick[]): boolean {
+export function isRageBurst(burst: TrackedClick[], thresholds: FrustrationThresholds): boolean {
   if (burst.some((click) => click.changedSelection || click.scrolled)) {
     return false;
   }
 
   return burst.some((click, index) => {
-    const windowStart = burst[index - (RAGE_CLICK_THRESHOLD - 1)];
-    return windowStart !== undefined && click.time - windowStart.time <= BURST_MAX_GAP_MS;
+    const windowStart = burst[index - (thresholds.rageClickThreshold - 1)];
+    return windowStart !== undefined && click.time - windowStart.time <= thresholds.burstMaxGapMs;
   });
 }
 

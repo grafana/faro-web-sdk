@@ -383,6 +383,87 @@ describe('FrustrationInstrumentation', () => {
     ]);
   });
 
+  describe('configured thresholds', () => {
+    it('reports slower clicks as a rage click with a larger burst gap', () => {
+      setup({ frustrationInstrumentation: { burstMaxGapMs: 1500 } });
+
+      for (let i = 0; i < 3; i++) {
+        click();
+        domMutation();
+        jest.advanceTimersByTime(600);
+      }
+      jest.advanceTimersByTime(2000);
+
+      expect(events().map(({ name }) => name)).toEqual(['faro.frustration.rage_click']);
+    });
+
+    it('reports clicks further apart as a rage click with a larger burst radius', () => {
+      setup({ frustrationInstrumentation: { burstMaxRadiusPx: 200 } });
+
+      [0, 150, 300].forEach((clientX) => {
+        click(button, { clientX });
+        domMutation();
+      });
+      jest.advanceTimersByTime(2000);
+
+      expect(events().map(({ name }) => name)).toEqual(['faro.frustration.rage_click']);
+    });
+
+    it('needs more clicks for a rage click with a higher rage click threshold', () => {
+      setup({ frustrationInstrumentation: { rageClickThreshold: 4 } });
+
+      for (let i = 0; i < 3; i++) {
+        click();
+        domMutation();
+      }
+      jest.advanceTimersByTime(2000);
+      expect(events()).toEqual([]);
+
+      for (let i = 0; i < 4; i++) {
+        click();
+        domMutation();
+      }
+      jest.advanceTimersByTime(2000);
+      expect(events()).toEqual([
+        expect.objectContaining({
+          name: 'faro.frustration.rage_click',
+          attributes: expect.objectContaining({ clickCount: '4' }),
+        }),
+      ]);
+    });
+
+    it('accepts later page activity as a response with a longer response window', () => {
+      setup({ frustrationInstrumentation: { responseWindowMs: 300 } });
+
+      click();
+      jest.advanceTimersByTime(150);
+      domMutation();
+      jest.advanceTimersByTime(2000);
+
+      expect(events()).toEqual([]);
+    });
+
+    it.each([
+      { burstMaxGapMs: 0 },
+      { burstMaxRadiusPx: -1 },
+      { responseWindowMs: Number.NaN },
+      { burstMaxGapMs: Number.POSITIVE_INFINITY },
+      { rageClickThreshold: 1 },
+      { rageClickThreshold: 2.5 },
+    ])('falls back to the default for invalid option %o', (options) => {
+      const warn = jest.spyOn(FrustrationInstrumentation.prototype, 'logWarn');
+      setup({ frustrationInstrumentation: options });
+
+      click();
+      jest.advanceTimersByTime(150);
+      domMutation();
+      jest.advanceTimersByTime(2000);
+
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(events().map(({ name }) => name)).toEqual(['faro.frustration.dead_click']);
+    });
+  });
+
   it('subscribes to the shared page monitors on initialize and unsubscribes on destroy', () => {
     const subscriberCount = () =>
       [dom$, http$, perf$].map(

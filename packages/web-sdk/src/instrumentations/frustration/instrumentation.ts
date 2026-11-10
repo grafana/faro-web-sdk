@@ -7,11 +7,13 @@ import { monitorPerformanceEntries } from '../_internal/monitors/performanceEntr
 import { userActionDataAttribute } from '../userActions/const';
 import { isRequestEndMessage, normalizeDataAttributeName } from '../userActions/util';
 
-import { belongsToBurst, BURST_MAX_GAP_MS, detectFrustrationSignals } from './clickBurst';
-import type { FrustrationSignal, TrackedClick } from './clickBurst';
-
-// Page activity that starts later than this after a click is not considered a response to it
-export const RESPONSE_WINDOW_MS = 100;
+import {
+  belongsToBurst,
+  defaultFrustrationThresholds,
+  detectFrustrationSignals,
+  resolveFrustrationThresholds,
+} from './clickBurst';
+import type { FrustrationSignal, FrustrationThresholds, TrackedClick } from './clickBurst';
 
 const listenerOptions: AddEventListenerOptions = { capture: true, passive: true };
 
@@ -22,6 +24,7 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
   readonly name = '@grafana/faro-web-sdk:instrumentation-frustration';
   readonly version: string = VERSION;
 
+  private thresholds: FrustrationThresholds = defaultFrustrationThresholds;
   private responseSub?: Subscription;
   private pointerDown?: { time: number; selection: string };
   private lastResponseTime?: number;
@@ -59,9 +62,9 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
     this.pointerDown = undefined;
 
     const previous = this.burst[this.burst.length - 1];
-    if (previous && !belongsToBurst(previous, click)) {
+    if (previous && !belongsToBurst(previous, click, this.thresholds)) {
       // The previous burst's last click may still get its page response
-      this.flushBurst(RESPONSE_WINDOW_MS);
+      this.flushBurst(this.thresholds.responseWindowMs);
     } else if (previous && this.lastScrollTime !== undefined && this.lastScrollTime >= previous.time) {
       click.scrolled = true;
     }
@@ -71,7 +74,7 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
     this.clicksAwaitingResponse.push(click);
 
     window.clearTimeout(this.burstTid);
-    this.burstTid = window.setTimeout(() => this.flushBurst(0), BURST_MAX_GAP_MS);
+    this.burstTid = window.setTimeout(() => this.flushBurst(0), this.thresholds.burstMaxGapMs);
   };
 
   private readonly onPageResponse = (): void => {
@@ -99,6 +102,10 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
   };
 
   initialize(): void {
+    this.thresholds = resolveFrustrationThresholds(this.config.frustrationInstrumentation, (message) =>
+      this.logWarn(message)
+    );
+
     this.responseSub = new Observable()
       .merge(monitorDomMutations(), monitorHttpRequests(), monitorPerformanceEntries())
       .filter((msg) => !isRequestEndMessage(msg))
@@ -138,7 +145,8 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
   }
 
   private pruneClicksAwaitingResponse(now: number): void {
-    this.clicksAwaitingResponse = this.clicksAwaitingResponse.filter((click) => now - click.time <= RESPONSE_WINDOW_MS);
+    const { responseWindowMs } = this.thresholds;
+    this.clicksAwaitingResponse = this.clicksAwaitingResponse.filter((click) => now - click.time <= responseWindowMs);
   }
 
   private markError(message: string): void {
@@ -155,7 +163,7 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
 
     const tid = window.setTimeout(() => {
       this.flushTids.delete(tid);
-      detectFrustrationSignals(clicks).forEach((signal) => this.report(signal));
+      detectFrustrationSignals(clicks, this.thresholds).forEach((signal) => this.report(signal));
     }, delay);
     this.flushTids.add(tid);
   }
