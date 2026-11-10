@@ -26,6 +26,9 @@ initializeFaro({
 The default configuration masks all input values and text content. Review the privacy options below
 before making masking more selective.
 
+Replay is a separate, opt-in package and is not included by `getWebInstrumentations()`. Its code is only
+loaded when you import the package or load its browser bundle.
+
 ## Public API
 
 The package exports `ReplayInstrumentation` and the types `ReplayInstrumentationOptions`, `MaskInputOptions`,
@@ -41,13 +44,6 @@ Faro in the browser; server runtimes, browser extensions, workers, Node.js, and 
 Canvas 2D and WebGL content capture is not supported. Canvas elements can appear in the recorded DOM,
 but replaying their drawing content is not supported. Cross-origin iframe recording is disabled by default
 and requires rrweb in each child iframe when enabled.
-
-## Bundle Size
-
-Replay is separate from `@grafana/faro-web-sdk` and is not included by `getWebInstrumentations()`.
-Applications that do not import replay or load its browser bundle do not download its code or rrweb through Faro.
-Using a static import includes the recording code even if recording is disabled at runtime or a session is not sampled.
-Use a dynamic `import()` with a bundler that supports code splitting to load replay only when needed.
 
 ## Configuration Options
 
