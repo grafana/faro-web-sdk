@@ -39,10 +39,10 @@
           "path": "packages/react/package.json",
           "jsonpath": "$['dependencies']['@grafana/faro-web-tracing']"
         },
-        { "type": "json", "path": "experimental/instrumentation-replay/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "packages/instrumentation-replay/package.json", "jsonpath": "$.version" },
         {
           "type": "json",
-          "path": "experimental/instrumentation-replay/package.json",
+          "path": "packages/instrumentation-replay/package.json",
           "jsonpath": "$['dependencies']['@grafana/faro-core']"
         },
         { "type": "json", "path": "experimental/transport-otlp-http/package.json", "jsonpath": "$.version" },
