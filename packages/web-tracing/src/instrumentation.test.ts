@@ -73,6 +73,34 @@ describe('TracingInstrumentation single-owner behavior', () => {
     expect(api.initOTEL).toHaveBeenCalledTimes(1);
   });
 
+  it('normalizes API and page-route matchers against their respective URL bases', () => {
+    const previousPageUrl = window.location.href;
+    window.history.replaceState({}, '', '/app/current');
+    const pageUrl = window.location.href;
+    const base = document.createElement('base');
+    base.href = 'https://api.example.test/base/';
+    document.head.prepend(base);
+
+    try {
+      const { instrumentation } = setupInstrumentation('routing-app', {
+        mode: 'routing',
+        apiUrlMatchers: [{ pattern: 'orders', target: 'full-url' }],
+        pageRouteMatchers: [{ pattern: 'orders', target: 'full-url' }],
+      });
+
+      instrumentation.initialize();
+
+      const configuration = getTracingRegistry()!.registrations[0]!.configuration;
+      const apiMatcher = (configuration['apiUrlMatchers'] as Array<{ pattern: string }>)[0]!;
+      const pageRouteMatcher = (configuration['pageRouteMatchers'] as Array<{ pattern: string }>)[0]!;
+      expect(apiMatcher.pattern).toBe('https://api.example.test/base/orders');
+      expect(pageRouteMatcher.pattern).toBe(new URL('orders', pageUrl).href);
+    } finally {
+      base.remove();
+      window.history.replaceState({}, '', previousPageUrl);
+    }
+  });
+
   it('keeps legacy custom instrumentations unchanged when routing is omitted', () => {
     const customInstrumentation = { name: 'custom' };
     const { instrumentation } = setupInstrumentation('legacy-app', {

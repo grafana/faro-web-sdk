@@ -268,7 +268,8 @@ export class TracingInstrumentation extends BaseInstrumentation {
       this.updateRoutingCaptureState();
     });
     const provider = this.createProvider(options, lifecycle);
-    const matcherBaseUrl = typeof location !== 'undefined' ? location.href : undefined;
+    const pageRouteMatcherBaseUrl = typeof location !== 'undefined' ? location.href : undefined;
+    const apiMatcherBaseUrl = typeof document !== 'undefined' ? document.baseURI : pageRouteMatcherBaseUrl;
     this.routingProvider = provider;
     this.tracingLifecycle = lifecycle;
     const registration = registerTracingRegistration({
@@ -278,12 +279,12 @@ export class TracingInstrumentation extends BaseInstrumentation {
         apiUrlMatchers: normalizeUrlMatchers(
           options.apiUrlMatchers,
           (message) => this.logWarn(message),
-          matcherBaseUrl
+          apiMatcherBaseUrl
         ),
         pageRouteMatchers: normalizeUrlMatchers(
           options.pageRouteMatchers,
           (message) => this.logWarn(message),
-          matcherBaseUrl
+          pageRouteMatcherBaseUrl
         ),
         drainTimeoutMs,
         collectorIgnoreUrls: this.getCollectorIgnoreUrls(),
