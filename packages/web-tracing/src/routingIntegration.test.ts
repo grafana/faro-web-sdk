@@ -1,4 +1,5 @@
 import { context, trace } from '@opentelemetry/api';
+import type { FetchInstrumentation as FetchInstrumentationType } from '@opentelemetry/instrumentation-fetch';
 import type { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 
 import type { API, Config, InternalLogger, Metas, Transports } from '@grafana/faro-web-sdk';
@@ -46,6 +47,8 @@ if (!originalHeaders) {
   });
 }
 
+const { FetchInstrumentation } =
+  require('@opentelemetry/instrumentation-fetch') as typeof import('@opentelemetry/instrumentation-fetch');
 const { TracingInstrumentation } = require('./instrumentation') as typeof import('./instrumentation');
 
 function setupApp(
@@ -181,6 +184,61 @@ describe('routing network integration', () => {
     } finally {
       instrumentation.destroy();
       base.remove();
+      jest.runOnlyPendingTimers();
+    }
+  });
+
+  it('suppresses collector spans from another instrumentation using the shared provider', async () => {
+    jest.useFakeTimers();
+    const app = api();
+    const collectorUrl = `${window.location.origin}/collect/collector-id`;
+    const instrumentation = setupApp('app-a', '/a', app);
+    Object.assign(instrumentation, {
+      transports: {
+        transports: [{ getIgnoreUrls: () => [collectorUrl] }],
+        isPaused: () => false,
+      } as unknown as Transports,
+    });
+    const response = {
+      status: 200,
+      url: collectorUrl,
+      clone: () => ({ body: null }),
+    } as unknown as Response;
+    const nativeFetch = jest.fn(() => Promise.resolve(response));
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: nativeFetch,
+    });
+    window.history.pushState({}, '', '/a');
+    let legacyInstrumentation: FetchInstrumentationType | undefined;
+
+    try {
+      instrumentation.initialize();
+      const registry = getTracingRegistry()!;
+      expect(registry.collectorIgnoreUrls).toContain(collectorUrl);
+
+      const oldSemconvSpan = registry
+        .captureProvider!.getTracer('@opentelemetry/instrumentation-fetch')
+        .startSpan('POST', { attributes: { 'http.url': collectorUrl } });
+      expect(oldSemconvSpan.isRecording()).toBe(false);
+      oldSemconvSpan.end();
+
+      // This instrumentation is registered after Faro's wrappers and has no Faro-specific ignoreUrls.
+      legacyInstrumentation = new FetchInstrumentation();
+      legacyInstrumentation.enable();
+      await fetch(collectorUrl, { method: 'POST' });
+      jest.runOnlyPendingTimers();
+
+      const registration = getTracingRegistry()!.registrations[0]!;
+      await (registration.provider as WebTracerProvider).forceFlush();
+
+      expect(nativeFetch).toHaveBeenCalledTimes(1);
+      expect(app.pushTraces).not.toHaveBeenCalled();
+      expect(app.pushEvent).not.toHaveBeenCalled();
+    } finally {
+      legacyInstrumentation?.disable();
+      instrumentation.destroy();
       jest.runOnlyPendingTimers();
     }
   });
@@ -379,7 +437,6 @@ describe('routing network integration', () => {
     try {
       first.initialize();
       second.initialize();
-
       const parent = trace.getTracer('integration').startSpan('parent');
       await context.with(trace.setSpan(context.active(), parent), () => fetch(response.url));
       const manual = trace.getTracer('manual').startSpan('manual', {

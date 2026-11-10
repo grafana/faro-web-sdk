@@ -75,10 +75,12 @@ dormant and is re-enabled for a later registration. Only registrations in the sh
 participate in fallback selection. A legacy non-owner can use the shared router while a routing
 registration is active, but once the final registration drains there is no routing destination and its
 spans are no longer exported. Keep a routing-aware Faro instance registered if legacy co-tenants need
-continued tracing. Collector exclusions remain page-wide during drain; app-specific exclusions and
-pause suppress the span, Faro HTTP event, and Faro headers without rerouting. Phase 1 does not infer
-ownership from JavaScript stacks. To roll back routing, select `mode: 'legacy'` on the next page load;
-the live global provider is not replaced in place.
+continued tracing. Collector URLs reported by registered Faro transports are suppressed centrally,
+including spans created by other instrumentation using the shared provider; custom collector URLs from
+legacy bundles that do not join the registry cannot be discovered. Collector exclusions remain
+page-wide during drain; app-specific exclusions and pause suppress the span, Faro HTTP event, and Faro
+headers without rerouting. Phase 1 does not infer ownership from JavaScript stacks. To roll back routing,
+select `mode: 'legacy'` on the next page load; the live global provider is not replaced in place.
 
 [faro-web-sdk-package]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk
 [opentelemetry-js]: https://opentelemetry.io/docs/instrumentation/js/

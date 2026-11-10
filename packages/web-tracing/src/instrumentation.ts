@@ -336,12 +336,22 @@ export class TracingInstrumentation extends BaseInstrumentation {
           const isAutomaticNetworkSpan =
             instrumentationScopeName === '@opentelemetry/instrumentation-fetch' ||
             instrumentationScopeName === '@opentelemetry/instrumentation-xml-http-request';
-          const requestUrl = isAutomaticNetworkSpan ? spanOptions.attributes?.['url.full'] : undefined;
+          const requestUrlAttribute = spanOptions.attributes?.['url.full'] ?? spanOptions.attributes?.['http.url'];
+          const requestUrl =
+            isAutomaticNetworkSpan && typeof requestUrlAttribute === 'string' ? requestUrlAttribute : undefined;
           const pageUrl = typeof location !== 'undefined' ? location.href : undefined;
+          const registry = getTracingRegistry();
+          if (requestUrl && isUrlIgnored(requestUrl, registry?.collectorIgnoreUrls ?? [])) {
+            return {
+              suppressed: true,
+              shouldSuppress: () => true,
+              isSuppressed: () => true,
+            };
+          }
           const attribution =
             routeManualSpansByPage && !isAutomaticNetworkSpan
               ? resolvePageRouteAttribution(pageUrl)
-              : resolveNetworkAttribution(typeof requestUrl === 'string' ? requestUrl : undefined, pageUrl);
+              : resolveNetworkAttribution(requestUrl, pageUrl);
 
           if (!attribution) {
             return undefined;

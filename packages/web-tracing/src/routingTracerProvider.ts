@@ -32,7 +32,8 @@ export class RoutingTracerProvider implements TracerProvider {
 
   shouldSuppressActiveSpan(): boolean {
     const activeSpan = trace.getActiveSpan();
-    return activeSpan ? this.requestDecisions.get(activeSpan)?.shouldSuppress?.() === true : false;
+    const resolution = activeSpan ? this.requestDecisions.get(activeSpan) : undefined;
+    return resolution?.suppressed === true || resolution?.shouldSuppress?.() === true;
   }
 
   getResolution(span: Span): RoutingSpanResolution | undefined {
@@ -81,7 +82,7 @@ export class RoutingTracerProvider implements TracerProvider {
   }
 
   private rememberDecision(span: Span, resolution: RoutingSpanResolution): void {
-    if (resolution.registration || resolution.strategy !== undefined) {
+    if (resolution.registration || resolution.strategy !== undefined || resolution.suppressed === true) {
       this.requestDecisions.set(span, resolution);
     }
   }
