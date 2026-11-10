@@ -347,6 +347,8 @@ describe('TracingInstrumentation single-owner behavior', () => {
 
     expect(disableSpies.every((spy) => spy.mock.calls.length > 0)).toBe(true);
     expect(getTracingRegistry()?.registrations).toHaveLength(0);
+    expect(getFallbackTracingRegistration()).toBeUndefined();
+    expect(trace.getTracer('legacy-client').startSpan('after-final-unmount').isRecording()).toBe(false);
 
     const second = setupInstrumentation('app-b', { mode: 'routing' });
     second.instrumentation.initialize();

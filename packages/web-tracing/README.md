@@ -66,10 +66,14 @@ span.end();
 Call `destroy()` when an app unmounts. New requests stop selecting it, while already-started spans
 finish through its original pipeline until the single bounded drain deadline (default 30 seconds,
 maximum 5 minutes; `0` expires immediately). When no active app remains, capture stays patched but is
-dormant and is re-enabled for a later registration. Collector exclusions remain page-wide during
-drain; app-specific exclusions and pause suppress the span, Faro HTTP event, and Faro headers without
-rerouting. Phase 1 does not infer ownership from JavaScript stacks. To roll back routing, select
-`mode: 'legacy'` on the next page load; the live global provider is not replaced in place.
+dormant and is re-enabled for a later registration. Only registrations in the shared routing registry
+participate in fallback selection. A legacy non-owner can use the shared router while a routing
+registration is active, but once the final registration drains there is no routing destination and its
+spans are no longer exported. Keep a routing-aware Faro instance registered if legacy co-tenants need
+continued tracing. Collector exclusions remain page-wide during drain; app-specific exclusions and
+pause suppress the span, Faro HTTP event, and Faro headers without rerouting. Phase 1 does not infer
+ownership from JavaScript stacks. To roll back routing, select `mode: 'legacy'` on the next page load;
+the live global provider is not replaced in place.
 
 [faro-web-sdk-package]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk
 [opentelemetry-js]: https://opentelemetry.io/docs/instrumentation/js/
