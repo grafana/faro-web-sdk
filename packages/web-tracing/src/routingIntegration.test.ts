@@ -190,6 +190,45 @@ describe('routing network integration', () => {
     }
   });
 
+  it('suppresses an XHR when its app pauses after send but before completion', async () => {
+    jest.useFakeTimers();
+    let paused = false;
+    const app = api();
+    const requestUrl = 'https://api.example.test/orders';
+    const instrumentation = setupApp('app-a', '/a', app);
+    Object.assign(instrumentation, {
+      transports: { transports: [], isPaused: () => paused } as unknown as Transports,
+    });
+    const nativeSend = jest.spyOn(XMLHttpRequest.prototype, 'send').mockImplementation(() => {});
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: jest.fn(() => Promise.resolve({ status: 200, url: requestUrl } as Response)),
+    });
+    window.history.pushState({}, '', '/a');
+
+    try {
+      instrumentation.initialize();
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', requestUrl);
+      xhr.send();
+      paused = true;
+      xhr.dispatchEvent(new Event('load'));
+      await jest.advanceTimersByTimeAsync(300);
+
+      const registration = getTracingRegistry()!.registrations[0]!;
+      await (registration.provider as WebTracerProvider).forceFlush();
+
+      expect(nativeSend).toHaveBeenCalledTimes(1);
+      expect(app.pushTraces).not.toHaveBeenCalled();
+      expect(app.pushEvent).not.toHaveBeenCalled();
+    } finally {
+      instrumentation.destroy();
+      nativeSend.mockRestore();
+      jest.runOnlyPendingTimers();
+    }
+  });
+
   it('resolves relative fetch URLs against document.baseURI before capture suppression', async () => {
     jest.useFakeTimers();
     const app = api();

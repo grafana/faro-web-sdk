@@ -441,7 +441,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
               registration,
               ...(routeManualSpansByPage ? { strategy: attribution.strategy, fallback: attribution.fallback } : {}),
               shouldSuppress: shouldSuppressTraceContext,
-              isSuppressed: () => suppressionLatched || registration?.shouldDropLateWork?.() === true,
+              isSuppressed: () => shouldSuppressTraceContext() || registration?.shouldDropLateWork?.() === true,
             };
           }
 
@@ -462,7 +462,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
             fallback: attribution.fallback,
             suppressed: shouldSuppress(),
             shouldSuppress,
-            isSuppressed: () => suppressionLatched || registration?.shouldDropLateWork?.() === true,
+            isSuppressed: () => shouldSuppress() || registration?.shouldDropLateWork?.() === true,
           };
         }
       );
