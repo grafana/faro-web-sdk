@@ -8,10 +8,11 @@ import type { Transports } from '../transports';
 import type { UnpatchedConsole } from '../unpatchedConsole';
 
 import { setFaroOnGlobalObject } from './faroGlobalObject';
-import { isInternalFaroOnGlobalObject, setInternalFaroOnGlobalObject } from './internalFaroGlobalObject';
+import { setInternalFaroOnGlobalObject } from './internalFaroGlobalObject';
 import type { Faro } from './types';
 
 export let faro: Faro = { api: getNoopAPI() } as Faro;
+let hasNonIsolatedInstance = false;
 
 export function registerFaro(
   unpatchedConsole: UnpatchedConsole,
@@ -36,8 +37,12 @@ export function registerFaro(
     unpause: transports.unpause,
   };
 
-  // Preserve isolated-only usage until a non-isolated singleton is registered.
-  if (!config.isolate || !isInternalFaroOnGlobalObject()) {
+  // Track the singleton for this module copy independently of the shared global marker.
+  if (!config.isolate) {
+    hasNonIsolatedInstance = true;
+  }
+
+  if (!config.isolate || !hasNonIsolatedInstance) {
     faro = instance;
   }
 
