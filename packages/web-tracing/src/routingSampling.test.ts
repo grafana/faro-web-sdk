@@ -50,22 +50,21 @@ describe('routing session sampling and propagation', () => {
     const span = routing
       .getTracer('network')
       .startSpan('GET', { attributes: { 'url.full': 'https://api.example.test/orders' } }, parentContext());
-    const propagator = new FaroPausablePropagator(new W3CTraceContextPropagator(), () =>
-      routing.shouldSuppressActiveSpan()
+    const propagator = new FaroPausablePropagator(new W3CTraceContextPropagator(), (injectionContext) =>
+      routing.shouldSuppressContext(injectionContext)
     );
     const carrier: Record<string, string> = {};
     const setter = { set: (target: Record<string, string>, key: string, value: string) => (target[key] = value) };
 
-    context.with(trace.setSpan(context.active(), span), () => propagator.inject(context.active(), carrier, setter));
+    const injectionContext = trace.setSpan(ROOT_CONTEXT, span);
+    propagator.inject(injectionContext, carrier, setter);
 
     expect(span.isRecording()).toBe(false);
     expect(carrier['traceparent']).toMatch(/^00-0af7651916cd43dd8448eb211c80319c-[0-9a-f]{16}-00$/);
 
     suppressPropagation = true;
     const suppressedCarrier: Record<string, string> = {};
-    context.with(trace.setSpan(context.active(), span), () =>
-      propagator.inject(context.active(), suppressedCarrier, setter)
-    );
+    propagator.inject(injectionContext, suppressedCarrier, setter);
     expect(suppressedCarrier).toEqual({});
   });
 });

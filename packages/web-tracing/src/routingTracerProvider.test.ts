@@ -140,10 +140,12 @@ describe('RoutingTracerProvider', () => {
   it('remembers collector suppression for the propagator even without a registration', () => {
     const routing = new RoutingTracerProvider(() => ({ suppressed: true, shouldSuppress: () => true }));
     const span = routing.getTracer('@opentelemetry/instrumentation-fetch').startSpan('collector');
-    const getActiveSpan = jest.spyOn(trace, 'getActiveSpan').mockReturnValue(span);
+    const injectionContext = trace.setSpan(ROOT_CONTEXT, span);
+    const getActiveSpan = jest.spyOn(trace, 'getActiveSpan').mockReturnValue(undefined);
 
     expect(routing.getResolution(span)).toMatchObject({ suppressed: true });
-    expect(routing.shouldSuppressActiveSpan()).toBe(true);
+    expect(routing.shouldSuppressContext(injectionContext)).toBe(true);
+    expect(getActiveSpan).not.toHaveBeenCalled();
 
     getActiveSpan.mockRestore();
   });

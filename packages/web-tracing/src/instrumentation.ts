@@ -601,8 +601,8 @@ export class TracingInstrumentation extends BaseInstrumentation {
     }
 
     propagation.setGlobalPropagator(
-      new FaroPausablePropagator(options.propagator ?? new W3CTraceContextPropagator(), () =>
-        routingProvider.shouldSuppressActiveSpan()
+      new FaroPausablePropagator(options.propagator ?? new W3CTraceContextPropagator(), (injectionContext) =>
+        routingProvider.shouldSuppressContext(injectionContext)
       )
     );
 

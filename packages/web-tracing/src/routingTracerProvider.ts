@@ -30,10 +30,14 @@ export class RoutingTracerProvider implements TracerProvider {
 
   constructor(private readonly resolveRegistration: RoutingRegistrationResolver) {}
 
-  shouldSuppressActiveSpan(): boolean {
-    const activeSpan = trace.getActiveSpan();
-    const resolution = activeSpan ? this.requestDecisions.get(activeSpan) : undefined;
+  shouldSuppressContext(injectionContext: Context): boolean {
+    const span = trace.getSpan(injectionContext);
+    const resolution = span ? this.requestDecisions.get(span) : undefined;
     return resolution?.suppressed === true || resolution?.shouldSuppress?.() === true;
+  }
+
+  shouldSuppressActiveSpan(): boolean {
+    return this.shouldSuppressContext(context.active());
   }
 
   getResolution(span: Span): RoutingSpanResolution | undefined {
