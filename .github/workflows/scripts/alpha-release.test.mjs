@@ -222,3 +222,18 @@ test('bumpAlphaVersion updates package.json versions and internal dependencies',
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test('bumpAlphaVersion throws descriptive error when a target manifest is missing', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'faro-bump-missing-'));
+  try {
+    assert.throws(
+      () => bumpAlphaVersion({ version: '2.15.0-alpha.0', repoRoot: tmpDir }),
+      {
+        name: 'Error',
+        message: /Target file not found:/,
+      }
+    );
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});

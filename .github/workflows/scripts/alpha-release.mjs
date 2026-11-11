@@ -154,10 +154,16 @@ export function bumpAlphaVersion({ version, repoRoot = process.cwd() }) {
 
   for (const { file, update } of fileUpdates) {
     const fullPath = path.resolve(repoRoot, file);
-    if (!fs.existsSync(fullPath)) {
-      throw new Error(`Target file not found: ${fullPath}`);
+    let raw;
+    try {
+      raw = fs.readFileSync(fullPath, 'utf8');
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        throw new Error(`Target file not found: ${fullPath}`);
+      }
+      throw err;
     }
-    const content = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+    const content = JSON.parse(raw);
     update(content);
     fs.writeFileSync(fullPath, `${JSON.stringify(content, null, 2)}\n`, 'utf8');
     console.log(`[bump] Updated ${file}`);
