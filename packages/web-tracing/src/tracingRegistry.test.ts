@@ -144,7 +144,7 @@ describe('page-lifetime tracing mode', () => {
     expect(second?.state).toBe('active');
   });
 
-  it('keeps active and draining collector exclusions page-wide until expiry', () => {
+  it('retains known collector exclusions page-wide after the owning registration is removed', () => {
     selectTracingMode('routing');
     const first = registerTracingRegistration({
       appName: 'first',
@@ -163,8 +163,11 @@ describe('page-lifetime tracing mode', () => {
     expect(getPageCollectorIgnoreUrls()).toHaveLength(2);
 
     expireTracingRegistration(first!.registrationId);
-    expect(getPageCollectorIgnoreUrls()).toEqual([/collector\\.second\\.test/]);
+    expect(getPageCollectorIgnoreUrls()).toEqual(['https://collector.first.test', /collector\\.second\\.test/]);
     expect(second?.state).toBe('active');
+
+    removeTracingRegistration(first!.registrationId);
+    expect(getPageCollectorIgnoreUrls()).toEqual(['https://collector.first.test', /collector\\.second\\.test/]);
   });
 
   it('prefers the active global fallback and transitions to the earliest remaining app', () => {

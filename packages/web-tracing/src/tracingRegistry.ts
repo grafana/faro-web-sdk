@@ -252,16 +252,20 @@ export function useTracingOwnerPropagationUrls(urls: Array<string | RegExp>): vo
 }
 
 function refreshCollectorIgnoreUrls(registry: TracingRegistry): void {
-  registry.collectorIgnoreUrls.splice(
-    0,
-    registry.collectorIgnoreUrls.length,
-    ...registry.registrations
-      .filter((registration) => registration.state === 'active' || registration.state === 'draining')
-      .flatMap((registration) => {
-        const urls = registration.configuration['collectorIgnoreUrls'];
-        return Array.isArray(urls) ? (urls as Array<string | RegExp>) : [];
-      })
-  );
+  const discoveredUrls = registry.registrations
+    .filter((registration) => registration.state === 'active' || registration.state === 'draining')
+    .flatMap((registration) => {
+      const urls = registration.configuration['collectorIgnoreUrls'];
+      return Array.isArray(urls) ? (urls as Array<string | RegExp>) : [];
+    });
+
+  // Faro transports may still deliver queued batches or retries after the app's tracing provider
+  // finishes draining. Keep every known collector excluded for the lifetime of this page registry.
+  for (const url of discoveredUrls) {
+    if (!registry.collectorIgnoreUrls.some((existingUrl) => samePropagationUrl(existingUrl, url))) {
+      registry.collectorIgnoreUrls.push(url);
+    }
+  }
 }
 
 function noteRegistryConfigurationChange(registry: TracingRegistry): void {

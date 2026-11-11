@@ -322,6 +322,52 @@ describe('routing network integration', () => {
     }
   });
 
+  it('continues bypassing a removed app collector URL while another routing app is active', async () => {
+    jest.useFakeTimers();
+    const appA = api();
+    const appB = api();
+    const collectorUrl = `${window.location.origin}/ingest`;
+    const first = setupApp('app-a', '/a', appA);
+    const second = setupApp('app-b', '/b', appB);
+    Object.assign(first, {
+      transports: {
+        transports: [{ getIgnoreUrls: () => [collectorUrl] }],
+        isPaused: () => false,
+      } as unknown as Transports,
+    });
+    const nativeFetch = jest.fn(() =>
+      Promise.resolve({ status: 202, url: collectorUrl, clone: () => ({ body: null }) } as unknown as Response)
+    );
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: nativeFetch,
+    });
+    window.history.pushState({}, '', '/b');
+
+    try {
+      first.initialize();
+      second.initialize();
+      first.destroy();
+
+      expect(getTracingRegistry()?.registrations.map(({ appName }) => appName)).toEqual(['app-b']);
+      expect(getTracingRegistry()?.collectorIgnoreUrls).toContain(collectorUrl);
+
+      await fetch(collectorUrl, { method: 'POST' });
+      jest.runOnlyPendingTimers();
+      const registration = getTracingRegistry()!.registrations[0]!;
+      await (registration.provider as WebTracerProvider).forceFlush();
+
+      expect(nativeFetch).toHaveBeenCalledTimes(1);
+      expect(appB.pushTraces).not.toHaveBeenCalled();
+      expect(appB.pushEvent).not.toHaveBeenCalled();
+    } finally {
+      first.destroy();
+      second.destroy();
+      jest.runOnlyPendingTimers();
+    }
+  });
+
   it("keeps a draining app's XHR tracked until its load event completes", async () => {
     jest.useFakeTimers();
     const appA = api();
