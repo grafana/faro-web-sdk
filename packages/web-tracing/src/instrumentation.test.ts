@@ -170,12 +170,14 @@ describe('TracingInstrumentation single-owner behavior', () => {
     const fetchInstrumentation = registry.captureInstrumentations![0] as unknown as {
       getConfig: () => { propagateTraceHeaderCorsUrls: Array<string | RegExp> };
     };
+    const fetchPropagationUrls = fetchInstrumentation.getConfig().propagateTraceHeaderCorsUrls;
     expect(registry.propagateTraceHeaderCorsUrls).toBe(ownerUrls);
-    expect(fetchInstrumentation.getConfig().propagateTraceHeaderCorsUrls).toBe(ownerUrls);
+    expect(fetchPropagationUrls.some((url) => url === 'https://routing-a.example.test')).toBe(true);
 
     // Simulate a separately bundled legacy Faro version appending to the owner contract after
     // routing capture has already been installed.
     addPropagateTraceHeaderCorsUrls(['https://legacy.example.test']);
+    expect(fetchPropagationUrls.some((url) => url === 'https://legacy.example.test')).toBe(true);
 
     const second = setupInstrumentation('app-b', {
       mode: 'routing',
@@ -192,8 +194,54 @@ describe('TracingInstrumentation single-owner behavior', () => {
 
     first.instrumentation.destroy();
     expect(ownerUrls).toEqual(['https://legacy.example.test', 'https://routing-b.example.test']);
+    expect(fetchPropagationUrls.some((url) => url === 'https://routing-a.example.test')).toBe(false);
+    expect(fetchPropagationUrls.some((url) => url === 'https://routing-b.example.test')).toBe(true);
     second.instrumentation.destroy();
     expect(ownerUrls).toEqual(['https://legacy.example.test']);
+  });
+
+  it('preserves nested fetch and XHR propagation allowlists with legacy precedence', () => {
+    const first = setupInstrumentation('app-a', {
+      mode: 'routing',
+      instrumentationOptions: {
+        propagateTraceHeaderCorsUrls: ['https://top-a.example.test'],
+        fetchInstrumentationOptions: {
+          propagateTraceHeaderCorsUrls: ['https://fetch-a.example.test'],
+        },
+        xhrInstrumentationOptions: {
+          propagateTraceHeaderCorsUrls: ['https://xhr-a.example.test'],
+        },
+      },
+    });
+    first.instrumentation.initialize();
+
+    const second = setupInstrumentation('app-b', {
+      mode: 'routing',
+      instrumentationOptions: {
+        propagateTraceHeaderCorsUrls: ['https://top-b.example.test'],
+        xhrInstrumentationOptions: {
+          propagateTraceHeaderCorsUrls: ['https://xhr-b.example.test'],
+        },
+      },
+    });
+    second.instrumentation.initialize();
+
+    const instrumentations = getTracingRegistry()!.captureInstrumentations! as unknown as Array<{
+      getConfig: () => { propagateTraceHeaderCorsUrls: Array<string | RegExp> };
+    }>;
+    const fetchUrls = instrumentations[0]!.getConfig().propagateTraceHeaderCorsUrls;
+    const xhrUrls = instrumentations[1]!.getConfig().propagateTraceHeaderCorsUrls;
+    const includes = (urls: Array<string | RegExp>, url: string) => urls.some((pattern) => pattern === url);
+
+    expect(includes(fetchUrls, 'https://fetch-a.example.test')).toBe(true);
+    expect(includes(fetchUrls, 'https://top-b.example.test')).toBe(true);
+    expect(includes(fetchUrls, 'https://top-a.example.test')).toBe(false);
+    expect(includes(fetchUrls, 'https://xhr-a.example.test')).toBe(false);
+
+    expect(includes(xhrUrls, 'https://xhr-a.example.test')).toBe(true);
+    expect(includes(xhrUrls, 'https://xhr-b.example.test')).toBe(true);
+    expect(includes(xhrUrls, 'https://top-a.example.test')).toBe(false);
+    expect(includes(xhrUrls, 'https://top-b.example.test')).toBe(false);
   });
 
   it('registers each routing instance in the shared registry before capture integration', () => {

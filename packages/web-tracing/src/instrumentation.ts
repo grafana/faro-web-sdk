@@ -76,6 +76,67 @@ function areIgnorePatternsEqual(left: string | RegExp, right: string | RegExp): 
   return left.source === right.source && left.flags === right.flags;
 }
 
+type PropagationUrlPattern = string | RegExp;
+type InstrumentationPropagationConfigurationKey =
+  'fetchPropagateTraceHeaderCorsUrls' | 'xhrPropagateTraceHeaderCorsUrls';
+
+function getPropagationUrlPatterns(value: unknown): PropagationUrlPattern[] {
+  if (Array.isArray(value)) {
+    return value.filter(
+      (pattern): pattern is PropagationUrlPattern =>
+        typeof pattern === 'string' || Object.prototype.toString.call(pattern) === '[object RegExp]'
+    );
+  }
+
+  return typeof value === 'string' || Object.prototype.toString.call(value) === '[object RegExp]'
+    ? [value as PropagationUrlPattern]
+    : [];
+}
+
+function getRoutingPropagationUrlPatterns(
+  registry: TracingRegistry,
+  nestedConfigurationKey: InstrumentationPropagationConfigurationKey
+): PropagationUrlPattern[] {
+  const retainedUrls = [...registry.propagateTraceHeaderCorsUrls];
+  for (const routingUrl of registry.routingPropagationUrls ?? []) {
+    const index = retainedUrls.findIndex((url) => areIgnorePatternsEqual(url, routingUrl));
+    if (index >= 0) {
+      retainedUrls.splice(index, 1);
+    }
+  }
+
+  const registrationUrls = registry.registrations
+    .filter((registration) => registration.state === 'active')
+    .flatMap((registration) => {
+      const configuration = registration.configuration;
+      const nestedPatterns = configuration[nestedConfigurationKey];
+      const patterns = nestedPatterns === undefined ? configuration['propagateTraceHeaderCorsUrls'] : nestedPatterns;
+      return getPropagationUrlPatterns(patterns);
+    });
+
+  return [...retainedUrls, ...registrationUrls];
+}
+
+/**
+ * OTel checks this list through `some()`. Keep that operation live so additions made directly to
+ * the legacy tracing-owner array by an older Faro bundle are visible without rebuilding capture.
+ */
+function createRoutingPropagationUrlView(
+  registry: TracingRegistry,
+  nestedConfigurationKey: InstrumentationPropagationConfigurationKey
+): Array<string | RegExp> {
+  const urls = getRoutingPropagationUrlPatterns(registry, nestedConfigurationKey);
+  Object.defineProperty(urls, 'some', {
+    configurable: true,
+    enumerable: false,
+    value: (
+      predicate: (value: string | RegExp, index: number, array: Array<string | RegExp>) => unknown,
+      thisArg?: unknown
+    ) => getRoutingPropagationUrlPatterns(registry, nestedConfigurationKey).some(predicate, thisArg),
+  });
+  return urls;
+}
+
 function normalizeCaptureRequestUrl(input: unknown): string | undefined {
   const candidate = input && typeof input === 'object' && 'url' in input ? (input as { url?: unknown }).url : input;
   if (typeof candidate !== 'string' && !(typeof URL !== 'undefined' && candidate instanceof URL)) {
@@ -290,6 +351,10 @@ export class TracingInstrumentation extends BaseInstrumentation {
         collectorIgnoreUrls: this.getCollectorIgnoreUrls(),
         appIgnoreUrls: this.config.ignoreUrls ?? [],
         propagateTraceHeaderCorsUrls: options.instrumentationOptions?.propagateTraceHeaderCorsUrls ?? [],
+        fetchPropagateTraceHeaderCorsUrls:
+          options.instrumentationOptions?.fetchInstrumentationOptions?.propagateTraceHeaderCorsUrls,
+        xhrPropagateTraceHeaderCorsUrls:
+          options.instrumentationOptions?.xhrInstrumentationOptions?.propagateTraceHeaderCorsUrls,
         fetchRequestHook: options.instrumentationOptions?.fetchInstrumentationOptions?.requestHook,
         fetchApplyCustomAttributesOnSpan:
           options.instrumentationOptions?.fetchInstrumentationOptions?.applyCustomAttributesOnSpan,
@@ -431,7 +496,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
       const fetchInstrumentationOptions = {
         ...options.instrumentationOptions?.fetchInstrumentationOptions,
         ignoreUrls: registry.collectorIgnoreUrls,
-        propagateTraceHeaderCorsUrls: registry.propagateTraceHeaderCorsUrls,
+        propagateTraceHeaderCorsUrls: createRoutingPropagationUrlView(registry, 'fetchPropagateTraceHeaderCorsUrls'),
         requestHook: (span: Span, request: Request | RequestInit) => {
           const resolution = routingProvider.getResolution(span);
           if (!resolution?.registration || resolution.suppressed === true || resolution.shouldSuppress?.()) {
@@ -460,7 +525,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
       const xhrInstrumentationOptions = {
         ...options.instrumentationOptions?.xhrInstrumentationOptions,
         ignoreUrls: registry.collectorIgnoreUrls,
-        propagateTraceHeaderCorsUrls: registry.propagateTraceHeaderCorsUrls,
+        propagateTraceHeaderCorsUrls: createRoutingPropagationUrlView(registry, 'xhrPropagateTraceHeaderCorsUrls'),
         applyCustomAttributesOnSpan: (span: Span, xhr: XMLHttpRequest) => {
           const resolution = routingProvider.getResolution(span);
           if (!resolution?.registration || resolution.suppressed === true || resolution.isSuppressed?.()) {
