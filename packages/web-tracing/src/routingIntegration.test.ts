@@ -125,6 +125,46 @@ describe('routing network integration', () => {
     jest.useRealTimers();
   });
 
+  it('opens a reused routed XHR only once when the next URL is suppressed', () => {
+    const ignoredUrl = 'https://api.example.test/private';
+    const instrumentation = setupApp('app-a', '/a', api(), [ignoredUrl]);
+    const originalXhr = globalThis.XMLHttpRequest;
+    Object.defineProperty(globalThis, 'fetch', {
+      configurable: true,
+      writable: true,
+      value: jest.fn(() => Promise.resolve({ status: 200, url: 'https://api.example.test/first' } as Response)),
+    });
+    class TestXMLHttpRequest {
+      open(_method: string, _url: string): void {}
+      send(_body?: unknown): void {}
+    }
+    const nativeOpen = jest.spyOn(TestXMLHttpRequest.prototype, 'open');
+    Object.defineProperty(globalThis, 'XMLHttpRequest', {
+      configurable: true,
+      writable: true,
+      value: TestXMLHttpRequest as unknown as typeof XMLHttpRequest,
+    });
+    window.history.pushState({}, '', '/a');
+
+    try {
+      instrumentation.initialize();
+      const xhr = new TestXMLHttpRequest();
+      xhr.open('GET', 'https://api.example.test/first');
+      xhr.open('GET', ignoredUrl);
+
+      expect(nativeOpen).toHaveBeenCalledTimes(2);
+      expect(nativeOpen).toHaveBeenLastCalledWith('GET', ignoredUrl);
+    } finally {
+      instrumentation.destroy();
+      nativeOpen.mockRestore();
+      Object.defineProperty(globalThis, 'XMLHttpRequest', {
+        configurable: true,
+        writable: true,
+        value: originalXhr,
+      });
+    }
+  });
+
   it('bypasses upstream capture for a resolved app exclusion', async () => {
     const app = api();
     const instrumentation = setupApp('app-b', '/b', app, ['https://api.example.test/private']);

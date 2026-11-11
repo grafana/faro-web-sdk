@@ -141,8 +141,8 @@ function installRoutingCaptureGates(
         // already went through the routed wrapper, let the wrapper perform that cleanup while
         // retaining the suppressed decision for the subsequent send().
         if (routedXhrs.has(this)) {
-          routedOpen.apply(this, args);
           routedXhrs.delete(this);
+          return routedOpen.apply(this, args);
         }
         return nativeOpen.apply(this, args);
       }
