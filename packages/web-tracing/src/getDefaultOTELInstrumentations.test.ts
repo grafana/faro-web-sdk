@@ -10,8 +10,19 @@ jest.mock('@opentelemetry/instrumentation-fetch');
 jest.mock('@opentelemetry/instrumentation-xml-http-request');
 
 describe('getDefaultOTELInstrumentations', () => {
+  const originalXhr = globalThis.XMLHttpRequest;
+
   afterEach(() => {
+    globalThis.XMLHttpRequest = originalXhr;
     jest.clearAllMocks();
+  });
+
+  it('does not construct XHR instrumentation in a service worker without XMLHttpRequest', () => {
+    delete (globalThis as Partial<typeof globalThis>).XMLHttpRequest;
+    const instrumentations = getDefaultOTELInstrumentations();
+    expect(instrumentations).toHaveLength(1);
+    expect(instrumentations[0]).toBeInstanceOf(FetchInstrumentation);
+    expect(XMLHttpRequestInstrumentation).not.toHaveBeenCalled();
   });
 
   it('should return an array of instrumentations', () => {

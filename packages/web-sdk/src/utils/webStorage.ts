@@ -13,6 +13,10 @@ type StorageMechanism = (typeof webStorageType)[keyof typeof webStorageType];
  * @returns
  */
 export function isWebStorageAvailable(type: StorageMechanism): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
   try {
     let storage;
     storage = window[type];
