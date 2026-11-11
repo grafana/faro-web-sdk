@@ -161,7 +161,7 @@ class RoutingTracer implements Tracer {
       return target.tracer.startActiveSpan(name, target.options, context, callbackWithDecision) as ReturnType<F>;
     }
 
-    if (options) {
+    if (options || target.resolution.strategy !== undefined) {
       return target.tracer.startActiveSpan(name, target.options, callbackWithDecision) as ReturnType<F>;
     }
 

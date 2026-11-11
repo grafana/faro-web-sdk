@@ -137,6 +137,33 @@ describe('RoutingTracerProvider', () => {
     expect(callback).not.toHaveBeenCalled();
   });
 
+  it('forwards attribution options for callback-only startActiveSpan calls', () => {
+    const callback = jest.fn();
+    const targetTracer = {
+      startSpan: jest.fn(),
+      startActiveSpan: jest.fn(() => 'result'),
+    } as unknown as Tracer;
+    const provider = { getTracer: jest.fn(() => targetTracer) } as unknown as TracerProvider;
+    const routing = new RoutingTracerProvider(() => ({
+      registration: makeRegistration(provider, 1),
+      strategy: 'page-route',
+      fallback: false,
+    }));
+    const tracer = routing.getTracer('scope');
+
+    expect(tracer.startActiveSpan('checkout', callback)).toBe('result');
+    expect(targetTracer.startActiveSpan).toHaveBeenCalledWith(
+      'checkout',
+      {
+        attributes: {
+          'faro.attribution.strategy': 'page-route',
+          'faro.attribution.fallback': false,
+        },
+      },
+      expect.any(Function)
+    );
+  });
+
   it('remembers collector suppression for the propagator even without a registration', () => {
     const routing = new RoutingTracerProvider(() => ({ suppressed: true, shouldSuppress: () => true }));
     const span = routing.getTracer('@opentelemetry/instrumentation-fetch').startSpan('collector');
