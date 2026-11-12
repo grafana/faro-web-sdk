@@ -40,8 +40,8 @@ function setup(options = {}) {
 }
 
 beforeEach(() => {
-  jest.clearAllMocks();
   resetTracingOwnerForTests();
+  jest.clearAllMocks();
 });
 
 it('updates both default instrumentations, preserves options and stops listening on destroy', () => {
