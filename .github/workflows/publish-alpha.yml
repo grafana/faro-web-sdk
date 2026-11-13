@@ -12,9 +12,10 @@ on:
 permissions:
   contents: read
 
-# Avoid concurrent publish runs on the same branch.
+# Avoid concurrent publish runs across all alpha branches: they share one npm version space,
+# so two branches dispatched with the same version could each publish part of it.
 concurrency:
-  group: publish-alpha-${{ github.ref }}
+  group: publish-alpha
   cancel-in-progress: false
 
 jobs:
@@ -45,6 +46,9 @@ jobs:
         with:
           node-version-file: .nvmrc
           package-manager-cache: false
+
+      - name: Test alpha release script
+        run: node --test .github/workflows/scripts/alpha-release.test.mjs
 
       - name: Check existing publications on npm
         env:
