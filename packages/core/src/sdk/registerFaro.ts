@@ -12,6 +12,7 @@ import { setInternalFaroOnGlobalObject } from './internalFaroGlobalObject';
 import type { Faro } from './types';
 
 export let faro: Faro = { api: getNoopAPI() } as Faro;
+let hasNonIsolatedInstance = false;
 
 export function registerFaro(
   unpatchedConsole: UnpatchedConsole,
@@ -24,7 +25,7 @@ export function registerFaro(
 ): Faro {
   internalLogger.debug('Initializing Faro');
 
-  faro = {
+  const instance: Faro = {
     api,
     config,
     instrumentations,
@@ -36,9 +37,18 @@ export function registerFaro(
     unpause: transports.unpause,
   };
 
-  setInternalFaroOnGlobalObject(faro);
+  // Track the singleton for this module copy independently of the shared global marker.
+  if (!config.isolate) {
+    hasNonIsolatedInstance = true;
+  }
 
-  setFaroOnGlobalObject(faro);
+  if (!config.isolate || !hasNonIsolatedInstance) {
+    faro = instance;
+  }
 
-  return faro;
+  setInternalFaroOnGlobalObject(instance);
+
+  setFaroOnGlobalObject(instance);
+
+  return instance;
 }

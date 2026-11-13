@@ -14,6 +14,8 @@
 
 ### Bug Fixes
 
+- **core:** prevent isolated initialization from replacing an existing non-isolated `faro` export
+  ([#1846](https://github.com/grafana/faro-web-sdk/issues/1846)).
 - **session:** synchronize volatile sessions between same-origin frames after session rotation
 - **web-sdk:** use Web Crypto for session sampling when available
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
