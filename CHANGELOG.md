@@ -21,17 +21,15 @@
 
 ## [2.15.0](https://github.com/grafana/faro-web-sdk/compare/v2.14.0...v2.15.0) (2026-11-13)
 
-
 ### Features
 
-* **release:** add linked prerelease alpha workflow ([#2360](https://github.com/grafana/faro-web-sdk/issues/2360)) ([f83abf1](https://github.com/grafana/faro-web-sdk/commit/f83abf1c799b8a77a51c4b34c25827b9513c8d5f))
-
+- **release:** add linked prerelease alpha workflow ([#2360](https://github.com/grafana/faro-web-sdk/issues/2360)) ([f83abf1](https://github.com/grafana/faro-web-sdk/commit/f83abf1c799b8a77a51c4b34c25827b9513c8d5f))
 
 ### Bug Fixes
 
-* **core:** use findIndex when removing instrumentations ([#2378](https://github.com/grafana/faro-web-sdk/issues/2378)) ([bdf6d6d](https://github.com/grafana/faro-web-sdk/commit/bdf6d6ddfb55215487c12f85a9eb4d40d63aaa50))
-* **react:** accept history v4 types ([#2379](https://github.com/grafana/faro-web-sdk/issues/2379)) ([c8e33b9](https://github.com/grafana/faro-web-sdk/commit/c8e33b9f0dd211f63b43b55a4677b5378612a9b2))
-* **tracing:** refresh exclusions when transports change ([#2285](https://github.com/grafana/faro-web-sdk/issues/2285)) ([e7b5ca6](https://github.com/grafana/faro-web-sdk/commit/e7b5ca6005efd369e0fbd61f001d36d0188b411b))
+- **core:** use findIndex when removing instrumentations ([#2378](https://github.com/grafana/faro-web-sdk/issues/2378)) ([bdf6d6d](https://github.com/grafana/faro-web-sdk/commit/bdf6d6ddfb55215487c12f85a9eb4d40d63aaa50))
+- **react:** accept history v4 types ([#2379](https://github.com/grafana/faro-web-sdk/issues/2379)) ([c8e33b9](https://github.com/grafana/faro-web-sdk/commit/c8e33b9f0dd211f63b43b55a4677b5378612a9b2))
+- **tracing:** refresh exclusions when transports change ([#2285](https://github.com/grafana/faro-web-sdk/issues/2285)) ([e7b5ca6](https://github.com/grafana/faro-web-sdk/commit/e7b5ca6005efd369e0fbd61f001d36d0188b411b))
 
 ## [2.14.0](https://github.com/grafana/faro-web-sdk/compare/v2.13.0...v2.14.0) (2026-11-09)
 
