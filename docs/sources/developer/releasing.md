@@ -121,10 +121,10 @@ dedicated feature branch.
 2. **Develop and merge feature PRs**: Target and merge PRs directly into
    `alpha/my-feature`. **Do not bump version numbers in git commits** — git
    history stays clean of prerelease version churn.
-3. **Trigger the alpha publish workflow**: Navigate to GitHub Actions, select
-   the `alpha/my-feature` branch in the branch dropdown, and under
-   [Publish alpha prerelease](../.github/workflows/publish-alpha.yml), click
-   **Run workflow** (`workflow_dispatch`) and provide:
+3. **Trigger the alpha publish workflow**: Navigate to GitHub Actions, open the
+   **Publish alpha prerelease** workflow (`.github/workflows/publish-alpha.yml`),
+   click **Run workflow** (`workflow_dispatch`), select the `alpha/my-feature`
+   branch in the branch dropdown, and provide:
    - **`version`**: the explicit alpha version (e.g. `2.15.0-alpha.0`,
      `2.15.0-alpha.1`).
 
@@ -148,9 +148,14 @@ dedicated feature branch.
    npm install @grafana/faro-web-sdk@2.15.0-alpha.0
    ```
 
+   Projects that enforce a minimum package age (for example yarn's
+   `npmMinimalAgeGate`, set to `3d` in this repository's `.yarnrc.yml`) won't
+   install a freshly published alpha until the gate passes, unless the Faro
+   packages are exempted (for yarn, via `npmPreapprovedPackages`).
+
 6. **Promoting to `main`**: When testing is complete, open a PR from
-   `alpha/my-feature` into `main`. The branch merges cleanly with zero version or
-   changelog conflicts, and the standard stable Release Please workflow on
+   `alpha/my-feature` into `main`. No version or changelog changes are committed
+   to the feature branch, and the standard stable Release Please workflow on
    `main` handles the official release. The feature branch is then deleted.
 
 ## Skipping a release
