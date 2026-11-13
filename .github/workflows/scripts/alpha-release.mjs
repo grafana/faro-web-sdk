@@ -1,6 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
 export const PUBLIC_PACKAGES = [
   '@grafana/faro-core',
   '@grafana/faro-web-sdk',
@@ -59,117 +56,6 @@ export async function preCheckAlphaVersion({
   }
 
   return { existing, total: packages.length };
-}
-
-/**
- * Updates package versions and cross-package dependency ranges in the CI runner.
- * This runs in memory / on the runner only and is never committed back to git.
- *
- * @param {{ version: string, repoRoot?: string }} options
- */
-export function bumpAlphaVersion({ version, repoRoot = process.cwd() }) {
-  console.log(`[bump] Updating package manifests to alpha version ${version}...`);
-
-  const fileUpdates = [
-    // 1. @grafana/faro-core
-    {
-      file: 'packages/core/package.json',
-      update(json) {
-        json.version = version;
-      },
-    },
-    // 2. @grafana/faro-web-sdk
-    {
-      file: 'packages/web-sdk/package.json',
-      update(json) {
-        json.version = version;
-        if (json.dependencies?.['@grafana/faro-core']) {
-          json.dependencies['@grafana/faro-core'] = version;
-        }
-      },
-    },
-    // 3. @grafana/faro-web-tracing
-    {
-      file: 'packages/web-tracing/package.json',
-      update(json) {
-        json.version = version;
-        if (json.dependencies?.['@grafana/faro-web-sdk']) {
-          json.dependencies['@grafana/faro-web-sdk'] = version;
-        }
-      },
-    },
-    // 4. @grafana/faro-react
-    {
-      file: 'packages/react/package.json',
-      update(json) {
-        json.version = version;
-        if (json.dependencies?.['@grafana/faro-web-sdk']) {
-          json.dependencies['@grafana/faro-web-sdk'] = version;
-        }
-        if (json.dependencies?.['@grafana/faro-web-tracing']) {
-          json.dependencies['@grafana/faro-web-tracing'] = version;
-        }
-      },
-    },
-    // 5. @grafana/faro-instrumentation-replay
-    {
-      file: 'experimental/instrumentation-replay/package.json',
-      update(json) {
-        json.version = version;
-        if (json.dependencies?.['@grafana/faro-core']) {
-          json.dependencies['@grafana/faro-core'] = version;
-        }
-      },
-    },
-    // 6. @grafana/faro-transport-otlp-http
-    {
-      file: 'experimental/transport-otlp-http/package.json',
-      update(json) {
-        json.version = version;
-        if (json.dependencies?.['@grafana/faro-core']) {
-          json.dependencies['@grafana/faro-core'] = version;
-        }
-      },
-    },
-    // 7. lerna.json
-    {
-      file: 'lerna.json',
-      update(json) {
-        json.version = version;
-      },
-    },
-    // 8. e2e/smoke/package.json (private harness)
-    {
-      file: 'e2e/smoke/package.json',
-      update(json) {
-        json.version = version;
-        for (const pkg of PUBLIC_PACKAGES) {
-          if (json.devDependencies?.[pkg]) {
-            json.devDependencies[pkg] = version;
-          }
-        }
-      },
-    },
-  ];
-
-  for (const { file, update } of fileUpdates) {
-    const fullPath = path.resolve(repoRoot, file);
-    let raw;
-    try {
-      raw = fs.readFileSync(fullPath, 'utf8');
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        throw new Error(`Target file not found: ${fullPath}`);
-      }
-      throw err;
-    }
-    const content = JSON.parse(raw);
-    update(content);
-    fs.writeFileSync(fullPath, `${JSON.stringify(content, null, 2)}\n`, 'utf8');
-    console.log(`[bump] Updated ${file}`);
-  }
-
-  console.log(`[bump] Successfully updated all workspaces to ${version}.`);
 }
 
 /**
@@ -244,20 +130,13 @@ if (process.argv[1] && process.argv[1].endsWith('alpha-release.mjs')) {
       console.error(err.message);
       process.exit(1);
     });
-  } else if (command === 'bump') {
-    try {
-      bumpAlphaVersion({ version });
-    } catch (err) {
-      console.error(err.message);
-      process.exit(1);
-    }
   } else if (command === 'post-check') {
     postCheckAlphaVersion({ version }).catch((err) => {
       console.error(err.message);
       process.exit(1);
     });
   } else {
-    console.error(`Unknown command: "${command}". Available commands: pre-check, bump, post-check`);
+    console.error(`Unknown command: "${command}". Available commands: pre-check, post-check`);
     process.exit(1);
   }
 }

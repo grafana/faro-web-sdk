@@ -121,22 +121,26 @@ dedicated feature branch.
 2. **Develop and merge feature PRs**: Target and merge PRs directly into
    `alpha/my-feature`. **Do not bump version numbers in git commits** — git
    history stays clean of prerelease version churn.
-3. **Trigger the alpha publish workflow**: In GitHub Actions under
+3. **Trigger the alpha publish workflow**: Navigate to GitHub Actions, select
+   the `alpha/my-feature` branch in the branch dropdown, and under
    [Publish alpha prerelease](../.github/workflows/publish-alpha.yml), click
    **Run workflow** (`workflow_dispatch`) and provide:
-   - **`ref`**: the branch to publish from (e.g. `alpha/my-feature`).
    - **`version`**: the explicit alpha version (e.g. `2.15.0-alpha.0`,
      `2.15.0-alpha.1`).
+
+   The workflow will only run on `alpha/*` branches.
+
 4. **Automated validation & publishing**:
    - **Pre-publish check**: Verifies the version does not already exist on npm
      for all six packages. If a previous publish partially failed, rerunning with
      the same version resumes safely (`from-package` skips already published packages).
-   - **In-memory bump & CI checks**: Bumps all six public packages, internal
-     cross-dependencies, `lerna.json`, and the private smoke harness on the runner,
-     then runs the full quality suite (`build`, `typecheck`, `lint`,
+   - **Version bump & CI checks**: Runs `lerna version` with
+     `--exact --force-publish` to bump all six public packages, internal
+     cross-dependencies, `lerna.json`, and the private smoke harness locally on
+     the runner, then runs the full quality suite (`build`, `typecheck`, `lint`,
      `circular-deps`, and `unit tests`).
    - **Publish to npm**: Runs under the `publish-alpha` GitHub Environment with
-     OIDC Trusted Publishing and publishes with `--dist-tag alpha --pre-dist-tag alpha`.
+     OIDC Trusted Publishing and publishes with `--dist-tag alpha`.
    - **Post-publish check**: Confirms all six packages are published on npm.
 5. **Testing**: Applications testing the feature pin the exact version:
 

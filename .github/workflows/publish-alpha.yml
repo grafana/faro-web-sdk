@@ -3,10 +3,6 @@ name: Publish alpha prerelease
 on:
   workflow_dispatch:
     inputs:
-      ref:
-        description: 'Branch or ref to publish from (e.g. alpha/tracing-routing)'
-        required: true
-        type: string
       version:
         description: 'Explicit alpha version to publish (e.g. 2.15.0-alpha.0)'
         required: true
@@ -18,11 +14,12 @@ permissions:
 
 # Avoid concurrent publish runs on the same branch.
 concurrency:
-  group: publish-alpha-${{ github.event.inputs.ref }}
+  group: publish-alpha-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   pre-check:
+    if: startsWith(github.ref, 'refs/heads/alpha/')
     runs-on: ubuntu-latest
     steps:
       - name: Harden the runner
@@ -41,7 +38,6 @@ jobs:
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ github.event.inputs.ref }}
           persist-credentials: false
 
       - name: Setup Node.js
@@ -56,6 +52,7 @@ jobs:
         run: node .github/workflows/scripts/alpha-release.mjs pre-check
 
   build-test:
+    if: startsWith(github.ref, 'refs/heads/alpha/')
     needs: pre-check
     runs-on: ubuntu-latest
     steps:
@@ -66,7 +63,6 @@ jobs:
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ github.event.inputs.ref }}
           persist-credentials: false
 
       - name: Setup Node.js
@@ -78,17 +74,16 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Bump package versions for CI
+      - name: Configure git identity for version commit
+        run: |
+          git config user.name ci
+          git config user.email ci@localhost
+
+      - name: Bump package versions
         env:
           VERSION: ${{ github.event.inputs.version }}
-        run: node .github/workflows/scripts/alpha-release.mjs bump
-
-      - name: Refresh lockfile for internal dependencies
         run: |
-          set -euo pipefail
-          corepack enable
-          yarn install --mode update-lockfile
-          yarn install --immutable
+          yarn lerna version "$VERSION" --exact --force-publish --no-push --no-commit-hooks --yes -m "chore: alpha %s"
 
       - name: Build
         run: yarn build
@@ -106,6 +101,7 @@ jobs:
         run: yarn quality:test
 
   publish:
+    if: startsWith(github.ref, 'refs/heads/alpha/')
     needs: [pre-check, build-test]
     runs-on: ubuntu-latest
     environment: publish-alpha # Hardening: protect this environment with required reviewers + branch restriction
@@ -125,7 +121,6 @@ jobs:
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ github.event.inputs.ref }}
           persist-credentials: false
 
       - name: Setup Node.js
@@ -138,23 +133,22 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Bump package versions for CI
+      - name: Configure git identity for version commit
+        run: |
+          git config user.name ci
+          git config user.email ci@localhost
+
+      - name: Bump package versions
         env:
           VERSION: ${{ github.event.inputs.version }}
-        run: node .github/workflows/scripts/alpha-release.mjs bump
-
-      - name: Refresh lockfile for internal dependencies
         run: |
-          set -euo pipefail
-          corepack enable
-          yarn install --mode update-lockfile
-          yarn install --immutable
+          yarn lerna version "$VERSION" --exact --force-publish --no-push --no-commit-hooks --yes -m "chore: alpha %s"
 
       - name: Build
         run: yarn build
 
       - name: Publish packages to npm
-        run: npm run publish -- from-package --yes --no-git-reset --dist-tag alpha --pre-dist-tag alpha
+        run: npm run publish -- from-package --yes --dist-tag alpha
 
       - name: Confirm all packages published on npm
         env:
