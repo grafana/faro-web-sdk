@@ -1,13 +1,13 @@
 export interface ReactRouterLocation<S extends any = unknown> {
   hash: string;
-  key: string;
+  key?: string;
   pathname: string;
   search: string;
   state: S;
 }
 
 export interface ReactRouterHistory extends Record<string, any> {
-  listen?: (cb: (location: ReactRouterLocation, action: NavigationType) => void) => void;
+  listen?: (cb: (location: ReactRouterLocation, action: `${NavigationType}`) => void) => void;
   location?: ReactRouterLocation;
 }
 
