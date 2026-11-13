@@ -25,6 +25,9 @@ Navigation instrumentation is enabled by default. To disable it, pass `trackNavi
 `getWebInstrumentations()` when supplying custom instrumentations, or provide a custom `instrumentations` array without
 `NavigationInstrumentation`.
 
+Web vitals reporting for soft navigations is disabled by default. To enable it, set
+`webVitalsInstrumentation.reportSoftNavs` to `true`.
+
 ## Metas
 
 - browser - captures browser metadata: name, version, etc
