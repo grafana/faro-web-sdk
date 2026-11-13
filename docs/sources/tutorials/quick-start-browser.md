@@ -105,6 +105,8 @@ otelcol.exporter.otlp "trace_write" {
    ```
 
 1. To enable [OpenTelemetry][opentelemetry-js] based tracing, run one of the following commands.
+   For a [custom OpenTelemetry setup](#with-custom-opentelemetry-tracing-configuration), also install
+   the direct dependencies listed in that section.
 
    ```bash
    #npm
@@ -288,17 +290,43 @@ you can easily achieve this by utilizing the
 [instrumentations option](https://github.com/grafana/faro-web-sdk/blob/main/packages/web-tracing/src/types.ts)
 within the `TracingInstrumentation` class.
 
+Install each package imported by the custom setup as a direct dependency. The version ranges below
+keep the example on OpenTelemetry SDK 3.x, matching `@grafana/faro-web-tracing`. SDK 3.x supports
+`@opentelemetry/api` 1.10.x only, so the API stays on 1.10.x. SDK 3.x also needs webpack 5.54+, Jest 29.4+
+or Parcel with `packageExports` enabled, see the
+[OpenTelemetry JS 3.x migration guide](https://github.com/open-telemetry/opentelemetry-js/blob/main/doc/3.x/migration-guide.md#bundler-requirements-for-packages-with-platform-specific-code).
+
+```bash
+#npm
+npm i -S @grafana/faro-web-sdk @grafana/faro-web-tracing \
+  @opentelemetry/api@~1.10.0 @opentelemetry/context-zone-peer-dep@^3.0.0 zone.js@^0.16.0 \
+  @opentelemetry/core@^3.0.0 @opentelemetry/resources@^3.0.0 \
+  @opentelemetry/sdk-trace@^3.0.0 @opentelemetry/semantic-conventions@^1.32.0 \
+  @opentelemetry/instrumentation@^0.300.0 @opentelemetry/instrumentation-document-load@^0.69.0 \
+  @opentelemetry/instrumentation-fetch@^0.300.0 @opentelemetry/instrumentation-xml-http-request@^0.300.0
+
+#yarn
+yarn add @grafana/faro-web-sdk @grafana/faro-web-tracing \
+  @opentelemetry/api@~1.10.0 @opentelemetry/context-zone-peer-dep@^3.0.0 zone.js@^0.16.0 \
+  @opentelemetry/core@^3.0.0 @opentelemetry/resources@^3.0.0 \
+  @opentelemetry/sdk-trace@^3.0.0 @opentelemetry/semantic-conventions@^1.32.0 \
+  @opentelemetry/instrumentation@^0.300.0 @opentelemetry/instrumentation-document-load@^0.69.0 \
+  @opentelemetry/instrumentation-fetch@^0.300.0 @opentelemetry/instrumentation-xml-http-request@^0.300.0
+```
+
 ```ts
-import { trace, context } from '@opentelemetry/api';
-import { ZoneContextManager } from '@opentelemetry/context-zone';
+import 'zone.js';
+
+import { trace, context, propagation } from '@opentelemetry/api';
+import { ZoneContextManager } from '@opentelemetry/context-zone-peer-dep';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
-import { Resource } from '@opentelemetry/resources';
-import { BatchSpanProcessor, WebTracerProvider } from '@opentelemetry/sdk-trace-web';
-import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
+import { BatchSpanProcessor, TracerProvider } from '@opentelemetry/sdk-trace';
+import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 
 import { initializeFaro } from '@grafana/faro-web-sdk';
 import {
@@ -322,25 +350,28 @@ const faro = initializeFaro({
 });
 
 // set up otel
-const resource = Resource.default().merge(
-  new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: NAME,
-    [SEMRESATTRS_SERVICE_VERSION]: VERSION,
+const resource = defaultResource().merge(
+  resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: NAME,
+    [ATTR_SERVICE_VERSION]: VERSION,
   })
 );
 
-const provider = new WebTracerProvider({ resource });
-
-provider.addSpanProcessor(
-  new FaroUserActionSpanProcessor(
-    new FaroMetaAttributesSpanProcessor(new BatchSpanProcessor(new FaroTraceExporter({ ...faro })))
-  )
-);
-
-provider.register({
-  propagator: new W3CTraceContextPropagator(),
-  contextManager: new ZoneContextManager(),
+const provider = new TracerProvider({
+  resource,
+  spanProcessors: [
+    new FaroUserActionSpanProcessor(
+      new FaroMetaAttributesSpanProcessor(
+        new BatchSpanProcessor({ exporter: new FaroTraceExporter({ api: faro.api }) }),
+        faro.metas
+      )
+    ),
+  ],
 });
+
+trace.setGlobalTracerProvider(provider);
+propagation.setGlobalPropagator(new W3CTraceContextPropagator());
+context.setGlobalContextManager(new ZoneContextManager().enable());
 
 const ignoreUrls = [COLLECTOR_URL];
 
