@@ -52,7 +52,6 @@
   },
   "dependencies": {
     "@grafana/faro-core": "^2.14.0",
-    "@opentelemetry/otlp-transformer": "^0.223.0",
     "@opentelemetry/semantic-conventions": "^1.28.0"
   }
 }

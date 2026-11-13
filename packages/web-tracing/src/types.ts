@@ -2,7 +2,7 @@ import type { Attributes, ContextManager, TextMapPropagator } from '@opentelemet
 import type { Instrumentation } from '@opentelemetry/instrumentation';
 import type { FetchInstrumentationConfig } from '@opentelemetry/instrumentation-fetch';
 import type { XMLHttpRequestInstrumentationConfig } from '@opentelemetry/instrumentation-xml-http-request';
-import type { SpanProcessor } from '@opentelemetry/sdk-trace-web';
+import type { SpanProcessor } from '@opentelemetry/sdk-trace';
 
 import type { API, Patterns } from '@grafana/faro-web-sdk';
 

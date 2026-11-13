@@ -68,7 +68,12 @@
     {
       "description": "Keep the stable OpenTelemetry JS SDK packages on 2.x until Faro migrates to SDK 3.x. SDK 3.x removes @opentelemetry/sdk-trace-web and only works with the 0.300 experimental packages and @opentelemetry/api 1.10, so all three must move in one migration pull request, which also removes this rule and the two after it.",
       "matchManagers": ["npm"],
-      "matchPackageNames": ["@opentelemetry/core", "@opentelemetry/resources", "@opentelemetry/sdk-trace-web"],
+      "matchPackageNames": [
+        "@opentelemetry/core",
+        "@opentelemetry/resources",
+        "@opentelemetry/sdk-trace",
+        "@opentelemetry/sdk-trace-web"
+      ],
       "allowedVersions": "<3.0.0"
     },
     {
