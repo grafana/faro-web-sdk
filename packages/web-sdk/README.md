@@ -25,6 +25,21 @@ Navigation instrumentation is enabled by default. To disable it, pass `trackNavi
 `getWebInstrumentations()` when supplying custom instrumentations, or provide a custom `instrumentations` array without
 `NavigationInstrumentation`.
 
+Frustration instrumentation thresholds can be changed with the `frustrationInstrumentation` option. Values that are
+not set keep their defaults:
+
+```ts
+initializeFaro({
+  // ...
+  frustrationInstrumentation: {
+    burstMaxGapMs: 1000, // max time between clicks of one burst, and the time window for a rage click
+    burstMaxRadiusPx: 100, // max distance between clicks of one burst
+    rageClickThreshold: 3, // clicks within burstMaxGapMs that make a rage click
+    responseWindowMs: 100, // page activity later than this after a click does not count as a response
+  },
+});
+```
+
 ## Metas
 
 - browser - captures browser metadata: name, version, etc
