@@ -100,7 +100,58 @@ gh api repos/grafana/faro-web-sdk/actions/runs/<run-id>/pending_deployments \
 - `release-please-config.json` — package list, plugins, changelog path.
 - `.release-please-manifest.json` — current versions per package (managed by the bot;
   do not hand-edit unless recovering from a broken state).
-- `.github/workflows/release-please.yml` — the workflow itself.
+- `.github/workflows/release-please.yml` — the stable release workflow.
+- `.github/workflows/publish-alpha.yml` — manual workflow to publish prerelease alpha builds.
+
+## Prerelease (alpha) flow
+
+When testing cross-package features across all linked Faro workspaces without
+affecting the stable `latest` channel, releases are published on demand from a
+dedicated feature branch.
+
+### How alpha releases work
+
+1. **Create an alpha feature branch from `main`**:
+
+   ```sh
+   git checkout -b alpha/my-feature origin/main
+   git push origin alpha/my-feature
+   ```
+
+2. **Develop and merge feature PRs**: Target and merge PRs directly into
+   `alpha/my-feature`. **Do not bump version numbers in git commits** — git
+   history stays clean of prerelease version churn.
+3. **Trigger the alpha publish workflow**: Navigate to GitHub Actions, select
+   the `alpha/my-feature` branch in the branch dropdown, and under
+   [Publish alpha prerelease](../.github/workflows/publish-alpha.yml), click
+   **Run workflow** (`workflow_dispatch`) and provide:
+   - **`version`**: the explicit alpha version (e.g. `2.15.0-alpha.0`,
+     `2.15.0-alpha.1`).
+
+   The workflow will only run on `alpha/*` branches.
+
+4. **Automated validation & publishing**:
+   - **Pre-publish check**: Verifies the version does not already exist on npm
+     for all six packages. If a previous publish partially failed, rerunning with
+     the same version resumes safely (`from-package` skips already published packages).
+   - **Version bump & CI checks**: Runs `lerna version` with
+     `--exact --force-publish` to bump all six public packages, internal
+     cross-dependencies, `lerna.json`, and the private smoke harness locally on
+     the runner, then runs the full quality suite (`build`, `typecheck`, `lint`,
+     `circular-deps`, and `unit tests`).
+   - **Publish to npm**: Runs under the `publish-alpha` GitHub Environment with
+     OIDC Trusted Publishing and publishes with `--dist-tag alpha`.
+   - **Post-publish check**: Confirms all six packages are published on npm.
+5. **Testing**: Applications testing the feature pin the exact version:
+
+   ```sh
+   npm install @grafana/faro-web-sdk@2.15.0-alpha.0
+   ```
+
+6. **Promoting to `main`**: When testing is complete, open a PR from
+   `alpha/my-feature` into `main`. The branch merges cleanly with zero version or
+   changelog conflicts, and the standard stable Release Please workflow on
+   `main` handles the official release. The feature branch is then deleted.
 
 ## Skipping a release
 

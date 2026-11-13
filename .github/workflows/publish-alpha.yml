@@ -1,0 +1,156 @@
+name: Publish alpha prerelease
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Explicit alpha version to publish (e.g. 2.15.0-alpha.0)'
+        required: true
+        type: string
+
+# Hardening: default to read-only at the workflow level; jobs elevate id-token only where OIDC is needed.
+permissions:
+  contents: read
+
+# Avoid concurrent publish runs on the same branch.
+concurrency:
+  group: publish-alpha-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pre-check:
+    if: startsWith(github.ref, 'refs/heads/alpha/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Validate version input format
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+$ ]]; then
+            echo "::error::Invalid alpha version format: '$VERSION'. Expected format like 2.15.0-alpha.0"
+            exit 1
+          fi
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Check existing publications on npm
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+        run: node .github/workflows/scripts/alpha-release.mjs pre-check
+
+  build-test:
+    if: startsWith(github.ref, 'refs/heads/alpha/')
+    needs: pre-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Configure git identity for version commit
+        run: |
+          git config user.name ci
+          git config user.email ci@localhost
+
+      - name: Bump package versions
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          yarn lerna version "$VERSION" --exact --force-publish --no-push --no-commit-hooks --yes -m "chore: alpha %s"
+
+      - name: Build
+        run: yarn build
+
+      - name: Type check
+        run: yarn quality:typecheck
+
+      - name: Lint
+        run: yarn quality:lint
+
+      - name: Check circular dependencies
+        run: yarn quality:circular-deps
+
+      - name: Unit tests
+        run: yarn quality:test
+
+  publish:
+    if: startsWith(github.ref, 'refs/heads/alpha/')
+    needs: [pre-check, build-test]
+    runs-on: ubuntu-latest
+    environment: publish-alpha # Hardening: protect this environment with required reviewers + branch restriction
+    permissions:
+      contents: read
+      id-token: write # npm provenance / trusted publishing (OIDC)
+
+    env:
+      NPM_CONFIG_ACCESS: public
+      NPM_CONFIG_PROVENANCE: true
+
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
+        with:
+          node-version-file: .nvmrc
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Configure git identity for version commit
+        run: |
+          git config user.name ci
+          git config user.email ci@localhost
+
+      - name: Bump package versions
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          yarn lerna version "$VERSION" --exact --force-publish --no-push --no-commit-hooks --yes -m "chore: alpha %s"
+
+      - name: Build
+        run: yarn build
+
+      - name: Publish packages to npm
+        run: npm run publish -- from-package --yes --dist-tag alpha
+
+      - name: Confirm all packages published on npm
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+        run: node .github/workflows/scripts/alpha-release.mjs post-check
