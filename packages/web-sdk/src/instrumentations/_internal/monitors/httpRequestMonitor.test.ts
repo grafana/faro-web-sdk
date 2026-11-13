@@ -1,5 +1,5 @@
 import { initializeFaro } from '@grafana/faro-core';
-import { mockConfig } from '@grafana/faro-core/src/testUtils';
+import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { MESSAGE_TYPE_HTTP_REQUEST_END, MESSAGE_TYPE_HTTP_REQUEST_START } from './const';
 import { __resetHttpRequestMonitorForTests, monitorHttpRequests } from './httpRequestMonitor';
@@ -85,6 +85,30 @@ describe('monitorHttpRequests', () => {
 
     // Restore original send method
     XMLHttpRequest.prototype.send = originalSend;
+  });
+
+  it('Monitors xhr requests opened with a URL object', () => {
+    const observable = monitorHttpRequests();
+    const mockSubscribe = jest.fn();
+    observable.subscribe(mockSubscribe);
+
+    initializeFaro(mockConfig({ transports: [new MockTransport(['https://collector.grafana.com'])] }));
+
+    const xhr = new XMLHttpRequest();
+
+    expect(() => xhr.open('GET', new URL('https://www.grafana.com/data.txt'))).not.toThrow();
+
+    xhr.dispatchEvent(new Event('loadstart'));
+
+    expect(mockSubscribe).toHaveBeenCalledWith({
+      type: MESSAGE_TYPE_HTTP_REQUEST_START,
+      request: {
+        apiType: 'xhr',
+        method: 'GET',
+        requestId: expect.any(String),
+        url: 'https://www.grafana.com/data.txt',
+      },
+    });
   });
 
   it('Monitors fetch requests and sends a message if request are pending', async () => {
