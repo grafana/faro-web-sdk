@@ -36,6 +36,7 @@
     "quality": "run-s 'quality:*'",
     "quality:typecheck": "tsc -p tsconfig.typecheck.json",
     "quality:test": "jest",
+    "quality:test:coverage": "jest --coverage",
     "quality:format": "prettier --cache --cache-location=../../.cache/prettier/webSessionReplay --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
     "quality:lint": "run-s quality:lint:eslint quality:lint:prettier quality:lint:md",
     "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/webSessionReplay \"./**/*.{js,jsx,ts,tsx}\"",
