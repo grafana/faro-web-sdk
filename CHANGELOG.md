@@ -18,6 +18,8 @@
 - **web-sdk:** use Web Crypto for session sampling when available
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
 - **web-sdk:** prevent duplicate sessions when Chrome activates a prerendered page
+- **web-sdk:** split over-budget batches into keepalive-sized requests on `pagehide` and log a warning when a request
+  still goes out without keepalive (#2365)
 
 ## [2.14.0](https://github.com/grafana/faro-web-sdk/compare/v2.13.0...v2.14.0) (2026-11-09)
 
