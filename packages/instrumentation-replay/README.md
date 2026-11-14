@@ -2,8 +2,8 @@
 
 Faro instrumentation for session replay with rrweb.
 
-Canvas 2D and WebGL content capture is not supported. Canvas elements can appear in
-the recorded DOM, but replaying their drawing content is not supported.
+This is an optional package, released alongside the other Faro packages under the same
+[semantic versioning policy](https://github.com/grafana/faro-web-sdk#releases).
 
 ## Installation
 
@@ -19,20 +19,31 @@ import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 
 initializeFaro({
   url: 'https://your-faro-endpoint.com',
-  instrumentations: [
-    ...getWebInstrumentations(),
-    new ReplayInstrumentation({
-      maskInputOptions: {
-        password: true,
-        email: true,
-      },
-      maskAllInputs: false,
-      recordAfter: 'load',
-      recordCrossOriginIframes: false,
-    }),
-  ],
+  instrumentations: [...getWebInstrumentations(), new ReplayInstrumentation()],
 });
 ```
+
+The default configuration masks all input values and text content. Review the privacy options below
+before making masking more selective.
+
+Replay is a separate, opt-in package and is not included by `getWebInstrumentations()`. Its code is only
+loaded when you import the package or load its browser bundle.
+
+## Public API
+
+The package exports `ReplayInstrumentation` and the types `ReplayInstrumentationOptions`, `MaskInputOptions`,
+and `MaskInputFn`. Pass an instance to `initializeFaro()` as shown above. Use `pauseRecording()` and
+`resumeRecording()` on that instance to control recording explicitly.
+
+## Supported Environments and Limitations
+
+Replay runs in browser pages, including the client-side portion of server-rendered applications. Initialize
+Faro in the browser; server runtimes, browser extensions, workers, Node.js, and React Native are outside the
+[supported environments](https://github.com/grafana/faro-web-sdk#supported-environments).
+
+Canvas 2D and WebGL content capture is not supported. Canvas elements can appear in the recorded DOM,
+but replaying their drawing content is not supported. Cross-origin iframe recording is disabled by default
+and requires rrweb in each child iframe when enabled.
 
 ## Configuration Options
 
@@ -156,7 +167,7 @@ new ReplayInstrumentation({
   maskTextSelector: '.sensitive-data, .pii',
   // Block elements completely from recording
   blockSelector: '.payment-form, .credit-card-info',
-  // Ignore certain elements (won't be recorded at all)
+  // Ignore input-change events on matching elements
   ignoreSelector: '.analytics-widget',
 });
 ```

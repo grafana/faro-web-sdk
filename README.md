@@ -47,6 +47,11 @@ the [README.md][faro-web-sdk-readme] for more information.
 [@grafana/faro-web-tracing][faro-web-tracing] provides implementation for tracing web applications. See the
 [README.md][faro-web-tracing-readme] for more information.
 
+### Session Replay
+
+[@grafana/faro-instrumentation-replay][faro-replay] records browser sessions with rrweb. Add it explicitly to
+the SDK's `instrumentations` array. See the [README.md][faro-replay-readme] for configuration and privacy defaults.
+
 ### React Support
 
 [@grafana/faro-react][faro-react] is a package that enables easier integration in projects built with React. See the
@@ -63,6 +68,8 @@ the [README.md][faro-web-sdk-readme] for more information.
 [faro-quick-start]: ./docs/sources/tutorials/quick-start-browser.md
 [faro-react]: ./packages/react
 [faro-react-readme]: ./packages/react/README.md
+[faro-replay]: ./packages/instrumentation-replay
+[faro-replay-readme]: ./packages/instrumentation-replay/README.md
 [faro-supported-environments]: https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/introduction/supported-environments/
 [faro-web-sdk]: ./packages/web-sdk
 [faro-web-sdk-readme]: ./packages/web-sdk/README.md
