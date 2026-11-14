@@ -654,8 +654,44 @@ describe('reliable FetchTransport', () => {
       expect(internalLogger.error).not.toHaveBeenCalled();
     });
 
-    it.each([1, 2])('keeps split batches within a concurrency of %i', async (concurrency) => {
-      fetchMock.mockRejectedValueOnce(new TypeError('keepalive request lost'));
+    it('sends the rest of the batch in one request once the keepalive budget runs out', async () => {
+      const { transport } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(Array(6).fill(largeItem));
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 3 },
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 2 },
+      ]);
+
+      finishAll();
+      await sending;
+    });
+
+    it('starts every request of a split batch before any of them finishes', async () => {
+      const { transport, internalLogger } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+      const items = [...Array(6).fill(oversizedItem), item];
+
+      const sending = transport.send(items);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(maxInFlight).toBe(5);
+      expect(sentRequests().map(({ logs }) => logs)).toEqual([1, 1, 1, 1, 3]);
+      const messages = fetchMock.mock.calls.flatMap(([, init]) =>
+        JSON.parse(init.body as string).logs.map((log: LogEvent) => log.message)
+      );
+      expect(messages).toEqual(items.map((entry) => entry.payload.message));
+
+      finishAll();
+      await sending;
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it.each([1, 2])('sends each batch whole when no slot is free within a concurrency of %i', async (concurrency) => {
       const { transport, internalLogger } = createTransport({ concurrency });
       window.dispatchEvent(new Event('pagehide'));
       const batches = [0, 1].map((batch) =>
@@ -673,6 +709,10 @@ describe('reliable FetchTransport', () => {
       }
 
       expect(maxInFlight).toBe(concurrency);
+      expect(sentRequests()).toEqual([
+        { keepalive: false, logs: 5 },
+        { keepalive: false, logs: 5 },
+      ]);
       const sent = fetchMock.mock.calls.flatMap(([, init]) =>
         JSON.parse(init.body as string).logs.map((log: LogEvent) => log.message)
       );
