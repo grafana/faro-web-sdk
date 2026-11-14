@@ -175,6 +175,12 @@ export interface Config<P = APIEvent> {
     reportAllChanges?: boolean;
 
     /**
+     * Custom label for LCP elements, INP interaction targets, and CLS shift targets.
+     * Return undefined to use web-vitals' default CSS selector.
+     */
+    generateTarget?: (element: Node | null) => string | undefined;
+
+    /**
      * Track attribution fields that identify the source behind a metric value: the LCP resource
      * (`resource_url`, `resource_delivery_type`, `resource_initiator_type`) and the INP longest script
      * (`longest_script_invoker`, `longest_script_source_url`, `longest_script_source_function_name`,
