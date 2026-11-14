@@ -52,12 +52,12 @@ jobs:
       - name: Mint GitHub App token
         id: app-token
         if: ${{ !inputs.dryRun }}
-        continue-on-error: true
         uses: grafana/shared-workflows/actions/create-github-app-token@5bbb526b1728ca57fbe1750c4c27ab6ab06171c2 # create-github-app-token/v1.0
         with:
           github_app: app-o11y-kwl-ci
 
       - name: Run PR sweep
+        if: ${{ inputs.dryRun || steps.app-token.outputs.token != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BOT_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -65,3 +65,9 @@ jobs:
           DRY_RUN: ${{ inputs.dryRun || false }}
           PR_NUMBER: ${{ inputs.prNumber || '' }}
         run: node .github/workflows/scripts/respond-or-close.mjs
+
+      - name: Fail if app token was required but unavailable
+        if: ${{ !inputs.dryRun && steps.app-token.outputs.token == '' }}
+        run: |
+          echo "::error::GitHub App token is required for live sweep but was not available."
+          exit 1

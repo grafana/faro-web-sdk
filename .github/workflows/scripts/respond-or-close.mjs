@@ -136,6 +136,35 @@ export function evaluateTimeline(timelineEvents, authorLogin) {
         lastAuthorEvent = ev;
       }
     }
+
+    // Check inline review comment (line-commented)
+    if (ev.event === 'line-commented') {
+      const directActor = ev.actor?.login || ev.user?.login;
+      const directIsBot = ev.actor?.type === 'Bot' || ev.user?.type === 'Bot';
+      if (directActor === authorLogin && !directIsBot) {
+        authorRespondedAfterLabel = true;
+        lastAuthorEvent = ev;
+      }
+      const comments = Array.isArray(ev.comments) ? ev.comments : ev.source ? [ev.source] : [];
+      for (const c of comments) {
+        const commenter = c.user?.login || c.actor?.login;
+        const isBot = c.user?.type === 'Bot' || c.actor?.type === 'Bot';
+        if (commenter === authorLogin && !isBot) {
+          authorRespondedAfterLabel = true;
+          lastAuthorEvent = ev;
+        }
+      }
+    }
+
+    // Check pull request review (reviewed)
+    if (ev.event === 'reviewed') {
+      const reviewer = ev.user?.login || ev.actor?.login;
+      const isBot = ev.user?.type === 'Bot' || ev.actor?.type === 'Bot';
+      if (reviewer === authorLogin && !isBot) {
+        authorRespondedAfterLabel = true;
+        lastAuthorEvent = ev;
+      }
+    }
   }
 
   return { labeledAt, authorRespondedAfterLabel, lastAuthorEvent };
@@ -272,12 +301,20 @@ export class GitHubClient {
     }
   }
 
-  async findExistingReplacementPr(headRefSpec) {
-    // Check if an open PR exists with the same head
+  async findExistingReplacementPr({ headOwner, headBranch, baseRef, excludePrNumber }) {
+    // Always qualify head with owner:branch so same-repo branches don't return
+    // every open PR.  Also filter on base ref and exclude the original PR.
+    const headParam = `${headOwner}:${headBranch}`;
     const prs = await this.request(
-      `/repos/${this.owner}/${this.repoName}/pulls?state=open&head=${encodeURIComponent(headRefSpec)}`
+      `/repos/${this.owner}/${this.repoName}/pulls?state=open&head=${encodeURIComponent(headParam)}`
     );
-    return prs && prs.length > 0 ? prs[0] : null;
+    if (!prs || prs.length === 0) {
+      return null;
+    }
+    const match = prs.find(
+      (pr) => pr.base?.ref === baseRef && pr.number !== excludePrNumber
+    );
+    return match || null;
   }
 
   async createPullRequest({ title, head, base, body, draft }) {
@@ -324,12 +361,21 @@ export async function runSweep({
   const client = clientOverride || new GitHubClient({ token: githubToken, repo: repository });
   const botClient = botClientOverride || new GitHubClient({ token: botToken || githubToken, repo: repository });
 
+  let targetPrNumber = null;
+  if (prNumber !== null && prNumber !== undefined && prNumber !== '') {
+    const prStr = String(prNumber).trim();
+    if (!/^\d+$/.test(prStr) || parseInt(prStr, 10) <= 0) {
+      throw new Error(`Invalid prNumber: "${prNumber}". Must be a positive integer.`);
+    }
+    targetPrNumber = parseInt(prStr, 10);
+  }
+
   let prsToProcess = [];
-  if (prNumber) {
-    console.log(`[respond-or-close] Targeted run for single PR #${prNumber}`);
-    const pr = await client.getPr(prNumber);
+  if (targetPrNumber) {
+    console.log(`[respond-or-close] Targeted run for single PR #${targetPrNumber}`);
+    const pr = await client.getPr(targetPrNumber);
     if (!pr.labels?.some((l) => l.name === 'respond-or-close')) {
-      console.log(`[respond-or-close] PR #${prNumber} does not have label 'respond-or-close'. Nothing to do.`);
+      console.log(`[respond-or-close] PR #${targetPrNumber} does not have label 'respond-or-close'. Nothing to do.`);
       return { processed: 0, closed: 0, recreated: 0, exempt: 0, skipped: 1 };
     }
     prsToProcess = [pr];
@@ -425,8 +471,13 @@ export async function runSweep({
     }
 
     // Idempotency check: see if a replacement PR already exists
-    const existingReplacement = await client.findExistingReplacementPr(headRefSpec);
-    if (existingReplacement && existingReplacement.number !== pr.number) {
+    const existingReplacement = await client.findExistingReplacementPr({
+      headOwner,
+      headBranch,
+      baseRef: pr.base.ref,
+      excludePrNumber: pr.number,
+    });
+    if (existingReplacement) {
       console.log(
         `${prLogPrefix} Replacement PR already exists at #${existingReplacement.number}. Closing original PR and linking.`
       );
@@ -451,6 +502,17 @@ export async function runSweep({
       );
       results.closed++;
       results.recreated++;
+      continue;
+    }
+
+    // Require bot token in live mode before closing and recreating.
+    // Without it the replacement PR would be created with GITHUB_TOKEN,
+    // which blocks downstream workflows from triggering.
+    if (!botToken) {
+      console.error(
+        `${prLogPrefix} Bot token is required in live mode to create replacement PRs. Aborting for this PR to avoid closing without a proper replacement.`
+      );
+      results.skipped++;
       continue;
     }
 
@@ -520,10 +582,18 @@ export async function runSweep({
 // CLI entry point
 if (process.argv[1] && process.argv[1].endsWith('respond-or-close.mjs')) {
   const githubToken = process.env.GITHUB_TOKEN;
-  const botToken = process.env.BOT_TOKEN || process.env.GITHUB_TOKEN;
+  const botToken = process.env.BOT_TOKEN && process.env.BOT_TOKEN.trim() !== '' ? process.env.BOT_TOKEN.trim() : null;
   const repository = process.env.GITHUB_REPOSITORY;
   const dryRun = process.env.DRY_RUN === 'true' || process.argv.includes('--dry-run');
-  const prNumber = process.env.PR_NUMBER ? parseInt(process.env.PR_NUMBER, 10) : null;
+
+  let prNumber = null;
+  if (process.env.PR_NUMBER && process.env.PR_NUMBER.trim() !== '') {
+    if (!/^\d+$/.test(process.env.PR_NUMBER.trim())) {
+      console.error(`Invalid PR_NUMBER: "${process.env.PR_NUMBER}". Must be a positive integer.`);
+      process.exit(1);
+    }
+    prNumber = parseInt(process.env.PR_NUMBER.trim(), 10);
+  }
 
   if (!githubToken || !repository) {
     console.error('Missing required environment variables: GITHUB_TOKEN and GITHUB_REPOSITORY.');

@@ -55,9 +55,10 @@ The workflow operates on a 7-day timeline:
 1. **Maintainers apply `respond-or-close`**: This indicates that review progress
    is blocked pending author input.
 2. **Author response**: When the PR author responds—either by leaving a new
-   non-bot comment or pushing a commit—the `respond-or-close` label is
-   automatically removed. Comments or commits from maintainers, bots, or third
-   parties do not remove the label or reset the 7-day clock.
+   non-bot comment, pushing a commit, submitting a review, or replying to an
+   inline review comment—the `respond-or-close` label is automatically removed.
+   Comments, reviews, or commits from maintainers, bots, or third parties do not
+   remove the label or reset the 7-day clock.
 3. **Automatic closure and re-creation**: If 7 days pass without an author
    response, the pull request is closed automatically. The author's source
    branch is kept intact, and a replacement pull request is opened from the same
