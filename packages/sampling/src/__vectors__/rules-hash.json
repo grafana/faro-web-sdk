@@ -1,0 +1,318 @@
+[
+  {
+    "name": "design-doc-example",
+    "note": "The document from the design doc.",
+    "document": {
+      "schema": "faro.sampling.rules/v1",
+      "rules": [
+        {
+          "id": "no-bots",
+          "scope": {
+            "browser.userAgent": "*HeadlessChrome*"
+          },
+          "action": "drop"
+        },
+        {
+          "id": "default-base",
+          "action": "keep_session_and_replay",
+          "baseRate": 0.05,
+          "replayRate": 0.5
+        },
+        {
+          "id": "errors",
+          "trigger": {
+            "type": "error"
+          },
+          "action": "keep_session_and_replay"
+        },
+        {
+          "id": "checkout-step",
+          "trigger": {
+            "type": "page_view",
+            "match": {
+              "view": "checkout/*"
+            }
+          },
+          "scope": {
+            "session.attributes.FI": "acme"
+          },
+          "action": "keep_session"
+        },
+        {
+          "id": "checkout-failed",
+          "trigger": {
+            "type": "custom_event",
+            "match": {
+              "name": "checkout_failed"
+            }
+          },
+          "action": "keep_session_and_replay",
+          "triggerRate": 0.5
+        }
+      ]
+    },
+    "canonical": "{\"rules\":[{\"action\":\"drop\",\"id\":\"no-bots\",\"scope\":{\"browser.userAgent\":\"*HeadlessChrome*\"}},{\"action\":\"keep_session_and_replay\",\"baseRate\":0.05,\"id\":\"default-base\",\"replayRate\":0.5},{\"action\":\"keep_session_and_replay\",\"id\":\"errors\",\"trigger\":{\"type\":\"error\"}},{\"action\":\"keep_session\",\"id\":\"checkout-step\",\"scope\":{\"session.attributes.FI\":\"acme\"},\"trigger\":{\"match\":{\"view\":\"checkout/*\"},\"type\":\"page_view\"}},{\"action\":\"keep_session_and_replay\",\"id\":\"checkout-failed\",\"trigger\":{\"match\":{\"name\":\"checkout_failed\"},\"type\":\"custom_event\"},\"triggerRate\":0.5}],\"schema\":\"faro.sampling.rules/v1\"}",
+    "rulesHash": "2e014eda409e5e0a"
+  },
+  {
+    "name": "same-document-reordered",
+    "note": "Same as design-doc-example with keys in a different order; must hash the same.",
+    "document": {
+      "rules": [
+        {
+          "action": "drop",
+          "scope": {
+            "browser.userAgent": "*HeadlessChrome*"
+          },
+          "id": "no-bots"
+        },
+        {
+          "replayRate": 0.5,
+          "baseRate": 0.05,
+          "action": "keep_session_and_replay",
+          "id": "default-base"
+        },
+        {
+          "action": "keep_session_and_replay",
+          "trigger": {
+            "type": "error"
+          },
+          "id": "errors"
+        },
+        {
+          "action": "keep_session",
+          "scope": {
+            "session.attributes.FI": "acme"
+          },
+          "trigger": {
+            "type": "page_view",
+            "match": {
+              "view": "checkout/*"
+            }
+          },
+          "id": "checkout-step"
+        },
+        {
+          "triggerRate": 0.5,
+          "action": "keep_session_and_replay",
+          "trigger": {
+            "type": "custom_event",
+            "match": {
+              "name": "checkout_failed"
+            }
+          },
+          "id": "checkout-failed"
+        }
+      ],
+      "schema": "faro.sampling.rules/v1"
+    },
+    "canonical": "{\"rules\":[{\"action\":\"drop\",\"id\":\"no-bots\",\"scope\":{\"browser.userAgent\":\"*HeadlessChrome*\"}},{\"action\":\"keep_session_and_replay\",\"baseRate\":0.05,\"id\":\"default-base\",\"replayRate\":0.5},{\"action\":\"keep_session_and_replay\",\"id\":\"errors\",\"trigger\":{\"type\":\"error\"}},{\"action\":\"keep_session\",\"id\":\"checkout-step\",\"scope\":{\"session.attributes.FI\":\"acme\"},\"trigger\":{\"match\":{\"view\":\"checkout/*\"},\"type\":\"page_view\"}},{\"action\":\"keep_session_and_replay\",\"id\":\"checkout-failed\",\"trigger\":{\"match\":{\"name\":\"checkout_failed\"},\"type\":\"custom_event\"},\"triggerRate\":0.5}],\"schema\":\"faro.sampling.rules/v1\"}",
+    "rulesHash": "2e014eda409e5e0a"
+  },
+  {
+    "name": "same-document-explicit-null-trigger-and-empty-scope",
+    "note": "Same as design-doc-example with trigger: null and scope: {} spelled out; normalisation strips both, so it must hash the same.",
+    "document": {
+      "schema": "faro.sampling.rules/v1",
+      "rules": [
+        {
+          "trigger": null,
+          "scope": {
+            "browser.userAgent": "*HeadlessChrome*"
+          },
+          "id": "no-bots",
+          "action": "drop"
+        },
+        {
+          "trigger": null,
+          "scope": {},
+          "id": "default-base",
+          "action": "keep_session_and_replay",
+          "baseRate": 0.05,
+          "replayRate": 0.5
+        },
+        {
+          "trigger": {
+            "type": "error"
+          },
+          "scope": {},
+          "id": "errors",
+          "action": "keep_session_and_replay"
+        },
+        {
+          "trigger": {
+            "type": "page_view",
+            "match": {
+              "view": "checkout/*"
+            }
+          },
+          "scope": {
+            "session.attributes.FI": "acme"
+          },
+          "id": "checkout-step",
+          "action": "keep_session"
+        },
+        {
+          "trigger": {
+            "type": "custom_event",
+            "match": {
+              "name": "checkout_failed"
+            }
+          },
+          "scope": {},
+          "id": "checkout-failed",
+          "action": "keep_session_and_replay",
+          "triggerRate": 0.5
+        }
+      ]
+    },
+    "canonical": "{\"rules\":[{\"action\":\"drop\",\"id\":\"no-bots\",\"scope\":{\"browser.userAgent\":\"*HeadlessChrome*\"}},{\"action\":\"keep_session_and_replay\",\"baseRate\":0.05,\"id\":\"default-base\",\"replayRate\":0.5},{\"action\":\"keep_session_and_replay\",\"id\":\"errors\",\"trigger\":{\"type\":\"error\"}},{\"action\":\"keep_session\",\"id\":\"checkout-step\",\"scope\":{\"session.attributes.FI\":\"acme\"},\"trigger\":{\"match\":{\"view\":\"checkout/*\"},\"type\":\"page_view\"}},{\"action\":\"keep_session_and_replay\",\"id\":\"checkout-failed\",\"trigger\":{\"match\":{\"name\":\"checkout_failed\"},\"type\":\"custom_event\"},\"triggerRate\":0.5}],\"schema\":\"faro.sampling.rules/v1\"}",
+    "rulesHash": "2e014eda409e5e0a"
+  },
+  {
+    "name": "html-characters-in-glob",
+    "note": "Go's encoding/json escapes <, > and & as \\u003c etc. by default. JCS does not.",
+    "document": {
+      "schema": "faro.sampling.rules/v1",
+      "rules": [
+        {
+          "id": "xss",
+          "trigger": {
+            "type": "error",
+            "match": {
+              "value": "*<script>*&*>*"
+            }
+          },
+          "action": "keep_session"
+        }
+      ]
+    },
+    "canonical": "{\"rules\":[{\"action\":\"keep_session\",\"id\":\"xss\",\"trigger\":{\"match\":{\"value\":\"*<script>*&*>*\"},\"type\":\"error\"}}],\"schema\":\"faro.sampling.rules/v1\"}",
+    "rulesHash": "c27947be6eb6ad5b"
+  },
+  {
+    "name": "quotes-backslash-and-control-characters",
+    "note": "Only \", \\\\ and U+0000..U+001F are escaped; \\b \\f \\n \\r \\t use the short form, the rest \\u00xx lowercase. U+007F and U+2028 stay literal.",
+    "document": {
+      "schema": "faro.sampling.rules/v1",
+      "rules": [
+        {
+          "id": "weird",
+          "trigger": {
+            "type": "console_error",
+            "match": {
+              "message": "say \"hi\" \\ back\n\ttab\u0001\u001f "
+            }
+          },
+          "action": "keep_session"
+        }
+      ]
+    },
+    "canonical": "{\"rules\":[{\"action\":\"keep_session\",\"id\":\"weird\",\"trigger\":{\"match\":{\"message\":\"say \\\"hi\\\" \\\\ back\\n\\ttab\\u0001\\u001f \"},\"type\":\"console_error\"}}],\"schema\":\"faro.sampling.rules/v1\"}",
+    "rulesHash": "6a8cecc181eebeb8"
+  },
+  {
+    "name": "non-ascii-and-non-bmp-keys",
+    "note": "Keys sort by UTF-16 code units, not bytes: U+1F600 (D83D DE00) sorts before U+FF01 (FF01) and after U+00FC.",
+    "document": {
+      "schema": "faro.sampling.rules/v1",
+      "rules": [
+        {
+          "id": "intl",
+          "scope": {
+            "session.attributes.！": "a",
+            "session.attributes.😀": "b",
+            "session.attributes.ü": "c",
+            "session.attributes.z": "d"
+          },
+          "action": "drop"
+        }
+      ]
+    },
+    "canonical": "{\"rules\":[{\"action\":\"drop\",\"id\":\"intl\",\"scope\":{\"session.attributes.z\":\"d\",\"session.attributes.ü\":\"c\",\"session.attributes.😀\":\"b\",\"session.attributes.！\":\"a\"}}],\"schema\":\"faro.sampling.rules/v1\"}",
+    "rulesHash": "a7f233b90c92363e"
+  },
+  {
+    "name": "number-formatting",
+    "note": "ES6 number serialisation: 1 not 1.0, 0.000001 in decimal, 1e-7 with no exponent padding (Go's %g gives 1e-07).",
+    "document": {
+      "schema": "faro.sampling.rules/v1",
+      "rules": [
+        {
+          "id": "micro",
+          "action": "keep_session_and_replay",
+          "baseRate": 0.000001,
+          "replayRate": 0.1
+        },
+        {
+          "id": "zero",
+          "trigger": {
+            "type": "error"
+          },
+          "action": "keep_session",
+          "triggerRate": 0
+        },
+        {
+          "id": "one",
+          "trigger": {
+            "type": "http_error"
+          },
+          "action": "keep_session",
+          "triggerRate": 1
+        },
+        {
+          "id": "nano",
+          "trigger": {
+            "type": "console_error"
+          },
+          "action": "keep_session",
+          "triggerRate": 1e-7
+        },
+        {
+          "id": "third",
+          "trigger": {
+            "type": "custom_event"
+          },
+          "action": "keep_session",
+          "triggerRate": 0.3333333333333333
+        }
+      ]
+    },
+    "canonical": "{\"rules\":[{\"action\":\"keep_session_and_replay\",\"baseRate\":0.000001,\"id\":\"micro\",\"replayRate\":0.1},{\"action\":\"keep_session\",\"id\":\"zero\",\"trigger\":{\"type\":\"error\"},\"triggerRate\":0},{\"action\":\"keep_session\",\"id\":\"one\",\"trigger\":{\"type\":\"http_error\"},\"triggerRate\":1},{\"action\":\"keep_session\",\"id\":\"nano\",\"trigger\":{\"type\":\"console_error\"},\"triggerRate\":1e-7},{\"action\":\"keep_session\",\"id\":\"third\",\"trigger\":{\"type\":\"custom_event\"},\"triggerRate\":0.3333333333333333}],\"schema\":\"faro.sampling.rules/v1\"}",
+    "rulesHash": "b73b5dbce58613e7"
+  },
+  {
+    "name": "integer-like-keys",
+    "note": "Keys that look like integers sort as strings (\"1\", \"10\", \"2\"). JavaScript objects reorder such keys numerically, so a canonicaliser must write from the sorted key list, never rebuild an object and JSON.stringify it.",
+    "document": {
+      "schema": "faro.sampling.rules/v1",
+      "rules": [
+        {
+          "id": "ints",
+          "trigger": {
+            "type": "custom_event",
+            "match": {
+              "1": "c",
+              "2": "b",
+              "10": "a",
+              "name": "x"
+            }
+          },
+          "action": "keep_session"
+        }
+      ]
+    },
+    "canonical": "{\"rules\":[{\"action\":\"keep_session\",\"id\":\"ints\",\"trigger\":{\"match\":{\"1\":\"c\",\"10\":\"a\",\"2\":\"b\",\"name\":\"x\"},\"type\":\"custom_event\"}}],\"schema\":\"faro.sampling.rules/v1\"}",
+    "rulesHash": "019db19db777fd8c"
+  },
+  {
+    "name": "empty-rules",
+    "note": "The smallest valid document.",
+    "document": {
+      "schema": "faro.sampling.rules/v1",
+      "rules": []
+    },
+    "canonical": "{\"rules\":[],\"schema\":\"faro.sampling.rules/v1\"}",
+    "rulesHash": "6642b1fcedc41fd9"
+  }
+]

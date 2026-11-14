@@ -28,6 +28,7 @@
           "path": "packages/web-tracing/package.json",
           "jsonpath": "$['dependencies']['@grafana/faro-web-sdk']"
         },
+        { "type": "json", "path": "packages/sampling/package.json", "jsonpath": "$.version" },
         { "type": "json", "path": "packages/react/package.json", "jsonpath": "$.version" },
         {
           "type": "json",

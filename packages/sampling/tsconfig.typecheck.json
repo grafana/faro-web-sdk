@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.esm.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "isolatedDeclarations": true,
+    "noEmit": true
+  },
+  "include": ["./src"],
+  "exclude": ["**/*.test.ts"]
+}
