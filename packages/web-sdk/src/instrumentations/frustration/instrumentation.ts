@@ -73,8 +73,13 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
     this.pruneClicksAwaitingResponse(now);
     this.clicksAwaitingResponse.push(click);
 
+    // The last click may still get its page response if the response window outlasts the burst gap
+    const { burstMaxGapMs, responseWindowMs } = this.thresholds;
     window.clearTimeout(this.burstTid);
-    this.burstTid = window.setTimeout(() => this.flushBurst(0), this.thresholds.burstMaxGapMs);
+    this.burstTid = window.setTimeout(
+      () => this.flushBurst(Math.max(0, responseWindowMs - burstMaxGapMs)),
+      burstMaxGapMs
+    );
   };
 
   private readonly onPageResponse = (): void => {

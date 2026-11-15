@@ -443,6 +443,17 @@ describe('FrustrationInstrumentation', () => {
       expect(events()).toEqual([]);
     });
 
+    it('waits for the response window when it is longer than the burst gap', () => {
+      setup({ frustrationInstrumentation: { responseWindowMs: 500, burstMaxGapMs: 100 } });
+
+      click();
+      jest.advanceTimersByTime(150);
+      domMutation();
+      jest.advanceTimersByTime(2000);
+
+      expect(events()).toEqual([]);
+    });
+
     it.each([
       { burstMaxGapMs: 0 },
       { burstMaxRadiusPx: -1 },
