@@ -177,8 +177,9 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
 }
 
 export function createFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
+  const activationStart = (navigationEntryRaw as PerformanceNavigationTiming & { activationStart?: number })
+    .activationStart;
   const {
-    activationStart,
     domComplete,
     domContentLoadedEventEnd,
     domContentLoadedEventStart,
