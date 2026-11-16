@@ -55,6 +55,11 @@ If multiple apps opt in, Faro warns and selects the earliest registered; if none
 active registration is the fallback. Ownership is fixed at fetch/span creation or XHR `open()` and is
 not reassigned by navigation or later registration.
 
+The first routing app owns page-wide `clearTimingResources`, `ignoreNetworkEvents`, and
+`measureRequestSize` instrumentation settings. Later apps inherit those values; conflicting explicit
+values are warned about and ignored. Per-app callbacks and other registered tracing configuration
+remain app-scoped.
+
 Manual spans created through the page-global `faro.api.getOTEL()` continue to use the fallback app
 because that API does not identify which micro-frontend called it. For page-route attribution, retain
 a `TracingInstrumentation` instance and use its `getTracer()` method after Faro is initialized:

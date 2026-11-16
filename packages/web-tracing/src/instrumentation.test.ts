@@ -264,6 +264,32 @@ describe('TracingInstrumentation single-owner behavior', () => {
     expect(includes(xhrUrls, 'https://top-b.example.test')).toBe(false);
   });
 
+  it('warns later routing apps when page-wide capture options differ', () => {
+    const first = setupInstrumentation('capture-owner', {
+      mode: 'routing',
+      instrumentationOptions: {
+        fetchInstrumentationOptions: { ignoreNetworkEvents: false, measureRequestSize: true },
+        xhrInstrumentationOptions: { clearTimingResources: true },
+      },
+    });
+    first.instrumentation.initialize();
+
+    const later = setupInstrumentation('later-app', {
+      mode: 'routing',
+      instrumentationOptions: {
+        fetchInstrumentationOptions: { ignoreNetworkEvents: true, measureRequestSize: true },
+        xhrInstrumentationOptions: { clearTimingResources: false },
+      },
+    });
+    later.instrumentation.initialize();
+
+    const warning = (later.internalLogger.warn as jest.Mock).mock.calls.map((call) => call.join(' ')).join('\n');
+    expect(warning).toContain('fetch.ignoreNetworkEvents');
+    expect(warning).toContain('xhr.clearTimingResources');
+    expect(warning).not.toContain('measureRequestSize');
+    expect(warning).toContain('capture-owner');
+  });
+
   it('registers the explicit routing fallback option in the typed configuration', () => {
     const host = setupInstrumentation('host-app', { mode: 'routing', fallback: true });
     host.instrumentation.initialize();

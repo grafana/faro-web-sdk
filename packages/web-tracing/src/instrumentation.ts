@@ -589,6 +589,8 @@ export class TracingInstrumentation extends BaseInstrumentation {
         instrumentations: this.routingInstrumentations,
       });
       registry.captureInstrumentationsRegistered = typeof registrationCleanup === 'function';
+    } else {
+      this.warnOnRoutingCaptureOptionConflicts(registry, options);
     }
 
     this.appTracerProvider = provider;
@@ -610,6 +612,54 @@ export class TracingInstrumentation extends BaseInstrumentation {
       );
     }
     this.api.initOTEL(trace, context);
+  }
+
+  private warnOnRoutingCaptureOptionConflicts(registry: TracingRegistry, options: TracingInstrumentationOptions): void {
+    const captureInstrumentations = registry.captureInstrumentations;
+    if (!captureInstrumentations || captureInstrumentations.length < 2) {
+      return;
+    }
+
+    const requestedOptions = [
+      options.instrumentationOptions?.fetchInstrumentationOptions,
+      options.instrumentationOptions?.xhrInstrumentationOptions,
+    ];
+    const instrumentationNames = ['fetch', 'xhr'];
+    const optionNames = ['clearTimingResources', 'ignoreNetworkEvents', 'measureRequestSize'] as const;
+    const conflicts: string[] = [];
+
+    captureInstrumentations.slice(0, 2).forEach((instrumentation, index) => {
+      const captureOptions = instrumentation.getConfig();
+      const effectiveOptions =
+        captureOptions && typeof captureOptions === 'object' ? (captureOptions as Record<string, unknown>) : {};
+      const requested = requestedOptions[index] as Record<string, unknown> | undefined;
+
+      for (const optionName of optionNames) {
+        const requestedValue = requested?.[optionName];
+        if (requestedValue === undefined) {
+          continue;
+        }
+
+        const defaultValue = optionName === 'ignoreNetworkEvents' ? true : false;
+        const captureValue = effectiveOptions[optionName] ?? defaultValue;
+        if (requestedValue !== captureValue) {
+          conflicts.push(`${instrumentationNames[index]}.${optionName}`);
+        }
+      }
+    });
+
+    if (conflicts.length === 0) {
+      return;
+    }
+
+    const captureOwner = registry.registrations.find(
+      (registration) => registration.registrationId === registry.captureOwnerRegistrationId
+    );
+    this.logWarn(
+      `Routing instrumentation options [${conflicts.join(', ')}] differ from the page capture owner${
+        captureOwner?.appName ? ` "${captureOwner.appName}"` : ''
+      }; the first routing instance's values apply page-wide and later values are ignored.`
+    );
   }
 
   private registerRoutingProvider(
