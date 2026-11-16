@@ -49,6 +49,7 @@ import { TracingLifecycle, TracingLifecycleExporter, TracingLifecycleSpanProcess
 import { addPropagateTraceHeaderCorsUrls, claimTracingOwner, getTracingOwner } from './tracingOwner';
 import { hasExternalGlobalTracerProvider } from './tracingProvider';
 import {
+  appendCollectorIgnoreUrls,
   getActiveTracingRegistrations,
   getTracingRegistry,
   markTracingRegistrationDraining,
@@ -135,6 +136,21 @@ function createRoutingPropagationUrlView(
     ) => getRoutingPropagationUrlPatterns(registry, nestedConfigurationKey).some(predicate, thisArg),
   });
   return urls;
+}
+
+function normalizeIgnoreUrls(urls: Array<string | RegExp>): Array<string | RegExp> {
+  return urls.flatMap<string | RegExp>((url) => {
+    if (typeof url !== 'string') {
+      return [url];
+    }
+
+    try {
+      const normalizedUrl = new URL(url, typeof document === 'undefined' ? undefined : document.baseURI).href;
+      return normalizedUrl === url ? [url] : [url, normalizedUrl];
+    } catch {
+      return [url];
+    }
+  });
 }
 
 function normalizeCaptureRequestUrl(input: unknown): string | undefined {
@@ -391,6 +407,11 @@ export class TracingInstrumentation extends BaseInstrumentation {
       this.api.initOTEL(trace, context);
       return;
     }
+
+    this.unsubscribeTransportChanges?.();
+    this.unsubscribeTransportChanges = this.transports.onChange?.(() => {
+      appendCollectorIgnoreUrls(this.getCollectorIgnoreUrls());
+    });
 
     if (Object.prototype.hasOwnProperty.call(options, 'instrumentations')) {
       this.logWarn(
@@ -833,18 +854,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
       ...(this.config.ignoreUrls ?? []),
       ...this.transports.transports.flatMap((transport: Transport) => transport.getIgnoreUrls()),
     ];
-    return patterns.flatMap<string | RegExp>((pattern) => {
-      if (typeof pattern !== 'string') {
-        return [pattern];
-      }
-      try {
-        // OTel compares against absolute request URLs; honor relative endpoints and <base>.
-        const url = new URL(pattern, typeof document === 'undefined' ? undefined : document.baseURI).href;
-        return url === pattern ? [pattern] : [pattern, url];
-      } catch {
-        return [pattern];
-      }
-    });
+    return normalizeIgnoreUrls(patterns);
   }
 
   private getCollectorIgnoreUrls(): Array<string | RegExp> {
@@ -855,7 +865,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
       return ignoreUrls.length > 0 ? [ignoreUrls[0]] : [];
     });
 
-    return [...transportIgnoreUrls, ...appIgnoreUrls].filter(
+    const collectorUrls = [...transportIgnoreUrls, ...appIgnoreUrls].filter(
       (url) =>
         isDefaultCollectorPattern(url) ||
         transportCollectorUrls.some(
@@ -865,5 +875,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
           (configuredUrl) => configuredUrl !== undefined && areIgnorePatternsEqual(configuredUrl, url)
         )
     );
+
+    return normalizeIgnoreUrls(collectorUrls);
   }
 }
