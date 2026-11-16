@@ -18,12 +18,18 @@ Alternatively, you can use the CDN version of the library. See [use cdn library]
 - web-vitals - captures performance metrics reported by web vitals API
 - session - sends session start event
 - view - sends view changed event
-- navigation - captures soft navigations and reports their URL changes and durations
+- navigation - captures hard page loads and soft navigations and reports their URL changes and durations
 - frustration - sends an event for each rage click, dead click and error click, but not for ordinary clicks
 
 Navigation instrumentation is enabled by default. To disable it, pass `trackNavigation: false` to
 `getWebInstrumentations()` when supplying custom instrumentations, or provide a custom `instrumentations` array without
 `NavigationInstrumentation`.
+
+Hard page loads emit one `faro.navigation` event with `sameDocument: "false"`. Its `fromUrl` is
+`document.referrer` (empty for direct visits), `toUrl` is the navigation timing entry URL, and `duration` runs
+to the end of the load event. Prerendered pages wait for activation and measure from `activationStart`,
+clamped to zero if loading finished before activation. Back/forward cache restores are not reported.
+Soft navigations continue to use `sameDocument: "true"` and the activity window duration.
 
 ## Metas
 

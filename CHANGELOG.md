@@ -11,6 +11,7 @@
 - **web-sdk:** report rage clicks, dead clicks and error clicks as frustration events by default
 - **user-actions:** add configurable initial activity timeouts globally, through `startUserAction`, and with
   `data-faro-user-action-timeout` element overrides
+- **web-sdk:** include hard page loads in navigation events, with `sameDocument: false` and a load-end duration.
 
 ### Bug Fixes
 
