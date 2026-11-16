@@ -4,12 +4,12 @@ import {
   warnOnAttributionConflict,
 } from './attributionResolver';
 import { registerTracingRegistration, resetTracingRegistryForTests, selectTracingMode } from './tracingRegistry';
-import type { TracingRegistration } from './tracingRegistry';
+import type { TracingRegistration, TracingRegistrationConfiguration } from './tracingRegistry';
 
 function registration(
   registrationId: number,
   appName: string,
-  config: Record<string, unknown> = {},
+  config: TracingRegistrationConfiguration = {},
   isolate = true
 ): TracingRegistration {
   return {
@@ -82,7 +82,7 @@ describe('resolveNetworkAttribution', () => {
     const routeB = registration(2, 'route-b', {
       pageRouteMatchers: [{ pattern: '/a', target: 'pathname' }],
     });
-    const fallback = registration(3, 'global', {}, false);
+    const fallback = registration(3, 'global', { fallback: true }, false);
 
     const result = resolvePageRouteAttribution('https://app.example.test/a', [routeA, routeB, fallback]);
 
@@ -141,7 +141,7 @@ describe('resolveNetworkAttribution', () => {
     const second = registration(2, 'second', {
       pageRouteMatchers: [{ pattern: '/orders', target: 'pathname' }],
     });
-    const fallback = registration(3, 'global', {}, false);
+    const fallback = registration(3, 'global', { fallback: true }, false);
 
     const result = resolveNetworkAttribution(requestUrl, pageUrl, [first, second, fallback]);
 
@@ -153,7 +153,7 @@ describe('resolveNetworkAttribution', () => {
 
   it('uses fallback when neither strategy resolves and keeps manual spans unattributed', () => {
     const isolated = registration(1, 'isolated');
-    const global = registration(2, 'global', {}, false);
+    const global = registration(2, 'global', { fallback: true }, false);
 
     expect(resolveNetworkAttribution(requestUrl, pageUrl, [isolated, global])?.registration).toBe(global);
     expect(resolveNetworkAttribution(undefined, pageUrl, [isolated, global])).toMatchObject({

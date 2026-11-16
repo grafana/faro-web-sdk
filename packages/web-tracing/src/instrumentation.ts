@@ -3,8 +3,6 @@ import type { Attributes, Span, Tracer, TracerOptions } from '@opentelemetry/api
 import { isUrlIgnored, W3CTraceContextPropagator } from '@opentelemetry/core';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import type { Instrumentation } from '@opentelemetry/instrumentation';
-import type { FetchCustomAttributeFunction, FetchRequestHookFunction } from '@opentelemetry/instrumentation-fetch';
-import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request';
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
 import {
   BatchSpanProcessor,
@@ -20,7 +18,7 @@ import {
 } from '@opentelemetry/semantic-conventions';
 
 import { BaseInstrumentation, captureMetas, isArray, VERSION } from '@grafana/faro-web-sdk';
-import type { API, Transport } from '@grafana/faro-web-sdk';
+import type { Transport } from '@grafana/faro-web-sdk';
 
 import {
   resolveNetworkAttribution,
@@ -57,6 +55,7 @@ import {
   registerTracingRegistration,
   removeTracingRegistration,
   selectTracingMode,
+  tracingRegistryProtocolMajor,
   useTracingOwnerPropagationUrls,
 } from './tracingRegistry';
 import type { TracingRegistry } from './tracingRegistry';
@@ -296,7 +295,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
     if (modeSelection.incompatibleRegistry) {
       const observed = modeSelection.incompatibleRegistryDetails;
       this.logWarn(
-        `Faro tracing found an incompatible global routing registry (supported protocol major 1; observed kind ${String(
+        `Faro tracing found an incompatible global routing registry (supported protocol major ${tracingRegistryProtocolMajor}; observed kind ${String(
           observed?.kind ?? 'unknown'
         )}, major ${String(observed?.protocolMajor ?? 'unknown')}, minor ${String(
           observed?.protocolMinor ?? 'unknown'
@@ -304,6 +303,10 @@ export class TracingInstrumentation extends BaseInstrumentation {
       );
       this.api.initOTEL(trace, context);
       return;
+    }
+
+    if (options.fallback !== undefined && typeof options.fallback !== 'boolean') {
+      this.logWarn('Invalid fallback option; only a boolean is supported and the value will be ignored.');
     }
 
     if (modeSelection.conflictingRequestedMode) {
@@ -327,6 +330,9 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     if (modeSelection.mode === 'legacy' && ('apiUrlMatchers' in options || 'pageRouteMatchers' in options)) {
       this.logWarn('URL matcher fields are only supported in routing mode and will be ignored.');
+    }
+    if (modeSelection.mode === 'legacy' && 'fallback' in options) {
+      this.logWarn('The fallback option is only supported in routing mode and will be ignored.');
     }
 
     if (modeSelection.mode === 'routing') {
@@ -366,6 +372,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
           pageRouteMatcherBaseUrl
         ),
         drainTimeoutMs,
+        fallback: options.fallback === true,
         collectorIgnoreUrls: this.getCollectorIgnoreUrls(),
         appIgnoreUrls: this.config.ignoreUrls ?? [],
         propagateTraceHeaderCorsUrls: options.instrumentationOptions?.propagateTraceHeaderCorsUrls ?? [],
@@ -471,10 +478,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
           const shouldSuppress = () => {
             const suppressed =
               shouldSuppressTraceContext() ||
-              isUrlIgnored(
-                requestUrl,
-                (registration?.configuration['appIgnoreUrls'] as Array<string | RegExp> | undefined) ?? []
-              );
+              isUrlIgnored(requestUrl, [...(registration?.configuration.appIgnoreUrls ?? [])]);
             suppressionLatched ||= suppressed;
             return suppressionLatched;
           };
@@ -526,8 +530,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
             return;
           }
 
-          const callback = resolution.registration.configuration['fetchRequestHook'] as
-            FetchRequestHookFunction | undefined;
+          const callback = resolution.registration.configuration.fetchRequestHook;
           callback?.(span, request);
         },
         applyCustomAttributesOnSpan: (
@@ -540,8 +543,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
             return;
           }
 
-          const callback = resolution.registration.configuration['fetchApplyCustomAttributesOnSpan'] as
-            FetchCustomAttributeFunction | undefined;
+          const callback = resolution.registration.configuration.fetchApplyCustomAttributesOnSpan;
           callback?.(span, request, result);
         },
       };
@@ -555,8 +557,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
             return;
           }
 
-          const callback = resolution.registration.configuration['xhrApplyCustomAttributesOnSpan'] as
-            XHRCustomAttributeFunction | undefined;
+          const callback = resolution.registration.configuration.xhrApplyCustomAttributesOnSpan;
           callback?.(span, xhr);
         },
       };
@@ -576,8 +577,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
             return undefined;
           }
 
-          const getActiveUserAction = resolution.registration.configuration['getActiveUserAction'] as
-            (() => ReturnType<API['getActiveUserAction']>) | undefined;
+          const getActiveUserAction = resolution.registration.configuration.getActiveUserAction;
           return getActiveUserAction?.();
         },
         fetchInstrumentationOptions,
@@ -778,19 +778,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
 
     const resource = defaultResource().merge(resourceFromAttributes(attributes));
 
-    const defaultSpanProcessor = new FaroMetaAttributesSpanProcessor(
-      new BatchSpanProcessor(
-        lifecycle
-          ? new TracingLifecycleExporter(new FaroTraceExporter({ api: this.api }), lifecycle)
-          : new FaroTraceExporter({ api: this.api }),
-        {
-          scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
-          maxExportBatchSize: 30,
-        }
-      ),
-      this.metas
-    );
-    const spanProcessor = options.spanProcessor ?? defaultSpanProcessor;
+    const spanProcessor = options.spanProcessor ?? this.createDefaultSpanProcessor(lifecycle);
     const managedSpanProcessor = lifecycle
       ? new TracingLifecycleSpanProcessor(spanProcessor, lifecycle)
       : spanProcessor;
@@ -815,6 +803,21 @@ export class TracingInstrumentation extends BaseInstrumentation {
       },
       spanProcessors: [managedSpanProcessor],
     });
+  }
+
+  private createDefaultSpanProcessor(lifecycle?: TracingLifecycle) {
+    return new FaroMetaAttributesSpanProcessor(
+      new BatchSpanProcessor(
+        lifecycle
+          ? new TracingLifecycleExporter(new FaroTraceExporter({ api: this.api }), lifecycle)
+          : new FaroTraceExporter({ api: this.api }),
+        {
+          scheduledDelayMillis: TracingInstrumentation.SCHEDULED_BATCH_DELAY_MS,
+          maxExportBatchSize: 30,
+        }
+      ),
+      this.metas
+    );
   }
 
   destroy(): void {

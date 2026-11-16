@@ -92,7 +92,7 @@ describe('page-lifetime tracing mode', () => {
   it('assigns opaque IDs and keeps same-name lifecycles distinct across registrations', () => {
     selectTracingMode('routing');
 
-    const matchers = [{ pattern: '/orders', target: 'pathname' }];
+    const matchers: Array<{ pattern: string; target: 'pathname' }> = [{ pattern: '/orders', target: 'pathname' }];
     const first = registerTracingRegistration({
       appName: 'shared-app',
       isolate: true,
@@ -104,9 +104,9 @@ describe('page-lifetime tracing mode', () => {
     expect(second?.registrationId).toBe(1);
     expect(first).not.toBe(second);
     matchers.push({ pattern: '/users', target: 'pathname' });
-    expect(first?.configuration['pageRouteMatchers']).toHaveLength(1);
+    expect(first?.configuration.pageRouteMatchers).toHaveLength(1);
     expect(() => {
-      (first!.configuration['pageRouteMatchers'] as Array<{ pattern: string }>)[0]!.pattern = '/changed';
+      (first!.configuration.pageRouteMatchers as unknown as Array<{ pattern: string }>)[0]!.pattern = '/changed';
     }).toThrow();
     expect(getActiveTracingRegistrations()).toEqual([first, second]);
 
@@ -170,45 +170,69 @@ describe('page-lifetime tracing mode', () => {
     expect(getPageCollectorIgnoreUrls()).toEqual(['https://collector.first.test', /collector\\.second\\.test/]);
   });
 
-  it('prefers the active global fallback and transitions to the earliest remaining app', () => {
+  it('prefers an explicit fallback regardless of isolation, then falls back to registration order', () => {
     selectTracingMode('routing');
 
     const isolatedFirst = registerTracingRegistration({ appName: 'isolated-a', isolate: true });
-    const isolatedSecond = registerTracingRegistration({ appName: 'isolated-b', isolate: true });
+    const nonIsolatedSecond = registerTracingRegistration({ appName: 'mfe', isolate: false });
+    const host = registerTracingRegistration({
+      appName: 'host',
+      isolate: true,
+      configuration: { fallback: true },
+    });
 
-    expect(getFallbackTracingRegistration()).toBe(isolatedFirst);
+    expect(getFallbackTracingRegistration()).toBe(host);
 
-    const global = registerTracingRegistration({ appName: 'global', isolate: false });
-    expect(getFallbackTracingRegistration()).toBe(global);
-
-    markTracingRegistrationDraining(global!.registrationId);
+    markTracingRegistrationDraining(host!.registrationId);
     expect(getFallbackTracingRegistration()).toBe(isolatedFirst);
 
     markTracingRegistrationDraining(isolatedFirst!.registrationId);
-    expect(getFallbackTracingRegistration()).toBe(isolatedSecond);
+    expect(getFallbackTracingRegistration()).toBe(nonIsolatedSecond);
   });
 
-  it('does not replace an incompatible registry', () => {
+  it('warns once and selects the earliest registration when multiple apps set fallback', () => {
+    selectTracingMode('routing');
+    const warnFirst = jest.fn();
+    const warnSecond = jest.fn();
+    const first = registerTracingRegistration({
+      appName: 'host-a',
+      isolate: true,
+      configuration: { fallback: true },
+      warn: warnFirst,
+    });
+    registerTracingRegistration({
+      appName: 'host-b',
+      isolate: false,
+      configuration: { fallback: true },
+      warn: warnSecond,
+    });
+
+    expect(getFallbackTracingRegistration()).toBe(first);
+    expect(getFallbackTracingRegistration()).toBe(first);
+    expect(warnFirst).toHaveBeenCalledTimes(1);
+    expect(warnFirst.mock.calls[0]?.[0]).toContain('Multiple active Faro tracing registrations');
+    expect(warnSecond).not.toHaveBeenCalled();
+  });
+
+  it('does not join a registry with the previous protocol major', () => {
+    const previousRegistry = { kind: 'faro-tracing-registry', protocolMajor: 1, protocolMinor: 0 };
     Object.defineProperty(globalThis, tracingRegistryKey, {
       configurable: true,
       enumerable: false,
       writable: false,
-      value: { kind: 'other-registry', protocolMajor: 2 },
+      value: previousRegistry,
     });
 
     const selection = selectTracingMode('routing');
 
     expect(selection.incompatibleRegistry).toBe(true);
     expect(selection.incompatibleRegistryDetails).toEqual({
-      kind: 'other-registry',
-      protocolMajor: 2,
-      protocolMinor: undefined,
+      kind: 'faro-tracing-registry',
+      protocolMajor: 1,
+      protocolMinor: 0,
     });
     expect(selection.mode).toBeUndefined();
-    expect((globalThis as Record<string, unknown>)[tracingRegistryKey]).toEqual({
-      kind: 'other-registry',
-      protocolMajor: 2,
-    });
+    expect((globalThis as Record<string, unknown>)[tracingRegistryKey]).toBe(previousRegistry);
   });
 
   it('yields from a malformed same-major capture registry', () => {
@@ -222,6 +246,6 @@ describe('page-lifetime tracing mode', () => {
     const nextSelection = selectTracingMode('routing');
 
     expect(nextSelection.incompatibleRegistry).toBe(true);
-    expect(nextSelection.incompatibleRegistryDetails?.protocolMajor).toBe(1);
+    expect(nextSelection.incompatibleRegistryDetails?.protocolMajor).toBe(2);
   });
 });

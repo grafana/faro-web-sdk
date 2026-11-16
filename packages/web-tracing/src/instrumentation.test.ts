@@ -91,14 +91,34 @@ describe('TracingInstrumentation single-owner behavior', () => {
       instrumentation.initialize();
 
       const configuration = getTracingRegistry()!.registrations[0]!.configuration;
-      const apiMatcher = (configuration['apiUrlMatchers'] as Array<{ pattern: string }>)[0]!;
-      const pageRouteMatcher = (configuration['pageRouteMatchers'] as Array<{ pattern: string }>)[0]!;
+      const apiMatcher = (configuration.apiUrlMatchers as unknown as Array<{ pattern: string }>)[0]!;
+      const pageRouteMatcher = (configuration.pageRouteMatchers as unknown as Array<{ pattern: string }>)[0]!;
       expect(apiMatcher.pattern).toBe('https://api.example.test/base/orders');
       expect(pageRouteMatcher.pattern).toBe(new URL('orders', pageUrl).href);
     } finally {
       base.remove();
       window.history.replaceState({}, '', previousPageUrl);
     }
+  });
+
+  it('does not construct the default batch processor when a custom span processor is supplied', () => {
+    const customSpanProcessor = {
+      onStart: jest.fn(),
+      onEnd: jest.fn(),
+      forceFlush: jest.fn().mockResolvedValue(undefined),
+      shutdown: jest.fn().mockResolvedValue(undefined),
+    };
+    const { instrumentation } = setupInstrumentation('custom-span-processor', {
+      spanProcessor: customSpanProcessor as never,
+    });
+    const processorFactory = jest.spyOn(
+      instrumentation as unknown as { createDefaultSpanProcessor: () => unknown },
+      'createDefaultSpanProcessor'
+    );
+
+    instrumentation.initialize();
+
+    expect(processorFactory).not.toHaveBeenCalled();
   });
 
   it('keeps legacy custom instrumentations unchanged when routing is omitted', () => {
@@ -242,6 +262,13 @@ describe('TracingInstrumentation single-owner behavior', () => {
     expect(includes(xhrUrls, 'https://xhr-b.example.test')).toBe(true);
     expect(includes(xhrUrls, 'https://top-a.example.test')).toBe(false);
     expect(includes(xhrUrls, 'https://top-b.example.test')).toBe(false);
+  });
+
+  it('registers the explicit routing fallback option in the typed configuration', () => {
+    const host = setupInstrumentation('host-app', { mode: 'routing', fallback: true });
+    host.instrumentation.initialize();
+
+    expect(getTracingRegistry()?.registrations[0]?.configuration.fallback).toBe(true);
   });
 
   it('registers each routing instance in the shared registry before capture integration', () => {

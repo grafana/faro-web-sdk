@@ -1,9 +1,14 @@
 import type { Span, TracerProvider } from '@opentelemetry/api';
+import type { FetchCustomAttributeFunction, FetchRequestHookFunction } from '@opentelemetry/instrumentation-fetch';
+import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request';
 
 import { globalObject } from '@grafana/faro-web-sdk';
+import type { API } from '@grafana/faro-web-sdk';
+
+import type { NormalizedUrlMatcher } from './urlMatcher';
 
 export const tracingRegistryKey = '_faroTracingRegistry';
-export const tracingRegistryProtocolMajor = 1;
+export const tracingRegistryProtocolMajor = 2;
 export const tracingRegistryProtocolMinor = 0;
 export const defaultTracingDrainTimeoutMs = 30_000;
 export const maxTracingDrainTimeoutMs = 300_000;
@@ -11,6 +16,30 @@ export const maxTracingDrainTimeoutMs = 300_000;
 export type TracingMode = 'legacy' | 'routing';
 
 export type TracingRegistrationState = 'active' | 'draining' | 'expired';
+
+export type TraceHeaderPropagationUrl = string | RegExp;
+export type TraceHeaderPropagationUrls = TraceHeaderPropagationUrl | ReadonlyArray<TraceHeaderPropagationUrl>;
+
+/**
+ * Versioned cross-bundle contract for per-app routing configuration. Keep changes to this shape
+ * synchronized with tracingRegistryProtocolMajor so independently bundled Faro copies cannot
+ * silently interpret different registration semantics.
+ */
+export interface TracingRegistrationConfiguration {
+  apiUrlMatchers?: ReadonlyArray<NormalizedUrlMatcher>;
+  pageRouteMatchers?: ReadonlyArray<NormalizedUrlMatcher>;
+  drainTimeoutMs?: number;
+  collectorIgnoreUrls?: ReadonlyArray<TraceHeaderPropagationUrl>;
+  appIgnoreUrls?: ReadonlyArray<TraceHeaderPropagationUrl>;
+  propagateTraceHeaderCorsUrls?: ReadonlyArray<TraceHeaderPropagationUrl>;
+  fetchPropagateTraceHeaderCorsUrls?: TraceHeaderPropagationUrls;
+  xhrPropagateTraceHeaderCorsUrls?: TraceHeaderPropagationUrls;
+  fetchRequestHook?: FetchRequestHookFunction;
+  fetchApplyCustomAttributesOnSpan?: FetchCustomAttributeFunction;
+  xhrApplyCustomAttributesOnSpan?: XHRCustomAttributeFunction;
+  getActiveUserAction?: () => ReturnType<API['getActiveUserAction']>;
+  fallback?: boolean;
+}
 
 export function normalizeTracingDrainTimeoutMs(value: unknown, warn: (message: string) => void): number {
   if (value === undefined) {
@@ -34,7 +63,7 @@ export interface TracingRegistration {
   readonly registrationId: number;
   readonly appName?: string;
   readonly isolate: boolean;
-  readonly configuration: Readonly<Record<string, unknown>>;
+  readonly configuration: Readonly<TracingRegistrationConfiguration>;
   readonly provider?: TracerProvider;
   readonly isPaused?: () => boolean;
   readonly shouldSuppressTraceContext?: () => boolean;
@@ -48,6 +77,7 @@ export interface TracingRegistration {
 export interface TracingCaptureInstrumentation {
   enable(): void;
   disable(): void;
+  getConfig(): unknown;
 }
 
 export interface TracingRegistry {
@@ -114,6 +144,66 @@ function isTracerProviderLike(value: unknown): boolean {
   return !!value && typeof value === 'object' && typeof (value as { getTracer?: unknown }).getTracer === 'function';
 }
 
+function isUrlPattern(value: unknown): value is TraceHeaderPropagationUrl {
+  return typeof value === 'string' || Object.prototype.toString.call(value) === '[object RegExp]';
+}
+
+function isUrlPatternArray(value: unknown): boolean {
+  return Array.isArray(value) && value.every(isUrlPattern);
+}
+
+function isTracingRegistrationConfiguration(value: unknown): value is TracingRegistrationConfiguration {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const configuration = value as Record<string, unknown>;
+  const matcherArrays = ['apiUrlMatchers', 'pageRouteMatchers'] as const;
+  if (
+    matcherArrays.some(
+      (key) =>
+        configuration[key] !== undefined &&
+        (!Array.isArray(configuration[key]) ||
+          !(configuration[key] as unknown[]).every(
+            (matcher) =>
+              !!matcher &&
+              typeof matcher === 'object' &&
+              isUrlPattern((matcher as { pattern?: unknown }).pattern) &&
+              ((matcher as { target?: unknown }).target === 'full-url' ||
+                (matcher as { target?: unknown }).target === 'pathname')
+          ))
+    )
+  ) {
+    return false;
+  }
+
+  const patternArrays = ['collectorIgnoreUrls', 'appIgnoreUrls', 'propagateTraceHeaderCorsUrls'] as const;
+  if (patternArrays.some((key) => configuration[key] !== undefined && !isUrlPatternArray(configuration[key]))) {
+    return false;
+  }
+
+  const nestedPatternKeys = ['fetchPropagateTraceHeaderCorsUrls', 'xhrPropagateTraceHeaderCorsUrls'] as const;
+  if (
+    nestedPatternKeys.some((key) => {
+      const patterns = configuration[key];
+      return patterns !== undefined && !isUrlPattern(patterns) && !isUrlPatternArray(patterns);
+    })
+  ) {
+    return false;
+  }
+
+  const callbackKeys = [
+    'fetchRequestHook',
+    'fetchApplyCustomAttributesOnSpan',
+    'xhrApplyCustomAttributesOnSpan',
+    'getActiveUserAction',
+  ] as const;
+  return (
+    (configuration['fallback'] === undefined || typeof configuration['fallback'] === 'boolean') &&
+    callbackKeys.every((key) => configuration[key] === undefined || typeof configuration[key] === 'function')
+  );
+}
+
 function isTracingRegistry(value: unknown): value is TracingRegistry {
   if (!value || typeof value !== 'object') {
     return false;
@@ -130,7 +220,8 @@ function isTracingRegistry(value: unknown): value is TracingRegistry {
             !!instrumentation &&
             typeof instrumentation === 'object' &&
             typeof instrumentation.enable === 'function' &&
-            typeof instrumentation.disable === 'function'
+            typeof instrumentation.disable === 'function' &&
+            typeof instrumentation.getConfig === 'function'
         ) &&
         typeof registry.captureInstrumentationsRegistered === 'boolean' &&
         typeof registry.captureGatesInstalled === 'boolean';
@@ -155,8 +246,7 @@ function isTracingRegistry(value: unknown): value is TracingRegistry {
         registration.registrationId >= 0 &&
         typeof registration.isolate === 'boolean' &&
         (registration.state === 'active' || registration.state === 'draining' || registration.state === 'expired') &&
-        !!registration.configuration &&
-        typeof registration.configuration === 'object' &&
+        isTracingRegistrationConfiguration(registration.configuration) &&
         (registration.provider === undefined || isTracerProviderLike(registration.provider))
     ) &&
     captureStateValid &&
@@ -222,7 +312,7 @@ function refreshPropagationUrls(registry: TracingRegistry): void {
   const routingUrls = registry.registrations
     .filter((registration) => registration.state === 'active')
     .flatMap((registration) => {
-      const urls = registration.configuration['propagateTraceHeaderCorsUrls'];
+      const urls = registration.configuration.propagateTraceHeaderCorsUrls;
       return Array.isArray(urls) ? (urls as Array<string | RegExp>) : [];
     });
 
@@ -265,7 +355,7 @@ function refreshCollectorIgnoreUrls(registry: TracingRegistry): void {
   const discoveredUrls = registry.registrations
     .filter((registration) => registration.state === 'active' || registration.state === 'draining')
     .flatMap((registration) => {
-      const urls = registration.configuration['collectorIgnoreUrls'];
+      const urls = registration.configuration.collectorIgnoreUrls;
       return Array.isArray(urls) ? (urls as Array<string | RegExp>) : [];
     });
 
@@ -287,9 +377,31 @@ function noteRegistryConfigurationChange(registry: TracingRegistry): void {
   };
 }
 
+function warnOnMultipleFallbackRegistrations(registry: TracingRegistry, registrations: TracingRegistration[]): void {
+  const explicitFallbacks = registrations.filter(
+    (registration) => registration.state === 'active' && registration.configuration.fallback === true
+  );
+  if (explicitFallbacks.length < 2) {
+    return;
+  }
+
+  const ids = explicitFallbacks.map(({ registrationId }) => registrationId);
+  const warningKey = `fallback:${ids.join(',')}`;
+  if (registry.ownershipWarnings.keys.includes(warningKey)) {
+    return;
+  }
+
+  registry.ownershipWarnings.keys.push(warningKey);
+  const selected = explicitFallbacks[0]!;
+  const apps = explicitFallbacks.map(({ appName, registrationId }) => appName ?? `registration ${registrationId}`);
+  selected.warn?.(
+    `Multiple active Faro tracing registrations set fallback: true (${apps.join(', ')}); using the earliest registered app ${selected.appName ?? `registration ${selected.registrationId}`} as fallback.`
+  );
+}
+
 function freezeRegistrationConfiguration(
-  configuration: Readonly<Record<string, unknown>> | undefined
-): Readonly<Record<string, unknown>> {
+  configuration: TracingRegistrationConfiguration | undefined
+): Readonly<TracingRegistrationConfiguration> {
   const copy: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(configuration ?? {})) {
@@ -306,7 +418,7 @@ function freezeRegistrationConfiguration(
     }
   }
 
-  return Object.freeze(copy);
+  return Object.freeze(copy) as Readonly<TracingRegistrationConfiguration>;
 }
 
 function normalizeRequestedMode(value: unknown): {
@@ -373,7 +485,7 @@ export function getTracingRegistry(): TracingRegistry | undefined {
 export function registerTracingRegistration(input: {
   appName?: string;
   isolate: boolean;
-  configuration?: Readonly<Record<string, unknown>>;
+  configuration?: TracingRegistrationConfiguration;
   provider?: TracerProvider;
   isPaused?: () => boolean;
   shouldSuppressTraceContext?: () => boolean;
@@ -407,6 +519,7 @@ export function registerTracingRegistration(input: {
   refreshPropagationUrls(registry);
   refreshCollectorIgnoreUrls(registry);
   noteRegistryConfigurationChange(registry);
+  warnOnMultipleFallbackRegistrations(registry, registry.registrations);
 
   return registration;
 }
@@ -469,13 +582,21 @@ export function getPageCollectorIgnoreUrls(): Array<string | RegExp> {
 }
 
 /**
- * Returns the active fallback registration. A non-isolated/global registration has priority over
- * isolated registrations; otherwise registration order provides the deterministic isolated-only
- * fallback. Draining and expired lifecycles are deliberately excluded.
+ * Returns the active fallback registration. An explicit fallback takes priority regardless of
+ * `isolate`; otherwise the earliest active registration is the deterministic last resort.
+ * Draining and expired lifecycles are deliberately excluded.
  */
-export function getFallbackTracingRegistration(): TracingRegistration | undefined {
-  const active = getActiveTracingRegistrations();
-  return active.find((registration) => !registration.isolate) ?? active[0];
+export function getFallbackTracingRegistration(
+  registrations: TracingRegistration[] = getActiveTracingRegistrations()
+): TracingRegistration | undefined {
+  const active = registrations.filter((registration) => registration.state === 'active');
+  const explicitFallbacks = active.filter((registration) => registration.configuration.fallback === true);
+  const registry = getTracingRegistry();
+  if (registry) {
+    warnOnMultipleFallbackRegistrations(registry, active);
+  }
+
+  return explicitFallbacks[0] ?? active[0];
 }
 
 /**

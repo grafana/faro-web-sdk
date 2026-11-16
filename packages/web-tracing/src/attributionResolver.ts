@@ -1,4 +1,4 @@
-import { getActiveTracingRegistrations, getTracingRegistry } from './tracingRegistry';
+import { getActiveTracingRegistrations, getFallbackTracingRegistration, getTracingRegistry } from './tracingRegistry';
 import type { TracingRegistration } from './tracingRegistry';
 import { matchesAnyUrl } from './urlMatcher';
 import type { NormalizedUrlMatcher } from './urlMatcher';
@@ -19,13 +19,11 @@ export interface NetworkAttribution {
   conflict?: AttributionConflict;
 }
 
-function getMatchers(registration: TracingRegistration, key: 'apiUrlMatchers' | 'pageRouteMatchers') {
-  const matchers = registration.configuration[key];
-  return Array.isArray(matchers) ? (matchers as NormalizedUrlMatcher[]) : [];
-}
-
-function getFallback(registrations: TracingRegistration[]): TracingRegistration | undefined {
-  return registrations.find((registration) => !registration.isolate) ?? registrations[0];
+function getMatchers(
+  registration: TracingRegistration,
+  key: 'apiUrlMatchers' | 'pageRouteMatchers'
+): readonly NormalizedUrlMatcher[] {
+  return registration.configuration[key] ?? [];
 }
 
 function fallbackAttribution(
@@ -35,7 +33,7 @@ function fallbackAttribution(
   conflict?: AttributionConflict
 ): NetworkAttribution {
   return {
-    registration: getFallback(registrations),
+    registration: getFallbackTracingRegistration(registrations),
     strategy: 'fallback',
     fallback: true,
     apiClaimants,

@@ -29,6 +29,8 @@ export interface TracingInstrumentationOptions {
    * preserves legacy behavior and omission on later instances inherits the selected page mode.
    */
   mode?: TracingMode;
+  /** Marks this app as the preferred destination for unresolved network and manual spans. */
+  fallback?: boolean;
   apiUrlMatchers?: UrlMatcher[];
   pageRouteMatchers?: UrlMatcher[];
   drainTimeoutMs?: number;

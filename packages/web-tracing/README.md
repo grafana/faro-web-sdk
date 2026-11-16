@@ -30,11 +30,18 @@ bundles do not install a second fetch/XHR wrapper.
 
 Routing mode lets each app retain its own provider, resource (`service.name`), processors, exporter,
 transport, credentials, and callbacks while one page-owned fetch/XHR capture wrapper resolves every
-request. Configure it on each routing-enabled instance:
+request. Mark the host app as the fallback; `isolate` controls Faro data isolation, not trace ownership:
+
+```ts
+new TracingInstrumentation({ mode: 'routing', fallback: true });
+```
+
+Configure routing on each routing-enabled instance:
 
 ```ts
 new TracingInstrumentation({
   mode: 'routing',
+  fallback: true, // set on the host app, not each micro-frontend
   apiUrlMatchers: [{ pattern: 'https://api.example.test/orders', target: 'full-url' }],
   pageRouteMatchers: [{ pattern: '/orders', target: 'pathname' }],
   drainTimeoutMs: 30_000,
@@ -43,9 +50,10 @@ new TracingInstrumentation({
 
 Matchers are exact strings or regular expressions and explicitly target the full URL (including
 query/hash) or pathname. A unique API claimant wins; otherwise a unique current page-route claimant
-wins across all active apps; ambiguous or unresolved requests use the active global/non-isolated app,
-or the earliest active isolated app. Ownership is fixed at fetch/span creation or XHR `open()` and
-is not reassigned by navigation or later registration.
+wins across all active apps. Ambiguous or unresolved requests use the active app marked `fallback: true`.
+If multiple apps opt in, Faro warns and selects the earliest registered; if none opt in, the earliest
+active registration is the fallback. Ownership is fixed at fetch/span creation or XHR `open()` and is
+not reassigned by navigation or later registration.
 
 Manual spans created through the page-global `faro.api.getOTEL()` continue to use the fallback app
 because that API does not identify which micro-frontend called it. For page-route attribution, retain
