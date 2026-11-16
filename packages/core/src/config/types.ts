@@ -263,6 +263,36 @@ export interface Config<P = APIEvent> {
   };
 
   /**
+   * Configuration for the frustration instrumentation. Invalid values fall back to the default.
+   */
+  frustrationInstrumentation?: {
+    /**
+     * Clicks further apart than this in time start a new burst. Also the time window for a rage click.
+     * @default 1000
+     */
+    burstMaxGapMs?: number;
+
+    /**
+     * Clicks further apart than this distance start a new burst.
+     * @default 100
+     */
+    burstMaxRadiusPx?: number;
+
+    /**
+     * Number of clicks within `burstMaxGapMs` that makes a burst a rage click. Must be an integer of at least 2.
+     * @default 3
+     */
+    rageClickThreshold?: number;
+
+    /**
+     * Page activity that starts later than this after a click does not count as a response to it.
+     * A click without a response is a dead click.
+     * @default 100
+     */
+    responseWindowMs?: number;
+  };
+
+  /**
    * When enabled, preserves the original Error object in the transport item for use in the beforeSend hook.
    * The original error is automatically removed before the item is sent to the transport.
    *
