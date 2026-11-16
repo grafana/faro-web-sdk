@@ -214,8 +214,8 @@ describe('page-lifetime tracing mode', () => {
     expect(warnSecond).not.toHaveBeenCalled();
   });
 
-  it('does not join a registry with the previous protocol major', () => {
-    const previousRegistry = { kind: 'faro-tracing-registry', protocolMajor: 1, protocolMinor: 0 };
+  it('does not join a registry with a different protocol major', () => {
+    const previousRegistry = { kind: 'faro-tracing-registry', protocolMajor: 0, protocolMinor: 0 };
     Object.defineProperty(globalThis, tracingRegistryKey, {
       configurable: true,
       enumerable: false,
@@ -228,7 +228,7 @@ describe('page-lifetime tracing mode', () => {
     expect(selection.incompatibleRegistry).toBe(true);
     expect(selection.incompatibleRegistryDetails).toEqual({
       kind: 'faro-tracing-registry',
-      protocolMajor: 1,
+      protocolMajor: 0,
       protocolMinor: 0,
     });
     expect(selection.mode).toBeUndefined();
@@ -246,6 +246,6 @@ describe('page-lifetime tracing mode', () => {
     const nextSelection = selectTracingMode('routing');
 
     expect(nextSelection.incompatibleRegistry).toBe(true);
-    expect(nextSelection.incompatibleRegistryDetails?.protocolMajor).toBe(2);
+    expect(nextSelection.incompatibleRegistryDetails?.protocolMajor).toBe(1);
   });
 });

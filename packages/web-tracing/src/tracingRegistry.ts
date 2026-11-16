@@ -8,7 +8,7 @@ import type { API } from '@grafana/faro-web-sdk';
 import type { NormalizedUrlMatcher } from './urlMatcher';
 
 export const tracingRegistryKey = '_faroTracingRegistry';
-export const tracingRegistryProtocolMajor = 2;
+export const tracingRegistryProtocolMajor = 1;
 export const tracingRegistryProtocolMinor = 0;
 export const defaultTracingDrainTimeoutMs = 30_000;
 export const maxTracingDrainTimeoutMs = 300_000;
