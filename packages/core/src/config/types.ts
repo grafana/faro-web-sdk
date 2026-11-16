@@ -184,6 +184,17 @@ export interface Config<P = APIEvent> {
      * @default false
      */
     trackAttributionSources?: boolean;
+
+    /**
+     * Report web vitals (LCP, CLS, INP, FCP) for soft navigations in browsers that support them
+     * (Chromium 151+). Other browsers are unaffected.
+     * Each soft navigation reports its own metric values with `navigation_type` set to `soft-navigation`.
+     * When enabled, the metrics of the initial page load (CLS and INP in particular) are finalized at the first
+     * soft navigation instead of accumulating until the page is unloaded.
+     * Measurements also carry `navigation_id` and `navigation_url` in the context.
+     * @default false
+     */
+    reportSoftNavs?: boolean;
   };
 
   /**

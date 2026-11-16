@@ -112,12 +112,14 @@ describe('config', () => {
       app: {},
       webVitalsInstrumentation: {
         reportAllChanges: true,
+        reportSoftNavs: true,
       },
     };
     const config = makeCoreConfig(browserConfig);
 
     expect(config).toBeTruthy();
     expect(config?.webVitalsInstrumentation?.reportAllChanges).toBe(true);
+    expect(config?.webVitalsInstrumentation?.reportSoftNavs).toBe(true);
   });
 
   it('merges configured urls with default URLs into ignoreUrls list', () => {

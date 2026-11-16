@@ -48,7 +48,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllChanges, reportSoftNavs: this.webVitalConfig?.reportSoftNavs }
     );
   }
 
@@ -66,7 +66,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllChanges, reportSoftNavs: this.webVitalConfig?.reportSoftNavs }
     );
   }
 
@@ -123,7 +123,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllChanges, reportSoftNavs: this.webVitalConfig?.reportSoftNavs }
     );
   }
 
@@ -161,13 +161,18 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllChanges, reportSoftNavs: this.webVitalConfig?.reportSoftNavs }
     );
   }
 
   private measureTTFB(): void {
     onTTFB(
       (metric) => {
+        // TTFB is always 0 for soft navigations, so it carries no information.
+        if (metric.navigationType === 'soft-navigation') {
+          return;
+        }
+
         const { dnsDuration, connectionDuration, requestDuration, waitingDuration, cacheDuration } = metric.attribution;
 
         const values = this.buildInitialValues(metric);
@@ -181,7 +186,7 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
+      { reportAllChanges: this.webVitalConfig?.reportAllChanges, reportSoftNavs: this.webVitalConfig?.reportSoftNavs }
     );
   }
 
@@ -196,12 +201,19 @@ export class WebVitalsWithAttribution {
   private buildInitialContext(metric: Metric): Context {
     const navigationEntryId = getItem(NAVIGATION_ID_STORAGE_KEY, webStorageType.session) ?? unknownString;
 
-    return {
+    const context: Context = {
       id: metric.id,
       rating: metric.rating,
       navigation_type: metric.navigationType,
       navigation_entry_id: navigationEntryId,
     };
+
+    if (this.webVitalConfig?.reportSoftNavs) {
+      context['navigation_id'] = String(metric.navigationId);
+      this.addIfPresent(context, 'navigation_url', metric.navigationURL);
+    }
+
+    return context;
   }
 
   private pushMeasurement(values: Values, context: Context): void {
