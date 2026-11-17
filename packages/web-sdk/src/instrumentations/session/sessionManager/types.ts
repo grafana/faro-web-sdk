@@ -7,7 +7,7 @@ export interface FaroUserSession {
   sessionId: string;
   lastActivity: number;
   started: number;
-  isSampled: boolean;
+  sampling?: unknown;
   sessionMeta?: MetaSession;
 }
 

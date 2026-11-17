@@ -1,9 +1,9 @@
 import { dateNow, deepEqual, EVENT_OVERRIDES_SERVICE_NAME, faro, genShortID, isEmpty } from '@grafana/faro-core';
 import type { Meta, MetaOverrides } from '@grafana/faro-core';
+import { getInternalMetas } from '@grafana/faro-core/internal';
 
 import { isLocalStorageAvailable, isSessionStorageAvailable } from '../../../utils';
 
-import { isSampled } from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import type { FaroUserSession, SessionContext } from './types';
 
@@ -11,11 +11,11 @@ type CreateUserSessionObjectParams = {
   sessionId?: string;
   started?: number;
   lastActivity?: number;
-  isSampled?: boolean;
+  sampling?: unknown;
 };
 
 export function createUserSessionObject(
-  { sessionId, started, lastActivity, isSampled = true }: CreateUserSessionObjectParams = {},
+  { sessionId, started, lastActivity, sampling }: CreateUserSessionObjectParams = {},
   context: SessionContext = faro
 ): FaroUserSession {
   const now = dateNow();
@@ -30,7 +30,7 @@ export function createUserSessionObject(
     sessionId,
     lastActivity: lastActivity ?? now,
     started: started ?? now,
-    isSampled: isSampled,
+    ...(sampling === undefined ? {} : { sampling }),
   };
 }
 
@@ -108,16 +108,18 @@ export function getUserSessionUpdater(
         sessionFromStorage!.sessionId !== inMemorySessionId
       ) {
         adoptSession(sessionFromStorage!.sessionMeta);
+        getInternalMetas(context.metas).notifySessionCreated(sessionFromStorage!, 'resume');
       }
     } else {
       let newSession = addSessionMetadataToNextSession(
-        createUserSessionObject({ isSampled: isSampled(context) }, context),
+        createUserSessionObject({}, context),
         sessionFromStorage,
         context
       );
       nextUpdate = now + updateInterval;
 
       storeUserSession(newSession);
+      getInternalMetas(context.metas).notifySessionCreated(newSession, 'rotate');
 
       context.api?.setSession(newSession.sessionMeta);
       sessionTrackingConfig?.onSessionChange?.(sessionFromStorage?.sessionMeta ?? null, newSession.sessionMeta!);
@@ -156,18 +158,20 @@ export function addSessionMetadataToNextSession(
   newSession: FaroUserSession,
   previousSession: FaroUserSession | null,
   context: SessionContext = faro
-): Required<FaroUserSession> {
-  const sessionWithMeta: Required<FaroUserSession> = {
+): FaroUserSession & { sessionMeta: NonNullable<FaroUserSession['sessionMeta']> } {
+  const sessionWithMeta: FaroUserSession & { sessionMeta: NonNullable<FaroUserSession['sessionMeta']> } = {
     ...newSession,
     sessionMeta: {
       id: newSession.sessionId,
       attributes: removeUndefinedValues({
         ...context.config.sessionTracking?.session?.attributes,
         ...(context.metas.value.session?.attributes ?? {}),
-        isSampled: newSession.isSampled.toString(),
       }),
     },
   };
+  if (Object.keys(sessionWithMeta.sessionMeta.attributes ?? {}).length === 0) {
+    delete sessionWithMeta.sessionMeta.attributes;
+  }
 
   const overrides = context.metas.value.session?.overrides ?? previousSession?.sessionMeta?.overrides;
   if (!isEmpty(overrides)) {
@@ -176,7 +180,8 @@ export function addSessionMetadataToNextSession(
 
   const previousSessionId = previousSession?.sessionId;
   if (previousSessionId != null) {
-    sessionWithMeta.sessionMeta.attributes!['previousSession'] = previousSessionId;
+    sessionWithMeta.sessionMeta.attributes ??= {};
+    sessionWithMeta.sessionMeta.attributes['previousSession'] = previousSessionId;
   }
 
   return sessionWithMeta;
@@ -216,7 +221,7 @@ export function getSessionMetaUpdateHandler(
       const userSession = isCurrentSession
         ? addSessionMetadataToNextSession(sessionFromSessionStorage, sessionFromSessionStorage, context)
         : addSessionMetadataToNextSession(
-            createUserSessionObject({ sessionId, isSampled: isSampled(context) }, context),
+            createUserSessionObject({ sessionId }, context),
             sessionFromSessionStorage,
             context
           );
@@ -230,6 +235,9 @@ export function getSessionMetaUpdateHandler(
       }
 
       storeUserSession(userSession);
+      if (!isCurrentSession) {
+        getInternalMetas(context.metas).notifySessionCreated(userSession, 'explicit');
+      }
       sendOverrideEvent(context, hasSessionOverridesChanged, sessionOverrides, storedSessionMetaOverrides);
 
       isSyncing = true;

@@ -12,6 +12,7 @@ import { makeCoreConfig } from '../../config/makeCoreConfig';
 import { createSession } from '../../metas/session';
 
 import { SessionInstrumentation } from './instrumentation';
+import * as samplingModuleMock from './legacySampling';
 import {
   FaroUserSession,
   MAX_SESSION_PERSISTENCE_TIME,
@@ -20,7 +21,6 @@ import {
   STORAGE_KEY,
   STORAGE_UPDATE_DELAY,
 } from './sessionManager';
-import * as samplingModuleMock from './sessionManager/sampling';
 import { createUserSessionObject } from './sessionManager/sessionManagerUtils';
 
 describe('SessionInstrumentation', () => {
@@ -45,7 +45,7 @@ describe('SessionInstrumentation', () => {
   afterEach(() => {
     jest.clearAllMocks();
     jest.clearAllTimers();
-    jest.spyOn(samplingModuleMock, 'isSampled').mockRestore();
+    jest.spyOn(samplingModuleMock.samplingDecision, 'isSampled').mockRestore();
     mockStorage = {};
   });
 
@@ -341,7 +341,7 @@ describe('SessionInstrumentation', () => {
       mockStorage[STORAGE_KEY] = JSON.stringify(
         createUserSessionObject({
           sessionId: 'S0',
-          isSampled: wasSampled,
+          sampling: { kept: wasSampled },
           started: expiry === 'lifetime' ? dateNow() - SESSION_EXPIRATION_TIME + 1000 : dateNow(),
         })
       );
@@ -362,7 +362,7 @@ describe('SessionInstrumentation', () => {
       jest.setSystemTime(dateNow() + (expiry === 'lifetime' ? 2000 : SESSION_INACTIVITY_TIME + 1));
       expect(api.getSession()?.id).toBe('S0');
 
-      jest.spyOn(samplingModuleMock, 'isSampled').mockReturnValue(nextSampled);
+      jest.spyOn(samplingModuleMock.samplingDecision, 'isSampled').mockReturnValue(nextSampled);
       api.pushEvent('after-expiry');
       const newSessionId = api.getSession()?.id;
       expect(newSessionId).not.toBe('S0');
@@ -411,7 +411,7 @@ describe('SessionInstrumentation', () => {
       jest.advanceTimersByTime(STORAGE_UPDATE_DELAY + 1);
       mockStorage[STORAGE_KEY] = JSON.stringify({
         ...createUserSessionObject({ sessionId: 'A1' }),
-        sessionMeta: { id: 'A1', attributes: { isSampled: 'true', previousSession: 'S0' } },
+        sessionMeta: { id: 'A1', attributes: { previousSession: 'S0' } },
       });
 
       // a send triggers updateSession, which adopts A1
@@ -436,7 +436,6 @@ describe('SessionInstrumentation', () => {
       id: 'new-session',
       attributes: {
         foo: 'bar',
-        isSampled: 'true',
       },
     };
 
@@ -457,7 +456,7 @@ describe('SessionInstrumentation', () => {
 
     expect(sessionFromStorage).toStrictEqual({
       sessionId: 'new-session',
-      isSampled: true,
+      sampling: { kept: true },
 
       // lastActivity and started values are not important for this test so it's ok to take them form the object we verify.
       lastActivity: sessionFromStorage.lastActivity,
@@ -469,7 +468,6 @@ describe('SessionInstrumentation', () => {
           foo: 'bar',
 
           // Faro doesn't care about the isSampled value in the meta form localStorage. But it's not worthy to remove it tbh.
-          isSampled: 'true',
         },
       },
     });
@@ -480,7 +478,6 @@ describe('SessionInstrumentation', () => {
       id: 'new-session',
       attributes: {
         foo: 'bar',
-        isSampled: 'true',
       },
     };
 
@@ -508,7 +505,7 @@ describe('SessionInstrumentation', () => {
 
     expect(sessionFromStorage).toStrictEqual({
       sessionId: 'new-session',
-      isSampled: true,
+      sampling: { kept: true },
 
       // lastActivity and started values are not important for this test so it's ok to take them form the object we verify.
       lastActivity: sessionFromStorage.lastActivity,
@@ -518,7 +515,6 @@ describe('SessionInstrumentation', () => {
         id: 'new-session',
         attributes: {
           foo: 'bar',
-          isSampled: 'true',
         },
       },
     });
@@ -539,7 +535,7 @@ describe('SessionInstrumentation', () => {
 
     expect(sessionFromStorage).toStrictEqual({
       sessionId: 'extended-session-id',
-      isSampled: true,
+      sampling: { kept: true },
 
       // lastActivity and started values are not important for this test so it's ok to take them form the object we verify.
       lastActivity: sessionFromStorage.lastActivity,
@@ -551,7 +547,6 @@ describe('SessionInstrumentation', () => {
           location: 'neptun',
           foo: 'abc',
           previousSession: 'new-session',
-          isSampled: 'true',
         },
       },
     });
@@ -563,7 +558,6 @@ describe('SessionInstrumentation', () => {
       attributes: {
         foo: 'bar',
         location: 'mars',
-        isSampled: 'true',
       },
       overrides: {
         serviceName: 'my-service',
@@ -575,7 +569,7 @@ describe('SessionInstrumentation', () => {
       sessionMeta: mockSessionMeta,
       lastActivity: dateNow(),
       started: dateNow(),
-      isSampled: true,
+      sampling: { kept: true },
     } as FaroUserSession);
 
     const { metas } = initializeFaro(
@@ -592,7 +586,7 @@ describe('SessionInstrumentation', () => {
   });
 
   it('creates new session meta for browser with no faro session stored in web storage.', () => {
-    const mockSessionMeta = { id: 'new-session', attributes: { isSampled: 'true' } };
+    const mockSessionMeta = { id: 'new-session' };
 
     const { metas } = initializeFaro(
       mockConfig({
@@ -614,7 +608,6 @@ describe('SessionInstrumentation', () => {
       id: 'persisted-session',
       attributes: {
         foo: 'bar',
-        isSampled: 'true',
       },
     };
 
@@ -700,7 +693,7 @@ describe('SessionInstrumentation', () => {
   it('Removes items which are not part of the sample.', () => {
     const transport = new MockTransport();
 
-    jest.spyOn(samplingModuleMock, 'isSampled').mockReturnValue(true);
+    jest.spyOn(samplingModuleMock.samplingDecision, 'isSampled').mockReturnValue(true);
 
     const { api } = initializeFaro(
       mockConfig({
@@ -717,7 +710,7 @@ describe('SessionInstrumentation', () => {
 
     expect(transport.items).toHaveLength(3);
 
-    jest.spyOn(samplingModuleMock, 'isSampled').mockReturnValueOnce(false);
+    jest.spyOn(samplingModuleMock.samplingDecision, 'isSampled').mockReturnValueOnce(false);
     api.setSession({ id: 'second-session-with-sampling-set-to-false' });
     expect(transport.items).toHaveLength(3);
 
@@ -752,17 +745,16 @@ describe('SessionInstrumentation', () => {
 
       const after = JSON.parse(mockStorage[STORAGE_KEY]!) as FaroUserSession;
       expect(sampler).not.toHaveBeenCalled();
-      expect(api.getSession()?.attributes?.['isSampled']).toBe('false');
+      expect(api.getSession()?.attributes?.['isSampled']).toBeUndefined();
       expect(after).toMatchObject({
         sessionId: before.sessionId,
-        isSampled: before.isSampled,
+        sampling: before.sampling,
         started: before.started,
         lastActivity: before.lastActivity,
         sessionMeta: {
           id: before.sessionId,
           attributes: {
             customerAttribute: 'customer-value',
-            isSampled: before.isSampled.toString(),
             previousSession: 'prior-session',
           },
         },
@@ -797,7 +789,7 @@ describe('SessionInstrumentation', () => {
     const initialIsSampled = true;
     const mockUserSession = createUserSessionObject({
       sessionId: 'persisted-session-ac',
-      isSampled: initialIsSampled,
+      sampling: { kept: initialIsSampled },
     });
 
     mockStorage[STORAGE_KEY] = JSON.stringify(mockUserSession);
@@ -816,15 +808,15 @@ describe('SessionInstrumentation', () => {
     const { api } = initializeFaro(config!);
     const sessionMeta = api.getSession();
 
-    expect(sessionMeta?.attributes?.['isSampled']).toBe(initialIsSampled.toString());
-    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).isSampled).toBe(initialIsSampled);
+    expect(sessionMeta?.attributes?.['isSampled']).toBeUndefined();
+    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).sampling).toEqual({ kept: initialIsSampled });
   });
 
   it('Will calculate new sampling decision if session from web storage is invalid.', () => {
     const initialIsSampled = true;
     const mockUserSession = createUserSessionObject({
       sessionId: 'persisted-session-ac',
-      isSampled: initialIsSampled,
+      sampling: { kept: initialIsSampled },
     });
 
     mockUserSession.lastActivity = dateNow() - SESSION_EXPIRATION_TIME;
@@ -845,8 +837,8 @@ describe('SessionInstrumentation', () => {
     const { api } = initializeFaro(config!);
     const sessionMeta = api.getSession();
 
-    expect(sessionMeta?.attributes?.['isSampled']).toBe('false');
-    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).isSampled).toBe(false);
+    expect(sessionMeta?.attributes?.['isSampled']).toBeUndefined();
+    expect((JSON.parse(mockStorage[STORAGE_KEY]) as FaroUserSession).sampling).toEqual({ kept: false });
   });
 
   it('Will send 0% of the signals.', () => {
@@ -939,12 +931,13 @@ describe('SessionInstrumentation', () => {
     api.pushEvent('two');
     api.pushEvent('three');
 
-    jest.spyOn(samplingModuleMock, 'isSampled').mockReturnValue(false);
-    api.setSession();
+    jest.spyOn(samplingModuleMock.samplingDecision, 'isSampled').mockReturnValue(false);
+    api.setSession({ id: 'new-unsampled-session' });
 
     api.pushEvent('four');
     api.pushEvent('five');
     api.pushEvent('six');
+    jest.advanceTimersByTime(1);
 
     expect(sentItems).toHaveLength(3);
 
@@ -1018,7 +1011,6 @@ describe('SessionInstrumentation', () => {
       id: 'new-session',
       attributes: {
         foo: 'bar',
-        isSampled: 'true',
       },
       overrides: {
         serviceName: 'my-service',
@@ -1048,7 +1040,6 @@ describe('SessionInstrumentation', () => {
       id: sessionId,
       attributes: {
         foo: 'bar',
-        isSampled: 'true',
       },
       overrides: {
         serviceName: 'my-service',
@@ -1098,7 +1089,6 @@ describe('SessionInstrumentation', () => {
       id: sessionId,
       attributes: {
         foo: 'bar',
-        isSampled: 'true',
       },
       overrides: {
         serviceName: 'my-service',

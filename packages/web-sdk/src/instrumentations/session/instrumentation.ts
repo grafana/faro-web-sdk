@@ -7,11 +7,11 @@ import {
   VERSION,
 } from '@grafana/faro-core';
 import type { BeforeSendHook, Config, Meta, MetaSession } from '@grafana/faro-core';
+import { getInternalMetas } from '@grafana/faro-core/internal';
 
-import type { TransportItem } from '../..';
-
+import { registerLegacySampling } from './legacySampling';
 import { type PendingSessionChanges, PrerenderSession } from './prerenderSession';
-import { type FaroUserSession, getSessionManagerByConfig, isSampled } from './sessionManager';
+import { type FaroUserSession, getSessionManagerByConfig } from './sessionManager';
 import { PersistentSessionsManager } from './sessionManager/PersistentSessionsManager';
 import { createUserSessionObject, isUserSessionValid } from './sessionManager/sessionManagerUtils';
 import type { SessionManager } from './sessionManager/types';
@@ -32,6 +32,7 @@ export class SessionInstrumentation extends BaseInstrumentation {
   private beforeSendHook: BeforeSendHook | undefined;
   private sessionStartListener: ((meta: Meta) => void) | undefined;
   private prerenderSession: PrerenderSession | undefined;
+  private removeLegacySampling: (() => void) | undefined;
 
   private sendSessionStartEvent(meta: Meta): void {
     const session = meta.session;
@@ -92,11 +93,16 @@ export class SessionInstrumentation extends BaseInstrumentation {
       initialSession = createUserSessionObject(
         {
           sessionId,
-          isSampled: storedUserSession!.isSampled || false,
+          sampling: storedUserSession!.sampling,
           started: storedUserSession?.started,
         },
         this
       );
+      // Read decisions written by earlier 2.x versions when resuming storage.
+      const legacyDecision = (storedUserSession as FaroUserSession & { isSampled?: boolean }).isSampled;
+      if (typeof legacyDecision === 'boolean') {
+        (initialSession as FaroUserSession & { isSampled?: boolean }).isSampled = legacyDecision;
+      }
 
       const storedUserSessionMeta = storedUserSession?.sessionMeta;
 
@@ -110,8 +116,6 @@ export class SessionInstrumentation extends BaseInstrumentation {
         attributes: {
           ...sessionsConfig.session?.attributes,
           ...storedUserSessionMeta?.attributes,
-          // For valid resumed sessions we do not want to recalculate the sampling decision on each init phase.
-          isSampled: initialSession.isSampled.toString(),
         },
         overrides,
       };
@@ -121,7 +125,6 @@ export class SessionInstrumentation extends BaseInstrumentation {
       initialSession = createUserSessionObject(
         {
           sessionId: pendingChanges?.reset ? undefined : (pendingSession?.id ?? sessionsConfig.session?.id),
-          isSampled: isSampled(this),
         },
         this
       );
@@ -138,7 +141,6 @@ export class SessionInstrumentation extends BaseInstrumentation {
       initialSession.sessionMeta = {
         id: sessionId,
         attributes: {
-          isSampled: initialSession.isSampled.toString(),
           ...sessionsConfig.session?.attributes,
         },
         ...(overrides ? { overrides } : {}),
@@ -153,7 +155,6 @@ export class SessionInstrumentation extends BaseInstrumentation {
         attributes: {
           ...initialSession.sessionMeta?.attributes,
           ...pendingSession.attributes,
-          isSampled: initialSession.isSampled.toString(),
         },
       };
       if (pendingSession.overrides) {
@@ -168,35 +169,24 @@ export class SessionInstrumentation extends BaseInstrumentation {
       }
     }
 
+    if (initialSession.sessionMeta?.attributes) {
+      delete initialSession.sessionMeta.attributes['isSampled'];
+      if (Object.keys(initialSession.sessionMeta.attributes).length === 0) {
+        delete initialSession.sessionMeta.attributes;
+      }
+    }
+
     return { initialSession, lifecycleType };
   }
 
   private registerBeforeSendHook(recordActivity: (sessionId: string) => void) {
     this.beforeSendHook = (item) => {
-      // config.beforeSend runs before this hook. Sampling and hooks added later
-      // retain their existing order and do not undo session activity.
+      // config.beforeSend runs before this hook. Keep session activity recording.
       const sessionId = item.meta.session?.id;
       if (sessionId && !this.transports.isPaused()) {
         recordActivity(sessionId);
       }
-      // Delivery filters using the captured session's sampling decision. It must
-      // never rotate or reassign an item that already belongs to a session.
-      const attributes = item.meta.session?.attributes;
-
-      if (attributes && attributes?.['isSampled'] === 'true') {
-        let newItem: TransportItem = JSON.parse(JSON.stringify(item));
-
-        const newAttributes = newItem.meta.session?.attributes;
-        delete newAttributes?.['isSampled'];
-
-        if (Object.keys(newAttributes ?? {}).length === 0) {
-          delete newItem.meta.session?.attributes;
-        }
-
-        return newItem;
-      }
-
-      return null;
+      return item;
     };
     this.transports?.addBeforeSendHooks(this.beforeSendHook);
   }
@@ -224,6 +214,11 @@ export class SessionInstrumentation extends BaseInstrumentation {
       const SessionManager = getSessionManagerByConfig(sessionTrackingConfig);
 
       const sessionManager = new SessionManager(this);
+      this.removeLegacySampling = registerLegacySampling(
+        this,
+        SessionManager.storeUserSession,
+        sessionManager.recordActivity
+      );
       this.isAdoptingSession = sessionManager.isAdopting;
       this.registerBeforeSendHook(sessionManager.recordActivity);
 
@@ -234,6 +229,10 @@ export class SessionInstrumentation extends BaseInstrumentation {
       );
 
       SessionManager.storeUserSession(initialSession);
+      getInternalMetas(this.metas).notifySessionCreated(
+        initialSession,
+        lifecycleType === EVENT_SESSION_RESUME ? 'resume' : 'start'
+      );
 
       const initialSessionMeta = initialSession.sessionMeta;
 
@@ -260,6 +259,8 @@ export class SessionInstrumentation extends BaseInstrumentation {
   }
 
   destroy(): void {
+    this.removeLegacySampling?.();
+    this.removeLegacySampling = undefined;
     // Keep pending API writes if this instance is readded before they are applied.
     this.prerenderSession?.destroy();
     if (this.captureListener) {
