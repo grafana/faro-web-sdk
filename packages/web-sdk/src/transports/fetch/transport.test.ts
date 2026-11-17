@@ -568,7 +568,7 @@ describe('reliable FetchTransport', () => {
       sessionId,
       started: Date.now(),
       lastActivity: Date.now(),
-      isSampled: true,
+      sampling: { kept: true },
     });
 
     // Wires the transport into a real, isolated Faro instance so the invalidation guard's
