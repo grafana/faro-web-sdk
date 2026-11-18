@@ -21,6 +21,11 @@ Alternatively, you can use the CDN version of the library. See [use cdn library]
 - navigation - captures soft navigations and reports their URL changes and durations
 - frustration - sends an event for each rage click, dead click and error click, but not for ordinary clicks
 
+Frustration events include an `elementPath` made from tag names and sibling positions (for example,
+`html > body > button:nth-of-type(2)`). The path is captured when the click occurs. It does not include element text,
+IDs, classes, or attribute values. It keeps at most eight elements and 120 characters, with `... >` marking an omitted
+prefix. Add `data-faro-user-action-name` to a control to include a stable, developer-defined `userActionName` as well.
+
 Navigation instrumentation is enabled by default. To disable it, pass `trackNavigation: false` to
 `getWebInstrumentations()` when supplying custom instrumentations, or provide a custom `instrumentations` array without
 `NavigationInstrumentation`.

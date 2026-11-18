@@ -40,8 +40,8 @@ describe('FrustrationInstrumentation', () => {
   }
 
   function click(target: Element = button, { clientX = 10, clientY = 10 } = {}) {
-    target.dispatchEvent(new Event('pointerdown', { bubbles: true }));
-    target.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX, clientY }));
+    target.dispatchEvent(new Event('pointerdown', { bubbles: true, composed: true }));
+    target.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true, clientX, clientY }));
   }
 
   function domMutation() {
@@ -85,7 +85,13 @@ describe('FrustrationInstrumentation', () => {
     expect(events()).toEqual([
       expect.objectContaining({
         name: 'faro.frustration.dead_click',
-        attributes: { target: 'button', clickCount: '1', clientX: '10', clientY: '10' },
+        attributes: {
+          target: 'button',
+          elementPath: 'html > body > button',
+          clickCount: '1',
+          clientX: '10',
+          clientY: '10',
+        },
       }),
     ]);
   });
@@ -191,6 +197,7 @@ describe('FrustrationInstrumentation', () => {
         name: 'faro.frustration.rage_click',
         attributes: {
           target: 'button',
+          elementPath: 'html > body > button',
           clickCount: '5',
           clientX: '10',
           clientY: '10',
@@ -280,13 +287,100 @@ describe('FrustrationInstrumentation', () => {
     expect(events()).toEqual([]);
   });
 
-  it('does not send element ids or classes', () => {
+  it('describes sibling elements without sending their ids, classes, text, or labels', () => {
     setup();
+    const second = document.createElement('button');
+    second.id = 'account-123';
+    second.className = 'private-class';
+    second.textContent = 'Private button text';
+    second.setAttribute('aria-label', 'Private label');
+    document.body.appendChild(second);
 
-    click();
+    click(second);
     jest.advanceTimersByTime(2000);
 
-    expect(JSON.stringify(events())).not.toMatch(/save|btn|primary/);
+    expect(events()[0]?.attributes?.['elementPath']).toBe('html > body > button:nth-of-type(2)');
+    expect(JSON.stringify(events())).not.toMatch(/save|btn|primary|account-123|private-class|Private/);
+  });
+
+  it('captures the element path before the DOM changes', () => {
+    setup();
+    const second = document.createElement('button');
+    second.setAttribute('data-faro-user-action-name', 'save-settings');
+    document.body.appendChild(second);
+
+    click(second);
+    second.remove();
+    jest.advanceTimersByTime(2000);
+
+    expect(events()[0]?.attributes?.['elementPath']).toBe('html > body > button:nth-of-type(2)');
+    expect(events()[0]?.attributes?.['userActionName']).toBe('save-settings');
+  });
+
+  it('describes a click inside a shadow root', () => {
+    setup();
+    const host = document.createElement('div');
+    const shadowButton = document.createElement('button');
+    host.attachShadow({ mode: 'open' }).appendChild(shadowButton);
+    document.body.appendChild(host);
+
+    click(shadowButton);
+    jest.advanceTimersByTime(2000);
+
+    expect(events()[0]?.attributes?.['elementPath']).toBe('html > body > div > ::shadow > button');
+  });
+
+  it('keeps the closest eight elements in a deeply nested tree', () => {
+    setup();
+    const root = document.createElement('div');
+    let parent = root;
+    for (let index = 0; index < 11; index++) {
+      const child = document.createElement('div');
+      parent.appendChild(child);
+      parent = child;
+    }
+    const nestedButton = document.createElement('button');
+    parent.appendChild(nestedButton);
+    document.body.appendChild(root);
+
+    click(nestedButton);
+    jest.advanceTimersByTime(2000);
+
+    expect(events()[0]?.attributes?.['elementPath']).toBe(`... > ${'div > '.repeat(7)}button`);
+  });
+
+  it('limits the element path to 120 characters', () => {
+    setup();
+    const root = document.createElement('long-custom-element-name');
+    let parent = root;
+    for (let index = 0; index < 6; index++) {
+      const child = document.createElement('long-custom-element-name');
+      parent.appendChild(child);
+      parent = child;
+    }
+    const nestedButton = document.createElement('button');
+    parent.appendChild(nestedButton);
+    document.body.appendChild(root);
+
+    click(nestedButton);
+    jest.advanceTimersByTime(2000);
+
+    const elementPath = events()[0]?.attributes?.['elementPath'];
+    expect(elementPath).toMatch(/^\.\.\. > .* > button$/);
+    expect(elementPath!.length).toBeLessThanOrEqual(120);
+  });
+
+  it('limits a path even when the clicked tag alone exceeds 120 characters', () => {
+    setup();
+    const longTag = document.createElement(`x-${'a'.repeat(130)}`);
+    document.body.appendChild(longTag);
+
+    click(longTag);
+    jest.advanceTimersByTime(2000);
+
+    const elementPath = events()[0]?.attributes?.['elementPath'];
+    expect(elementPath).toMatch(/^\.\.\. > x-a+\.\.\.$/);
+    expect(elementPath!.length).toBe(120);
   });
 
   it('names the element by the closest user action name', () => {
@@ -298,7 +392,11 @@ describe('FrustrationInstrumentation', () => {
     jest.advanceTimersByTime(2000);
 
     expect(events()[0]?.attributes).toEqual(
-      expect.objectContaining({ target: 'span', userActionName: 'save-settings' })
+      expect.objectContaining({
+        target: 'span',
+        elementPath: 'html > body > button > span',
+        userActionName: 'save-settings',
+      })
     );
   });
 
@@ -323,7 +421,13 @@ describe('FrustrationInstrumentation', () => {
     expect(events()).toEqual([
       expect.objectContaining({
         name: 'faro.frustration.error_click',
-        attributes: { target: 'button', clickCount: '1', clientX: '10', clientY: '10' },
+        attributes: {
+          target: 'button',
+          elementPath: 'html > body > button',
+          clickCount: '1',
+          clientX: '10',
+          clientY: '10',
+        },
       }),
     ]);
   });
