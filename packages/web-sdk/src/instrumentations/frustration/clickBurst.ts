@@ -14,6 +14,8 @@ export const defaultFrustrationThresholds: FrustrationThresholds = {
 
 export type TrackedClick = {
   target: Element;
+  elementPath: string;
+  userActionName?: string;
   clientX: number;
   clientY: number;
   // Monotonic, for comparing clicks with each other
