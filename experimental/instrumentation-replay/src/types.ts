@@ -43,6 +43,12 @@ export interface ReplayInstrumentationOptions {
   ignoreSelector?: string;
 
   /**
+   * Capture canvas pixels as image snapshots. Text and input masking do not apply to pixels.
+   * @default false
+   */
+  captureCanvasSnapshots?: boolean;
+
+  /**
    * Whether to collect fonts
    * @default false
    */
