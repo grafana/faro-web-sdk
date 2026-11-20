@@ -70,6 +70,94 @@ const createTransport = (options: Omit<FetchTransportOptions, 'url'> = {}) => {
   return { transport, internalLogger };
 };
 
+const TRACE_SCHEMA_URL = 'https://opentelemetry.io/schemas/1.21.0';
+
+function bodyBytes(body: string): number {
+  return new TextEncoder().encode(body).byteLength;
+}
+
+function traceItem(name: string) {
+  return {
+    type: TransportItemType.TRACE,
+    meta: {},
+    payload: {
+      resourceSpans: [
+        {
+          resource: {
+            attributes: [{ key: 'service.name', value: { stringValue: 'review-service' } }],
+            droppedAttributesCount: 0,
+          },
+          schemaUrl: TRACE_SCHEMA_URL,
+          scopeSpans: [
+            {
+              spans: [
+                {
+                  traceId: 'd6bba34860089d3a4ee58df0811b2f5f',
+                  spanId: '22c85dd7b7c674e8',
+                  name,
+                  kind: 1,
+                  startTimeUnixNano: '1679329154423000000',
+                  endTimeUnixNano: '1679329154449000000',
+                  attributes: [],
+                  droppedAttributesCount: 0,
+                  events: [],
+                  droppedEventsCount: 0,
+                  links: [],
+                  droppedLinksCount: 0,
+                  status: { code: 0 },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  };
+}
+
+// The parent shapes each request with getTransportBody on the original items.
+// Ordinary log and trace batches, split or not, have to send those same bytes.
+function expectParentBytes(items: TransportItem[]): void {
+  const meta = JSON.parse(JSON.stringify(getTransportBody(items).meta));
+  const actual = fetchMock.mock.calls.map(([, init]) => init.body as string);
+  let offset = 0;
+  const expected = actual.map((body) => {
+    const count = sentEntryCount(body, items[offset]?.type ?? items[0]!.type);
+    const slice = items.slice(offset, offset + count);
+    offset += count;
+    return JSON.stringify({ ...getTransportBody(slice), meta });
+  });
+  if (offset !== items.length) {
+    throw new Error(`sent ${offset} of ${items.length} items`);
+  }
+  expect(actual.map(bodyBytes)).toEqual(expected.map(bodyBytes));
+  expect(actual).toEqual(expected);
+}
+
+function sentEntryCount(body: string, type: TransportItemType): number {
+  const parsed = JSON.parse(body) as {
+    traces?: { resourceSpans?: Array<{ scopeSpans?: unknown[] }> };
+    logs?: unknown[];
+    exceptions?: unknown[];
+    measurements?: unknown[];
+    events?: unknown[];
+  };
+  const entries =
+    type === TransportItemType.TRACE
+      ? parsed.traces?.resourceSpans?.[0]?.scopeSpans
+      : type === TransportItemType.EXCEPTION
+        ? parsed.exceptions
+        : type === TransportItemType.MEASUREMENT
+          ? parsed.measurements
+          : type === TransportItemType.EVENT
+            ? parsed.events
+            : parsed.logs;
+  if (!entries?.length) {
+    throw new Error(`request has no ${type} entries`);
+  }
+  return entries.length;
+}
+
 describe('reliable FetchTransport', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -808,6 +896,162 @@ describe('reliable FetchTransport', () => {
       await jest.advanceTimersByTimeAsync(60000);
       expect(fetchMock).toHaveBeenCalledTimes(4);
     });
+
+    it('sends the same bytes as the parent for a split log batch', async () => {
+      const batch = Array.from({ length: 5 }, () => largeItem);
+      const { transport } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 3 },
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 1 },
+      ]);
+      expectParentBytes(batch);
+
+      finishAll();
+      await sending;
+    });
+
+    it.each([
+      ['log', [item, item]],
+      ['trace', [traceItem('one'), traceItem('two')]],
+    ])('sends the same bytes as the parent for an unsplit unload %s batch', async (_label, batch) => {
+      const { transport } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock.mock.calls[0]![1].keepalive).toBe(true);
+      expectParentBytes(batch);
+
+      finishAll();
+      await sending;
+    });
+
+    it('keeps captured resource fields on every split trace request', async () => {
+      const spanName = 's'.repeat(14_000);
+      const batch = Array.from({ length: 5 }, () => traceItem(spanName));
+      const { transport } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+
+      const bodies = fetchMock.mock.calls.map(([, init]) => JSON.parse(init.body as string));
+      expect(fetchMock.mock.calls.map(([, init]) => init.keepalive)).toEqual([true, true, false]);
+      expect(bodies.map((body) => body.traces.resourceSpans[0].scopeSpans.length)).toEqual([3, 1, 1]);
+      for (const body of bodies) {
+        expect(body.traces.resourceSpans[0].resource.attributes).toEqual([
+          { key: 'service.name', value: { stringValue: 'review-service' } },
+        ]);
+        expect(body.traces.resourceSpans[0].schemaUrl).toBe(TRACE_SCHEMA_URL);
+      }
+      expectParentBytes(batch);
+
+      finishAll();
+      await sending;
+    });
+
+    it('keeps a captured null log when a header callback changes the live payload', async () => {
+      let changed = false;
+      const live = {
+        ...item.payload,
+        message: 'original',
+        toJSON() {
+          return changed ? { ...item.payload, message: 'mutated' } : null;
+        },
+      };
+      const filler = { ...item, payload: { ...item.payload, message: 'f'.repeat(14_000) } };
+      const batch = [filler, { ...item, payload: live }, filler, filler, filler, filler];
+      const authorization = jest.fn(() => {
+        changed = true;
+        return 'token';
+      });
+      const { transport } = createTransport({
+        requestOptions: { headers: { Authorization: authorization } },
+      });
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(authorization).toHaveBeenCalledTimes(1);
+      expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
+      const logs = fetchMock.mock.calls.flatMap(([, init]) => JSON.parse(init.body as string).logs);
+      expect(logs).toHaveLength(6);
+      expect(logs[1]).toBeNull();
+      expect(JSON.stringify(logs)).not.toContain('mutated');
+
+      finishAll();
+      await sending;
+    });
+
+    it.each([
+      [
+        'exception',
+        TransportItemType.EXCEPTION,
+        { type: 'Error', value: 'original', timestamp: item.payload.timestamp },
+        { type: 'Error', value: 'e'.repeat(14_000), timestamp: item.payload.timestamp },
+      ],
+      [
+        'measurement',
+        TransportItemType.MEASUREMENT,
+        { type: 'web-vital', values: { lcp: 1 }, timestamp: item.payload.timestamp },
+        { type: 'm'.repeat(14_000), values: { lcp: 1 }, timestamp: item.payload.timestamp },
+      ],
+      [
+        'event',
+        TransportItemType.EVENT,
+        { name: 'click', timestamp: item.payload.timestamp },
+        { name: 'e'.repeat(14_000), timestamp: item.payload.timestamp },
+      ],
+    ])(
+      'keeps a captured null %s payload when a header callback changes the live payload',
+      async (_label, type, base, fillerPayload) => {
+        let changed = false;
+        const live = {
+          ...base,
+          toJSON() {
+            return changed ? { ...base, marker: 'mutated' } : null;
+          },
+        };
+        const filler = { type, meta: {}, payload: fillerPayload };
+        const batch = [filler, { type, meta: {}, payload: live }, filler, filler, filler, filler];
+        const authorization = jest.fn(() => {
+          changed = true;
+          return 'token';
+        });
+        const { transport } = createTransport({
+          requestOptions: { headers: { Authorization: authorization } },
+        });
+        window.dispatchEvent(new Event('pagehide'));
+
+        const sending = transport.send(batch);
+        await jest.advanceTimersByTimeAsync(0);
+
+        expect(authorization).toHaveBeenCalledTimes(1);
+        expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
+        const key =
+          type === TransportItemType.EXCEPTION
+            ? 'exceptions'
+            : type === TransportItemType.MEASUREMENT
+              ? 'measurements'
+              : 'events';
+        const entries = fetchMock.mock.calls.flatMap(([, init]) => JSON.parse(init.body as string)[key]);
+        expect(entries).toHaveLength(6);
+        expect(entries[1]).toBeNull();
+        expect(JSON.stringify(entries)).not.toContain('mutated');
+
+        finishAll();
+        await sending;
+      }
+    );
   });
 
   it('resumes retries after restoration from the back-forward cache', async () => {
@@ -865,6 +1109,19 @@ describe('reliable FetchTransport', () => {
     expect(fetchMock.mock.calls[0]![1]).toEqual(
       expect.objectContaining({ body: JSON.stringify(getTransportBody([item])), method: 'POST' })
     );
+  });
+
+  it.each([
+    ['log', () => [item, { ...item, payload: { ...item.payload, message: 'second' } }]],
+    ['trace', () => [traceItem('one'), traceItem('two')]],
+  ])('sends the same bytes as the parent for an unsplit visible %s batch', async (_label, build) => {
+    const batch = build();
+    const { transport } = createTransport();
+
+    await transport.send(batch);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expectParentBytes(batch);
   });
 
   it('preserves the toJSON key used by a visible unsplit request', async () => {

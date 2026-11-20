@@ -122,12 +122,24 @@ function tracePayloadsFromSent(
     }
     const slice = scopeSpans.slice(offset, offset + entry.count);
     offset += entry.count;
-    if (entry.role === 'owner' && resourceSpan) {
-      const { scopeSpans: _scopeSpans, ...rest } = resourceSpan;
-      return { resourceSpans: [{ ...rest, scopeSpans: slice }] };
+    if (!resourceSpan) {
+      return { resourceSpans: [{ scopeSpans: slice }] };
     }
-    return { resourceSpans: [{ scopeSpans: slice }] };
+    // Any slice can be the first item of its own request, so it keeps the captured resource fields.
+    return { resourceSpans: [{ ...resourceSpan, scopeSpans: slice }] };
   });
+}
+
+function readCaptured(
+  values: readonly unknown[] | undefined,
+  index: number,
+  fallback: TransportItem['payload']
+): TransportItem['payload'] {
+  if (values == null || index >= values.length) {
+    return fallback;
+  }
+  // A captured null is the serialized value. Treating it as missing would send the live object.
+  return values[index] as TransportItem['payload'];
 }
 
 function signalPayload(
@@ -137,13 +149,13 @@ function signalPayload(
 ): TransportItem['payload'] {
   switch (item.type) {
     case TransportItemType.EXCEPTION:
-      return sent.exceptions?.[cursor.exceptions++] ?? item.payload;
+      return readCaptured(sent.exceptions, cursor.exceptions++, item.payload);
     case TransportItemType.LOG:
-      return sent.logs?.[cursor.logs++] ?? item.payload;
+      return readCaptured(sent.logs, cursor.logs++, item.payload);
     case TransportItemType.MEASUREMENT:
-      return sent.measurements?.[cursor.measurements++] ?? item.payload;
+      return readCaptured(sent.measurements, cursor.measurements++, item.payload);
     case TransportItemType.EVENT:
-      return sent.events?.[cursor.events++] ?? item.payload;
+      return readCaptured(sent.events, cursor.events++, item.payload);
     default:
       return item.payload;
   }
