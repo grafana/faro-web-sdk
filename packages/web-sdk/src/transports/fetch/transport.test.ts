@@ -671,6 +671,67 @@ describe('reliable FetchTransport', () => {
       await sending;
     });
 
+    it('sends only the item that misses the remaining budget without keepalive', async () => {
+      // About 29 KB is already reserved. The 39 KB item does not fit in what is left, and it is under the
+      // 60 KB limit. The 1 KB item still fits on its own, so it stays on keepalive.
+      const reserveItem = { ...item, payload: { ...item.payload, message: 'r'.repeat(28_898) } };
+      const wideItem = { ...item, payload: { ...item.payload, message: 'w'.repeat(38_898) } };
+      const smallItem = { ...item, payload: { ...item.payload, message: 's'.repeat(898) } };
+      const { transport, internalLogger } = createTransport();
+      const reserved = transport.send([reserveItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      expect(new TextEncoder().encode(fetchMock.mock.calls[0]![1].body as string).byteLength).toBe(29_000);
+
+      window.dispatchEvent(new Event('pagehide'));
+      const sending = transport.send([wideItem, smallItem]);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 1 },
+        { keepalive: true, logs: 1 },
+      ]);
+      const unloadBodies = fetchMock.mock.calls.slice(1).map(([, init]) => init.body as string);
+      expect(unloadBodies.map((body) => new TextEncoder().encode(body).byteLength)).toEqual([39_000, 1_000]);
+      expect(unloadBodies.flatMap((body) => JSON.parse(body).logs.map((log: LogEvent) => log.message))).toEqual([
+        wideItem.payload.message,
+        smallItem.payload.message,
+      ]);
+      expect(internalLogger.warn).toHaveBeenCalledTimes(1);
+
+      finishAll();
+      await Promise.all([reserved, sending]);
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it('splits an unload batch from the payload captured before a header callback mutates it', async () => {
+      const kept = 'kept'.padEnd(14_000, 'k');
+      const payload = { ...item.payload, message: kept };
+      const batch = Array.from({ length: 5 }, () => ({ ...item, payload }));
+      const authorization = jest.fn(() => {
+        payload.message = 'mutated';
+        return 'token';
+      });
+      const { transport } = createTransport({
+        requestOptions: { headers: { Authorization: authorization } },
+      });
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(authorization).toHaveBeenCalledTimes(1);
+      expect(payload.message).toBe('mutated');
+      expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
+      const messages = fetchMock.mock.calls.flatMap(([, init]) =>
+        JSON.parse(init.body as string).logs.map((log: LogEvent) => log.message)
+      );
+      expect(messages).toEqual(Array(5).fill(kept));
+
+      finishAll();
+      await sending;
+    });
+
     it('starts every request of a split batch before any of them finishes', async () => {
       const { transport, internalLogger } = createTransport();
       window.dispatchEvent(new Event('pagehide'));

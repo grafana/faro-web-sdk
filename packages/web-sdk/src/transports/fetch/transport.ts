@@ -43,6 +43,8 @@ interface PreparedRequest {
   meta: Meta;
   sessionId: string | undefined;
   resolvedHeaders: Record<string, string>;
+  /** Items copied before header callbacks run. Splits read this, not the live batch. */
+  items: TransportItem[];
 }
 class RequestTimeoutError extends Error {}
 
@@ -183,7 +185,7 @@ export class FetchTransport extends BaseTransport {
       const prepared = await this.prepareRequest(items);
       const outcome = await reservation.deliver((attemptsRemaining, unloading, isRedelivery) =>
         unloading && !isRedelivery
-          ? this.performUnloadAttempt(items, prepared, attemptsRemaining)
+          ? this.performUnloadAttempt(prepared, attemptsRemaining)
           : this.performAttempt(prepared, attemptsRemaining, unloading)
       );
       if (outcome.kind === 'terminal') {
@@ -215,9 +217,10 @@ export class FetchTransport extends BaseTransport {
   private async prepareRequest(items: TransportItem[], original?: PreparedRequest): Promise<PreparedRequest> {
     // Async headers and compression can outlive a session. Bind both the header
     // and its response handling to the payload, not the current session.
-    // Copy the metadata first, so the chunks of a split batch keep the original
-    // identity even if the items change later.
-    const transportBody = getTransportBody(items);
+    // Copy the items first. A payload toJSON can mutate metadata while the body is built,
+    // and a header callback can mutate a payload after that. Chunks read this copy.
+    const sourceItems = original ? items : this.snapshotItems(items);
+    const transportBody = getTransportBody(sourceItems);
     const meta: Meta = original?.meta ?? JSON.parse(JSON.stringify(transportBody.meta));
     const sessionId = meta.session?.id;
     const jsonBody = JSON.stringify({ ...transportBody, meta });
@@ -246,6 +249,7 @@ export class FetchTransport extends BaseTransport {
       meta,
       sessionId,
       resolvedHeaders,
+      items: sourceItems,
       requestInit: {
         method: 'POST',
         headers: {
@@ -263,12 +267,18 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
+  /** Deep-copies meta before payload serialization, so a payload toJSON cannot change the captured session. */
+  private snapshotItems(items: TransportItem[]): TransportItem[] {
+    return items.map((item) => {
+      const meta = JSON.parse(JSON.stringify(item.meta ?? {})) as Meta;
+      const payloadJson = JSON.stringify(item.payload);
+      const payload = (payloadJson === undefined ? item.payload : JSON.parse(payloadJson)) as TransportItem['payload'];
+      return { ...item, meta, payload };
+    });
+  }
+
   /** On unload, send an over-budget batch in chunks that fit the keepalive budget. */
-  private async performUnloadAttempt(
-    items: TransportItem[],
-    prepared: PreparedRequest,
-    attemptsRemaining: number
-  ): Promise<AttemptOutcome> {
+  private async performUnloadAttempt(prepared: PreparedRequest, attemptsRemaining: number): Promise<AttemptOutcome> {
     // Each request gets a slot of its own: this attempt's slot first, then idle ones. A request that waited
     // for a slot would only start after an earlier one finished, which is too late once the page is gone.
     const requests: Array<{ prepared: PreparedRequest; reservation: KeepaliveReservation; releaseSlot: () => void }> =
@@ -280,7 +290,7 @@ export class FetchTransport extends BaseTransport {
       });
     let chunkSlot: () => void = noop;
     try {
-      let remaining = items;
+      let remaining = prepared.items;
       let remainingPrepared = prepared;
       for (;;) {
         let chunk = remaining;
@@ -294,16 +304,19 @@ export class FetchTransport extends BaseTransport {
           chunkPrepared = await this.prepareRequest(chunk, prepared);
         }
 
-        // Only a single item too big for any keepalive request goes out on its own without keepalive. Once
-        // the budget runs out, or no slot is free for another request, the rest goes in this request.
-        let nextSlot: (() => void) | undefined;
-        const isOversizedItem =
+        // A single item that does not fit goes on its own, and the suffix keeps splitting, when a later item
+        // can still use keepalive and a slot is free. An item over the 60 KB limit always goes alone. Once
+        // nothing left fits, or no slot is free, the rest stays in this request.
+        const fits = this.fitsKeepaliveBudget(chunkPrepared.bodySize);
+        const sendItemAlone =
+          !fits &&
+          chunk !== remaining &&
           chunk.length === 1 &&
-          chunkPrepared.bodySize > BEACON_BODY_SIZE_LIMIT &&
-          pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS;
-        if (chunk !== remaining && (this.fitsKeepaliveBudget(chunkPrepared.bodySize) || isOversizedItem)) {
-          nextSlot = this.deliveryQueue.claimIdleSlot();
-        }
+          pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS &&
+          (chunkPrepared.bodySize > BEACON_BODY_SIZE_LIMIT ||
+            (await this.laterItemFitsKeepalive(remaining.slice(chunk.length), prepared)));
+        const nextSlot =
+          chunk !== remaining && (fits || sendItemAlone) ? this.deliveryQueue.claimIdleSlot() : undefined;
         if (!nextSlot) {
           chunk = remaining;
           chunkPrepared = remainingPrepared;
@@ -520,6 +533,16 @@ export class FetchTransport extends BaseTransport {
     return (
       pendingKeepaliveBodySize + bodySize <= BEACON_BODY_SIZE_LIMIT && pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS
     );
+  }
+
+  private async laterItemFitsKeepalive(items: TransportItem[], original: PreparedRequest): Promise<boolean> {
+    for (const item of items) {
+      const prepared = await this.prepareRequest([item], original);
+      if (this.fitsKeepaliveBudget(prepared.bodySize)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private handleResponse(response: Response, requestSessionId: string | undefined): void {
