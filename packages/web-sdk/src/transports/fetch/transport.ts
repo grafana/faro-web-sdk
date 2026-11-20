@@ -269,7 +269,16 @@ export class FetchTransport extends BaseTransport {
     prepared: PreparedRequest,
     attemptsRemaining: number
   ): Promise<AttemptOutcome> {
-    const requests: Array<{ prepared: PreparedRequest; reservation: KeepaliveReservation }> = [];
+    // Each request gets a slot of its own: this attempt's slot first, then idle ones. A request that waited
+    // for a slot would only start after an earlier one finished, which is too late once the page is gone.
+    const requests: Array<{ prepared: PreparedRequest; reservation: KeepaliveReservation; releaseSlot: () => void }> =
+      [];
+    const releaseAll = () =>
+      requests.forEach(({ reservation, releaseSlot }) => {
+        reservation.release();
+        releaseSlot();
+      });
+    let chunkSlot: () => void = noop;
     try {
       let remaining = items;
       let remainingPrepared = prepared;
@@ -285,44 +294,51 @@ export class FetchTransport extends BaseTransport {
           chunkPrepared = await this.prepareRequest(chunk, prepared);
         }
 
+        // Only a single item too big for any keepalive request goes out on its own without keepalive. Once
+        // the budget runs out, or no slot is free for another request, the rest goes in this request.
+        let nextSlot: (() => void) | undefined;
+        const isOversizedItem =
+          chunk.length === 1 &&
+          chunkPrepared.bodySize > BEACON_BODY_SIZE_LIMIT &&
+          pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS;
+        if (chunk !== remaining && (this.fitsKeepaliveBudget(chunkPrepared.bodySize) || isOversizedItem)) {
+          nextSlot = this.deliveryQueue.claimIdleSlot();
+        }
+        if (!nextSlot) {
+          chunk = remaining;
+          chunkPrepared = remainingPrepared;
+        }
+
         // Hold the actual budget while asynchronous preparation allows other deliveries to run.
-        requests.push({ prepared: chunkPrepared, reservation: this.reserveKeepalive(chunkPrepared.bodySize, true) });
-        if (chunk === remaining) {
+        requests.push({
+          prepared: chunkPrepared,
+          reservation: this.reserveKeepalive(chunkPrepared.bodySize, true),
+          releaseSlot: chunkSlot,
+        });
+        if (!nextSlot) {
           break;
         }
+        chunkSlot = nextSlot;
         remaining = remaining.slice(chunk.length);
         remainingPrepared = await this.prepareRequest(remaining, prepared);
       }
     } catch {
       // Nothing has been sent, so the original body and key are still safe to use.
-      requests.forEach(({ reservation }) => reservation.release());
+      releaseAll();
+      chunkSlot();
       return this.performAttempt(prepared, attemptsRemaining, true);
     }
 
     try {
-      // Send chunks from this attempt's slot and any idle ones, so they stay within the configured concurrency.
-      const outcomes: AttemptOutcome[] = [];
-      let next = 0;
-      const sendChunks = async (releaseSlot: () => void = noop): Promise<void> => {
-        try {
-          while (next < requests.length) {
-            const index = next++;
-            const { prepared, reservation } = requests[index]!;
-            outcomes[index] = await this.performAttempt(prepared, attemptsRemaining, true, reservation);
+      const outcomes = await Promise.all(
+        requests.map(async ({ prepared, reservation, releaseSlot }) => {
+          try {
+            return await this.performAttempt(prepared, attemptsRemaining, true, reservation);
+          } finally {
+            releaseSlot();
           }
-        } finally {
-          releaseSlot();
-        }
-      };
-      const senders = [sendChunks()];
-      while (next < requests.length) {
-        const releaseSlot = this.deliveryQueue.claimIdleSlot();
-        if (!releaseSlot) {
-          break;
-        }
-        senders.push(sendChunks(releaseSlot));
-      }
-      await Promise.all(senders);
+        })
+      );
 
       const attemptsMade = outcomes.reduce((total, outcome) => total + outcome.attemptsMade, 0);
       for (const outcome of outcomes) {
@@ -332,7 +348,7 @@ export class FetchTransport extends BaseTransport {
       }
       return { kind: 'success', attemptsMade };
     } finally {
-      requests.forEach(({ reservation }) => reservation.release());
+      releaseAll();
     }
   }
 
