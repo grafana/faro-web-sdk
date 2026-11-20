@@ -4,7 +4,6 @@
 
 ### Features
 
-- **web-sdk:** support custom web vitals target labels through `webVitalsInstrumentation.generateTarget`
 - **replay:** expose `maskTextFn` for custom text masking in snapshots and text changes
 - **web-sdk:** enable navigation instrumentation by default. Pass `trackNavigation: false` to
   `getWebInstrumentations()` or omit `NavigationInstrumentation` from a custom `instrumentations` array to disable it.
@@ -13,6 +12,7 @@
 - **web-sdk:** make frustration detection thresholds configurable with `frustrationInstrumentation`
 - **user-actions:** add configurable initial activity timeouts globally, through `startUserAction`, and with
   `data-faro-user-action-timeout` element overrides
+- **web-sdk:** support custom web vitals target labels through `webVitalsInstrumentation.generateTarget`
 
 ### Bug Fixes
 
