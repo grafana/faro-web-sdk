@@ -393,7 +393,8 @@ Although an isolated agent may sound like a great idea, there are some limitatio
 
 - some instrumentations will still register globally (i.e. exceptions instrumentation or console instrumentation)
 - an isolated Faro instance will not be available on the global object
-- the Faro reference should be stored by the project as it won't be available via
-  `import { faro } from '@grafana/faro-core';`
+- after a non-isolated instance is initialized, store each isolated instance's returned reference because
+  `import { faro } from '@grafana/faro-core';` remains bound to the non-isolated instance. If only isolated instances
+  are initialized, the import refers to the most recently initialized isolated instance for compatibility.
 
 [faro-web-sdk-package]: https://github.com/grafana/faro-web-sdk/tree/main/packages/web-sdk

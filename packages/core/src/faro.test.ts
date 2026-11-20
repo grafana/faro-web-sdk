@@ -12,21 +12,42 @@ describe('faro singleton before initialization', () => {
     expect(faro.api.getSession()).toBeUndefined();
   });
 
-  it('replaces the no-op api with the real one after initializeFaro', () => {
+  it('exposes an isolated instance when no non-isolated singleton exists', () => {
+    const transport = new MockTransport();
+    const isolatedFaro = initializeFaro(mockConfig({ transports: [transport] }));
+
+    expect(faro).toBe(isolatedFaro);
+    faro.api.pushLog(['isolated instance']);
+    expect(transport.items).toHaveLength(1);
+
+    const anotherIsolatedFaro = initializeFaro(mockConfig());
+    expect(faro).toBe(anotherIsolatedFaro);
+  });
+
+  it('replaces the isolated export after non-isolated initialization without public exposure', () => {
     const transport = new MockTransport();
 
-    initializeFaro(
+    const globalFaro = initializeFaro(
       mockConfig({
-        isolate: true,
+        isolate: false,
         transports: [transport],
       })
     );
 
+    const isolatedTransport = new MockTransport();
+    const isolatedFaro = initializeFaro(mockConfig({ transports: [isolatedTransport] }));
+
+    expect(faro).toBe(globalFaro);
     faro.api.pushLog(['after init']);
 
     expect(transport.items).toHaveLength(1);
+    expect(isolatedTransport.items).toHaveLength(0);
     const item = transport.items[0]! as TransportItem<LogEvent>;
     expect(item.payload.message).toEqual('after init');
+
+    isolatedFaro.api.pushLog(['isolated instance']);
+    expect(isolatedTransport.items).toHaveLength(1);
+    expect(transport.items).toHaveLength(1);
   });
 });
 

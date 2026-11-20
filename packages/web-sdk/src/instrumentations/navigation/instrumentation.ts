@@ -1,4 +1,4 @@
-import { BaseInstrumentation, faro, Observable, VERSION } from '@grafana/faro-core';
+import { BaseInstrumentation, Observable, VERSION } from '@grafana/faro-core';
 
 import {
   ActivityWindowTracker,
@@ -54,7 +54,7 @@ export class NavigationInstrumentation extends BaseInstrumentation {
           msg.events?.some((e: any) => e.type === 'dom-mutation')
         ) {
           const urlChange = msg.events?.find((e: any) => e.type === 'url-change');
-          faro.api.pushEvent('faro.navigation', {
+          this.api.pushEvent('faro.navigation', {
             fromUrl: urlChange?.from,
             toUrl: urlChange?.to,
             sameDocument: String(true),

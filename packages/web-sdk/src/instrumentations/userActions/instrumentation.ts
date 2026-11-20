@@ -11,7 +11,10 @@ export class UserActionInstrumentation extends BaseInstrumentation {
   private _processKeydown?: (event: KeyboardEvent) => void;
 
   initialize(): void {
-    const { processUserEvent, processUserActionStarted } = getUserEventHandler(faro, (message) =>
+    // Instrumentations receive their instance context during registration. The fallback keeps direct instrumentation
+    // initialization supported for consumers that use it outside initializeFaro().
+    const context = (this.api as Partial<typeof this.api>).startUserAction ? this : faro;
+    const { processUserEvent, processUserActionStarted } = getUserEventHandler(context, (message) =>
       this.logWarn(message)
     );
     this._processUserEvent = processUserEvent;
