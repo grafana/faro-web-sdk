@@ -133,6 +133,25 @@ describe('Meta API', () => {
       expect(api.getSession()?.id).toEqual(newSession.id);
       expect(api.getSession()?.overrides).toStrictEqual({ ...newOverrides, geoLocationTrackingEnabled: false });
     });
+
+    it('keeps payload overrides when option overrides are also provided', () => {
+      const { api } = initializeFaro(mockConfig({ sessionTracking: { enabled: false } }));
+
+      api.setSession({ overrides: { geoLocationTrackingEnabled: true } }, { overrides: { serviceName: 'checkout' } });
+
+      expect(api.getSession()?.overrides).toStrictEqual({
+        geoLocationTrackingEnabled: true,
+        serviceName: 'checkout',
+      });
+    });
+
+    it('lets option overrides replace the same key from the payload', () => {
+      const { api } = initializeFaro(mockConfig({ sessionTracking: { enabled: false } }));
+
+      api.setSession({ overrides: { serviceName: 'from-payload' } }, { overrides: { serviceName: 'from-options' } });
+
+      expect(api.getSession()?.overrides).toStrictEqual({ serviceName: 'from-options' });
+    });
   });
 
   describe('setPage / getPage', () => {

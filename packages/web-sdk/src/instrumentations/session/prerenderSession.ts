@@ -48,7 +48,7 @@ export class PrerenderSession {
         id: session?.id,
         attributes: session?.attributes && { ...session.attributes },
         overrides: update.overrides
-          ? { ...previous?.session.overrides, ...update.overrides }
+          ? { ...previous?.session.overrides, ...session?.overrides, ...update.overrides }
           : overrides && { ...overrides },
       },
     };
