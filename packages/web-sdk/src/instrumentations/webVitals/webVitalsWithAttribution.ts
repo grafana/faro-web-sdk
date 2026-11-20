@@ -48,7 +48,10 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
+      {
+        reportAllChanges: this.webVitalConfig?.reportAllChanges,
+        generateTarget: this.webVitalConfig?.generateTarget,
+      }
     );
   }
 
@@ -123,7 +126,10 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
+      {
+        reportAllChanges: this.webVitalConfig?.reportAllChanges,
+        generateTarget: this.webVitalConfig?.generateTarget,
+      }
     );
   }
 
@@ -161,7 +167,10 @@ export class WebVitalsWithAttribution {
 
         this.pushMeasurement(values, context);
       },
-      { reportAllChanges: this.webVitalConfig?.reportAllChanges }
+      {
+        reportAllChanges: this.webVitalConfig?.reportAllChanges,
+        generateTarget: this.webVitalConfig?.generateTarget,
+      }
     );
   }
 

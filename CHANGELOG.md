@@ -4,6 +4,7 @@
 
 ### Features
 
+- **web-sdk:** support custom web vitals target labels through `webVitalsInstrumentation.generateTarget`
 - **replay:** expose `maskTextFn` for custom text masking in snapshots and text changes
 - **web-sdk:** enable navigation instrumentation by default. Pass `trackNavigation: false` to
   `getWebInstrumentations()` or omit `NavigationInstrumentation` from a custom `instrumentations` array to disable it.

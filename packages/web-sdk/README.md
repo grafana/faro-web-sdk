@@ -40,6 +40,25 @@ initializeFaro({
 });
 ```
 
+### Web vitals target labels
+
+Set `webVitalsInstrumentation.generateTarget` to label the LCP element, INP interaction target, and CLS largest shift
+target while web-vitals measures them. Return `undefined` to keep web-vitals' default CSS selector.
+
+```ts
+initializeFaro({
+  url: 'https://agent.myapp/collect',
+  app: { name: 'frontend' },
+  webVitalsInstrumentation: {
+    generateTarget: (element) =>
+      element instanceof HTMLElement ? element.closest<HTMLElement>('[data-testid]')?.dataset.testid : undefined,
+  },
+});
+```
+
+The labels are sent as `context.element` for LCP, `context.interaction_target` for INP, and
+`context.largest_shift_target` for CLS.
+
 ## Metas
 
 - browser - captures browser metadata: name, version, etc
