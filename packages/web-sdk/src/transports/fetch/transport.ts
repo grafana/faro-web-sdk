@@ -7,7 +7,7 @@ import {
   noop,
   VERSION,
 } from '@grafana/faro-core';
-import type { Config, Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
+import type { Config, Meta, Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
 
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
 import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
@@ -40,6 +40,7 @@ interface KeepaliveReservation {
 interface PreparedRequest {
   requestInit: RequestInit;
   bodySize: number;
+  meta: Meta;
   sessionId: string | undefined;
   resolvedHeaders: Record<string, string>;
 }
@@ -211,18 +212,19 @@ export class FetchTransport extends BaseTransport {
     return true;
   }
 
-  private async prepareRequest(
-    items: TransportItem[],
-    resolvedHeaders?: Record<string, string>
-  ): Promise<PreparedRequest> {
+  private async prepareRequest(items: TransportItem[], original?: PreparedRequest): Promise<PreparedRequest> {
     // Async headers and compression can outlive a session. Bind both the header
     // and its response handling to the payload, not the current session.
+    // Copy the metadata first, so the chunks of a split batch keep the original
+    // identity even if the items change later.
     const transportBody = getTransportBody(items);
-    const sessionId = transportBody.meta.session?.id;
-    const jsonBody = JSON.stringify(transportBody);
+    const meta: Meta = original?.meta ?? JSON.parse(JSON.stringify(transportBody.meta));
+    const sessionId = meta.session?.id;
+    const jsonBody = JSON.stringify({ ...transportBody, meta });
 
     const { headers = {}, ...requestOptions } = this.options.requestOptions ?? {};
     const { keepalive: _keepalive, signal: _signal, ...requestOptionsWithoutManagedFields } = requestOptions;
+    let resolvedHeaders = original?.resolvedHeaders;
     if (!resolvedHeaders) {
       resolvedHeaders = {};
       for (const [key, value] of Object.entries(headers)) {
@@ -241,6 +243,7 @@ export class FetchTransport extends BaseTransport {
 
     return {
       bodySize,
+      meta,
       sessionId,
       resolvedHeaders,
       requestInit: {
@@ -279,7 +282,7 @@ export class FetchTransport extends BaseTransport {
           !this.fitsKeepaliveBudget(chunkPrepared.bodySize)
         ) {
           chunk = chunk.slice(0, Math.ceil(chunk.length / 2));
-          chunkPrepared = await this.prepareRequest(chunk, prepared.resolvedHeaders);
+          chunkPrepared = await this.prepareRequest(chunk, prepared);
         }
 
         // Hold the actual budget while asynchronous preparation allows other deliveries to run.
@@ -288,7 +291,7 @@ export class FetchTransport extends BaseTransport {
           break;
         }
         remaining = remaining.slice(chunk.length);
-        remainingPrepared = await this.prepareRequest(remaining, prepared.resolvedHeaders);
+        remainingPrepared = await this.prepareRequest(remaining, prepared);
       }
     } catch {
       // Nothing has been sent, so the original body and key are still safe to use.
@@ -297,10 +300,31 @@ export class FetchTransport extends BaseTransport {
     }
 
     try {
-      const outcomes = await Promise.all(
-        requests.map(({ prepared, reservation }) => this.performAttempt(prepared, attemptsRemaining, true, reservation))
-      );
-      const attemptsMade = Math.max(...outcomes.map((outcome) => outcome.attemptsMade));
+      // Send chunks from this attempt's slot and any idle ones, so they stay within the configured concurrency.
+      const outcomes: AttemptOutcome[] = [];
+      let next = 0;
+      const sendChunks = async (releaseSlot: () => void = noop): Promise<void> => {
+        try {
+          while (next < requests.length) {
+            const index = next++;
+            const { prepared, reservation } = requests[index]!;
+            outcomes[index] = await this.performAttempt(prepared, attemptsRemaining, true, reservation);
+          }
+        } finally {
+          releaseSlot();
+        }
+      };
+      const senders = [sendChunks()];
+      while (next < requests.length) {
+        const releaseSlot = this.deliveryQueue.claimIdleSlot();
+        if (!releaseSlot) {
+          break;
+        }
+        senders.push(sendChunks(releaseSlot));
+      }
+      await Promise.all(senders);
+
+      const attemptsMade = outcomes.reduce((total, outcome) => total + outcome.attemptsMade, 0);
       for (const outcome of outcomes) {
         if (outcome.kind !== 'success') {
           return { kind: 'terminal', failure: outcome.failure, attemptsMade };

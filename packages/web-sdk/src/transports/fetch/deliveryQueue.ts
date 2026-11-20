@@ -188,6 +188,26 @@ export class ReliableDeliveryQueue {
     this.unloading = false;
   }
 
+  /**
+   * Claims an idle slot for extra work inside a running attempt. Returns undefined instead of
+   * waiting when no slot is idle or attempts are queued, so the caller continues in its own slot.
+   */
+  claimIdleSlot(): (() => void) | undefined {
+    if (this.inProgress >= this.options.concurrency || this.attemptQueue.length > 0) {
+      return undefined;
+    }
+
+    this.inProgress++;
+    let released = false;
+    return () => {
+      if (!released) {
+        released = true;
+        this.inProgress--;
+        this.runNextAttempt();
+      }
+    };
+  }
+
   private runAttempt<T>(perform: () => Promise<T>, isRedelivery = false): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const run = () => {
