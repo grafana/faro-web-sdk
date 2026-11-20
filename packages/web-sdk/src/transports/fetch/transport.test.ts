@@ -545,6 +545,60 @@ describe('reliable FetchTransport', () => {
       expect(internalLogger.error).not.toHaveBeenCalled();
     });
 
+    it.each([false, true])('prepares the suffix before sending any chunk (failure: %s)', async (fail) => {
+      let resolveHeader!: (value: string) => void;
+      let rejectHeader!: (error: Error) => void;
+      const pendingHeader = new Promise<string>((resolve, reject) => {
+        resolveHeader = resolve;
+        rejectHeader = reject;
+      });
+      const header = jest
+        .fn()
+        .mockResolvedValue('ready')
+        .mockResolvedValueOnce('ready')
+        .mockResolvedValueOnce('ready')
+        .mockReturnValueOnce(pendingHeader);
+      const { transport, internalLogger } = createTransport({
+        bufferSize: 1,
+        requestOptions: { headers: { Authorization: header } },
+      });
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      const sendsBeforePreparation = fetchMock.mock.calls.length;
+
+      if (fail) {
+        rejectHeader(new Error('suffix header failed'));
+      } else {
+        resolveHeader('ready');
+      }
+      await jest.advanceTimersByTimeAsync(0);
+      finishAll();
+      await sending;
+
+      expect(sendsBeforePreparation).toBe(0);
+      if (fail) {
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(internalLogger.error).toHaveBeenCalledTimes(1);
+        expect(internalLogger.error).toHaveBeenCalledWith(
+          expect.any(String),
+          'Permanent delivery failure',
+          expect.objectContaining({ error: expect.any(Error), attempts: 0 })
+        );
+        fetchMock.mockResolvedValue(response(202));
+        await transport.send([largeItem, largeItem, largeItem, largeItem]);
+        expect(sentRequests()).toEqual([{ keepalive: true, logs: 4 }]);
+      } else {
+        expect(sentRequests()).toEqual([
+          { keepalive: true, logs: 3 },
+          { keepalive: true, logs: 1 },
+          { keepalive: false, logs: 1 },
+        ]);
+        expect(internalLogger.error).not.toHaveBeenCalled();
+      }
+    });
+
     it('splits the batch into requests that fit the keepalive budget', async () => {
       const { transport, internalLogger } = createTransport();
       window.dispatchEvent(new Event('pagehide'));
