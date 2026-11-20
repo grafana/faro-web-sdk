@@ -260,12 +260,7 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
-  /**
-   * On page unload a request without keepalive can be cancelled with the page. Instead of sending an
-   * over-budget batch as one plain request, send it in chunks that each fit the remaining keepalive
-   * budget. Items that still don't fit go out in plain requests. Only split on the first attempt so
-   * redeliveries keep the original body and idempotency key.
-   */
+  /** On unload, send an over-budget batch in chunks that fit the keepalive budget. */
   private async performUnloadAttempt(
     items: TransportItem[],
     prepared: PreparedRequest,
