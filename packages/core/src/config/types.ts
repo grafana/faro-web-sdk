@@ -176,7 +176,7 @@ export interface Config<P = APIEvent> {
 
     /**
      * Custom label for LCP elements, INP interaction targets, and CLS shift targets.
-     * Return undefined to use web-vitals' default CSS selector.
+     * Return undefined, or an empty or whitespace-only string, to use web-vitals' default CSS selector.
      */
     generateTarget?: (element: Node | null) => string | undefined;
 

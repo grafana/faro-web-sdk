@@ -89,6 +89,7 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
       ['INP', onINP],
       ['LCP', onLCP],
     ])('forwards the custom target generator and reportAllChanges to %s', (_, report) => {
+      const element = document.createElement('button');
       const generateTarget = jest.fn(() => 'checkout-button');
       const config = { reportAllChanges: true, generateTarget };
 
@@ -96,8 +97,32 @@ describe('WebVitalsWithAttributionInstrumentation', () => {
 
       expect(report).toHaveBeenLastCalledWith(expect.any(Function), {
         reportAllChanges: true,
-        generateTarget,
+        generateTarget: expect.any(Function),
       });
+
+      const [, options] = (report as jest.Mock).mock.calls.at(-1);
+
+      expect(options.generateTarget(element)).toBe('checkout-button');
+      expect(generateTarget).toHaveBeenCalledWith(element);
+    });
+
+    it.each<[string, string | undefined]>([
+      ['an empty string', ''],
+      ['whitespace', ' \n\t'],
+      ['undefined', undefined],
+    ])('treats %s from the target generator as unset for CLS, INP and LCP', (_, label) => {
+      const element = document.createElement('div');
+      const generateTarget = jest.fn(() => label);
+
+      new WebVitalsWithAttribution(jest.fn(), { generateTarget }).initialize();
+
+      for (const report of [onCLS, onINP, onLCP]) {
+        const [, options] = (report as jest.Mock).mock.calls.at(-1);
+
+        expect(options.generateTarget(element)).toBeUndefined();
+      }
+
+      expect(generateTarget).toHaveBeenCalledTimes(3);
     });
 
     it('keeps default target generation when no callback is configured', () => {

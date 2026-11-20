@@ -50,7 +50,7 @@ export class WebVitalsWithAttribution {
       },
       {
         reportAllChanges: this.webVitalConfig?.reportAllChanges,
-        generateTarget: this.webVitalConfig?.generateTarget,
+        generateTarget: this.resolveGenerateTarget(),
       }
     );
   }
@@ -128,7 +128,7 @@ export class WebVitalsWithAttribution {
       },
       {
         reportAllChanges: this.webVitalConfig?.reportAllChanges,
-        generateTarget: this.webVitalConfig?.generateTarget,
+        generateTarget: this.resolveGenerateTarget(),
       }
     );
   }
@@ -169,7 +169,7 @@ export class WebVitalsWithAttribution {
       },
       {
         reportAllChanges: this.webVitalConfig?.reportAllChanges,
-        generateTarget: this.webVitalConfig?.generateTarget,
+        generateTarget: this.resolveGenerateTarget(),
       }
     );
   }
@@ -192,6 +192,26 @@ export class WebVitalsWithAttribution {
       },
       { reportAllChanges: this.webVitalConfig?.reportAllChanges }
     );
+  }
+
+  // web-vitals falls back to the CSS selector only for null and undefined (`??`).
+  // A blank string would replace that selector, then addIfPresent would drop it.
+  private resolveGenerateTarget(): ((element: Node | null) => string | undefined) | undefined {
+    const generateTarget = this.webVitalConfig?.generateTarget;
+
+    if (!generateTarget) {
+      return undefined;
+    }
+
+    return (element) => {
+      const label = generateTarget(element);
+
+      if (label == null || label.trim() === '') {
+        return undefined;
+      }
+
+      return label;
+    };
   }
 
   private buildInitialValues(metric: Metric): Values {
