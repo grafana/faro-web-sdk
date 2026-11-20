@@ -70,6 +70,94 @@ const createTransport = (options: Omit<FetchTransportOptions, 'url'> = {}) => {
   return { transport, internalLogger };
 };
 
+const TRACE_SCHEMA_URL = 'https://opentelemetry.io/schemas/1.21.0';
+
+function bodyBytes(body: string): number {
+  return new TextEncoder().encode(body).byteLength;
+}
+
+function traceItem(name: string) {
+  return {
+    type: TransportItemType.TRACE,
+    meta: {},
+    payload: {
+      resourceSpans: [
+        {
+          resource: {
+            attributes: [{ key: 'service.name', value: { stringValue: 'review-service' } }],
+            droppedAttributesCount: 0,
+          },
+          schemaUrl: TRACE_SCHEMA_URL,
+          scopeSpans: [
+            {
+              spans: [
+                {
+                  traceId: 'd6bba34860089d3a4ee58df0811b2f5f',
+                  spanId: '22c85dd7b7c674e8',
+                  name,
+                  kind: 1,
+                  startTimeUnixNano: '1679329154423000000',
+                  endTimeUnixNano: '1679329154449000000',
+                  attributes: [],
+                  droppedAttributesCount: 0,
+                  events: [],
+                  droppedEventsCount: 0,
+                  links: [],
+                  droppedLinksCount: 0,
+                  status: { code: 0 },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  };
+}
+
+// The parent shapes each request with getTransportBody on the original items.
+// Ordinary log and trace batches, split or not, have to send those same bytes.
+function expectParentBytes(items: TransportItem[]): void {
+  const meta = JSON.parse(JSON.stringify(getTransportBody(items).meta));
+  const actual = fetchMock.mock.calls.map(([, init]) => init.body as string);
+  let offset = 0;
+  const expected = actual.map((body) => {
+    const count = sentEntryCount(body, items[offset]?.type ?? items[0]!.type);
+    const slice = items.slice(offset, offset + count);
+    offset += count;
+    return JSON.stringify({ ...getTransportBody(slice), meta });
+  });
+  if (offset !== items.length) {
+    throw new Error(`sent ${offset} of ${items.length} items`);
+  }
+  expect(actual.map(bodyBytes)).toEqual(expected.map(bodyBytes));
+  expect(actual).toEqual(expected);
+}
+
+function sentEntryCount(body: string, type: TransportItemType): number {
+  const parsed = JSON.parse(body) as {
+    traces?: { resourceSpans?: Array<{ scopeSpans?: unknown[] }> };
+    logs?: unknown[];
+    exceptions?: unknown[];
+    measurements?: unknown[];
+    events?: unknown[];
+  };
+  const entries =
+    type === TransportItemType.TRACE
+      ? parsed.traces?.resourceSpans?.[0]?.scopeSpans
+      : type === TransportItemType.EXCEPTION
+        ? parsed.exceptions
+        : type === TransportItemType.MEASUREMENT
+          ? parsed.measurements
+          : type === TransportItemType.EVENT
+            ? parsed.events
+            : parsed.logs;
+  if (!entries?.length) {
+    throw new Error(`request has no ${type} entries`);
+  }
+  return entries.length;
+}
+
 describe('reliable FetchTransport', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -485,6 +573,549 @@ describe('reliable FetchTransport', () => {
     );
   });
 
+  describe('over-budget batches on page hide', () => {
+    const largeItem = { ...item, payload: { ...item.payload, message: 'a'.repeat(14_000) } };
+    const oversizedItem = { ...item, payload: { ...item.payload, message: 'b'.repeat(70_000) } };
+    let finishAll: (firstStatus?: number) => void;
+    let maxInFlight: number;
+
+    beforeEach(() => {
+      const pending: Array<(value: TestResponse) => void> = [];
+      maxInFlight = 0;
+      fetchMock.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            pending.push(resolve);
+            maxInFlight = Math.max(maxInFlight, pending.length);
+          })
+      );
+      finishAll = (firstStatus = 202) =>
+        pending.splice(0).forEach((resolve, index) => resolve(response(index === 0 ? firstStatus : 202)));
+    });
+
+    const sentRequests = () =>
+      fetchMock.mock.calls.map(([, init]) => ({
+        keepalive: init.keepalive,
+        logs: JSON.parse(init.body as string).logs.length,
+      }));
+
+    it.each(['retryable response', 'lost response'])(
+      'keeps the original body and key on unload after a %s',
+      async (failure) => {
+        if (failure === 'retryable response') {
+          fetchMock.mockResolvedValueOnce(response(503));
+        } else {
+          fetchMock.mockRejectedValueOnce(new TypeError('response lost'));
+        }
+        const authorization = jest.fn().mockReturnValue('token');
+        const { transport, internalLogger } = createTransport({
+          requestOptions: { headers: { Authorization: authorization } },
+        });
+        const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+        await jest.advanceTimersByTimeAsync(0);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        const original = fetchMock.mock.calls[0]![1];
+
+        window.dispatchEvent(new Event('pagehide'));
+        await jest.advanceTimersByTimeAsync(0);
+        finishAll();
+        await sending;
+
+        expect(sentRequests()).toEqual([
+          { keepalive: false, logs: 5 },
+          { keepalive: false, logs: 5 },
+        ]);
+        expect(fetchMock.mock.calls[1]![1].body).toBe(original.body);
+        expect(fetchMock.mock.calls[1]![1].headers).toBe(original.headers);
+        expect(authorization).toHaveBeenCalledTimes(1);
+        expect(internalLogger.warn).toHaveBeenCalledTimes(1);
+        expect(internalLogger.warn).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.stringContaining('without keepalive during page unload'),
+          expect.objectContaining({ bodySize: new TextEncoder().encode(original.body as string).byteLength })
+        );
+        expect(internalLogger.error).not.toHaveBeenCalled();
+        await jest.advanceTimersByTimeAsync(60000);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+      }
+    );
+
+    it('preserves a redelivery queued behind an active request when the page unloads', async () => {
+      fetchMock.mockResolvedValueOnce(response(503));
+      const { transport } = createTransport({ concurrency: 1, getRandom: () => 0 });
+      const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      const original = fetchMock.mock.calls[0]![1];
+      const active = transport.send([item]);
+      await jest.advanceTimersByTimeAsync(1000);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+
+      window.dispatchEvent(new Event('pagehide'));
+      finishAll();
+      await jest.advanceTimersByTimeAsync(0);
+      finishAll();
+      await Promise.all([sending, active]);
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(fetchMock.mock.calls[2]![1].body).toBe(original.body);
+      expect(fetchMock.mock.calls[2]![1].headers).toBe(original.headers);
+      expect(fetchMock.mock.calls[2]![1].keepalive).toBe(false);
+    });
+
+    it('plans the ninth keepalive request around in-flight requests and warns for later chunks', async () => {
+      const { transport, internalLogger } = createTransport({ concurrency: 11 });
+      const active = Array.from({ length: 8 }, () => transport.send([item]));
+      await jest.advanceTimersByTimeAsync(0);
+      expect(fetchMock.mock.calls.every(([, init]) => init.keepalive)).toBe(true);
+
+      window.dispatchEvent(new Event('pagehide'));
+      const sending = transport.send([item, oversizedItem, item]);
+      await jest.advanceTimersByTimeAsync(0);
+      const afterLimit = transport.send([item]);
+      await jest.advanceTimersByTimeAsync(0);
+      finishAll();
+      await Promise.all([...active, sending, afterLimit]);
+
+      expect(sentRequests().slice(8)).toEqual([
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 2 },
+        { keepalive: false, logs: 1 },
+      ]);
+      expect(fetchMock.mock.calls.filter(([, init]) => init.keepalive)).toHaveLength(9);
+      expect(internalLogger.warn).toHaveBeenCalledTimes(2);
+      for (const call of internalLogger.warn.mock.calls) {
+        expect(call).toEqual([
+          expect.any(String),
+          expect.stringContaining('without keepalive during page unload'),
+          expect.objectContaining({ pendingKeepaliveRequests: 9, pendingKeepaliveBodySize: expect.any(Number) }),
+        ]);
+        expect(call[2].pendingKeepaliveBodySize).toBeLessThan(60000);
+      }
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      { position: 'first', items: [oversizedItem, item, item], keepalive: [false, true], logs: [1, 2] },
+      { position: 'middle', items: [item, oversizedItem, item], keepalive: [true, false, true], logs: [1, 1, 1] },
+      { position: 'last', items: [item, item, oversizedItem], keepalive: [true, false], logs: [2, 1] },
+      { position: 'only', items: [oversizedItem], keepalive: [false], logs: [1] },
+    ])('only downgrades the oversized item when it is $position', async ({ items, keepalive, logs }) => {
+      const { transport, internalLogger } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(items);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(sentRequests()).toEqual(keepalive.map((value, index) => ({ keepalive: value, logs: logs[index] })));
+      const messages = fetchMock.mock.calls.flatMap(([, init]) =>
+        JSON.parse(init.body as string).logs.map((log: LogEvent) => log.message)
+      );
+      expect(messages).toEqual(items.map((entry) => entry.payload.message));
+      expect(internalLogger.warn).toHaveBeenCalledTimes(1);
+
+      finishAll();
+      await sending;
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it('splits the batch into requests that fit the keepalive budget', async () => {
+      const { transport, internalLogger } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 3 },
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 1 },
+      ]);
+      expect(internalLogger.warn).toHaveBeenCalledTimes(1);
+      expect(internalLogger.warn).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('without keepalive during page unload'),
+        expect.objectContaining({ pendingKeepaliveRequests: 2 })
+      );
+
+      finishAll();
+      await sending;
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it('sends the rest of the batch in one request once the keepalive budget runs out', async () => {
+      const { transport } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(Array(6).fill(largeItem));
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 3 },
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 2 },
+      ]);
+
+      finishAll();
+      await sending;
+    });
+
+    it('sends only the item that misses the remaining budget without keepalive', async () => {
+      // About 29 KB is already reserved. The 39 KB item does not fit in what is left, and it is under the
+      // 60 KB limit. The 1 KB item still fits on its own, so it stays on keepalive.
+      const reserveItem = { ...item, payload: { ...item.payload, message: 'r'.repeat(28_898) } };
+      const wideItem = { ...item, payload: { ...item.payload, message: 'w'.repeat(38_898) } };
+      const smallItem = { ...item, payload: { ...item.payload, message: 's'.repeat(898) } };
+      const { transport, internalLogger } = createTransport();
+      const reserved = transport.send([reserveItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      expect(new TextEncoder().encode(fetchMock.mock.calls[0]![1].body as string).byteLength).toBe(29_000);
+
+      window.dispatchEvent(new Event('pagehide'));
+      const sending = transport.send([wideItem, smallItem]);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 1 },
+        { keepalive: true, logs: 1 },
+      ]);
+      const unloadBodies = fetchMock.mock.calls.slice(1).map(([, init]) => init.body as string);
+      expect(unloadBodies.map((body) => new TextEncoder().encode(body).byteLength)).toEqual([39_000, 1_000]);
+      expect(unloadBodies.flatMap((body) => JSON.parse(body).logs.map((log: LogEvent) => log.message))).toEqual([
+        wideItem.payload.message,
+        smallItem.payload.message,
+      ]);
+      expect(internalLogger.warn).toHaveBeenCalledTimes(1);
+
+      finishAll();
+      await Promise.all([reserved, sending]);
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it('splits an unload batch from the payload captured before a header callback mutates it', async () => {
+      const kept = 'kept'.padEnd(14_000, 'k');
+      const payload = { ...item.payload, message: kept };
+      const batch = Array.from({ length: 5 }, () => ({ ...item, payload }));
+      const authorization = jest.fn(() => {
+        payload.message = 'mutated';
+        return 'token';
+      });
+      const { transport } = createTransport({
+        requestOptions: { headers: { Authorization: authorization } },
+      });
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(authorization).toHaveBeenCalledTimes(1);
+      expect(payload.message).toBe('mutated');
+      expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
+      const messages = fetchMock.mock.calls.flatMap(([, init]) =>
+        JSON.parse(init.body as string).logs.map((log: LogEvent) => log.message)
+      );
+      expect(messages).toEqual(Array(5).fill(kept));
+
+      finishAll();
+      await sending;
+    });
+
+    it('starts every request of a split batch before any of them finishes', async () => {
+      const { transport, internalLogger } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+      const items = [...Array(6).fill(oversizedItem), item];
+
+      const sending = transport.send(items);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(maxInFlight).toBe(5);
+      expect(sentRequests().map(({ logs }) => logs)).toEqual([1, 1, 1, 1, 3]);
+      const messages = fetchMock.mock.calls.flatMap(([, init]) =>
+        JSON.parse(init.body as string).logs.map((log: LogEvent) => log.message)
+      );
+      expect(messages).toEqual(items.map((entry) => entry.payload.message));
+
+      finishAll();
+      await sending;
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it.each([1, 2])('sends each batch whole when no slot is free within a concurrency of %i', async (concurrency) => {
+      const { transport, internalLogger } = createTransport({ concurrency });
+      window.dispatchEvent(new Event('pagehide'));
+      const batches = [0, 1].map((batch) =>
+        Array.from({ length: 5 }, (_, index) => ({
+          ...item,
+          payload: { ...item.payload, message: `${batch}-${index}`.padEnd(14_000, 'a') },
+        }))
+      );
+
+      let settled = false;
+      void Promise.all(batches.map((batch) => transport.send(batch))).then(() => (settled = true));
+      while (!settled) {
+        await jest.advanceTimersByTimeAsync(0);
+        finishAll();
+      }
+
+      expect(maxInFlight).toBe(concurrency);
+      expect(sentRequests()).toEqual([
+        { keepalive: false, logs: 5 },
+        { keepalive: false, logs: 5 },
+      ]);
+      const sent = fetchMock.mock.calls.flatMap(([, init]) =>
+        JSON.parse(init.body as string).logs.map((log: LogEvent) => log.message)
+      );
+      expect(new Set(sent)).toEqual(new Set(batches.flat().map((entry) => entry.payload.message)));
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
+
+    it('counts every request of a split batch and does not retry it after the page is restored', async () => {
+      fetchMock.mockRejectedValueOnce(new TypeError('keepalive request lost')).mockResolvedValueOnce(response(202));
+      const { transport, internalLogger } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send([largeItem, largeItem, largeItem, largeItem, largeItem]);
+      await jest.advanceTimersByTimeAsync(0);
+      const pageShowEvent = new Event('pageshow');
+      Object.defineProperty(pageShowEvent, 'persisted', { value: true });
+      window.dispatchEvent(pageShowEvent);
+      finishAll(503);
+      await sending;
+
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 3 },
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 1 },
+        { keepalive: false, logs: 3 },
+      ]);
+      expect(internalLogger.error).toHaveBeenCalledWith(
+        expect.any(String),
+        'Permanent delivery failure',
+        expect.objectContaining({ attempts: 4, status: 503 })
+      );
+      await jest.advanceTimersByTimeAsync(60000);
+      expect(fetchMock).toHaveBeenCalledTimes(4);
+    });
+
+    it('sends the same bytes as the parent for a split log batch', async () => {
+      const batch = Array.from({ length: 5 }, () => largeItem);
+      const { transport } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(sentRequests()).toEqual([
+        { keepalive: true, logs: 3 },
+        { keepalive: true, logs: 1 },
+        { keepalive: false, logs: 1 },
+      ]);
+      expectParentBytes(batch);
+
+      finishAll();
+      await sending;
+    });
+
+    it.each([
+      ['log', [item, item]],
+      ['trace', [traceItem('one'), traceItem('two')]],
+    ])('sends the same bytes as the parent for an unsplit unload %s batch', async (_label, batch) => {
+      const { transport } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock.mock.calls[0]![1].keepalive).toBe(true);
+      expectParentBytes(batch);
+
+      finishAll();
+      await sending;
+    });
+
+    it('keeps captured resource fields on every split trace request', async () => {
+      const spanName = 's'.repeat(14_000);
+      const batch = Array.from({ length: 5 }, () => traceItem(spanName));
+      const { transport } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+
+      const bodies = fetchMock.mock.calls.map(([, init]) => JSON.parse(init.body as string));
+      expect(fetchMock.mock.calls.map(([, init]) => init.keepalive)).toEqual([true, true, false]);
+      expect(bodies.map((body) => body.traces.resourceSpans[0].scopeSpans.length)).toEqual([3, 1, 1]);
+      for (const body of bodies) {
+        expect(body.traces.resourceSpans[0].resource.attributes).toEqual([
+          { key: 'service.name', value: { stringValue: 'review-service' } },
+        ]);
+        expect(body.traces.resourceSpans[0].schemaUrl).toBe(TRACE_SCHEMA_URL);
+      }
+      expectParentBytes(batch);
+
+      finishAll();
+      await sending;
+    });
+
+    it.each([false, true])(
+      'preserves per-item trace resources on split requests (mutating headers: %s)',
+      async (mutate) => {
+        const batch = Array.from({ length: 5 }, (_, index) => {
+          const trace = traceItem('s'.repeat(14_000));
+          const first = trace.payload.resourceSpans[0]!;
+          first.resource.attributes[0]!.value.stringValue = `service-${index}`;
+          first.schemaUrl = `${TRACE_SCHEMA_URL}/${index}`;
+          trace.payload.resourceSpans.push(traceItem(`extra-${index}`).payload.resourceSpans[0]!);
+          return trace;
+        });
+        const expectedBodies = [batch.slice(0, 3), batch.slice(3, 4), batch.slice(4)].map((items) =>
+          JSON.stringify(getTransportBody(items))
+        );
+        const header = jest.fn(() => {
+          if (mutate) {
+            for (const trace of batch) {
+              const [first, extra] = trace.payload.resourceSpans;
+              first!.resource.attributes[0]!.value.stringValue = 'mutated';
+              first!.schemaUrl = 'mutated';
+              extra!.scopeSpans[0]!.spans[0]!.name = 'mutated';
+            }
+          }
+          return 'header-value';
+        });
+        const { transport } = createTransport({ requestOptions: { headers: { 'x-test': header } } });
+        window.dispatchEvent(new Event('pagehide'));
+
+        const sending = transport.send(batch);
+        await jest.advanceTimersByTimeAsync(0);
+
+        finishAll();
+        await sending;
+
+        expect(header).toHaveBeenCalledTimes(1);
+        expect(fetchMock.mock.calls.map(([, init]) => init.keepalive)).toEqual([true, true, false]);
+        expect(fetchMock.mock.calls.map(([, init]) => init.body)).toEqual(expectedBodies);
+      }
+    );
+
+    it('uses the prepared body when a split would need to capture a custom trace serializer', async () => {
+      const batch = Array.from({ length: 5 }, () => traceItem('s'.repeat(14_000)));
+      const toJSON = jest.fn(() => {
+        throw new Error('discarded resource must not be serialized');
+      });
+      const extraResource = { ...traceItem('extra').payload.resourceSpans[0]!, toJSON };
+      batch[3]!.payload.resourceSpans.push(extraResource);
+      const expectedBody = JSON.stringify(getTransportBody(batch));
+      const { transport, internalLogger } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+      finishAll();
+      await sending;
+
+      expect(toJSON).not.toHaveBeenCalled();
+      expect(internalLogger.error).not.toHaveBeenCalled();
+      expect(fetchMock.mock.calls.map(([, init]) => init.keepalive)).toEqual([false]);
+      expect(fetchMock.mock.calls.map(([, init]) => init.body)).toEqual([expectedBody]);
+    });
+
+    it('keeps a captured null log when a header callback changes the live payload', async () => {
+      let changed = false;
+      const live = {
+        ...item.payload,
+        message: 'original',
+        toJSON() {
+          return changed ? { ...item.payload, message: 'mutated' } : null;
+        },
+      };
+      const filler = { ...item, payload: { ...item.payload, message: 'f'.repeat(14_000) } };
+      const batch = [filler, { ...item, payload: live }, filler, filler, filler, filler];
+      const authorization = jest.fn(() => {
+        changed = true;
+        return 'token';
+      });
+      const { transport } = createTransport({
+        requestOptions: { headers: { Authorization: authorization } },
+      });
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(authorization).toHaveBeenCalledTimes(1);
+      expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
+      const logs = fetchMock.mock.calls.flatMap(([, init]) => JSON.parse(init.body as string).logs);
+      expect(logs).toHaveLength(6);
+      expect(logs[1]).toBeNull();
+      expect(JSON.stringify(logs)).not.toContain('mutated');
+
+      finishAll();
+      await sending;
+    });
+
+    it.each([
+      [
+        'exception',
+        TransportItemType.EXCEPTION,
+        { type: 'Error', value: 'original', timestamp: item.payload.timestamp },
+        { type: 'Error', value: 'e'.repeat(14_000), timestamp: item.payload.timestamp },
+      ],
+      [
+        'measurement',
+        TransportItemType.MEASUREMENT,
+        { type: 'web-vital', values: { lcp: 1 }, timestamp: item.payload.timestamp },
+        { type: 'm'.repeat(14_000), values: { lcp: 1 }, timestamp: item.payload.timestamp },
+      ],
+      [
+        'event',
+        TransportItemType.EVENT,
+        { name: 'click', timestamp: item.payload.timestamp },
+        { name: 'e'.repeat(14_000), timestamp: item.payload.timestamp },
+      ],
+    ])(
+      'keeps a captured null %s payload when a header callback changes the live payload',
+      async (_label, type, base, fillerPayload) => {
+        let changed = false;
+        const live = {
+          ...base,
+          toJSON() {
+            return changed ? { ...base, marker: 'mutated' } : null;
+          },
+        };
+        const filler = { type, meta: {}, payload: fillerPayload };
+        const batch = [filler, { type, meta: {}, payload: live }, filler, filler, filler, filler];
+        const authorization = jest.fn(() => {
+          changed = true;
+          return 'token';
+        });
+        const { transport } = createTransport({
+          requestOptions: { headers: { Authorization: authorization } },
+        });
+        window.dispatchEvent(new Event('pagehide'));
+
+        const sending = transport.send(batch);
+        await jest.advanceTimersByTimeAsync(0);
+
+        expect(authorization).toHaveBeenCalledTimes(1);
+        expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
+        const key =
+          type === TransportItemType.EXCEPTION
+            ? 'exceptions'
+            : type === TransportItemType.MEASUREMENT
+              ? 'measurements'
+              : 'events';
+        const entries = fetchMock.mock.calls.flatMap(([, init]) => JSON.parse(init.body as string)[key]);
+        expect(entries).toHaveLength(6);
+        expect(entries[1]).toBeNull();
+        expect(JSON.stringify(entries)).not.toContain('mutated');
+
+        finishAll();
+        await sending;
+      }
+    );
+  });
+
   it('resumes retries after restoration from the back-forward cache', async () => {
     fetchMock.mockResolvedValueOnce(response(503)).mockResolvedValueOnce(response(202));
     const { transport } = createTransport();
@@ -542,6 +1173,77 @@ describe('reliable FetchTransport', () => {
     );
   });
 
+  it.each([
+    ['log', () => [item, { ...item, payload: { ...item.payload, message: 'second' } }]],
+    ['trace', () => [traceItem('one'), traceItem('two')]],
+  ])('sends the same bytes as the parent for an unsplit visible %s batch', async (_label, build) => {
+    const batch = build();
+    const { transport } = createTransport();
+
+    await transport.send(batch);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expectParentBytes(batch);
+  });
+
+  it('preserves the toJSON key used by a visible unsplit request', async () => {
+    const outgoing = {
+      ...item,
+      payload: {
+        ...item.payload,
+        toJSON(key: string) {
+          return { ...item.payload, message: key };
+        },
+      },
+    };
+    const { transport } = createTransport();
+
+    await transport.send([outgoing]);
+
+    expect(JSON.parse(fetchMock.mock.calls[0]![1].body as string).logs[0].message).toBe('0');
+  });
+
+  it('does not serialize a discarded second trace resource', async () => {
+    const first = {
+      type: TransportItemType.TRACE,
+      meta: {},
+      payload: { resourceSpans: [{ scopeSpans: [] }] },
+    };
+    const unused = {
+      scopeSpans: [],
+      toJSON() {
+        throw new Error('unused resource should never be serialized');
+      },
+    };
+    const second = {
+      type: TransportItemType.TRACE,
+      meta: {},
+      payload: { resourceSpans: [{ scopeSpans: [] }, unused] },
+    };
+    const { transport, internalLogger } = createTransport();
+
+    await transport.send([first, second]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(internalLogger.error).not.toHaveBeenCalled();
+  });
+
+  it('preserves trace shaping before serialization', async () => {
+    const payload = {
+      resourceSpans: [{ scopeSpans: [] }],
+      toJSON() {
+        return {};
+      },
+    };
+    const { transport } = createTransport();
+
+    await transport.send([{ type: TransportItemType.TRACE, meta: {}, payload }]);
+
+    expect(JSON.parse(fetchMock.mock.calls[0]![1].body as string).traces).toEqual({
+      resourceSpans: [{ scopeSpans: [] }],
+    });
+  });
+
   describe('session identity and invalidation handling', () => {
     let mockStorage: Record<string, string> = {};
 
@@ -573,9 +1275,9 @@ describe('reliable FetchTransport', () => {
 
     // Wires the transport into a real, isolated Faro instance so the invalidation guard's
     // "current in-memory session" and the session updater's global lookups agree.
-    const setupFaroBackedTransport = (persistent = false) => {
+    const setupFaroBackedTransport = (persistent = false, options: Omit<FetchTransportOptions, 'url'> = {}) => {
       const faro = initializeFaro(mockConfig({ sessionTracking: { enabled: true, persistent } }));
-      const { transport, internalLogger } = createTransport();
+      const { transport, internalLogger } = createTransport(options);
       transport.config = faro.config;
       transport.metas = faro.metas;
       return { faro, transport, internalLogger };
@@ -651,6 +1353,40 @@ describe('reliable FetchTransport', () => {
         (first!.headers as Record<string, string>)['x-faro-session-id']
       );
       expect((first!.headers as Record<string, string>)['x-faro-session-id']).toBe('A');
+    });
+
+    it('keeps the original metadata and session on every chunk of a split batch', async () => {
+      fetchMock
+        .mockResolvedValueOnce(response(202))
+        .mockResolvedValueOnce(response(202))
+        .mockResolvedValueOnce(sessionInvalidResponse());
+      const message = 'a'.repeat(14_000);
+      const batch = ['A', 'B', 'B', 'B', 'B'].map((id) => ({
+        ...itemWithSession(id),
+        payload: { ...item.payload, message },
+      }));
+      const { faro, transport } = setupFaroBackedTransport(false, {
+        requestOptions: {
+          headers: {
+            Authorization: async () => {
+              batch[0]!.meta.session!.id = 'changed';
+              return 'token';
+            },
+          },
+        },
+      });
+      faro.metas.add({ session: { id: 'A' } });
+      VolatileSessionsManager.storeUserSession(storedSession('A'));
+
+      window.dispatchEvent(new Event('pagehide'));
+      await transport.send(batch);
+
+      const sent = fetchMock.mock.calls.map(([, init]) => [
+        JSON.parse(init.body as string).meta,
+        (init.headers as Record<string, string>)['x-faro-session-id'],
+      ]);
+      expect(sent).toEqual(Array(3).fill([{ session: { id: 'A' } }, 'A']));
+      expect(JSON.parse(mockStorage[STORAGE_KEY]!).sessionId).not.toBe('A');
     });
 
     it('rotates the session when an invalid response matches the current session in memory and storage', async () => {

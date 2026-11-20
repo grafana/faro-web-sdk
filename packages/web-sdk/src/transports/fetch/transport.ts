@@ -5,9 +5,19 @@ import {
   genShortID,
   getTransportBody,
   noop,
+  TransportItemType,
   VERSION,
 } from '@grafana/faro-core';
-import type { Config, Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
+import type {
+  Config,
+  Meta,
+  Patterns,
+  PromiseBuffer,
+  PromiseProducer,
+  TraceEvent,
+  TransportBody,
+  TransportItem,
+} from '@grafana/faro-core';
 
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
 import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
@@ -37,7 +47,106 @@ interface KeepaliveReservation {
   keepalive: boolean;
   release: () => void;
 }
+interface PreparedRequest {
+  requestInit: RequestInit;
+  bodySize: number;
+  meta: Meta;
+  sessionId: string | undefined;
+  resolvedHeaders: Record<string, string>;
+  /** Items captured before header callbacks run, when the batch can be split safely. */
+  items: TransportItem[] | undefined;
+}
 class RequestTimeoutError extends Error {}
+
+interface CapturedBatch {
+  items: TransportItem[] | undefined;
+  meta: Meta;
+  jsonBody: string;
+}
+
+// Copy the OTLP data without invoking serializers or accessors on resources the
+// whole request might discard. If a trace needs custom serialization, keep the
+// prepared request instead of guessing what a different slice would serialize.
+function copyTraceData(value: unknown, copies = new WeakMap<object, object>()): unknown {
+  if (typeof value === 'function') {
+    throw new TypeError('Cannot snapshot a trace function');
+  }
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+  const existing = copies.get(value);
+  if (existing) {
+    return existing;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  const isArray = prototype === Array.prototype;
+  if (!isArray && prototype !== Object.prototype && prototype !== null && prototype !== Uint8Array.prototype) {
+    throw new TypeError('Cannot snapshot a custom trace object');
+  }
+  // Uint8Array is represented by its indexed properties in the JSON request.
+  const copy: object = isArray ? [] : Object.create(prototype === null ? null : Object.prototype);
+  copies.set(value, copy);
+  for (const key of Reflect.ownKeys(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !('value' in descriptor)) {
+      throw new TypeError('Cannot snapshot a trace accessor');
+    }
+    Object.defineProperty(copy, key, { ...descriptor, value: copyTraceData(descriptor.value, copies) });
+  }
+  return copy;
+}
+
+function snapshotTracePayload(payload: TraceEvent): TraceEvent {
+  const resources = Object.getOwnPropertyDescriptor(payload, 'resourceSpans');
+  if (resources ? !('value' in resources) : 'resourceSpans' in payload) {
+    throw new TypeError('Cannot snapshot an accessor or inherited trace resource list');
+  }
+  return { resourceSpans: copyTraceData(resources?.value) as TraceEvent['resourceSpans'] };
+}
+
+function readCaptured(
+  values: readonly unknown[] | undefined,
+  index: number,
+  fallback: TransportItem['payload']
+): TransportItem['payload'] {
+  if (values == null || index >= values.length) {
+    return fallback;
+  }
+  // A captured null is the serialized value. Treating it as missing would send the live object.
+  return values[index] as TransportItem['payload'];
+}
+
+function signalPayload(
+  sent: TransportBody,
+  item: TransportItem,
+  cursor: { exceptions: number; logs: number; measurements: number; events: number }
+): TransportItem['payload'] {
+  switch (item.type) {
+    case TransportItemType.EXCEPTION:
+      return readCaptured(sent.exceptions, cursor.exceptions++, item.payload);
+    case TransportItemType.LOG:
+      return readCaptured(sent.logs, cursor.logs++, item.payload);
+    case TransportItemType.MEASUREMENT:
+      return readCaptured(sent.measurements, cursor.measurements++, item.payload);
+    case TransportItemType.EVENT:
+      return readCaptured(sent.events, cursor.events++, item.payload);
+    default:
+      return item.payload;
+  }
+}
+
+/** Capture signal values from the wire body and trace resources from their own items. */
+function snapshotItems(items: TransportItem[], sent: TransportBody, meta: Meta): TransportItem[] {
+  const cursor = { exceptions: 0, logs: 0, measurements: 0, events: 0 };
+
+  return items.map((item) => {
+    if (item.type === TransportItemType.TRACE) {
+      return { ...item, meta, payload: snapshotTracePayload(item.payload as TraceEvent) };
+    }
+    return { ...item, meta, payload: signalPayload(sent, item, cursor) };
+  });
+}
 
 function getBodyByteSize(body: string): number {
   return typeof TextEncoder === 'undefined' ? body.length : new TextEncoder().encode(body).byteLength;
@@ -174,8 +283,10 @@ export class FetchTransport extends BaseTransport {
 
     try {
       const prepared = await this.prepareRequest(items);
-      const outcome = await reservation.deliver((attemptsRemaining, unloading) =>
-        this.performAttempt(prepared, attemptsRemaining, unloading)
+      const outcome = await reservation.deliver((attemptsRemaining, unloading, isRedelivery) =>
+        unloading && !isRedelivery
+          ? this.performUnloadAttempt(prepared, attemptsRemaining)
+          : this.performAttempt(prepared, attemptsRemaining, unloading)
       );
       if (outcome.kind === 'terminal') {
         this.logError(
@@ -203,21 +314,32 @@ export class FetchTransport extends BaseTransport {
     return true;
   }
 
-  private async prepareRequest(
-    items: TransportItem[]
-  ): Promise<{ requestInit: RequestInit; bodySize: number; sessionId: string | undefined }> {
+  private async prepareRequest(items: TransportItem[], original?: PreparedRequest): Promise<PreparedRequest> {
     // Async headers and compression can outlive a session. Bind both the header
     // and its response handling to the payload, not the current session.
-    const transportBody = getTransportBody(items);
-    const sessionId = transportBody.meta.session?.id;
-    const jsonBody = JSON.stringify(transportBody);
+    // Capture per-item data before a header callback can change the payload.
+    let sourceItems: TransportItem[] | undefined = items;
+    let meta: Meta;
+    let jsonBody: string;
+    if (original) {
+      meta = original.meta;
+      jsonBody = JSON.stringify({ ...getTransportBody(items), meta });
+    } else {
+      const captured = this.captureSnapshot(items);
+      sourceItems = captured.items;
+      meta = captured.meta;
+      jsonBody = captured.jsonBody;
+    }
+    const sessionId = meta.session?.id;
 
     const { headers = {}, ...requestOptions } = this.options.requestOptions ?? {};
     const { keepalive: _keepalive, signal: _signal, ...requestOptionsWithoutManagedFields } = requestOptions;
-    const resolvedHeaders: Record<string, string> = {};
-
-    for (const [key, value] of Object.entries(headers)) {
-      resolvedHeaders[key] = typeof value === 'function' ? await value() : value;
+    let resolvedHeaders = original?.resolvedHeaders;
+    if (!resolvedHeaders) {
+      resolvedHeaders = {};
+      for (const [key, value] of Object.entries(headers)) {
+        resolvedHeaders[key] = typeof value === 'function' ? await value() : value;
+      }
     }
 
     let body: string | Blob = jsonBody;
@@ -231,7 +353,10 @@ export class FetchTransport extends BaseTransport {
 
     return {
       bodySize,
+      meta,
       sessionId,
+      resolvedHeaders,
+      items: sourceItems,
       requestInit: {
         method: 'POST',
         headers: {
@@ -240,7 +365,7 @@ export class FetchTransport extends BaseTransport {
           ...resolvedHeaders,
           ...(this.options.apiKey ? { 'x-api-key': this.options.apiKey } : {}),
           ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
-          // Unlike dynamic headers, this key is generated once and must remain stable across attempts.
+          // Each body gets its own key, reused across attempts.
           'Idempotency-Key': genShortID(20),
         },
         body,
@@ -249,10 +374,120 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
+  /**
+   * Shape and serialize the batch before copying it. Meta is cloned before payload toJSON runs,
+   * so a serializer cannot change the captured session. Traces keep each item's full resource list
+   * because the resources in a split request can differ from the ones in the merged body.
+   */
+  private captureSnapshot(items: TransportItem[]): CapturedBatch {
+    const transportBody = getTransportBody(items);
+    const meta = JSON.parse(JSON.stringify(transportBody.meta)) as Meta;
+    const jsonBody = JSON.stringify({ ...transportBody, meta });
+    const sent = JSON.parse(jsonBody) as TransportBody;
+    try {
+      return { items: snapshotItems(items, sent, meta), meta, jsonBody };
+    } catch {
+      // The original body is ready, but an alternate trace slice cannot be captured safely.
+      return { items: undefined, meta, jsonBody };
+    }
+  }
+
+  /** On unload, send an over-budget batch in chunks that fit the keepalive budget. */
+  private async performUnloadAttempt(prepared: PreparedRequest, attemptsRemaining: number): Promise<AttemptOutcome> {
+    if (!prepared.items) {
+      return this.performAttempt(prepared, attemptsRemaining, true);
+    }
+    // Each request gets a slot of its own: this attempt's slot first, then idle ones. A request that waited
+    // for a slot would only start after an earlier one finished, which is too late once the page is gone.
+    const requests: Array<{ prepared: PreparedRequest; reservation: KeepaliveReservation; releaseSlot: () => void }> =
+      [];
+    const releaseAll = () =>
+      requests.forEach(({ reservation, releaseSlot }) => {
+        reservation.release();
+        releaseSlot();
+      });
+    let chunkSlot: () => void = noop;
+    try {
+      let remaining = prepared.items;
+      let remainingPrepared = prepared;
+      for (;;) {
+        let chunk = remaining;
+        let chunkPrepared = remainingPrepared;
+        while (
+          chunk.length > 1 &&
+          pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS &&
+          !this.fitsKeepaliveBudget(chunkPrepared.bodySize)
+        ) {
+          chunk = chunk.slice(0, Math.ceil(chunk.length / 2));
+          chunkPrepared = await this.prepareRequest(chunk, prepared);
+        }
+
+        // A single item that does not fit goes on its own, and the suffix keeps splitting, when a later item
+        // can still use keepalive and a slot is free. An item over the 60 KB limit always goes alone. Once
+        // nothing left fits, or no slot is free, the rest stays in this request.
+        const fits = this.fitsKeepaliveBudget(chunkPrepared.bodySize);
+        const sendItemAlone =
+          !fits &&
+          chunk !== remaining &&
+          chunk.length === 1 &&
+          pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS &&
+          (chunkPrepared.bodySize > BEACON_BODY_SIZE_LIMIT ||
+            (await this.laterItemFitsKeepalive(remaining.slice(chunk.length), prepared)));
+        const nextSlot =
+          chunk !== remaining && (fits || sendItemAlone) ? this.deliveryQueue.claimIdleSlot() : undefined;
+        if (!nextSlot) {
+          chunk = remaining;
+          chunkPrepared = remainingPrepared;
+        }
+
+        // Hold the actual budget while asynchronous preparation allows other deliveries to run.
+        requests.push({
+          prepared: chunkPrepared,
+          reservation: this.reserveKeepalive(chunkPrepared.bodySize, true),
+          releaseSlot: chunkSlot,
+        });
+        if (!nextSlot) {
+          break;
+        }
+        chunkSlot = nextSlot;
+        remaining = remaining.slice(chunk.length);
+        remainingPrepared = await this.prepareRequest(remaining, prepared);
+      }
+    } catch {
+      // Nothing has been sent, so the original body and key are still safe to use.
+      releaseAll();
+      chunkSlot();
+      return this.performAttempt(prepared, attemptsRemaining, true);
+    }
+
+    try {
+      const outcomes = await Promise.all(
+        requests.map(async ({ prepared, reservation, releaseSlot }) => {
+          try {
+            return await this.performAttempt(prepared, attemptsRemaining, true, reservation);
+          } finally {
+            releaseSlot();
+          }
+        })
+      );
+
+      const attemptsMade = outcomes.reduce((total, outcome) => total + outcome.attemptsMade, 0);
+      for (const outcome of outcomes) {
+        if (outcome.kind !== 'success') {
+          return { kind: 'terminal', failure: outcome.failure, attemptsMade };
+        }
+      }
+      return { kind: 'success', attemptsMade };
+    } finally {
+      releaseAll();
+    }
+  }
+
   private async performAttempt(
-    prepared: { requestInit: RequestInit; bodySize: number; sessionId: string | undefined },
+    prepared: PreparedRequest,
     attemptsRemaining: number,
-    unloading: boolean
+    unloading: boolean,
+    keepaliveReservation?: KeepaliveReservation
   ): Promise<AttemptOutcome> {
     const callerSignal = this.options.requestOptions?.signal;
     if (callerSignal?.aborted) {
@@ -265,8 +500,10 @@ export class FetchTransport extends BaseTransport {
         prepared.requestInit,
         prepared.bodySize,
         unloading ? true : this.options.requestOptions?.keepalive,
+        unloading,
         attemptsRemaining,
-        () => attemptsMade++
+        () => attemptsMade++,
+        keepaliveReservation
       );
       this.handleResponse(response, prepared.sessionId);
 
@@ -298,11 +535,16 @@ export class FetchTransport extends BaseTransport {
     requestInit: RequestInit,
     bodySize: number,
     configuredKeepalive: boolean | undefined,
+    unloading: boolean,
     attemptsRemaining: number,
-    onFetch: () => void
+    onFetch: () => void,
+    keepaliveReservation?: KeepaliveReservation
   ): Promise<Response> {
     const startedAt = this.getNow();
-    const reservation = this.reserveKeepalive(bodySize, configuredKeepalive);
+    const reservation = keepaliveReservation ?? this.reserveKeepalive(bodySize, configuredKeepalive);
+    if (!reservation.keepalive) {
+      this.warnOnUnloadWithoutKeepalive(bodySize, unloading);
+    }
     try {
       return await this.fetchWithTimeout(
         { ...requestInit, keepalive: reservation.keepalive },
@@ -318,12 +560,23 @@ export class FetchTransport extends BaseTransport {
         !this.options.requestOptions?.signal?.aborted
       ) {
         this.logDebug('Retrying failed keepalive request with keepalive disabled.');
+        this.warnOnUnloadWithoutKeepalive(bodySize, unloading);
         const remainingTimeoutMs = this.requestTimeoutMs - (this.getNow() - startedAt);
         return this.fetchWithTimeout({ ...requestInit, keepalive: false }, remainingTimeoutMs, onFetch);
       }
       throw error;
     } finally {
       reservation.release();
+    }
+  }
+
+  private warnOnUnloadWithoutKeepalive(bodySize: number, unloading: boolean): void {
+    if (unloading) {
+      this.logWarn('Sending request without keepalive during page unload. It may be cancelled with the page.', {
+        bodySize,
+        pendingKeepaliveBodySize,
+        pendingKeepaliveRequests,
+      });
     }
   }
 
@@ -375,12 +628,7 @@ export class FetchTransport extends BaseTransport {
   }
 
   private reserveKeepalive(bodySize: number, configuredKeepalive?: boolean): KeepaliveReservation {
-    if (
-      configuredKeepalive === false ||
-      bodySize > BEACON_BODY_SIZE_LIMIT ||
-      pendingKeepaliveBodySize + bodySize > BEACON_BODY_SIZE_LIMIT ||
-      pendingKeepaliveRequests >= MAX_KEEPALIVE_REQUESTS
-    ) {
+    if (configuredKeepalive === false || !this.fitsKeepaliveBudget(bodySize)) {
       return { keepalive: false, release: noop };
     }
 
@@ -397,6 +645,22 @@ export class FetchTransport extends BaseTransport {
         }
       },
     };
+  }
+
+  private fitsKeepaliveBudget(bodySize: number): boolean {
+    return (
+      pendingKeepaliveBodySize + bodySize <= BEACON_BODY_SIZE_LIMIT && pendingKeepaliveRequests < MAX_KEEPALIVE_REQUESTS
+    );
+  }
+
+  private async laterItemFitsKeepalive(items: TransportItem[], original: PreparedRequest): Promise<boolean> {
+    for (const item of items) {
+      const prepared = await this.prepareRequest([item], original);
+      if (this.fitsKeepaliveBudget(prepared.bodySize)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private handleResponse(response: Response, requestSessionId: string | undefined): void {
