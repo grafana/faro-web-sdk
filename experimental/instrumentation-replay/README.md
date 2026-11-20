@@ -2,8 +2,24 @@
 
 Faro instrumentation for session replay with rrweb.
 
-Canvas 2D and WebGL content capture is not supported. Canvas elements can appear in
-the recorded DOM, but replaying their drawing content is not supported.
+Canvas pixel capture is experimental and requires a player that supports raster
+snapshots. Enable it with `new ReplayInstrumentation({ captureCanvasSnapshots: true })`.
+The recorder samples up to four frames per second across eligible canvases
+in the visible top-level document, using WebP quality 0.5. Canvas pixels can include map labels and other
+sensitive content even when DOM text and input masking are enabled. Use
+`grafana-block` or `blockSelector` on a canvas or its document ancestors to exclude it.
+For slotted content, apply the block to the shadow host or the light-DOM subtree.
+
+For example, to capture only MapLibre canvases, include
+`canvas:not(.maplibregl-canvas)` in your existing `blockSelector`. A privacy
+preset that blocks `canvas` continues to block every canvas. Canvas sampling skips
+iframe and shadow-tree content, unreadable canvases, and images above 8192 pixels
+on either edge, 16,777,216 total pixels, or 768 KiB of encoded WebP.
+
+WebGL applications must preserve the drawing buffer to capture pixels reliably
+after rendering. For MapLibre GL JS, set
+`canvasContextAttributes: { preserveDrawingBuffer: true }` when constructing
+the map. Preserving the buffer can increase rendering cost.
 
 ## Installation
 
@@ -93,6 +109,7 @@ These classes work without configuration and remain active alongside custom sele
 | `samplingRate`             | `number`                       | `1`      | Fraction of globally-sampled sessions that will be recorded. Applied on top of `sessionTracking.samplingRate`. Out-of-range values are clamped. |
 | `recordAfter`              | `'load' \| 'DOMContentLoaded'` | `'load'` | When to start recording if the document is not ready yet                                                                                        |
 | `recordCrossOriginIframes` | `boolean`                      | `false`  | Whether to record cross-origin iframes. rrweb must be injected in each child iframe for this to work                                            |
+| `captureCanvasSnapshots`   | `boolean`                      | `false`  | Capture unmasked canvas pixels as image snapshots                                                                                               |
 | `collectFonts`             | `boolean`                      | `false`  | Whether to collect fonts used in the website                                                                                                    |
 | `inlineImages`             | `boolean`                      | `false`  | Whether to record image content                                                                                                                 |
 | `inlineStylesheet`         | `boolean`                      | `false`  | Whether to inline stylesheets in the recording events                                                                                           |
