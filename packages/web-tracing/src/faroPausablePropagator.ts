@@ -16,11 +16,11 @@ import type { Context, TextMapGetter, TextMapPropagator, TextMapSetter } from '@
 export class FaroPausablePropagator implements TextMapPropagator {
   constructor(
     private readonly propagator: TextMapPropagator,
-    private readonly shouldOmitTraceContext: () => boolean
+    private readonly shouldOmitTraceContext: (context: Context) => boolean
   ) {}
 
   inject(context: Context, carrier: unknown, setter: TextMapSetter): void {
-    if (this.shouldOmitTraceContext()) {
+    if (this.shouldOmitTraceContext(context)) {
       return;
     }
 
