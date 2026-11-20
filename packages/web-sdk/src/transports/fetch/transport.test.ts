@@ -867,6 +867,64 @@ describe('reliable FetchTransport', () => {
     );
   });
 
+  it('preserves the toJSON key used by a visible unsplit request', async () => {
+    const outgoing = {
+      ...item,
+      payload: {
+        ...item.payload,
+        toJSON(key: string) {
+          return { ...item.payload, message: key };
+        },
+      },
+    };
+    const { transport } = createTransport();
+
+    await transport.send([outgoing]);
+
+    expect(JSON.parse(fetchMock.mock.calls[0]![1].body as string).logs[0].message).toBe('0');
+  });
+
+  it('does not serialize a discarded second trace resource', async () => {
+    const first = {
+      type: TransportItemType.TRACE,
+      meta: {},
+      payload: { resourceSpans: [{ scopeSpans: [] }] },
+    };
+    const unused = {
+      scopeSpans: [],
+      toJSON() {
+        throw new Error('unused resource should never be serialized');
+      },
+    };
+    const second = {
+      type: TransportItemType.TRACE,
+      meta: {},
+      payload: { resourceSpans: [{ scopeSpans: [] }, unused] },
+    };
+    const { transport, internalLogger } = createTransport();
+
+    await transport.send([first, second]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(internalLogger.error).not.toHaveBeenCalled();
+  });
+
+  it('preserves trace shaping before serialization', async () => {
+    const payload = {
+      resourceSpans: [{ scopeSpans: [] }],
+      toJSON() {
+        return {};
+      },
+    };
+    const { transport } = createTransport();
+
+    await transport.send([{ type: TransportItemType.TRACE, meta: {}, payload }]);
+
+    expect(JSON.parse(fetchMock.mock.calls[0]![1].body as string).traces).toEqual({
+      resourceSpans: [{ scopeSpans: [] }],
+    });
+  });
+
   describe('session identity and invalidation handling', () => {
     let mockStorage: Record<string, string> = {};
 

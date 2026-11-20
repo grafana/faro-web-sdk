@@ -5,9 +5,19 @@ import {
   genShortID,
   getTransportBody,
   noop,
+  TransportItemType,
   VERSION,
 } from '@grafana/faro-core';
-import type { Config, Meta, Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
+import type {
+  Config,
+  Meta,
+  Patterns,
+  PromiseBuffer,
+  PromiseProducer,
+  TraceEvent,
+  TransportBody,
+  TransportItem,
+} from '@grafana/faro-core';
 
 import { getSessionManagerByConfig } from '../../instrumentations/session/sessionManager';
 import { getUserSessionUpdater } from '../../instrumentations/session/sessionManager/sessionManagerUtils';
@@ -47,6 +57,116 @@ interface PreparedRequest {
   items: TransportItem[];
 }
 class RequestTimeoutError extends Error {}
+
+interface TraceContribution {
+  count: number;
+  role: 'owner' | 'append' | 'skip';
+}
+
+interface CapturedBatch {
+  items: TransportItem[];
+  meta: Meta;
+  jsonBody: string;
+}
+
+/** Mirrors mergeResourceSpans so the snapshot keeps only the spans that merge would send. */
+function planTraceContributions(items: TransportItem[]): { entries: TraceContribution[]; whole: boolean } {
+  const entries: TraceContribution[] = [];
+  let hasTraces = false;
+  let currentResourceDefined = false;
+  let replaced = false;
+
+  for (const item of items) {
+    if (item.type !== TransportItemType.TRACE) {
+      continue;
+    }
+    const resourceSpans = (item.payload as TraceEvent).resourceSpans;
+    if (resourceSpans === undefined) {
+      entries.push({ count: 0, role: 'skip' });
+      continue;
+    }
+    if (!hasTraces) {
+      hasTraces = true;
+      currentResourceDefined = resourceSpans[0] !== undefined;
+      entries.push({ count: resourceSpans[0]?.scopeSpans?.length ?? 0, role: 'owner' });
+      continue;
+    }
+    if (!currentResourceDefined) {
+      entries.push({ count: 0, role: 'skip' });
+      continue;
+    }
+    replaced = true;
+    entries.push({ count: resourceSpans[0]?.scopeSpans?.length ?? 0, role: 'append' });
+  }
+
+  return { entries, whole: hasTraces && !replaced };
+}
+
+function tracePayloadsFromSent(
+  sentTraces: TraceEvent | undefined,
+  plan: { entries: TraceContribution[]; whole: boolean }
+): TraceEvent[] {
+  if (!sentTraces) {
+    return plan.entries.map(() => ({}) as TraceEvent);
+  }
+  if (plan.whole) {
+    return plan.entries.map((entry) => (entry.role === 'owner' ? sentTraces : ({} as TraceEvent)));
+  }
+
+  const resourceSpan = sentTraces.resourceSpans?.[0];
+  const scopeSpans = resourceSpan?.scopeSpans ?? [];
+  let offset = 0;
+  return plan.entries.map((entry) => {
+    if (entry.role === 'skip') {
+      return {} as TraceEvent;
+    }
+    const slice = scopeSpans.slice(offset, offset + entry.count);
+    offset += entry.count;
+    if (entry.role === 'owner' && resourceSpan) {
+      const { scopeSpans: _scopeSpans, ...rest } = resourceSpan;
+      return { resourceSpans: [{ ...rest, scopeSpans: slice }] };
+    }
+    return { resourceSpans: [{ scopeSpans: slice }] };
+  });
+}
+
+function signalPayload(
+  sent: TransportBody,
+  item: TransportItem,
+  cursor: { exceptions: number; logs: number; measurements: number; events: number }
+): TransportItem['payload'] {
+  switch (item.type) {
+    case TransportItemType.EXCEPTION:
+      return sent.exceptions?.[cursor.exceptions++] ?? item.payload;
+    case TransportItemType.LOG:
+      return sent.logs?.[cursor.logs++] ?? item.payload;
+    case TransportItemType.MEASUREMENT:
+      return sent.measurements?.[cursor.measurements++] ?? item.payload;
+    case TransportItemType.EVENT:
+      return sent.events?.[cursor.events++] ?? item.payload;
+    default:
+      return item.payload;
+  }
+}
+
+/** Plain items from the body that would be sent. A raw payload copy would run toJSON too early. */
+function itemsFromSentBody(
+  items: TransportItem[],
+  sent: TransportBody,
+  plan: { entries: TraceContribution[]; whole: boolean },
+  meta: Meta
+): TransportItem[] {
+  const cursor = { exceptions: 0, logs: 0, measurements: 0, events: 0 };
+  const tracePayloads = tracePayloadsFromSent(sent.traces, plan);
+  let traceIndex = 0;
+
+  return items.map((item) => {
+    if (item.type === TransportItemType.TRACE) {
+      return { ...item, meta, payload: tracePayloads[traceIndex++] ?? ({} as TraceEvent) };
+    }
+    return { ...item, meta, payload: signalPayload(sent, item, cursor) };
+  });
+}
 
 function getBodyByteSize(body: string): number {
   return typeof TextEncoder === 'undefined' ? body.length : new TextEncoder().encode(body).byteLength;
@@ -217,13 +337,21 @@ export class FetchTransport extends BaseTransport {
   private async prepareRequest(items: TransportItem[], original?: PreparedRequest): Promise<PreparedRequest> {
     // Async headers and compression can outlive a session. Bind both the header
     // and its response handling to the payload, not the current session.
-    // Copy the items first. A payload toJSON can mutate metadata while the body is built,
-    // and a header callback can mutate a payload after that. Chunks read this copy.
-    const sourceItems = original ? items : this.snapshotItems(items);
-    const transportBody = getTransportBody(sourceItems);
-    const meta: Meta = original?.meta ?? JSON.parse(JSON.stringify(transportBody.meta));
+    // The first body is shaped the same way as before. A split reads a plain copy of
+    // that body, so a header callback cannot change a payload after it is built.
+    let sourceItems = items;
+    let meta: Meta;
+    let jsonBody: string;
+    if (original) {
+      meta = original.meta;
+      jsonBody = JSON.stringify({ ...getTransportBody(sourceItems), meta });
+    } else {
+      const captured = this.captureSnapshot(items);
+      sourceItems = captured.items;
+      meta = captured.meta;
+      jsonBody = captured.jsonBody;
+    }
     const sessionId = meta.session?.id;
-    const jsonBody = JSON.stringify({ ...transportBody, meta });
 
     const { headers = {}, ...requestOptions } = this.options.requestOptions ?? {};
     const { keepalive: _keepalive, signal: _signal, ...requestOptionsWithoutManagedFields } = requestOptions;
@@ -267,14 +395,17 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
-  /** Deep-copies meta before payload serialization, so a payload toJSON cannot change the captured session. */
-  private snapshotItems(items: TransportItem[]): TransportItem[] {
-    return items.map((item) => {
-      const meta = JSON.parse(JSON.stringify(item.meta ?? {})) as Meta;
-      const payloadJson = JSON.stringify(item.payload);
-      const payload = (payloadJson === undefined ? item.payload : JSON.parse(payloadJson)) as TransportItem['payload'];
-      return { ...item, meta, payload };
-    });
+  /**
+   * Shape and serialize the batch before copying it. Meta is cloned before payload toJSON runs,
+   * so a serializer cannot change the captured session. The copy is the wire body, not the raw payload.
+   */
+  private captureSnapshot(items: TransportItem[]): CapturedBatch {
+    const plan = planTraceContributions(items);
+    const transportBody = getTransportBody(items);
+    const meta = JSON.parse(JSON.stringify(transportBody.meta)) as Meta;
+    const jsonBody = JSON.stringify({ ...transportBody, meta });
+    const sent = JSON.parse(jsonBody) as TransportBody;
+    return { items: itemsFromSentBody(items, sent, plan, meta), meta, jsonBody };
   }
 
   /** On unload, send an over-budget batch in chunks that fit the keepalive budget. */
