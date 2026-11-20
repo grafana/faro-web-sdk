@@ -165,3 +165,23 @@ export { VERSION } from './version';
 export { captureMetas } from './metas';
 
 export { unknownString } from './consts';
+
+export { ESpanKind } from './api/traces/otlp';
+export type {
+  ESpanKindType,
+  EStatusCode,
+  Fixed64,
+  IAnyValue,
+  IArrayValue,
+  IEvent,
+  IInstrumentationScope,
+  IKeyValue,
+  IKeyValueList,
+  ILink,
+  IResourceSpans,
+  IScopeSpans,
+  ISpan,
+  IStatus,
+  LongBits,
+  Resource,
+} from './api/traces/otlp';

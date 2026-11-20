@@ -1,6 +1,4 @@
-import type { IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
-
-import type { EventEvent, ExceptionEvent, LogEvent, MeasurementEvent, TraceEvent } from '..';
+import type { EventEvent, ExceptionEvent, IResourceSpans, LogEvent, MeasurementEvent, TraceEvent } from '..';
 
 import { TransportItemType, transportItemTypeToBodyKey } from './const';
 import type { TransportBody, TransportItem } from './types';

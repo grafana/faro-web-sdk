@@ -184,3 +184,6 @@ export {
 export { getIgnoreUrls, getUrlFromResource } from './utils/url';
 
 export { userActionDataAttribute, userActionTimeoutDataAttribute } from './instrumentations/userActions';
+
+export { ESpanKind } from '@grafana/faro-core';
+export type { IResourceSpans, IScopeSpans } from '@grafana/faro-core';

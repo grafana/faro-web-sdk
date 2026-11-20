@@ -1,9 +1,10 @@
 import type { Span } from '@opentelemetry/api';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 import type { XMLHttpRequestInstrumentationConfig } from '@opentelemetry/instrumentation-xml-http-request';
-import type { OpenFunction } from '@opentelemetry/instrumentation-xml-http-request/build/src/types';
 
 import { faro, getUrlFromResource, type UserActionInternalInterface, UserActionState } from '@grafana/faro-web-sdk';
+
+type OpenFunction = (method: string, url: string, async?: boolean, user?: string | null, pass?: string | null) => void;
 
 type Parent = {
   _createSpan: (xhr: XMLHttpRequest, url: string, method: string) => Span | undefined;
@@ -24,6 +25,11 @@ export class FaroXhrInstrumentation extends XMLHttpRequestInstrumentation {
     return (original: OpenFunction): OpenFunction => {
       const plugin = this;
       return function patchOpen(this: XMLHttpRequest, ...args): void {
+        // disable() keeps open patched, so skip span creation like the parent does
+        if (!plugin._enabled) {
+          return original.apply(this, args);
+        }
+
         let span: Span | undefined;
         try {
           const method: string = args[0];

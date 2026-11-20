@@ -6,6 +6,7 @@ exports.jestBaseConfig = {
     '@grafana/faro-core/src/(.*)': '<rootDir>/packages/core/src/$1',
   },
   rootDir: '../../',
+  resolver: '<rootDir>/jest.resolver.js',
   testEnvironment: 'jsdom',
   transform: {
     '^.+\\.ts?$': [

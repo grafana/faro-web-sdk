@@ -1,8 +1,7 @@
 import type { SpanContext } from '@opentelemetry/api';
-import { ESpanKind, type IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
 
-import { unknownString } from '@grafana/faro-web-sdk';
-import type { API, EventAttributes as FaroEventAttributes } from '@grafana/faro-web-sdk';
+import { ESpanKind, unknownString } from '@grafana/faro-web-sdk';
+import type { API, EventAttributes as FaroEventAttributes, IResourceSpans } from '@grafana/faro-web-sdk';
 
 const DURATION_NS_KEY = 'duration_ns';
 

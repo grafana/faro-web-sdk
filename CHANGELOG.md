@@ -12,6 +12,9 @@
 - **web-sdk:** make frustration detection thresholds configurable with `frustrationInstrumentation`
 - **user-actions:** add configurable initial activity timeouts globally, through `startUserAction`, and with
   `data-faro-user-action-timeout` element overrides
+- **web-tracing:** upgrade to OpenTelemetry JS SDK 3.0, experimental 0.300 and API 1.10. Bundlers need package
+  `imports` support (webpack 5.54+, Jest 29.4+, or Parcel with `packageExports` enabled), and OpenTelemetry 3.x needs
+  Node.js 22.15+ where the app is installed and built. Spans keep object and other complex attribute values.
 
 ### Bug Fixes
 
@@ -21,6 +24,7 @@
 - **web-sdk:** use Web Crypto for session sampling when available
 - **user-actions:** prevent declarative user actions from attaching duplicate controllers
 - **web-sdk:** prevent duplicate sessions when Chrome activates a prerendered page
+- **web-tracing:** stop creating XHR spans after `FaroXhrInstrumentation` is disabled
 
 ## [2.14.0](https://github.com/grafana/faro-web-sdk/compare/v2.13.0...v2.14.0) (2026-11-09)
 

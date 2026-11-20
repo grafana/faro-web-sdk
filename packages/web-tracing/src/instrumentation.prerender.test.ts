@@ -1,5 +1,5 @@
 import { context, propagation, trace } from '@opentelemetry/api';
-import type { ReadableSpan } from '@opentelemetry/sdk-trace-web';
+import type { ReadableSpan } from '@opentelemetry/sdk-trace';
 
 import { MockTransport } from '@grafana/faro-core/src/testUtils';
 import { initializeFaro, SessionInstrumentation, STORAGE_KEY, TransportItemType } from '@grafana/faro-web-sdk';
