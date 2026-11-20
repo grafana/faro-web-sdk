@@ -41,6 +41,7 @@ interface PreparedRequest {
   requestInit: RequestInit;
   bodySize: number;
   sessionId: string | undefined;
+  resolvedHeaders: Record<string, string>;
 }
 class RequestTimeoutError extends Error {}
 
@@ -210,7 +211,10 @@ export class FetchTransport extends BaseTransport {
     return true;
   }
 
-  private async prepareRequest(items: TransportItem[]): Promise<PreparedRequest> {
+  private async prepareRequest(
+    items: TransportItem[],
+    resolvedHeaders?: Record<string, string>
+  ): Promise<PreparedRequest> {
     // Async headers and compression can outlive a session. Bind both the header
     // and its response handling to the payload, not the current session.
     const transportBody = getTransportBody(items);
@@ -219,10 +223,11 @@ export class FetchTransport extends BaseTransport {
 
     const { headers = {}, ...requestOptions } = this.options.requestOptions ?? {};
     const { keepalive: _keepalive, signal: _signal, ...requestOptionsWithoutManagedFields } = requestOptions;
-    const resolvedHeaders: Record<string, string> = {};
-
-    for (const [key, value] of Object.entries(headers)) {
-      resolvedHeaders[key] = typeof value === 'function' ? await value() : value;
+    if (!resolvedHeaders) {
+      resolvedHeaders = {};
+      for (const [key, value] of Object.entries(headers)) {
+        resolvedHeaders[key] = typeof value === 'function' ? await value() : value;
+      }
     }
 
     let body: string | Blob = jsonBody;
@@ -237,6 +242,7 @@ export class FetchTransport extends BaseTransport {
     return {
       bodySize,
       sessionId,
+      resolvedHeaders,
       requestInit: {
         method: 'POST',
         headers: {
@@ -245,7 +251,7 @@ export class FetchTransport extends BaseTransport {
           ...resolvedHeaders,
           ...(this.options.apiKey ? { 'x-api-key': this.options.apiKey } : {}),
           ...(sessionId ? { 'x-faro-session-id': sessionId } : {}),
-          // Unlike dynamic headers, this key is generated once and must remain stable across attempts.
+          // Each body gets its own key, reused across attempts.
           'Idempotency-Key': genShortID(20),
         },
         body,
@@ -278,7 +284,7 @@ export class FetchTransport extends BaseTransport {
         !this.fitsKeepaliveBudget(chunkPrepared.bodySize, plannedBodySize, plannedRequests)
       ) {
         chunk = chunk.slice(0, Math.ceil(chunk.length / 2));
-        chunkPrepared = await this.prepareRequest(chunk);
+        chunkPrepared = await this.prepareRequest(chunk, prepared.resolvedHeaders);
       }
 
       if (chunk === remaining) {
@@ -292,7 +298,7 @@ export class FetchTransport extends BaseTransport {
         plannedRequests++;
       }
       remaining = remaining.slice(chunk.length);
-      remainingPrepared = await this.prepareRequest(remaining);
+      remainingPrepared = await this.prepareRequest(remaining, prepared.resolvedHeaders);
     }
 
     const outcomes = await Promise.all(
