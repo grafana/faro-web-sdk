@@ -177,8 +177,10 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
 }
 
 export function createFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
+  // activationStart is available in browsers but is missing from some DOM type definitions.
+  const activationStart = (navigationEntryRaw as PerformanceNavigationTiming & { activationStart?: number })
+    .activationStart;
   const {
-    activationStart,
     domComplete,
     domContentLoadedEventEnd,
     domContentLoadedEventStart,
