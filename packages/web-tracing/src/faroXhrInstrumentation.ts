@@ -1,9 +1,10 @@
 import type { Span } from '@opentelemetry/api';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 import type { XMLHttpRequestInstrumentationConfig } from '@opentelemetry/instrumentation-xml-http-request';
-import type { OpenFunction } from '@opentelemetry/instrumentation-xml-http-request/build/src/types';
 
 import { faro, getUrlFromResource, type UserActionInternalInterface, UserActionState } from '@grafana/faro-web-sdk';
+
+type OpenFunction = (method: string, url: string, async?: boolean, user?: string | null, pass?: string | null) => void;
 
 type Parent = {
   _createSpan: (xhr: XMLHttpRequest, url: string, method: string) => Span | undefined;

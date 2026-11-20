@@ -1,9 +1,8 @@
-import type { IResourceSpans } from '@opentelemetry/otlp-transformer/build/src/trace/internal-types';
-
 import {
   EventEvent,
   ExceptionEvent,
   getTransportBody,
+  IResourceSpans,
   LogEvent,
   Meta,
   TraceEvent,
