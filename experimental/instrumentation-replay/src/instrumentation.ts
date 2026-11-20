@@ -1,4 +1,12 @@
-import { BaseInstrumentation, captureMetas, clampSamplingRate, genShortID, VERSION } from '@grafana/faro-core';
+import {
+  BaseInstrumentation,
+  captureMetas,
+  clampSamplingRate,
+  genShortID,
+  TransportItemType,
+  VERSION,
+} from '@grafana/faro-core';
+import type { BeforeSendHook, TransportItem } from '@grafana/faro-core';
 import { record, type recordOptions } from '@grafana/rrweb';
 import { EventType, type eventWithTime } from '@grafana/rrweb-types';
 
@@ -16,7 +24,14 @@ const faroSessionReplayResumedEventName = 'faro.session_recording.resumed';
 // recovery recording.
 let documentLocalCheckpointStorage: Storage | undefined;
 const sharedStorageProbeKey = 'com.grafana.faro.replay.probe';
-
+const replayLimitKeyPrefix = 'com.grafana.faro.replay.limit:';
+const MAX_REPLAY_LIMIT_TIMER_MS = 2_147_000_000;
+const replayLimitMonth = (date: Date): string => `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}`;
+const replayLimitHash = (value: string): string => {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index++) hash = Math.imul(hash ^ value.charCodeAt(index), 16777619);
+  return (hash >>> 0).toString(36);
+};
 interface ActiveRecordingHandoff {
   sessionId: string;
   recordingId: string;
@@ -92,6 +107,24 @@ export class ReplayInstrumentation extends BaseInstrumentation {
   // Coalesce re-entrant session changes into one deferred start.
   private pendingStart: boolean = false;
   private destroyed: boolean = false;
+  private replayLimitActive = false;
+  private readonly replayItemHook: BeforeSendHook = (item: TransportItem) => {
+    const payload = item.payload as { name?: string };
+    return this.replayLimitActive &&
+      item.type === TransportItemType.EVENT &&
+      payload.name === faroSessionReplayEventName
+      ? null
+      : item;
+  };
+  private replayLimitStorageKey = '';
+  private replayLimitMonthKey = '';
+  private replayLimitTimer: ReturnType<typeof setTimeout> | undefined;
+  private replayLimitUnsubscribers: Array<() => void> = [];
+  private replayLimitChannel: BroadcastChannel | undefined;
+  private readonly replayLimitStorageListener = (event: StorageEvent): void => {
+    if (event.key === this.replayLimitStorageKey && event.newValue) this.applyReplayLimit(false);
+  };
+  private readonly replayLimitMessageListener = (): void => this.applyReplayLimit(false);
   // Deferred starts belong to the lifecycle that scheduled them.
   private lifecycle = 0;
   // Prevent an invalidated attempt from reviving if the same session returns.
@@ -181,6 +214,37 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       this.config.app?.namespace ?? '',
       this.config.app?.environment ?? '',
     ]);
+    const replayLimitScope = JSON.stringify([
+      this.config.globalObjectKey,
+      this.config.app?.name ?? '',
+      this.config.app?.namespace ?? '',
+      this.config.app?.environment ?? '',
+      ...(this.transports.transports ?? []).map((transport) => {
+        const scope = transport.getReplayLimitScope?.();
+        if (!scope) return '';
+        try {
+          const url = new URL(scope);
+          return `${url.origin}${url.pathname}`;
+        } catch {
+          return scope;
+        }
+      }),
+    ]);
+    this.replayLimitStorageKey = replayLimitKeyPrefix + replayLimitHash(replayLimitScope);
+    this.readReplayLimit();
+    this.transports.addBeforeSendHooks?.(this.replayItemHook);
+    this.replayLimitUnsubscribers = (this.transports.transports ?? []).flatMap((transport) =>
+      transport.addReplayLimitListener ? [transport.addReplayLimitListener(() => this.applyReplayLimit())] : []
+    );
+    window.addEventListener('storage', this.replayLimitStorageListener);
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        this.replayLimitChannel = new BroadcastChannel(this.replayLimitStorageKey);
+        this.replayLimitChannel.addEventListener('message', this.replayLimitMessageListener);
+      } catch {
+        /* Per-tab fallback. */
+      }
+    }
     this.recordingStateStore = new ReplayRecordingStateStore({
       tabStorage: this.getSessionStorage(),
       sharedStorage: this.getSharedCheckpointStorage(),
@@ -324,11 +388,75 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     const sessionId = session.id ?? null;
     const isSampled = session.attributes?.['isSampled'] === 'true';
 
-    if (sessionId === null || !isSampled || !this.shouldReplaySample(sessionId)) {
+    if (this.replayLimitActive || sessionId === null || !isSampled || !this.shouldReplaySample(sessionId)) {
       return null;
     }
 
     return sessionId;
+  }
+
+  private readReplayLimit(): void {
+    this.replayLimitActive = false;
+    try {
+      const value = window.localStorage.getItem(this.replayLimitStorageKey);
+      const state = value ? (JSON.parse(value) as { monthKey?: string }) : undefined;
+      this.replayLimitMonthKey = state?.monthKey ?? '';
+      this.replayLimitActive = this.replayLimitMonthKey === replayLimitMonth(new Date());
+    } catch {
+      /* Storage unavailable: this tab still responds to the signal. */
+    }
+    if (this.replayLimitActive) this.scheduleReplayLimitExpiry();
+  }
+
+  private applyReplayLimit(propagate = true): void {
+    if (this.destroyed || this.replayLimitActive) return;
+    this.replayLimitActive = true;
+    this.replayLimitMonthKey = replayLimitMonth(new Date());
+    this.logWarn('Session replay paused because the collector reported its replay limit.');
+    window.dispatchEvent(new CustomEvent('faro.replay.limit', { detail: { reason: 'limited' } }));
+    if (propagate) {
+      try {
+        window.localStorage.setItem(
+          this.replayLimitStorageKey,
+          JSON.stringify({ limitedAt: Date.now(), monthKey: this.replayLimitMonthKey })
+        );
+      } catch {
+        /* Per-tab fallback. */
+      }
+      try {
+        this.replayLimitChannel?.postMessage('limited');
+      } catch {
+        /* Per-tab fallback. */
+      }
+    }
+    if (this.recordingState) this.recordingStateStore?.abandon(this.recordingState.recordingId);
+    this.stopRecording();
+    this.recordingState = undefined;
+    this.scheduleReplayLimitExpiry();
+  }
+
+  private scheduleReplayLimitExpiry(): void {
+    if (this.replayLimitTimer) clearTimeout(this.replayLimitTimer);
+    const now = new Date();
+    const nextMonth = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1);
+    this.replayLimitTimer = setTimeout(
+      () => {
+        if (this.replayLimitMonthKey === replayLimitMonth(new Date())) {
+          this.scheduleReplayLimitExpiry();
+          return;
+        }
+        this.replayLimitActive = false;
+        this.replayLimitMonthKey = '';
+        try {
+          window.localStorage.removeItem(this.replayLimitStorageKey);
+        } catch {
+          /* Best effort. */
+        }
+        this.recordingState = undefined;
+        this.checkAndUpdateRecording(false);
+      },
+      Math.min(MAX_REPLAY_LIMIT_TIMER_MS, Math.max(1, nextMonth - now.getTime()))
+    );
   }
 
   private shouldReplaySample(sessionId: string): boolean {
@@ -859,6 +987,14 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
   destroy(): void {
     this.destroyed = true;
+    this.transports.removeBeforeSendHooks?.(this.replayItemHook);
+    this.replayLimitUnsubscribers.forEach((unsubscribe) => unsubscribe());
+    this.replayLimitUnsubscribers = [];
+    window.removeEventListener('storage', this.replayLimitStorageListener);
+    this.replayLimitChannel?.removeEventListener('message', this.replayLimitMessageListener);
+    this.replayLimitChannel?.close();
+    this.replayLimitChannel = undefined;
+    if (this.replayLimitTimer) clearTimeout(this.replayLimitTimer);
     document.removeEventListener('prerenderingchange', this.prerenderListener);
     this.pendingStart = false;
     this.metas.removeListener?.(this.metasListener);
