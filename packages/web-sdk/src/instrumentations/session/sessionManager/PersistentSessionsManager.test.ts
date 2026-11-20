@@ -3,7 +3,6 @@ import { dateNow, faro, initializeFaro } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { PersistentSessionsManager } from './PersistentSessionsManager';
-import * as samplingModule from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME, STORAGE_KEY } from './sessionConstants';
 import type { FaroUserSession } from './types';
 
@@ -44,9 +43,7 @@ describe('Persistent Sessions Manager.', () => {
     mockStorage = {};
   });
 
-  afterEach(() => {
-    jest.spyOn(samplingModule, 'isSampled').mockRestore();
-  });
+  afterEach(() => {});
 
   afterAll(() => {
     jest.useRealTimers();
@@ -57,14 +54,10 @@ describe('Persistent Sessions Manager.', () => {
   });
 
   it('Refreshes valid sessions only when activity is recorded, not when expiry is checked.', () => {
-    const mockIsSampled = jest.fn();
-    jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
-
     const validSession = {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: true,
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(validSession);
@@ -83,7 +76,6 @@ describe('Persistent Sessions Manager.', () => {
         sessionId: mockInitialSessionId,
         lastActivity: nextActivityTimeAfterFiveSeconds,
         started: fakeSystemTime,
-        isSampled: true,
       })
     );
   });
@@ -93,7 +85,6 @@ describe('Persistent Sessions Manager.', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: true,
     });
     new PersistentSessionsManager();
     jest.setSystemTime(fakeSystemTime + 10_000);
@@ -110,14 +101,10 @@ describe('Persistent Sessions Manager.', () => {
   });
 
   it('Creates a new Faro user session if (old) session if max inactivity duration is reached.', () => {
-    const mockIsSampled = jest.fn();
-    jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
-
     const storedSession = {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: true,
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -139,14 +126,12 @@ describe('Persistent Sessions Manager.', () => {
       id: mockNewSessionId,
       attributes: {
         previousSession: mockInitialSessionId,
-        isSampled: 'true',
       },
     };
     expect(session).toStrictEqual({
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
-      isSampled: true,
       sessionMeta: matchNewSessionMeta,
     });
 
@@ -159,21 +144,16 @@ describe('Persistent Sessions Manager.', () => {
   });
 
   it('Creates a new Faro user session if (old) session expiration time is reached.', () => {
-    const mockIsSampled = jest.fn();
-    jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
-
     const oldStoredMeta = {
       id: 'aaaa',
       attributes: {
         previousSession: 'bbbb',
-        isSampled: 'true',
       },
     };
     const storedSession = {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: true,
       sessionMeta: oldStoredMeta,
     };
 
@@ -197,14 +177,12 @@ describe('Persistent Sessions Manager.', () => {
       id: mockNewSessionId,
       attributes: {
         previousSession: mockInitialSessionId,
-        isSampled: 'true',
       },
     };
     expect(session).toStrictEqual({
       sessionId: mockNewSessionId,
       lastActivity: maxActivityTimeReached,
       started: maxActivityTimeReached,
-      isSampled: true,
       sessionMeta: matchNewSessionMeta,
     });
 
@@ -217,12 +195,8 @@ describe('Persistent Sessions Manager.', () => {
   });
 
   it('Creates a new Faro user session if setSession(§) is called outside the Faro session manager.', () => {
-    const mockIsSampled = jest.fn();
-    jest.spyOn(samplingModule, 'isSampled').mockImplementation(mockIsSampled);
-
     const storedSession = {
       sessionId: mockInitialSessionId,
-      isSampled: true,
     };
 
     mockStorage[STORAGE_KEY] = JSON.stringify(storedSession);
@@ -234,7 +208,6 @@ describe('Persistent Sessions Manager.', () => {
 
     const manualSetSessionId = 'xyz';
     faro.api.setSession({ id: manualSetSessionId });
-    expect(mockIsSampled).toHaveBeenCalledTimes(1);
 
     const newSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
     expect(newSession.sessionId).toBe(manualSetSessionId);
@@ -246,7 +219,6 @@ describe('Persistent Sessions Manager.', () => {
 
     const storedSession = {
       sessionId: mockInitialSessionId,
-      isSampled: true,
       circularObject,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
@@ -259,12 +231,8 @@ describe('Persistent Sessions Manager.', () => {
 
   describe('setSession().', () => {
     it('Creates a new Faro user session if new sessionId is set.', () => {
-      const mockIsSampled = jest.fn();
-      jest.spyOn(samplingModule, 'isSampled').mockImplementationOnce(mockIsSampled);
-
       const storedSession: FaroUserSession = {
         sessionId: mockInitialSessionId,
-        isSampled: true,
         lastActivity: dateNow(),
         started: dateNow(),
       };
@@ -278,7 +246,6 @@ describe('Persistent Sessions Manager.', () => {
 
       const manualSetSessionId = 'xyz';
       faro.api.setSession({ id: manualSetSessionId });
-      expect(mockIsSampled).toHaveBeenCalledTimes(1);
 
       const newSession: FaroUserSession = JSON.parse(mockStorage[STORAGE_KEY]!);
       expect(newSession.sessionId).toBe(manualSetSessionId);
@@ -287,14 +254,12 @@ describe('Persistent Sessions Manager.', () => {
     it('Does not update Faro user session if "sessionId" and "attributes" in the meta session object and stored session meta are identical.', () => {
       const storedSession: FaroUserSession = {
         sessionId: mockInitialSessionId,
-        isSampled: true,
         lastActivity: dateNow(),
         started: dateNow(),
         sessionMeta: {
           id: mockInitialSessionId,
           attributes: {
             previousSession: 'none',
-            isSampled: 'true',
           },
         },
       };
@@ -312,14 +277,11 @@ describe('Persistent Sessions Manager.', () => {
     it('Updates the current Faro user session if new meta attributes are added.', () => {
       const storedSession: FaroUserSession = {
         sessionId: mockInitialSessionId,
-        isSampled: true,
         lastActivity: dateNow(),
         started: dateNow(),
         sessionMeta: {
           id: mockInitialSessionId,
-          attributes: {
-            isSampled: 'true',
-          },
+          attributes: {},
         },
       };
 
@@ -329,7 +291,6 @@ describe('Persistent Sessions Manager.', () => {
       const newMetaAttributes = {
         id: mockInitialSessionId,
         attributes: {
-          isSampled: 'true',
           newAttribute: 'newValue',
         },
       };

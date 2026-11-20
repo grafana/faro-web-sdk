@@ -77,8 +77,8 @@ describe('session ownership with isolated SDK instances', () => {
       document.dispatchEvent(new Event('prerenderingchange'));
       a.api.pushEvent('from-a');
       b.api.pushEvent('from-b');
-      expect(a.api.getSession()).toMatchObject({ id: 'session-a', attributes: { isSampled: 'true' } });
-      expect(b.api.getSession()).toMatchObject({ id: 'session-b', attributes: { isSampled: 'false' } });
+      expect(a.api.getSession()).toMatchObject({ id: 'session-a' });
+      expect(b.api.getSession()).toMatchObject({ id: 'session-b' });
       expect(transportA.items).toContainEqual(
         expect.objectContaining({ payload: expect.objectContaining({ name: 'from-a' }) })
       );
@@ -138,7 +138,7 @@ describe('session ownership with isolated SDK instances', () => {
       prerendering = false;
       document.dispatchEvent(new Event('prerenderingchange'));
       a.api.pushEvent('initial');
-      expect(a.api.getSession()).toMatchObject({ id: 'session-a-1', attributes: { isSampled: 'true' } });
+      expect(a.api.getSession()).toMatchObject({ id: 'session-a-1' });
       expect(samplerA).toHaveBeenCalledWith(
         expect.objectContaining({ metas: expect.objectContaining({ app: a.config.app }) })
       );
@@ -150,7 +150,6 @@ describe('session ownership with isolated SDK instances', () => {
       a.api.resetSession();
       expect(a.api.getSession()).toMatchObject({
         id: 'session-a-2',
-        attributes: { isSampled: 'true' },
         overrides: { serviceName: 'service-a' },
       });
 
@@ -164,7 +163,6 @@ describe('session ownership with isolated SDK instances', () => {
       a.api.pushEvent('after-expiry');
       expect(a.api.getSession()).toMatchObject({
         id: 'session-a-3',
-        attributes: { isSampled: 'true' },
         overrides: { serviceName: 'service-a' },
       });
       expect(onSessionChangeA).toHaveBeenCalledTimes(1);

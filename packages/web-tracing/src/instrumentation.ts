@@ -149,7 +149,7 @@ export class TracingInstrumentation extends BaseInstrumentation {
           // An earlier activation listener can start a span before the session is initialized.
           // Reconcile it before sampling, since nonrecording spans never reach metadata capture.
           return {
-            decision: getSamplingDecision(captureMetas(this.metas).session),
+            decision: getSamplingDecision(captureMetas(this.metas).session, this.metas),
           };
         },
       },
@@ -172,7 +172,9 @@ export class TracingInstrumentation extends BaseInstrumentation {
       // from being injected into requests
       propagator: new FaroPausablePropagator(
         options.propagator ?? new W3CTraceContextPropagator(),
-        () => this.transports.isPaused() || (omitForUnsampledSessions && !isSessionSampled(this.api.getSession()))
+        () =>
+          this.transports.isPaused() ||
+          (omitForUnsampledSessions && !isSessionSampled(this.api.getSession(), this.metas))
       ),
       contextManager: options.contextManager,
     });

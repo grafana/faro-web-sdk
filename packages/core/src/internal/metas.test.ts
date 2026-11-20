@@ -17,12 +17,53 @@ describe('internal metas', () => {
       'shouldCapture',
       'addCaptureFilter',
       'removeCaptureFilter',
+      'setInterceptor',
+      'intercept',
+      'addSessionCreatedListener',
+      'notifySessionCreated',
+      'getSessionSampling',
     ];
 
     for (const key of internalKeys) {
       expect(key in metas).toBe(false);
     }
     expect(publicAPI).not.toHaveProperty('getInternalMetas');
+  });
+
+  it.each([false, true])('allows a deferred interceptor with batching %s', async (enabled) => {
+    const transport = new MockTransport();
+    const { api, metas } = initializeFaro(
+      mockConfig({ transports: [transport], batching: { enabled, sendTimeout: 0, itemLimit: 1 } })
+    );
+    const held: Array<() => void> = [];
+    getInternalMetas(metas).setInterceptor((item, next) => held.push(() => next(item)));
+
+    api.pushEvent('held');
+    expect(transport.items).toHaveLength(0);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    held[0]?.();
+    expect(transport.items).toHaveLength(1);
+
+    getInternalMetas(metas).setInterceptor(() => undefined);
+    api.pushEvent('dropped');
+    expect(transport.items).toHaveLength(1);
+
+    getInternalMetas(metas).setInterceptor();
+    api.pushEvent('plain');
+    expect(transport.items).toHaveLength(2);
+  });
+
+  it('notifies session creation listeners and removes them', () => {
+    const { metas } = initializeFaro(mockConfig());
+    const listener = jest.fn();
+    const internal = getInternalMetas(metas);
+    const remove = internal.addSessionCreatedListener(listener);
+    internal.notifySessionCreated({ sessionId: 'one' }, 'start');
+    expect(internal.getSessionSampling('one')).toBeUndefined();
+    remove();
+    internal.notifySessionCreated({ sessionId: 'two' }, 'rotate');
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith({ session: { sessionId: 'one' }, reason: 'start' });
   });
 
   it('isolates capture filters and session update listeners between SDK instances', () => {
