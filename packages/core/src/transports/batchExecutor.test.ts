@@ -97,6 +97,31 @@ describe('BatchExecutor', () => {
       expect(mockSendFunction).toHaveBeenCalledTimes(0);
     });
 
+    it('sends items that a later "visibilitychange" listener adds while the page is hidden', () => {
+      const mockSendFunction = jest.fn();
+      const item = generateTransportItem();
+      const lateItem = { ...generateTransportItem(), meta: { sdk: { name: 'late-sdk' } } };
+      const be = new BatchExecutor(mockSendFunction, {
+        sendTimeout: 1000,
+      });
+      // Registered after the executor, like OpenTelemetry's BatchSpanProcessor exporting on hide.
+      const addLateItem = () => be.addItem(lateItem);
+      document.addEventListener('visibilitychange', addLateItem);
+
+      be.addItem(item);
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get() {
+          return 'hidden';
+        },
+      });
+      // Browsers fire visibilitychange at the document and it bubbles to the window.
+      document.dispatchEvent(new Event('visibilitychange', { bubbles: true }));
+      document.removeEventListener('visibilitychange', addLateItem);
+
+      expect(mockSendFunction.mock.calls.map(([items]) => items)).toEqual([[item], [lateItem]]);
+    });
+
     it('tests send when starting paused', () => {
       const mockSendFunction = jest.fn();
       const item = generateTransportItem();
