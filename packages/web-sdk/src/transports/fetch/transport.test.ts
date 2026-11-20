@@ -958,6 +958,68 @@ describe('reliable FetchTransport', () => {
       await sending;
     });
 
+    it.each([false, true])(
+      'preserves per-item trace resources on split requests (mutating headers: %s)',
+      async (mutate) => {
+        const batch = Array.from({ length: 5 }, (_, index) => {
+          const trace = traceItem('s'.repeat(14_000));
+          const first = trace.payload.resourceSpans[0]!;
+          first.resource.attributes[0]!.value.stringValue = `service-${index}`;
+          first.schemaUrl = `${TRACE_SCHEMA_URL}/${index}`;
+          trace.payload.resourceSpans.push(traceItem(`extra-${index}`).payload.resourceSpans[0]!);
+          return trace;
+        });
+        const expectedBodies = [batch.slice(0, 3), batch.slice(3, 4), batch.slice(4)].map((items) =>
+          JSON.stringify(getTransportBody(items))
+        );
+        const header = jest.fn(() => {
+          if (mutate) {
+            for (const trace of batch) {
+              const [first, extra] = trace.payload.resourceSpans;
+              first!.resource.attributes[0]!.value.stringValue = 'mutated';
+              first!.schemaUrl = 'mutated';
+              extra!.scopeSpans[0]!.spans[0]!.name = 'mutated';
+            }
+          }
+          return 'header-value';
+        });
+        const { transport } = createTransport({ requestOptions: { headers: { 'x-test': header } } });
+        window.dispatchEvent(new Event('pagehide'));
+
+        const sending = transport.send(batch);
+        await jest.advanceTimersByTimeAsync(0);
+
+        finishAll();
+        await sending;
+
+        expect(header).toHaveBeenCalledTimes(1);
+        expect(fetchMock.mock.calls.map(([, init]) => init.keepalive)).toEqual([true, true, false]);
+        expect(fetchMock.mock.calls.map(([, init]) => init.body)).toEqual(expectedBodies);
+      }
+    );
+
+    it('uses the prepared body when a split would need to capture a custom trace serializer', async () => {
+      const batch = Array.from({ length: 5 }, () => traceItem('s'.repeat(14_000)));
+      const toJSON = jest.fn(() => {
+        throw new Error('discarded resource must not be serialized');
+      });
+      const extraResource = { ...traceItem('extra').payload.resourceSpans[0]!, toJSON };
+      batch[3]!.payload.resourceSpans.push(extraResource);
+      const expectedBody = JSON.stringify(getTransportBody(batch));
+      const { transport, internalLogger } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(batch);
+      await jest.advanceTimersByTimeAsync(0);
+      finishAll();
+      await sending;
+
+      expect(toJSON).not.toHaveBeenCalled();
+      expect(internalLogger.error).not.toHaveBeenCalled();
+      expect(fetchMock.mock.calls.map(([, init]) => init.keepalive)).toEqual([false]);
+      expect(fetchMock.mock.calls.map(([, init]) => init.body)).toEqual([expectedBody]);
+    });
+
     it('keeps a captured null log when a header callback changes the live payload', async () => {
       let changed = false;
       const live = {

@@ -53,81 +53,56 @@ interface PreparedRequest {
   meta: Meta;
   sessionId: string | undefined;
   resolvedHeaders: Record<string, string>;
-  /** Items copied before header callbacks run. Splits read this, not the live batch. */
-  items: TransportItem[];
+  /** Items captured before header callbacks run, when the batch can be split safely. */
+  items: TransportItem[] | undefined;
 }
 class RequestTimeoutError extends Error {}
 
-interface TraceContribution {
-  count: number;
-  role: 'owner' | 'append' | 'skip';
-}
-
 interface CapturedBatch {
-  items: TransportItem[];
+  items: TransportItem[] | undefined;
   meta: Meta;
   jsonBody: string;
 }
 
-/** Mirrors mergeResourceSpans so the snapshot keeps only the spans that merge would send. */
-function planTraceContributions(items: TransportItem[]): { entries: TraceContribution[]; whole: boolean } {
-  const entries: TraceContribution[] = [];
-  let hasTraces = false;
-  let currentResourceDefined = false;
-  let replaced = false;
-
-  for (const item of items) {
-    if (item.type !== TransportItemType.TRACE) {
-      continue;
-    }
-    const resourceSpans = (item.payload as TraceEvent).resourceSpans;
-    if (resourceSpans === undefined) {
-      entries.push({ count: 0, role: 'skip' });
-      continue;
-    }
-    if (!hasTraces) {
-      hasTraces = true;
-      currentResourceDefined = resourceSpans[0] !== undefined;
-      entries.push({ count: resourceSpans[0]?.scopeSpans?.length ?? 0, role: 'owner' });
-      continue;
-    }
-    if (!currentResourceDefined) {
-      entries.push({ count: 0, role: 'skip' });
-      continue;
-    }
-    replaced = true;
-    entries.push({ count: resourceSpans[0]?.scopeSpans?.length ?? 0, role: 'append' });
+// Copy the OTLP data without invoking serializers or accessors on resources the
+// whole request might discard. If a trace needs custom serialization, keep the
+// prepared request instead of guessing what a different slice would serialize.
+function copyTraceData(value: unknown, copies = new WeakMap<object, object>()): unknown {
+  if (typeof value === 'function') {
+    throw new TypeError('Cannot snapshot a trace function');
+  }
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+  const existing = copies.get(value);
+  if (existing) {
+    return existing;
   }
 
-  return { entries, whole: hasTraces && !replaced };
+  const prototype = Object.getPrototypeOf(value);
+  const isArray = prototype === Array.prototype;
+  if (!isArray && prototype !== Object.prototype && prototype !== null && prototype !== Uint8Array.prototype) {
+    throw new TypeError('Cannot snapshot a custom trace object');
+  }
+  // Uint8Array is represented by its indexed properties in the JSON request.
+  const copy: object = isArray ? [] : Object.create(prototype === null ? null : Object.prototype);
+  copies.set(value, copy);
+  for (const key of Reflect.ownKeys(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !('value' in descriptor)) {
+      throw new TypeError('Cannot snapshot a trace accessor');
+    }
+    Object.defineProperty(copy, key, { ...descriptor, value: copyTraceData(descriptor.value, copies) });
+  }
+  return copy;
 }
 
-function tracePayloadsFromSent(
-  sentTraces: TraceEvent | undefined,
-  plan: { entries: TraceContribution[]; whole: boolean }
-): TraceEvent[] {
-  if (!sentTraces) {
-    return plan.entries.map(() => ({}) as TraceEvent);
+function snapshotTracePayload(payload: TraceEvent): TraceEvent {
+  const resources = Object.getOwnPropertyDescriptor(payload, 'resourceSpans');
+  if (resources ? !('value' in resources) : 'resourceSpans' in payload) {
+    throw new TypeError('Cannot snapshot an accessor or inherited trace resource list');
   }
-  if (plan.whole) {
-    return plan.entries.map((entry) => (entry.role === 'owner' ? sentTraces : ({} as TraceEvent)));
-  }
-
-  const resourceSpan = sentTraces.resourceSpans?.[0];
-  const scopeSpans = resourceSpan?.scopeSpans ?? [];
-  let offset = 0;
-  return plan.entries.map((entry) => {
-    if (entry.role === 'skip') {
-      return {} as TraceEvent;
-    }
-    const slice = scopeSpans.slice(offset, offset + entry.count);
-    offset += entry.count;
-    if (!resourceSpan) {
-      return { resourceSpans: [{ scopeSpans: slice }] };
-    }
-    // Any slice can be the first item of its own request, so it keeps the captured resource fields.
-    return { resourceSpans: [{ ...resourceSpan, scopeSpans: slice }] };
-  });
+  return { resourceSpans: copyTraceData(resources?.value) as TraceEvent['resourceSpans'] };
 }
 
 function readCaptured(
@@ -161,20 +136,13 @@ function signalPayload(
   }
 }
 
-/** Plain items from the body that would be sent. A raw payload copy would run toJSON too early. */
-function itemsFromSentBody(
-  items: TransportItem[],
-  sent: TransportBody,
-  plan: { entries: TraceContribution[]; whole: boolean },
-  meta: Meta
-): TransportItem[] {
+/** Capture signal values from the wire body and trace resources from their own items. */
+function snapshotItems(items: TransportItem[], sent: TransportBody, meta: Meta): TransportItem[] {
   const cursor = { exceptions: 0, logs: 0, measurements: 0, events: 0 };
-  const tracePayloads = tracePayloadsFromSent(sent.traces, plan);
-  let traceIndex = 0;
 
   return items.map((item) => {
     if (item.type === TransportItemType.TRACE) {
-      return { ...item, meta, payload: tracePayloads[traceIndex++] ?? ({} as TraceEvent) };
+      return { ...item, meta, payload: snapshotTracePayload(item.payload as TraceEvent) };
     }
     return { ...item, meta, payload: signalPayload(sent, item, cursor) };
   });
@@ -349,14 +317,13 @@ export class FetchTransport extends BaseTransport {
   private async prepareRequest(items: TransportItem[], original?: PreparedRequest): Promise<PreparedRequest> {
     // Async headers and compression can outlive a session. Bind both the header
     // and its response handling to the payload, not the current session.
-    // The first body is shaped the same way as before. A split reads a plain copy of
-    // that body, so a header callback cannot change a payload after it is built.
-    let sourceItems = items;
+    // Capture per-item data before a header callback can change the payload.
+    let sourceItems: TransportItem[] | undefined = items;
     let meta: Meta;
     let jsonBody: string;
     if (original) {
       meta = original.meta;
-      jsonBody = JSON.stringify({ ...getTransportBody(sourceItems), meta });
+      jsonBody = JSON.stringify({ ...getTransportBody(items), meta });
     } else {
       const captured = this.captureSnapshot(items);
       sourceItems = captured.items;
@@ -409,19 +376,27 @@ export class FetchTransport extends BaseTransport {
 
   /**
    * Shape and serialize the batch before copying it. Meta is cloned before payload toJSON runs,
-   * so a serializer cannot change the captured session. The copy is the wire body, not the raw payload.
+   * so a serializer cannot change the captured session. Traces keep each item's full resource list
+   * because the resources in a split request can differ from the ones in the merged body.
    */
   private captureSnapshot(items: TransportItem[]): CapturedBatch {
-    const plan = planTraceContributions(items);
     const transportBody = getTransportBody(items);
     const meta = JSON.parse(JSON.stringify(transportBody.meta)) as Meta;
     const jsonBody = JSON.stringify({ ...transportBody, meta });
     const sent = JSON.parse(jsonBody) as TransportBody;
-    return { items: itemsFromSentBody(items, sent, plan, meta), meta, jsonBody };
+    try {
+      return { items: snapshotItems(items, sent, meta), meta, jsonBody };
+    } catch {
+      // The original body is ready, but an alternate trace slice cannot be captured safely.
+      return { items: undefined, meta, jsonBody };
+    }
   }
 
   /** On unload, send an over-budget batch in chunks that fit the keepalive budget. */
   private async performUnloadAttempt(prepared: PreparedRequest, attemptsRemaining: number): Promise<AttemptOutcome> {
+    if (!prepared.items) {
+      return this.performAttempt(prepared, attemptsRemaining, true);
+    }
     // Each request gets a slot of its own: this attempt's slot first, then idle ones. A request that waited
     // for a slot would only start after an earlier one finished, which is too late once the page is gone.
     const requests: Array<{ prepared: PreparedRequest; reservation: KeepaliveReservation; releaseSlot: () => void }> =
