@@ -257,7 +257,7 @@ export class FetchTransport extends BaseTransport {
   /**
    * On page unload a request without keepalive can be cancelled with the page. Instead of sending an
    * over-budget batch as one plain request, send it in chunks that each fit the remaining keepalive
-   * budget. Whatever still doesn't fit goes out as one plain request, as before.
+   * budget. Items that still don't fit go out in plain requests.
    */
   private async performUnloadAttempt(
     items: TransportItem[],
@@ -279,7 +279,7 @@ export class FetchTransport extends BaseTransport {
         chunkPrepared = await this.prepareRequest(chunk);
       }
 
-      if (chunk === remaining || !this.fitsKeepaliveBudget(chunkPrepared.bodySize)) {
+      if (chunk === remaining) {
         sends.push(this.performAttempt(remainingPrepared, attemptsRemaining, true));
         break;
       }
@@ -355,12 +355,8 @@ export class FetchTransport extends BaseTransport {
   ): Promise<Response> {
     const startedAt = this.getNow();
     const reservation = this.reserveKeepalive(bodySize, configuredKeepalive);
-    if (unloading && !reservation.keepalive) {
-      this.logWarn('Sending request without keepalive during page unload. It may be cancelled with the page.', {
-        bodySize,
-        pendingKeepaliveBodySize,
-        pendingKeepaliveRequests,
-      });
+    if (!reservation.keepalive) {
+      this.warnOnUnloadWithoutKeepalive(bodySize, unloading);
     }
     try {
       return await this.fetchWithTimeout(
@@ -377,12 +373,23 @@ export class FetchTransport extends BaseTransport {
         !this.options.requestOptions?.signal?.aborted
       ) {
         this.logDebug('Retrying failed keepalive request with keepalive disabled.');
+        this.warnOnUnloadWithoutKeepalive(bodySize, unloading);
         const remainingTimeoutMs = this.requestTimeoutMs - (this.getNow() - startedAt);
         return this.fetchWithTimeout({ ...requestInit, keepalive: false }, remainingTimeoutMs, onFetch);
       }
       throw error;
     } finally {
       reservation.release();
+    }
+  }
+
+  private warnOnUnloadWithoutKeepalive(bodySize: number, unloading: boolean): void {
+    if (unloading) {
+      this.logWarn('Sending request without keepalive during page unload. It may be cancelled with the page.', {
+        bodySize,
+        pendingKeepaliveBodySize,
+        pendingKeepaliveRequests,
+      });
     }
   }
 

@@ -443,6 +443,24 @@ describe('reliable FetchTransport', () => {
       'Delivery retries exhausted',
       expect.objectContaining({ attempts: 2 })
     );
+    expect(internalLogger.warn).not.toHaveBeenCalled();
+  });
+
+  it('warns when an unload keepalive request falls back after a network error', async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError('keepalive network failure'));
+    const { transport, internalLogger } = createTransport();
+    window.dispatchEvent(new Event('pagehide'));
+
+    await transport.send([item]);
+
+    expect(fetchMock.mock.calls.map(([, init]) => init.keepalive)).toEqual([true, false]);
+    expect(internalLogger.warn).toHaveBeenCalledTimes(1);
+    expect(internalLogger.warn).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('without keepalive during page unload'),
+      expect.objectContaining({ pendingKeepaliveRequests: 1 })
+    );
+    expect(internalLogger.error).not.toHaveBeenCalled();
   });
 
   it('flushes a waiting batch once on page hide without scheduling another retry', async () => {
@@ -487,6 +505,7 @@ describe('reliable FetchTransport', () => {
 
   describe('over-budget batches on page hide', () => {
     const largeItem = { ...item, payload: { ...item.payload, message: 'a'.repeat(14_000) } };
+    const oversizedItem = { ...item, payload: { ...item.payload, message: 'b'.repeat(70_000) } };
     let finishAll: (firstStatus?: number) => void;
 
     beforeEach(() => {
@@ -501,6 +520,30 @@ describe('reliable FetchTransport', () => {
         keepalive: init.keepalive,
         logs: JSON.parse(init.body as string).logs.length,
       }));
+
+    it.each([
+      { position: 'first', items: [oversizedItem, item, item], keepalive: [false, true], logs: [1, 2] },
+      { position: 'middle', items: [item, oversizedItem, item], keepalive: [true, false, true], logs: [1, 1, 1] },
+      { position: 'last', items: [item, item, oversizedItem], keepalive: [true, false], logs: [2, 1] },
+      { position: 'only', items: [oversizedItem], keepalive: [false], logs: [1] },
+    ])('only downgrades the oversized item when it is $position', async ({ items, keepalive, logs }) => {
+      const { transport, internalLogger } = createTransport();
+      window.dispatchEvent(new Event('pagehide'));
+
+      const sending = transport.send(items);
+      await jest.advanceTimersByTimeAsync(0);
+
+      expect(sentRequests()).toEqual(keepalive.map((value, index) => ({ keepalive: value, logs: logs[index] })));
+      const messages = fetchMock.mock.calls.flatMap(([, init]) =>
+        JSON.parse(init.body as string).logs.map((log: LogEvent) => log.message)
+      );
+      expect(messages).toEqual(items.map((entry) => entry.payload.message));
+      expect(internalLogger.warn).toHaveBeenCalledTimes(1);
+
+      finishAll();
+      await sending;
+      expect(internalLogger.error).not.toHaveBeenCalled();
+    });
 
     it('splits the batch into requests that fit the keepalive budget', async () => {
       const { transport, internalLogger } = createTransport();
