@@ -88,4 +88,29 @@ describe('NavigationInstrumentation', () => {
       toUrl: initialHref + '/deferred',
     });
   });
+
+  it('routes isolated navigation events to the owning instance', async () => {
+    const globalTransport = new MockTransport();
+    const isolatedTransport = new MockTransport();
+    initializeFaro(mockConfig({ isolate: false, transports: [globalTransport] }));
+    initializeFaro(
+      mockConfig({
+        isolate: true,
+        transports: [isolatedTransport],
+        instrumentations: [new NavigationInstrumentation()],
+      })
+    );
+
+    const initialHref = window.location.href;
+    window.dispatchEvent(new Event('pointerdown'));
+    navigation.currentEntry = { url: initialHref + '/isolated' };
+    navigation._dispatch('currententrychange', { from: { url: initialHref }, navigationType: 'push' });
+    document.body.appendChild(document.createElement('div'));
+    await flushMicrotasks();
+    jest.advanceTimersByTime(100);
+
+    expect(globalTransport.items).toHaveLength(0);
+    expect(isolatedTransport.items).toHaveLength(1);
+    expect(isolatedTransport.items[0]?.payload).toMatchObject({ name: 'faro.navigation' });
+  });
 });

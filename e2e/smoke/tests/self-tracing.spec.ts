@@ -42,3 +42,61 @@ test.describe('Smoke / self-tracing', () => {
     expect(collectorSpans).toEqual([]);
   });
 });
+
+// A custom path avoids the default /collect ignore pattern masking stale configuration.
+test('does not trace a transport added after tracing initialization', async ({ page }) => {
+  const bodies: TransportBody[] = [];
+  await page.route('**/telemetry', async (route) => {
+    bodies.push(route.request().postDataJSON() as TransportBody);
+    await route.fulfill({ status: 201, body: '{}' });
+  });
+  await page.route('**/api/ping', (route) => route.fulfill({ status: 200, body: '{}' }));
+  await page.goto('/?lateTransport');
+  await page.locator('[data-cy="btn-add-transport"]').click();
+  await page.locator('[data-cy="btn-push-log"]').click();
+  await expect.poll(() => bodies.length).toBeGreaterThan(0);
+  await page.locator('[data-cy="btn-traced-fetch"]').click();
+  await expect
+    .poll(() => allSpans(bodies).some((span) => JSON.stringify(span).includes('/api/ping')), {
+      timeout: 10_000,
+    })
+    .toBe(true);
+  // Wait for a subsequent export as well, so a collector span cannot hide in the next batch.
+  await page.locator('[data-cy="btn-emit-span"]').click();
+  await expect
+    .poll(() => allSpans(bodies).some((span) => span.name === 'smoke-harness-span'), {
+      timeout: 10_000,
+    })
+    .toBe(true);
+  expect(allSpans(bodies).filter((span) => JSON.stringify(span).includes('/telemetry'))).toEqual([]);
+});
+
+test('refreshes exclusions when a transport is replaced and traces the removed endpoint', async ({ page }) => {
+  const bodies: TransportBody[] = [];
+  for (const endpoint of ['/telemetry', '/telemetry-next']) {
+    await page.route(`**${endpoint}`, async (route) => {
+      if (route.request().method() === 'POST') {
+        bodies.push(route.request().postDataJSON() as TransportBody);
+      }
+      await route.fulfill({ status: 201, body: '{}' });
+    });
+  }
+  await page.goto('/?lateTransport');
+  await page.locator('[data-cy="btn-add-transport"]').click();
+  await page.locator('[data-cy="btn-push-log"]').click();
+  await expect.poll(() => bodies.length).toBeGreaterThan(0);
+  await page.locator('[data-cy="btn-replace-transport"]').click();
+  await page.locator('[data-cy="btn-fetch-old-endpoint"]').click();
+  await expect
+    .poll(() => allSpans(bodies).some((span) => JSON.stringify(span).includes('/telemetry')), {
+      timeout: 10_000,
+    })
+    .toBe(true);
+  await page.locator('[data-cy="btn-emit-span"]').click();
+  await expect
+    .poll(() => allSpans(bodies).some((span) => span.name === 'smoke-harness-span'), {
+      timeout: 10_000,
+    })
+    .toBe(true);
+  expect(allSpans(bodies).filter((span) => JSON.stringify(span).includes('/telemetry-next'))).toEqual([]);
+});
