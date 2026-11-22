@@ -31,22 +31,36 @@ export function createPromiseBuffer<T>(options: PromiseBufferOptions): PromiseBu
 
       inProgress++;
 
-      producer().then(
-        (result) => {
+      // release the slot exactly once, then start the next pending task
+      let released = false;
+      const release = () => {
+        if (!released) {
+          released = true;
           inProgress--;
 
           work();
-
-          resolve(result);
-        },
-        (reason) => {
-          inProgress--;
-
-          work();
-
-          reject(reason);
         }
-      );
+      };
+
+      try {
+        producer().then(
+          (result) => {
+            release();
+
+            resolve(result);
+          },
+          (reason) => {
+            release();
+
+            reject(reason);
+          }
+        );
+      } catch (reason) {
+        // a producer that throws instead of returning a promise must not keep its slot
+        release();
+
+        reject(reason);
+      }
     }
   };
 
