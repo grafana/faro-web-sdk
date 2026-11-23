@@ -5,6 +5,7 @@ import {
   genShortID,
   getTransportBody,
   noop,
+  TransportItemType,
   VERSION,
 } from '@grafana/faro-core';
 import type { Config, Patterns, PromiseBuffer, PromiseProducer, TransportItem } from '@grafana/faro-core';
@@ -29,6 +30,9 @@ const WAIT_INTERVAL_STATUS_CODES = new Set([429, 503]);
 const BEACON_BODY_SIZE_LIMIT = 60000;
 const MAX_KEEPALIVE_REQUESTS = 9;
 const ACCEPTED = 202;
+const REPLAY_LIMIT_HEADER = 'X-Faro-Replay-Status';
+const REPLAY_LIMIT_VALUE = 'limited';
+const REPLAY_EVENT_NAME = 'faro.session_recording.event';
 
 let pendingKeepaliveBodySize = 0;
 let pendingKeepaliveRequests = 0;
@@ -58,6 +62,7 @@ export class FetchTransport extends BaseTransport {
   private readonly requestTimeoutMs: number;
   private readonly compressionEnabled: boolean;
   private readonly deliveryQueue: ReliableDeliveryQueue;
+  private readonly replayLimitListeners = new Set<() => void>();
 
   constructor(private readonly options: FetchTransportOptions) {
     super();
@@ -145,6 +150,15 @@ export class FetchTransport extends BaseTransport {
     }
   }
 
+  addReplayLimitListener(listener: () => void): () => void {
+    this.replayLimitListeners.add(listener);
+    return () => this.replayLimitListeners.delete(listener);
+  }
+
+  getReplayLimitScope(): string {
+    return this.options.url;
+  }
+
   private async runBufferedTask(
     reservation: DeliveryReservation,
     producer: PromiseProducer<Response | void>
@@ -205,7 +219,7 @@ export class FetchTransport extends BaseTransport {
 
   private async prepareRequest(
     items: TransportItem[]
-  ): Promise<{ requestInit: RequestInit; bodySize: number; sessionId: string | undefined }> {
+  ): Promise<{ requestInit: RequestInit; bodySize: number; sessionId: string | undefined; hasReplay: boolean }> {
     // Async headers and compression can outlive a session. Bind both the header
     // and its response handling to the payload, not the current session.
     const transportBody = getTransportBody(items);
@@ -232,6 +246,10 @@ export class FetchTransport extends BaseTransport {
     return {
       bodySize,
       sessionId,
+      hasReplay: items.some(
+        (item) =>
+          item.type === TransportItemType.EVENT && (item.payload as { name?: string }).name === REPLAY_EVENT_NAME
+      ),
       requestInit: {
         method: 'POST',
         headers: {
@@ -250,7 +268,7 @@ export class FetchTransport extends BaseTransport {
   }
 
   private async performAttempt(
-    prepared: { requestInit: RequestInit; bodySize: number; sessionId: string | undefined },
+    prepared: { requestInit: RequestInit; bodySize: number; sessionId: string | undefined; hasReplay: boolean },
     attemptsRemaining: number,
     unloading: boolean
   ): Promise<AttemptOutcome> {
@@ -268,7 +286,7 @@ export class FetchTransport extends BaseTransport {
         attemptsRemaining,
         () => attemptsMade++
       );
-      this.handleResponse(response, prepared.sessionId);
+      this.handleResponse(response, prepared.sessionId, prepared.hasReplay);
 
       if (response.status >= 200 && response.status < 300) {
         return { kind: 'success', attemptsMade };
@@ -399,7 +417,21 @@ export class FetchTransport extends BaseTransport {
     };
   }
 
-  private handleResponse(response: Response, requestSessionId: string | undefined): void {
+  private handleResponse(response: Response, requestSessionId: string | undefined, hasReplay: boolean): void {
+    if (
+      hasReplay &&
+      response.status >= 200 &&
+      response.status < 300 &&
+      response.headers.get(REPLAY_LIMIT_HEADER)?.trim() === REPLAY_LIMIT_VALUE
+    ) {
+      this.replayLimitListeners.forEach((listener) => {
+        try {
+          listener();
+        } catch (error) {
+          this.logWarn('Replay-limit listener failed after successful delivery.', error);
+        }
+      });
+    }
     if (response.status === ACCEPTED && response.headers.get('X-Faro-Session-Status') === 'invalid') {
       this.extendFaroSession(this.config, this.logDebug.bind(this), requestSessionId);
     }

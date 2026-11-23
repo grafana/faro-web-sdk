@@ -177,6 +177,7 @@ export function createFaroResourceTiming(resourceEntryRaw: PerformanceResourceTi
 }
 
 export function createFaroNavigationTiming(navigationEntryRaw: PerformanceNavigationTiming): FaroNavigationTiming {
+  const navigationEntry = navigationEntryRaw as PerformanceNavigationTiming & { activationStart?: number };
   const {
     activationStart,
     domComplete,
@@ -188,7 +189,7 @@ export function createFaroNavigationTiming(navigationEntryRaw: PerformanceNaviga
     loadEventStart,
     responseStart,
     type,
-  } = navigationEntryRaw;
+  } = navigationEntry;
 
   const parserStart = getDocumentParsingTime();
 

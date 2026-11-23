@@ -23,6 +23,10 @@ export interface Transport extends Extension {
   getIgnoreUrls(): Patterns;
   // returns whether the transport supports processing batches of items
   isBatched(): boolean;
+  /** @internal Internal replay-limit signal used by replay-aware transports. */
+  addReplayLimitListener?(listener: () => void): () => void;
+  /** @internal Stable scope for coordinating replay-limit state across tabs. */
+  getReplayLimitScope?(): string;
 }
 
 export type BodyKey = 'exceptions' | 'logs' | 'measurements' | 'traces' | 'events';

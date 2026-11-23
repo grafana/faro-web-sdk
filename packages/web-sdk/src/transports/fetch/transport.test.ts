@@ -44,9 +44,12 @@ const item: TransportItem<LogEvent> = {
   meta: {},
 };
 
-const response = (status: number, retryAfter?: string): TestResponse => ({
+const response = (status: number, retryAfter?: string, replayStatus?: string): TestResponse => ({
   status,
-  headers: { get: (name) => (name === 'Retry-After' ? retryAfter : undefined) },
+  headers: {
+    get: (name) =>
+      name === 'Retry-After' ? retryAfter : name.toLowerCase() === 'x-faro-replay-status' ? replayStatus : undefined,
+  },
   text: async () => undefined,
 });
 
@@ -98,6 +101,29 @@ describe('reliable FetchTransport', () => {
       (first.headers as Record<string, string>)['Idempotency-Key']
     );
     expect(internalLogger.error).not.toHaveBeenCalled();
+  });
+
+  it('signals a replay limit only for replay items in successful responses', async () => {
+    const replayItem = {
+      ...item,
+      type: TransportItemType.EVENT,
+      payload: { name: 'faro.session_recording.event', timestamp: new Date(0).toISOString() },
+    };
+    const { transport } = createTransport();
+    const listener = jest.fn();
+    transport.addReplayLimitListener(listener);
+    fetchMock.mockResolvedValueOnce(response(400, undefined, 'limited'));
+    await transport.send([replayItem]);
+    expect(listener).not.toHaveBeenCalled();
+    fetchMock.mockResolvedValueOnce(response(202, undefined, ' limited '));
+    await transport.send([replayItem]);
+    expect(listener).toHaveBeenCalledTimes(1);
+    fetchMock.mockResolvedValueOnce(response(202));
+    await transport.send([replayItem]);
+    expect(listener).toHaveBeenCalledTimes(1);
+    fetchMock.mockResolvedValueOnce(response(202, undefined, 'limited'));
+    await transport.send([replayItem, item]);
+    expect(listener).toHaveBeenCalledTimes(2);
   });
 
   it('uses different idempotency keys for distinct batches', async () => {
