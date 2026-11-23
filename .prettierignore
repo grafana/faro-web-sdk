@@ -32,3 +32,6 @@ yarn-error.log*
 .yarn/releases/*.js
 
 /.nx/workspace-data
+
+# Byte-identical copies of grafana/faro spec/sampling/*.json; must not be reformatted
+packages/sampling/src/__vectors__

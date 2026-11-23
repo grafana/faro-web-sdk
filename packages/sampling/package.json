@@ -1,0 +1,54 @@
+{
+  "name": "@grafana/faro-sampling",
+  "packageManager": "yarn@4.18.1",
+  "version": "2.12.1",
+  "description": "Adaptive sampling rules engine for Faro: parse a rules document, decide once per session, arm triggers, produce the sampling verdict. Platform neutral, no Faro dependency.",
+  "keywords": [
+    "observability",
+    "rum",
+    "sampling",
+    "browser"
+  ],
+  "license": "Apache-2.0",
+  "author": "Grafana Labs",
+  "homepage": "https://github.com/grafana/faro-web-sdk",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/faro-web-sdk.git",
+    "directory": "packages/sampling"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "bin": "./bin/faro-sampling.js",
+  "files": [
+    ".browserslistrc",
+    "bin",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "yarn watch",
+    "build": "tsdown",
+    "watch": "tsdown --watch",
+    "clean": "rimraf dist/ yarn-error.log",
+    "quality": "run-s 'quality:*'",
+    "quality:typecheck": "tsc -p tsconfig.typecheck.json",
+    "quality:test": "jest",
+    "quality:format": "prettier --cache --cache-location=../../.cache/prettier/sampling --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint": "run-s quality:lint:eslint quality:lint:prettier quality:lint:md",
+    "quality:lint:eslint": "eslint --cache --cache-location ../../.cache/eslint/sampling \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:prettier": "prettier --cache --cache-location=../../.cache/prettier/sampling --ignore-path ../../.prettierignore -c \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:lint:md": "markdownlint README.md",
+    "quality:lint:fix": "run-s 'quality:lint:fix:*'",
+    "quality:lint:fix:eslint": "eslint --fix --cache --cache-location ../../.cache/eslint/sampling \"./**/*.{js,jsx,ts,tsx}\"",
+    "quality:lint:fix:prettier": "prettier --cache --cache-location=../../.cache/prettier/sampling --ignore-path ../../.prettierignore -w \"./**/*.{js,jsx,ts,tsx,css,scss,md,yaml,yml,json}\"",
+    "quality:circular-deps": "madge --circular .",
+    "vectors:check": "scripts/check-vectors.sh"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
