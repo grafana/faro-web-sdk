@@ -330,6 +330,47 @@ describe('FrustrationInstrumentation', () => {
     expect(events()[0]?.attributes?.['elementPath']).toBe('html > body > div > ::shadow > button');
   });
 
+  it.each([false, true])('bounds sibling inspection and snapshots the fallback (shadow: %s)', (shadow) => {
+    setup();
+    const host = document.createElement('div');
+    const parent = shadow ? host.attachShadow({ mode: 'open' }) : host;
+    document.body.appendChild(host);
+    const siblings = Array.from({ length: 1000 }, () => document.createElement('button'));
+    siblings.forEach((sibling) => parent.appendChild(sibling));
+    const children = jest.spyOn(parent, 'children', 'get');
+    const beyondCap = jest.spyOn(siblings[99]!, 'nextElementSibling', 'get');
+    const target = siblings[100]!;
+
+    click(target);
+    target.remove();
+    jest.advanceTimersByTime(2000);
+
+    expect(events()[0]?.attributes?.['elementPath']).toBe(`html > body > div > ${shadow ? '::shadow > ' : ''}button`);
+    expect(children).not.toHaveBeenCalled();
+    expect(beyondCap).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])('keeps exact same-tag ordinals at the scan boundary (shadow: %s)', (shadow) => {
+    setup();
+    const host = document.createElement('div');
+    const parent = shadow ? host.attachShadow({ mode: 'open' }) : host;
+    document.body.appendChild(host);
+    for (let index = 0; index < 99; index++) {
+      parent.appendChild(document.createElement(index % 2 === 0 ? 'span' : 'button'));
+    }
+    const target = document.createElement('button');
+    parent.appendChild(target);
+    parent.appendChild(document.createElement('button'));
+
+    click(target);
+    target.remove();
+    jest.advanceTimersByTime(2000);
+
+    expect(events()[0]?.attributes?.['elementPath']).toBe(
+      `html > body > div > ${shadow ? '::shadow > ' : ''}button:nth-of-type(50)`
+    );
+  });
+
   it('keeps the closest eight elements in a deeply nested tree', () => {
     setup();
     const root = document.createElement('div');

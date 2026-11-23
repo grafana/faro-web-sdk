@@ -18,6 +18,7 @@ import type { FrustrationSignal, FrustrationThresholds, TrackedClick } from './c
 const listenerOptions: AddEventListenerOptions = { capture: true, passive: true };
 const MAX_ELEMENT_PATH_DEPTH = 8;
 const MAX_ELEMENT_PATH_LENGTH = 120;
+const MAX_ELEMENT_PATH_SIBLINGS = 100;
 const TRUNCATED_PATH_PREFIX = '... > ';
 
 /**
@@ -235,8 +236,7 @@ function getElementPath(target: Element): string {
     const shadowRoot: ShadowRoot | null = typeof ShadowRoot !== 'undefined' && root instanceof ShadowRoot ? root : null;
     const parent: Element | ShadowRoot | null = element.parentElement ?? shadowRoot;
     const tagName = element.tagName;
-    const siblings = parent ? Array.from(parent.children).filter((child) => child.tagName === tagName) : [];
-    const position = siblings.length > 1 ? `:nth-of-type(${siblings.indexOf(element) + 1})` : '';
+    const position = getSiblingPosition(element, parent);
     parts.push(`${tagName.toLowerCase()}${position}`);
     depth++;
 
@@ -265,4 +265,29 @@ function getElementPath(target: Element): string {
   }
 
   return `${truncated ? TRUNCATED_PATH_PREFIX : ''}${path()}`;
+}
+
+function getSiblingPosition(element: Element, parent: Element | ShadowRoot | null): string {
+  let sibling = parent?.firstElementChild ?? null;
+  let scanned = 0;
+  let sameTagCount = 0;
+  let position = 0;
+
+  while (sibling && scanned < MAX_ELEMENT_PATH_SIBLINGS) {
+    if (sibling.tagName === element.tagName) {
+      sameTagCount++;
+    }
+    if (sibling === element) {
+      position = sameTagCount;
+    }
+    scanned++;
+    if (scanned === MAX_ELEMENT_PATH_SIBLINGS) {
+      break;
+    }
+    sibling = sibling.nextElementSibling;
+  }
+
+  // Beyond the scan budget, omit the ordinal instead of guessing. At the boundary,
+  // retain a known ordinal even if we cannot establish whether the tag is unique.
+  return position > 0 && (sameTagCount > 1 || scanned === MAX_ELEMENT_PATH_SIBLINGS) ? `:nth-of-type(${position})` : '';
 }
