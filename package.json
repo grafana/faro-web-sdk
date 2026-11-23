@@ -33,6 +33,7 @@
     "quality": "run-p quality:circular-deps quality:test quality:typecheck quality:lint quality:e2e:smoke:ci",
     "quality:packages": "lerna run --parallel quality",
     "quality:test": "lerna run --parallel quality:test",
+    "quality:test:coverage": "lerna run --parallel quality:test:coverage",
     "quality:typecheck": "run-s quality:typecheck:version quality:typecheck:packages",
     "quality:typecheck:version": "yarn workspace @grafana/faro-core run build:version",
     "quality:typecheck:packages": "lerna run --parallel quality:typecheck",
