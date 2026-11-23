@@ -170,8 +170,8 @@ describe.each([true, false])('accepted activity with persistent=%s', (persistent
     const current = stored(persistent);
     expect(current.sessionId).toBe(initial.sessionId);
     expect(current.started).toBe(initial.started);
-    expect(current.isSampled).toBe(false);
-    expect(current.lastActivity).toBe(dateNow());
+    expect(current.sampling).toEqual({ kept: false });
+    expect(current.lastActivity).toBe(dateNow() - 250);
     expect(transport.items).toEqual([]);
   });
 

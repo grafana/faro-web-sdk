@@ -5,7 +5,6 @@ import { mockConfig } from '@grafana/faro-core/src/testUtils';
 
 import { getSessionManagerByConfig } from './getSessionManagerByConfig';
 import { PersistentSessionsManager } from './PersistentSessionsManager';
-import * as samplingModule from './sampling';
 import { SESSION_EXPIRATION_TIME, SESSION_INACTIVITY_TIME } from './sessionConstants';
 import * as mockSessionManagerUtils from './sessionManagerUtils';
 import {
@@ -46,7 +45,6 @@ describe('sessionManagerUtils', () => {
       sessionId: mockSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: true,
     });
 
     // create with given sessionId
@@ -57,7 +55,6 @@ describe('sessionManagerUtils', () => {
       sessionId: mockInitialSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: true,
     });
   });
 
@@ -81,7 +78,6 @@ describe('sessionManagerUtils', () => {
       sessionId: customGeneratedSessionId,
       lastActivity: fakeSystemTime,
       started: fakeSystemTime,
-      isSampled: true,
     });
   });
 
@@ -167,13 +163,12 @@ describe('sessionManagerUtils', () => {
       id: mockSessionId,
       attributes: {
         previousSession: 'abc',
-        isSampled: 'true',
       },
     });
 
     expect(mockOnSessionChange).toHaveBeenCalledWith(null, {
-      attributes: { previousSession: 'abc', isSampled: 'true' },
       id: '123',
+      attributes: { previousSession: 'abc' },
     });
   });
 
@@ -182,7 +177,6 @@ describe('sessionManagerUtils', () => {
       id: 'currentSession',
       attributes: {
         previousSession: 'previous',
-        isSampled: 'true',
       },
     };
 
@@ -229,7 +223,6 @@ describe('sessionManagerUtils', () => {
       id: nextSessionId,
       attributes: {
         previousSession: currentSessionMeta.id,
-        isSampled: 'true',
       },
     };
 
@@ -246,7 +239,6 @@ describe('sessionManagerUtils', () => {
       lastActivity: 1,
       started: 2,
       sessionId: 'new-session-id',
-      isSampled: true,
     };
 
     const sessionWithMetadata1 = addSessionMetadataToNextSession(newSession, null);
@@ -255,9 +247,6 @@ describe('sessionManagerUtils', () => {
       ...newSession,
       sessionMeta: {
         id: newSession.sessionId,
-        attributes: {
-          isSampled: 'true',
-        },
       },
     });
 
@@ -265,7 +254,6 @@ describe('sessionManagerUtils', () => {
       lastActivity: 8,
       started: 9,
       sessionId: 'previous-session-id',
-      isSampled: true,
     };
 
     const sessionWithMetadata2 = addSessionMetadataToNextSession(newSession, previousSession);
@@ -276,7 +264,6 @@ describe('sessionManagerUtils', () => {
         id: newSession.sessionId,
         attributes: {
           previousSession: previousSession.sessionId,
-          isSampled: 'true',
         },
       },
     });
@@ -300,7 +287,6 @@ describe('sessionManagerUtils', () => {
         id: newSession.sessionId,
         attributes: {
           ...sessionMeta.attributes,
-          isSampled: 'true',
           previousSession: previousSession.sessionId,
         },
       },
@@ -315,7 +301,6 @@ describe('sessionManagerUtils', () => {
       lastActivity: 1,
       started: 2,
       sessionId: 'new-session-id',
-      isSampled: true,
     };
 
     const sessionWithMetadata1 = addSessionMetadataToNextSession(newSession, null);
@@ -324,9 +309,6 @@ describe('sessionManagerUtils', () => {
       ...newSession,
       sessionMeta: {
         id: newSession.sessionId,
-        attributes: {
-          isSampled: 'true',
-        },
       },
     });
 
@@ -334,7 +316,6 @@ describe('sessionManagerUtils', () => {
       lastActivity: 8,
       started: 9,
       sessionId: 'previous-session-id',
-      isSampled: true,
     };
 
     const overrides = {
@@ -352,7 +333,6 @@ describe('sessionManagerUtils', () => {
         overrides,
         attributes: {
           previousSession: previousSession.sessionId,
-          isSampled: 'true',
         },
       },
     });
@@ -402,9 +382,9 @@ describe('sessionManagerUtils', () => {
     const faro = initializeFaro(mockConfig({ sessionTracking: { enabled: true, persistent: true } }));
 
     // in-memory session is S0
-    faro.api.setSession({ id: 'S0', attributes: { isSampled: 'true' } });
+    faro.api.setSession({ id: 'S0' });
+    const adoptedMeta = { id: 'A1', attributes: { previousSession: 'S0' } };
 
-    const adoptedMeta = { id: 'A1', attributes: { isSampled: 'true', previousSession: 'S0' } };
     const mockAdoptSession = jest.fn();
 
     const updateSession = getUserSessionUpdater({
@@ -425,15 +405,13 @@ describe('sessionManagerUtils', () => {
 
   it('does not adopt when the stored valid session matches the in-memory id', () => {
     const faro = initializeFaro(mockConfig({ sessionTracking: { enabled: true, persistent: true } }));
-
-    faro.api.setSession({ id: 'A1', attributes: { isSampled: 'true' } });
+    faro.api.setSession({ id: 'A1' });
 
     const mockAdoptSession = jest.fn();
 
     const updateSession = getUserSessionUpdater({
       fetchUserSession: jest.fn().mockReturnValue({
         ...createUserSessionObject({ sessionId: 'A1' }),
-        sessionMeta: { id: 'A1', attributes: { isSampled: 'true' } },
       }),
       storeUserSession: jest.fn(),
       adoptSession: mockAdoptSession,
@@ -454,9 +432,6 @@ describe('sessionManagerUtils', () => {
 
   describe('sessionMetaUpdateHandler', () => {
     it('Creates a new Faro user session if new sessionID is set', () => {
-      const mockIsSampled = jest.fn();
-      jest.spyOn(samplingModule, 'isSampled').mockImplementationOnce(mockIsSampled);
-
       const mockStoreUserSession = jest.fn();
       jest.spyOn(VolatileSessionsManager, 'storeUserSession').mockImplementationOnce(mockStoreUserSession);
 
@@ -488,14 +463,11 @@ describe('sessionManagerUtils', () => {
 
       const storedSession: FaroUserSession = {
         sessionId: mockSessionId,
-        isSampled: true,
         lastActivity: fakeSystemTime,
         started: fakeSystemTime,
         sessionMeta: {
           id: mockSessionId,
-          attributes: {
-            isSampled: 'true',
-          },
+          attributes: {},
         },
       };
 
@@ -513,7 +485,6 @@ describe('sessionManagerUtils', () => {
       faro.api.setSession({
         id: mockSessionId,
         attributes: {
-          isSampled: 'true',
           foo: 'bar',
         },
       });
@@ -524,7 +495,6 @@ describe('sessionManagerUtils', () => {
       expect(mockStoreUserSession).toHaveBeenCalledWith(
         expect.objectContaining({
           sessionId: mockSessionId,
-          isSampled: true,
           sessionMeta: expect.objectContaining({
             attributes: expect.objectContaining({
               foo: 'bar',
@@ -540,13 +510,11 @@ describe('sessionManagerUtils', () => {
 
       const storedSession: FaroUserSession = {
         sessionId: mockSessionId,
-        isSampled: true,
         lastActivity: fakeSystemTime,
         started: fakeSystemTime,
         sessionMeta: {
           id: mockSessionId,
           attributes: {
-            isSampled: 'true',
             foo: 'bar',
           },
         },
@@ -574,7 +542,6 @@ describe('sessionManagerUtils', () => {
       expect(mockStoreUserSession).toHaveBeenCalledWith(
         expect.objectContaining({
           sessionId: mockSessionId,
-          isSampled: true,
           sessionMeta: expect.objectContaining({
             id: mockSessionId,
             overrides: newOverrides,
@@ -608,7 +575,6 @@ describe('sessionManagerUtils', () => {
       expect(mockStoreUserSession).toHaveBeenCalledWith(
         expect.objectContaining({
           sessionId: expect.any(String),
-          isSampled: true,
           sessionMeta: expect.objectContaining({
             overrides: newOverrides,
           }),
@@ -623,7 +589,6 @@ describe('sessionManagerUtils', () => {
       const initialSession: MetaSession = {
         id: mockSessionId,
         attributes: {
-          isSampled: 'true',
           foo: 'bar',
         },
       };
@@ -646,7 +611,6 @@ describe('sessionManagerUtils', () => {
       expect(mockStoreUserSession).toHaveBeenCalledWith(
         expect.objectContaining({
           sessionId: initialSession.id,
-          isSampled: true,
           sessionMeta: expect.objectContaining({
             ...initialSession,
             overrides: newOverrides,
@@ -768,7 +732,6 @@ describe('sessionManagerUtils', () => {
 
       jest.spyOn(VolatileSessionsManager, 'fetchUserSession').mockReturnValueOnce({
         sessionId: mockSessionId,
-        isSampled: true,
         lastActivity: fakeSystemTime,
         started: fakeSystemTime,
         sessionMeta: previouslyChangedSession,

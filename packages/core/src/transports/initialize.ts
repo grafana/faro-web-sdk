@@ -174,11 +174,13 @@ export function initializeTransports(
       };
     }
 
-    if (config.batching?.enabled) {
-      batchExecutor?.addItem(item);
-    }
+    getInternalMetas(metas).intercept(item, (nextItem) => {
+      if (config.batching?.enabled) {
+        batchExecutor?.addItem(nextItem);
+      }
 
-    instantSend(item);
+      instantSend(nextItem);
+    });
   };
 
   const getBeforeSendHooks: Transports['getBeforeSendHooks'] = () => [...beforeSendHooks];

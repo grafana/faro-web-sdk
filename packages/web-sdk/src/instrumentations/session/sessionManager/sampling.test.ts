@@ -3,8 +3,8 @@ import { mockConfig, MockTransport } from '@grafana/faro-core/src/testUtils';
 
 import { createSession } from '../../../metas';
 import { SessionInstrumentation } from '../instrumentation';
+import { isSampled } from '../legacySampling';
 
-import { isSampled } from './sampling';
 import { STORAGE_KEY } from './sessionConstants';
 
 describe('Sampling.', () => {
@@ -179,7 +179,8 @@ describe('Sampling.', () => {
       );
 
       try {
-        expect(faro.api.getSession()?.attributes?.['isSampled']).toBe(String(expected));
+        expect(faro.api.getSession()?.attributes?.['isSampled']).toBeUndefined();
+        expect(JSON.parse(window.sessionStorage.getItem(STORAGE_KEY)!).sampling).toEqual({ kept: expected });
         faro.api.pushEvent('after-initialization');
         expect(
           transport.items.some((item) => 'name' in item.payload && item.payload.name === 'after-initialization')

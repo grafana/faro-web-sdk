@@ -80,7 +80,7 @@ describe('prerendered sessions', () => {
         isSampled: true,
         sessionMeta: {
           id: 'stored-session',
-          attributes: { isSampled: 'true' },
+          attributes: {},
           overrides: { serviceName: 'previous-app', geoLocationTrackingEnabled: true },
         },
       })
@@ -267,7 +267,7 @@ describe('prerendered sessions', () => {
         isSampled: true,
         sessionMeta: {
           id: 'activated-session',
-          attributes: { stored: 'kept', shared: 'stored', isSampled: 'true' },
+          attributes: { stored: 'kept', shared: 'stored' },
           overrides: { serviceName: 'stored-service', geoLocationTrackingEnabled: true },
         },
       })
@@ -280,7 +280,7 @@ describe('prerendered sessions', () => {
     const session = faro.api.getSession();
     expect(session).toEqual({
       id: 'activated-session',
-      attributes: { configured: 'kept', stored: 'kept', custom: 'pending', shared: 'pending', isSampled: 'true' },
+      attributes: { configured: 'kept', stored: 'kept', custom: 'pending', shared: 'pending' },
       overrides: { serviceName: 'checkout-service', geoLocationTrackingEnabled: true },
     });
     expect(JSON.parse(storage.getItem(STORAGE_KEY)!).sessionMeta).toEqual(session);
@@ -301,7 +301,7 @@ describe('prerendered sessions', () => {
 
     expect(faro.api.getSession()).toEqual({
       id: 'manual-session',
-      attributes: { custom: 'kept', isSampled: 'true' },
+      attributes: { custom: 'kept' },
       overrides: { serviceName: 'manual-service' },
     });
     expect(events().map((item) => item.payload.name)).toEqual(['session_start']);
@@ -310,7 +310,7 @@ describe('prerendered sessions', () => {
   it('does not queue speculative signals even with an explicitly sampled session', () => {
     const beforeSend = jest.fn((item: TransportItem) => item);
     start({ beforeSend });
-    faro.api.setSession({ id: 'manual-session', attributes: { isSampled: 'true' } });
+    faro.api.setSession({ id: 'manual-session', attributes: {} });
     faro.api.pushEvent('speculative-event');
     faro.api.pushMeasurement({ type: 'test', values: { value: 1 } });
     activate();
@@ -343,7 +343,7 @@ describe('prerendered sessions', () => {
         isSampled: true,
         sessionMeta: {
           id: 'stored-session',
-          attributes: { shared: 'stored', isSampled: 'true' },
+          attributes: { shared: 'stored' },
           overrides: { serviceName: 'stored-service', geoLocationTrackingEnabled: true },
         },
       })
@@ -353,7 +353,7 @@ describe('prerendered sessions', () => {
 
     expect(faro.api.getSession()).toEqual({
       id: 'stored-session',
-      attributes: { shared: 'stored', isSampled: 'true' },
+      attributes: { shared: 'stored' },
       overrides: { serviceName: 'checkout-service', geoLocationTrackingEnabled: true },
     });
   });
@@ -411,7 +411,7 @@ describe('prerendered sessions', () => {
       started: Date.now(),
       lastActivity: Date.now(),
       isSampled: true,
-      sessionMeta: { id: 'existing-session', attributes: { isSampled: 'true', custom: 'preserved' } },
+      sessionMeta: { id: 'existing-session', attributes: { custom: 'preserved' } },
     });
     storage.setItem(STORAGE_KEY, storedSession);
     start({ sessionTracking: { persistent, samplingRate: 1 } });
@@ -444,7 +444,7 @@ describe('prerendered sessions', () => {
     jest.advanceTimersByTime(2000);
 
     expect(sampler).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(window.sessionStorage.getItem(STORAGE_KEY)!).isSampled).toBe(false);
+    expect(JSON.parse(window.sessionStorage.getItem(STORAGE_KEY)!).sampling).toEqual({ kept: false });
     expect(transport.items).toEqual([]);
   });
 
@@ -495,7 +495,7 @@ describe('prerendered sessions', () => {
 
       expect(faro.api.getSession()).toEqual({
         id: 'explicit-session',
-        attributes: { custom: 'preserved', isSampled: 'true' },
+        attributes: { custom: 'preserved' },
         overrides: { serviceName: 'checkout' },
       });
       expect(events().map((item) => [item.payload.name, item.meta.session?.id])).toEqual([

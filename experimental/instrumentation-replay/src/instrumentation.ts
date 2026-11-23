@@ -1,4 +1,5 @@
 import { BaseInstrumentation, captureMetas, clampSamplingRate, genShortID, VERSION } from '@grafana/faro-core';
+import { getInternalMetas } from '@grafana/faro-core/internal';
 import { record, type recordOptions } from '@grafana/rrweb';
 import { EventType, type eventWithTime } from '@grafana/rrweb-types';
 
@@ -322,13 +323,21 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     }
 
     const sessionId = session.id ?? null;
-    const isSampled = session.attributes?.['isSampled'] === 'true';
+    const isSampled = this.isSessionSampled(sessionId);
 
     if (sessionId === null || !isSampled || !this.shouldReplaySample(sessionId)) {
       return null;
     }
 
     return sessionId;
+  }
+
+  private isSessionSampled(sessionId: string | null): boolean {
+    if (sessionId === null) {
+      return false;
+    }
+    const sampling = getInternalMetas(this.metas).getSessionSampling(sessionId) as { kept?: boolean } | undefined;
+    return sampling?.kept ?? this.api.getSession()?.attributes?.['isSampled'] === 'true';
   }
 
   private shouldReplaySample(sessionId: string): boolean {
@@ -465,7 +474,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
     const session = this.api.getSession();
     return (
       session?.id === this.recordingState.sessionId &&
-      session.attributes?.['isSampled'] === 'true' &&
+      this.isSessionSampled(this.recordingState.sessionId) &&
       this.shouldReplaySample(this.recordingState.sessionId)
     );
   }

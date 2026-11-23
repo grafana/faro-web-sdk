@@ -4,6 +4,11 @@
     "declarationDir": "./dist/types",
     "outDir": "./dist/spec",
     "rootDir": "..",
+    "paths": {
+      "@grafana/faro-core": ["../core/src"],
+      "@grafana/faro-core/internal": ["../core/src/internal"],
+      "@grafana/faro-core/src/*": ["../core/src/*"]
+    },
     "tsBuildInfoFile": "../../.cache/tsc/webSdk.spec.tsbuildinfo"
   },
   "include": ["./src"],

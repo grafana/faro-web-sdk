@@ -9,7 +9,6 @@ export {
   STORAGE_UPDATE_DELAY,
   VolatileSessionsManager,
   defaultSessionTrackingConfig,
-  isSampled,
 } from './sessionManager';
 
 export type { FaroUserSession } from './sessionManager';
