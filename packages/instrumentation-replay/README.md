@@ -19,12 +19,14 @@ import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 
 initializeFaro({
   url: 'https://your-faro-endpoint.com',
+  app: { name: 'demo' },
   instrumentations: [...getWebInstrumentations(), new ReplayInstrumentation()],
 });
 ```
 
-The default configuration masks all input values and text content. Review the privacy options below
-before making masking more selective.
+Text content and text input values are masked by default. Checkbox and radio values and checked state
+can still be recorded. Use `grafana-block` or `blockSelector` for sensitive form groups. Review the privacy
+options below before making masking more selective.
 
 Replay is a separate, opt-in package and is not included by `getWebInstrumentations()`. Its code is only
 loaded when you import the package or load its browser bundle.
@@ -52,7 +54,7 @@ and requires rrweb in each child iframe when enabled.
 | Key                | Type                                                     | Default                 | Description                                                                                                                                                                  |
 | ------------------ | -------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `sanitizeMetaHref` | `boolean`                                                | `true`                  | Strip credentials, query string, and fragment from `window.location.href` in rrweb Meta events before sending. URLs may still appear in transport metadata and DOM snapshots |
-| `maskAllInputs`    | `boolean`                                                | `true`                  | Mask all input content                                                                                                                                                       |
+| `maskAllInputs`    | `boolean`                                                | `true`                  | Mask supported input values; checkbox/radio values and checked state can still be recorded                                                                                   |
 | `maskInputOptions` | `MaskInputOptions`                                       | `{ password: true }`    | Selectively mask specific input types (used only when `maskAllInputs` is `false`)                                                                                            |
 | `maskInputFn`      | `(value: string, element: HTMLElement) => string`        | Fixed-length `'******'` | Customize mask input content recording logic. The default returns a fixed-length mask regardless of input length to prevent length leakage                                   |
 | `maskTextSelector` | `string`                                                 | `'*'`                   | CSS selector for elements whose text content should be masked                                                                                                                |
@@ -119,6 +121,7 @@ stays paused until `resumeRecording()` is called.
 ```typescript
 initializeFaro({
   url: 'https://your-faro-endpoint.com',
+  app: { name: 'demo' },
   sessionTracking: {
     samplingRate: 1.0, // collect telemetry (logs, errors, web-vitals) for all sessions
   },
@@ -142,9 +145,11 @@ initializeFaro({
 
 This instrumentation records user interactions on your website. Make sure to:
 
-1. **Review masking options for your use case** - By default, all input values and text content are masked.
-   If needed, you can make masking more selective with `maskAllInputs`, `maskInputOptions`, and `maskTextSelector`
-2. **Use CSS selectors** - Use `maskTextSelector` to mask sensitive content, `blockSelector` to completely exclude elements
+1. **Review masking options for your use case** - Text content and text input values are masked by default.
+   Checkbox and radio values and checked state can still be recorded. You can make masking more selective
+   with `maskAllInputs`, `maskInputOptions`, and `maskTextSelector`
+2. **Block sensitive form groups** - Use `grafana-block` or `blockSelector` to completely exclude sensitive
+   form groups and other elements. Use `maskTextSelector` to mask text content
 3. **Implement filtering** - Use the `beforeSend` hook to filter or transform events before sending
 4. **Review your privacy policy** - Ensure you have proper user consent for session recording
 5. **Test your configuration** - Verify no sensitive information is captured in recordings
