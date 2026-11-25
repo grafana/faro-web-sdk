@@ -38,11 +38,12 @@ describe('registerOnerror', () => {
     window.onerror = originalOnError;
   });
 
-  it('will preserve the old callback', () => {
+  it('will preserve the old callback and its return value', () => {
     let called = false;
 
     window.onerror = () => {
       called = true;
+      return true;
     };
 
     const transport = new MockTransport();
@@ -54,9 +55,10 @@ describe('registerOnerror', () => {
 
     registerOnerror(api);
 
-    window.onerror('boo', 'some file', 10, 10, new Error('boo'));
+    const result = window.onerror('boo', 'some file', 10, 10, new Error('boo'));
     expect(called).toBe(true);
     expect(transport.items).toHaveLength(1);
+    expect(result).toBe(true);
   });
 
   it('In case of an error, the original error is not lost', () => {
