@@ -1,3 +1,4 @@
+import { trace } from '@opentelemetry/api';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 
 import { BaseTransport, initializeFaro } from '@grafana/faro-core';
@@ -6,6 +7,7 @@ import { mockConfig } from '@grafana/faro-core/src/testUtils';
 import { getDefaultOTELInstrumentations } from './getDefaultOTELInstrumentations';
 import { TracingInstrumentation } from './instrumentation';
 import { resetTracingOwnerForTests } from './tracingOwner';
+import { getTracingRegistry } from './tracingRegistry';
 
 jest.mock('@opentelemetry/instrumentation', () => ({
   ...jest.requireActual('@opentelemetry/instrumentation'),
@@ -40,8 +42,14 @@ function setup(options = {}) {
 }
 
 beforeEach(() => {
+  trace.disable();
   resetTracingOwnerForTests();
   jest.clearAllMocks();
+});
+
+afterEach(() => {
+  trace.disable();
+  resetTracingOwnerForTests();
 });
 
 it('updates both default instrumentations, preserves options and stops listening on destroy', () => {
@@ -59,6 +67,40 @@ it('updates both default instrumentations, preserves options and stops listening
   instrumentation.destroy();
   faro.transports.add(transport);
   expect(fetch.setConfig).toHaveBeenCalledTimes(2);
+});
+
+it('normalizes and appends collector URLs added after routing initialization', () => {
+  const base = document.createElement('base');
+  base.href = 'https://collector.example.test/app/';
+  document.head.prepend(base);
+  const captureInstrumentation = {
+    enable: jest.fn(),
+    disable: jest.fn(),
+    getConfig: () => ({}),
+    setConfig: jest.fn(),
+  };
+  jest.mocked(getDefaultOTELInstrumentations).mockReturnValue([captureInstrumentation, captureInstrumentation] as any);
+  const { instrumentation, faro } = setup({ mode: 'routing', drainTimeoutMs: 0 });
+  const registry = getTracingRegistry()!;
+  const provider = registry.registrations[0]!.provider as unknown as { shutdown: () => Promise<void> };
+  provider.shutdown = jest.fn().mockResolvedValue(undefined);
+  const transport = new TestTransport('../telemetry');
+
+  try {
+    faro.transports.add(transport);
+    expect(registry.collectorIgnoreUrls).toContain('../telemetry');
+    expect(registry.collectorIgnoreUrls).toContain('https://collector.example.test/telemetry');
+
+    faro.transports.remove(transport);
+    expect(registry.collectorIgnoreUrls).toContain('https://collector.example.test/telemetry');
+
+    instrumentation.destroy();
+    faro.transports.add(new TestTransport('/late-collector'));
+    expect(registry.collectorIgnoreUrls).not.toContain('https://collector.example.test/late-collector');
+  } finally {
+    instrumentation.destroy();
+    base.remove();
+  }
 });
 
 it('leaves explicitly supplied instrumentations under caller control', () => {
