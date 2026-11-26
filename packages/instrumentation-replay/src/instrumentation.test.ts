@@ -7,8 +7,9 @@ import {
   type TransportItem,
 } from '@grafana/faro-core';
 import { mockConfig } from '@grafana/faro-core/src/testUtils';
-import { EventType } from '@grafana/rrweb-types';
+import { EventType, IncrementalSource, NodeType } from '@grafana/rrweb-types';
 
+import * as canvasSnapshots from './canvasSnapshots';
 import { defaultMaskInputFn } from './const';
 import { ReplayInstrumentation } from './instrumentation';
 import { replayRecordingCheckpointKeyPrefix } from './recordingState';
@@ -16,7 +17,7 @@ import { MaskInputFn, ReplayInstrumentationOptions } from './types';
 
 // Mock rrweb
 jest.mock('@grafana/rrweb', () => {
-  const record = Object.assign(jest.fn(), { takeFullSnapshot: jest.fn() });
+  const record = Object.assign(jest.fn(), { takeFullSnapshot: jest.fn(), mirror: { getNode: () => null } });
   return { record };
 });
 
@@ -313,10 +314,70 @@ describe('ReplayInstrumentation', () => {
       expect(mockRecord).toHaveBeenCalledWith(
         expect.objectContaining({
           recordAfter: 'load',
+          recordCanvas: false,
           maskAllInputs: true,
           maskTextSelector: '*',
         })
       );
+    });
+
+    it('keeps native checkpoint and drawing-command capture disabled when sampling pixels', () => {
+      const start = jest.spyOn(canvasSnapshots, 'startCanvasSnapshots');
+      instrumentation = initSampled({ captureCanvasSnapshots: true });
+      expect(start).toHaveBeenCalledTimes(1);
+
+      expect(mockRecord).toHaveBeenCalledWith(expect.objectContaining({ recordCanvas: false }));
+    });
+
+    it.each([{}, { recordCanvas: true }, { captureCanvasSnapshots: 'true' }])(
+      'requires a literal opt-in before starting the pixel sampler (%j)',
+      (options) => {
+        const start = jest.spyOn(canvasSnapshots, 'startCanvasSnapshots');
+        instrumentation = initSampled(options as ReplayInstrumentationOptions);
+        expect(start).not.toHaveBeenCalled();
+        expect(mockRecord).toHaveBeenCalledWith(expect.objectContaining({ recordCanvas: false }));
+      }
+    );
+
+    it('passes a child DOM checkpoint to beforeSend without its canvas pixels', () => {
+      const beforeSend = jest.fn((event) => event);
+      instrumentation = initSampled({ captureCanvasSnapshots: true, recordCrossOriginIframes: true, beforeSend });
+      const { emit } = mockRecord.mock.calls[0]![0];
+      const checkpoint = {
+        type: EventType.IncrementalSnapshot,
+        timestamp: Date.now(),
+        data: {
+          source: IncrementalSource.Mutation,
+          isAttachIframe: true,
+          adds: [
+            {
+              parentId: 7,
+              nextId: null,
+              node: {
+                type: NodeType.Document,
+                id: 11,
+                childNodes: [
+                  {
+                    type: NodeType.Element,
+                    tagName: 'canvas',
+                    id: 12,
+                    attributes: { rr_dataURL: 'child frame', width: '64' },
+                    childNodes: [],
+                  },
+                ],
+              },
+            },
+          ],
+          attributes: [],
+          texts: [],
+          removes: [],
+        },
+      };
+      emit(checkpoint);
+      const accepted = beforeSend.mock.calls[0]![0];
+      expect(accepted.data.adds[0].node.childNodes[0].attributes).toEqual({ width: '64' });
+      emit({ type: EventType.IncrementalSnapshot, data: { source: IncrementalSource.CanvasMutation } });
+      expect(beforeSend).toHaveBeenCalledTimes(1);
     });
 
     it('should push a faro.session_recording.started event when recording begins', () => {
