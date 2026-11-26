@@ -15,6 +15,7 @@
 
 ### Bug Fixes
 
+- **web-sdk:** preserve the return value of an existing `window.onerror` handler
 - **core:** prevent isolated initialization from replacing an existing non-isolated `faro` export
   ([#1846](https://github.com/grafana/faro-web-sdk/issues/1846)).
 - **session:** synchronize volatile sessions between same-origin frames after session rotation

@@ -6,6 +6,8 @@ export function registerOnerror(api: API): void {
   const oldOnerror = window.onerror;
 
   window.onerror = (...args) => {
+    let previousResult: unknown;
+
     try {
       const { value, type, stackFrames } = getDetailsFromErrorArgs(args);
       const originalError = args[4];
@@ -20,7 +22,9 @@ export function registerOnerror(api: API): void {
         api.pushError(new Error(value), options);
       }
     } finally {
-      oldOnerror?.apply(window, args);
+      previousResult = oldOnerror?.apply(window, args);
     }
+
+    return previousResult;
   };
 }
