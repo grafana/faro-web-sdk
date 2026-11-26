@@ -1,5 +1,5 @@
 import type { Context } from '@opentelemetry/api';
-import type { ReadableSpan, Span, SpanProcessor } from '@opentelemetry/sdk-trace-web';
+import type { ReadableSpan, Span, SpanProcessor } from '@opentelemetry/sdk-trace';
 
 import type { Metas } from '@grafana/faro-web-sdk';
 
