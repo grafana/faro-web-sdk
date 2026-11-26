@@ -58,6 +58,9 @@ jobs:
       - name: Unit tests
         run: yarn quality:test
 
+      - name: Workflow script unit tests
+        run: node --test .github/workflows/scripts/*.test.mjs
+
   e2e-smoke:
     permissions:
       contents: read
