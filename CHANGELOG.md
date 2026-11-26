@@ -23,6 +23,8 @@
 - **web-sdk:** prevent duplicate sessions when Chrome activates a prerendered page
 - **core:** send telemetry that other listeners queue while the page is being hidden, such as spans that tracing
   exports when the page unloads
+- **core:** keep `createPromiseBuffer` running when a task producer throws instead of returning a promise. The task is
+  rejected and its slot is released, so queued tasks still start
 
 ## [2.15.0](https://github.com/grafana/faro-web-sdk/compare/v2.14.0...v2.15.0) (2026-11-20)
 

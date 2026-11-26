@@ -83,4 +83,38 @@ describe('PromiseBuffer', () => {
       addTask(4);
     });
   });
+
+  it('rejects and frees the slot when a producer throws synchronously', async () => {
+    const buf = createPromiseBuffer<string>({ size: 1, concurrency: 1 });
+    const failure = new Error('producer failed');
+
+    await expect(
+      buf.add(() => {
+        throw failure;
+      })
+    ).rejects.toBe(failure);
+
+    // the failed task no longer counts against size or concurrency
+    await expect(buf.add(() => Promise.resolve('next'))).resolves.toEqual('next');
+  });
+
+  it('starts the next queued task after a producer throws synchronously', async () => {
+    const buf = createPromiseBuffer<string>({ size: 3, concurrency: 1 });
+    const blocker = createTestPromise<string>();
+    const failure = new Error('producer failed');
+    const queuedProducer = jest.fn(() => Promise.resolve('queued'));
+
+    const first = buf.add(() => blocker.promise);
+    const failing = buf.add(() => {
+      throw failure;
+    });
+    const queued = buf.add(queuedProducer);
+
+    blocker.resolve('first');
+
+    await expect(first).resolves.toEqual('first');
+    await expect(failing).rejects.toBe(failure);
+    await expect(queued).resolves.toEqual('queued');
+    expect(queuedProducer).toHaveBeenCalledTimes(1);
+  });
 });
