@@ -26,10 +26,9 @@
 
 ## [2.16.0](https://github.com/grafana/faro-web-sdk/compare/v2.15.0...v2.16.0) (2026-11-26)
 
-
 ### Features
 
-* **replay:** graduate instrumentation from experimental ([#2372](https://github.com/grafana/faro-web-sdk/issues/2372)) ([1015ed2](https://github.com/grafana/faro-web-sdk/commit/1015ed22bca39f9d52b5eefc29189662b9f60408))
+- **replay:** graduate instrumentation from experimental ([#2372](https://github.com/grafana/faro-web-sdk/issues/2372)) ([1015ed2](https://github.com/grafana/faro-web-sdk/commit/1015ed22bca39f9d52b5eefc29189662b9f60408))
 
 ## [2.15.0](https://github.com/grafana/faro-web-sdk/compare/v2.14.0...v2.15.0) (2026-11-20)
 
