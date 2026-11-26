@@ -16,6 +16,10 @@ import {
 import type { FrustrationSignal, FrustrationThresholds, TrackedClick } from './clickBurst';
 
 const listenerOptions: AddEventListenerOptions = { capture: true, passive: true };
+const MAX_ELEMENT_PATH_DEPTH = 8;
+const MAX_ELEMENT_PATH_LENGTH = 120;
+const MAX_ELEMENT_PATH_SIBLINGS = 100;
+const TRUNCATED_PATH_PREFIX = '... > ';
 
 /**
  * Reports rage clicks, dead clicks and error clicks as events. Ordinary clicks are not reported.
@@ -50,6 +54,8 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
     const start = this.pointerDown?.time ?? now;
     const click: TrackedClick = {
       target,
+      elementPath: getElementPath(target),
+      ...this.getUserActionName(target),
       clientX: event.clientX,
       clientY: event.clientY,
       time: now,
@@ -188,7 +194,8 @@ export class FrustrationInstrumentation extends BaseInstrumentation {
       `faro.frustration.${type}`,
       {
         target: click.target.tagName.toLowerCase(),
-        ...this.getUserActionName(click.target),
+        elementPath: click.elementPath,
+        ...(click.userActionName ? { userActionName: click.userActionName } : {}),
         clickCount: String(clickCount),
         clientX: String(click.clientX),
         clientY: String(click.clientY),
@@ -210,4 +217,77 @@ function resolveClickTarget(event: Event): Element | undefined {
 
 function getSelectionText(): string {
   return window.getSelection?.()?.toString() ?? '';
+}
+
+// Describe the click location without collecting text, IDs, classes, or attribute values.
+// Capture this on click because the DOM may change before the signal is reported.
+function getElementPath(target: Element): string {
+  const parts: string[] = [];
+  let element: Element | null = target;
+  let depth = 0;
+  let crossedShadowRoot = false;
+
+  while (element && depth < MAX_ELEMENT_PATH_DEPTH) {
+    if (crossedShadowRoot) {
+      parts.push('::shadow');
+    }
+
+    const root: Node = element.getRootNode();
+    const shadowRoot: ShadowRoot | null = typeof ShadowRoot !== 'undefined' && root instanceof ShadowRoot ? root : null;
+    const parent: Element | ShadowRoot | null = element.parentElement ?? shadowRoot;
+    const tagName = element.tagName;
+    const position = getSiblingPosition(element, parent);
+    parts.push(`${tagName.toLowerCase()}${position}`);
+    depth++;
+
+    crossedShadowRoot = shadowRoot !== null && parent === shadowRoot;
+    if (shadowRoot && crossedShadowRoot) {
+      element = shadowRoot.host;
+    } else {
+      element = element.parentElement;
+    }
+  }
+
+  let truncated = element !== null;
+  const path = () => [...parts].reverse().join(' > ');
+
+  while (parts.length > 1 && (truncated ? TRUNCATED_PATH_PREFIX.length : 0) + path().length > MAX_ELEMENT_PATH_LENGTH) {
+    parts.pop();
+    if (parts[parts.length - 1] === '::shadow') {
+      parts.pop();
+    }
+    truncated = true;
+  }
+
+  if (path().length + (truncated ? TRUNCATED_PATH_PREFIX.length : 0) > MAX_ELEMENT_PATH_LENGTH) {
+    parts[0] = `${parts[0]!.slice(0, MAX_ELEMENT_PATH_LENGTH - TRUNCATED_PATH_PREFIX.length - 3)}...`;
+    truncated = true;
+  }
+
+  return `${truncated ? TRUNCATED_PATH_PREFIX : ''}${path()}`;
+}
+
+function getSiblingPosition(element: Element, parent: Element | ShadowRoot | null): string {
+  let sibling = parent?.firstElementChild ?? null;
+  let scanned = 0;
+  let sameTagCount = 0;
+  let position = 0;
+
+  while (sibling && scanned < MAX_ELEMENT_PATH_SIBLINGS) {
+    if (sibling.tagName === element.tagName) {
+      sameTagCount++;
+    }
+    if (sibling === element) {
+      position = sameTagCount;
+    }
+    scanned++;
+    if (scanned === MAX_ELEMENT_PATH_SIBLINGS) {
+      break;
+    }
+    sibling = sibling.nextElementSibling;
+  }
+
+  // Beyond the scan budget, omit the ordinal instead of guessing. At the boundary,
+  // retain a known ordinal even if we cannot establish whether the tag is unique.
+  return position > 0 && (sameTagCount > 1 || scanned === MAX_ELEMENT_PATH_SIBLINGS) ? `:nth-of-type(${position})` : '';
 }

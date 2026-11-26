@@ -10,6 +10,7 @@
   The deprecated `experimental.trackNavigation` option remains supported as a fallback for compatibility.
 - **web-sdk:** report rage clicks, dead clicks and error clicks as frustration events by default
 - **web-sdk:** make frustration detection thresholds configurable with `frustrationInstrumentation`
+- **web-sdk:** include bounded, privacy-conscious element paths in frustration events
 - **user-actions:** add configurable initial activity timeouts globally, through `startUserAction`, and with
   `data-faro-user-action-timeout` element overrides
 
