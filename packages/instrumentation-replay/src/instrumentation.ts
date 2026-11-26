@@ -1,7 +1,8 @@
 import { BaseInstrumentation, captureMetas, clampSamplingRate, genShortID, VERSION } from '@grafana/faro-core';
 import { record, type recordOptions } from '@grafana/rrweb';
-import { EventType, type eventWithTime } from '@grafana/rrweb-types';
+import { EventType, type eventWithTime, IncrementalSource } from '@grafana/rrweb-types';
 
+import { removeChildCanvasPixels, startCanvasSnapshots } from './canvasSnapshots';
 import { defaultMaskInputFn, defaultReplayInstrumentationOptions } from './const';
 import { createMemoryStorage, type ReplayRecordingState, ReplayRecordingStateStore } from './recordingState';
 import type { ReplayInstrumentationOptions } from './types';
@@ -394,6 +395,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       maskTextFn: this.options.maskTextFn,
       blockSelector: this.options.blockSelector,
       ignoreSelector: this.options.ignoreSelector,
+      // Native rrweb canvas capture also embeds pixels in DOM checkpoints.
       recordCanvas: false,
       collectFonts: this.options.collectFonts,
       inlineImages: this.options.inlineImages,
@@ -486,11 +488,26 @@ export class ReplayInstrumentation extends BaseInstrumentation {
       bufferedEvents.length = 0;
     };
 
+    let canvasSnapshots: ReturnType<typeof startCanvasSnapshots>;
     this.isStarting = true;
     let stop: (() => void) | undefined;
     try {
       stop = record(
         this.buildRecordOptions((event) => {
+          if (event.type === EventType.IncrementalSnapshot && event.data.source === IncrementalSource.CanvasMutation) {
+            // Canvas frames belong to the current document and recorder attempt only.
+            return;
+          }
+          if (
+            this.options.recordCrossOriginIframes &&
+            event.type === EventType.IncrementalSnapshot &&
+            event.data.source === IncrementalSource.Mutation
+          ) {
+            removeChildCanvasPixels(event.data, record.mirror);
+          }
+          if (event.type === EventType.FullSnapshot) {
+            canvasSnapshots?.checkout();
+          }
           if (attempt.phase === 'buffering') {
             bufferedEvents.push(event);
           } else if (attempt.phase === 'active') {
@@ -526,6 +543,7 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
     const stopAttempt = (): void => {
       discardAttempt();
+      canvasSnapshots?.stop();
       stop!();
     };
     const recordingId = state.recordingId;
@@ -559,6 +577,14 @@ export class ReplayInstrumentation extends BaseInstrumentation {
 
       bufferedEvents.length = 0;
       attempt.phase = 'active';
+      if (this.options.captureCanvasSnapshots === true) {
+        canvasSnapshots = startCanvasSnapshots(
+          this.options.blockSelector,
+          record.mirror,
+          isCurrentAttempt,
+          (event, stillEligible) => this.handleEvent(event, stillEligible)
+        );
+      }
       return true;
     } catch (err) {
       if (this.stopFn === stopAttempt) {
