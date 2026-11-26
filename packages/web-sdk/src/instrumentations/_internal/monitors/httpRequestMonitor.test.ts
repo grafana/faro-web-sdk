@@ -134,4 +134,58 @@ describe('monitorHttpRequests', () => {
     const second = monitorHttpRequests();
     expect(second).toBe(first);
   });
+
+  it('normalizes URL objects passed to XMLHttpRequest.open', async () => {
+    const url = new URL('https://www.grafana.com/data.txt');
+    const originalSend = XMLHttpRequest.prototype.send;
+
+    XMLHttpRequest.prototype.send = function () {
+      this.dispatchEvent(new Event('loadstart'));
+      setTimeout(() => {
+        Object.defineProperty(this, 'readyState', { value: 4, writable: true });
+        Object.defineProperty(this, 'status', { value: 200, writable: true });
+        this.dispatchEvent(new Event('load'));
+        if (this.onreadystatechange) {
+          this.onreadystatechange.call(this, new Event('readystatechange') as any);
+        }
+      }, 0);
+    };
+
+    try {
+      const observable = monitorHttpRequests();
+      const mockSubscribe = jest.fn();
+      observable.subscribe(mockSubscribe);
+
+      initializeFaro(
+        mockConfig({
+          ignoreUrls: [/ignored\.example\.com/],
+        })
+      );
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url);
+
+      await new Promise((resolve) => {
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
+            resolve({});
+          }
+        };
+        xhr.send();
+      });
+
+      expect(mockSubscribe).toHaveBeenCalledTimes(2);
+      expect(mockSubscribe).toHaveBeenNthCalledWith(1, {
+        type: MESSAGE_TYPE_HTTP_REQUEST_START,
+        request: {
+          apiType: 'xhr',
+          method: 'GET',
+          requestId: expect.any(String),
+          url: url.toString(),
+        },
+      });
+    } finally {
+      XMLHttpRequest.prototype.send = originalSend;
+    }
+  });
 });
