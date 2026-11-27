@@ -776,7 +776,7 @@ __metadata:
     react-router: "npm:7.18.4"
     react-router-dom-v5: "npm:react-router-dom@5.3.4"
     react-router-v6: "npm:react-router@6.30.4"
-    react-router-v8: "npm:react-router@8.4.0"
+    react-router-v8: "npm:react-router@8.5.3"
     semver: "npm:7.8.5"
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -803,7 +803,7 @@ __metadata:
     "@grafana/faro-transport-otlp-http": "npm:^2.15.0"
     "@grafana/faro-web-sdk": "npm:^2.15.0"
     "@grafana/faro-web-tracing": "npm:^2.15.0"
-    "@playwright/test": "npm:1.64.1"
+    "@playwright/test": "npm:1.65.1"
     "@types/react": "npm:19.3.0"
     "@types/react-dom": "npm:19.3.0"
     "@vitejs/plugin-react-swc": "npm:4.3.3"
@@ -2286,9 +2286,9 @@ __metadata:
   linkType: hard
 
 "@opentelemetry/semantic-conventions@npm:^1.28.0, @opentelemetry/semantic-conventions@npm:^1.29.0, @opentelemetry/semantic-conventions@npm:^1.32.0":
-  version: 1.44.0
-  resolution: "@opentelemetry/semantic-conventions@npm:1.44.0"
-  checksum: 10c0/38ce72dfe254e16177903cc42475eecdfd312d20487133a84d1ab8d97c452acabb186e0069ddcd9a8ba1f65d76535dfec670ce059ef4265f8f29fc395b0db5f0
+  version: 1.45.0
+  resolution: "@opentelemetry/semantic-conventions@npm:1.45.0"
+  checksum: 10c0/0b29d18a617f1eda2b57677f3363f856af6cdae68df2a24e958c17a4b0454ba3edc654e43b11dab102e624430557c69869af46521beaa39ae6c04f311bbd9390
   languageName: node
   linkType: hard
 
@@ -2452,14 +2452,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.64.1":
-  version: 1.64.1
-  resolution: "@playwright/test@npm:1.64.1"
+"@playwright/test@npm:1.65.1":
+  version: 1.65.1
+  resolution: "@playwright/test@npm:1.65.1"
   dependencies:
-    playwright: "npm:1.64.1"
+    playwright: "npm:1.65.1"
   bin:
     playwright: cli.js
-  checksum: 10c0/0a1a853d76d6c532cafaf0366a5448584b766737ebd39bbd23dc0580f3d3b6ef4c833082af47a792e7fc2501f444debdfaad37a87a76cc5b195f3803fc80ea3c
+  checksum: 10c0/f3c0c6ce1d426c84c2ee370e7b7a81fcd4a7a8eaa9d51a880ec853e98ce437482772a09c58c7fbb4444002b127068f076458bec99cecca60c3b51e9ba93e2cc6
   languageName: node
   linkType: hard
 
@@ -3995,13 +3995,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-styles@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "ansi-styles@npm:7.0.0"
-  checksum: 10c0/406cf8984c682d632738964db918d895d84ec4ff39bffd0dddc81c4a4669a77b57adb0b58b26a1cc6ebcff0e30581d5946fc9b6f0394f6d9ac0b42f5ea97d216
-  languageName: node
-  linkType: hard
-
 "any-promise@npm:^1.1.0":
   version: 1.3.0
   resolution: "any-promise@npm:1.3.0"
@@ -4058,6 +4051,13 @@ __metadata:
   version: 3.0.4
   resolution: "argparse@npm:3.0.4"
   checksum: 10c0/845346e39e677b46f8558cece7c8dad1f7045f8b86af33356d8565b26a16940bf770a14a51d6da40ce76554a141e0e95b514d055d1da17a2f1b42df7d523fa0f
+  languageName: node
+  linkType: hard
+
+"argsclopts@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "argsclopts@npm:1.1.1"
+  checksum: 10c0/3dc60b93a03f18bbb7f14d02ca32960d3408ecfd2de3b6d3239e186b1d81e3c17f28178ed8c93b68165aa7f26206007fd746514db0eb5213353b7c869830a9af
   languageName: node
   linkType: hard
 
@@ -4391,7 +4391,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"brace-expansion@npm:5.0.12, brace-expansion@npm:^5.0.12, brace-expansion@npm:^5.0.9":
+"brace-expansion@npm:5.0.12":
   version: 5.0.12
   resolution: "brace-expansion@npm:5.0.12"
   dependencies:
@@ -4401,11 +4401,20 @@ __metadata:
   linkType: hard
 
 "brace-expansion@npm:^2.0.0":
-  version: 2.1.7
-  resolution: "brace-expansion@npm:2.1.7"
+  version: 2.1.8
+  resolution: "brace-expansion@npm:2.1.8"
   dependencies:
     balanced-match: "npm:^1.0.0"
-  checksum: 10c0/17ee4194c85b05cde0a7b7c068eeef664440c027116ef42c3d35c13ebabdc9fd3eaf05c5c8a06dd0ca20ae012d652561d8ac2a699daa5cbee1f0510e5134ab4d
+  checksum: 10c0/72e79fbb273a10ec3d01f45a09a4fb08344f1bac88477a1664401cd1b7730887e755a094b012a2487e3007ad73bef5fa54efb25aef389d7f41268cb137b857d8
+  languageName: node
+  linkType: hard
+
+"brace-expansion@npm:^5.0.12, brace-expansion@npm:^5.0.9":
+  version: 5.1.0
+  resolution: "brace-expansion@npm:5.1.0"
+  dependencies:
+    balanced-match: "npm:^4.0.2"
+  checksum: 10c0/e45471e38321aa12dd38c4e76ffd065efe1056b053ce6035922742351aa836666a71deca248d0bb875d3d135ca0f77588101370a629b56803e8b6495acc4f251
   languageName: node
   linkType: hard
 
@@ -6173,7 +6182,7 @@ __metadata:
     lint-staged: "npm:17.6.0"
     madge: "npm:8.0.0"
     markdownlint-cli: "npm:0.49.1"
-    npm-run-all2: "npm:9.0.3"
+    npm-run-all2: "npm:9.1.0"
     prettier: "npm:3.9.10"
     rimraf: "npm:6.1.3"
     ts-jest: "npm:29.4.15"
@@ -8812,13 +8821,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"memorystream@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "memorystream@npm:0.3.1"
-  checksum: 10c0/4bd164657711d9747ff5edb0508b2944414da3464b7fe21ac5c67cf35bba975c4b446a0124bd0f9a8be54cfc18faf92e92bd77563a20328b1ccf2ff04e9f39b9
-  languageName: node
-  linkType: hard
-
 "merge-stream@npm:^2.0.0":
   version: 2.0.0
   resolution: "merge-stream@npm:2.0.0"
@@ -9201,17 +9203,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^11.0.0":
-  version: 11.0.5
-  resolution: "minimatch@npm:11.0.5"
-  dependencies:
-    "@isaacs/nonrecursive-glob-match": "npm:^1.1.0"
-    brace-expansion: "npm:^5.0.12"
-  checksum: 10c0/398cbb80d0faf4d9714d62b9d8a55af4df27d885144317416a6efc1c673705210cbc9b17d263b368b19a91749df9b4769a18fafd5e88eb43326f502267145fc0
-  languageName: node
-  linkType: hard
-
-"minimatch@npm:^11.0.5, minimatch@npm:^11.0.9":
+"minimatch@npm:^11.0.0, minimatch@npm:^11.0.5, minimatch@npm:^11.0.9":
   version: 11.0.9
   resolution: "minimatch@npm:11.0.9"
   dependencies:
@@ -9573,24 +9565,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"npm-run-all2@npm:9.0.3":
-  version: 9.0.3
-  resolution: "npm-run-all2@npm:9.0.3"
+"npm-run-all2@npm:9.1.0":
+  version: 9.1.0
+  resolution: "npm-run-all2@npm:9.1.0"
   dependencies:
-    ansi-styles: "npm:^7.0.0"
+    argsclopts: "npm:^1.1.1"
     cross-spawn: "npm:^7.0.6"
-    memorystream: "npm:^0.3.1"
     picomatch: "npm:^4.0.2"
     pidtree: "npm:^1.0.0"
     read-package-json-fast: "npm:^6.0.0"
-    shell-quote: "npm:^1.8.4"
+    shell-quote: "npm:^1.12.0"
     which: "npm:^7.0.0"
   bin:
     npm-run-all: bin/npm-run-all/index.js
     npm-run-all2: bin/npm-run-all/index.js
     run-p: bin/run-p/index.js
     run-s: bin/run-s/index.js
-  checksum: 10c0/71a72e7ed7e11a8f4e326ab9769333a4f096998c1117e6cf804f7d0cf6e6fe04725a5c80a509b1d6275015d33d3f41f13c530e01dbd5e89b5bad6cf499deebe1
+  checksum: 10c0/2b9cd42da31d08e4fd7a25aa15ef66f602d670ea63bdf3923f00b8ca77d5929d1ac9848ec9e920de4f8f8d41b40614764a8952e4f99061bb79f960fae153779e
   languageName: node
   linkType: hard
 
@@ -10269,23 +10260,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.64.1":
-  version: 1.64.1
-  resolution: "playwright-core@npm:1.64.1"
+"playwright-core@npm:1.65.1":
+  version: 1.65.1
+  resolution: "playwright-core@npm:1.65.1"
   bin:
     playwright-core: cli.js
-  checksum: 10c0/91c4f5ed1cff4b0e18b6ac62f66770f5f1b6c204d4aebd6a321c07466dca18a70822ac692597c6059705a703f9768097ac551df179fb49294d639509148e04f3
+  checksum: 10c0/4406d4f8eff668a93aaada8382d25fcce8da5f679e9f31311888178d631ed0270eb40c0288129e41e15709c957a31932cac9753fdb332547a19bc3541d317e44
   languageName: node
   linkType: hard
 
-"playwright@npm:1.64.1":
-  version: 1.64.1
-  resolution: "playwright@npm:1.64.1"
+"playwright@npm:1.65.1":
+  version: 1.65.1
+  resolution: "playwright@npm:1.65.1"
   dependencies:
-    playwright-core: "npm:1.64.1"
+    playwright-core: "npm:1.65.1"
   bin:
     playwright: cli.js
-  checksum: 10c0/edf52d0a79feca37bf383e841a467aa68750684128218eac560063991c9e4b615a94901f580cd8a088bb05fd53008ab4a0e5e8d976067698b60ae5d1de2459f3
+  checksum: 10c0/30ce029c9fb2a6e88cf81b150b978fd60edb59b8af5a6460f5576f0fe6e2bb739454109f0ce4904eac63cb2cf10390518d7d71d335fd695b5897734a5af7250d
   languageName: node
   linkType: hard
 
@@ -10634,19 +10625,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-v8@npm:react-router@8.4.0":
-  version: 8.4.0
-  resolution: "react-router@npm:8.4.0"
+"react-router-v8@npm:react-router@8.5.3":
+  version: 8.5.3
+  resolution: "react-router@npm:8.5.3"
   dependencies:
     "@remix-run/route-pattern": "npm:^0.22.1"
     cookie-es: "npm:^3.1.1"
   peerDependencies:
+    "@types/react": ">=19.2.0"
+    "@types/react-dom": ">=19.2.0"
     react: ">=19.2.7"
     react-dom: ">=19.2.7"
   peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
     react-dom:
       optional: true
-  checksum: 10c0/37ad46ed19aad7fcb6432fcc65b0817ac90898f6bb8cfaa406c151767fd59f56ee1f5ab56cdf90468ec03a7952e42f0494372b226fdad8fb316854ef04c5d9be
+  checksum: 10c0/3941806b91d3c1d983b4943f07919bb6baa7f30108c11140ebe7bf31f72ed6a16f9d0682de007cec4f326d32d2567b1c27152e8d1ba7bd0b4f585223b07bae2e
   languageName: node
   linkType: hard
 
@@ -11893,11 +11890,11 @@ __metadata:
   linkType: hard
 
 "tough-cookie@npm:^6.0.0":
-  version: 6.0.2
-  resolution: "tough-cookie@npm:6.0.2"
+  version: 6.1.0
+  resolution: "tough-cookie@npm:6.1.0"
   dependencies:
     tldts: "npm:^7.0.5"
-  checksum: 10c0/5ff521a476a3c540821352125a5d481c8d2fe16035de7e0efda4df120f290c95500a0e9b51ea0aa56343955be482e014c30f5ba73e04b93ba138e4e855cb9e89
+  checksum: 10c0/704607363dcf905301048f3412afe17e05c5e8e1c377e6b22ebc96d3d5a7f1727992677ff1c05fa2d411d580ccf9ddbd2ed62c1cab44ef06fdd4026fedc8b896
   languageName: node
   linkType: hard
 
@@ -12309,10 +12306,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:8.12.4, undici@npm:^8.4.1":
-  version: 8.12.4
-  resolution: "undici@npm:8.12.4"
-  checksum: 10c0/2a83590ce3347ca4e8fb83917bd7ad1d0bcb72ecb6d1a5066f01a89b4941becac569412aa27d7318119ea1a20d217018cce535f8eeed3c1b307d87426f96cfe3
+"undici@npm:8.13.1, undici@npm:^8.4.1":
+  version: 8.13.1
+  resolution: "undici@npm:8.13.1"
+  checksum: 10c0/ee202b4da4f4a663e723696c6d6f6f27f3424aaddd652ceccf1062beaddce171809445cbdbedc50dcd53f0119a1fe8ce20f7c5d320039e71915418dfc98b58a0
   languageName: node
   linkType: hard
 
