@@ -1,6 +1,6 @@
 {
   "name": "@grafana/faro-react",
-  "packageManager": "yarn@4.18.1",
+  "packageManager": "yarn@4.19.0",
   "version": "2.15.0",
   "description": "Faro package that enables easier integration in projects built with React.",
   "keywords": [
@@ -73,7 +73,7 @@
     "react-router": "7.18.4",
     "react-router-dom-v5": "npm:react-router-dom@5.3.4",
     "react-router-v6": "npm:react-router@6.30.4",
-    "react-router-v8": "npm:react-router@8.4.0",
+    "react-router-v8": "npm:react-router@8.5.3",
     "semver": "7.8.5"
   },
   "peerDependencies": {
